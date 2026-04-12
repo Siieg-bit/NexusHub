@@ -669,12 +669,10 @@ class _EditCommunityProfileScreenState
               ),
             )
           : SingleChildScrollView(
+              padding: EdgeInsets.only(bottom: r.s(32)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ══════════════════════════════════════════════════════
-                  // SEÇÃO DO TOPO: Banner + Avatar + "Editar Molduras"
-                  // ══════════════════════════════════════════════════════
                   _BannerAvatarSection(
                     bannerUrl:
                         _gallery.isNotEmpty ? _gallery.first : _localBannerUrl,
@@ -697,278 +695,165 @@ class _EditCommunityProfileScreenState
                       }
                     },
                   ),
-
-                  SizedBox(height: r.s(8)),
-
-                  // ══════════════════════════════════════════════════════
-                  // LINHA: Nickname local
-                  // ══════════════════════════════════════════════════════
-                  _AminoListTile(
-                    leading: Icon(Icons.person_outline_rounded,
-                        color: Colors.grey[500], size: r.s(28)),
-                    content: _InlineTextField(
-                      controller: _nicknameController,
-                      hintText: s.leaveEmptyGlobal,
-                      maxLength: 24,
-                      style: TextStyle(
-                        color: context.textPrimary,
-                        fontSize: r.fs(15),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-
-                  _AminoDivider(),
-
-                  // ══════════════════════════════════════════════════════
-                  // LINHA: Bio local
-                  // ══════════════════════════════════════════════════════
-                  _AminoListTile(
-                    leading: Icon(Icons.edit_note_rounded,
-                        color: Colors.grey[500], size: r.s(28)),
-                    content: _CommunityBioField(
-                      controller: _bioController,
-                      hintText: s.leaveEmptyBio,
-                      markdownLabel: s.markdown,
-                      previewLabel: s.preview,
-                      onTap: _openBioEditor,
-                    ),
-                    trailing: Icon(Icons.chevron_right_rounded,
-                        color: context.textHint, size: r.s(22)),
-                  ),
-
-                  _AminoDivider(),
-
-                  // ══════════════════════════════════════════════════════
-                  // SEÇÃO: Plano de Fundo — toggle Cor Sólida / Imagem
-                  // ══════════════════════════════════════════════════════
-                  _AminoListTile(
-                    leading: Icon(Icons.palette_rounded,
-                        color: const Color(0xFF2196F3), size: r.s(28)),
-                    content: Text(
-                      s.profileBackgroundOptional,
-                      style: TextStyle(
-                        color: context.textPrimary,
-                        fontSize: r.fs(15),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    trailing: const SizedBox.shrink(),
-                  ),
-                  // Hint sobre galeria como banner
                   Padding(
-                    padding: EdgeInsets.fromLTRB(r.s(16), 0, r.s(16), r.s(8)),
-                    child: Text(
-                      s.galleryAsBannerHint,
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: r.fs(12),
-                        height: 1.4,
-                      ),
+                    padding: EdgeInsets.fromLTRB(
+                      r.s(16),
+                      r.s(8),
+                      r.s(16),
+                      0,
                     ),
-                  ),
-                  // Botões de toggle: Cor Sólida | Imagem
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(r.s(16), 0, r.s(16), r.s(8)),
-                    child: Row(
+                    child: Column(
                       children: [
-                        // Botão: Cor Sólida
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: _pickBackgroundColor,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: r.s(10), horizontal: r.s(12)),
-                              decoration: BoxDecoration(
-                                color: _localBackgroundColor != null
-                                    ? (_parseStoredBackgroundColor(_localBackgroundColor) ??
-                                        AppTheme.accentColor.withValues(alpha: 0.15))
-                                    : context.surfaceColor,
-                                borderRadius: BorderRadius.circular(r.s(10)),
-                                border: Border.all(
-                                  color: _localBackgroundColor != null
-                                      ? Colors.white.withValues(alpha: 0.3)
-                                      : Colors.grey.withValues(alpha: 0.3),
-                                  width: 1.5,
+                        _SettingsSectionCard(
+                          child: Padding(
+                            padding: EdgeInsets.all(r.s(14)),
+                            child: Column(
+                              children: [
+                                _SectionHeader(
+                                  icon: Icons.tune_rounded,
+                                  iconColor: AppTheme.accentColor,
+                                  title: 'Perfil',
+                                  subtitle: 'Nome e apresentação',
                                 ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.circle,
-                                    size: r.s(16),
-                                    color: _localBackgroundColor != null
-                                        ? Colors.white
-                                        : AppTheme.accentColor,
-                                  ),
-                                  SizedBox(width: r.s(6)),
-                                  Flexible(
-                                    child: Text(
-                                      s.backgroundColorSolid,
-                                      style: TextStyle(
-                                        color: _localBackgroundColor != null
-                                            ? Colors.white
-                                            : context.textPrimary,
-                                        fontSize: r.fs(13),
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
+                                SizedBox(height: r.s(14)),
+                                _AminoListTile(
+                                  leading: Icon(Icons.person_outline_rounded,
+                                      color: Colors.grey[300], size: r.s(22)),
+                                  title: 'Nome',
+                                  content: _InlineTextField(
+                                    controller: _nicknameController,
+                                    hintText: s.leaveEmptyGlobal,
+                                    maxLength: 24,
+                                    style: TextStyle(
+                                      color: context.textPrimary,
+                                      fontSize: r.fs(16),
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  if (_localBackgroundColor != null) ...[  
-                                    SizedBox(width: r.s(4)),
-                                    GestureDetector(
-                                      onTap: () => setState(() => _localBackgroundColor = null),
-                                      child: Icon(Icons.close_rounded,
-                                          color: Colors.white70, size: r.s(14)),
-                                    ),
-                                  ],
-                                ],
-                              ),
+                                ),
+                                SizedBox(height: r.s(10)),
+                                _AminoListTile(
+                                  leading: Icon(Icons.notes_rounded,
+                                      color: Colors.grey[300], size: r.s(22)),
+                                  title: 'Bio',
+                                  content: _CommunityBioField(
+                                    controller: _bioController,
+                                    hintText: s.leaveEmptyBio,
+                                    markdownLabel: s.markdown,
+                                    previewLabel: s.preview,
+                                    onTap: _openBioEditor,
+                                  ),
+                                  trailing: Icon(Icons.chevron_right_rounded,
+                                      color: context.textHint, size: r.s(20)),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                        SizedBox(width: r.s(8)),
-                        // Botão: Imagem
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: _pickBackground,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: r.s(10), horizontal: r.s(12)),
-                              decoration: BoxDecoration(
-                                color: context.surfaceColor,
-                                borderRadius: BorderRadius.circular(r.s(10)),
-                                border: Border.all(
-                                  color: _localBackgroundUrl != null
-                                      ? AppTheme.accentColor
-                                      : Colors.grey.withValues(alpha: 0.3),
-                                  width: _localBackgroundUrl != null ? 2 : 1.5,
+                        SizedBox(height: r.s(16)),
+                        _SettingsSectionCard(
+                          child: Padding(
+                            padding: EdgeInsets.all(r.s(14)),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _SectionHeader(
+                                  icon: Icons.palette_rounded,
+                                  iconColor: const Color(0xFF2196F3),
+                                  title: s.profileBackgroundOptional,
+                                  subtitle: 'Plano de fundo e galeria',
                                 ),
-                                image: _localBackgroundUrl != null
-                                    ? DecorationImage(
-                                        image: NetworkImage(_localBackgroundUrl!),
-                                        fit: BoxFit.cover,
-                                        colorFilter: ColorFilter.mode(
-                                          Colors.black.withValues(alpha: 0.45),
-                                          BlendMode.darken,
+                                SizedBox(height: r.s(14)),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _BackgroundOptionButton(
+                                        icon: Icons.circle,
+                                        label: s.backgroundColorSolid,
+                                        selected: _localBackgroundColor != null,
+                                        selectedColor: _parseStoredBackgroundColor(
+                                                _localBackgroundColor) ??
+                                            AppTheme.accentColor,
+                                        onTap: _pickBackgroundColor,
+                                        onClear: _localBackgroundColor != null
+                                            ? () => setState(() =>
+                                                _localBackgroundColor = null)
+                                            : null,
+                                      ),
+                                    ),
+                                    SizedBox(width: r.s(10)),
+                                    Expanded(
+                                      child: _BackgroundOptionButton(
+                                        icon: Icons.image_rounded,
+                                        label: s.backgroundFromGallery,
+                                        selected: _localBackgroundUrl != null,
+                                        imageUrl: _localBackgroundUrl,
+                                        selectedColor: AppTheme.accentColor,
+                                        onTap: _pickBackground,
+                                        onClear: _localBackgroundUrl != null
+                                            ? () => setState(() =>
+                                                _localBackgroundUrl = null)
+                                            : null,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: r.s(12)),
+                                GestureDetector(
+                                  onTap: _openGalleryManager,
+                                  child: Container(
+                                    padding: EdgeInsets.all(r.s(14)),
+                                    decoration: BoxDecoration(
+                                      color: context.scaffoldBg.withValues(alpha: 0.45),
+                                      borderRadius: BorderRadius.circular(r.s(18)),
+                                      border: Border.all(
+                                        color: Colors.white.withValues(alpha: 0.06),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: _GallerySummaryContent(
+                                            photos: _gallery,
+                                            itemSize: r.s(50),
+                                          ),
                                         ),
-                                      )
-                                    : null,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.image_rounded,
-                                    size: r.s(16),
-                                    color: _localBackgroundUrl != null
-                                        ? Colors.white
-                                        : AppTheme.accentColor,
-                                  ),
-                                  SizedBox(width: r.s(6)),
-                                  Flexible(
-                                    child: Text(
-                                      s.backgroundFromGallery,
-                                      style: TextStyle(
-                                        color: _localBackgroundUrl != null
-                                            ? Colors.white
-                                            : context.textPrimary,
-                                        fontSize: r.fs(13),
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
+                                        SizedBox(width: r.s(12)),
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: r.s(10),
+                                            vertical: r.s(6),
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withValues(alpha: 0.06),
+                                            borderRadius:
+                                                BorderRadius.circular(r.s(999)),
+                                          ),
+                                          child: Text(
+                                            '${_gallery.length}',
+                                            style: TextStyle(
+                                              color: context.textPrimary,
+                                              fontSize: r.fs(12),
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: r.s(6)),
+                                        Icon(Icons.chevron_right_rounded,
+                                            color: Colors.grey[400],
+                                            size: r.s(22)),
+                                      ],
                                     ),
                                   ),
-                                  if (_localBackgroundUrl != null) ...[  
-                                    SizedBox(width: r.s(4)),
-                                    GestureDetector(
-                                      onTap: () => setState(() => _localBackgroundUrl = null),
-                                      child: Icon(Icons.close_rounded,
-                                          color: Colors.white70, size: r.s(14)),
-                                    ),
-                                  ],
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
+                        SizedBox(height: r.s(6)),
                       ],
                     ),
                   ),
-
-                  _AminoDivider(),
-
-                  // ══════════════════════════════════════════════════════
-                  // LINHA: Galeria de fotos
-                  // ══════════════════════════════════════════════════════
-                  GestureDetector(
-                    onTap: _openGalleryManager,
-                    child: _AminoListTile(
-                      leading: Icon(Icons.camera_alt_rounded,
-                          color: const Color(0xFF2196F3), size: r.s(28)),
-                      content: _GallerySummaryContent(
-                        photos: _gallery,
-                        itemSize: r.s(44),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '${s.galleryCount} (${_gallery.length})',
-                            style: TextStyle(
-                              color: context.textPrimary,
-                              fontSize: r.fs(15),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          SizedBox(width: r.s(4)),
-                          Icon(Icons.chevron_right_rounded,
-                              color: Colors.grey[400], size: r.s(22)),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  _AminoDivider(),
-
-                  // ══════════════════════════════════════════════════════
-                  // NOTA INFORMATIVA
-                  // ══════════════════════════════════════════════════════
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: r.s(16), vertical: r.s(12)),
-                    child: Container(
-                      padding: EdgeInsets.all(r.s(12)),
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentColor.withValues(alpha: 0.07),
-                        borderRadius: BorderRadius.circular(r.s(10)),
-                        border: Border.all(
-                          color: AppTheme.accentColor.withValues(alpha: 0.18),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.info_outline_rounded,
-                              color: AppTheme.accentColor, size: r.s(18)),
-                          SizedBox(width: r.s(10)),
-                          Expanded(
-                            child: Text(
-                              '${s.settingsApplyOnlyCommunity}\n${s.emptyFieldsGlobal}',
-                              style: TextStyle(
-                                color: context.textSecondary,
-                                fontSize: r.fs(12),
-                                height: 1.4,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: r.s(40)),
                 ],
               ),
             ),
@@ -1003,102 +888,160 @@ class _BannerAvatarSection extends ConsumerWidget {
 
     return Column(
       children: [
-        // ── Banner ──────────────────────────────────────────────────────
         Stack(
           clipBehavior: Clip.none,
           alignment: Alignment.bottomCenter,
           children: [
-            // Banner exibido como prévia da primeira imagem da galeria
             Container(
-              height: r.s(160),
+              height: r.s(188),
               width: double.infinity,
-              color: const Color(0xFFE8E0E0),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (bannerUrl != null)
-                    CachedNetworkImage(
-                      imageUrl: bannerUrl!,
-                      fit: BoxFit.cover,
-                      color: Colors.black.withValues(alpha: 0.15),
-                      colorBlendMode: BlendMode.darken,
+              decoration: BoxDecoration(
+                color: context.surfaceColor,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(r.s(28)),
+                  bottomRight: Radius.circular(r.s(28)),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 22,
+                    offset: Offset(0, r.s(8)),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(r.s(28)),
+                  bottomRight: Radius.circular(r.s(28)),
+                ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (bannerUrl != null)
+                      CachedNetworkImage(
+                        imageUrl: bannerUrl!,
+                        fit: BoxFit.cover,
+                      )
+                    else
+                      Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Color(0xFF24384D), Color(0xFF132235)],
+                          ),
+                        ),
+                      ),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.10),
+                            Colors.black.withValues(alpha: 0.42),
+                          ],
+                        ),
+                      ),
                     ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: -r.s(50),
+              child: GestureDetector(
+                onTap: onTapAvatar,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: r.s(104),
+                      height: r.s(104),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: context.scaffoldBg,
+                          width: 4,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.22),
+                            blurRadius: 18,
+                            offset: Offset(0, r.s(8)),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: avatarUrl != null
+                            ? CachedNetworkImage(
+                                imageUrl: avatarUrl!,
+                                fit: BoxFit.cover,
+                              )
+                            : Container(
+                                color: context.surfaceColor,
+                                child: Icon(Icons.person_rounded,
+                                    color: Colors.grey[500], size: r.s(56)),
+                              ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: r.s(2),
+                      right: r.s(2),
+                      child: Container(
+                        width: r.s(30),
+                        height: r.s(30),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accentColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: context.scaffoldBg,
+                            width: 2,
+                          ),
+                        ),
+                        child: Icon(Icons.camera_alt_rounded,
+                            color: Colors.white, size: r.s(14)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: r.s(62)),
+        Center(
+          child: GestureDetector(
+            onTap: onTapEditFrames,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: r.s(14),
+                vertical: r.s(8),
+              ),
+              decoration: BoxDecoration(
+                color: context.surfaceColor.withValues(alpha: 0.88),
+                borderRadius: BorderRadius.circular(r.s(999)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.auto_awesome_rounded,
+                      color: const Color(0xFF5B9BD5), size: r.s(15)),
+                  SizedBox(width: r.s(8)),
+                  Text(
+                    editFramesLabel,
+                    style: TextStyle(
+                      color: const Color(0xFF5B9BD5),
+                      fontSize: r.fs(13),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
             ),
-
-              // Avatar sobreposto ao banner (metade dentro, metade fora)
-              Positioned(
-                bottom: -r.s(52),
-                child: GestureDetector(
-                  onTap: onTapAvatar,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      // Círculo do avatar
-                      Container(
-                        width: r.s(96),
-                        height: r.s(96),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFFD0C8C8),
-                          border: Border.all(
-                            color: const Color(0xFFE8E0E0),
-                            width: 3,
-                          ),
-                        ),
-                        child: ClipOval(
-                          child: avatarUrl != null
-                              ? CachedNetworkImage(
-                                  imageUrl: avatarUrl!,
-                                  fit: BoxFit.cover,
-                                )
-                              : Icon(Icons.person_rounded,
-                                  color: Colors.grey[600], size: r.s(52)),
-                        ),
-                      ),
-                      // Ícone de câmera no canto inferior direito
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          padding: EdgeInsets.all(r.s(5)),
-                          decoration: BoxDecoration(
-                            color: AppTheme.accentColor,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: const Color(0xFFE8E0E0),
-                              width: 2,
-                            ),
-                          ),
-                          child: Icon(Icons.camera_alt_rounded,
-                              color: Colors.white, size: r.s(12)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-        // Espaço para o avatar sobrepor o conteúdo seguinte
-        SizedBox(height: r.s(60)),
-
-        // "Editar Molduras de Perfil" — abre o FramePickerSheet
-        GestureDetector(
-          onTap: onTapEditFrames,
-          child: Text(
-            editFramesLabel,
-            style: TextStyle(
-              color: const Color(0xFF5B9BD5),
-              fontSize: r.fs(14),
-              fontWeight: FontWeight.w500,
-            ),
           ),
         ),
-
-        SizedBox(height: r.s(16)),
       ],
     );
   }
@@ -1110,12 +1053,14 @@ class _BannerAvatarSection extends ConsumerWidget {
 
 class _AminoListTile extends StatelessWidget {
   final Widget leading;
+  final String? title;
   final Widget content;
   final Widget? trailing;
 
   const _AminoListTile({
     required this.leading,
     required this.content,
+    this.title,
     this.trailing,
   });
 
@@ -1123,20 +1068,223 @@ class _AminoListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = context.r;
     return Container(
-      color: context.surfaceColor,
-      padding: EdgeInsets.symmetric(
-          horizontal: r.s(16), vertical: r.s(12)),
+      padding: EdgeInsets.all(r.s(14)),
+      decoration: BoxDecoration(
+        color: context.scaffoldBg.withValues(alpha: 0.42),
+        borderRadius: BorderRadius.circular(r.s(18)),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.06),
+        ),
+      ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: r.s(32), child: leading),
+          Container(
+            width: r.s(40),
+            height: r.s(40),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(r.s(14)),
+            ),
+            child: leading,
+          ),
           SizedBox(width: r.s(12)),
-          Expanded(child: content),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (title != null) ...[
+                  Text(
+                    title!,
+                    style: TextStyle(
+                      color: context.textSecondary,
+                      fontSize: r.fs(11),
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  SizedBox(height: r.s(6)),
+                ],
+                content,
+              ],
+            ),
+          ),
           if (trailing != null) ...[
-            SizedBox(width: r.s(8)),
-            trailing!,
+            SizedBox(width: r.s(10)),
+            Padding(
+              padding: EdgeInsets.only(top: title != null ? r.s(18) : r.s(6)),
+              child: trailing!,
+            ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _SettingsSectionCard extends StatelessWidget {
+  final Widget child;
+
+  const _SettingsSectionCard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return Container(
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(r.s(22)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 18,
+            offset: Offset(0, r.s(8)),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String? subtitle;
+
+  const _SectionHeader({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return Row(
+      children: [
+        Container(
+          width: r.s(40),
+          height: r.s(40),
+          decoration: BoxDecoration(
+            color: iconColor.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(r.s(14)),
+          ),
+          child: Icon(icon, color: iconColor, size: r.s(22)),
+        ),
+        SizedBox(width: r.s(12)),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: r.fs(16),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              if (subtitle != null) ...[
+                SizedBox(height: r.s(2)),
+                Text(
+                  subtitle!,
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontSize: r.fs(12),
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BackgroundOptionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final Color selectedColor;
+  final String? imageUrl;
+  final VoidCallback onTap;
+  final VoidCallback? onClear;
+
+  const _BackgroundOptionButton({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.selectedColor,
+    this.imageUrl,
+    required this.onTap,
+    this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    final foreground = selected ? Colors.white : context.textPrimary;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: r.s(12),
+          vertical: r.s(12),
+        ),
+        decoration: BoxDecoration(
+          color: selected ? selectedColor : context.scaffoldBg.withValues(alpha: 0.45),
+          borderRadius: BorderRadius.circular(r.s(16)),
+          border: Border.all(
+            color: selected
+                ? selectedColor.withValues(alpha: 0.9)
+                : Colors.white.withValues(alpha: 0.08),
+            width: selected ? 1.8 : 1,
+          ),
+          image: imageUrl != null
+              ? DecorationImage(
+                  image: NetworkImage(imageUrl!),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withValues(alpha: 0.40),
+                    BlendMode.darken,
+                  ),
+                )
+              : null,
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: r.s(16), color: selected ? Colors.white : AppTheme.accentColor),
+            SizedBox(width: r.s(8)),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: foreground,
+                  fontSize: r.fs(13),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            if (onClear != null)
+              GestureDetector(
+                onTap: onClear,
+                child: Icon(Icons.close_rounded,
+                    color: selected ? Colors.white70 : context.textHint,
+                    size: r.s(16)),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -1190,9 +1338,30 @@ class _InlineTextField extends StatelessWidget {
         border: InputBorder.none,
         isDense: true,
         contentPadding: EdgeInsets.zero,
-        counterStyle:
-            TextStyle(color: context.textHint, fontSize: r.fs(10)),
+        counterText: '',
       ),
+      buildCounter: (
+        BuildContext context, {
+        required int currentLength,
+        required bool isFocused,
+        required int? maxLength,
+      }) {
+        if (maxLength == null) return null;
+        return Padding(
+          padding: EdgeInsets.only(top: r.s(8)),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              '$currentLength/$maxLength',
+              style: TextStyle(
+                color: context.textHint,
+                fontSize: r.fs(10),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -1222,32 +1391,19 @@ class _CommunityBioField extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(r.s(12)),
+        borderRadius: BorderRadius.circular(r.s(14)),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: r.s(4)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                hasBio ? bio : hintText,
-                maxLines: hasBio ? 4 : 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: hasBio ? context.textPrimary : context.textHint,
-                  fontSize: r.fs(14),
-                  height: 1.45,
-                ),
-              ),
-              SizedBox(height: r.s(8)),
-              Wrap(
-                spacing: r.s(6),
-                runSpacing: r.s(6),
-                children: [
-                  _BioInfoChip(label: markdownLabel),
-                  _BioInfoChip(label: previewLabel),
-                ],
-              ),
-            ],
+          padding: EdgeInsets.symmetric(vertical: r.s(2)),
+          child: Text(
+            hasBio ? bio : hintText,
+            maxLines: hasBio ? 3 : 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: hasBio ? context.textPrimary : context.textHint,
+              fontSize: r.fs(14),
+              height: 1.45,
+              fontWeight: hasBio ? FontWeight.w500 : FontWeight.w400,
+            ),
           ),
         ),
       ),
@@ -1269,15 +1425,19 @@ class _BioInfoChip extends StatelessWidget {
         vertical: r.s(4),
       ),
       decoration: BoxDecoration(
-        color: AppTheme.accentColor.withValues(alpha: 0.12),
+        color: AppTheme.accentColor.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(r.s(999)),
+        border: Border.all(
+          color: AppTheme.accentColor.withValues(alpha: 0.12),
+        ),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: AppTheme.accentColor,
-          fontSize: r.fs(11),
-          fontWeight: FontWeight.w600,
+          fontSize: r.fs(10),
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.2,
         ),
       ),
     );
@@ -1765,20 +1925,20 @@ class _GallerySummaryContent extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Gerenciar galeria',
+            'Galeria',
             style: TextStyle(
               color: context.textPrimary,
-              fontSize: r.fs(14),
-              fontWeight: FontWeight.w600,
+              fontSize: r.fs(15),
+              fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: r.s(4)),
+          SizedBox(height: r.s(3)),
           Text(
-            'Adicione imagens e defina a ordem da capa.',
+            'Adicione imagens',
             style: TextStyle(
               color: context.textSecondary,
               fontSize: r.fs(12),
-              height: 1.35,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -1789,44 +1949,91 @@ class _GallerySummaryContent extends StatelessWidget {
 
     return Row(
       children: [
-        ...previewPhotos.asMap().entries.map((entry) {
-          final index = entry.key;
-          final photo = entry.value;
-          return Container(
-            width: itemSize,
-            height: itemSize,
-            margin: EdgeInsets.only(right: r.s(8)),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(r.s(6)),
-              child: CachedNetworkImage(
-                imageUrl: photo,
-                fit: BoxFit.cover,
-              ),
-            ),
-          );
-        }),
+        SizedBox(
+          width: itemSize + r.s(18),
+          height: itemSize,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: previewPhotos.asMap().entries.map((entry) {
+              final index = entry.key;
+              final photo = entry.value;
+              return Positioned(
+                left: index * r.s(18),
+                child: Container(
+                  width: itemSize,
+                  height: itemSize,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(r.s(14)),
+                    border: Border.all(
+                      color: context.surfaceColor,
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        blurRadius: 10,
+                        offset: Offset(0, r.s(4)),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(r.s(12)),
+                    child: CachedNetworkImage(
+                      imageUrl: photo,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        SizedBox(width: r.s(12)),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Gerenciar galeria',
-                style: TextStyle(
-                  color: context.textPrimary,
-                  fontSize: r.fs(14),
-                  fontWeight: FontWeight.w600,
-                ),
+              Row(
+                children: [
+                  Text(
+                    'Galeria',
+                    style: TextStyle(
+                      color: context.textPrimary,
+                      fontSize: r.fs(15),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(width: r.s(8)),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: r.s(8),
+                      vertical: r.s(4),
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(r.s(999)),
+                    ),
+                    child: Text(
+                      '${photos.length}',
+                      style: TextStyle(
+                        color: AppTheme.accentColor,
+                        fontSize: r.fs(11),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: r.s(4)),
               Text(
-                'Reordene, remova ou adicione novas imagens.',
-                maxLines: 2,
+                photos.length == 1 ? 'Toque para gerenciar' : 'Toque para organizar',
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: context.textSecondary,
                   fontSize: r.fs(12),
-                  height: 1.35,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -1939,52 +2146,48 @@ class _CommunityGalleryManagerScreenState
       ),
       body: Column(
         children: [
-          Container(
-            width: double.infinity,
-            margin: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(8)),
-            padding: EdgeInsets.all(r.s(12)),
-            decoration: BoxDecoration(
-              color: context.surfaceColor,
-              borderRadius: BorderRadius.circular(r.s(12)),
-              border: Border.all(color: context.dividerClr),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'A primeira imagem da lista será usada como capa da comunidade.',
-                  style: TextStyle(
-                    color: context.textPrimary,
-                    fontSize: r.fs(13),
-                    fontWeight: FontWeight.w600,
-                    height: 1.35,
-                  ),
-                ),
-                SizedBox(height: r.s(6)),
-                Text(
-                  'Arraste para reordenar, remova itens que não deseja manter e adicione novas imagens quando precisar.',
-                  style: TextStyle(
-                    color: context.textSecondary,
-                    fontSize: r.fs(12),
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
           Expanded(
             child: _photos.isEmpty
                 ? Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: r.s(24)),
-                      child: Text(
-                        'Nenhuma imagem na galeria ainda. Adicione a primeira para definir a capa da comunidade.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: context.textSecondary,
-                          fontSize: r.fs(13),
-                          height: 1.45,
-                        ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: r.s(64),
+                            height: r.s(64),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(r.s(20)),
+                            ),
+                            child: Icon(
+                              Icons.photo_library_outlined,
+                              color: AppTheme.accentColor,
+                              size: r.s(30),
+                            ),
+                          ),
+                          SizedBox(height: r.s(14)),
+                          Text(
+                            'Sua galeria está vazia',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontSize: r.fs(16),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: r.s(6)),
+                          Text(
+                            'Adicione imagens para começar.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: context.textSecondary,
+                              fontSize: r.fs(13),
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   )
@@ -2047,9 +2250,7 @@ class _CommunityGalleryManagerScreenState
                                     ),
                                     SizedBox(height: r.s(8)),
                                     Text(
-                                      index == 0
-                                          ? 'Imagem principal exibida no topo do perfil.'
-                                          : 'Arraste para cima se quiser usar esta imagem como capa.',
+                                      index == 0 ? 'Capa atual' : 'Arraste para reordenar',
                                       style: TextStyle(
                                         color: context.textSecondary,
                                         fontSize: r.fs(12),
@@ -2112,9 +2313,9 @@ class _CommunityGalleryManagerScreenState
                         )
                       : const Icon(Icons.add_photo_alternate_outlined),
                   label: Text(
-                    _photos.length >= widget.maxPhotos
-                        ? 'Limite de ${widget.maxPhotos} imagens atingido'
-                        : 'Adicionar imagem',
+                        _photos.length >= widget.maxPhotos
+                            ? 'Limite de ${widget.maxPhotos} imagens'
+                            : 'Adicionar imagem',
                   ),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppTheme.accentColor,
