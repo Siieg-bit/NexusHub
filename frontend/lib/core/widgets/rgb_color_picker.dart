@@ -84,19 +84,6 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
     const Color(0xFFE53935),
   ];
 
-  // Paleta de swatches predefinidos
-  static const List<Color> _swatches = [
-    Color(0xFFE53935), Color(0xFFE91E63), Color(0xFF9C27B0),
-    Color(0xFF673AB7), Color(0xFF3F51B5), Color(0xFF2196F3),
-    Color(0xFF03A9F4), Color(0xFF00BCD4), Color(0xFF009688),
-    Color(0xFF4CAF50), Color(0xFF8BC34A), Color(0xFFCDDC39),
-    Color(0xFFFFEB3B), Color(0xFFFFC107), Color(0xFFFF9800),
-    Color(0xFFFF5722), Color(0xFF795548), Color(0xFF607D8B),
-    Color(0xFF000000), Color(0xFF424242), Color(0xFF757575),
-    Color(0xFFBDBDBD), Color(0xFFFFFFFF), Color(0xFF6C5CE7),
-    Color(0xFF2DBE60), Color(0xFF00BCD4), Color(0xFFFF6B6B),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -207,9 +194,6 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
                 // Campo HEX
                 _buildHexField(r),
                 SizedBox(height: r.s(16)),
-                // Swatches predefinidos
-                _buildSwatches(r),
-                SizedBox(height: r.s(14)),
                 // Recentes
                 if (_recentColors.isNotEmpty) ...[
                   _buildRecentColors(r),
@@ -448,67 +432,6 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSwatches(Responsive r) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Cores predefinidas',
-          style: TextStyle(
-            color: Colors.white38,
-            fontSize: r.fs(11),
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-          ),
-        ),
-        SizedBox(height: r.s(10)),
-        Wrap(
-          spacing: r.s(8),
-          runSpacing: r.s(8),
-          children: _swatches.map((color) {
-            final isSelected = _currentColor.value == color.value;
-            return GestureDetector(
-              onTap: () => _selectSwatch(color),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                width: r.s(30),
-                height: r.s(30),
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.15),
-                    width: isSelected ? 2.5 : 1,
-                  ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: color.withValues(alpha: 0.6),
-                            blurRadius: 8,
-                            spreadRadius: 1,
-                          ),
-                        ]
-                      : null,
-                ),
-                child: isSelected
-                    ? Icon(
-                        Icons.check_rounded,
-                        color: color.computeLuminance() > 0.5
-                            ? Colors.black87
-                            : Colors.white,
-                        size: r.s(14),
-                      )
-                    : null,
-              ),
-            );
-          }).toList(),
-        ),
-      ],
     );
   }
 
