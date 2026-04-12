@@ -1052,35 +1052,43 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Balao com texto de exemplo
+              // Image widget com centerSlice — abordagem correta para nine-slice.
+              // DecorationImage+centerSlice lança assertion no Flutter moderno.
               CachedNetworkImage(
                 imageUrl: imageUrl,
-                imageBuilder: (ctx, img) => Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: r.s(16),
-                    vertical: r.s(10),
-                  ),
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: img,
-                      // SEM fit: BoxFit.fill — proibido com centerSlice
-                      centerSlice: const Rect.fromLTRB(38, 38, 90, 90),
+                imageBuilder: (ctx, img) => Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Image(
+                        image: img,
+                        fit: BoxFit.fill,
+                        centerSlice: const Rect.fromLTRB(38, 38, 90, 90),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    'Olá! 👋',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: r.fs(13),
-                      fontWeight: FontWeight.w600,
-                      shadows: const [
-                        Shadow(
-                          color: Colors.black54,
-                          blurRadius: 4,
-                          offset: Offset(0, 1),
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: r.s(16),
+                          vertical: r.s(10),
                         ),
-                      ],
+                        child: Text(
+                          'Olá! 👋',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: r.fs(13),
+                            fontWeight: FontWeight.w600,
+                            shadows: const [
+                              Shadow(
+                                color: Colors.black54,
+                                blurRadius: 4,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
                 placeholder: (_, __) => Center(
                   child: CircularProgressIndicator(

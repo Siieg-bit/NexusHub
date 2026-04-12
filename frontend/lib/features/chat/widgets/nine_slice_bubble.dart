@@ -107,18 +107,15 @@ class NineSliceBubble extends StatelessWidget {
 
 /// Widget interno que renderiza a imagem com 9-slice scaling.
 ///
-/// Usa [CachedNetworkImage] para cache e [DecorationImage] com
-/// [centerSlice] para o efeito de 9-slice nativo do Flutter.
+/// IMPORTANTE: usa o widget [Image] nativo do Flutter com [centerSlice],
+/// NÃO [DecorationImage] — o Flutter lança assertion error quando
+/// [DecorationImage.centerSlice] é usado sem fit exato.
 ///
-/// O [imageSize] deve corresponder às dimensões reais do PNG em pixels.
-/// Por padrão assume 128×128 (tamanho padrão dos bubble frames da loja).
+/// O widget [Image] com [centerSlice] não tem essa restrição e é a
+/// abordagem correta para nine-slice no Flutter.
 class _NineSliceImage extends StatelessWidget {
   final String imageUrl;
   final EdgeInsets sliceInsets;
-
-  /// Dimensões reais da imagem fonte em pixels lógicos.
-  /// IMPORTANTE: deve bater com o tamanho real do PNG para que o
-  /// centerSlice seja calculado corretamente.
   final Size imageSize;
 
   const _NineSliceImage({
@@ -129,43 +126,40 @@ class _NineSliceImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
-    // centerSlice define a região CENTRAL (esticável) em coordenadas
-    // de pixels da imagem original. Os cantos fora desse rect são fixos.
+    // centerSlice: região central esticável em pixels da imagem original.
+    // Os 4 cantos fora desse rect são renderizados em tamanho fixo.
     final centerSlice = Rect.fromLTRB(
       sliceInsets.left,
       sliceInsets.top,
       imageSize.width - sliceInsets.right,
       imageSize.height - sliceInsets.bottom,
     );
+
     return CachedNetworkImage(
       imageUrl: imageUrl,
       memCacheWidth: imageSize.width.toInt() * 2,
       memCacheHeight: imageSize.height.toInt() * 2,
       imageBuilder: (context, imageProvider) {
-        return Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: imageProvider,
-              // NÃO usar fit: BoxFit.fill com centerSlice — o Flutter proibe
-              // essa combinação (assertion: 'sourceSize == inputSize').
-              // Quando centerSlice está definido, o Flutter já gerencia o
-              // scaling automaticamente: os cantos são fixos e o centro estica.
-              centerSlice: centerSlice,
-            ),
-          ),
+        // Usa Image widget com centerSlice — abordagem correta para nine-slice.
+        // DecorationImage+centerSlice lança assertion no Flutter moderno.
+        return Image(
+          image: imageProvider,
+          fit: BoxFit.fill,
+          centerSlice: centerSlice,
+          width: double.infinity,
+          height: double.infinity,
         );
       },
       placeholder: (_, __) => Container(
         decoration: BoxDecoration(
           color: AppTheme.primaryColor.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(r.s(16)),
+          borderRadius: BorderRadius.circular(16),
         ),
       ),
       errorWidget: (_, __, ___) => Container(
         decoration: BoxDecoration(
           color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(r.s(16)),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: AppTheme.primaryColor.withValues(alpha: 0.3),
             width: 1,
@@ -311,7 +305,6 @@ class _ProceduralFramePainter extends CustomPainter {
       ..color = Colors.white.withValues(alpha: 0.6)
       ..style = PaintingStyle.fill;
 
-    // Estrelas nos 4 cantos
     _drawStar(canvas, Offset(12, 10), 4, paint);
     _drawStar(canvas, Offset(size.width - 12, 10), 3.5, paint);
     _drawStar(canvas, Offset(10, size.height - 10), 3, paint);
@@ -325,38 +318,92 @@ class _ProceduralFramePainter extends CustomPainter {
       final innerAngle = ((i * 72) + 36 - 90) * 3.14159 / 180;
       if (i == 0) {
         path.moveTo(
-          center.dx + radius * 1.0 * _cos(angle),
-          center.dy + radius * 1.0 * _sin(angle),
+          center.dx + radius * _cos(angle),
+          center.dy + radius * _sin(angle),
         );
       } else {
         path.lineTo(
-          center.dx + radius * 1.0 * _cos(angle),
-          center.dy + radius * 1.0 * _sin(angle),
+          center.dx + radius * _cos(angle),
+          center.dy + radius * _sin(angle),
         );
       }
       path.lineTo(
-        center.dx + radius * 0.4 * _cos(innerAngle),
-        center.dy + radius * 0.4 * _sin(innerAngle),
+        center.dx + (radius * 0.4) * _cos(innerAngle),
+        center.dy + (radius * 0.4) * _sin(innerAngle),
       );
     }
     path.close();
     canvas.drawPath(path, paint);
   }
 
-  double _cos(double angle) => _cosVal(angle);
-  double _sin(double angle) => _sinVal(angle);
+  void _drawHearts(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.5)
+      ..style = PaintingStyle.fill;
 
-  static double _cosVal(double rad) {
-    // Simple cos approximation
-    return _dartMathCos(rad);
+    _drawHeart(canvas, Offset(10, 10), 5, paint);
+    _drawHeart(canvas, Offset(size.width - 10, 10), 4, paint);
+    _drawHeart(canvas, Offset(10, size.height - 10), 4, paint);
+    _drawHeart(canvas, Offset(size.width - 10, size.height - 10), 5, paint);
   }
 
-  static double _sinVal(double rad) {
-    return _dartMathSin(rad);
+  void _drawHeart(Canvas canvas, Offset center, double size, Paint paint) {
+    final path = Path();
+    path.moveTo(center.dx, center.dy + size * 0.3);
+    path.cubicTo(
+      center.dx - size, center.dy - size * 0.5,
+      center.dx - size * 1.5, center.dy + size * 0.5,
+      center.dx, center.dy + size,
+    );
+    path.cubicTo(
+      center.dx + size * 1.5, center.dy + size * 0.5,
+      center.dx + size, center.dy - size * 0.5,
+      center.dx, center.dy + size * 0.3,
+    );
+    canvas.drawPath(path, paint);
   }
 
-  static double _dartMathCos(double x) {
-    // Use dart:math via import workaround
+  void _drawSparkles(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.7)
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    _drawSparkle(canvas, Offset(10, 10), 5, paint);
+    _drawSparkle(canvas, Offset(size.width - 10, 12), 4, paint);
+    _drawSparkle(canvas, Offset(12, size.height - 10), 4, paint);
+    _drawSparkle(canvas, Offset(size.width - 12, size.height - 10), 5, paint);
+  }
+
+  void _drawSparkle(Canvas canvas, Offset center, double radius, Paint paint) {
+    for (int i = 0; i < 4; i++) {
+      final angle = i * 45 * 3.14159 / 180;
+      canvas.drawLine(
+        Offset(center.dx - radius * _cos(angle), center.dy - radius * _sin(angle)),
+        Offset(center.dx + radius * _cos(angle), center.dy + radius * _sin(angle)),
+        paint,
+      );
+    }
+  }
+
+  void _drawGlowEdges(Canvas canvas, Size size) {
+    final glowPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          primaryColor.withValues(alpha: 0.3),
+          Colors.transparent,
+        ],
+        radius: 0.8,
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), glowPaint);
+  }
+
+  double _cos(double angle) => (angle == 0) ? 1.0 : (angle == 3.14159 / 2) ? 0.0 : _mathCos(angle);
+  double _sin(double angle) => (angle == 0) ? 0.0 : (angle == 3.14159 / 2) ? 1.0 : _mathSin(angle);
+
+  double _mathCos(double x) {
     double result = 1.0;
     double term = 1.0;
     for (int i = 1; i <= 10; i++) {
@@ -366,7 +413,7 @@ class _ProceduralFramePainter extends CustomPainter {
     return result;
   }
 
-  static double _dartMathSin(double x) {
+  double _mathSin(double x) {
     double result = x;
     double term = x;
     for (int i = 1; i <= 10; i++) {
@@ -376,81 +423,9 @@ class _ProceduralFramePainter extends CustomPainter {
     return result;
   }
 
-  void _drawHearts(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.5)
-      ..style = PaintingStyle.fill;
-
-    // Corações pequenos nos cantos
-    _drawHeart(canvas, Offset(14, 12), 5, paint);
-    _drawHeart(canvas, Offset(size.width - 14, size.height - 12), 5, paint);
-  }
-
-  void _drawHeart(Canvas canvas, Offset center, double size, Paint paint) {
-    final path = Path();
-    path.moveTo(center.dx, center.dy + size * 0.4);
-    path.cubicTo(
-      center.dx - size,
-      center.dy - size * 0.2,
-      center.dx - size * 0.5,
-      center.dy - size,
-      center.dx,
-      center.dy - size * 0.4,
-    );
-    path.cubicTo(
-      center.dx + size * 0.5,
-      center.dy - size,
-      center.dx + size,
-      center.dy - size * 0.2,
-      center.dx,
-      center.dy + size * 0.4,
-    );
-    canvas.drawPath(path, paint);
-  }
-
-  void _drawSparkles(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.7)
-      ..style = PaintingStyle.fill;
-
-    // Pontos brilhantes
-    canvas.drawCircle(Offset(8, 8), 2, paint);
-    canvas.drawCircle(Offset(size.width - 8, 8), 1.5, paint);
-    canvas.drawCircle(Offset(size.width / 2, 5), 1, paint);
-    canvas.drawCircle(Offset(8, size.height - 8), 1.5, paint);
-    canvas.drawCircle(Offset(size.width - 8, size.height - 8), 2, paint);
-
-    // Linhas de brilho
-    final linePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.3)
-      ..strokeWidth = 0.5;
-
-    canvas.drawLine(Offset(8, 5), Offset(8, 11), linePaint);
-    canvas.drawLine(Offset(5, 8), Offset(11, 8), linePaint);
-  }
-
-  void _drawGlowEdges(Canvas canvas, Size size) {
-    // Brilho sutil nas bordas superiores
-    final glowPaint = Paint()
-      ..shader = LinearGradient(
-        colors: [
-          Colors.white.withValues(alpha: 0.15),
-          Colors.white.withValues(alpha: 0.0),
-        ],
-        begin: Alignment.topCenter,
-        end: Alignment.center,
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-
-    final topRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(0, 0, size.width, size.height * 0.4),
-      const Radius.circular(18),
-    );
-    canvas.drawRRect(topRect, glowPaint);
-  }
-
   @override
-  bool shouldRepaint(covariant _ProceduralFramePainter old) =>
-      style != old.style ||
-      primaryColor != old.primaryColor ||
-      secondaryColor != old.secondaryColor;
+  bool shouldRepaint(_ProceduralFramePainter old) =>
+      old.style != style ||
+      old.primaryColor != primaryColor ||
+      old.secondaryColor != secondaryColor;
 }

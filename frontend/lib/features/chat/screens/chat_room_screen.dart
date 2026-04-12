@@ -3370,49 +3370,47 @@ class _BubblePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imageUrl != null && imageUrl!.isNotEmpty) {
-      // Preview com nine-slice
-      return Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned.fill(
-            child: CachedNetworkImage(
-              imageUrl: imageUrl!,
-              imageBuilder: (ctx, img) => Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: img,
-                    // NÃO usar fit com centerSlice — Flutter proíbe a combinação
-                    centerSlice: const Rect.fromLTRB(38, 38, 90, 90),
-                  ),
-                ),
-              ),
-              placeholder: (_, __) => Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(r.s(10)),
-                ),
-              ),
-              errorWidget: (_, __, ___) => _fallbackContainer(context),
-            ),
-          ),
-          Center(
-            child: Text(
-              'Olá!',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: r.fs(13),
-                fontWeight: FontWeight.w500,
-                shadows: const [
-                  Shadow(
-                    color: Colors.black54,
-                    blurRadius: 4,
-                    offset: Offset(0, 1),
-                  ),
-                ],
+      // Preview nine-slice usando Image widget (não DecorationImage).
+      // DecorationImage+centerSlice lança assertion no Flutter moderno.
+      // Image widget com centerSlice é a abordagem correta.
+      return CachedNetworkImage(
+        imageUrl: imageUrl!,
+        imageBuilder: (ctx, img) => Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned.fill(
+              child: Image(
+                image: img,
+                fit: BoxFit.fill,
+                centerSlice: const Rect.fromLTRB(38, 38, 90, 90),
               ),
             ),
+            Center(
+              child: Text(
+                'Olá!',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: r.fs(13),
+                  fontWeight: FontWeight.w500,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black54,
+                      blurRadius: 4,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        placeholder: (_, __) => Container(
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColor.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(r.s(10)),
           ),
-        ],
+        ),
+        errorWidget: (_, __, ___) => _fallbackContainer(context),
       );
     }
 
