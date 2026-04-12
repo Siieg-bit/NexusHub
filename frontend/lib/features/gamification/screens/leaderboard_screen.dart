@@ -127,7 +127,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
             iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -239,7 +239,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
 
           // ── Conteúdo ──
           leaderboardAsync.when(
-            loading: () => const SliverFillRemaining(
+            loading: () => SliverFillRemaining(
               child: Center(
                 child: CircularProgressIndicator(color: context.nexusTheme.accentSecondary),
               ),

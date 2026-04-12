@@ -280,7 +280,7 @@ class _VoiceRecorderState extends State<VoiceRecorder>
             child: Container(
               width: r.s(48),
               height: r.s(48),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: context.nexusTheme.accentPrimary,
                 shape: BoxShape.circle,
               ),

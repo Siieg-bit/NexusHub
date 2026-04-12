@@ -2296,7 +2296,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               child: _isOpeningVoiceCall
                   ? Padding(
                       padding: EdgeInsets.all(r.s(9)),
-                      child: const CircularProgressIndicator(
+                      child: CircularProgressIndicator(
                         strokeWidth: 2,
                         color: context.nexusTheme.accentPrimary,
                       ),
@@ -2456,7 +2456,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             // ── Message list ──
             Expanded(
               child: _isLoading
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
                           color: context.nexusTheme.accentPrimary, strokeWidth: 2))
                   : _messages.isEmpty
@@ -3255,7 +3255,7 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
         ),
         Expanded(
           child: _isLoading
-              ? const Center(
+              ? Center(
                   child: CircularProgressIndicator(
                       color: context.nexusTheme.accentPrimary, strokeWidth: 2))
               : _members.isEmpty
@@ -3299,7 +3299,7 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                                         nickname.isNotEmpty
                                             ? nickname[0].toUpperCase()
                                             : '?',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             color: context.nexusTheme.accentPrimary,
                                             fontWeight: FontWeight.w700))
                                     : null,

@@ -108,7 +108,7 @@ class _FlagCenterScreenState extends ConsumerState<FlagCenterScreen>
         ),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
                 color: context.nexusTheme.accentPrimary,
               ),

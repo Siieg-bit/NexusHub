@@ -26,7 +26,7 @@ class CommunityGuidelinesTab extends ConsumerWidget {
       color: context.nexusTheme.accentPrimary,
       backgroundColor: context.surfaceColor,
       child: guidelinesAsync.when(
-        loading: () => const Center(
+        loading: () => Center(
           child: CircularProgressIndicator(
               color: context.nexusTheme.accentPrimary, strokeWidth: 2.5),
         ),

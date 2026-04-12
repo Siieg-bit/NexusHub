@@ -260,7 +260,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
+            child: Text(
               'Excluir',
               style: TextStyle(
                 color: context.nexusTheme.error,
@@ -293,7 +293,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Não foi possível excluir o comentário.'),
           behavior: SnackBarBehavior.floating,
           backgroundColor: context.nexusTheme.error,
@@ -947,7 +947,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         ],
       ),
       body: postAsync.when(
-        loading: () => const Center(
+        loading: () => Center(
           child: CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(context.nexusTheme.accentPrimary),
           ),
@@ -1539,7 +1539,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                       onTap: _isSending ? null : _sendComment,
                                       child: Container(
                                         padding: EdgeInsets.all(r.s(9)),
-                                        decoration: const BoxDecoration(
+                                        decoration: BoxDecoration(
                                           color: context.nexusTheme.accentPrimary,
                                           shape: BoxShape.circle,
                                         ),

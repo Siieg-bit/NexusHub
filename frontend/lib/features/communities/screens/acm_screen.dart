@@ -268,7 +268,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 ),
                 borderRadius: BorderRadius.circular(r.s(20)),
@@ -475,7 +475,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           ),
           child: Row(
             children: [
-              const Icon(Icons.color_lens_rounded,
+              Icon(Icons.color_lens_rounded,
                   color: context.nexusTheme.accentPrimary),
               SizedBox(width: r.s(12)),
               Expanded(
@@ -1652,7 +1652,7 @@ class _CategoriesTabContentState
             style: TextStyle(color: Colors.white)),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : _categories.isEmpty
               ? Center(

@@ -180,7 +180,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                           )
                         : Text(
                             'Enviar (${_selected.length})',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: context.nexusTheme.accentPrimary,
                               fontWeight: FontWeight.w700,
                             ),
@@ -287,7 +287,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                                     child: Container(
                                       width: r.s(18),
                                       height: r.s(18),
-                                      decoration: const BoxDecoration(
+                                      decoration: BoxDecoration(
                                         color: context.nexusTheme.accentPrimary,
                                         shape: BoxShape.circle,
                                       ),

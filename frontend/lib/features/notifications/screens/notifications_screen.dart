@@ -386,7 +386,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         ],
       ),
       body: notifAsync.when(
-        loading: () => const Center(
+        loading: () => Center(
           child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
         ),
         error: (error, _) => Center(
@@ -667,7 +667,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                             ? Padding(
                                 padding:
                                     EdgeInsets.symmetric(vertical: r.s(20)),
-                                child: const Center(
+                                child: Center(
                                   child: CircularProgressIndicator(
                                     color: context.nexusTheme.accentPrimary,
                                     strokeWidth: 2,
@@ -924,7 +924,7 @@ class _NotificationTile extends ConsumerWidget {
                               SizedBox(
                                 width: r.s(14),
                                 height: r.s(14),
-                                child: const CircularProgressIndicator(
+                                child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   color: context.nexusTheme.accentPrimary,
                                 ),
@@ -962,7 +962,7 @@ class _NotificationTile extends ConsumerWidget {
               Container(
                 width: r.s(8),
                 height: r.s(8),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: context.nexusTheme.accentPrimary,
                   shape: BoxShape.circle,
                 ),

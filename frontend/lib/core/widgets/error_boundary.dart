@@ -178,7 +178,7 @@ class _DefaultErrorFallbackState extends ConsumerState<_DefaultErrorFallback> {
                   color: context.nexusTheme.error.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.error_outline_rounded,
                   color: context.nexusTheme.error,
                   size: 40,
@@ -274,7 +274,7 @@ class _DefaultErrorFallbackState extends ConsumerState<_DefaultErrorFallback> {
                   child: SingleChildScrollView(
                     child: Text(
                       _fullErrorText,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: context.nexusTheme.error,
                         fontSize: 10,
                         fontFamily: 'monospace',

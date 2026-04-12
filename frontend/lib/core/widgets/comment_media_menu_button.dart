@@ -117,7 +117,7 @@ class CommentMediaMenuButton extends StatelessWidget {
                   ? SizedBox(
                       width: r.s(20),
                       height: r.s(20),
-                      child: const CircularProgressIndicator(
+                      child: CircularProgressIndicator(
                         strokeWidth: 2,
                         color: context.nexusTheme.accentPrimary,
                       ),

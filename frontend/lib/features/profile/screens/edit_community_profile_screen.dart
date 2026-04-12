@@ -654,7 +654,7 @@ class _EditCommunityProfileScreenState
         ],
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
                 color: context.nexusTheme.accentSecondary,
                 strokeWidth: 2.5,

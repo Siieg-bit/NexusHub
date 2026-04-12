@@ -50,7 +50,7 @@ class CommunityMembersScreen extends ConsumerWidget {
     }
   }
 
-  Color _roleColor(String role) {
+  Color _roleColor(BuildContext context, String role) {
     switch (role) {
       case 'agent':
         return context.nexusTheme.warning;

@@ -260,7 +260,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                           nickname.isNotEmpty
                               ? nickname[0].toUpperCase()
                               : '?',
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: context.nexusTheme.accentPrimary,
                               fontWeight: FontWeight.w700))
                       : null,
@@ -674,7 +674,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
             // ── Lista de membros ──
             Expanded(
               child: _isLoading
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
                           color: context.nexusTheme.accentPrimary, strokeWidth: 2))
                   : _members.isEmpty
@@ -759,7 +759,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                                             child: Container(
                                               width: r.s(14),
                                               height: r.s(14),
-                                              decoration: const BoxDecoration(
+                                              decoration: BoxDecoration(
                                                 color: context.nexusTheme.error,
                                                 shape: BoxShape.circle,
                                               ),

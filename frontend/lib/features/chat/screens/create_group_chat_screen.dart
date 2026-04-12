@@ -371,7 +371,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
     final s = getStrings();
     final r = context.r;
     if (_isLoadingCommunities) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
             color: context.nexusTheme.accentPrimary, strokeWidth: 2),
       );
@@ -688,7 +688,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           child: Container(
             padding: EdgeInsets.symmetric(vertical: r.s(14)),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
               ),
               borderRadius: BorderRadius.circular(r.s(12)),
@@ -786,7 +786,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         // Members list
         Expanded(
           child: _isLoadingMembers
-              ? const Center(
+              ? Center(
                   child: CircularProgressIndicator(
                       color: context.nexusTheme.accentPrimary, strokeWidth: 2),
                 )
@@ -867,7 +867,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                   child: avatarUrl == null
                                       ? Text(
                                           nickname[0].toUpperCase(),
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: context.nexusTheme.accentPrimary,
                                             fontWeight: FontWeight.w700,
                                           ),

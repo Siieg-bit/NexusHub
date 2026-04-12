@@ -24,7 +24,7 @@ class ProfileStoriesTab extends ConsumerWidget {
     final storiesAsync = ref.watch(userStoriesProvider(userId));
 
     return storiesAsync.when(
-      loading: () => const Center(
+      loading: () => Center(
         child: CircularProgressIndicator(
             color: context.nexusTheme.accentSecondary, strokeWidth: 2),
       ),

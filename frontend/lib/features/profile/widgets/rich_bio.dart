@@ -664,7 +664,7 @@ class RichBioRenderer extends StatelessWidget {
           fontSize: (fontSize ?? r.fs(14)) + 2,
           fontWeight: FontWeight.w700,
         ),
-        a: const TextStyle(
+        a: TextStyle(
           color: context.nexusTheme.accentPrimary,
           decoration: TextDecoration.underline,
         ),

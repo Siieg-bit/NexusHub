@@ -623,7 +623,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
           ),
         ],
         body: _isLoading
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(
                   color: context.nexusTheme.accentPrimary,
                   strokeWidth: 2,

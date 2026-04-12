@@ -533,7 +533,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           SizedBox(height: r.s(10)),
           if (_luckyDrawUsed && _luckyDrawPrize > 0)
             Text(s.wonExtraCoins(_luckyDrawPrize),
-                style: const TextStyle(
+                style: TextStyle(
                     color: context.nexusTheme.accentPrimary, fontWeight: FontWeight.w700))
           else if (_luckyDrawUsed)
             Text(s.betterLuckNextTime,
@@ -678,7 +678,7 @@ class _DayCircle extends ConsumerWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: active
-            ? const LinearGradient(
+            ? LinearGradient(
                 colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,

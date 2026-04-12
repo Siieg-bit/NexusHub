@@ -275,7 +275,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
             // List
             Expanded(
               child: _loading
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
                           color: context.nexusTheme.accentSecondary))
                   : _loadError != null

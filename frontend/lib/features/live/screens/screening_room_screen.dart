@@ -899,7 +899,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
               decoration: InputDecoration(
                 hintText: 'Cole o link do vídeo ou stream',
                 hintStyle: TextStyle(color: Colors.grey[600]),
-                prefixIcon: const Icon(Icons.link_rounded,
+                prefixIcon: Icon(Icons.link_rounded,
                     color: context.nexusTheme.accentSecondary),
                 filled: true,
                 fillColor: ctx.cardBg,
@@ -916,7 +916,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
               decoration: InputDecoration(
                 hintText: 'Título (opcional)',
                 hintStyle: TextStyle(color: Colors.grey[600]),
-                prefixIcon: const Icon(Icons.title_rounded,
+                prefixIcon: Icon(Icons.title_rounded,
                     color: context.nexusTheme.accentSecondary),
                 filled: true,
                 fillColor: ctx.cardBg,
@@ -1013,7 +1013,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
       backgroundColor: Colors.black,
       body: SafeArea(
         child: _isLoading
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(color: context.nexusTheme.accentSecondary))
             : _roomClosed
                 ? _buildRoomClosedState()
@@ -1090,7 +1090,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
           Container(
             width: r.s(8),
             height: r.s(8),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: context.nexusTheme.error,
               shape: BoxShape.circle,
             ),
@@ -1341,7 +1341,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
 
           // ── Loading indicator ──
           if (_webViewLoading)
-            const Center(
+            Center(
               child: CircularProgressIndicator(
                   color: context.nexusTheme.accentSecondary, strokeWidth: 2),
             ),
@@ -1671,7 +1671,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
               child: Container(
                 width: r.s(40),
                 height: r.s(40),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: context.nexusTheme.accentPrimary,
                   shape: BoxShape.circle,
                 ),

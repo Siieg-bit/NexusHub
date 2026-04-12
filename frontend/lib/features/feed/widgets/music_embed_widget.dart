@@ -43,7 +43,7 @@ class MusicEmbedWidget extends StatelessWidget {
       case MusicPlatform.appleMusic:
         return const Color(0xFFFA243C);
       case MusicPlatform.unknown:
-        return context.nexusTheme.accentPrimary;
+        return const Color(0xFF00BCD4); // accentPrimary fallback
     }
   }
 

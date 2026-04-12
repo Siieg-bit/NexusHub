@@ -89,7 +89,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 ),
                 borderRadius: BorderRadius.circular(r.s(12)),
@@ -508,7 +508,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : ListView(
               padding: EdgeInsets.all(r.s(16)),
@@ -670,7 +670,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                         style: TextStyle(
                                             color: context.nexusTheme.textPrimary)),
                                     trailing: currentLocale == locale
-                                        ? const Icon(Icons.check_circle_rounded,
+                                        ? Icon(Icons.check_circle_rounded,
                                             color: context.nexusTheme.accentPrimary)
                                         : null,
                                     onTap: () {
@@ -741,7 +741,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 padding: EdgeInsets.symmetric(
                                     horizontal: r.s(16), vertical: r.s(8)),
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
+                                  gradient: LinearGradient(
                                     colors: [
                                       context.nexusTheme.accentPrimary,
                                       context.nexusTheme.accentSecondary

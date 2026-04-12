@@ -261,7 +261,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : _devices.isEmpty
               ? Center(
@@ -405,7 +405,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                                             horizontal: r.s(8),
                                             vertical: r.s(4)),
                                         decoration: BoxDecoration(
-                                          gradient: const LinearGradient(
+                                          gradient: LinearGradient(
                                             colors: [
                                               context.nexusTheme.accentPrimary,
                                               context.nexusTheme.accentSecondary,

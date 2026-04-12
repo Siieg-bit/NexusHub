@@ -67,7 +67,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                   Container(
                     padding: EdgeInsets.all(r.s(6)),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                       ),
                       borderRadius: BorderRadius.circular(r.s(8)),
@@ -204,7 +204,7 @@ class GlobalFeedScreen extends ConsumerWidget {
             ),
 
             feedAsync.when(
-              loading: () => const SliverFillRemaining(
+              loading: () => SliverFillRemaining(
                 child: Center(
                     child: CircularProgressIndicator(
                         color: context.nexusTheme.accentPrimary)),
@@ -229,7 +229,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                           padding: EdgeInsets.symmetric(
                               horizontal: r.s(24), vertical: r.s(12)),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
+                            gradient: LinearGradient(
                               colors: [
                                 context.nexusTheme.accentPrimary,
                                 context.nexusTheme.accentSecondary

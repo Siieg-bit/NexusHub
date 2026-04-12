@@ -83,7 +83,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                   ref.invalidate(checkInStatusProvider);
                 },
                 child: communitiesAsync.when(
-                  loading: () => const Center(
+                  loading: () => Center(
                     child: CircularProgressIndicator(
                       color: context.nexusTheme.accentSecondary,
                       strokeWidth: 2.5,
@@ -584,7 +584,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                       SizedBox(height: r.s(10)),
                       Flexible(
                         child: suggestionsAsync.when(
-                          loading: () => const Center(
+                          loading: () => Center(
                             child: Padding(
                               padding: EdgeInsets.all(24),
                               child: CircularProgressIndicator(

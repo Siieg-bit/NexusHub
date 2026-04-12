@@ -130,7 +130,7 @@ class _PostModerationMenuSheetState
       });
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Post adicionado aos destaques!'),
         backgroundColor: context.nexusTheme.warning,
         behavior: SnackBarBehavior.floating,
@@ -364,7 +364,7 @@ class _PostModerationMenuSheetState
           if (_isLoading)
             Padding(
               padding: EdgeInsets.all(r.s(24)),
-              child: const CircularProgressIndicator(
+              child: CircularProgressIndicator(
                   color: context.nexusTheme.accentPrimary),
             )
           else ...[
@@ -628,7 +628,7 @@ class _ModerationHistorySheetState
           const Divider(height: 1),
           Expanded(
             child: _isLoading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
                         color: context.nexusTheme.accentPrimary))
                 : _logs.isEmpty
@@ -825,7 +825,7 @@ class _ManageCategoriesSheetState
             SnackBar(content: Text('Erro: $error')));
       } else {
         setState(() => _currentCategoryId = categoryId);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Categoria atualizada!'),
           backgroundColor: context.nexusTheme.accentPrimary,
           behavior: SnackBarBehavior.floating,
@@ -879,7 +879,7 @@ class _ManageCategoriesSheetState
           const Divider(height: 1),
           Expanded(
             child: _isLoading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
                         color: context.nexusTheme.accentPrimary))
                 : _categories.isEmpty

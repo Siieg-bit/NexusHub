@@ -72,7 +72,7 @@ class _FeaturedTab extends ConsumerWidget {
 
   const _FeaturedTab({required this.communityId, required this.onRefresh});
 
-  Color _accentColor(WidgetRef ref) {
+  Color _accentColor(BuildContext context, WidgetRef ref) {
     final community =
         ref.watch(communityDetailProvider(communityId)).valueOrNull;
     if (community == null) return context.nexusTheme.accentPrimary;
@@ -90,7 +90,7 @@ class _FeaturedTab extends ConsumerWidget {
     final pinnedAsync = ref.watch(pinnedFeedProvider(communityId));
     final featuredAsync = ref.watch(activeFeaturedFeedProvider(communityId));
     final latestAsync = ref.watch(latestFeedProvider(communityId));
-    final accent = _accentColor(ref);
+    final accent = _accentColor(context, ref);
 
     final pinnedPosts = pinnedAsync.valueOrNull ?? [];
     final featuredPosts = featuredAsync.valueOrNull ?? [];
@@ -237,7 +237,7 @@ class _FeaturedArchiveTab extends ConsumerWidget {
 
   const _FeaturedArchiveTab({required this.communityId, required this.onRefresh});
 
-  Color _accentColor(WidgetRef ref) {
+  Color _accentColor(BuildContext context, WidgetRef ref) {
     final community =
         ref.watch(communityDetailProvider(communityId)).valueOrNull;
     if (community == null) return context.nexusTheme.accentPrimary;
@@ -252,7 +252,7 @@ class _FeaturedArchiveTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
     final featuredAsync = ref.watch(activeFeaturedFeedProvider(communityId));
-    final accent = _accentColor(ref);
+    final accent = _accentColor(context, ref);
     final archivedPosts = (featuredAsync.valueOrNull ?? []).skip(5).toList();
 
     if (featuredAsync.isLoading && archivedPosts.isEmpty) {

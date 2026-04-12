@@ -651,7 +651,7 @@ class _SeamlessBlock extends ConsumerWidget {
                   SizedBox(
                     width: r.s(18),
                     height: r.s(18),
-                    child: const CircularProgressIndicator(
+                    child: CircularProgressIndicator(
                       color: context.nexusTheme.accentSecondary,
                       strokeWidth: 2,
                     ),

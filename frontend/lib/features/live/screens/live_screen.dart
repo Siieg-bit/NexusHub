@@ -73,7 +73,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
               decoration: InputDecoration(
                 hintText: s.roomName,
                 hintStyle: TextStyle(color: Colors.grey[600]),
-                prefixIcon: const Icon(Icons.live_tv_rounded,
+                prefixIcon: Icon(Icons.live_tv_rounded,
                     color: context.nexusTheme.accentSecondary),
                 filled: true,
                 fillColor: context.nexusTheme.surfacePrimary,
@@ -226,7 +226,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : RefreshIndicator(
               onRefresh: _loadActiveSessions,

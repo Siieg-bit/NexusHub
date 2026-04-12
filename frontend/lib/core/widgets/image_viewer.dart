@@ -346,7 +346,7 @@ class _MediaViewerScreenState extends State<_MediaViewerScreen>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const CircularProgressIndicator(
+                      CircularProgressIndicator(
                         color: context.nexusTheme.accentSecondary,
                         strokeWidth: 3,
                       ),
@@ -629,7 +629,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(
+            CircularProgressIndicator(
               color: context.nexusTheme.accentSecondary,
               strokeWidth: 3,
             ),
@@ -907,7 +907,7 @@ class TappableImage extends StatelessWidget {
               width: width ?? 160,
               height: height ?? 120,
               color: Colors.grey[900],
-              child: const Center(
+              child: Center(
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   color: context.nexusTheme.accentSecondary,

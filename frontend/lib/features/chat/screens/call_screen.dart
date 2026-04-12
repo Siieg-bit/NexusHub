@@ -243,7 +243,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                   Container(
                     width: r.s(8),
                     height: r.s(8),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: context.nexusTheme.accentPrimary,
                       shape: BoxShape.circle,
                     ),
@@ -271,7 +271,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                     color: context.nexusTheme.accentPrimary, size: r.s(16)),
                 SizedBox(width: r.s(4)),
                 Text('${_participants.length + _remoteUsers.length}',
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: context.nexusTheme.accentPrimary,
                         fontWeight: FontWeight.w700)),
               ],
@@ -287,7 +287,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     final s = getStrings();
     final r = context.r;
     if (CallService.engine == null) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
       );
     }
@@ -447,7 +447,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
               Container(
                 width: r.s(8),
                 height: r.s(8),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: context.nexusTheme.accentPrimary,
                   shape: BoxShape.circle,
                 ),

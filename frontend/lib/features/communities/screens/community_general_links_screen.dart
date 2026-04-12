@@ -95,7 +95,7 @@ class _CommunityGeneralLinksScreenState
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ),
-                  prefixIcon: const Icon(Icons.title_rounded,
+                  prefixIcon: Icon(Icons.title_rounded,
                       color: context.nexusTheme.accentSecondary),
                 ),
               ),
@@ -114,7 +114,7 @@ class _CommunityGeneralLinksScreenState
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ),
-                  prefixIcon: const Icon(Icons.link_rounded,
+                  prefixIcon: Icon(Icons.link_rounded,
                       color: context.nexusTheme.accentSecondary),
                 ),
               ),
@@ -319,7 +319,7 @@ class _CommunityGeneralLinksScreenState
           if (_isSaving)
             Padding(
               padding: EdgeInsets.only(right: r.s(16)),
-              child: const SizedBox(
+              child: SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
@@ -331,7 +331,7 @@ class _CommunityGeneralLinksScreenState
         ],
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: context.nexusTheme.accentSecondary))
           : Column(
               children: [

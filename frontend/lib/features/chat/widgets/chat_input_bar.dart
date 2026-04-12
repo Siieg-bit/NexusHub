@@ -128,7 +128,7 @@ class ChatInputBar extends ConsumerWidget {
               child: Container(
                 width: r.s(40),
                 height: r.s(40),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: context.nexusTheme.accentPrimary,
                   shape: BoxShape.circle,
                 ),

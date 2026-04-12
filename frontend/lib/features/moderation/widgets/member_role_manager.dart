@@ -323,7 +323,7 @@ class _MemberRoleManagerSheetState
             if (_isLoading)
               Padding(
                 padding: EdgeInsets.all(r.s(24)),
-                child: const CircularProgressIndicator(
+                child: CircularProgressIndicator(
                     color: context.nexusTheme.accentPrimary),
               )
             else ...[

@@ -106,7 +106,7 @@ class _FollowersScreenState extends ConsumerState<FollowersScreen>
         ),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
                 color: context.nexusTheme.accentPrimary,
               ),
@@ -285,7 +285,7 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
           borderRadius: BorderRadius.circular(r.s(20)),
           gradient: _isFollowing
               ? null
-              : const LinearGradient(
+              : LinearGradient(
                   colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 ),
           color: _isFollowing ? Colors.transparent : null,

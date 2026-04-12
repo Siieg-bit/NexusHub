@@ -249,7 +249,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
             )
           : SingleChildScrollView(
@@ -700,7 +700,7 @@ class _AchievementTile extends ConsumerWidget {
                             value: progress / 100,
                             backgroundColor:
                                 Colors.white.withValues(alpha: 0.05),
-                            valueColor: const AlwaysStoppedAnimation(
+                            valueColor: AlwaysStoppedAnimation(
                                 context.nexusTheme.accentPrimary),
                             minHeight: 6,
                           ),

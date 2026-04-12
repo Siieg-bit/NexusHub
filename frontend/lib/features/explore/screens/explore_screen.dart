@@ -369,7 +369,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             // ── Conteúdo scrollável ──
             Expanded(
               child: _isLoading
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
                         color: context.nexusTheme.accentSecondary,
                         strokeWidth: 2.5,
@@ -495,8 +495,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  _parseColor(community.themeColor),
-                                  _parseColor(community.themeColor)
+                                  _parseColor(context, community.themeColor),
+                                  _parseColor(context, community.themeColor)
                                       .withValues(alpha: 0.5),
                                 ],
                               ),
@@ -508,8 +508,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                _parseColor(community.themeColor),
-                                _parseColor(community.themeColor)
+                                _parseColor(context, community.themeColor),
+                                _parseColor(context, community.themeColor)
                                     .withValues(alpha: 0.5),
                               ],
                             ),
@@ -675,7 +675,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  Color _parseColor(String hex) {
+  Color _parseColor(BuildContext context, String hex) {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
@@ -696,7 +696,7 @@ class _MyCommunityCard extends StatelessWidget {
   final void Function(CommunityModel)? onLongPress;
   const _MyCommunityCard({required this.community, this.onLongPress});
 
-  Color _parseColor(String hex) {
+  Color _parseColor(context, String hex) {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
@@ -707,7 +707,7 @@ class _MyCommunityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final color = _parseColor(community.themeColor);
+    final color = _parseColor(context, community.themeColor);
 
     return GestureDetector(
       onTap: () => context.push('/community/${community.id}'),
@@ -859,7 +859,7 @@ class _NewCommunityCard extends ConsumerWidget {
   final CommunityModel community;
   const _NewCommunityCard({required this.community});
 
-  Color _parseColor(String hex) {
+  Color _parseColor(context, String hex) {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
@@ -870,7 +870,7 @@ class _NewCommunityCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
-    final color = _parseColor(community.themeColor);
+    final color = _parseColor(context, community.themeColor);
     return GestureDetector(
       onTap: () => context.push('/community/${community.id}'),
       child: Container(

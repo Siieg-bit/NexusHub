@@ -449,7 +449,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                         child: Container(
                           padding: EdgeInsets.all(r.s(8)),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
+                            gradient: LinearGradient(
                               colors: [
                                 context.nexusTheme.accentPrimary,
                                 context.nexusTheme.accentSecondary
@@ -516,7 +516,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                         child: SizedBox(
                           width: r.s(18),
                           height: r.s(18),
-                          child: const CircularProgressIndicator(
+                          child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(context.nexusTheme.accentPrimary),
                           ),
@@ -749,7 +749,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
               Navigator.pop(ctx);
             },
             child: Text(s.insertLink,
-                style: const TextStyle(
+                style: TextStyle(
                     color: context.nexusTheme.accentPrimary, fontWeight: FontWeight.w700)),
           ),
         ],

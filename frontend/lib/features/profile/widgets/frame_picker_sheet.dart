@@ -285,7 +285,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
                   child: Container(
                     width: r.s(36),
                     height: r.s(36),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: context.nexusTheme.accentSecondary,
                       shape: BoxShape.circle,
                     ),
@@ -312,7 +312,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
           // ── Grid de molduras ──
           Expanded(
             child: _isLoading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
                       color: context.nexusTheme.accentSecondary,
                       strokeWidth: 2.5,
@@ -458,7 +458,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
                       child: Container(
                         width: r.s(18),
                         height: r.s(18),
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           color: context.nexusTheme.accentSecondary,
                           shape: BoxShape.circle,
                         ),

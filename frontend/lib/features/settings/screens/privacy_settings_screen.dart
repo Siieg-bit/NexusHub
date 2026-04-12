@@ -161,7 +161,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 ),
                 borderRadius: BorderRadius.circular(r.s(20)),
@@ -187,7 +187,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : ListView(
               padding: EdgeInsets.all(r.s(16)),
@@ -375,7 +375,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                   child: Column(
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.download_rounded,
+                        leading: Icon(Icons.download_rounded,
                             color: context.nexusTheme.accentPrimary),
                         title: Text(
                           s.exportMyData,
@@ -423,7 +423,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                           height: 1,
                           color: Colors.white.withValues(alpha: 0.05)),
                       ListTile(
-                        leading: const Icon(Icons.delete_forever_rounded,
+                        leading: Icon(Icons.delete_forever_rounded,
                             color: context.nexusTheme.error),
                         title:  Text(
                           s.deleteAccount2,
@@ -473,7 +473,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                                             TextEditingController();
                                         return AlertDialog(
                                           backgroundColor: context.surfaceColor,
-                                          title: const Text(
+                                          title: Text(
                                               'Confirmar Exclus\u00e3o',
                                               style: TextStyle(
                                                   color: context.nexusTheme.error)),

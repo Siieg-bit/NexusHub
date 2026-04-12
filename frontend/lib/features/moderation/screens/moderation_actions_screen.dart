@@ -339,7 +339,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
         iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : SingleChildScrollView(
               padding: EdgeInsets.all(r.s(16)),
@@ -560,7 +560,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
                       width: double.infinity,
                       height: r.s(52),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           colors: [context.nexusTheme.error, Color(0xFFD32F2F)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,

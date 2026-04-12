@@ -28,7 +28,7 @@ class ProfileBlogsTab extends ConsumerWidget {
     final pinnedBlogAsync = ref.watch(pinnedProfileBlogProvider(userId));
 
     return blogsAsync.when(
-      loading: () => const Center(
+      loading: () => Center(
         child: CircularProgressIndicator(
           color: context.nexusTheme.accentPrimary,
           strokeWidth: 2,

@@ -123,12 +123,12 @@ class _ShortCodeRedirectScreenState extends State<ShortCodeRedirectScreen> {
                     const SizedBox(height: 24),
                     TextButton(
                       onPressed: () => context.go('/explore'),
-                      child: const Text('Voltar ao início',
+                      child: Text('Voltar ao início',
                           style: TextStyle(color: context.nexusTheme.accentPrimary)),
                     ),
                   ],
                 )
-              : const CircularProgressIndicator(
+              : CircularProgressIndicator(
                   color: context.nexusTheme.accentPrimary,
                   strokeWidth: 2,
                 ),

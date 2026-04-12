@@ -1383,7 +1383,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                   SizedBox(
                     width: r.s(20),
                     height: r.s(20),
-                    child: const CircularProgressIndicator(
+                    child: CircularProgressIndicator(
                       color: context.nexusTheme.accentSecondary,
                       strokeWidth: 2,
                     ),

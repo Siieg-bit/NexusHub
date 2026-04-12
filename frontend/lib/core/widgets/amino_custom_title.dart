@@ -82,7 +82,7 @@ class AminoCustomTitleList extends StatelessWidget {
     this.maxVisible = 6,
   });
 
-  Color _parseColor(String hex) {
+  Color _parseColor(BuildContext context, String hex) {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
@@ -103,7 +103,7 @@ class AminoCustomTitleList extends StatelessWidget {
         ...titles.take(maxVisible).map((t) {
           final titleText = t is Map ? (t['title'] ?? '') : t.toString();
           final titleColor = t is Map && t['color'] != null
-              ? _parseColor(t['color'] as String? ?? '')
+              ? _parseColor(context, t['color'] as String? ?? '')
               : context.nexusTheme.accentPrimary.withValues(alpha: 0.3);
           return AminoCustomTitle(
             title: titleText,

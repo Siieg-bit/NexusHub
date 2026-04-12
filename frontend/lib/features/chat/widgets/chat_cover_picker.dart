@@ -189,7 +189,7 @@ class _ChatCoverPickerSheetState extends State<_ChatCoverPickerSheet> {
                 placeholder: (_, __) => Container(
                   height: r.s(140),
                   color: context.nexusTheme.surfacePrimary,
-                  child: const Center(
+                  child: Center(
                     child: CircularProgressIndicator(
                         color: context.nexusTheme.accentPrimary, strokeWidth: 2),
                   ),

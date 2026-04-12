@@ -115,7 +115,7 @@ class _MyPacksTab extends ConsumerWidget {
     final packsAsync = ref.watch(myPacksProvider);
 
     return packsAsync.when(
-      loading: () => const Center(
+      loading: () => Center(
         child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary, strokeWidth: 2),
       ),
       error: (e, _) => Center(
@@ -168,7 +168,7 @@ class _SavedPacksTab extends ConsumerWidget {
     final packsAsync = ref.watch(savedPacksProvider);
 
     return packsAsync.when(
-      loading: () => const Center(
+      loading: () => Center(
         child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary, strokeWidth: 2),
       ),
       error: (e, _) => Center(
@@ -219,7 +219,7 @@ class _FavoritesTab extends ConsumerWidget {
     final favsAsync = ref.watch(favoritesProvider);
 
     return favsAsync.when(
-      loading: () => const Center(
+      loading: () => Center(
         child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary, strokeWidth: 2),
       ),
       error: (e, _) => Center(

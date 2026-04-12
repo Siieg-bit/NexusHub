@@ -198,7 +198,7 @@ class _StickerPickerV2State extends ConsumerState<StickerPickerV2>
             _buildTabBar(r),
             Expanded(
               child: pickerState.isLoading
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
                         color: context.nexusTheme.accentPrimary,
                         strokeWidth: 2,
@@ -604,7 +604,7 @@ class _PackStickerGrid extends ConsumerWidget {
     final stickersAsync = ref.watch(packStickersProvider(packId));
 
     return stickersAsync.when(
-      loading: () => const Center(
+      loading: () => Center(
         child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary, strokeWidth: 2),
       ),
       error: (e, _) => Center(
@@ -764,7 +764,7 @@ class _StickerCell extends StatelessWidget {
                           child: SizedBox(
                             width: r.s(16),
                             height: r.s(16),
-                            child: const CircularProgressIndicator(
+                            child: CircularProgressIndicator(
                               strokeWidth: 1.5,
                               color: context.nexusTheme.accentPrimary,
                             ),

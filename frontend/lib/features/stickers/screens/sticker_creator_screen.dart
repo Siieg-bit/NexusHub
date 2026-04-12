@@ -156,7 +156,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Figurinha adicionada ao pack!'),
             backgroundColor: context.nexusTheme.accentPrimary,
           ),
@@ -198,7 +198,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
                 ? SizedBox(
                     width: r.s(16),
                     height: r.s(16),
-                    child: const CircularProgressIndicator(
+                    child: CircularProgressIndicator(
                       strokeWidth: 2,
                       color: context.nexusTheme.accentPrimary,
                     ),
@@ -340,7 +340,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
             if (_isUploading)
               Container(
                 color: Colors.black.withValues(alpha: 0.6),
-                child: const Center(
+                child: Center(
                   child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
                 ),
               ),

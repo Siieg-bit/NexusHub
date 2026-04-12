@@ -157,7 +157,7 @@ class BlockContentRenderer extends StatelessWidget {
                 placeholder: (_, __) => Container(
                   height: r.s(200),
                   color: context.nexusTheme.surfacePrimary,
-                  child: const Center(
+                  child: Center(
                     child: CircularProgressIndicator(
                       color: context.nexusTheme.accentSecondary,
                       strokeWidth: 2,

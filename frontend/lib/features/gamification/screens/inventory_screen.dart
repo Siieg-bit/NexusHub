@@ -192,7 +192,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
         ),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
                 color: context.nexusTheme.accentPrimary,
               ),
@@ -238,7 +238,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                 padding: EdgeInsets.symmetric(
                     horizontal: r.s(24), vertical: r.s(12)),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -348,7 +348,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                           right: 6,
                           child: Container(
                             padding: EdgeInsets.all(r.s(4)),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
                                   context.nexusTheme.accentPrimary,

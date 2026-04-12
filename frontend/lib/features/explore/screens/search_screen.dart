@@ -147,7 +147,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         ),
       ),
       body: _isSearching
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : _query.isEmpty
               ? _buildEmptyState()
@@ -218,7 +218,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                     : null,
               ),
               child: c['icon_url'] == null
-                  ? const Icon(Icons.groups_rounded,
+                  ? Icon(Icons.groups_rounded,
                       color: context.nexusTheme.accentPrimary)
                   : null,
             ),

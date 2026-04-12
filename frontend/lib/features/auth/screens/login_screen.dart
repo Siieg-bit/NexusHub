@@ -457,14 +457,14 @@ class _AminoTextField extends ConsumerWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(r.s(14)),
-          borderSide: const BorderSide(
+          borderSide: BorderSide(
             color: context.nexusTheme.accentPrimary,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(r.s(14)),
-          borderSide: const BorderSide(
+          borderSide: BorderSide(
             color: context.nexusTheme.error,
             width: 1,
           ),

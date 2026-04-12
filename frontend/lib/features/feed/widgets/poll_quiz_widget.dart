@@ -300,7 +300,7 @@ class _PollDetailWidgetState extends ConsumerState<PollDetailWidget> {
                                 width: r.s(20),
                                 height: r.s(20),
                                 margin: EdgeInsets.only(right: r.s(10)),
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: context.nexusTheme.accentSecondary,
                                 ),

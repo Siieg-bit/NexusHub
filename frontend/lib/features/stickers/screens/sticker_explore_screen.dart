@@ -101,7 +101,7 @@ class _PublicPacksList extends ConsumerWidget {
     final packsAsync = ref.watch(publicPacksProvider(searchQuery));
 
     return packsAsync.when(
-      loading: () => const Center(
+      loading: () => Center(
         child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary, strokeWidth: 2),
       ),
       error: (e, _) => Center(

@@ -94,7 +94,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
       debugPrint('[community_live_chats] Erro ao fixar: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Erro ao alterar fixação. Tente novamente.'),
             backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,

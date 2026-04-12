@@ -122,7 +122,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 ),
                 borderRadius: BorderRadius.circular(r.s(20)),
@@ -313,7 +313,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                   dropdownColor: context.surfaceColor,
                   style: TextStyle(color: context.nexusTheme.textPrimary),
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.language_rounded,
+                    prefixIcon: Icon(Icons.language_rounded,
                         color: context.nexusTheme.accentSecondary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(r.s(16)),

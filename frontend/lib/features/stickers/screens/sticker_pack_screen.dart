@@ -152,7 +152,7 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
     return Scaffold(
       backgroundColor: context.nexusTheme.backgroundPrimary,
       body: packAsync.when(
-        loading: () => const Center(
+        loading: () => Center(
           child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary, strokeWidth: 2),
         ),
         error: (e, _) => Center(
@@ -418,7 +418,7 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
 
               // Grid de stickers
               _isLoadingStickers
-                  ? const SliverToBoxAdapter(
+                  ? SliverToBoxAdapter(
                       child: Center(
                         child: Padding(
                           padding: EdgeInsets.all(32),

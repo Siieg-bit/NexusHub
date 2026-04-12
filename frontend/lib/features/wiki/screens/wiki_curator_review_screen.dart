@@ -241,7 +241,7 @@ class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScree
         ),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : _pendingEntries.isEmpty
               ? Center(
@@ -477,7 +477,7 @@ class _PendingWikiCard extends ConsumerWidget {
                           child: Container(
                             padding: EdgeInsets.symmetric(vertical: r.s(12)),
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
+                              gradient: LinearGradient(
                                 colors: [
                                   context.nexusTheme.success,
                                   Color(0xFF00C853)

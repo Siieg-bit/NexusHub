@@ -1894,7 +1894,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final r = context.r;
     if (!_savedPostsLoaded) {
       _loadSavedPosts();
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
       );
     }

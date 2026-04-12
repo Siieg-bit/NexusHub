@@ -340,7 +340,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
           child: _query.isEmpty
               ? _buildEmptySearch(r, 'Busque posts nesta comunidade')
               : _isSearching
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
                           color: context.nexusTheme.accentPrimary))
                   : _posts.isEmpty
@@ -602,7 +602,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
     return _query.isEmpty
         ? _buildEmptySearch(r, s.searchCommunityMembers)
         : _isSearching
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
             : _members.isEmpty
                 ? _buildNoResults(r, s.noMemberFound)
@@ -675,7 +675,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
     return _query.isEmpty
         ? _buildEmptySearch(r, s.searchWikiArticles)
         : _isSearching
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
             : _wikis.isEmpty
                 ? _buildNoResults(r, 'Nenhum artigo wiki encontrado')

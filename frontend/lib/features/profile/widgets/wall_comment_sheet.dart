@@ -459,7 +459,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
     AsyncValue<List<WallComment>> commentsAsync,
   ) {
     return commentsAsync.when(
-      loading: () => const Center(
+      loading: () => Center(
         child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
       ),
       error: (e, _) => Center(
@@ -1079,7 +1079,7 @@ class _StickerDisplay extends ConsumerWidget {
                     );
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text('Figurinha favoritada!'),
                           backgroundColor: context.nexusTheme.accentPrimary,
                         ),
@@ -1096,7 +1096,7 @@ class _StickerDisplay extends ConsumerWidget {
                       await StickerRepository.instance.savePack(packId!);
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                             content: Text('Pack salvo!'),
                             backgroundColor: context.nexusTheme.accentSecondary,
                           ),
@@ -1118,7 +1118,7 @@ class _StickerDisplay extends ConsumerWidget {
           width: 120,
           height: 120,
           color: Colors.transparent,
-          child: const Center(
+          child: Center(
             child: CircularProgressIndicator(
               strokeWidth: 2,
               color: context.nexusTheme.accentPrimary,
@@ -1225,7 +1225,7 @@ class _VideoDisplayState extends State<_VideoDisplay> {
                 width: r.s(160),
                 height: r.s(120),
                 color: Colors.grey[800],
-                child: const Center(
+                child: Center(
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     color: context.nexusTheme.accentPrimary,
@@ -1349,7 +1349,7 @@ class _MediaMenuButton extends StatelessWidget {
                   ? SizedBox(
                       width: r.s(20),
                       height: r.s(20),
-                      child: const CircularProgressIndicator(
+                      child: CircularProgressIndicator(
                         strokeWidth: 2,
                         color: context.nexusTheme.accentPrimary,
                       ),

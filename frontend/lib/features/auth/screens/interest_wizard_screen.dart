@@ -351,7 +351,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
             height: r.s(120),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -487,7 +487,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
             decoration: InputDecoration(
               hintText: 'ex: nexus_user_2026',
               hintStyle: TextStyle(color: Colors.grey[600]),
-              prefixIcon: const Icon(Icons.alternate_email_rounded,
+              prefixIcon: Icon(Icons.alternate_email_rounded,
                   color: context.nexusTheme.accentPrimary),
               counterStyle: TextStyle(color: Colors.grey[600]),
               filled: true,
@@ -512,7 +512,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
                       child: SizedBox(
                         width: r.s(18),
                         height: r.s(18),
-                        child: const CircularProgressIndicator(
+                        child: CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation<Color>(context.nexusTheme.accentPrimary),
                         ),
@@ -520,7 +520,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
                     )
                   : _isAminoIdAvailable == null
                       ? (_aminoIdController.text.length >= 3
-                          ? const Icon(Icons.alternate_email_rounded,
+                          ? Icon(Icons.alternate_email_rounded,
                               color: context.nexusTheme.accentPrimary)
                           : null)
                       : Icon(
@@ -826,7 +826,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(r.s(24)),
           gradient: isEnabled
-              ? const LinearGradient(
+              ? LinearGradient(
                   colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,

@@ -285,7 +285,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                   context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(r.s(12)),
                             ),
-                            child: const Icon(Icons.person_add_rounded,
+                            child: Icon(Icons.person_add_rounded,
                                 color: context.nexusTheme.accentPrimary),
                           ),
                           title: Text(s.privateChatLabel,
@@ -309,7 +309,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                   context.nexusTheme.accentSecondary.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(r.s(12)),
                             ),
-                            child: const Icon(Icons.group_add_rounded,
+                            child: Icon(Icons.group_add_rounded,
                                 color: context.nexusTheme.accentSecondary),
                           ),
                           title: Text(s.groupChatLabel,
@@ -442,7 +442,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   // ════════════════════════════════════════════════
                   Expanded(
                     child: chatsAsync.when(
-                      loading: () => const Center(
+                      loading: () => Center(
                         child: CircularProgressIndicator(
                           color: context.nexusTheme.accentSecondary,
                           strokeWidth: 2.5,
@@ -816,7 +816,7 @@ class _SidebarIcon extends ConsumerWidget {
                       child: Container(
                         width: r.s(14),
                         height: r.s(14),
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           color: context.nexusTheme.error,
                           shape: BoxShape.circle,
                         ),

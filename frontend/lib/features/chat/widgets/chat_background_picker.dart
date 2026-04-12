@@ -210,7 +210,7 @@ class _ChatBackgroundPickerSheetState
                     SizedBox(
                       width: r.s(18),
                       height: r.s(18),
-                      child: const CircularProgressIndicator(
+                      child: CircularProgressIndicator(
                         color: context.nexusTheme.accentPrimary,
                         strokeWidth: 2,
                       ),
@@ -308,7 +308,7 @@ class _ChatBackgroundPickerSheetState
                             ? Center(
                                 child: Container(
                                   padding: const EdgeInsets.all(4),
-                                  decoration: const BoxDecoration(
+                                  decoration: BoxDecoration(
                                     color: context.nexusTheme.accentPrimary,
                                     shape: BoxShape.circle,
                                   ),

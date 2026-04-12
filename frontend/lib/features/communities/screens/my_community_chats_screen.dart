@@ -358,7 +358,7 @@ class _MyCommunityChatsScreenState
                     chatsAsync.when(
                       loading: () => Padding(
                         padding: EdgeInsets.only(top: r.s(40)),
-                        child: const Center(
+                        child: Center(
                           child: CircularProgressIndicator(
                             color: context.nexusTheme.accentPrimary,
                           ),

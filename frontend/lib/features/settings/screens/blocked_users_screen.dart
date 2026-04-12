@@ -91,7 +91,7 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 ),
                 borderRadius: BorderRadius.circular(r.s(20)),
@@ -181,7 +181,7 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
                 valueColor:
                     AlwaysStoppedAnimation<Color>(context.nexusTheme.accentPrimary),

@@ -65,7 +65,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return profileAsync.when(
       loading: () => Scaffold(
         backgroundColor: context.nexusTheme.backgroundPrimary,
-        body: const Center(
+        body: Center(
           child: CircularProgressIndicator(
               color: context.nexusTheme.accentSecondary, strokeWidth: 2),
         ),

@@ -279,7 +279,7 @@ class _HappeningSection extends ConsumerWidget {
                   child: SizedBox(
                     width: r.s(20),
                     height: r.s(20),
-                    child: const CircularProgressIndicator(
+                    child: CircularProgressIndicator(
                         strokeWidth: 2, color: context.nexusTheme.accentPrimary),
                   ),
                 ),
@@ -342,7 +342,7 @@ class _MembersOnlineSection extends ConsumerWidget {
                 Container(
                   width: r.s(10),
                   height: r.s(10),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: context.nexusTheme.onlineIndicator,
                     shape: BoxShape.circle,
                   ),
@@ -909,7 +909,7 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
             ? SizedBox(
                 width: r.s(14),
                 height: r.s(14),
-                child: const CircularProgressIndicator(
+                child: CircularProgressIndicator(
                     strokeWidth: 1.5, color: context.nexusTheme.accentPrimary),
               )
             : Text(

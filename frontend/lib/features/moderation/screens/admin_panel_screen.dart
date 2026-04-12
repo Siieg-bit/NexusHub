@@ -102,7 +102,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
         ),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : TabBarView(
               controller: _tabController,

@@ -931,11 +931,11 @@ class MessageBubble extends ConsumerWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.monetization_on_rounded,
+            Icon(Icons.monetization_on_rounded,
                 color: context.nexusTheme.warning),
             SizedBox(width: r.s(8)),
             Text(s.amountCoins(amount),
-                style: const TextStyle(
+                style: TextStyle(
                     fontWeight: FontWeight.bold, color: context.nexusTheme.warning)),
           ],
         ),

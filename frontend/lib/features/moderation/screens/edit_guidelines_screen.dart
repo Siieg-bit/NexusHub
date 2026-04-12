@@ -166,7 +166,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
                 padding:
                     EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                   ),
                   borderRadius: BorderRadius.circular(r.s(20)),
@@ -422,7 +422,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
                   width: r.s(6),
                   height: r.s(6),
                   margin: EdgeInsets.only(top: r.s(7), right: r.s(10)),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: context.nexusTheme.accentPrimary,
                     shape: BoxShape.circle,
                   ),

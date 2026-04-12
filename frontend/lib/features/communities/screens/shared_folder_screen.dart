@@ -397,7 +397,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
             : Icon(Icons.add_rounded, color: Colors.white, size: r.s(28)),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : TabBarView(
               controller: _tabController,
@@ -684,7 +684,7 @@ class _ImageTile extends ConsumerWidget {
           children: [
             if (canDelete)
               ListTile(
-                leading: const Icon(Icons.delete_rounded,
+                leading: Icon(Icons.delete_rounded,
                     color: context.nexusTheme.error),
                 title: Text(s.delete,
                     style: TextStyle(color: context.nexusTheme.error)),

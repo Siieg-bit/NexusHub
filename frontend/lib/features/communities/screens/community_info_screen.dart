@@ -180,7 +180,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
             onPressed: () => Navigator.pop(context),
           ),
         ),
-        body: const Center(
+        body: Center(
           child: CircularProgressIndicator(color: context.nexusTheme.accentSecondary),
         ),
       );
