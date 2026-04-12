@@ -159,6 +159,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                   children: [
                     Expanded(
                       child: ReorderableListView.builder(
+                        buildDefaultDragHandles: false,
                         scrollDirection: Axis.horizontal,
                         padding: EdgeInsets.only(
                             left: leftPad, right: gap, top: overflow),
@@ -195,6 +196,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                             padding: EdgeInsets.only(right: gap),
                             child: _AminoCommunityCard(
                               community: community,
+                              reorderIndex: index,
                               cardWidth: cardW,
                               onTap: () =>
                                   context.push('/community/${community.id}'),
@@ -224,7 +226,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
               padding: EdgeInsets.only(top: r.s(16), bottom: r.s(16)),
               child: Center(
                 child: Text(
-                  s.holdAndDragToReorder,
+                  'Use o ícone de arraste no card para reordenar suas comunidades.',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.35),
                     fontSize: r.fs(12),
@@ -860,6 +862,7 @@ class _AminoCommunityCard extends ConsumerStatefulWidget {
   final CommunityModel community;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
+  final int reorderIndex;
   /// Largura do card em dp (calculada dinamicamente pelo pai).
   final double cardWidth;
 
@@ -868,6 +871,7 @@ class _AminoCommunityCard extends ConsumerStatefulWidget {
 
   const _AminoCommunityCard({
     required this.community,
+    required this.reorderIndex,
     required this.cardWidth,
     required this.onTap,
     required this.onLongPress,
@@ -1060,6 +1064,29 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                                     Colors.transparent,
                                     Color(0xDD000000),
                                   ],
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          Positioned(
+                            top: r.s(6),
+                            right: r.s(6),
+                            child: ReorderableDelayedDragStartListener(
+                              index: widget.reorderIndex,
+                              child: Container(
+                                padding: EdgeInsets.all(r.s(4)),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.42),
+                                  borderRadius: BorderRadius.circular(r.s(999)),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.12),
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.drag_indicator_rounded,
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  size: r.s(16),
                                 ),
                               ),
                             ),
