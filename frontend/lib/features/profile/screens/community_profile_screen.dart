@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,6 +19,7 @@ import '../../../core/providers/block_provider.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/wall_comment_sheet.dart';
 import '../../moderation/widgets/member_role_manager.dart';
+import 'bio_and_wall_screen.dart';
 
 /// Perfil dentro de uma Comunidade — Layout 1:1 com Amino Apps.
 ///
@@ -52,7 +54,6 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   List<Map<String, dynamic>> _savedPosts = [];
   bool _isInitialLoading = true;
   bool _savedPostsLoaded = false;
-  bool _bioExpanded = false;
   bool _viewerIsTeamMember = false;
   int _followersCount = 0;
   int _followingCount = 0;
@@ -62,11 +63,27 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   bool get _isOwnProfile => widget.userId == SupabaseService.currentUserId;
   Map<String, dynamic>? _myMembership; // membership do usuário logado na comunidade
 
+  // Banner rotativo
+  int _bannerIndex = 0;
+  Timer? _bannerTimer;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _loadProfile();
+  }
+
+  void _startBannerTimer(List<String> gallery) {
+    _bannerTimer?.cancel();
+    if (gallery.length <= 1) return;
+    _bannerTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+      if (mounted) {
+        setState(() {
+          _bannerIndex = (_bannerIndex + 1) % gallery.length;
+        });
+      }
+    });
   }
 
   Future<void> _loadProfile() async {
@@ -201,7 +218,12 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       setState(() {
         _isInitialLoading = false;
         _savedPostsLoaded = false; // força recarregar posts salvos na próxima vez
+        _bannerIndex = 0; // reinicia o índice ao recarregar
       });
+      // Iniciar timer de banner rotativo se houver galeria
+      final rawGallery = _membership?['local_gallery'] as List<dynamic>?;
+      final gallery = rawGallery?.map((e) => e.toString()).toList() ?? <String>[];
+      _startBannerTimer(gallery);
     } catch (e) {
       if (mounted) setState(() => _isInitialLoading = false);
     }
@@ -210,6 +232,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _bannerTimer?.cancel();
     super.dispose();
   }
 
@@ -238,8 +261,21 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final localBannerUrl = _membership?['local_banner_url'] as String?;
     final localBio = _membership?['local_bio'] as String?;
     final localBackgroundUrl = _membership?['local_background_url'] as String?;
+    final localBackgroundColor = _membership?['local_background_color'] as String?;
     final rawGallery = _membership?['local_gallery'] as List<dynamic>?;
     final displayGallery = rawGallery?.map((e) => e.toString()).toList() ?? <String>[];
+    // Cor de fundo dinâmica: cor sólida > imagem > default
+    Color? dynamicBgColor;
+    if (localBackgroundColor != null && localBackgroundColor.isNotEmpty) {
+      try {
+        final hex = localBackgroundColor.replaceFirst('#', '');
+        dynamicBgColor = Color(int.parse('FF$hex', radix: 16));
+      } catch (_) {}
+    }
+    // Banner ativo da galeria (rotativo)
+    final activeBannerUrl = displayGallery.isNotEmpty
+        ? displayGallery[_bannerIndex.clamp(0, displayGallery.length - 1)]
+        : null;
     final joinedAt = _membership?['joined_at'] != null
         ? DateTime.tryParse(_membership?['joined_at'] as String? ?? '')
         : null;
@@ -270,9 +306,12 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         (titles.isNotEmpty ? r.s(40) : 0) +
         (roleTitle != null ? r.s(28) : 0);
 
+    // Fundo dinâmico: cor sólida (se definida) ou imagem (via Stack) ou default
+    final effectiveBgColor = dynamicBgColor ?? context.scaffoldBg;
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: effectiveBgColor,
       floatingActionButton: _isOwnProfile
           ? AminoCommunityFab(
               onTap: () => showCommunityCreateMenu(
@@ -300,7 +339,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             SliverAppBar(
               expandedHeight: expandedHeight,
               pinned: true,
-              backgroundColor: context.scaffoldBg,
+              backgroundColor: effectiveBgColor,
               elevation: 0,
               leading: IconButton(
                 icon: Icon(Icons.arrow_back_ios_rounded,
@@ -350,8 +389,34 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                 background: Stack(
                   fit: StackFit.expand,
                   children: [
-                    // ── Banner background ──────────────────────────────────
-                    if (displayBanner != null)
+                    // ── Banner background (galeria rotativa ou banner estático) ──
+                    // A galeria tem prioridade: cada imagem é exibida como capa
+                    // alternando com fade a cada 20 segundos.
+                    if (activeBannerUrl != null)
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 800),
+                        transitionBuilder: (child, animation) =>
+                            FadeTransition(opacity: animation, child: child),
+                        child: CachedNetworkImage(
+                          key: ValueKey(activeBannerUrl),
+                          imageUrl: activeBannerUrl,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          color: Colors.black.withValues(alpha: 0.20),
+                          colorBlendMode: BlendMode.darken,
+                          errorWidget: (_, __, ___) => displayBanner != null
+                              ? CachedNetworkImage(
+                                  imageUrl: displayBanner,
+                                  fit: BoxFit.cover,
+                                  color: Colors.black.withValues(alpha: 0.25),
+                                  colorBlendMode: BlendMode.darken,
+                                  errorWidget: (_, __, ___) => _defaultBannerGradient(),
+                                )
+                              : _defaultBannerGradient(),
+                        ),
+                      )
+                    else if (displayBanner != null)
                       CachedNetworkImage(
                         imageUrl: displayBanner,
                         fit: BoxFit.cover,
@@ -362,7 +427,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                     else
                       _defaultBannerGradient(),
 
-                    // ── Gradient overlay (fade para scaffoldBg na base) ────
+                    // ── Gradient overlay (fade para effectiveBgColor na base) ──
                     Positioned(
                       bottom: 0,
                       left: 0,
@@ -373,8 +438,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                           gradient: LinearGradient(
                             colors: [
                               Colors.transparent,
-                              context.scaffoldBg.withValues(alpha: 0.7),
-                              context.scaffoldBg,
+                              effectiveBgColor.withValues(alpha: 0.7),
+                              effectiveBgColor,
                             ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
@@ -383,7 +448,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                       ),
                     ),
 
-                    // ── Conteúdo do perfil (sobre o banner) ────────────────
+                    // ── Conteúdo do perfil (sobre o banner) ──────────────────────
                     Positioned(
                       bottom: 0,
                       left: 0,
@@ -773,7 +838,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             // ================================================================
             SliverToBoxAdapter(
               child: Container(
-                color: context.scaffoldBg,
+                color: effectiveBgColor,
                 padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
                 child: Row(
                   children: [
@@ -905,11 +970,21 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                       ],
                     ),
                     SizedBox(height: r.s(10)),
-                    // Bio text + seta para expandir
+                    // Bio text + seta para abrir BioAndWallScreen
                     if (displayBio.isNotEmpty)
                       GestureDetector(
-                        onTap: () =>
-                            setState(() => _bioExpanded = !_bioExpanded),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => BioAndWallScreen(
+                              userId: widget.userId,
+                              communityId: widget.communityId,
+                              displayName: displayName,
+                              avatarUrl: displayAvatar,
+                              bio: displayBio,
+                              isOwnProfile: _isOwnProfile,
+                            ),
+                          ),
+                        ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -921,17 +996,13 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                   fontSize: r.fs(14),
                                   height: 1.5,
                                 ),
-                                maxLines: _bioExpanded ? null : 3,
-                                overflow: _bioExpanded
-                                    ? TextOverflow.visible
-                                    : TextOverflow.ellipsis,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             SizedBox(width: r.s(8)),
                             Icon(
-                              _bioExpanded
-                                  ? Icons.keyboard_arrow_up_rounded
-                                  : Icons.keyboard_arrow_right_rounded,
+                              Icons.keyboard_arrow_right_rounded,
                               color: Colors.grey[500],
                               size: r.s(20),
                             ),
@@ -963,23 +1034,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             ),
 
             // ================================================================
-            // PLANO DE FUNDO LOCAL (se definido)
-            // ================================================================
-            if (localBackgroundUrl != null)
-              SliverToBoxAdapter(
-                child: Container(
-                  margin: EdgeInsets.fromLTRB(0, r.s(4), 0, 0),
-                  height: r.s(180),
-                  width: double.infinity,
-                  child: CachedNetworkImage(
-                    imageUrl: localBackgroundUrl,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-
-            // ================================================================
-            // GALERIA LOCAL (se houver fotos)
+            // GALERIA / BANNER (miniaturas das capas do perfil)
+            // A galeria é exibida como grid de miniaturas. As imagens também
+            // são usadas como capa rotativa no topo do perfil.
             // ================================================================
             if (displayGallery.isNotEmpty)
               SliverToBoxAdapter(
@@ -1009,12 +1066,34 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                         ),
                         itemCount: displayGallery.length,
                         itemBuilder: (context, index) {
-                          return ClipRRect(
-                            borderRadius: BorderRadius.circular(r.s(4)),
-                            child: CachedNetworkImage(
-                              imageUrl: displayGallery[index],
-                              fit: BoxFit.cover,
-                            ),
+                          final isActive = index == _bannerIndex.clamp(0, displayGallery.length - 1);
+                          return Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(r.s(4)),
+                                child: CachedNetworkImage(
+                                  imageUrl: displayGallery[index],
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                ),
+                              ),
+                              if (isActive && displayGallery.length > 1)
+                                Positioned(
+                                  bottom: r.s(4),
+                                  right: r.s(4),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(4), vertical: r.s(2)),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(alpha: 0.6),
+                                      borderRadius: BorderRadius.circular(r.s(4)),
+                                    ),
+                                    child: Icon(Icons.play_arrow_rounded,
+                                        color: Colors.white, size: r.s(12)),
+                                  ),
+                                ),
+                            ],
                           );
                         },
                       ),

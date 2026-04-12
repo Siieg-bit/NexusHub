@@ -5911,9 +5911,14 @@ class AppStringsPt implements AppStrings {
   String get localAvatarRemoved => 'Avatar local removido';
   @override
   String get maxGalleryPhotos => 'Máximo de 12 fotos na galeria';
+  @override
   String get backgroundColorSolid => 'Cor sólida';
+  @override
   String get backgroundFromGallery => 'Imagem da galeria';
+  @override
   String get backgroundTypeLabel => 'Tipo de fundo';
+  @override
   String get galleryAsBannerHint => 'As imagens da galeria serão exibidas como capa do perfil, alternando a cada 20s';
+  @override
   String get bioAndWallTitle => 'Biografia & Mural';
 }

@@ -5782,9 +5782,14 @@ class AppStringsRu implements AppStrings {
   String get localAvatarRemoved => 'Локальный аватар удален';
   @override
   String get maxGalleryPhotos => 'Макс Галерея Фотографии';
+  @override
   String get backgroundColorSolid => 'Сплошной цвет';
+  @override
   String get backgroundFromGallery => 'Изображение из галереи';
+  @override
   String get backgroundTypeLabel => 'Тип фона';
+  @override
   String get galleryAsBannerHint => 'Изображения галереи будут показаны как обложка профиля, меняясь каждые 20 секунд';
+  @override
   String get bioAndWallTitle => 'Биография и стена';
 }

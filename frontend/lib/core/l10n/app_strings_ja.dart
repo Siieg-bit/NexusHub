@@ -5780,9 +5780,14 @@ class AppStringsJa implements AppStrings {
   String get localAvatarRemoved => 'localAvatarRemoved';
   @override
   String get maxGalleryPhotos => 'maxGalleryPhotos';
+  @override
   String get backgroundColorSolid => '単色';
+  @override
   String get backgroundFromGallery => 'ギャラリー画像';
+  @override
   String get backgroundTypeLabel => '背景タイプ';
+  @override
   String get galleryAsBannerHint => 'ギャラリーの画像がプロフィールカバーとして20秒ごとに切り替わります';
+  @override
   String get bioAndWallTitle => '自己紹介 & 掲示板';
 }

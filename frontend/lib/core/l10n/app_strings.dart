@@ -2981,11 +2981,9 @@ abstract class AppStrings {
   String get maxGalleryPhotos;
   // ── Fundo, galeria como banner e bio expandida ──
   String get backgroundColorSolid;
-  String get backgroundTypeImage;
-  String get backgroundTypeColor;
-  String get pickSolidColor;
-  String get bannerImages;
-  String get bannerImagesHint;
+  String get backgroundFromGallery;
+  String get backgroundTypeLabel;
+  String get galleryAsBannerHint;
   String get bioAndWallTitle;
 
 }

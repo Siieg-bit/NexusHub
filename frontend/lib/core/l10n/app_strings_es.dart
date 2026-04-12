@@ -5780,9 +5780,14 @@ class AppStringsEs implements AppStrings {
   String get localAvatarRemoved => 'localAvatarRemoved';
   @override
   String get maxGalleryPhotos => 'maxGalleryPhotos';
+  @override
   String get backgroundColorSolid => 'Color sólido';
+  @override
   String get backgroundFromGallery => 'Imagen de galería';
+  @override
   String get backgroundTypeLabel => 'Tipo de fondo';
+  @override
   String get galleryAsBannerHint => 'Las imágenes de la galería se mostrarán como portada del perfil, alternando cada 20s';
+  @override
   String get bioAndWallTitle => 'Biografía & Mural';
 }

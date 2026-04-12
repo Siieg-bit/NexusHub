@@ -5857,9 +5857,14 @@ class AppStringsEn implements AppStrings {
   String get localAvatarRemoved => 'Local avatar removed';
   @override
   String get maxGalleryPhotos => 'Maximum 12 photos in gallery';
+  @override
   String get backgroundColorSolid => 'Solid color';
+  @override
   String get backgroundFromGallery => 'Gallery image';
+  @override
   String get backgroundTypeLabel => 'Background type';
+  @override
   String get galleryAsBannerHint => 'Gallery images will be shown as profile cover, rotating every 20s';
+  @override
   String get bioAndWallTitle => 'Biography & Wall';
 }

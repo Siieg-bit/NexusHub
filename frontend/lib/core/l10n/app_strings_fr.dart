@@ -5782,9 +5782,14 @@ class AppStringsFr implements AppStrings {
   String get localAvatarRemoved => 'Avatar local supprimé';
   @override
   String get maxGalleryPhotos => 'Photos de la galerie Max';
+  @override
   String get backgroundColorSolid => 'Couleur unie';
+  @override
   String get backgroundFromGallery => 'Image de galerie';
+  @override
   String get backgroundTypeLabel => 'Type de fond';
+  @override
   String get galleryAsBannerHint => 'Les images de la galerie seront affichées comme couverture du profil, en alternance toutes les 20s';
+  @override
   String get bioAndWallTitle => 'Biographie & Mur';
 }

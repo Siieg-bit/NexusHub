@@ -5782,9 +5782,14 @@ class AppStringsKo implements AppStrings {
   String get localAvatarRemoved => '로컬 아바타가 제거되었습니다.';
   @override
   String get maxGalleryPhotos => '맥스 갤러리 사진';
+  @override
   String get backgroundColorSolid => '단색';
+  @override
   String get backgroundFromGallery => '갤러리 이미지';
+  @override
   String get backgroundTypeLabel => '배경 유형';
+  @override
   String get galleryAsBannerHint => '갤러리 이미지가 프로필 커버로 표시되며 20초마다 전환됩니다';
+  @override
   String get bioAndWallTitle => '소개 & 게시판';
 }

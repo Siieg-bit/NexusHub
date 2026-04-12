@@ -5781,9 +5781,14 @@ class AppStringsAr implements AppStrings {
   String get localAvatarRemoved => 'تمت إزالة الصورة الرمزية المحلية';
   @override
   String get maxGalleryPhotos => 'صور معرض ماكس';
+  @override
   String get backgroundColorSolid => 'لون صلب';
+  @override
   String get backgroundFromGallery => 'صورة من المعرض';
+  @override
   String get backgroundTypeLabel => 'نوع الخلفية';
+  @override
   String get galleryAsBannerHint => 'ستُعرض صور المعرض كغلاف للملف الشخصي، مع التبديل كل 20 ثانية';
+  @override
   String get bioAndWallTitle => 'السيرة الذاتية والحائط';
 }

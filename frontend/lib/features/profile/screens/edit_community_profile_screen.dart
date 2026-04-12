@@ -8,6 +8,7 @@ import 'package:image_cropper/image_cropper.dart';
 import '../../../core/services/media_upload_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/widgets/rgb_color_picker.dart';
 import '../../communities/providers/community_detail_providers.dart';
 import '../widgets/frame_picker_sheet.dart';
 
@@ -39,6 +40,7 @@ class _EditCommunityProfileScreenState
   String? _localIconUrl;
   String? _localBannerUrl;
   String? _localBackgroundUrl;
+  String? _localBackgroundColor; // hex string, ex: '#FF5733'
   List<String> _gallery = [];
   bool _galleryLoaded = false;
   bool _mediaLoaded = false;
@@ -67,7 +69,7 @@ class _EditCommunityProfileScreenState
       final membership = await SupabaseService.table('community_members')
           .select(
               'local_nickname, local_bio, local_icon_url, local_banner_url, '
-              'local_background_url, local_gallery, active_avatar_frame_id')
+              'local_background_url, local_background_color, local_gallery, active_avatar_frame_id')
           .eq('community_id', widget.communityId)
           .eq('user_id', userId)
           .maybeSingle();
@@ -157,6 +159,8 @@ class _EditCommunityProfileScreenState
             _localBannerUrl = hydratedMembership['local_banner_url'] as String?;
             _localBackgroundUrl =
                 hydratedMembership['local_background_url'] as String?;
+            _localBackgroundColor =
+                hydratedMembership['local_background_color'] as String?;
             _selectedFrameUrl = resolvedFrameUrl;
             _selectedFramePurchaseId = resolvedFramePurchaseId;
             final rawGallery = hydratedMembership['local_gallery'];
@@ -272,7 +276,34 @@ class _EditCommunityProfileScreenState
     final url = await _uploadCommunityImage('background');
     if (url != null && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() => _localBackgroundUrl = url);
+        if (mounted) setState(() {
+          _localBackgroundUrl = url;
+          _localBackgroundColor = null; // limpa cor ao escolher imagem
+        });
+      });
+    }
+  }
+
+  Future<void> _pickBackgroundColor() async {
+    final s = getStrings();
+    // Cor inicial: parsear _localBackgroundColor se existir
+    Color initialColor = const Color(0xFF1A1A2E);
+    if (_localBackgroundColor != null) {
+      try {
+        final hex = _localBackgroundColor!.replaceFirst('#', '');
+        initialColor = Color(int.parse('FF$hex', radix: 16));
+      } catch (_) {}
+    }
+    final picked = await showRGBColorPicker(
+      context,
+      initialColor: initialColor,
+      title: s.backgroundTypeLabel,
+    );
+    if (picked != null && mounted) {
+      final hex = '#${picked.value.toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
+      setState(() {
+        _localBackgroundColor = hex;
+        _localBackgroundUrl = null; // limpa imagem ao escolher cor
       });
     }
   }
@@ -325,12 +356,13 @@ class _EditCommunityProfileScreenState
       String? iconUrlToSave = _localIconUrl;
       String? bannerUrlToSave = _localBannerUrl;
       String? backgroundUrlToSave = _localBackgroundUrl;
+      String? backgroundColorToSave = _localBackgroundColor;
 
       if (!_mediaLoaded) {
         // Carregamento inicial falhou — buscar valores atuais antes de salvar
         try {
           final current = await SupabaseService.table('community_members')
-              .select('local_icon_url, local_banner_url, local_background_url')
+              .select('local_icon_url, local_banner_url, local_background_url, local_background_color')
               .eq('community_id', widget.communityId)
               .eq('user_id', userId)
               .maybeSingle();
@@ -338,6 +370,7 @@ class _EditCommunityProfileScreenState
             iconUrlToSave = current['local_icon_url'] as String?;
             bannerUrlToSave = current['local_banner_url'] as String?;
             backgroundUrlToSave = current['local_background_url'] as String?;
+            backgroundColorToSave = current['local_background_color'] as String?;
           }
         } catch (_) {
           // Se falhar novamente, aborta o save para não apagar dados
@@ -352,6 +385,7 @@ class _EditCommunityProfileScreenState
         'p_local_icon_url': iconUrlToSave,
         'p_local_banner_url': bannerUrlToSave,
         'p_local_background_url': backgroundUrlToSave,
+        'p_local_background_color': backgroundColorToSave,
         'p_local_gallery': galleryPayload,
         'p_active_avatar_frame_purchase_id':
             _frameSelectionChanged ? _selectedFramePurchaseId : null,
@@ -538,58 +572,167 @@ class _EditCommunityProfileScreenState
                   _AminoDivider(),
 
                   // ══════════════════════════════════════════════════════
-                  // LINHA: Plano de Fundo (Opcional)
+                  // SEÇÃO: Plano de Fundo — toggle Cor Sólida / Imagem
                   // ══════════════════════════════════════════════════════
-                  GestureDetector(
-                    onTap: _pickBackground,
-                    child: _AminoListTile(
-                      leading: Icon(Icons.palette_rounded,
-                          color: const Color(0xFF2196F3), size: r.s(28)),
-                      content: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            s.profileBackgroundOptional,
-                            style: TextStyle(
-                              color: context.textPrimary,
-                              fontSize: r.fs(15),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                  _AminoListTile(
+                    leading: Icon(Icons.palette_rounded,
+                        color: const Color(0xFF2196F3), size: r.s(28)),
+                    content: Text(
+                      s.profileBackgroundOptional,
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(15),
+                        fontWeight: FontWeight.w500,
                       ),
-                      trailing: _localBackgroundUrl != null
-                          ? Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Thumbnail clicável: abre o picker para trocar o background
-                                GestureDetector(
-                                  onTap: _pickBackground,
-                                  child: ClipRRect(
-                                    borderRadius:
-                                        BorderRadius.circular(r.s(4)),
-                                    child: CachedNetworkImage(
-                                      imageUrl: _localBackgroundUrl!,
-                                      width: r.s(44),
-                                      height: r.s(44),
-                                      fit: BoxFit.cover,
+                    ),
+                    trailing: const SizedBox.shrink(),
+                  ),
+                  // Hint sobre galeria como banner
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(r.s(16), 0, r.s(16), r.s(8)),
+                    child: Text(
+                      s.galleryAsBannerHint,
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: r.fs(12),
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                  // Botões de toggle: Cor Sólida | Imagem
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(r.s(16), 0, r.s(16), r.s(8)),
+                    child: Row(
+                      children: [
+                        // Botão: Cor Sólida
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: _pickBackgroundColor,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: r.s(10), horizontal: r.s(12)),
+                              decoration: BoxDecoration(
+                                color: _localBackgroundColor != null
+                                    ? (() {
+                                        try {
+                                          final hex = _localBackgroundColor!.replaceFirst('#', '');
+                                          return Color(int.parse('FF$hex', radix: 16));
+                                        } catch (_) {
+                                          return AppTheme.accentColor.withValues(alpha: 0.15);
+                                        }
+                                      })()
+                                    : context.surfaceColor,
+                                borderRadius: BorderRadius.circular(r.s(10)),
+                                border: Border.all(
+                                  color: _localBackgroundColor != null
+                                      ? Colors.white.withValues(alpha: 0.3)
+                                      : Colors.grey.withValues(alpha: 0.3),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.circle,
+                                    size: r.s(16),
+                                    color: _localBackgroundColor != null
+                                        ? Colors.white
+                                        : AppTheme.accentColor,
+                                  ),
+                                  SizedBox(width: r.s(6)),
+                                  Flexible(
+                                    child: Text(
+                                      s.backgroundColorSolid,
+                                      style: TextStyle(
+                                        color: _localBackgroundColor != null
+                                            ? Colors.white
+                                            : context.textPrimary,
+                                        fontSize: r.fs(13),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
+                                  if (_localBackgroundColor != null) ...[  
+                                    SizedBox(width: r.s(4)),
+                                    GestureDetector(
+                                      onTap: () => setState(() => _localBackgroundColor = null),
+                                      child: Icon(Icons.close_rounded,
+                                          color: Colors.white70, size: r.s(14)),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: r.s(8)),
+                        // Botão: Imagem
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: _pickBackground,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: r.s(10), horizontal: r.s(12)),
+                              decoration: BoxDecoration(
+                                color: context.surfaceColor,
+                                borderRadius: BorderRadius.circular(r.s(10)),
+                                border: Border.all(
+                                  color: _localBackgroundUrl != null
+                                      ? AppTheme.accentColor
+                                      : Colors.grey.withValues(alpha: 0.3),
+                                  width: _localBackgroundUrl != null ? 2 : 1.5,
                                 ),
-                                SizedBox(width: r.s(4)),
-                                // Botão X: remove o background
-                                GestureDetector(
-                                  onTap: () => setState(
-                                      () => _localBackgroundUrl = null),
-                                  child: Icon(Icons.close_rounded,
-                                      color: Colors.grey[500],
-                                      size: r.s(18)),
-                                ),
-                              ],
-                            )
-                          : Icon(Icons.chevron_right_rounded,
-                              color: Colors.grey[400], size: r.s(22)),
+                                image: _localBackgroundUrl != null
+                                    ? DecorationImage(
+                                        image: NetworkImage(_localBackgroundUrl!),
+                                        fit: BoxFit.cover,
+                                        colorFilter: ColorFilter.mode(
+                                          Colors.black.withValues(alpha: 0.45),
+                                          BlendMode.darken,
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.image_rounded,
+                                    size: r.s(16),
+                                    color: _localBackgroundUrl != null
+                                        ? Colors.white
+                                        : AppTheme.accentColor,
+                                  ),
+                                  SizedBox(width: r.s(6)),
+                                  Flexible(
+                                    child: Text(
+                                      s.backgroundFromGallery,
+                                      style: TextStyle(
+                                        color: _localBackgroundUrl != null
+                                            ? Colors.white
+                                            : context.textPrimary,
+                                        fontSize: r.fs(13),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (_localBackgroundUrl != null) ...[  
+                                    SizedBox(width: r.s(4)),
+                                    GestureDetector(
+                                      onTap: () => setState(() => _localBackgroundUrl = null),
+                                      child: Icon(Icons.close_rounded,
+                                          color: Colors.white70, size: r.s(14)),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
