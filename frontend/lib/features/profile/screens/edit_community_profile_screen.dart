@@ -1410,8 +1410,7 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
     final text = value.text;
 
     if (!selection.isValid || selection.start < 0 || selection.end < 0) {
-      final updated = '$text${text.isNotEmpty ? '
-' : ''}$prefix';
+      final updated = '$text${text.isNotEmpty ? '\n' : ''}$prefix';
       _replaceValue(
         updated,
         selection: TextSelection.collapsed(offset: updated.length),
@@ -1421,14 +1420,11 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
 
     final start = selection.start;
     final end = selection.end;
-    final blockStart = text.lastIndexOf('
-', start == 0 ? 0 : start - 1) + 1;
-    final nextBreak = text.indexOf('
-', end);
+    final blockStart = text.lastIndexOf('\n', start == 0 ? 0 : start - 1) + 1;
+    final nextBreak = text.indexOf('\n', end);
     final blockEnd = nextBreak == -1 ? text.length : nextBreak;
     final block = text.substring(blockStart, blockEnd);
-    final lines = block.split('
-');
+    final lines = block.split('\n');
     final allPrefixed = lines
         .where((line) => line.trim().isNotEmpty)
         .every((line) => line.startsWith(prefix));
@@ -1441,8 +1437,7 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
           }
           return line.startsWith(prefix) ? line : '$prefix$line';
         })
-        .join('
-');
+        .join('\n');
 
     final updated = text.replaceRange(blockStart, blockEnd, updatedBlock);
     _replaceValue(
@@ -1457,10 +1452,7 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
   void _insertDivider() {
     final text = _controller.text;
     final selection = _controller.selection;
-    final insertText = '${text.isNotEmpty ? '
-
-' : ''}---
-';
+    final insertText = '${text.isNotEmpty ? '\n\n' : ''}---\n';
 
     if (!selection.isValid || selection.start < 0) {
       final updated = '$text$insertText';
