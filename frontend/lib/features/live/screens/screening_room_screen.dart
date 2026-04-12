@@ -8,8 +8,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/realtime_service.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Sala de Projeção — sala de exibição coletiva de vídeos/streams.
 ///

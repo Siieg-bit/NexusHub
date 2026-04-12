@@ -6,8 +6,7 @@ import '../../../core/utils/responsive.dart';
 import '../models/sticker_model.dart';
 import '../providers/sticker_providers.dart';
 import '../screens/sticker_pack_screen.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Widget para exibir um sticker dentro de uma mensagem ou comentário.
 /// Ao segurar, exibe opções: favoritar, salvar pack, ver pack.

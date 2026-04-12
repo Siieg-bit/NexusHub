@@ -9,8 +9,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/utils/helpers.dart'; // ReputationRewards
 import '../providers/community_shared_providers.dart'; // checkInStatusProvider
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CHECK-IN BAR — Design moderno com gradiente, ícone animado e streak visual

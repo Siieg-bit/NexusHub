@@ -8,8 +8,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Tela de revisão de Wikis pendentes — estilo Amino Apps.
 /// Apenas curadores e leaders podem acessar.

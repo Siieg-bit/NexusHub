@@ -7,8 +7,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Shared Folder — Pasta Compartilhada da Comunidade.
 ///

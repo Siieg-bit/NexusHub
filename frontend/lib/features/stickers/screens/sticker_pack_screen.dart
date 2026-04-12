@@ -7,8 +7,7 @@ import '../models/sticker_model.dart';
 import '../providers/sticker_providers.dart';
 import '../repositories/sticker_repository.dart';
 import 'sticker_creator_screen.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Tela de detalhes de um pack de stickers.
 /// Permite visualizar, editar (se dono), salvar e usar stickers.

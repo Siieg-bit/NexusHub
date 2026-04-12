@@ -22,8 +22,7 @@ import '../widgets/rich_bio.dart';
 import '../../moderation/widgets/member_role_manager.dart';
 import '../../../core/widgets/image_viewer.dart';
 import 'bio_and_wall_screen.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Perfil dentro de uma Comunidade — Layout 1:1 com Amino Apps.
 ///
@@ -2139,7 +2138,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(s.unblock,
-                  style: const TextStyle(color: context.nexusTheme.error, fontWeight: FontWeight.w800)),
+                  style: TextStyle(color: context.nexusTheme.error, fontWeight: FontWeight.w800)),
             ),
           ],
         ),
@@ -2175,7 +2174,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(s.block,
-                  style: const TextStyle(color: context.nexusTheme.error, fontWeight: FontWeight.w800)),
+                  style: TextStyle(color: context.nexusTheme.error, fontWeight: FontWeight.w800)),
             ),
           ],
         ),

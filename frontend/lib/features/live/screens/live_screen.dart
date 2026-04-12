@@ -5,8 +5,7 @@ import '../../../core/services/supabase_service.dart';
 import 'screening_room_screen.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Tela Live — exibe Salas de Projeção, Voice Chats e Video Chats ativos.
 ///

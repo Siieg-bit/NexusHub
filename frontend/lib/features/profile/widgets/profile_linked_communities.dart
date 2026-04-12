@@ -7,8 +7,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/profile_providers.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // LINKED COMMUNITIES SECTION

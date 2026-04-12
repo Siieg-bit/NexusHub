@@ -13,8 +13,7 @@ import '../../chat/screens/chat_list_screen.dart' show chatListProvider, chatCom
 import '../../../core/providers/chat_provider.dart' show unreadCountProvider, unreadCountByCommunityProvider;
 import '../widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 Map<String, dynamic>? _extractProfile(dynamic rawProfile) {
   if (rawProfile is Map<String, dynamic>) return rawProfile;

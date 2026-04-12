@@ -7,8 +7,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/profile_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // STORIES TAB — Stories reais do usuário (tabela stories, NÃO posts)

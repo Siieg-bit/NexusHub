@@ -14,8 +14,7 @@ import '../../../core/utils/responsive.dart';
 import '../providers/community_shared_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/level_up_dialog.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 class CommunityListScreen extends ConsumerStatefulWidget {
   final bool isExplore;

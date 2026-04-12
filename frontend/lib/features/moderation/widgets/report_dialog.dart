@@ -4,8 +4,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Diálogo de denúncia — permite reportar posts, comentários, mensagens ou usuários.
 /// Categorias: Bullying, Art Theft, Conteúdo Impróprio, Spam, Off-Topic, Outro.

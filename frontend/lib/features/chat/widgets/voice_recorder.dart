@@ -8,8 +8,7 @@ import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Widget de gravação de Voice Notes — réplica pixel-perfect do Amino.
 ///

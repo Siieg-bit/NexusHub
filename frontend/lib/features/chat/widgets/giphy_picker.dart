@@ -5,8 +5,7 @@ import 'package:http/http.dart' as http;
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Giphy Picker — busca e seleciona GIFs usando a API pública do Giphy.
 /// Retorna a URL do GIF selecionado via Navigator.pop().

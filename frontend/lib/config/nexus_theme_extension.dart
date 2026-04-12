@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../core/providers/nexus_theme_provider.dart';
 import 'nexus_theme_data.dart';
-import 'nexus_themes.dart';
+import 'nexus_theme_scope.dart';
 
 // =============================================================================
 // NexusThemeExtension — Acesso direto ao NexusThemeData via BuildContext
@@ -10,10 +8,16 @@ import 'nexus_themes.dart';
 // Permite usar `context.nexusTheme` em qualquer widget para acessar os
 // tokens visuais do tema ativo, sem precisar de WidgetRef.
 //
-// Para widgets com WidgetRef, prefira:
-//   final theme = ref.watch(nexusThemeProvider);
+// REATIVIDADE GARANTIDA:
+//   context.nexusTheme usa NexusThemeScope.of(context), que é um
+//   InheritedWidget. Isso significa que o widget será automaticamente
+//   reconstruído quando o tema mudar — sem necessidade de ref.watch().
 //
-// Uso via context (widgets sem ref):
+// Para widgets ConsumerWidget/ConsumerStatefulWidget, você pode usar
+// tanto context.nexusTheme quanto ref.watch(nexusThemeProvider) — ambos
+// são reativos e equivalentes em termos de atualização.
+//
+// Uso:
 //   context.nexusTheme.accentPrimary
 //   context.nexusTheme.backgroundPrimary
 //   context.nexusTheme.textPrimary
@@ -21,33 +25,20 @@ import 'nexus_themes.dart';
 // Aliases de compatibilidade com a extensão NexusColors legada:
 //   context.scaffoldBg   → context.nexusTheme.backgroundPrimary
 //   context.cardBg       → context.nexusTheme.cardBackground
-//   context.textPrimary  → context.nexusTheme.textPrimary
+//   context.dividerClr   → context.nexusTheme.divider
 //   (etc.)
 // =============================================================================
 
 extension NexusThemeContext on BuildContext {
   /// Retorna o [NexusThemeData] do tema ativo.
   ///
-  /// Acessa o Riverpod container via ProviderScope.
-  /// Caso não esteja disponível, usa fallback baseado no brightness do Material.
-  NexusThemeData get nexusTheme {
-    try {
-      final container = ProviderScope.containerOf(this, listen: false);
-      return container.read(nexusThemeProvider);
-    } catch (_) {
-      // Fallback: inferir tema pelo brightness do MaterialTheme
-      final brightness = Theme.of(this).brightness;
-      return brightness == Brightness.dark
-          ? NexusThemes.principal
-          : NexusThemes.greenLeaf;
-    }
-  }
+  /// Usa [NexusThemeScope.of] para acessar o tema via InheritedWidget,
+  /// garantindo que o widget seja reconstruído quando o tema mudar.
+  NexusThemeData get nexusTheme => NexusThemeScope.of(this);
 
   // ── Aliases de compatibilidade com NexusColors (legado) ──────────────────
-  // Mantidos para não quebrar os 1.708 usos existentes de context.scaffoldBg,
+  // Mantidos para não quebrar os usos existentes de context.scaffoldBg,
   // context.cardBg, etc. durante a migração gradual.
-
-  bool get _isDark => nexusTheme.baseMode == NexusThemeMode.dark;
 
   // Fundos
   Color get scaffoldBg => nexusTheme.backgroundPrimary;

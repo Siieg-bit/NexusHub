@@ -10,8 +10,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show FileOptions;
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CREATE PUBLIC CHAT SCREEN — Personalização Avançada

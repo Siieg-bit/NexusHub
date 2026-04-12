@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import 'config/app_config.dart';
 import 'config/app_theme.dart';
 import 'config/nexus_theme_data.dart';
+import 'config/nexus_theme_scope.dart';
 import 'router/app_router.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/providers/nexus_theme_provider.dart';
@@ -292,11 +293,19 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
       supportedLocales: AppLocale.values.map((l) => Locale(l.code)),
       routerConfig: router,
       builder: (context, child) {
-        return GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-          child: ErrorBoundary(
-            child: child ?? const SizedBox.shrink(),
+        // NexusThemeScope propaga o tema ativo via InheritedWidget,
+        // tornando context.nexusTheme reativo em toda a árvore de widgets.
+        // Quando o nexusThemeProvider notifica uma mudança, o MaterialApp
+        // reconstrói o builder com o novo nexusTheme, e o NexusThemeScope
+        // atualiza todos os widgets dependentes automaticamente.
+        return NexusThemeScope(
+          theme: nexusTheme,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: ErrorBoundary(
+              child: child ?? const SizedBox.shrink(),
+            ),
           ),
         );
       },

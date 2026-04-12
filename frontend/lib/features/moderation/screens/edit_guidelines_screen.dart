@@ -5,8 +5,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Tela para Leaders/Curators editarem as guidelines da comunidade.
 /// Réplica fiel do Amino Apps — editor de texto rico com preview.

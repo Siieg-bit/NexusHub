@@ -16,8 +16,7 @@ import '../../profile/providers/profile_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/level_up_dialog.dart';
 import '../../../core/providers/chat_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // COMMUNITY DRAWER — Réplica fiel do painel lateral do Amino Apps

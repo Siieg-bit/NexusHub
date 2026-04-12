@@ -4,8 +4,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../providers/community_detail_providers.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 // =============================================================================
 // TAB: Guidelines — Estilo Amino
 // Busca as regras da tabela guidelines no banco de dados.

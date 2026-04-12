@@ -12,8 +12,7 @@ import '../../../core/providers/post_provider.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Editor de criação e edição de posts do tipo **normal** (texto genérico).
 ///

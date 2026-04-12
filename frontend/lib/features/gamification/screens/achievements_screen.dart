@@ -8,8 +8,7 @@ import '../../../core/widgets/level_progress_bar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Conquistas / Achievements — Layout estilo Amino Apps.
 ///

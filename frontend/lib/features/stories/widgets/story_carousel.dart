@@ -6,8 +6,7 @@ import '../screens/story_viewer_screen.dart';
 import '../screens/create_story_screen.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Story Carousel — Carrossel horizontal de stories no topo do feed.
 ///

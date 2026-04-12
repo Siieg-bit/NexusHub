@@ -9,8 +9,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/call_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// ============================================================================
 /// CallScreen — UI de chamada com Agora.io RTC real.
@@ -349,7 +348,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
+            CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
             SizedBox(height: r.s(16)),
             Text('Aguardando participantes...',
                 style: TextStyle(color: Colors.grey[500])),

@@ -8,8 +8,7 @@ import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // LIVE PROJECTIONS SECTION

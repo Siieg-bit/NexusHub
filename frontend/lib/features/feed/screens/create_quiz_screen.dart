@@ -12,8 +12,7 @@ import '../../../core/models/post_model.dart';
 import '../../../core/providers/post_provider.dart';
 import '../../../core/providers/draft_provider.dart';
 import 'dart:async';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CREATE QUIZ SCREEN — Quiz interativo com perguntas e respostas corretas

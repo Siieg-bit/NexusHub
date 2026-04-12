@@ -7,8 +7,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Tela para criação de nova comunidade.
 class CreateCommunityScreen extends ConsumerStatefulWidget {
@@ -381,15 +380,15 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(r.s(16)),
-          borderSide: const BorderSide(color: context.nexusTheme.accentPrimary),
+          borderSide: BorderSide(color: context.nexusTheme.accentPrimary),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(r.s(16)),
-          borderSide: const BorderSide(color: context.nexusTheme.error),
+          borderSide: BorderSide(color: context.nexusTheme.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(r.s(16)),
-          borderSide: const BorderSide(color: context.nexusTheme.error),
+          borderSide: BorderSide(color: context.nexusTheme.error),
         ),
       ),
     );

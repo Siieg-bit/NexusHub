@@ -20,8 +20,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/block_provider.dart';
 import '../../../core/services/deep_link_service.dart';
 import '../../../core/widgets/image_viewer.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // PROFILE SCREEN — Layout fiel ao Amino Apps
@@ -706,7 +705,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(s.unblock,
-                  style: const TextStyle(color: context.nexusTheme.error, fontWeight: FontWeight.w800)),
+                  style: TextStyle(color: context.nexusTheme.error, fontWeight: FontWeight.w800)),
             ),
           ],
         ),
@@ -744,7 +743,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(s.block,
-                  style: const TextStyle(color: context.nexusTheme.error, fontWeight: FontWeight.w800)),
+                  style: TextStyle(color: context.nexusTheme.error, fontWeight: FontWeight.w800)),
             ),
           ],
         ),

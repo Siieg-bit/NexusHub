@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Preview de resposta exibido acima da barra de input quando o usuário
 /// seleciona "Responder" em uma mensagem.

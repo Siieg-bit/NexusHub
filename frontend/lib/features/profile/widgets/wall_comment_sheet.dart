@@ -16,8 +16,7 @@ import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../stickers/stickers.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/comment_media_menu_button.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // PROVIDER — carregamento de comentários do mural via RPC
@@ -264,12 +263,12 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.image_outlined, color: context.nexusTheme.accentPrimary),
+              leading: Icon(Icons.image_outlined, color: context.nexusTheme.accentPrimary),
               title: const Text('Imagem', style: TextStyle(color: Colors.white)),
               onTap: () => Navigator.pop(context, 'image'),
             ),
             ListTile(
-              leading: const Icon(Icons.videocam_outlined, color: context.nexusTheme.accentPrimary),
+              leading: Icon(Icons.videocam_outlined, color: context.nexusTheme.accentPrimary),
               title: const Text('Vídeo', style: TextStyle(color: Colors.white)),
               onTap: () => Navigator.pop(context, 'video'),
             ),
@@ -476,7 +475,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => ref.invalidate(wallCommentsProvider(widget.wallUserId)),
-              child: const Text('Tentar novamente', style: TextStyle(color: context.nexusTheme.accentPrimary)),
+              child: Text('Tentar novamente', style: TextStyle(color: context.nexusTheme.accentPrimary)),
             ),
           ],
         ),
@@ -1062,7 +1061,7 @@ class _StickerDisplay extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.favorite_border_rounded, color: context.nexusTheme.accentPrimary),
+                  leading: Icon(Icons.favorite_border_rounded, color: context.nexusTheme.accentPrimary),
                   title: Text('Favoritar figurinha',
                       style: TextStyle(color: context.nexusTheme.textPrimary)),
                   onTap: () async {
@@ -1090,7 +1089,7 @@ class _StickerDisplay extends ConsumerWidget {
                 ),
                 if (packId != null)
                   ListTile(
-                    leading: const Icon(Icons.bookmark_border_rounded, color: context.nexusTheme.accentSecondary),
+                    leading: Icon(Icons.bookmark_border_rounded, color: context.nexusTheme.accentSecondary),
                     title: Text('Salvar pack', style: TextStyle(color: context.nexusTheme.textPrimary)),
                     onTap: () async {
                       Navigator.pop(context);

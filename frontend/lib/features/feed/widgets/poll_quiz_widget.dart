@@ -5,8 +5,7 @@ import '../../../core/models/post_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Widget de Enquete (Poll) para uso no PostDetailScreen.
 ///
@@ -581,7 +580,7 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
             value: (_currentQuestion + 1) / _questions.length,
             backgroundColor: context.dividerClr,
             valueColor:
-                const AlwaysStoppedAnimation<Color>(context.nexusTheme.accentSecondary),
+                AlwaysStoppedAnimation<Color>(context.nexusTheme.accentSecondary),
             minHeight: 4,
           ),
         ),

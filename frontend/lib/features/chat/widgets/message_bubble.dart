@@ -15,8 +15,7 @@ import '../../stickers/widgets/sticker_message_bubble.dart';
 import 'chat_bubble.dart' show ChatBubble;
 import 'voice_recorder.dart' show VoiceNotePlayer;
 import '../../../core/widgets/image_viewer.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// ============================================================================
 /// MESSAGE BUBBLE (suporta todos os 19+ tipos) — Estilo Amino

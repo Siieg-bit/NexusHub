@@ -6,8 +6,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Rich Text Block Editor — Editor de blocos estilo Amino.
 ///

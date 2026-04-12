@@ -204,7 +204,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
-                  borderSide: const BorderSide(color: context.nexusTheme.error),
+                  borderSide: BorderSide(color: context.nexusTheme.error),
                 ),
               ),
             ),

@@ -13,8 +13,7 @@ import '../../../core/providers/presence_provider.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../providers/community_detail_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // COMMUNITY ONLINE TAB — Estilo Amino Apps

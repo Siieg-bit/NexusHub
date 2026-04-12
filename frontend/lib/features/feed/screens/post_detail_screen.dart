@@ -26,8 +26,7 @@ import '../../../core/services/deep_link_service.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/comment_media_menu_button.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 enum _CommentSortOrder { mostRecent, oldest, mostPopular }
 
@@ -955,7 +954,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         ),
         error: (error, _) => Center(
           child: Text(s.errorGeneric(error.toString()),
-              style: const TextStyle(color: context.nexusTheme.error)),
+              style: TextStyle(color: context.nexusTheme.error)),
         ),
         data: (post) {
           if (post == null) {
@@ -1581,7 +1580,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             child: Text(
                               'Erro ao carregar comentários. Tente novamente.',
                               style:
-                                  const TextStyle(color: context.nexusTheme.error),
+                                  TextStyle(color: context.nexusTheme.error),
                             ),
                           ),
                           data: (comments) {

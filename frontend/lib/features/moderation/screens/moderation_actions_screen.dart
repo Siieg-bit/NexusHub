@@ -7,8 +7,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Ações de Moderação — Tela para aplicar ações em um usuário/conteúdo.
 /// Suporta: Ban, Mute, Warn, Hide Post, Delete Post, Strike, Transfer Leader.
@@ -548,7 +547,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(r.s(16)),
                         borderSide:
-                            const BorderSide(color: context.nexusTheme.accentPrimary),
+                            BorderSide(color: context.nexusTheme.accentPrimary),
                       ),
                     ),
                   ),

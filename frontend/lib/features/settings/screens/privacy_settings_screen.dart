@@ -5,8 +5,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Configurações de Privacidade — Controles de quem pode ver perfil, enviar DM, etc.
 /// Réplica 1:1 das opções de privacidade do Amino.

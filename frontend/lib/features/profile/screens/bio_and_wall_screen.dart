@@ -6,8 +6,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../widgets/rich_bio.dart';
 import '../widgets/wall_comment_sheet.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Tela expandida de Biografia & Mural — acessível ao tocar no título "Biografia"
 /// no perfil de comunidade. Exibe a bio completa e o mural do usuário.

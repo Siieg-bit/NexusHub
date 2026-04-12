@@ -6,8 +6,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Sticker Picker — carrega packs reais de stickers comprados na loja e
 /// permite selecionar um sticker para envio no chat.

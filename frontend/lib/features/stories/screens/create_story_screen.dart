@@ -9,8 +9,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Create Story Screen — Criação de stories estilo Amino/Instagram.
 ///

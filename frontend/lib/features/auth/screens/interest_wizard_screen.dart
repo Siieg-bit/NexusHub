@@ -8,8 +8,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Wizard de seleção de interesses em 4 passos, inspirado no Amino Apps.
 /// Passo 1: Boas-vindas e avatar
@@ -330,7 +329,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
             child: LinearProgressIndicator(
               value: (_currentStep + 1) / 4,
               backgroundColor: Colors.white.withValues(alpha: 0.05),
-              valueColor: const AlwaysStoppedAnimation(context.nexusTheme.accentPrimary),
+              valueColor: AlwaysStoppedAnimation(context.nexusTheme.accentPrimary),
               minHeight: 4,
             ),
           ),
@@ -421,7 +420,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(16)),
-                borderSide: const BorderSide(color: context.nexusTheme.accentPrimary),
+                borderSide: BorderSide(color: context.nexusTheme.accentPrimary),
               ),
             ),
           ),
@@ -505,7 +504,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(16)),
-                borderSide: const BorderSide(color: context.nexusTheme.accentPrimary),
+                borderSide: BorderSide(color: context.nexusTheme.accentPrimary),
               ),
               suffixIcon: _isCheckingAminoId
                   ? Padding(

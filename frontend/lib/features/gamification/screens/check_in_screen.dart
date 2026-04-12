@@ -7,8 +7,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../../config/nexus_theme_extension.dart';
-import '../../../../config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_extension.dart';
 
 /// Tela de check-in diário com gamificação — Estilo Amino Apps.
 class CheckInScreen extends ConsumerStatefulWidget {
@@ -484,7 +483,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
         ),
         boxShadow: [
           BoxShadow(
-            color: (completed ? context.nexusTheme.accentPrimary : const Color(0xFFFF9800))
+            color: (completed ? context.nexusTheme.accentPrimary : context.nexusTheme.streakGradient.colors.first)
                 .withValues(alpha: 0.4),
             blurRadius: 24,
             spreadRadius: 4,
