@@ -252,17 +252,29 @@ class _EditCommunityProfileScreenState
 
   Future<void> _pickAvatar() async {
     final url = await _uploadCommunityImage('avatar', crop: true);
-    if (url != null && mounted) setState(() => _localIconUrl = url);
+    if (url != null && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _localIconUrl = url);
+      });
+    }
   }
 
   Future<void> _pickBanner() async {
     final url = await _uploadCommunityImage('banner');
-    if (url != null && mounted) setState(() => _localBannerUrl = url);
+    if (url != null && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _localBannerUrl = url);
+      });
+    }
   }
 
   Future<void> _pickBackground() async {
     final url = await _uploadCommunityImage('background');
-    if (url != null && mounted) setState(() => _localBackgroundUrl = url);
+    if (url != null && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _localBackgroundUrl = url);
+      });
+    }
   }
 
   Future<void> _addGalleryPhoto() async {
