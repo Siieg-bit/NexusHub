@@ -279,7 +279,15 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
         final item = items[index];
         final storeItem = item['store_items'] as Map<String, dynamic>? ?? {};
         final name = storeItem['name'] as String? ?? 'Item';
-        final imageUrl = storeItem['image_url'] as String?;
+        // store_items não tem coluna image_url — usa preview_url ou asset_url
+        final assetConfig = storeItem['asset_config'] as Map<String, dynamic>? ?? {};
+        final imageUrl = (storeItem['preview_url'] as String?)?.isNotEmpty == true
+            ? storeItem['preview_url'] as String?
+            : (storeItem['asset_url'] as String?)?.isNotEmpty == true
+                ? storeItem['asset_url'] as String?
+                : (assetConfig['frame_url'] as String?)?.isNotEmpty == true
+                    ? assetConfig['frame_url'] as String?
+                    : assetConfig['image_url'] as String?;
         final isEquipped = _equippedIds.contains(item['id']);
 
         return GestureDetector(

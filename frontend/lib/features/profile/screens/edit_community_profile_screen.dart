@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -752,9 +753,7 @@ class _BannerAvatarSection extends ConsumerWidget {
 
         // "Editar Molduras de Perfil" — link azul clicável
         GestureDetector(
-          onTap: () {
-            // TODO: navegar para a tela de molduras
-          },
+          onTap: () => context.push('/inventory'),
           child: Text(
             editFramesLabel,
             style: TextStyle(
