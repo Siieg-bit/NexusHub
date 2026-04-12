@@ -13,7 +13,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../widgets/rich_bio.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Tela de edição de perfil do usuário com Rich Bio Editor.
 class EditProfileScreen extends ConsumerStatefulWidget {

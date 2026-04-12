@@ -6,7 +6,7 @@ import '../../../core/utils/responsive.dart';
 import '../models/sticker_model.dart';
 import '../providers/sticker_providers.dart';
 import 'sticker_pack_screen.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Tela de exploração de packs públicos de outros usuários.
 class StickerExploreScreen extends ConsumerStatefulWidget {

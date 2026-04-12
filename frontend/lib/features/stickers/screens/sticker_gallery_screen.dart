@@ -8,7 +8,7 @@ import '../providers/sticker_providers.dart';
 import 'sticker_pack_screen.dart';
 import 'create_pack_screen.dart';
 import 'sticker_explore_screen.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Tela principal de stickers — gerencia packs próprios, salvos e descobre novos.
 class StickerGalleryScreen extends ConsumerStatefulWidget {

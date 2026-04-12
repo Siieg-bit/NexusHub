@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
-import '../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../utils/responsive.dart';
 import '../utils/helpers.dart';
 import '../l10n/app_strings.dart';

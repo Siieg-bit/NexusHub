@@ -17,7 +17,7 @@ import '../../../core/providers/dm_invite_provider.dart';
 import '../../../core/providers/chat_provider.dart' show unreadCountProvider, unreadCountByCommunityProvider;
 import '../widgets/dm_invite_card.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Provider para "Meus chats" — lista pessoal do usuário.
 /// Retorna apenas threads com membership ativo (status != 'left').

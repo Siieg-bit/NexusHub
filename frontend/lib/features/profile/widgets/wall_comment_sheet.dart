@@ -16,7 +16,7 @@ import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../stickers/stickers.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/comment_media_menu_button.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 // =============================================================================
 // PROVIDER — carregamento de comentários do mural via RPC

@@ -13,7 +13,7 @@ import '../../../core/models/post_editor_model.dart';
 import '../../../core/providers/post_provider.dart';
 import '../../../core/providers/draft_provider.dart';
 import 'dart:async';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CREATE POLL SCREEN — Enquete com múltiplas opções

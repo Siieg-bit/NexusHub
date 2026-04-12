@@ -4,7 +4,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Tela de Política de Privacidade do NexusHub.
 class PrivacyPolicyScreen extends ConsumerWidget {

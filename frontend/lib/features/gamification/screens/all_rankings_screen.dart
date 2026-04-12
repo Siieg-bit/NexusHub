@@ -5,7 +5,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Tela "Todos os Rankings" — lista dos 20 níveis com banner da comunidade
 /// ao fundo com opacidade, destaque do nível atual do usuário.

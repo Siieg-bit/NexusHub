@@ -10,7 +10,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/community_shared_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// ============================================================================
 /// CommunityInfoScreen — Tela de detalhes/informações da comunidade.

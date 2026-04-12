@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../utils/responsive.dart';
-import '../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// AminoCustomTitle — Pílula de título customizado estilo Amino.
 ///

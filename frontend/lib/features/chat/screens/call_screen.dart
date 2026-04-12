@@ -9,7 +9,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/call_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// ============================================================================
 /// CallScreen — UI de chamada com Agora.io RTC real.

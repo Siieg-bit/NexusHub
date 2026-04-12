@@ -12,7 +12,7 @@ import '../../../core/widgets/rgb_color_picker.dart';
 import '../../communities/providers/community_detail_providers.dart';
 import '../widgets/rich_bio.dart';
 import '../widgets/frame_picker_sheet.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Editar Perfil da Comunidade — estilo Amino Apps.
 ///

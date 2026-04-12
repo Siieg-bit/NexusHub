@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../config/app_theme.dart';
 import '../l10n/locale_provider.dart';
-import '../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Error Boundary global — captura erros de widgets filhos e exibe
 /// uma tela de fallback amigável em vez de crashar o app.

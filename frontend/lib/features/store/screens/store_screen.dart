@@ -9,7 +9,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../stickers/providers/sticker_providers.dart';
 import '../../chat/widgets/nine_slice_bubble.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Tela Store — Loja de itens virtuais (Avatar Frames, Chat Bubbles, Sticker Packs).
 ///

@@ -17,7 +17,7 @@ import '../../communities/providers/community_detail_providers.dart'
 import '../widgets/block_content_renderer.dart';
 import '../widgets/block_editor.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CREATE BLOG SCREEN — Editor de blogs estilo Amino

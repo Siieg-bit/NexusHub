@@ -37,7 +37,7 @@ import 'chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/deep_link_service.dart';
 import 'call_screen.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 // screening_room_screen.dart — navegação via GoRouter ('/screening-room/:threadId')
 
 /// =============================================================================

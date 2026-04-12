@@ -16,7 +16,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import '../../chat/widgets/giphy_picker.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 class RichBioMediaItem {
   final String id;

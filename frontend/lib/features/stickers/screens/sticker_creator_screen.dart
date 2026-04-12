@@ -9,7 +9,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../repositories/sticker_repository.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Tela de criação de stickers personalizados.
 /// Permite: escolher imagem, adicionar texto, emojis, molduras e bordas.

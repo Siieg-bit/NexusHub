@@ -8,7 +8,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../feed/widgets/post_card.dart';
 import '../providers/profile_providers.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 class ProfileBlogsTab extends ConsumerWidget {
   final String userId;

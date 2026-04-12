@@ -26,7 +26,7 @@ import '../../../core/services/deep_link_service.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/comment_media_menu_button.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 enum _CommentSortOrder { mostRecent, oldest, mostPopular }
 

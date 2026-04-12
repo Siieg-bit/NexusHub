@@ -8,7 +8,7 @@ import '../providers/sticker_providers.dart';
 import '../screens/sticker_gallery_screen.dart';
 import '../screens/sticker_explore_screen.dart';
 import '../screens/create_pack_screen.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Callback quando um sticker é selecionado.
 typedef OnStickerSelected = void Function(StickerModel sticker);

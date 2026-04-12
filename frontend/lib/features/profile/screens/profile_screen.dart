@@ -20,7 +20,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/block_provider.dart';
 import '../../../core/services/deep_link_service.dart';
 import '../../../core/widgets/image_viewer.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 // =============================================================================
 // PROFILE SCREEN — Layout fiel ao Amino Apps

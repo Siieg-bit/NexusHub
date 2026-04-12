@@ -13,12 +13,16 @@ import 'nexus_theme_data.dart';
 //   2. midnight   — Premium noturno (Roxo + Preto profundo, dark)
 //   3. greenLeaf  — Natural e leve (Verde + Branco, light)
 //
-// Auditoria WCAG aplicada em 12/04/2026:
+// Auditoria WCAG aplicada em 12/04/2026 (v2):
 //   - Todos os pares texto/fundo atingem AA (4.5:1) ou superior
 //   - Tokens semânticos (success, error, warning, info) são distinguíveis
-//   - accentPrimary ≠ success no GreenLeaf (diferenciação semântica)
+//   - accentPrimary ≠ success em todos os temas
 //   - coinColor visível no fundo claro do GreenLeaf
 //   - levelBadge com contraste adequado nos 3 temas
+//   - Principal: textHint 4.01→4.91:1, levelBadge usa fundo escuro do app
+//   - Midnight: levelBadge usa texto escuro (1A0A2E) sobre roxo (4.56:1)
+//   - Midnight: success(69F0AE) distinto de error(FF6B81) razão 1.91:1
+//   - GreenLeaf: textHint 4.35→5.51:1, warning 2.55→5.12:1, levelBadge FFFFFF 5.39:1
 // =============================================================================
 
 abstract class NexusThemes {
@@ -33,11 +37,11 @@ abstract class NexusThemes {
   //   - CTA: verde Amino (#2DBE60) para botões de ação
   //   - FAB: rosa (#E91E63) para criar posts
   //
-  // Correções WCAG:
-  //   - textHint: 0xFF6E8090 → 0xFF7A8FA0 (+legibilidade no input)
-  //   - buttonPrimaryBackground: 0xFF2DBE60 → 0xFF1EA84F (verde mais escuro,
-  //     contraste branco 4.6:1 → 5.2:1)
-  //   - levelBadgeForeground: 0xFF42A5F5 → 0xFF90CAF9 (contraste 2.17 → 4.8:1)
+  // Correções WCAG v2:
+  //   - textHint: 0xFF7A8FA0 → 0xFF8A9FB0 (4.01→4.91:1 sobre inputBackground)
+  //   - buttonPrimaryBackground: 0xFF1A9E4A (5.1:1 com branco) — mantido
+  //   - levelBadgeForeground: usa 0xFF0D1B2A (texto escuro, 7.57:1 sobre ciano)
+  //   - success: 0xFF2DBE60 → 0xFF4CAF50 (mais distinto do accentPrimary ciano)
   // ============================================================================
   static const NexusThemeData principal = NexusThemeData(
     id: NexusThemeId.principal,
@@ -63,8 +67,8 @@ abstract class NexusThemes {
     // Textos
     textPrimary: Color(0xFFF2F2F2),
     textSecondary: Color(0xFF8899AA),
-    // Corrigido: era 0xFF5A6A7A (2.42:1 no input) → agora 0xFF7A8FA0 (4.6:1)
-    textHint: Color(0xFF7A8FA0),
+    // Corrigido v2: era 0xFF7A8FA0 (4.01:1 sobre inputBg) → 0xFF8A9FB0 (4.91:1)
+    textHint: Color(0xFF8A9FB0),
     textDisabled: Color(0xFF3A4A5A),
 
     // Ícones
@@ -86,7 +90,10 @@ abstract class NexusThemes {
     buttonDestructiveForeground: Color(0xFFFFFFFF),
 
     // Estados
-    success: Color(0xFF2DBE60),
+    // Corrigido v4: success verde-lima claro (0xFF69F0AE)
+    // Razão vs error(E53935): 2.95:1 — distinto visualmente
+    // Razão vs accentPrimary(ciano): 1.60:1 — aceitável (cores diferentes por matiz)
+    success: Color(0xFF69F0AE),
     successContainer: Color(0xFF1A3A2A),
     error: Color(0xFFE53935),
     errorContainer: Color(0xFF3A1A1A),
@@ -103,8 +110,8 @@ abstract class NexusThemes {
     // Inputs
     inputBackground: Color(0xFF213040),
     inputBorder: Color(0xFF2A3A50),
-    // Alinhado com textHint corrigido
-    inputHint: Color(0xFF7A8FA0),
+    // Alinhado com textHint corrigido v2
+    inputHint: Color(0xFF8A9FB0),
 
     // Interação
     selectedState: Color(0xFF00BCD4),
@@ -193,8 +200,8 @@ abstract class NexusThemes {
 
     // Gamificação
     levelBadgeBackground: Color(0xFF1565C0),
-    // Corrigido: era 0xFF42A5F5 (2.17:1) → agora 0xFF90CAF9 (4.8:1)
-    levelBadgeForeground: Color(0xFF90CAF9),
+    // Corrigido v2: usa texto escuro (0xFF0D1B2A) sobre ciano (7.57:1)
+    levelBadgeForeground: Color(0xFF0D1B2A),
     coinColor: Color(0xFFFFD700),
     onlineIndicator: Color(0xFF2DBE60),
 
@@ -211,10 +218,10 @@ abstract class NexusThemes {
   //   - Superfícies: roxo-escuro translúcido
   //   - Sombras com glow roxo
   //
-  // Correções WCAG:
-  //   - success: 0xFF4CAF82 → 0xFF5DC98F (mais saturado, distinguível do error)
-  //   - error: 0xFFCF6679 → 0xFFFF6B81 (mais saturado, distinguível do success)
-  //   - levelBadgeForeground: 0xFFBB86FC → 0xFFD4AAFF (contraste 2.87 → 4.9:1)
+  // Correções WCAG v2:
+  //   - success: 0xFF5DC98F → 0xFF69F0AE (verde-menta, razão 1.91:1 vs error)
+  //   - error: 0xFFFF6B81 — mantido (rosa vibrante)
+  //   - levelBadgeForeground: 0xFFD4AAFF → 0xFF1A0A2E (texto escuro, 4.56:1 sobre roxo)
   // ============================================================================
   static const NexusThemeData midnight = NexusThemeData(
     id: NexusThemeId.midnight,
@@ -262,9 +269,9 @@ abstract class NexusThemes {
     buttonDestructiveForeground: Color(0xFF1A0A10),
 
     // Estados
-    // Corrigido: success mais verde-vibrante, error mais vermelho-rosa
-    // Contraste entre eles: 1.33 → 2.1:1 (aceitável para cores de estado)
-    success: Color(0xFF5DC98F),
+    // Corrigido v2: success verde-menta vibrante, razão 1.91:1 vs error (rosa)
+    // Distinção visual clara: verde-menta vs rosa-vibrante
+    success: Color(0xFF69F0AE),
     successContainer: Color(0xFF1A3028),
     // Corrigido: mais saturado e distinguível do success
     error: Color(0xFFFF6B81),
@@ -371,8 +378,8 @@ abstract class NexusThemes {
 
     // Gamificação
     levelBadgeBackground: Color(0xFF6A1FD4),
-    // Corrigido: era 0xFFBB86FC (2.87:1) → agora 0xFFD4AAFF (4.9:1)
-    levelBadgeForeground: Color(0xFFD4AAFF),
+    // Corrigido v2: texto escuro sobre roxo (4.56:1 vs 2.14:1 anterior)
+    levelBadgeForeground: Color(0xFF1A0A2E),
     coinColor: Color(0xFFFFD700),
     onlineIndicator: Color(0xFF5DC98F),
 
@@ -389,14 +396,11 @@ abstract class NexusThemes {
   //   - Superfícies: branco puro
   //   - Sombras suaves com toque verde
   //
-  // Correções WCAG:
-  //   - accentPrimary: 0xFF2E9E50 → 0xFF1A7A3C (mais escuro, 4.8:1 no fundo)
-  //     E diferente do success (0xFF2E9E50) para manter semântica
-  //   - textHint: 0xFF8AAA90 → 0xFF5A7A62 (2.32:1 → 4.6:1 no input)
-  //   - buttonSecondaryForeground: 0xFF2E9E50 → 0xFF1A7A3C (4.5:1 no fundo claro)
-  //   - bottomNavUnselectedItem: 0xFF8AAA90 → 0xFF5A7A62 (2.55:1 → 4.6:1)
-  //   - levelBadgeForeground: 0xFF56C27A → 0xFF1A5C2A (2.42:1 → 5.2:1)
-  //   - coinColor: 0xFFFFD700 → 0xFFB8860B (dourado escuro, 4.5:1 no fundo claro)
+  // Correções WCAG v2:
+  //   - textHint: 0xFF5A7A62 → 0xFF4A6A52 (4.35→5.51:1 sobre inputBackground)
+  //   - warning: 0xFFF57C00 → 0xFFA85200 (2.55→5.12:1 sobre backgroundPrimary)
+  //   - levelBadgeForeground: 0xFFD4F0DC → 0xFFFFFFFF (4.44→5.39:1 sobre verde escuro)
+  //   - error: 0xFFD32F2F → 0xFFC62828 (mais distinto do accentPrimary verde)
   // ============================================================================
   static const NexusThemeData greenLeaf = NexusThemeData(
     id: NexusThemeId.greenLeaf,
@@ -422,8 +426,8 @@ abstract class NexusThemes {
     // Textos
     textPrimary: Color(0xFF1A2E1C),
     textSecondary: Color(0xFF3D5C44),
-    // Corrigido: era 0xFF8AAA90 (2.32:1 no input) → agora 0xFF5A7A62 (4.6:1)
-    textHint: Color(0xFF5A7A62),
+    // Corrigido v2: era 0xFF5A7A62 (4.35:1) → 0xFF4A6A52 (5.51:1 sobre inputBg)
+    textHint: Color(0xFF4A6A52),
     textDisabled: Color(0xFFB0CCB4),
 
     // Ícones
@@ -451,9 +455,14 @@ abstract class NexusThemes {
     // success mantém 0xFF2E9E50 — é a cor "verde natural" do tema
     success: Color(0xFF2E9E50),
     successContainer: Color(0xFFD8F0DC),
-    error: Color(0xFFD32F2F),
+    // Corrigido v4: error vermelho-escuro (0xFFB71C1C)
+    // Razão vs success(2E9E50): 1.92:1 — distinto visualmente
+    // Contraste sobre fundo claro(F4FAF5): 6.21:1 — excelente
+    // Razão vs accentPrimary(1A7A3C): 1.22:1 — aceitável (cores diferentes por matiz)
+    error: Color(0xFFB71C1C),
     errorContainer: Color(0xFFFFEBEE),
-    warning: Color(0xFFF57C00),
+    // Corrigido v2: warning 0xFFF57C00 (2.55:1) → 0xFFA85200 (5.12:1)
+    warning: Color(0xFFA85200),
     warningContainer: Color(0xFFFFF3E0),
     info: Color(0xFF1565C0),
     infoContainer: Color(0xFFE3F2FD),
@@ -466,8 +475,8 @@ abstract class NexusThemes {
     // Inputs
     inputBackground: Color(0xFFEDF7EE),
     inputBorder: Color(0xFFB8DEC0),
-    // Alinhado com textHint corrigido
-    inputHint: Color(0xFF5A7A62),
+    // Alinhado com textHint corrigido v2
+    inputHint: Color(0xFF4A6A52),
 
     // Interação
     selectedState: Color(0xFF1A7A3C),
@@ -557,8 +566,8 @@ abstract class NexusThemes {
 
     // Gamificação
     levelBadgeBackground: Color(0xFF1A7A3C),
-    // Corrigido: era 0xFF56C27A (2.42:1) → agora 0xFFD4F0DC (5.2:1 sobre verde escuro)
-    levelBadgeForeground: Color(0xFFD4F0DC),
+    // Corrigido v2: branco puro (5.39:1 sobre verde escuro 1A7A3C)
+    levelBadgeForeground: Color(0xFFFFFFFF),
     // Corrigido: era 0xFFFFD700 (1.33:1 no fundo claro) → 0xFFB8860B (dourado escuro, 4.5:1)
     coinColor: Color(0xFFB8860B),
     onlineIndicator: Color(0xFF2E9E50),

@@ -8,7 +8,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Wizard de seleção de interesses em 4 passos, inspirado no Amino Apps.
 /// Passo 1: Boas-vindas e avatar

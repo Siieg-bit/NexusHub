@@ -25,7 +25,7 @@ import '../widgets/community_chat_tab.dart';
 import '../widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/deep_link_service.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 // =============================================================================
 // MAIN SCREEN — Estilo Amino Apps

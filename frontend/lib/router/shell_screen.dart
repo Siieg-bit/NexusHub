@@ -5,7 +5,7 @@ import 'package:badges/badges.dart' as badges;
 import '../config/app_theme.dart';
 import '../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Bottom Navigation Bar Global — réplica pixel-perfect do Amino Apps.
 ///

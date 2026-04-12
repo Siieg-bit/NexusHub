@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../config/nexus_theme_data.dart';
-import '../../config/nexus_themes.dart';
+import 'package:amino_clone/config/nexus_theme_data.dart';
+import 'package:amino_clone/config/nexus_themes.dart';
 
 // =============================================================================
 // NexusThemeProvider — Gerenciamento centralizado de temas do NexusHub

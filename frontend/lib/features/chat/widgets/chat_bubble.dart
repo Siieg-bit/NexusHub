@@ -6,7 +6,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 export '../../../core/widgets/avatar_with_frame.dart';
 
 /// Custom Chat Bubble com suporte a frames equipáveis — estilo Amino Apps.

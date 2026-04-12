@@ -11,11 +11,11 @@ import 'package:go_router/go_router.dart';
 
 import 'config/app_config.dart';
 import 'config/app_theme.dart';
-import 'config/nexus_theme_data.dart';
-import 'config/nexus_theme_scope.dart';
+import 'package:amino_clone/config/nexus_theme_data.dart';
+import 'package:amino_clone/config/nexus_theme_scope.dart';
 import 'router/app_router.dart';
 import 'core/providers/theme_provider.dart';
-import 'core/providers/nexus_theme_provider.dart';
+import 'package:amino_clone/core/providers/nexus_theme_provider.dart';
 import 'core/services/device_fingerprint_service.dart';
 import 'core/services/deep_link_service.dart';
 import 'core/services/push_notification_service.dart';

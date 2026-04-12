@@ -22,7 +22,7 @@ import '../widgets/rich_bio.dart';
 import '../../moderation/widgets/member_role_manager.dart';
 import '../../../core/widgets/image_viewer.dart';
 import 'bio_and_wall_screen.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Perfil dentro de uma Comunidade — Layout 1:1 com Amino Apps.
 ///

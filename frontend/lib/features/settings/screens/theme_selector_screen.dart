@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../config/nexus_theme_data.dart';
-import '../../../config/nexus_themes.dart';
-import '../../../config/nexus_theme_extension.dart';
-import '../../../core/providers/nexus_theme_provider.dart';
+import 'package:amino_clone/config/nexus_theme_data.dart';
+import 'package:amino_clone/config/nexus_themes.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/core/providers/nexus_theme_provider.dart';
 import '../../../core/utils/responsive.dart';
 
 // =============================================================================

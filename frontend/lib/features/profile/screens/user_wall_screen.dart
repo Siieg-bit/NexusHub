@@ -8,7 +8,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/wall_comment_sheet.dart';
-import '../../../config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Mural do Usuário (The Wall) — Mensagens públicas no perfil, estilo Amino.
 /// Refatorado para usar WallCommentSheet (corrige bugs de carregamento e envio).
