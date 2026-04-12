@@ -9,6 +9,7 @@ import '../../../core/services/media_upload_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../communities/providers/community_detail_providers.dart';
+import '../widgets/frame_picker_sheet.dart';
 
 /// Editar Perfil da Comunidade — estilo Amino Apps.
 ///
@@ -39,8 +40,13 @@ class _EditCommunityProfileScreenState
   String? _localBannerUrl;
   String? _localBackgroundUrl;
   List<String> _gallery = [];
-  bool _galleryLoaded = false; // garante que galeria só é enviada após carregamento
-  bool _mediaLoaded = false;  // garante que icon/banner/background só são enviados após carregamento
+  bool _galleryLoaded = false;
+  bool _mediaLoaded = false;
+
+  // Moldura selecionada temporariamente (só persiste ao salvar o perfil)
+  String? _selectedFrameUrl;
+  String? _selectedFramePurchaseId;
+  bool _frameSelectionChanged = false;
 
   bool _isLoading = true;
   bool _isSaving = false;
@@ -61,7 +67,7 @@ class _EditCommunityProfileScreenState
       final membership = await SupabaseService.table('community_members')
           .select(
               'local_nickname, local_bio, local_icon_url, local_banner_url, '
-              'local_background_url, local_gallery')
+              'local_background_url, local_gallery, active_avatar_frame_id')
           .eq('community_id', widget.communityId)
           .eq('user_id', userId)
           .maybeSingle();
@@ -123,6 +129,29 @@ class _EditCommunityProfileScreenState
             _localBannerUrl = hydratedMembership['local_banner_url'] as String?;
             _localBackgroundUrl =
                 hydratedMembership['local_background_url'] as String?;
+            // Carregar moldura ativa atual
+            final activeFramePurchaseId =
+                hydratedMembership['active_avatar_frame_id'] as String?;
+            if (activeFramePurchaseId != null) {
+              try {
+                final fp = await SupabaseService.table('user_purchases')
+                    .select('id, store_items!user_purchases_item_id_fkey(preview_url, asset_url, asset_config)')
+                    .eq('id', activeFramePurchaseId)
+                    .maybeSingle();
+                if (fp != null) {
+                  final si = fp['store_items'] as Map<String, dynamic>?;
+                  if (si != null) {
+                    String? fUrl = si['preview_url'] as String?;
+                    if (fUrl == null || fUrl.isEmpty) fUrl = si['asset_url'] as String?;
+                    if ((fUrl == null || fUrl.isEmpty) && si['asset_config'] is Map) {
+                      fUrl = (si['asset_config'] as Map)['frame_url'] as String?;
+                    }
+                    _selectedFrameUrl = fUrl;
+                    _selectedFramePurchaseId = activeFramePurchaseId;
+                  }
+                }
+              } catch (_) {}
+            }
             final rawGallery = hydratedMembership['local_gallery'];
             if (rawGallery is List) {
               _gallery = rawGallery.map((e) => e.toString()).toList();
@@ -305,6 +334,9 @@ class _EditCommunityProfileScreenState
         'p_local_banner_url': bannerUrlToSave,
         'p_local_background_url': backgroundUrlToSave,
         'p_local_gallery': galleryPayload,
+        'p_active_avatar_frame_purchase_id':
+            _frameSelectionChanged ? _selectedFramePurchaseId : null,
+        'p_frame_changed': _frameSelectionChanged,
       });
 
       // Nota: community_profile_screen usa _loadProfile() com estado local
@@ -421,12 +453,27 @@ class _EditCommunityProfileScreenState
                   _BannerAvatarSection(
                     bannerUrl: _localBannerUrl,
                     avatarUrl: _localIconUrl,
+                    frameUrl: _selectedFrameUrl,
                     editFramesLabel: s.editProfileFrames,
                     onTapBanner: _pickBanner,
                     onTapAvatar: _pickAvatar,
                     onRemoveBanner: _localBannerUrl != null
                         ? () => setState(() => _localBannerUrl = null)
                         : null,
+                    onTapEditFrames: () async {
+                      final result = await showFramePickerSheet(
+                        context,
+                        currentAvatarUrl: _localIconUrl,
+                        currentFrameUrl: _selectedFrameUrl,
+                      );
+                      if (result != null && mounted) {
+                        setState(() {
+                          _selectedFrameUrl = result.frameUrl;
+                          _selectedFramePurchaseId = result.purchaseId;
+                          _frameSelectionChanged = true;
+                        });
+                      }
+                    },
                   ),
 
                   SizedBox(height: r.s(8)),
@@ -631,18 +678,22 @@ class _EditCommunityProfileScreenState
 class _BannerAvatarSection extends ConsumerWidget {
   final String? bannerUrl;
   final String? avatarUrl;
+  final String? frameUrl;
   final String editFramesLabel;
   final VoidCallback onTapBanner;
   final VoidCallback onTapAvatar;
   final VoidCallback? onRemoveBanner;
+  final VoidCallback onTapEditFrames;
 
   const _BannerAvatarSection({
     required this.bannerUrl,
     required this.avatarUrl,
+    this.frameUrl,
     required this.editFramesLabel,
     required this.onTapBanner,
     required this.onTapAvatar,
     this.onRemoveBanner,
+    required this.onTapEditFrames,
   });
 
   @override
@@ -751,9 +802,9 @@ class _BannerAvatarSection extends ConsumerWidget {
         // Espaço para o avatar que sobrepõe
         SizedBox(height: r.s(60)),
 
-        // "Editar Molduras de Perfil" — link azul clicável
+        // "Editar Molduras de Perfil" — abre o FramePickerSheet
         GestureDetector(
-          onTap: () => context.push('/inventory'),
+          onTap: onTapEditFrames,
           child: Text(
             editFramesLabel,
             style: TextStyle(
