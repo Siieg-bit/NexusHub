@@ -82,6 +82,8 @@ O repositório contém um template de variáveis em `frontend/.env.example`, mas
 | `backend/supabase/config.toml` | configuração do ambiente local do Supabase CLI |
 | `.env.example` | referência adicional de ambiente na raiz do projeto |
 
+> **Nota operacional:** a Edge Function `agora-token` está configurada com `verify_jwt = false` no `backend/supabase/config.toml`. Isso é intencional para permitir chamadas com a publishable key atual do Supabase, enquanto a autenticação efetiva do usuário continua sendo validada dentro do fluxo da própria função via cabeçalhos e sessão.
+
 ## Fluxo de desenvolvimento local
 
 Para trabalhar no projeto localmente, o caminho mais seguro é preparar o backend Supabase primeiro e, depois, executar o frontend Flutter. O backend local já possui configuração em `backend/supabase/config.toml`, seed habilitada e ports definidos para API, banco, Studio e serviços auxiliares.

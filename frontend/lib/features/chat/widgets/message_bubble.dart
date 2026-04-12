@@ -127,13 +127,45 @@ class MessageBubble extends ConsumerWidget {
                 return;
               }
 
+              var loadingVisible = false;
               try {
-                final session = await CallService.openThreadCall(
+                loadingVisible = true;
+                showDialog<void>(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (dialogContext) {
+                    return PopScope(
+                      canPop: false,
+                      child: AlertDialog(
+                        content: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2.2),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text('Abrindo voice chat...'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ).then((_) => loadingVisible = false);
+
+                final result = await CallService.openThreadCallDetailed(
                   threadId: threadId,
                   type: CallType.voice,
                 );
 
-                if (session == null) {
+                if (loadingVisible && context.mounted) {
+                  Navigator.of(context, rootNavigator: true).pop();
+                }
+
+                if (result == null) {
                   final report = CallService.buildLastErrorReport(
                     title: 'MESSAGE BUBBLE VOICE CALL FAILURE',
                   );
@@ -164,8 +196,12 @@ class MessageBubble extends ConsumerWidget {
                 }
 
                 if (!context.mounted) return;
-                await CallScreen.show(context, session);
+                await CallScreen.show(context, result.session);
               } catch (e, st) {
+                if (loadingVisible && context.mounted) {
+                  Navigator.of(context, rootNavigator: true).pop();
+                }
+
                 final report = [
                   '===== MESSAGE BUBBLE VOICE CALL UNCAUGHT EXCEPTION =====',
                   'threadId: $threadId',

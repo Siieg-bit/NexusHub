@@ -93,6 +93,16 @@ class CallSession {
   }
 }
 
+class OpenThreadCallResult {
+  final CallSession session;
+  final bool reusedExistingSession;
+
+  const OpenThreadCallResult({
+    required this.session,
+    required this.reusedExistingSession,
+  });
+}
+
 /// ============================================================================
 /// CallService com Agora.io RTC integrado + RPCs + RealtimeService
 /// ============================================================================
@@ -501,7 +511,7 @@ class CallService {
     return null;
   }
 
-  static Future<CallSession?> openThreadCall({
+  static Future<OpenThreadCallResult?> openThreadCallDetailed({
     required String threadId,
     required CallType type,
   }) async {
@@ -513,20 +523,37 @@ class CallService {
       allowedTypes: allowedTypes,
     );
     if (existing != null) {
-      if (activeCall?.id == existing.id) return activeCall;
-      return joinCallSession(existing.id);
+      final session = activeCall?.id == existing.id
+          ? activeCall
+          : await joinCallSession(existing.id);
+      if (session == null) return null;
+      return OpenThreadCallResult(
+        session: session,
+        reusedExistingSession: true,
+      );
     }
 
     final created = await createCall(threadId: threadId, type: type);
-    if (created != null) return created;
+    if (created != null) {
+      return OpenThreadCallResult(
+        session: created,
+        reusedExistingSession: false,
+      );
+    }
 
     final raceWinner = await getActiveCallForThread(
       threadId,
       allowedTypes: allowedTypes,
     );
     if (raceWinner != null) {
-      if (activeCall?.id == raceWinner.id) return activeCall;
-      return joinCallSession(raceWinner.id);
+      final session = activeCall?.id == raceWinner.id
+          ? activeCall
+          : await joinCallSession(raceWinner.id);
+      if (session == null) return null;
+      return OpenThreadCallResult(
+        session: session,
+        reusedExistingSession: true,
+      );
     }
 
     if (lastError == null) {
@@ -542,6 +569,14 @@ class CallService {
     }
 
     return null;
+  }
+
+  static Future<CallSession?> openThreadCall({
+    required String threadId,
+    required CallType type,
+  }) async {
+    final result = await openThreadCallDetailed(threadId: threadId, type: type);
+    return result?.session;
   }
 
   /// Gera o channelName a partir do ID da sessão.
@@ -664,7 +699,11 @@ class CallService {
 
   /// Entra no canal Agora com áudio/vídeo real
   static Future<void> _joinAgoraChannel(CallSession session) async {
-    await _initEngine();
+    final channelName = _channelName(session);
+    final initEngineFuture = _initEngine();
+    final tokenFuture = _fetchAgoraToken(channelName);
+
+    await initEngineFuture;
 
     final isVideo = session.type == CallType.video;
 
@@ -680,9 +719,7 @@ class CallService {
     await _engine!.enableAudio();
     _isMuted = false;
 
-    final channelName = _channelName(session);
-
-    _agoraToken = await _fetchAgoraToken(channelName);
+    _agoraToken = await tokenFuture;
     if (_agoraToken == null || _agoraToken!.isEmpty) {
       throw StateError('Unable to fetch a valid Agora token for channel $channelName');
     }

@@ -86,6 +86,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   MessageModel? _replyingTo;
   bool _showEmojiPicker = false;
   bool _isRecordingVoice = false;
+  bool _isOpeningVoiceCall = false;
   List<Map<String, dynamic>> _pinnedMessages = [];
   String? _chatBackground;
   // Fluxo de DM invite
@@ -597,27 +598,26 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   Future<void> _startVoiceChat() async {
-    try {
-      final hadActiveCall = await CallService.getActiveCallForThread(
-            widget.threadId,
-            allowedTypes: {CallType.voice},
-          ) !=
-          null;
+    if (_isOpeningVoiceCall) return;
 
-      final session = await CallService.openThreadCall(
+    if (mounted) {
+      setState(() => _isOpeningVoiceCall = true);
+    }
+
+    try {
+      final result = await CallService.openThreadCallDetailed(
         threadId: widget.threadId,
         type: CallType.voice,
       );
 
       if (!mounted) return;
 
-      if (session == null) {
+      if (result == null) {
         final report = CallService.buildLastErrorReport(
           title: 'CHAT VOICE CALL FAILURE',
         );
         debugPrint(report);
 
-        if (!mounted) return;
         await showDialog<void>(
           context: context,
           builder: (dialogContext) {
@@ -641,12 +641,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         return;
       }
 
-      if (!hadActiveCall) {
+      if (!result.reusedExistingSession) {
         await _sendMessage(type: 'voice_chat');
         if (!mounted) return;
       }
 
-      await CallScreen.show(context, session);
+      if (mounted) {
+        setState(() => _isOpeningVoiceCall = false);
+      }
+
+      await CallScreen.show(context, result.session);
     } catch (e, st) {
       final report = [
         '===== CHAT VOICE CALL UNCAUGHT EXCEPTION =====',
@@ -679,6 +683,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           );
         },
       );
+    } finally {
+      if (mounted && _isOpeningVoiceCall) {
+        setState(() => _isOpeningVoiceCall = false);
+      }
     }
   }
 
@@ -2088,7 +2096,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               child: _badgeIcon(Icons.push_pin_rounded, _pinnedMessages.length),
             ),
           GestureDetector(
-            onTap: _startVoiceChat,
+            onTap: _isOpeningVoiceCall ? null : _startVoiceChat,
             child: Container(
               width: r.s(34),
               height: r.s(34),
@@ -2097,8 +2105,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 color: context.surfaceColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.headset_mic_rounded,
-                  color: Colors.grey[500], size: r.s(16)),
+              child: _isOpeningVoiceCall
+                  ? Padding(
+                      padding: EdgeInsets.all(r.s(9)),
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppTheme.primaryColor,
+                      ),
+                    )
+                  : Icon(Icons.headset_mic_rounded,
+                      color: Colors.grey[500], size: r.s(16)),
             ),
           ),
           GestureDetector(
