@@ -68,9 +68,6 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
   late double _hue;
   late double _saturation;
   late double _brightness;
-  late double _r;
-  late double _g;
-  late double _b;
   late TextEditingController _hexController;
   Color _currentColor = Colors.white;
   Color _previousColor = Colors.white;
@@ -117,15 +114,12 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
     super.dispose();
   }
 
-  // Sincroniza todos os valores (HSV + RGB) a partir de uma cor
+  // Sincroniza todos os valores HSV a partir de uma cor
   void _syncFromColor(Color color) {
     final hsv = HSVColor.fromColor(color);
     _hue = hsv.hue;
     _saturation = hsv.saturation;
     _brightness = hsv.value;
-    _r = color.red.toDouble();
-    _g = color.green.toDouble();
-    _b = color.blue.toDouble();
   }
 
   Color get _hsvColor =>
@@ -141,26 +135,6 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
     if (_isSyncing) return;
     _isSyncing = true;
     final color = _hsvColor;
-    _r = color.red.toDouble();
-    _g = color.green.toDouble();
-    _b = color.blue.toDouble();
-    _currentColor = color;
-    if (!_isEditingHex) {
-      _hexController.text = _colorToHex(color);
-    }
-    _isSyncing = false;
-    setState(() {});
-  }
-
-  // Atualiza a partir dos sliders RGB
-  void _updateFromRGB() {
-    if (_isSyncing) return;
-    _isSyncing = true;
-    final color = Color.fromARGB(255, _r.round(), _g.round(), _b.round());
-    final hsv = HSVColor.fromColor(color);
-    _hue = hsv.hue;
-    _saturation = hsv.saturation;
-    _brightness = hsv.value;
     _currentColor = color;
     if (!_isEditingHex) {
       _hexController.text = _colorToHex(color);
@@ -230,9 +204,6 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
                 // Roda de cores HSV
                 _buildHSVWheel(r),
                 SizedBox(height: r.s(16)),
-                // Sliders RGB
-                _buildRGBSliders(r),
-                SizedBox(height: r.s(14)),
                 // Campo HEX
                 _buildHexField(r),
                 SizedBox(height: r.s(16)),
@@ -368,45 +339,6 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
           ),
         );
       },
-    );
-  }
-
-  Widget _buildRGBSliders(Responsive r) {
-    return Column(
-      children: [
-        _RGBSlider(
-          label: 'R',
-          value: _r,
-          color: Colors.red,
-          gradientColors: [Colors.black, Colors.red],
-          onChanged: (v) {
-            _r = v;
-            _updateFromRGB();
-          },
-        ),
-        SizedBox(height: r.s(10)),
-        _RGBSlider(
-          label: 'G',
-          value: _g,
-          color: const Color(0xFF4CAF50),
-          gradientColors: [Colors.black, const Color(0xFF4CAF50)],
-          onChanged: (v) {
-            _g = v;
-            _updateFromRGB();
-          },
-        ),
-        SizedBox(height: r.s(10)),
-        _RGBSlider(
-          label: 'B',
-          value: _b,
-          color: Colors.blue,
-          gradientColors: [Colors.black, Colors.blue],
-          onChanged: (v) {
-            _b = v;
-            _updateFromRGB();
-          },
-        ),
-      ],
     );
   }
 
@@ -996,89 +928,6 @@ class _BrightnessSlider extends StatelessWidget {
           style: TextStyle(
             color: Colors.white38,
             fontSize: r.fs(9),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ============================================================================
-// _RGBSlider — Slider individual para canal R, G ou B
-// ============================================================================
-class _RGBSlider extends StatelessWidget {
-  final String label;
-  final double value;
-  final Color color;
-  final List<Color> gradientColors;
-  final ValueChanged<double> onChanged;
-
-  const _RGBSlider({
-    required this.label,
-    required this.value,
-    required this.color,
-    required this.gradientColors,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.r;
-    return Row(
-      children: [
-        // Label
-        SizedBox(
-          width: r.s(18),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: r.fs(13),
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-        SizedBox(width: r.s(6)),
-        // Slider com gradiente
-        Expanded(
-          child: SliderTheme(
-            data: SliderThemeData(
-              trackHeight: r.s(8),
-              thumbShape: RoundSliderThumbShape(
-                enabledThumbRadius: r.s(10),
-              ),
-              overlayShape: RoundSliderOverlayShape(
-                overlayRadius: r.s(16),
-              ),
-              thumbColor: Colors.white,
-              overlayColor: color.withValues(alpha: 0.2),
-              activeTrackColor: Colors.transparent,
-              inactiveTrackColor: Colors.transparent,
-              trackShape: _GradientTrackShape(
-                gradient: LinearGradient(colors: gradientColors),
-              ),
-            ),
-            child: Slider(
-              value: value,
-              min: 0,
-              max: 255,
-              onChanged: onChanged,
-            ),
-          ),
-        ),
-        SizedBox(width: r.s(6)),
-        // Valor numérico
-        SizedBox(
-          width: r.s(34),
-          child: Text(
-            value.round().toString(),
-            style: TextStyle(
-              color: Colors.white60,
-              fontSize: r.fs(12),
-              fontWeight: FontWeight.w600,
-              fontFamily: 'monospace',
-            ),
-            textAlign: TextAlign.right,
           ),
         ),
       ],
