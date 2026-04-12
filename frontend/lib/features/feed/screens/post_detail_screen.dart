@@ -33,7 +33,9 @@ enum _CommentSortOrder { mostRecent, oldest, mostPopular }
 final postCommentsProvider =
     FutureProvider.family<List<CommentModel>, String>((ref, postId) async {
   final response = await SupabaseService.table('comments')
-      .select('*, profiles!comments_author_id_fkey(*)')
+      .select(
+        '*, profiles!comments_author_id_fkey(id, nickname, icon_url, amino_id)',
+      )
       .eq('post_id', postId)
       .eq('status', 'ok')
       .order('created_at', ascending: true);
