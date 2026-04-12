@@ -49,7 +49,7 @@ class _BioAndWallScreenState extends ConsumerState<BioAndWallScreen>
   @override
   Widget build(BuildContext context) {
     final s = ref.watch(stringsProvider);
-    final r = Responsive(context);
+    final r = context.r;
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -131,7 +131,7 @@ class _BioTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final r = Responsive(context);
+    final r = context.r;
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(r.s(20)),
