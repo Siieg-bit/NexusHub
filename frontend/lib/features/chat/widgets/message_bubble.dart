@@ -280,13 +280,13 @@ class MessageBubble extends ConsumerWidget {
     }
 
     // DEBUG — remover após diagnóstico
+    debugPrint('[MessageBubble] authorId=$authorId myId=$myId isMe=$isMe');
+    debugPrint('[MessageBubble] senderCosmetics.imageUrl=${senderCosmetics?.chatBubbleImageUrl}');
     if (isMe) {
-      debugPrint('[MessageBubble] isMe=$isMe myId=$myId');
-      debugPrint('[MessageBubble] myCosmetics=${myCosmetics?.chatBubbleImageUrl} '
+      debugPrint('[MessageBubble] myCosmetics.imageUrl=${myCosmetics?.chatBubbleImageUrl} '
           'style=${myCosmetics?.chatBubbleStyle}');
-      debugPrint('[MessageBubble] activeBubbleImageUrl=$activeBubbleImageUrl');
-      debugPrint('[MessageBubble] bubbleFrameUrl=$bubbleFrameUrl');
     }
+    debugPrint('[MessageBubble] activeBubbleImageUrl=$activeBubbleImageUrl bubbleFrameUrl=$bubbleFrameUrl');
     if (activeBubbleColor != null && activeBubbleColor.isNotEmpty) {
       try {
         final hex = activeBubbleColor.replaceAll('#', '');
