@@ -82,5 +82,8 @@ END $$;
 
 COMMENT ON TABLE public.store_items IS
   'Itens da loja NexusHub. Tipos suportados: avatar_frame, chat_bubble, sticker_pack, profile_background, chat_background. '
-  'Para avatar_frame, asset_config deve conter: frame_url, image_url, rarity, frame_style, image_width, image_height. '
+  'Para avatar_frame, asset_config deve conter: frame_url, image_url, rarity, frame_style, image_width, image_height, '
+  'is_animated (bool, default false), mime_type (string, ex: image/gif). '
+  'Quando is_animated=true, o Flutter usa Image.network (preserva loop GIF/WebP) em vez de CachedNetworkImage. '
+  'Formatos animados suportados: GIF (.gif), WebP animado (.webp), APNG (.apng). '
   'Para chat_bubble, asset_config deve conter: bubble_url, image_url, bubble_style, nine-slice params (slice_top/left/right/bottom), image_width, image_height, content_padding_h/v, rarity.';

@@ -10,6 +10,9 @@ import 'avatar_with_frame.dart';
 /// Basta fornecer o userId e o avatarUrl — o frame é carregado
 /// automaticamente do cache do Provider.
 ///
+/// Molduras animadas (GIF / WebP animado) são renderizadas automaticamente
+/// quando [UserCosmetics.isAvatarFrameAnimated] é `true`.
+///
 /// Uso:
 /// ```dart
 /// CosmeticAvatar(
@@ -28,6 +31,10 @@ class CosmeticAvatar extends ConsumerWidget {
   /// Frame URL explícito — se fornecido, ignora o Provider.
   final String? frameUrlOverride;
 
+  /// Indica se o frame override é animado (GIF / WebP animado).
+  /// Só relevante quando [frameUrlOverride] é fornecido.
+  final bool isFrameOverrideAnimated;
+
   const CosmeticAvatar({
     super.key,
     this.userId,
@@ -36,6 +43,7 @@ class CosmeticAvatar extends ConsumerWidget {
     this.showOnline = false,
     this.onTap,
     this.frameUrlOverride,
+    this.isFrameOverrideAnimated = false,
   });
 
   @override
@@ -48,6 +56,7 @@ class CosmeticAvatar extends ConsumerWidget {
         size: size,
         showOnline: showOnline,
         onTap: onTap,
+        isFrameAnimated: isFrameOverrideAnimated,
       );
     }
 
@@ -59,6 +68,7 @@ class CosmeticAvatar extends ConsumerWidget {
         size: size,
         showOnline: showOnline,
         onTap: onTap,
+        isFrameAnimated: isFrameOverrideAnimated,
       );
     }
 
@@ -73,6 +83,8 @@ class CosmeticAvatar extends ConsumerWidget {
         showAminoPlus: cosmetics.isAminoPlus,
         showOnline: showOnline,
         onTap: onTap,
+        // Propaga is_animated do asset_config para renderizar GIF/WebP animado
+        isFrameAnimated: cosmetics.isAvatarFrameAnimated,
       ),
       loading: () => AvatarWithFrame(
         avatarUrl: avatarUrl,

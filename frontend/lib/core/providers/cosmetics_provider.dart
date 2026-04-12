@@ -8,9 +8,20 @@ import '../services/supabase_service.dart';
 /// Além das URLs e estilos, carrega os parâmetros de nine-slice
 /// diretamente do [asset_config] do banco, evitando valores hardcoded
 /// no widget e garantindo que cada bubble use suas próprias margens.
+///
+/// O campo [isAvatarFrameAnimated] indica se a moldura de perfil é um
+/// arquivo animado (GIF ou WebP animado). Quando verdadeiro, o widget
+/// [AvatarWithFrame] usa [Image.network] em vez de [CachedNetworkImage]
+/// para garantir que a animação seja reproduzida corretamente, já que
+/// o [CachedNetworkImage] pode armazenar apenas o primeiro frame em cache.
 class UserCosmetics {
   final String userId;
   final String? avatarFrameUrl;
+
+  /// Indica se a moldura de perfil é animada (GIF / WebP animado).
+  /// Lido de [asset_config.is_animated] no banco de dados.
+  final bool isAvatarFrameAnimated;
+
   final String? chatBubbleId;
   final String? chatBubbleStyle;
   final String? chatBubbleColor;
@@ -25,6 +36,7 @@ class UserCosmetics {
   const UserCosmetics({
     required this.userId,
     this.avatarFrameUrl,
+    this.isAvatarFrameAnimated = false,
     this.chatBubbleId,
     this.chatBubbleStyle,
     this.chatBubbleColor,
@@ -44,6 +56,7 @@ class UserCosmetics {
     return UserCosmetics(
       userId: json['user_id'] as String? ?? '',
       avatarFrameUrl: json['avatar_frame_url'] as String?,
+      isAvatarFrameAnimated: json['is_avatar_frame_animated'] as bool? ?? false,
       chatBubbleId: json['chat_bubble_id'] as String?,
       chatBubbleStyle: json['chat_bubble_style'] as String?,
       chatBubbleColor: json['chat_bubble_color'] as String?,
@@ -96,6 +109,7 @@ final userCosmeticsProvider =
         .eq('is_equipped', true);
 
     String? avatarFrameUrl;
+    bool isAvatarFrameAnimated = false;
     String? chatBubbleId;
     String? chatBubbleStyle;
     String? chatBubbleColor;
@@ -116,6 +130,10 @@ final userCosmeticsProvider =
           _asString(storeItem['asset_url']),
           _asString(storeItem['preview_url']),
         ]);
+        // Lê is_animated do asset_config para saber se deve usar Image.network
+        // (que preserva a animação) em vez de CachedNetworkImage (que pode
+        // armazenar apenas o primeiro frame do GIF em cache).
+        isAvatarFrameAnimated = assetConfig['is_animated'] as bool? ?? false;
       } else if (type == 'chat_bubble') {
         chatBubbleId = _asString(storeItem['id']);
         chatBubbleStyle = _firstNonEmpty([
@@ -147,6 +165,7 @@ final userCosmeticsProvider =
     return UserCosmetics(
       userId: userId,
       avatarFrameUrl: avatarFrameUrl,
+      isAvatarFrameAnimated: isAvatarFrameAnimated,
       chatBubbleId: chatBubbleId,
       chatBubbleStyle: chatBubbleStyle,
       chatBubbleColor: chatBubbleColor,
@@ -190,6 +209,7 @@ final batchCosmeticsProvider =
     for (final userId in userIds) {
       final items = byUser[userId] ?? [];
       String? avatarFrameUrl;
+      bool isAvatarFrameAnimated = false;
       String? chatBubbleId;
       String? chatBubbleStyle;
       String? chatBubbleColor;
@@ -210,6 +230,7 @@ final batchCosmeticsProvider =
             _asString(storeItem['asset_url']),
             _asString(storeItem['preview_url']),
           ]);
+          isAvatarFrameAnimated = assetConfig['is_animated'] as bool? ?? false;
         } else if (type == 'chat_bubble') {
           chatBubbleId = _asString(storeItem['id']);
           chatBubbleStyle = _firstNonEmpty([
@@ -234,6 +255,7 @@ final batchCosmeticsProvider =
       result[userId] = UserCosmetics(
         userId: userId,
         avatarFrameUrl: avatarFrameUrl,
+        isAvatarFrameAnimated: isAvatarFrameAnimated,
         chatBubbleId: chatBubbleId,
         chatBubbleStyle: chatBubbleStyle,
         chatBubbleColor: chatBubbleColor,

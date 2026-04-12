@@ -5,13 +5,20 @@
  * DM Sans (títulos) + DM Mono (labels técnicos)
  *
  * Fluxo automatizado:
- *  1. Upload PNG da moldura (overlay transparente)
- *  2. Preencher nome, descrição, preço e raridade
- *  3. Preview em tempo real com avatar simulado
- *  4. Publicar → upload para store-assets/frames/ + insert em store_items (type=avatar_frame)
+ *  1. Upload PNG/GIF/WebP animado da moldura (overlay transparente)
+ *  2. Detecção automática de animação por MIME type e extensão
+ *  3. Preencher nome, descrição, preço, raridade e estilo
+ *  4. Preview em tempo real com avatar simulado + animação rodando
+ *  5. Publicar → upload para store-assets/frames/ + insert em store_items (type=avatar_frame)
  *
  * asset_config gerado:
- *  { frame_url, image_url, rarity, frame_style, image_width, image_height }
+ *  { frame_url, image_url, rarity, frame_style, image_width, image_height, is_animated }
+ *
+ * Formatos suportados:
+ *  - PNG estático (recomendado para molduras simples)
+ *  - GIF animado (loops automáticos, suporte nativo no Flutter via CachedNetworkImage)
+ *  - WebP animado (melhor compressão que GIF, suporte nativo no Flutter 3+)
+ *  - APNG (PNG animado, suporte via flutter_cache_manager)
  */
 import { useState, useRef, useCallback, useEffect } from "react";
 import { supabase, StoreItem } from "@/lib/supabase";
@@ -30,6 +37,7 @@ import {
   RefreshCw,
   User,
   Frame,
+  Zap,
 } from "lucide-react";
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
@@ -59,16 +67,41 @@ const FRAME_STYLE_LABELS: Record<string, string> = {
   gold: "Gold 🏆",
 };
 
+// MIME types e extensões que indicam animação
+const ANIMATED_MIME_TYPES = new Set(["image/gif", "image/webp"]);
+const ANIMATED_EXTENSIONS = new Set(["gif", "webp", "apng"]);
+
+/**
+ * Detecta se um arquivo é uma moldura animada.
+ * Para WebP, a detecção por MIME não é suficiente (WebP pode ser estático),
+ * então também verificamos a extensão como sinal de intenção do usuário.
+ */
+function detectIsAnimated(file: File): boolean {
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  if (file.type === "image/gif") return true;
+  if (ext === "gif") return true;
+  if (ext === "apng") return true;
+  // WebP animado: o usuário está enviando intencionalmente como animado
+  if (file.type === "image/webp" && ext === "webp") {
+    // Não temos como detectar WebP animado vs estático sem ler os bytes,
+    // então exibimos um aviso e deixamos o usuário confirmar via toggle
+    return false; // padrão false; usuário pode forçar via toggle
+  }
+  return false;
+}
+
 // ─── Preview de Avatar com Moldura ───────────────────────────────────────────
 
 function AvatarPreview({
   frameUrl,
   name,
   rarity,
+  isAnimated,
 }: {
   frameUrl: string | null;
   name: string;
   rarity: string;
+  isAnimated: boolean;
 }) {
   const AVATAR_SIZE = 80;
   const FRAME_SIZE = Math.round(AVATAR_SIZE * 1.4); // 1.4× como no app Flutter
@@ -77,12 +110,27 @@ function AvatarPreview({
     <div className="flex flex-col items-center gap-5 p-6">
       {/* Preview principal */}
       <div className="flex flex-col items-center gap-3">
-        <p
-          className="text-[#4B5563] text-xs uppercase tracking-widest"
-          style={{ fontFamily: "'DM Mono', monospace" }}
-        >
-          Preview — Avatar + Moldura
-        </p>
+        <div className="flex items-center gap-2">
+          <p
+            className="text-[#4B5563] text-xs uppercase tracking-widest"
+            style={{ fontFamily: "'DM Mono', monospace" }}
+          >
+            Preview — Avatar + Moldura
+          </p>
+          {isAnimated && (
+            <span
+              className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded font-medium"
+              style={{
+                color: "#34D399",
+                backgroundColor: "#34D39920",
+                fontFamily: "'DM Mono', monospace",
+              }}
+            >
+              <Zap className="w-2.5 h-2.5" />
+              ANIMADO
+            </span>
+          )}
+        </div>
 
         {/* Stack: avatar + frame overlay */}
         <div
@@ -97,7 +145,7 @@ function AvatarPreview({
             <User className="w-10 h-10 text-[#4B5563]" />
           </div>
 
-          {/* Moldura overlay — PNG transparente sobreposto */}
+          {/* Moldura overlay — PNG/GIF/WebP transparente sobreposto */}
           {frameUrl && (
             <img
               src={frameUrl}
@@ -190,25 +238,33 @@ function AvatarPreview({
       </div>
 
       {/* Info técnica */}
-      <div className="w-full border-t border-[#2A2D34] pt-3">
+      <div className="w-full border-t border-[#2A2D34] pt-3 space-y-0.5">
         <p
           className="text-[#4B5563] text-xs"
           style={{ fontFamily: "'DM Mono', monospace" }}
         >
-          overlay PNG transparente
+          {isAnimated ? "overlay GIF/WebP animado" : "overlay PNG transparente"}
         </p>
         <p
-          className="text-[#4B5563] text-xs mt-0.5"
+          className="text-[#4B5563] text-xs"
           style={{ fontFamily: "'DM Mono', monospace" }}
         >
           frame_size = avatar × 1.4
         </p>
         <p
-          className="text-[#4B5563] text-xs mt-0.5"
+          className="text-[#4B5563] text-xs"
           style={{ fontFamily: "'DM Mono', monospace" }}
         >
           bucket: store-assets/frames/
         </p>
+        {isAnimated && (
+          <p
+            className="text-[#34D399] text-xs"
+            style={{ fontFamily: "'DM Mono', monospace" }}
+          >
+            is_animated: true → Flutter renderiza loop automático
+          </p>
+        )}
       </div>
     </div>
   );
@@ -235,6 +291,8 @@ export default function FramesDashboard() {
     h: number;
   } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isAnimated, setIsAnimated] = useState(false); // detectado ou forçado pelo usuário
+  const [isWebP, setIsWebP] = useState(false); // WebP pode ser estático ou animado
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Submission state
@@ -265,13 +323,28 @@ export default function FramesDashboard() {
   // ── Image handling ─────────────────────────────────────────────────────────
 
   function handleFile(file: File) {
+    const validTypes = ["image/png", "image/gif", "image/webp", "image/apng"];
     if (!file.type.startsWith("image/")) {
-      toast.error("Arquivo inválido. Envie uma imagem PNG.");
+      toast.error("Arquivo inválido. Envie PNG, GIF ou WebP.");
       return;
     }
-    if (file.type !== "image/png") {
-      toast.warning(
-        "Recomendamos PNG com transparência para molduras de perfil."
+
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+    const detected = detectIsAnimated(file);
+    const webp = file.type === "image/webp" || ext === "webp";
+
+    setIsAnimated(detected);
+    setIsWebP(webp);
+
+    if (detected) {
+      toast.info(
+        `Moldura animada detectada (${ext.toUpperCase()}). O Flutter renderizará o loop automaticamente.`,
+        { duration: 4000 }
+      );
+    } else if (webp) {
+      toast.info(
+        "WebP detectado. Se for animado, ative o toggle 'Moldura Animada' abaixo.",
+        { duration: 5000 }
       );
     }
 
@@ -301,7 +374,7 @@ export default function FramesDashboard() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!imageFile) {
-      toast.error("Selecione uma imagem PNG para a moldura.");
+      toast.error("Selecione uma imagem para a moldura.");
       return;
     }
     if (!form.name.trim()) {
@@ -313,7 +386,7 @@ export default function FramesDashboard() {
 
     try {
       // 1. Upload da imagem para store-assets/frames/
-      const ext = imageFile.name.split(".").pop() ?? "png";
+      const ext = imageFile.name.split(".").pop()?.toLowerCase() ?? "png";
       const slug = form.name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "_")
@@ -339,8 +412,9 @@ export default function FramesDashboard() {
       const imgH = imageDimensions?.h ?? 512;
 
       // 3. Montar asset_config para avatar_frame
-      // O app Flutter lê: frame_url, image_url, rarity, frame_style, image_width, image_height
-      // O widget AvatarWithFrame renderiza o PNG como overlay 1.4× o tamanho do avatar
+      // O app Flutter lê: frame_url, image_url, rarity, frame_style,
+      //                    image_width, image_height, is_animated
+      // CachedNetworkImage renderiza GIF/WebP animado nativamente no Flutter 3+
       const assetConfig = {
         frame_url: publicUrl,
         image_url: publicUrl,
@@ -348,6 +422,9 @@ export default function FramesDashboard() {
         frame_style: form.frameStyle,
         image_width: imgW,
         image_height: imgH,
+        is_animated: isAnimated,
+        // mime_type salvo para facilitar debug e decisões no app
+        mime_type: imageFile.type,
       };
 
       // 4. Inserir na tabela store_items com type = avatar_frame
@@ -370,7 +447,8 @@ export default function FramesDashboard() {
 
       if (insertError) throw new Error(`DB error: ${insertError.message}`);
 
-      toast.success(`"${form.name}" publicada na loja! 🎉`);
+      const animLabel = isAnimated ? " animada" : "";
+      toast.success(`"${form.name}" publicada na loja!${animLabel} 🎉`);
 
       // Reset form
       setForm({
@@ -384,6 +462,8 @@ export default function FramesDashboard() {
       setImageFile(null);
       setImagePreview(null);
       setImageDimensions(null);
+      setIsAnimated(false);
+      setIsWebP(false);
 
       loadFrames();
     } catch (err: unknown) {
@@ -451,8 +531,8 @@ export default function FramesDashboard() {
           className="text-[#9CA3AF] text-sm ml-3"
           style={{ fontFamily: "'DM Mono', monospace" }}
         >
-          Envie um PNG transparente. O sistema configura o overlay
-          automaticamente (frame = avatar × 1.4).
+          Envie PNG, GIF animado ou WebP animado. Animação detectada
+          automaticamente — o Flutter renderiza o loop nativamente.
         </p>
       </div>
 
@@ -461,13 +541,16 @@ export default function FramesDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-10">
           {/* Formulário — 3/5 */}
           <div className="lg:col-span-3 space-y-5">
+
             {/* Upload zone */}
             <div
               className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200 ${
                 isDragging
                   ? "border-[#E040FB] bg-[#E040FB]/5"
                   : imageFile
-                  ? "border-[#E040FB]/50 bg-[#E040FB]/5"
+                  ? isAnimated
+                    ? "border-[#34D399]/60 bg-[#34D399]/5"
+                    : "border-[#E040FB]/50 bg-[#E040FB]/5"
                   : "border-[#2A2D34] bg-[#1C1E22] hover:border-[#E040FB]/40 hover:bg-[#E040FB]/5"
               }`}
               onClick={() => fileInputRef.current?.click()}
@@ -481,7 +564,7 @@ export default function FramesDashboard() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/png,image/webp,image/gif"
+                accept="image/png,image/gif,image/webp,image/apng,.apng"
                 className="hidden"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
@@ -493,8 +576,9 @@ export default function FramesDashboard() {
                 <div className="flex items-center gap-4">
                   {/* Preview com fundo quadriculado para mostrar transparência */}
                   <div
-                    className="w-16 h-16 rounded-lg border border-[#2A2D34] overflow-hidden flex items-center justify-center flex-shrink-0"
+                    className="w-16 h-16 rounded-lg border overflow-hidden flex items-center justify-center flex-shrink-0 relative"
                     style={{
+                      borderColor: isAnimated ? "#34D39940" : "#2A2D34",
                       backgroundImage:
                         "linear-gradient(45deg, #2A2D34 25%, transparent 25%), linear-gradient(-45deg, #2A2D34 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #2A2D34 75%), linear-gradient(-45deg, transparent 75%, #2A2D34 75%)",
                       backgroundSize: "8px 8px",
@@ -506,11 +590,43 @@ export default function FramesDashboard() {
                       alt="Preview"
                       className="w-full h-full object-contain"
                     />
+                    {/* Badge animado */}
+                    {isAnimated && (
+                      <div className="absolute bottom-0.5 right-0.5 bg-[#34D399] rounded-sm px-1 flex items-center gap-0.5">
+                        <Zap
+                          style={{ width: 8, height: 8, color: "#111214" }}
+                        />
+                        <span
+                          style={{
+                            fontSize: 8,
+                            color: "#111214",
+                            fontFamily: "'DM Mono', monospace",
+                            fontWeight: 700,
+                          }}
+                        >
+                          GIF
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="text-left">
-                    <p className="text-white font-medium text-sm">
-                      {imageFile?.name}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-white font-medium text-sm">
+                        {imageFile?.name}
+                      </p>
+                      {isAnimated && (
+                        <span
+                          className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                          style={{
+                            color: "#34D399",
+                            backgroundColor: "#34D39920",
+                            fontFamily: "'DM Mono', monospace",
+                          }}
+                        >
+                          ANIMADO
+                        </span>
+                      )}
+                    </div>
                     <p
                       className="text-[#9CA3AF] text-xs mt-0.5"
                       style={{ fontFamily: "'DM Mono', monospace" }}
@@ -540,11 +656,81 @@ export default function FramesDashboard() {
                     className="text-[#4B5563] text-xs mt-1"
                     style={{ fontFamily: "'DM Mono', monospace" }}
                   >
-                    PNG com transparência · quadrado recomendado
+                    PNG estático · GIF animado · WebP animado
                   </p>
                 </div>
               )}
             </div>
+
+            {/* Toggle: Moldura Animada — visível para WebP (ambíguo) ou quando não detectado */}
+            {imageFile && (isWebP || !isAnimated) && (
+              <div
+                className="flex items-start gap-3 bg-[#1C1E22] border border-[#2A2D34] rounded-xl p-4"
+                style={{ borderColor: isAnimated ? "#34D39940" : undefined }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsAnimated((v) => !v)}
+                  className={`relative w-10 h-5 rounded-full transition-colors duration-200 flex-shrink-0 mt-0.5 ${
+                    isAnimated ? "bg-[#34D399]" : "bg-[#2A2D34]"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
+                      isAnimated ? "translate-x-5" : "translate-x-0.5"
+                    }`}
+                  />
+                </button>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Zap
+                      className="w-3.5 h-3.5"
+                      style={{ color: isAnimated ? "#34D399" : "#4B5563" }}
+                    />
+                    <span
+                      className="text-sm font-medium"
+                      style={{
+                        color: isAnimated ? "#34D399" : "#9CA3AF",
+                        fontFamily: "'DM Mono', monospace",
+                      }}
+                    >
+                      Moldura Animada
+                    </span>
+                  </div>
+                  <p
+                    className="text-[#4B5563] text-xs mt-1"
+                    style={{ fontFamily: "'DM Mono', monospace" }}
+                  >
+                    {isWebP
+                      ? "WebP pode ser estático ou animado. Ative se o arquivo contém animação."
+                      : "Ative para marcar esta moldura como animada no asset_config."}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Banner informativo quando GIF é detectado automaticamente */}
+            {imageFile && isAnimated && !isWebP && (
+              <div className="flex items-start gap-3 bg-[#34D399]/5 border border-[#34D399]/20 rounded-xl p-4">
+                <Zap className="w-4 h-4 text-[#34D399] flex-shrink-0 mt-0.5" />
+                <div>
+                  <p
+                    className="text-[#34D399] text-sm font-medium"
+                    style={{ fontFamily: "'DM Mono', monospace" }}
+                  >
+                    Animação detectada automaticamente
+                  </p>
+                  <p
+                    className="text-[#4B5563] text-xs mt-1"
+                    style={{ fontFamily: "'DM Mono', monospace" }}
+                  >
+                    O Flutter renderiza GIF/WebP animado nativamente via
+                    CachedNetworkImage. O loop é automático e não requer
+                    configuração adicional.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Nome */}
             <div className="space-y-1.5">
@@ -707,6 +893,18 @@ export default function FramesDashboard() {
                 <span className="flex items-center gap-2">
                   <Upload className="w-4 h-4" />
                   Publicar na Loja
+                  {isAnimated && (
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded font-medium ml-1"
+                      style={{
+                        color: "#34D399",
+                        backgroundColor: "#34D39930",
+                        fontFamily: "'DM Mono', monospace",
+                      }}
+                    >
+                      ANIMADA
+                    </span>
+                  )}
                 </span>
               )}
             </Button>
@@ -714,16 +912,44 @@ export default function FramesDashboard() {
 
           {/* Preview — 2/5 */}
           <div className="lg:col-span-2">
-            <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl overflow-hidden sticky top-6">
+            <div
+              className="border rounded-xl overflow-hidden sticky top-6"
+              style={{
+                backgroundColor: "#1C1E22",
+                borderColor: isAnimated ? "#34D39930" : "#2A2D34",
+              }}
+            >
               {/* Preview header */}
-              <div className="px-4 py-3 border-b border-[#2A2D34] flex items-center gap-2">
-                <User className="w-4 h-4 text-[#E040FB]" />
+              <div
+                className="px-4 py-3 border-b flex items-center gap-2"
+                style={{ borderColor: isAnimated ? "#34D39930" : "#2A2D34" }}
+              >
+                <User
+                  className="w-4 h-4"
+                  style={{ color: isAnimated ? "#34D399" : "#E040FB" }}
+                />
                 <span
-                  className="text-[#9CA3AF] text-xs uppercase tracking-widest"
-                  style={{ fontFamily: "'DM Mono', monospace" }}
+                  className="text-xs uppercase tracking-widest"
+                  style={{
+                    color: "#9CA3AF",
+                    fontFamily: "'DM Mono', monospace",
+                  }}
                 >
                   Preview em tempo real
                 </span>
+                {isAnimated && (
+                  <span
+                    className="ml-auto flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded font-medium"
+                    style={{
+                      color: "#34D399",
+                      backgroundColor: "#34D39920",
+                      fontFamily: "'DM Mono', monospace",
+                    }}
+                  >
+                    <Zap className="w-2.5 h-2.5" />
+                    ANIMADO
+                  </span>
+                )}
               </div>
 
               {/* Avatar simulation */}
@@ -732,6 +958,7 @@ export default function FramesDashboard() {
                   frameUrl={imagePreview}
                   name={form.name}
                   rarity={form.rarity}
+                  isAnimated={isAnimated}
                 />
               </div>
             </div>
@@ -781,6 +1008,7 @@ export default function FramesDashboard() {
               const cfg = item.asset_config as Record<string, unknown>;
               const rarity = (cfg?.rarity as string) ?? "common";
               const frameStyle = (cfg?.frame_style as string) ?? "default";
+              const frameIsAnimated = (cfg?.is_animated as boolean) ?? false;
               const frameUrl =
                 (cfg?.frame_url as string) ||
                 item.preview_url ||
@@ -789,9 +1017,11 @@ export default function FramesDashboard() {
               return (
                 <div
                   key={item.id}
-                  className={`bg-[#1C1E22] border rounded-xl overflow-hidden transition-all duration-200 hover:border-[#E040FB]/30 ${
+                  className={`bg-[#1C1E22] border rounded-xl overflow-hidden transition-all duration-200 ${
                     item.is_active
-                      ? "border-[#2A2D34]"
+                      ? frameIsAnimated
+                        ? "border-[#34D399]/20 hover:border-[#34D399]/40"
+                        : "border-[#2A2D34] hover:border-[#E040FB]/30"
                       : "border-[#2A2D34] opacity-50"
                   }`}
                 >
@@ -811,7 +1041,7 @@ export default function FramesDashboard() {
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2A2D34] to-[#1C1E22] flex items-center justify-center">
                         <User className="w-5 h-5 text-[#4B5563]" />
                       </div>
-                      {/* Frame overlay */}
+                      {/* Frame overlay — GIF animará automaticamente no browser */}
                       {frameUrl ? (
                         <img
                           src={frameUrl}
@@ -821,25 +1051,52 @@ export default function FramesDashboard() {
                       ) : (
                         <ImagePlus className="w-6 h-6 text-[#4B5563] absolute" />
                       )}
+                      {/* Badge animado no card */}
+                      {frameIsAnimated && (
+                        <div
+                          className="absolute top-0.5 right-0.5 flex items-center gap-0.5 px-1 rounded-sm"
+                          style={{ backgroundColor: "#34D399" }}
+                        >
+                          <Zap
+                            style={{ width: 7, height: 7, color: "#111214" }}
+                          />
+                        </div>
+                      )}
                     </div>
 
-                    {/* Name + rarity */}
+                    {/* Name + rarity + animated badge */}
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <p className="text-white font-semibold text-sm leading-tight">
                         {item.name}
                       </p>
-                      <span
-                        className="text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0"
-                        style={{
-                          color: RARITY_COLORS[rarity] ?? RARITY_COLORS.common,
-                          backgroundColor:
-                            (RARITY_COLORS[rarity] ?? RARITY_COLORS.common) +
-                            "20",
-                          fontFamily: "'DM Mono', monospace",
-                        }}
-                      >
-                        {rarity}
-                      </span>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <span
+                          className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                          style={{
+                            color:
+                              RARITY_COLORS[rarity] ?? RARITY_COLORS.common,
+                            backgroundColor:
+                              (RARITY_COLORS[rarity] ?? RARITY_COLORS.common) +
+                              "20",
+                            fontFamily: "'DM Mono', monospace",
+                          }}
+                        >
+                          {rarity}
+                        </span>
+                        {frameIsAnimated && (
+                          <span
+                            className="flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded font-medium"
+                            style={{
+                              color: "#34D399",
+                              backgroundColor: "#34D39920",
+                              fontFamily: "'DM Mono', monospace",
+                            }}
+                          >
+                            <Zap style={{ width: 8, height: 8 }} />
+                            anim
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Style tag */}

@@ -111,6 +111,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       ),
       data: (user) {
         final frameUrl = equippedAsync.valueOrNull?['frame_url'];
+        final frameIsAnimated =
+            equippedAsync.valueOrNull?['frame_is_animated'] as bool? ?? false;
         final isAminoPlus = user.isPremium || IAPService.isAminoPlus;
 
         return Scaffold(
@@ -235,6 +237,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           frameUrl: frameUrl,
                           size: r.s(80),
                           showAminoPlus: isAminoPlus,
+                          isFrameAnimated: frameIsAnimated,
                         ),
                         const Spacer(),
                         Padding(

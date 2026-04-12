@@ -559,11 +559,14 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         ? ref.watch(equippedItemsProvider(userId)).valueOrNull
         : null;
     final frameUrl = equippedData?['frame_url'] as String?;
+    final frameIsAnimated =
+        equippedData?['frame_is_animated'] as bool? ?? false;
     return AvatarWithFrame(
       avatarUrl: user?.iconUrl,
       frameUrl: frameUrl,
       size: r.s(72),
       showAminoPlus: user?.isPremium ?? false,
+      isFrameAnimated: frameIsAnimated,
       onTap: userId != null
           ? () => _closeAndNavigate(() {
                 context.push(

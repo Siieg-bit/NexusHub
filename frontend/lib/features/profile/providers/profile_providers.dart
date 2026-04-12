@@ -245,6 +245,7 @@ final equippedItemsProvider =
         .eq('is_equipped', true);
     final items = response as List;
     String? frameUrl;
+    bool frameIsAnimated = false;
     String? bubbleId;
     String? bubbleStyle;
     String? bubbleColor;
@@ -265,6 +266,8 @@ final equippedItemsProvider =
           _str(si['asset_url']),
           _str(si['preview_url']),
         ]);
+        // Lê is_animated do asset_config para propagar ao widget
+        frameIsAnimated = ac['is_animated'] as bool? ?? false;
       } else if (type == 'chat_bubble') {
         bubbleId = _str(si['id']);
         bubbleStyle = _first([_str(ac['style']), _str(ac['bubble_style'])]);
@@ -284,6 +287,7 @@ final equippedItemsProvider =
     }
     return {
       'frame_url': frameUrl,
+      'frame_is_animated': frameIsAnimated,
       'bubble_id': bubbleId,
       'bubble_style': bubbleStyle,
       'bubble_color': bubbleColor,
@@ -293,6 +297,7 @@ final equippedItemsProvider =
   } catch (_) {
     return {
       'frame_url': null,
+      'frame_is_animated': false,
       'bubble_id': null,
       'bubble_style': null,
       'bubble_color': null,

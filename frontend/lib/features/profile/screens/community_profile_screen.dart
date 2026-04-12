@@ -460,6 +460,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                           AvatarWithFrame(
                             avatarUrl: displayAvatar,
                             frameUrl: (ref.watch(equippedItemsProvider(widget.userId)).valueOrNull ?? {})?['frame_url'] as String?,
+                            isFrameAnimated: (ref.watch(equippedItemsProvider(widget.userId)).valueOrNull ?? {})?['frame_is_animated'] as bool? ?? false,
                             size: r.s(96),
                             showAminoPlus: isPremium,
                           ),

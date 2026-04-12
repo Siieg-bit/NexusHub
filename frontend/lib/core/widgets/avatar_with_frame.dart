@@ -6,14 +6,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Widget de Avatar com Frame decorativo — réplica pixel-perfect do Amino.
 ///
-/// O frame é uma imagem PNG com transparência que envolve o avatar circular.
-/// O frame é renderizado 40% maior que o avatar e centralizado sobre ele
-/// usando [Align] dentro de um [Stack] com [Clip.none].
+/// O frame é uma imagem PNG/GIF/WebP com transparência que envolve o avatar
+/// circular. O frame é renderizado 40% maior que o avatar e centralizado
+/// sobre ele usando [Align] dentro de um [Stack] com [Clip.none].
+///
+/// ## Molduras Animadas
+///
+/// Quando [isFrameAnimated] é `true` (lido de `asset_config.is_animated`),
+/// o widget usa [Image.network] em vez de [CachedNetworkImage] para renderizar
+/// o frame. Isso é necessário porque [CachedNetworkImage] pode armazenar
+/// apenas o primeiro frame de um GIF em cache, quebrando a animação.
+/// [Image.network] preserva a animação completa do GIF/WebP animado.
+///
+/// O Flutter renderiza GIF e WebP animado nativamente desde a versão 1.x —
+/// nenhuma dependência adicional é necessária.
 class AvatarWithFrame extends ConsumerWidget {
   /// URL da imagem do avatar do usuário.
   final String? avatarUrl;
 
-  /// URL da imagem do frame decorativo (PNG com transparência).
+  /// URL da imagem do frame decorativo (PNG/GIF/WebP com transparência).
   final String? frameUrl;
 
   /// Tamanho do avatar em pixels (diâmetro do círculo interno).
@@ -28,6 +39,16 @@ class AvatarWithFrame extends ConsumerWidget {
   /// Callback ao tocar no avatar.
   final VoidCallback? onTap;
 
+  /// Indica se a moldura é animada (GIF ou WebP animado).
+  ///
+  /// Quando `true`, usa [Image.network] para preservar a animação.
+  /// Quando `false` (padrão), usa [CachedNetworkImage] para melhor
+  /// performance e cache.
+  ///
+  /// Deve ser lido de [UserCosmetics.isAvatarFrameAnimated], que por sua
+  /// vez lê `asset_config.is_animated` do banco de dados.
+  final bool isFrameAnimated;
+
   const AvatarWithFrame({
     super.key,
     this.avatarUrl,
@@ -36,6 +57,7 @@ class AvatarWithFrame extends ConsumerWidget {
     this.showAminoPlus = false,
     this.showOnline = false,
     this.onTap,
+    this.isFrameAnimated = false,
   });
 
   @override
@@ -89,20 +111,44 @@ class AvatarWithFrame extends ConsumerWidget {
             ),
 
             // ── Frame decorativo (camada overlay, centralizado sobre o avatar) ──
+            //
+            // Para molduras animadas (GIF / WebP animado), usamos Image.network
+            // diretamente porque o CachedNetworkImage pode armazenar apenas o
+            // primeiro frame em cache, quebrando a animação. O Flutter renderiza
+            // GIF e WebP animado nativamente sem dependências adicionais.
+            //
+            // Para molduras estáticas (PNG), usamos CachedNetworkImage para
+            // melhor performance com cache em disco e memória.
             if (hasFrame)
               Center(
                 child: IgnorePointer(
                   child: SizedBox(
                     width: frameSize,
                     height: frameSize,
-                    child: CachedNetworkImage(
-                      imageUrl: frameUrl ?? '',
-                      fit: BoxFit.contain,
-                      memCacheWidth: (frameSize * 2).toInt(),
-                      memCacheHeight: (frameSize * 2).toInt(),
-                      errorWidget: (_, __, ___) => const SizedBox.shrink(),
-                      placeholder: (_, __) => const SizedBox.shrink(),
-                    ),
+                    child: isFrameAnimated
+                        ? Image.network(
+                            frameUrl ?? '',
+                            fit: BoxFit.contain,
+                            width: frameSize,
+                            height: frameSize,
+                            // gaplessPlayback evita piscar entre loops da animação
+                            gaplessPlayback: true,
+                            errorBuilder: (_, __, ___) =>
+                                const SizedBox.shrink(),
+                            loadingBuilder: (_, child, progress) {
+                              if (progress == null) return child;
+                              return const SizedBox.shrink();
+                            },
+                          )
+                        : CachedNetworkImage(
+                            imageUrl: frameUrl ?? '',
+                            fit: BoxFit.contain,
+                            memCacheWidth: (frameSize * 2).toInt(),
+                            memCacheHeight: (frameSize * 2).toInt(),
+                            errorWidget: (_, __, ___) =>
+                                const SizedBox.shrink(),
+                            placeholder: (_, __) => const SizedBox.shrink(),
+                          ),
                   ),
                 ),
               ),

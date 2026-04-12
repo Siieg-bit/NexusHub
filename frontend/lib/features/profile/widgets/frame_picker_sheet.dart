@@ -10,15 +10,22 @@ import '../../../core/l10n/locale_provider.dart';
 /// [frameUrl] é a URL da imagem do frame selecionado.
 /// [purchaseId] é o ID do user_purchase (para equipar globalmente se desejado).
 /// [storeItemId] é o ID do store_item.
+/// [isAnimated] indica se a moldura é animada (GIF / WebP animado).
 /// Se o usuário cancelou, retorna null.
 class FramePickerResult {
   final String? frameUrl;
   final String? purchaseId;
   final String? storeItemId;
+
+  /// Indica se a moldura selecionada é animada (GIF / WebP animado).
+  /// Lido de [asset_config.is_animated] no banco de dados.
+  final bool isAnimated;
+
   const FramePickerResult({
     this.frameUrl,
     this.purchaseId,
     this.storeItemId,
+    this.isAnimated = false,
   });
 
   /// Representa "sem moldura" (remover a moldura atual).
@@ -67,7 +74,7 @@ class _FramePickerSheet extends StatefulWidget {
 class _FramePickerSheetState extends State<_FramePickerSheet> {
   bool _isLoading = true;
 
-  // Molduras que o usuário possui: lista de {purchase_id, store_item_id, frame_url, name, preview_url}
+  // Molduras que o usuário possui: lista de {purchase_id, store_item_id, frame_url, name, preview_url, is_animated}
   List<Map<String, dynamic>> _ownedFrames = [];
 
   // Todas as molduras da loja (incluindo não possuídas)
@@ -81,6 +88,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
   String? _selectedFrameUrl;
   String? _selectedPurchaseId;
   String? _selectedStoreItemId;
+  bool _selectedIsAnimated = false;
 
   // Se a seleção atual é "sem moldura"
   bool _selectedNone = false;
@@ -140,12 +148,15 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
         final si = p['store_items'] as Map<String, dynamic>?;
         if (si == null) continue;
         final frameUrl = _extractFrameUrl(si);
+        final ac = si['asset_config'];
+        final isAnimated = ac is Map ? (ac['is_animated'] as bool? ?? false) : false;
         owned.add({
           'purchase_id': p['id'] as String?,
           'store_item_id': si['id'] as String?,
           'name': si['name'] as String? ?? '',
           'frame_url': frameUrl,
           'preview_url': si['preview_url'] as String?,
+          'is_animated': isAnimated,
         });
       }
 
@@ -183,12 +194,14 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
     String? purchaseId,
     String? storeItemId,
     bool none = false,
+    bool isAnimated = false,
   }) {
     setState(() {
       _selectedNone = none;
       _selectedFrameUrl = none ? null : frameUrl;
       _selectedPurchaseId = none ? null : purchaseId;
       _selectedStoreItemId = none ? null : storeItemId;
+      _selectedIsAnimated = none ? false : isAnimated;
     });
   }
 
@@ -200,6 +213,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
         frameUrl: _selectedFrameUrl,
         purchaseId: _selectedPurchaseId,
         storeItemId: _selectedStoreItemId,
+        isAnimated: _selectedIsAnimated,
       ));
     }
   }
@@ -283,6 +297,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
           _AvatarPreview(
             avatarUrl: widget.currentAvatarUrl,
             frameUrl: _selectedFrameUrl,
+            isFrameAnimated: _selectedIsAnimated,
             size: r.s(88),
           ),
           SizedBox(height: r.s(12)),
@@ -315,12 +330,14 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
 
     // Molduras possuídas
     for (final f in _ownedFrames) {
+      final ac = f['is_animated'];
       items.add(_FrameGridItem.owned(
         purchaseId: f['purchase_id'] as String?,
         storeItemId: f['store_item_id'] as String?,
         name: f['name'] as String? ?? '',
         frameUrl: f['frame_url'] as String?,
         previewUrl: f['preview_url'] as String?,
+        isAnimated: ac as bool? ?? false,
       ));
     }
 
@@ -329,12 +346,15 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
       final id = si['id'] as String?;
       if (id == null || _ownedStoreItemIds.contains(id)) continue;
       final frameUrl = _extractFrameUrl(si);
+      final ac = si['asset_config'];
+      final isAnimated = ac is Map ? (ac['is_animated'] as bool? ?? false) : false;
       items.add(_FrameGridItem.locked(
         storeItemId: id,
         name: si['name'] as String? ?? '',
         frameUrl: frameUrl,
         previewUrl: si['preview_url'] as String?,
         priceCoins: si['price_coins'] as int?,
+        isAnimated: isAnimated,
       ));
     }
 
@@ -368,6 +388,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
                 purchaseId: item.purchaseId,
                 storeItemId: item.storeItemId,
                 none: item.isNone,
+                isAnimated: item.isAnimated,
               ),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
@@ -491,6 +512,28 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
             color: Colors.grey[500], size: r.s(28)),
       );
     }
+    // Molduras animadas usam Image.network para preservar a animação no grid
+    if (item.isAnimated) {
+      return Image.network(
+        url,
+        fit: BoxFit.contain,
+        gaplessPlayback: true,
+        errorBuilder: (_, __, ___) => Icon(
+          Icons.photo_filter_outlined,
+          color: Colors.grey[400],
+          size: r.s(28),
+        ),
+        loadingBuilder: (_, child, progress) {
+          if (progress == null) return child;
+          return Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey[200],
+            ),
+          );
+        },
+      );
+    }
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.contain,
@@ -514,12 +557,14 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
 class _AvatarPreview extends StatelessWidget {
   final String? avatarUrl;
   final String? frameUrl;
+  final bool isFrameAnimated;
   final double size;
 
   const _AvatarPreview({
     required this.avatarUrl,
     required this.frameUrl,
     required this.size,
+    this.isFrameAnimated = false,
   });
 
   @override
@@ -555,7 +600,7 @@ class _AvatarPreview extends StatelessWidget {
                       color: Colors.grey[600], size: size * 0.55),
             ),
           ),
-          // Frame overlay
+          // Frame overlay — usa Image.network para GIF/WebP animado
           if ((frameUrl ?? '').isNotEmpty)
             Positioned(
               top: -(frameSize - size) / 2,
@@ -563,12 +608,23 @@ class _AvatarPreview extends StatelessWidget {
               child: SizedBox(
                 width: frameSize,
                 height: frameSize,
-                child: CachedNetworkImage(
-                  imageUrl: frameUrl!,
-                  fit: BoxFit.contain,
-                  errorWidget: (_, __, ___) => const SizedBox.shrink(),
-                  placeholder: (_, __) => const SizedBox.shrink(),
-                ),
+                child: isFrameAnimated
+                    ? Image.network(
+                        frameUrl!,
+                        fit: BoxFit.contain,
+                        gaplessPlayback: true,
+                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        loadingBuilder: (_, child, progress) {
+                          if (progress == null) return child;
+                          return const SizedBox.shrink();
+                        },
+                      )
+                    : CachedNetworkImage(
+                        imageUrl: frameUrl!,
+                        fit: BoxFit.contain,
+                        errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                        placeholder: (_, __) => const SizedBox.shrink(),
+                      ),
               ),
             ),
         ],
@@ -589,6 +645,9 @@ class _FrameGridItem {
   final String? previewUrl;
   final int? priceCoins;
 
+  /// Indica se a moldura é animada (GIF / WebP animado).
+  final bool isAnimated;
+
   const _FrameGridItem({
     required this.isNone,
     required this.isLocked,
@@ -598,6 +657,7 @@ class _FrameGridItem {
     this.frameUrl,
     this.previewUrl,
     this.priceCoins,
+    this.isAnimated = false,
   });
 
   factory _FrameGridItem.none() => const _FrameGridItem(
@@ -612,6 +672,7 @@ class _FrameGridItem {
     required String name,
     required String? frameUrl,
     required String? previewUrl,
+    bool isAnimated = false,
   }) =>
       _FrameGridItem(
         isNone: false,
@@ -621,6 +682,7 @@ class _FrameGridItem {
         name: name,
         frameUrl: frameUrl,
         previewUrl: previewUrl,
+        isAnimated: isAnimated,
       );
 
   factory _FrameGridItem.locked({
@@ -629,6 +691,7 @@ class _FrameGridItem {
     required String? frameUrl,
     required String? previewUrl,
     required int? priceCoins,
+    bool isAnimated = false,
   }) =>
       _FrameGridItem(
         isNone: false,
@@ -638,5 +701,6 @@ class _FrameGridItem {
         frameUrl: frameUrl,
         previewUrl: previewUrl,
         priceCoins: priceCoins,
+        isAnimated: isAnimated,
       );
 }
