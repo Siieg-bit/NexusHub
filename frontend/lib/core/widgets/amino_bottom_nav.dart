@@ -68,12 +68,12 @@ class AminoBottomNavBar extends ConsumerWidget {
             borderRadius: BorderRadius.circular(r.s(40)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.45),
+                color: context.nexusTheme.overlayColor.withValues(alpha: 0.45),
                 blurRadius: 20,
                 offset: const Offset(0, 6),
               ),
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
+                color: context.nexusTheme.overlayColor.withValues(alpha: 0.2),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -121,8 +121,8 @@ class AminoBottomNavBar extends ConsumerWidget {
                         onlineCount > 0 ? '$onlineCount' : s.online,
                         style: TextStyle(
                           color: currentIndex == 1
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.5),
+                              ? context.nexusTheme.bottomNavSelectedItem
+                              : context.nexusTheme.bottomNavUnselectedItem,
                           fontSize: r.fs(10),
                           fontWeight: currentIndex == 1
                               ? FontWeight.w700
@@ -160,7 +160,7 @@ class AminoBottomNavBar extends ConsumerWidget {
                         ),
                         child: Icon(
                           Icons.edit_rounded,
-                          color: Colors.white,
+                          color: context.nexusTheme.buttonPrimaryForeground,
                           size: r.s(22),
                         ),
                       ),
@@ -183,8 +183,8 @@ class AminoBottomNavBar extends ConsumerWidget {
                         Icon(
                           Icons.chat_bubble_rounded,
                           color: currentIndex == 3
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.5),
+                              ? context.nexusTheme.bottomNavSelectedItem
+                              : context.nexusTheme.bottomNavUnselectedItem,
                           size: r.s(22),
                         ),
                         if (showChatUnreadBadge)
@@ -207,8 +207,8 @@ class AminoBottomNavBar extends ConsumerWidget {
                       s.chats,
                       style: TextStyle(
                         color: currentIndex == 3
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.5),
+                            ? context.nexusTheme.bottomNavSelectedItem
+                            : context.nexusTheme.bottomNavUnselectedItem,
                         fontSize: r.fs(10),
                         fontWeight: currentIndex == 3
                             ? FontWeight.w700
@@ -233,8 +233,8 @@ class AminoBottomNavBar extends ConsumerWidget {
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: currentIndex == 4
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.25),
+                              ? context.nexusTheme.bottomNavSelectedItem
+                              : context.nexusTheme.bottomNavUnselectedItem.withValues(alpha: 0.5),
                           width: currentIndex == 4 ? 2 : 1,
                         ),
                       ),
@@ -246,13 +246,13 @@ class AminoBottomNavBar extends ConsumerWidget {
                                 errorWidget: (_, __, ___) => Icon(
                                   Icons.person_rounded,
                                   size: r.s(16),
-                                  color: Colors.white.withValues(alpha: 0.5),
+                                  color: context.nexusTheme.bottomNavUnselectedItem,
                                 ),
                               )
                             : Icon(
                                 Icons.person_rounded,
                                 size: r.s(16),
-                                color: Colors.white.withValues(alpha: 0.5),
+                                color: context.nexusTheme.bottomNavUnselectedItem,
                               ),
                       ),
                     ),
@@ -261,8 +261,8 @@ class AminoBottomNavBar extends ConsumerWidget {
                       'Eu',
                       style: TextStyle(
                         color: currentIndex == 4
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.5),
+                            ? context.nexusTheme.bottomNavSelectedItem
+                            : context.nexusTheme.bottomNavUnselectedItem,
                         fontSize: r.fs(10),
                         fontWeight: currentIndex == 4
                             ? FontWeight.w700
@@ -313,7 +313,7 @@ class AminoCommunityFab extends ConsumerWidget {
           onTap: onTap,
           customBorder: const CircleBorder(),
           child: Center(
-            child: Icon(Icons.add_rounded, color: Colors.white, size: r.s(28)),
+            child: Icon(Icons.add_rounded, color: context.nexusTheme.buttonPrimaryForeground, size: r.s(28)),
           ),
         ),
       ),
@@ -425,7 +425,9 @@ class _OnlineAvatarStack extends ConsumerWidget {
     if (visible.isEmpty) {
       return Icon(
         Icons.flash_on_rounded,
-        color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.5),
+        color: isSelected
+            ? context.nexusTheme.bottomNavSelectedItem
+            : context.nexusTheme.bottomNavUnselectedItem,
         size: size,
       );
     }
@@ -461,14 +463,13 @@ class _OnlineAvatarStack extends ConsumerWidget {
                         errorWidget: (_, __, ___) => Icon(
                           Icons.person_rounded,
                           size: r.s(10),
-                          color: Colors.white.withValues(alpha: 0.5),
+                                color: context.nexusTheme.bottomNavUnselectedItem,
                         ),
-                      )
                     : Icon(
                         Icons.person_rounded,
                         size: r.s(10),
-                        color: Colors.white.withValues(alpha: 0.5),
-                      ),
+                        color: context.nexusTheme.bottomNavUnselectedItem,
+                      ),                ),
               ),
             ),
           );

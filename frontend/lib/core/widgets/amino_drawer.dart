@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../config/nexus_theme_extension.dart';
 
 /// AminoDrawer — Drawer customizado com animação de sobreposição (overlay).
 ///
@@ -139,7 +140,9 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
         ),
 
         // ── Handle visual (indicador de puxão) ──────────────────────
-        // Barra branca fina na borda esquerda, visível quando fechado.
+        // Barra fina na borda esquerda, visível quando fechado.
+        // Usa o token appBarForeground do tema ativo para adaptar ao
+        // fundo de cada tema (claro/escuro).
         Positioned(
           left: 2.0,
           top: 0,
@@ -151,6 +154,7 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
                 final opacity =
                     (1.0 - _animController.value * 20.0).clamp(0.0, 1.0);
                 if (opacity == 0) return const SizedBox.shrink();
+                final handleColor = context.nexusTheme.appBarForeground;
                 return Center(
                   child: Opacity(
                     opacity: opacity,
@@ -158,11 +162,12 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
                       width: 5.0,
                       height: 48.0,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.35),
+                        color: handleColor.withValues(alpha: 0.35),
                         borderRadius: BorderRadius.circular(3.0),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
+                            color: context.nexusTheme.overlayColor
+                                .withValues(alpha: 0.2),
                             blurRadius: 4.0,
                           ),
                         ],
@@ -175,19 +180,22 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
           ),
         ),
 
-        // ── Overlay escuro sobre o conteúdo quando aberto ────────────
+        // ── Overlay sobre o conteúdo quando aberto ────────────────────
         // Toque fecha. Arrastar para esquerda fecha com drag.
+        // Usa o token overlayColor do tema para adaptar ao tema ativo
+        // (escuro nos temas dark, verde-escuro no GreenLeaf).
         AnimatedBuilder(
           animation: _animController,
           builder: (context, _) {
             if (_animController.value == 0) return const SizedBox.shrink();
+            final overlayBase = context.nexusTheme.overlayColor;
             return GestureDetector(
               onTap: close,
               onHorizontalDragUpdate: _onOverlayDragUpdate,
               onHorizontalDragEnd: _onOverlayDragEnd,
               child: Container(
-                color: Colors.black
-                    .withValues(alpha: 0.55 * _animController.value),
+                color: overlayBase
+                    .withValues(alpha: context.nexusTheme.overlayOpacity * _animController.value),
               ),
             );
           },

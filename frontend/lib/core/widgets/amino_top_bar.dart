@@ -98,7 +98,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
           shape: BoxShape.circle,
           color: context.nexusTheme.surfacePrimary,
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.08),
+            color: context.nexusTheme.borderSubtle,
             width: 1,
           ),
         ),
@@ -124,7 +124,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
       color: context.nexusTheme.surfacePrimary,
       child: Icon(
         Icons.person,
-        color: Colors.white.withValues(alpha: 0.30),
+        color: context.nexusTheme.iconSecondary,
         size: r.s(16),
       ),
     );
@@ -242,14 +242,14 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
                 child: Text(
                   locale.label,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(13),
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
                   ),
                 ),
               ),
               if (isSelected)
-                Icon(Icons.check_rounded, color: Colors.white, size: r.s(16)),
+                Icon(Icons.check_rounded, color: context.nexusTheme.accentPrimary, size: r.s(16)),
             ],
           ),
         );
@@ -282,22 +282,18 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Moeda dourada
+                    // Moeda — usa coinColor do tema (dourado escuro no GreenLeaf)
                     Container(
                       width: r.s(15),
                       height: r.s(15),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [Color(0xFFFFD700), Color(0xFFFFA000)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        color: context.nexusTheme.coinColor,
                         boxShadow: [
                           BoxShadow(
-                            color: Color(0x30000000),
+                            color: context.nexusTheme.overlayColor.withValues(alpha: 0.2),
                             blurRadius: 1,
-                            offset: Offset(0, 0.5),
+                            offset: const Offset(0, 0.5),
                           ),
                         ],
                       ),
@@ -305,7 +301,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
                         child: Text(
                           '\$',
                           style: TextStyle(
-                            color: Color(0xFF795548),
+                            color: context.nexusTheme.buttonPrimaryForeground,
                             fontSize: r.fs(8),
                             fontWeight: FontWeight.w900,
                             height: 1.0,
@@ -317,7 +313,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
                     Text(
                       coins.toString(),
                       style: TextStyle(
-                        color: Colors.white,
+                        color: context.nexusTheme.buttonPrimaryForeground,
                         fontSize: r.fs(11),
                         fontWeight: FontWeight.w700,
                         height: 1.0,
@@ -337,7 +333,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
                 child: Center(
                   child: Icon(
                     Icons.add_rounded,
-                    color: Colors.white,
+                    color: context.nexusTheme.buttonPrimaryForeground,
                     size: r.s(16),
                   ),
                 ),
@@ -387,10 +383,10 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
                           minWidth: r.s(16),
                           minHeight: r.s(14),
                         ),
-                        child: Text(
+                          child: Text(
                           notificationCount > 99 ? '99+' : '$notificationCount',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: context.nexusTheme.buttonDestructiveForeground,
                             fontSize: r.fs(8),
                             fontWeight: FontWeight.w800,
                             height: 1.1,

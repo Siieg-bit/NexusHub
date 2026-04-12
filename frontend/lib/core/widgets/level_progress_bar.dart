@@ -49,7 +49,13 @@ class LevelProgressBar extends StatelessWidget {
         // ── Ícone de nível (clicável) ──
         GestureDetector(
           onTap: onLevelTap,
-          child: _buildLevelIcon(r, levelColor),
+          child: _LevelIconPlaceholder(
+            r: r,
+            levelColor: levelColor,
+            level: level,
+            borderColor: context.nexusTheme.levelBadgeForeground.withValues(alpha: 0.5),
+            textColor: context.nexusTheme.levelBadgeForeground,
+          ),
         ),
         SizedBox(height: r.s(8)),
 
@@ -103,57 +109,9 @@ class LevelProgressBar extends StatelessWidget {
   }
 
   Widget _buildLevelIcon(Responsive r, Color levelColor) {
-    return Container(
-      width: r.s(64),
-      height: r.s(64),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            levelColor,
-            levelColor.withValues(alpha: 0.7),
-          ],
-        ),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.3),
-          width: 2.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: levelColor.withValues(alpha: 0.4),
-            blurRadius: 12,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'LV',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.85),
-                fontSize: r.fs(10),
-                fontWeight: FontWeight.w700,
-                height: 1.0,
-              ),
-            ),
-            Text(
-              '$level',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: r.fs(22),
-                fontWeight: FontWeight.w900,
-                height: 1.1,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    // Nota: este widget é StatelessWidget sem acesso direto ao context.
+    // O context é passado via _buildLevelIconWithContext chamado no build.
+    return _LevelIconPlaceholder(r: r, levelColor: levelColor, level: level);
   }
 
   Widget _buildProgressBar(
@@ -204,16 +162,93 @@ class LevelProgressBar extends StatelessWidget {
                     ? s.levelMaxReached
                     : s.repProgressLabel(relativeRep, relativeNext),
                 style: TextStyle(
-                  color: Colors.white,
+                  color: context.nexusTheme.levelBadgeForeground,
                   fontSize: r.fs(12),
                   fontWeight: FontWeight.w800,
                   shadows: [
                     Shadow(
-                      color: Colors.black.withValues(alpha: 0.5),
+                      color: context.nexusTheme.overlayColor.withValues(alpha: 0.5),
                       blurRadius: 4,
                     ),
                   ],
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Badge circular de nível — extraído para receber tokens do tema via parâmetros
+// ─────────────────────────────────────────────────────────────────────────────
+class _LevelIconPlaceholder extends StatelessWidget {
+  final Responsive r;
+  final Color levelColor;
+  final int level;
+  final Color? borderColor;
+  final Color? textColor;
+
+  const _LevelIconPlaceholder({
+    required this.r,
+    required this.levelColor,
+    required this.level,
+    this.borderColor,
+    this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveBorder = borderColor ??
+        context.nexusTheme.levelBadgeForeground.withValues(alpha: 0.5);
+    final effectiveText = textColor ?? context.nexusTheme.levelBadgeForeground;
+    return Container(
+      width: r.s(64),
+      height: r.s(64),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            levelColor,
+            levelColor.withValues(alpha: 0.7),
+          ],
+        ),
+        border: Border.all(
+          color: effectiveBorder,
+          width: 2.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: levelColor.withValues(alpha: 0.4),
+            blurRadius: 12,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'LV',
+              style: TextStyle(
+                color: effectiveText.withValues(alpha: 0.85),
+                fontSize: r.fs(10),
+                fontWeight: FontWeight.w700,
+                height: 1.0,
+              ),
+            ),
+            Text(
+              '$level',
+              style: TextStyle(
+                color: effectiveText,
+                fontSize: r.fs(22),
+                fontWeight: FontWeight.w900,
+                height: 1.1,
               ),
             ),
           ],

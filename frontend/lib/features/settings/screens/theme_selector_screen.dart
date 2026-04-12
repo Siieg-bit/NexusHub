@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/nexus_theme_data.dart';
 import '../../../config/nexus_themes.dart';
+import '../../../config/nexus_theme_extension.dart';
 import '../../../core/providers/nexus_theme_provider.dart';
 import '../../../core/utils/responsive.dart';
 
@@ -14,6 +15,11 @@ import '../../../core/utils/responsive.dart';
 //   - Indicador visual do tema ativo
 //   - Troca instantânea com animação suave
 //   - Persistência automática via NexusThemeProvider
+//
+// Auditoria visual 12/04/2026:
+//   - Ícone de check usa buttonPrimaryForeground (não Colors.white hardcoded)
+//   - Preview usa tokens reais do tema — não valores hardcoded
+//   - Preview aprimorado: FAB, badge online, barra de progresso simulada
 // =============================================================================
 
 class ThemeSelectorScreen extends ConsumerWidget {
@@ -208,7 +214,8 @@ class _ThemeCard extends StatelessWidget {
                     ),
                     child: Icon(
                       _themeIcon(theme.id),
-                      color: Colors.white,
+                      // Usa buttonPrimaryForeground — garante contraste no GreenLeaf
+                      color: theme.buttonPrimaryForeground,
                       size: r.s(16),
                     ),
                   ),
@@ -281,12 +288,14 @@ class _ThemeCard extends StatelessWidget {
                             width: r.s(24),
                             height: r.s(24),
                             decoration: BoxDecoration(
-                              color: currentTheme.accentPrimary,
+                              // Usa gradient do tema para o círculo de check
+                              gradient: currentTheme.accentGradient,
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
                               Icons.check_rounded,
-                              color: Colors.white,
+                              // buttonPrimaryForeground garante contraste em todos os temas
+                              color: currentTheme.buttonPrimaryForeground,
                               size: r.s(14),
                             ),
                           )
@@ -330,6 +339,17 @@ class _ThemeCard extends StatelessWidget {
 // Renderiza uma versão miniaturizada da interface do NexusHub usando
 // exclusivamente os tokens do tema passado como parâmetro, permitindo
 // que o usuário visualize como o app ficará antes de confirmar a escolha.
+//
+// Layout (de cima para baixo):
+//   - App bar: avatar + search bar + pílula de moedas + sino
+//   - Conteúdo: card de post + linha de chips + barra de progresso simulada
+//   - Bottom nav: 4 ícones com FAB central
+//
+// Auditoria 12/04/2026:
+//   - FAB central adicionado ao bottom nav (mais fiel ao layout real)
+//   - Badge online adicionado ao avatar
+//   - Barra de progresso simulada adicionada ao conteúdo
+//   - Todos os tokens são do tema passado — sem hardcoded
 // =============================================================================
 
 class _ThemePreview extends StatelessWidget {
@@ -341,7 +361,7 @@ class _ThemePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: r.s(110),
+      height: r.s(130),
       color: theme.backgroundPrimary,
       child: Stack(
         children: [
@@ -353,7 +373,7 @@ class _ThemePreview extends StatelessWidget {
             top: r.s(32),
             left: r.s(10),
             right: r.s(10),
-            bottom: r.s(26),
+            bottom: r.s(28),
             child: _buildContent(),
           ),
 
@@ -380,14 +400,39 @@ class _ThemePreview extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: r.s(10)),
         child: Row(
           children: [
-            // Avatar simulado
-            Container(
-              width: r.s(14),
-              height: r.s(14),
-              decoration: BoxDecoration(
-                color: theme.accentPrimary.withValues(alpha: 0.4),
-                shape: BoxShape.circle,
-              ),
+            // Avatar simulado com badge online
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: r.s(16),
+                  height: r.s(16),
+                  decoration: BoxDecoration(
+                    color: theme.accentPrimary.withValues(alpha: 0.4),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: theme.borderSubtle,
+                      width: 0.5,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -r.s(1),
+                  right: -r.s(1),
+                  child: Container(
+                    width: r.s(5),
+                    height: r.s(5),
+                    decoration: BoxDecoration(
+                      color: theme.onlineIndicator,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: theme.appBarBackground,
+                        width: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
             SizedBox(width: r.s(6)),
             // Search bar simulada
@@ -398,16 +443,68 @@ class _ThemePreview extends StatelessWidget {
                   color: theme.inputBackground,
                   borderRadius: BorderRadius.circular(r.s(7)),
                 ),
+                child: Row(
+                  children: [
+                    SizedBox(width: r.s(4)),
+                    Container(
+                      width: r.s(6),
+                      height: r.s(6),
+                      decoration: BoxDecoration(
+                        color: theme.textHint.withValues(alpha: 0.6),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: r.s(3)),
+                    Container(
+                      width: r.s(30),
+                      height: r.s(4),
+                      decoration: BoxDecoration(
+                        color: theme.textHint.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            SizedBox(width: r.s(6)),
+            SizedBox(width: r.s(5)),
             // Pílula de moedas simulada
-            Container(
-              width: r.s(30),
-              height: r.s(14),
-              decoration: BoxDecoration(
-                gradient: theme.walletGradient,
-                borderRadius: BorderRadius.circular(r.s(7)),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(r.s(7)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: r.s(22),
+                    height: r.s(14),
+                    color: theme.walletGradient.colors.first,
+                    child: Center(
+                      child: Container(
+                        width: r.s(7),
+                        height: r.s(7),
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFFFFD700),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: r.s(12),
+                    height: r.s(14),
+                    color: theme.accentPrimary,
+                    child: Center(
+                      child: Container(
+                        width: r.s(5),
+                        height: r.s(5),
+                        decoration: BoxDecoration(
+                          color: theme.buttonPrimaryForeground.withValues(alpha: 0.8),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(width: r.s(4)),
@@ -506,35 +603,96 @@ class _ThemePreview extends StatelessWidget {
             _miniChip(),
           ],
         ),
+
+        SizedBox(height: r.s(5)),
+
+        // Barra de progresso de nível simulada
+        Container(
+          height: r.s(10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(r.s(5)),
+            color: theme.shimmerBase,
+            border: Border.all(
+              color: theme.accentPrimary.withValues(alpha: 0.3),
+              width: 0.5,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(r.s(5)),
+            child: FractionallySizedBox(
+              widthFactor: 0.65,
+              alignment: Alignment.centerLeft,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: theme.accentGradient,
+                ),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildBottomNav() {
     return Container(
-      height: r.s(22),
+      height: r.s(24),
       color: theme.bottomNavBackground,
+      padding: EdgeInsets.symmetric(horizontal: r.s(8)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(4, (i) {
-          final isActive = i == 0;
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: r.s(14),
-                height: r.s(14),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? theme.bottomNavSelectedItem
-                      : theme.bottomNavUnselectedItem.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(r.s(4)),
+        children: [
+          // Item 1 — Home (ativo)
+          _navItem(active: true),
+          // Item 2 — Online
+          _navItem(),
+          // FAB central
+          Container(
+            width: r.s(20),
+            height: r.s(20),
+            decoration: BoxDecoration(
+              gradient: theme.fabGradient,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: theme.accentPrimary.withValues(alpha: 0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
+              ],
+            ),
+            child: Center(
+              child: Container(
+                width: r.s(8),
+                height: r.s(1.5),
+                color: theme.buttonPrimaryForeground,
               ),
-            ],
-          );
-        }),
+            ),
+          ),
+          // Item 3 — Chats
+          _navItem(),
+          // Item 4 — Eu
+          _navItem(),
+        ],
       ),
+    );
+  }
+
+  Widget _navItem({bool active = false}) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: r.s(12),
+          height: r.s(12),
+          decoration: BoxDecoration(
+            color: active
+                ? theme.bottomNavSelectedItem
+                : theme.bottomNavUnselectedItem.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(r.s(3)),
+          ),
+        ),
+      ],
     );
   }
 
@@ -549,7 +707,10 @@ class _ThemePreview extends StatelessWidget {
             ? Border.all(
                 color: theme.accentPrimary.withValues(alpha: 0.6),
                 width: 0.5)
-            : null,
+            : Border.all(
+                color: theme.borderSubtle,
+                width: 0.5,
+              ),
       ),
     );
   }
