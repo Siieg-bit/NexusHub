@@ -153,7 +153,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
           SupabaseService.table('notifications').select(
-        '*, profiles!notifications_actor_id_fkey(id, nickname, icon_url, display_name, avatar_url)',
+        '*, profiles!notifications_actor_id_fkey(id, nickname, icon_url)',
       );
 
       query = query.eq('user_id', userId).isFilter('community_id', null);
@@ -212,7 +212,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
 
     try {
       final rows = await SupabaseService.table('notifications')
-          .select('*, profiles!notifications_actor_id_fkey(display_name, avatar_url)')
+          .select('*, profiles!notifications_actor_id_fkey(id, nickname, icon_url)')
           .eq('user_id', userId)
           .isFilter('community_id', null)
           .order('created_at', ascending: false)
@@ -608,7 +608,7 @@ class CommunityNotificationNotifier
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
           SupabaseService.table('notifications').select(
-        '*, profiles!notifications_actor_id_fkey(id, nickname, icon_url, display_name, avatar_url)',
+        '*, profiles!notifications_actor_id_fkey(id, nickname, icon_url)',
       );
 
       query = query.eq('user_id', userId).eq('community_id', communityId);
