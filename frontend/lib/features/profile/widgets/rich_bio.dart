@@ -717,28 +717,24 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
   Widget _buildHeader(BuildContext context) {
     final r = context.r;
     return Container(
-      padding: EdgeInsets.fromLTRB(r.s(14), r.s(14), r.s(14), r.s(12)),
+      padding: EdgeInsets.fromLTRB(r.s(12), r.s(10), r.s(12), r.s(12)),
       decoration: BoxDecoration(
         color: context.cardBg,
-        borderRadius: BorderRadius.circular(r.s(22)),
+        borderRadius: BorderRadius.circular(r.s(20)),
         border: Border.all(color: context.dividerClr),
       ),
       child: ValueListenableBuilder<TextEditingValue>(
         valueListenable: _controller,
         builder: (_, value, __) {
-          final hasContent = value.text.trim().isNotEmpty || _media.isNotEmpty;
-          final statusText = _isUploading
-              ? 'Enviando mídia...'
-              : hasContent
-                  ? 'Sua bio está pronta para ganhar estrutura, cor e mídia.'
-                  : 'Comece escrevendo livremente e use o estúdio para montar sua bio.';
+          final mediaLabel = _media.isEmpty ? 'Sem mídia' : '${_media.length} mídia(s)';
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Center(
                 child: Container(
-                  width: r.s(44),
+                  width: r.s(40),
                   height: r.s(4),
                   decoration: BoxDecoration(
                     color: context.dividerClr,
@@ -746,110 +742,113 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                   ),
                 ),
               ),
-              SizedBox(height: r.s(14)),
+              SizedBox(height: r.s(10)),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           widget.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: context.textPrimary,
-                            fontSize: r.fs(19),
+                            fontSize: r.fs(18),
                             fontWeight: FontWeight.w800,
+                            height: 1.15,
                           ),
                         ),
-                        SizedBox(height: r.s(6)),
+                        SizedBox(height: r.s(4)),
                         Text(
-                          'Um estúdio de bio mais livre: escreva, estruture, pinte e anexe mídia sem perder o controle do layout.',
+                          'Crie livremente com texto, estrutura e mídia.',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: context.textSecondary,
-                            fontSize: r.fs(12),
-                            height: 1.45,
+                            fontSize: r.fs(11),
+                            height: 1.35,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  SizedBox(width: r.s(12)),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Text(widget.cancelLabel),
-                          ),
-                          SizedBox(width: r.s(6)),
-                          FilledButton(
-                            onPressed: _isUploading
-                                ? null
-                                : () => Navigator.of(context).pop(_buildResult()),
-                            child: Text(widget.saveLabel),
-                          ),
-                        ],
+                  SizedBox(width: r.s(10)),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: r.s(10),
+                      vertical: r.s(7),
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(r.s(999)),
+                      border: Border.all(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.20),
                       ),
-                      SizedBox(height: r.s(8)),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: r.s(10),
-                          vertical: r.s(8),
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.10),
-                          borderRadius: BorderRadius.circular(r.s(999)),
-                          border: Border.all(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.20),
-                          ),
-                        ),
-                        child: Text(
-                          '${value.text.length}/${widget.maxLength}',
-                          style: TextStyle(
-                            color: context.textPrimary,
-                            fontSize: r.fs(11),
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
+                    ),
+                    child: Text(
+                      '${value.text.length}/${widget.maxLength}',
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(11),
+                        fontWeight: FontWeight.w800,
                       ),
-                    ],
-                  ),
-                ],
-              ),
-              SizedBox(height: r.s(12)),
-              Wrap(
-                spacing: r.s(8),
-                runSpacing: r.s(8),
-                children: [
-                  _StatusPill(
-                    icon: Icons.auto_awesome_rounded,
-                    label: widget.markdownLabel,
-                  ),
-                  _StatusPill(
-                    icon: Icons.palette_outlined,
-                    label: _textColor == null
-                        ? 'Cor opcional'
-                        : 'Cor ${RichBioCodec.colorToHex(_textColor) ?? ''}',
-                  ),
-                  _StatusPill(
-                    icon: Icons.collections_outlined,
-                    label: _media.isEmpty
-                        ? 'Sem mídia anexada'
-                        : '${_media.length} mídia(s)',
+                    ),
                   ),
                 ],
               ),
               SizedBox(height: r.s(10)),
-              Text(
-                statusText,
-                style: TextStyle(
-                  color: context.textHint,
-                  fontSize: r.fs(11),
-                  fontWeight: FontWeight.w600,
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(widget.cancelLabel),
+                    ),
+                  ),
+                  SizedBox(width: r.s(8)),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: _isUploading
+                          ? null
+                          : () => Navigator.of(context).pop(_buildResult()),
+                      child: Text(widget.saveLabel),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: r.s(10)),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _StatusPill(
+                      icon: Icons.auto_awesome_rounded,
+                      label: widget.markdownLabel,
+                    ),
+                    SizedBox(width: r.s(8)),
+                    _StatusPill(
+                      icon: Icons.collections_outlined,
+                      label: mediaLabel,
+                    ),
+                    if (_textColor != null) ...[
+                      SizedBox(width: r.s(8)),
+                      _StatusPill(
+                        icon: Icons.palette_outlined,
+                        label: RichBioCodec.colorToHex(_textColor) ?? 'Cor',
+                      ),
+                    ],
+                    if (_isUploading) ...[
+                      SizedBox(width: r.s(8)),
+                      _StatusPill(
+                        icon: Icons.cloud_upload_outlined,
+                        label: 'Enviando...',
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ],
@@ -914,27 +913,28 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(r.s(14), r.s(14), r.s(14), r.s(10)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: EdgeInsets.fromLTRB(r.s(14), r.s(12), r.s(14), r.s(8)),
+            child: Row(
               children: [
-                Text(
-                  'Canvas da bio',
-                  style: TextStyle(
-                    color: context.textPrimary,
-                    fontSize: r.fs(14),
-                    fontWeight: FontWeight.w800,
+                Expanded(
+                  child: Text(
+                    'Editor livre',
+                    style: TextStyle(
+                      color: context.textPrimary,
+                      fontSize: r.fs(14),
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
-                SizedBox(height: r.s(4)),
-                Text(
-                  'Escreva livremente. O texto começa no topo da área e continua visível mesmo com o teclado aberto.',
-                  style: TextStyle(
-                    color: context.textSecondary,
-                    fontSize: r.fs(11),
-                    height: 1.4,
+                if (_textColor != null)
+                  Container(
+                    width: r.s(12),
+                    height: r.s(12),
+                    decoration: BoxDecoration(
+                      color: _textColor,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -966,9 +966,9 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                 ),
                 contentPadding: EdgeInsets.fromLTRB(
                   r.s(16),
+                  r.s(14),
                   r.s(16),
-                  r.s(16),
-                  r.s(20),
+                  r.s(18),
                 ),
                 border: InputBorder.none,
                 counterText: '',
@@ -1001,28 +1001,14 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(r.s(14), r.s(14), r.s(14), r.s(10)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Prévia viva',
-                      style: TextStyle(
-                        color: context.textPrimary,
-                        fontSize: r.fs(14),
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    SizedBox(height: r.s(4)),
-                    Text(
-                      'Veja exatamente como sua bio vai aparecer com cor, Markdown e mídia anexada.',
-                      style: TextStyle(
-                        color: context.textSecondary,
-                        fontSize: r.fs(11),
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
+                padding: EdgeInsets.fromLTRB(r.s(14), r.s(12), r.s(14), r.s(8)),
+                child: Text(
+                  'Prévia',
+                  style: TextStyle(
+                    color: context.textPrimary,
+                    fontSize: r.fs(14),
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
               const Divider(height: 1),
@@ -1044,7 +1030,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
     );
   }
 
-  Widget _buildToolDock(BuildContext context) {
+  Widget _buildToolDock(BuildContext context, {bool compact = false}) {
     final r = context.r;
     final actions = <Widget>[];
 
@@ -1131,22 +1117,105 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
       ]);
     }
 
+    final paletteSelector = compact
+        ? SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _PaletteChip(
+                  icon: Icons.text_fields_rounded,
+                  label: 'Texto',
+                  selected: _activeToolSection == 'text',
+                  onTap: () => setState(() => _activeToolSection = 'text'),
+                ),
+                SizedBox(width: r.s(8)),
+                _PaletteChip(
+                  icon: Icons.view_agenda_outlined,
+                  label: 'Estrutura',
+                  selected: _activeToolSection == 'structure',
+                  onTap: () => setState(() => _activeToolSection = 'structure'),
+                ),
+                SizedBox(width: r.s(8)),
+                _PaletteChip(
+                  icon: Icons.perm_media_outlined,
+                  label: 'Mídia',
+                  selected: _activeToolSection == 'media',
+                  onTap: () => setState(() => _activeToolSection = 'media'),
+                ),
+              ],
+            ),
+          )
+        : Row(
+            children: [
+              Expanded(
+                child: _PaletteChip(
+                  icon: Icons.text_fields_rounded,
+                  label: 'Texto',
+                  selected: _activeToolSection == 'text',
+                  onTap: () => setState(() => _activeToolSection = 'text'),
+                ),
+              ),
+              SizedBox(width: r.s(8)),
+              Expanded(
+                child: _PaletteChip(
+                  icon: Icons.view_agenda_outlined,
+                  label: 'Estrutura',
+                  selected: _activeToolSection == 'structure',
+                  onTap: () => setState(() => _activeToolSection = 'structure'),
+                ),
+              ),
+              SizedBox(width: r.s(8)),
+              Expanded(
+                child: _PaletteChip(
+                  icon: Icons.perm_media_outlined,
+                  label: 'Mídia',
+                  selected: _activeToolSection == 'media',
+                  onTap: () => setState(() => _activeToolSection = 'media'),
+                ),
+              ),
+            ],
+          );
+
+    final actionStrip = compact
+        ? SizedBox(
+            height: r.s(54),
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: actions.length,
+              separatorBuilder: (_, __) => SizedBox(width: r.s(8)),
+              itemBuilder: (_, index) {
+                final action = actions[index] as _StudioActionTile;
+                return _CompactStudioActionChip(
+                  icon: action.icon,
+                  label: action.label,
+                  onTap: action.onTap,
+                );
+              },
+            ),
+          )
+        : Wrap(
+            spacing: r.s(10),
+            runSpacing: r.s(10),
+            children: actions,
+          );
+
     return Container(
       decoration: BoxDecoration(
         color: context.cardBg,
         borderRadius: BorderRadius.circular(r.s(22)),
         border: Border.all(color: context.dividerClr),
       ),
-      child: Padding(
-        padding: EdgeInsets.all(r.s(14)),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(compact ? r.s(12) : r.s(14)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
                 Expanded(
                   child: Text(
-                    'Dock criativo',
+                    compact ? 'Ferramentas' : 'Dock criativo',
                     style: TextStyle(
                       color: context.textPrimary,
                       fontSize: r.fs(14),
@@ -1203,55 +1272,24 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                   ),
               ],
             ),
-            SizedBox(height: r.s(4)),
-            Text(
-              'Ferramentas agrupadas para você focar no que está criando, sem tudo jogado na tela ao mesmo tempo.',
-              style: TextStyle(
-                color: context.textSecondary,
-                fontSize: r.fs(11),
-                height: 1.4,
+            if (!compact) ...[
+              SizedBox(height: r.s(4)),
+              Text(
+                'Ferramentas agrupadas para você focar no que está criando, sem tudo jogado na tela ao mesmo tempo.',
+                style: TextStyle(
+                  color: context.textSecondary,
+                  fontSize: r.fs(11),
+                  height: 1.4,
+                ),
               ),
-            ),
+            ],
             SizedBox(height: r.s(12)),
-            Row(
-              children: [
-                Expanded(
-                  child: _PaletteChip(
-                    icon: Icons.text_fields_rounded,
-                    label: 'Texto',
-                    selected: _activeToolSection == 'text',
-                    onTap: () => setState(() => _activeToolSection = 'text'),
-                  ),
-                ),
-                SizedBox(width: r.s(8)),
-                Expanded(
-                  child: _PaletteChip(
-                    icon: Icons.view_agenda_outlined,
-                    label: 'Estrutura',
-                    selected: _activeToolSection == 'structure',
-                    onTap: () => setState(() => _activeToolSection = 'structure'),
-                  ),
-                ),
-                SizedBox(width: r.s(8)),
-                Expanded(
-                  child: _PaletteChip(
-                    icon: Icons.perm_media_outlined,
-                    label: 'Mídia',
-                    selected: _activeToolSection == 'media',
-                    onTap: () => setState(() => _activeToolSection = 'media'),
-                  ),
-                ),
-              ],
-            ),
+            paletteSelector,
             SizedBox(height: r.s(12)),
-            Wrap(
-              spacing: r.s(10),
-              runSpacing: r.s(10),
-              children: actions,
-            ),
-            SizedBox(height: r.s(14)),
+            actionStrip,
+            SizedBox(height: r.s(12)),
             Text(
-              'Blocos rápidos',
+              compact ? 'Blocos rápidos' : 'Blocos rápidos',
               style: TextStyle(
                 color: context.textPrimary,
                 fontSize: r.fs(12),
@@ -1286,7 +1324,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
               ),
             ),
             if (_media.isNotEmpty) ...[
-              SizedBox(height: r.s(14)),
+              SizedBox(height: r.s(12)),
               Text(
                 'Mídia anexada',
                 style: TextStyle(
@@ -1297,7 +1335,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
               ),
               SizedBox(height: r.s(8)),
               SizedBox(
-                height: r.s(112),
+                height: compact ? r.s(96) : r.s(112),
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: _media.length,
@@ -1305,7 +1343,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                   itemBuilder: (_, index) {
                     final item = _media[index];
                     return Container(
-                      width: r.s(132),
+                      width: compact ? r.s(118) : r.s(132),
                       decoration: BoxDecoration(
                         color: context.surfaceColor,
                         borderRadius: BorderRadius.circular(r.s(16)),
@@ -1321,7 +1359,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                             child: TappableImage(
                               url: item.url,
                               width: double.infinity,
-                              height: r.s(70),
+                              height: compact ? r.s(56) : r.s(70),
                               fit: BoxFit.cover,
                               borderRadius: BorderRadius.zero,
                             ),
@@ -1338,6 +1376,8 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                                 Expanded(
                                   child: Text(
                                     item.type.toUpperCase(),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       color: context.textPrimary,
                                       fontSize: r.fs(11),
@@ -1445,33 +1485,44 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
 
   Widget _buildMobileStudio(BuildContext context, {required bool keyboardVisible}) {
     final r = context.r;
-    return Column(
-      children: [
-        _buildModeSwitch(context),
-        SizedBox(height: r.s(12)),
-        Expanded(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            switchInCurve: Curves.easeOut,
-            switchOutCurve: Curves.easeIn,
-            child: _showPreview
-                ? _buildPreviewCanvas(context)
-                : Column(
-                    key: const ValueKey('editor_mode'),
-                    children: [
-                      Expanded(child: _buildEditorCanvas(context)),
-                      SizedBox(height: r.s(12)),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 180),
-                        child: keyboardVisible
-                            ? _buildKeyboardQuickBar(context)
-                            : _buildToolDock(context),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final dockHeight = (constraints.maxHeight * 0.34)
+            .clamp(r.s(172), r.s(252))
+            .toDouble();
+
+        return Column(
+          children: [
+            _buildModeSwitch(context),
+            SizedBox(height: r.s(10)),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                switchInCurve: Curves.easeOut,
+                switchOutCurve: Curves.easeIn,
+                child: _showPreview
+                    ? _buildPreviewCanvas(context)
+                    : Column(
+                        key: const ValueKey('editor_mode'),
+                        children: [
+                          Expanded(child: _buildEditorCanvas(context)),
+                          SizedBox(height: r.s(10)),
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 180),
+                            child: keyboardVisible
+                                ? _buildKeyboardQuickBar(context)
+                                : SizedBox(
+                                    height: dockHeight,
+                                    child: _buildToolDock(context, compact: true),
+                                  ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-          ),
-        ),
-      ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -1508,7 +1559,11 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
     final r = context.r;
     final mediaQuery = MediaQuery.of(context);
     final bottomInset = mediaQuery.viewInsets.bottom;
-    final maxSheetHeight = mediaQuery.size.height * 0.96;
+    final maxSheetHeight =
+        (mediaQuery.size.height - mediaQuery.padding.top - r.s(8)).clamp(
+      mediaQuery.size.height * 0.72,
+      mediaQuery.size.height,
+    ).toDouble();
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -1521,6 +1576,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
           child: Align(
             alignment: Alignment.bottomCenter,
             child: Container(
+              clipBehavior: Clip.antiAlias,
               constraints: BoxConstraints(maxHeight: maxSheetHeight),
               decoration: BoxDecoration(
                 color: context.surfaceColor,
@@ -1534,12 +1590,12 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                 ],
               ),
               child: Padding(
-                padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(16)),
+                padding: EdgeInsets.fromLTRB(r.s(12), r.s(10), r.s(12), r.s(12)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildHeader(context),
-                    SizedBox(height: r.s(12)),
+                    SizedBox(height: r.s(10)),
                     Expanded(
                       child: LayoutBuilder(
                         builder: (context, constraints) {
@@ -1777,6 +1833,53 @@ class _StudioActionTile extends StatelessWidget {
                 color: context.textSecondary,
                 fontSize: r.fs(10),
                 height: 1.35,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CompactStudioActionChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _CompactStudioActionChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return InkWell(
+      borderRadius: BorderRadius.circular(r.s(999)),
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: r.s(12),
+          vertical: r.s(10),
+        ),
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: BorderRadius.circular(r.s(999)),
+          border: Border.all(color: context.dividerClr),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: r.s(16), color: AppTheme.primaryColor),
+            SizedBox(width: r.s(8)),
+            Text(
+              label,
+              style: TextStyle(
+                color: context.textPrimary,
+                fontSize: r.fs(11),
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
