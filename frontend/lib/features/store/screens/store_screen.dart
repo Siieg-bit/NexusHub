@@ -827,23 +827,7 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                     ),
                   ),
                   child: imageUrl != null && imageUrl.isNotEmpty
-                      ? ClipRRect(
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(16),
-                          ),
-                          child: CachedNetworkImage(
-                            imageUrl: imageUrl,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            errorWidget: (_, __, ___) => Center(
-                              child: Icon(
-                                _getTypeIcon(type),
-                                color: Colors.grey[700],
-                                size: r.s(40),
-                              ),
-                            ),
-                          ),
-                        )
+                      ? _buildPreviewImage(r, imageUrl, type)
                       : Center(
                           child: Icon(
                             _getTypeIcon(type),
@@ -1042,6 +1026,105 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Renderiza o preview do item no card da loja.
+  ///
+  /// Para [chat_bubble] com [bubble_style == nine_slice], exibe um preview
+  /// fiel ao balao real: a imagem em tamanho contido centralizada, com um
+  /// texto de exemplo por cima para demonstrar o efeito nine-slice.
+  /// Para outros tipos, usa [BoxFit.cover] padrao.
+  Widget _buildPreviewImage(Responsive r, String imageUrl, String type) {
+    final assetConfig = _asMap(widget.item['asset_config']);
+    final isNineSlice =
+        _asString(assetConfig['bubble_style']) == 'nine_slice' ||
+        _asString(assetConfig['bubble_url']).isNotEmpty;
+
+    if (type == 'chat_bubble' && isNineSlice) {
+      // Preview nine-slice: mostra o balao com texto de exemplo
+      return ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        child: Padding(
+          padding: EdgeInsets.all(r.s(12)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Balao com texto de exemplo
+              CachedNetworkImage(
+                imageUrl: imageUrl,
+                imageBuilder: (ctx, img) => Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: r.s(16),
+                    vertical: r.s(10),
+                  ),
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: img,
+                      // SEM fit: BoxFit.fill — proibido com centerSlice
+                      centerSlice: const Rect.fromLTRB(38, 38, 90, 90),
+                    ),
+                  ),
+                  child: Text(
+                    'Olá! 👋',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: r.fs(13),
+                      fontWeight: FontWeight.w600,
+                      shadows: const [
+                        Shadow(
+                          color: Colors.black54,
+                          blurRadius: 4,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                placeholder: (_, __) => Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppTheme.primaryColor,
+                  ),
+                ),
+                errorWidget: (_, __, ___) => Center(
+                  child: Icon(
+                    Icons.chat_bubble_rounded,
+                    color: Colors.grey[700],
+                    size: r.s(40),
+                  ),
+                ),
+              ),
+              SizedBox(height: r.s(6)),
+              Text(
+                'Nine-Slice',
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: r.fs(9),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Preview padrao para outros tipos (avatar_frame, sticker_pack)
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      child: CachedNetworkImage(
+        imageUrl: imageUrl,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        errorWidget: (_, __, ___) => Center(
+          child: Icon(
+            _getTypeIcon(type),
+            color: Colors.grey[700],
+            size: r.s(40),
+          ),
+        ),
       ),
     );
   }
