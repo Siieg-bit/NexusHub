@@ -118,6 +118,34 @@ class _EditCommunityProfileScreenState
         }
       }
 
+      // Carregar moldura ativa fora do setState (operação async)
+      String? resolvedFrameUrl;
+      String? resolvedFramePurchaseId;
+      if (hydratedMembership != null) {
+        final activeFramePurchaseId =
+            hydratedMembership['active_avatar_frame_id'] as String?;
+        if (activeFramePurchaseId != null) {
+          try {
+            final fp = await SupabaseService.table('user_purchases')
+                .select('id, store_items!user_purchases_item_id_fkey(preview_url, asset_url, asset_config)')
+                .eq('id', activeFramePurchaseId)
+                .maybeSingle();
+            if (fp != null) {
+              final si = fp['store_items'] as Map<String, dynamic>?;
+              if (si != null) {
+                String? fUrl = si['preview_url'] as String?;
+                if (fUrl == null || fUrl.isEmpty) fUrl = si['asset_url'] as String?;
+                if ((fUrl == null || fUrl.isEmpty) && si['asset_config'] is Map) {
+                  fUrl = (si['asset_config'] as Map)['frame_url'] as String?;
+                }
+                resolvedFrameUrl = fUrl;
+                resolvedFramePurchaseId = activeFramePurchaseId;
+              }
+            }
+          } catch (_) {}
+        }
+      }
+
       if (mounted) {
         setState(() {
           if (hydratedMembership != null) {
@@ -129,29 +157,8 @@ class _EditCommunityProfileScreenState
             _localBannerUrl = hydratedMembership['local_banner_url'] as String?;
             _localBackgroundUrl =
                 hydratedMembership['local_background_url'] as String?;
-            // Carregar moldura ativa atual
-            final activeFramePurchaseId =
-                hydratedMembership['active_avatar_frame_id'] as String?;
-            if (activeFramePurchaseId != null) {
-              try {
-                final fp = await SupabaseService.table('user_purchases')
-                    .select('id, store_items!user_purchases_item_id_fkey(preview_url, asset_url, asset_config)')
-                    .eq('id', activeFramePurchaseId)
-                    .maybeSingle();
-                if (fp != null) {
-                  final si = fp['store_items'] as Map<String, dynamic>?;
-                  if (si != null) {
-                    String? fUrl = si['preview_url'] as String?;
-                    if (fUrl == null || fUrl.isEmpty) fUrl = si['asset_url'] as String?;
-                    if ((fUrl == null || fUrl.isEmpty) && si['asset_config'] is Map) {
-                      fUrl = (si['asset_config'] as Map)['frame_url'] as String?;
-                    }
-                    _selectedFrameUrl = fUrl;
-                    _selectedFramePurchaseId = activeFramePurchaseId;
-                  }
-                }
-              } catch (_) {}
-            }
+            _selectedFrameUrl = resolvedFrameUrl;
+            _selectedFramePurchaseId = resolvedFramePurchaseId;
             final rawGallery = hydratedMembership['local_gallery'];
             if (rawGallery is List) {
               _gallery = rawGallery.map((e) => e.toString()).toList();
