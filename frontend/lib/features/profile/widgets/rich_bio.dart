@@ -174,6 +174,7 @@ Future<String?> showRichBioEditorSheet(
   return showModalBottomSheet<String>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
     backgroundColor: Colors.transparent,
     builder: (_) => RichBioEditorSheet(
       initialValue: initialValue,
@@ -391,6 +392,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
   bool _showPreview = false;
   bool _isUploading = false;
   Color? _textColor;
+  String _activeToolSection = 'text';
 
   @override
   void initState() {
@@ -651,27 +653,851 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
     return RichBioCodec.encode(content);
   }
 
-  Widget _buildToolbarSection(
-    BuildContext context, {
-    required String title,
-    required List<Widget> actions,
-  }) {
+  void _insertTemplate(String template) {
+    final value = _controller.value;
+    final selection = value.selection;
+    final text = value.text;
+    final insertion = text.trim().isEmpty ? template : '\n\n$template';
+
+    if (!selection.isValid || selection.start < 0 || selection.end < 0) {
+      final updated = '$text$insertion';
+      _replaceValue(
+        updated,
+        selection: TextSelection.collapsed(offset: updated.length),
+      );
+      return;
+    }
+
+    final updated = text.replaceRange(selection.start, selection.end, insertion);
+    _replaceValue(
+      updated,
+      selection: TextSelection.collapsed(
+        offset: selection.start + insertion.length,
+      ),
+    );
+  }
+
+  void _insertLinkTemplate() {
+    final value = _controller.value;
+    final selection = value.selection;
+    final text = value.text;
+
+    if (!selection.isValid || selection.start < 0 || selection.end < 0) {
+      const insertion = '[texto](https://)';
+      final updated = '$text${text.isEmpty ? '' : '\n\n'}$insertion';
+      _replaceValue(
+        updated,
+        selection: TextSelection(baseOffset: updated.length - 9, extentOffset: updated.length - 1),
+      );
+      return;
+    }
+
+    final selected = text.substring(selection.start, selection.end);
+    final label = selected.isEmpty ? 'texto' : selected;
+    final replacement = '[$label](https://)';
+    final updated = text.replaceRange(selection.start, selection.end, replacement);
+    final urlStart = selection.start + replacement.length - 9;
+    _replaceValue(
+      updated,
+      selection: TextSelection(baseOffset: urlStart, extentOffset: urlStart + 8),
+    );
+  }
+
+  void _changeMode(bool showPreview) {
+    setState(() => _showPreview = showPreview);
+    if (showPreview) {
+      _focusNode.unfocus();
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  Widget _buildHeader(BuildContext context) {
     final r = context.r;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: context.textSecondary,
-            fontSize: r.fs(12),
-            fontWeight: FontWeight.w700,
+    return Container(
+      padding: EdgeInsets.fromLTRB(r.s(14), r.s(14), r.s(14), r.s(12)),
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(r.s(22)),
+        border: Border.all(color: context.dividerClr),
+      ),
+      child: ValueListenableBuilder<TextEditingValue>(
+        valueListenable: _controller,
+        builder: (_, value, __) {
+          final hasContent = value.text.trim().isNotEmpty || _media.isNotEmpty;
+          final statusText = _isUploading
+              ? 'Enviando mídia...'
+              : hasContent
+                  ? 'Sua bio está pronta para ganhar estrutura, cor e mídia.'
+                  : 'Comece escrevendo livremente e use o estúdio para montar sua bio.';
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: r.s(44),
+                  height: r.s(4),
+                  decoration: BoxDecoration(
+                    color: context.dividerClr,
+                    borderRadius: BorderRadius.circular(r.s(999)),
+                  ),
+                ),
+              ),
+              SizedBox(height: r.s(14)),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.title,
+                          style: TextStyle(
+                            color: context.textPrimary,
+                            fontSize: r.fs(19),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        SizedBox(height: r.s(6)),
+                        Text(
+                          'Um estúdio de bio mais livre: escreva, estruture, pinte e anexe mídia sem perder o controle do layout.',
+                          style: TextStyle(
+                            color: context.textSecondary,
+                            fontSize: r.fs(12),
+                            height: 1.45,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: r.s(12)),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text(widget.cancelLabel),
+                          ),
+                          SizedBox(width: r.s(6)),
+                          FilledButton(
+                            onPressed: _isUploading
+                                ? null
+                                : () => Navigator.of(context).pop(_buildResult()),
+                            child: Text(widget.saveLabel),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: r.s(8)),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: r.s(10),
+                          vertical: r.s(8),
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(r.s(999)),
+                          border: Border.all(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.20),
+                          ),
+                        ),
+                        child: Text(
+                          '${value.text.length}/${widget.maxLength}',
+                          style: TextStyle(
+                            color: context.textPrimary,
+                            fontSize: r.fs(11),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(height: r.s(12)),
+              Wrap(
+                spacing: r.s(8),
+                runSpacing: r.s(8),
+                children: [
+                  _StatusPill(
+                    icon: Icons.auto_awesome_rounded,
+                    label: widget.markdownLabel,
+                  ),
+                  _StatusPill(
+                    icon: Icons.palette_outlined,
+                    label: _textColor == null
+                        ? 'Cor opcional'
+                        : 'Cor ${RichBioCodec.colorToHex(_textColor) ?? ''}',
+                  ),
+                  _StatusPill(
+                    icon: Icons.collections_outlined,
+                    label: _media.isEmpty
+                        ? 'Sem mídia anexada'
+                        : '${_media.length} mídia(s)',
+                  ),
+                ],
+              ),
+              SizedBox(height: r.s(10)),
+              Text(
+                statusText,
+                style: TextStyle(
+                  color: context.textHint,
+                  fontSize: r.fs(11),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildModeSwitch(BuildContext context) {
+    final r = context.r;
+    return Container(
+      padding: EdgeInsets.all(r.s(4)),
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(r.s(18)),
+        border: Border.all(color: context.dividerClr),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _ModeButton(
+              icon: Icons.edit_note_rounded,
+              label: widget.editorLabel,
+              selected: !_showPreview,
+              onTap: () => _changeMode(false),
+            ),
+          ),
+          SizedBox(width: r.s(8)),
+          Expanded(
+            child: _ModeButton(
+              icon: Icons.visibility_rounded,
+              label: widget.previewLabel,
+              selected: _showPreview,
+              onTap: () => _changeMode(true),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditorCanvas(BuildContext context) {
+    final r = context.r;
+    return Container(
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(r.s(22)),
+        border: Border.all(
+          color: AppTheme.accentColor.withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(r.s(14), r.s(14), r.s(14), r.s(10)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Canvas da bio',
+                  style: TextStyle(
+                    color: context.textPrimary,
+                    fontSize: r.fs(14),
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: r.s(4)),
+                Text(
+                  'Escreva livremente. O texto começa no topo da área e continua visível mesmo com o teclado aberto.',
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontSize: r.fs(11),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              focusNode: _focusNode,
+              autofocus: true,
+              keyboardType: TextInputType.multiline,
+              textInputAction: TextInputAction.newline,
+              textCapitalization: TextCapitalization.sentences,
+              maxLines: null,
+              expands: true,
+              maxLength: widget.maxLength,
+              textAlignVertical: TextAlignVertical.top,
+              scrollPadding: EdgeInsets.fromLTRB(r.s(20), r.s(20), r.s(20), r.s(140)),
+              style: TextStyle(
+                color: context.textPrimary,
+                fontSize: r.fs(15),
+                height: 1.55,
+              ),
+              decoration: InputDecoration(
+                hintText: widget.hintText,
+                hintStyle: TextStyle(
+                  color: context.textHint,
+                  fontSize: r.fs(14),
+                  height: 1.45,
+                ),
+                contentPadding: EdgeInsets.fromLTRB(
+                  r.s(16),
+                  r.s(16),
+                  r.s(16),
+                  r.s(20),
+                ),
+                border: InputBorder.none,
+                counterText: '',
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPreviewCanvas(BuildContext context) {
+    final r = context.r;
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: _controller,
+      builder: (_, value, __) {
+        final preview = RichBioContent(
+          markdown: value.text,
+          textColorHex: RichBioCodec.colorToHex(_textColor),
+          media: _media,
+        );
+
+        return Container(
+          decoration: BoxDecoration(
+            color: context.cardBg,
+            borderRadius: BorderRadius.circular(r.s(22)),
+            border: Border.all(color: context.dividerClr),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(r.s(14), r.s(14), r.s(14), r.s(10)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Prévia viva',
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(14),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    SizedBox(height: r.s(4)),
+                    Text(
+                      'Veja exatamente como sua bio vai aparecer com cor, Markdown e mídia anexada.',
+                      style: TextStyle(
+                        color: context.textSecondary,
+                        fontSize: r.fs(11),
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(r.s(16)),
+                  child: RichBioRenderer(
+                    rawContent: RichBioCodec.encode(preview),
+                    emptyPlaceholder: widget.hintText,
+                    fontSize: r.fs(14),
+                    fallbackTextColor: context.textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildToolDock(BuildContext context) {
+    final r = context.r;
+    final actions = <Widget>[];
+
+    if (_activeToolSection == 'text') {
+      actions.addAll([
+        _StudioActionTile(
+          icon: Icons.format_bold_rounded,
+          label: 'Negrito',
+          caption: 'Destacar trecho',
+          onTap: () => _wrapSelection('**', '**'),
+        ),
+        _StudioActionTile(
+          icon: Icons.format_italic_rounded,
+          label: 'Itálico',
+          caption: 'Dar tom ao texto',
+          onTap: () => _wrapSelection('*', '*'),
+        ),
+        _StudioActionTile(
+          icon: Icons.link_rounded,
+          label: 'Link',
+          caption: 'Inserir link editável',
+          onTap: _insertLinkTemplate,
+        ),
+        _StudioActionTile(
+          icon: Icons.format_strikethrough_rounded,
+          label: 'Tachado',
+          caption: 'Marcar contraste',
+          onTap: () => _wrapSelection('~~', '~~'),
+        ),
+      ]);
+    } else if (_activeToolSection == 'structure') {
+      actions.addAll([
+        _StudioActionTile(
+          icon: Icons.title_rounded,
+          label: 'Título',
+          caption: 'Criar chamada',
+          onTap: () => _toggleLinePrefix('## '),
+        ),
+        _StudioActionTile(
+          icon: Icons.format_quote_rounded,
+          label: 'Citação',
+          caption: 'Bloco de destaque',
+          onTap: () => _toggleLinePrefix('> '),
+        ),
+        _StudioActionTile(
+          icon: Icons.format_list_bulleted_rounded,
+          label: 'Lista',
+          caption: 'Organizar ideias',
+          onTap: () => _toggleLinePrefix('- '),
+        ),
+        _StudioActionTile(
+          icon: Icons.horizontal_rule_rounded,
+          label: 'Divisor',
+          caption: 'Separar blocos',
+          onTap: _insertDivider,
+        ),
+      ]);
+    } else {
+      actions.addAll([
+        _StudioActionTile(
+          icon: Icons.format_color_text_rounded,
+          label: 'Cor',
+          caption: 'Escolher identidade',
+          onTap: _pickTextColor,
+        ),
+        _StudioActionTile(
+          icon: Icons.image_outlined,
+          label: 'Imagem',
+          caption: 'Adicionar da galeria',
+          onTap: _pickAndUploadImage,
+        ),
+        _StudioActionTile(
+          icon: Icons.gif_box_outlined,
+          label: 'GIF',
+          caption: 'Upload ou busca',
+          onTap: _openGifOptions,
+        ),
+        _StudioActionTile(
+          icon: Icons.smart_display_outlined,
+          label: 'Vídeo',
+          caption: 'Trazer movimento',
+          onTap: _pickAndUploadVideo,
+        ),
+      ]);
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(r.s(22)),
+        border: Border.all(color: context.dividerClr),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(r.s(14)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Dock criativo',
+                    style: TextStyle(
+                      color: context.textPrimary,
+                      fontSize: r.fs(14),
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                if (_textColor != null)
+                  GestureDetector(
+                    onTap: () => setState(() => _textColor = null),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: r.s(10),
+                        vertical: r.s(7),
+                      ),
+                      decoration: BoxDecoration(
+                        color: (_textColor ?? AppTheme.primaryColor)
+                            .withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(r.s(999)),
+                        border: Border.all(
+                          color: (_textColor ?? AppTheme.primaryColor)
+                              .withValues(alpha: 0.28),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: r.s(10),
+                            height: r.s(10),
+                            decoration: BoxDecoration(
+                              color: _textColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          SizedBox(width: r.s(6)),
+                          Text(
+                            RichBioCodec.colorToHex(_textColor) ?? '',
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontSize: r.fs(11),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(width: r.s(6)),
+                          Icon(
+                            Icons.close_rounded,
+                            size: r.s(14),
+                            color: context.textSecondary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            SizedBox(height: r.s(4)),
+            Text(
+              'Ferramentas agrupadas para você focar no que está criando, sem tudo jogado na tela ao mesmo tempo.',
+              style: TextStyle(
+                color: context.textSecondary,
+                fontSize: r.fs(11),
+                height: 1.4,
+              ),
+            ),
+            SizedBox(height: r.s(12)),
+            Row(
+              children: [
+                Expanded(
+                  child: _PaletteChip(
+                    icon: Icons.text_fields_rounded,
+                    label: 'Texto',
+                    selected: _activeToolSection == 'text',
+                    onTap: () => setState(() => _activeToolSection = 'text'),
+                  ),
+                ),
+                SizedBox(width: r.s(8)),
+                Expanded(
+                  child: _PaletteChip(
+                    icon: Icons.view_agenda_outlined,
+                    label: 'Estrutura',
+                    selected: _activeToolSection == 'structure',
+                    onTap: () => setState(() => _activeToolSection = 'structure'),
+                  ),
+                ),
+                SizedBox(width: r.s(8)),
+                Expanded(
+                  child: _PaletteChip(
+                    icon: Icons.perm_media_outlined,
+                    label: 'Mídia',
+                    selected: _activeToolSection == 'media',
+                    onTap: () => setState(() => _activeToolSection = 'media'),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: r.s(12)),
+            Wrap(
+              spacing: r.s(10),
+              runSpacing: r.s(10),
+              children: actions,
+            ),
+            SizedBox(height: r.s(14)),
+            Text(
+              'Blocos rápidos',
+              style: TextStyle(
+                color: context.textPrimary,
+                fontSize: r.fs(12),
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            SizedBox(height: r.s(8)),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _TemplateChip(
+                    label: 'Sobre mim',
+                    onTap: () => _insertTemplate('## Sobre mim\nEscreva aqui quem você é.'),
+                  ),
+                  SizedBox(width: r.s(8)),
+                  _TemplateChip(
+                    label: 'Destaques',
+                    onTap: () => _insertTemplate('## Destaques\n- Item 1\n- Item 2\n- Item 3'),
+                  ),
+                  SizedBox(width: r.s(8)),
+                  _TemplateChip(
+                    label: 'Mood',
+                    onTap: () => _insertTemplate('> Uma frase que define sua vibe.'),
+                  ),
+                  SizedBox(width: r.s(8)),
+                  _TemplateChip(
+                    label: 'Links',
+                    onTap: () => _insertTemplate('## Links\n- [Meu link](https://)'),
+                  ),
+                ],
+              ),
+            ),
+            if (_media.isNotEmpty) ...[
+              SizedBox(height: r.s(14)),
+              Text(
+                'Mídia anexada',
+                style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: r.fs(12),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              SizedBox(height: r.s(8)),
+              SizedBox(
+                height: r.s(112),
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _media.length,
+                  separatorBuilder: (_, __) => SizedBox(width: r.s(10)),
+                  itemBuilder: (_, index) {
+                    final item = _media[index];
+                    return Container(
+                      width: r.s(132),
+                      decoration: BoxDecoration(
+                        color: context.surfaceColor,
+                        borderRadius: BorderRadius.circular(r.s(16)),
+                        border: Border.all(color: context.dividerClr),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(r.s(16)),
+                            ),
+                            child: TappableImage(
+                              url: item.url,
+                              width: double.infinity,
+                              height: r.s(70),
+                              fit: BoxFit.cover,
+                              borderRadius: BorderRadius.zero,
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(
+                              r.s(10),
+                              r.s(8),
+                              r.s(8),
+                              r.s(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    item.type.toUpperCase(),
+                                    style: TextStyle(
+                                      color: context.textPrimary,
+                                      fontSize: r.fs(11),
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                                InkWell(
+                                  borderRadius: BorderRadius.circular(r.s(999)),
+                                  onTap: () => setState(() {
+                                    _media = _media.where((m) => m.id != item.id).toList();
+                                  }),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(r.s(2)),
+                                    child: Icon(
+                                      Icons.delete_outline_rounded,
+                                      color: AppTheme.errorColor,
+                                      size: r.s(18),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKeyboardQuickBar(BuildContext context) {
+    final r = context.r;
+    return Container(
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(r.s(18)),
+        border: Border.all(color: context.dividerClr),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(8)),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _MiniStudioButton(
+                icon: Icons.format_bold_rounded,
+                onTap: () => _wrapSelection('**', '**'),
+              ),
+              _MiniStudioButton(
+                icon: Icons.format_italic_rounded,
+                onTap: () => _wrapSelection('*', '*'),
+              ),
+              _MiniStudioButton(
+                icon: Icons.title_rounded,
+                onTap: () => _toggleLinePrefix('## '),
+              ),
+              _MiniStudioButton(
+                icon: Icons.format_list_bulleted_rounded,
+                onTap: () => _toggleLinePrefix('- '),
+              ),
+              _MiniStudioButton(
+                icon: Icons.link_rounded,
+                onTap: _insertLinkTemplate,
+              ),
+              _MiniStudioButton(
+                icon: Icons.format_color_text_rounded,
+                onTap: _pickTextColor,
+              ),
+              _MiniStudioButton(
+                icon: Icons.image_outlined,
+                onTap: _pickAndUploadImage,
+              ),
+              _MiniStudioButton(
+                icon: Icons.gif_box_outlined,
+                onTap: _openGifOptions,
+              ),
+              _MiniStudioButton(
+                icon: Icons.smart_display_outlined,
+                onTap: _pickAndUploadVideo,
+              ),
+              _MiniStudioButton(
+                icon: Icons.visibility_rounded,
+                onTap: () => _changeMode(true),
+              ),
+            ],
           ),
         ),
-        SizedBox(height: r.s(8)),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(children: actions),
+      ),
+    );
+  }
+
+  Widget _buildMobileStudio(BuildContext context, {required bool keyboardVisible}) {
+    final r = context.r;
+    return Column(
+      children: [
+        _buildModeSwitch(context),
+        SizedBox(height: r.s(12)),
+        Expanded(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            child: _showPreview
+                ? _buildPreviewCanvas(context)
+                : Column(
+                    key: const ValueKey('editor_mode'),
+                    children: [
+                      Expanded(child: _buildEditorCanvas(context)),
+                      SizedBox(height: r.s(12)),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 180),
+                        child: keyboardVisible
+                            ? _buildKeyboardQuickBar(context)
+                            : _buildToolDock(context),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWideStudio(BuildContext context) {
+    final r = context.r;
+    return Column(
+      children: [
+        _buildModeSwitch(context),
+        SizedBox(height: r.s(12)),
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    Expanded(child: _buildEditorCanvas(context)),
+                    SizedBox(height: r.s(12)),
+                    _buildToolDock(context),
+                  ],
+                ),
+              ),
+              SizedBox(width: r.s(12)),
+              Expanded(child: _buildPreviewCanvas(context)),
+            ],
+          ),
         ),
       ],
     );
@@ -682,446 +1508,54 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
     final r = context.r;
     final mediaQuery = MediaQuery.of(context);
     final bottomInset = mediaQuery.viewInsets.bottom;
-    final maxSheetHeight = mediaQuery.size.height * 0.92;
+    final maxSheetHeight = mediaQuery.size.height * 0.96;
 
-    return AnimatedPadding(
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOut,
-      padding: EdgeInsets.only(bottom: bottomInset),
-      child: SafeArea(
-        top: false,
-        child: Container(
-          constraints: BoxConstraints(maxHeight: maxSheetHeight),
-          decoration: BoxDecoration(
-            color: context.surfaceColor,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(24))),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.18),
-                blurRadius: 22,
-                offset: const Offset(0, -6),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(16)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: r.s(44),
-                    height: r.s(4),
-                    decoration: BoxDecoration(
-                      color: context.dividerClr,
-                      borderRadius: BorderRadius.circular(r.s(999)),
-                    ),
-                  ),
-                ),
-                SizedBox(height: r.s(16)),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.title,
-                            style: TextStyle(
-                              color: context.textPrimary,
-                              fontSize: r.fs(18),
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          SizedBox(height: r.s(6)),
-                          Text(
-                            '${widget.markdownLabel}. Você também pode definir a cor do texto e anexar imagem, GIF ou vídeo.',
-                            style: TextStyle(
-                              color: context.textSecondary,
-                              fontSize: r.fs(12),
-                              height: 1.4,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: r.s(12)),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(widget.cancelLabel),
-                    ),
-                    SizedBox(width: r.s(6)),
-                    FilledButton(
-                      onPressed: _isUploading
-                          ? null
-                          : () => Navigator.of(context).pop(_buildResult()),
-                      child: Text(widget.saveLabel),
-                    ),
-                  ],
-                ),
-                SizedBox(height: r.s(16)),
-                _buildToolbarSection(
-                  context,
-                  title: 'Formatação',
-                  actions: [
-                    _FormatActionChip(
-                      icon: Icons.format_bold_rounded,
-                      label: 'Negrito',
-                      onTap: () => _wrapSelection('**', '**'),
-                    ),
-                    SizedBox(width: r.s(8)),
-                    _FormatActionChip(
-                      icon: Icons.format_italic_rounded,
-                      label: 'Itálico',
-                      onTap: () => _wrapSelection('*', '*'),
-                    ),
-                    SizedBox(width: r.s(8)),
-                    _FormatActionChip(
-                      icon: Icons.format_strikethrough_rounded,
-                      label: 'Tachado',
-                      onTap: () => _wrapSelection('~~', '~~'),
-                    ),
-                    SizedBox(width: r.s(8)),
-                    _FormatActionChip(
-                      icon: Icons.title_rounded,
-                      label: 'Título',
-                      onTap: () => _toggleLinePrefix('## '),
-                    ),
-                    SizedBox(width: r.s(8)),
-                    _FormatActionChip(
-                      icon: Icons.format_quote_rounded,
-                      label: 'Citação',
-                      onTap: () => _toggleLinePrefix('> '),
-                    ),
-                    SizedBox(width: r.s(8)),
-                    _FormatActionChip(
-                      icon: Icons.format_list_bulleted_rounded,
-                      label: 'Lista',
-                      onTap: () => _toggleLinePrefix('- '),
-                    ),
-                    SizedBox(width: r.s(8)),
-                    _FormatActionChip(
-                      icon: Icons.horizontal_rule_rounded,
-                      label: 'Divisor',
-                      onTap: _insertDivider,
-                    ),
-                  ],
-                ),
-                SizedBox(height: r.s(12)),
-                _buildToolbarSection(
-                  context,
-                  title: 'Estilo e mídia',
-                  actions: [
-                    _FormatActionChip(
-                      icon: Icons.format_color_text_rounded,
-                      label: 'Cor do texto',
-                      onTap: _pickTextColor,
-                    ),
-                    SizedBox(width: r.s(8)),
-                    _FormatActionChip(
-                      icon: Icons.image_outlined,
-                      label: 'Imagem',
-                      onTap: _pickAndUploadImage,
-                    ),
-                    SizedBox(width: r.s(8)),
-                    _FormatActionChip(
-                      icon: Icons.gif_box_outlined,
-                      label: 'GIF',
-                      onTap: _openGifOptions,
-                    ),
-                    SizedBox(width: r.s(8)),
-                    _FormatActionChip(
-                      icon: Icons.smart_display_outlined,
-                      label: 'Vídeo',
-                      onTap: _pickAndUploadVideo,
-                    ),
-                    SizedBox(width: r.s(8)),
-                    if (_textColor != null)
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: r.s(12),
-                          vertical: r.s(10),
-                        ),
-                        decoration: BoxDecoration(
-                          color: (_textColor ?? AppTheme.primaryColor)
-                              .withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(r.s(999)),
-                          border: Border.all(
-                            color: (_textColor ?? AppTheme.primaryColor)
-                                .withValues(alpha: 0.35),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: r.s(12),
-                              height: r.s(12),
-                              decoration: BoxDecoration(
-                                color: _textColor,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            SizedBox(width: r.s(8)),
-                            Text(
-                              RichBioCodec.colorToHex(_textColor) ?? '',
-                              style: TextStyle(
-                                color: context.textPrimary,
-                                fontSize: r.fs(12),
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            SizedBox(width: r.s(8)),
-                            GestureDetector(
-                              onTap: () => setState(() => _textColor = null),
-                              child: Icon(
-                                Icons.close_rounded,
-                                color: context.textSecondary,
-                                size: r.s(16),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-                if (_media.isNotEmpty) ...[
-                  SizedBox(height: r.s(12)),
-                  Wrap(
-                    spacing: r.s(10),
-                    runSpacing: r.s(10),
-                    children: _media
-                        .map(
-                          (item) => Container(
-                            width: r.s(118),
-                            decoration: BoxDecoration(
-                              color: context.cardBg,
-                              borderRadius: BorderRadius.circular(r.s(14)),
-                              border: Border.all(color: context.dividerClr),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(r.s(14)),
-                                  ),
-                                  child: TappableImage(
-                                    url: item.url,
-                                    width: double.infinity,
-                                    height: r.s(84),
-                                    fit: BoxFit.cover,
-                                    borderRadius: BorderRadius.zero,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.fromLTRB(
-                                    r.s(10),
-                                    r.s(8),
-                                    r.s(10),
-                                    r.s(8),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          item.type.toUpperCase(),
-                                          style: TextStyle(
-                                            color: context.textPrimary,
-                                            fontSize: r.fs(11),
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: () => setState(() {
-                                          _media = _media
-                                              .where((m) => m.id != item.id)
-                                              .toList();
-                                        }),
-                                        child: Icon(
-                                          Icons.delete_outline_rounded,
-                                          color: AppTheme.errorColor,
-                                          size: r.s(18),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                        .toList(),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: AnimatedPadding(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+        padding: EdgeInsets.only(bottom: bottomInset > 0 ? bottomInset : 0),
+        child: SafeArea(
+          top: false,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              constraints: BoxConstraints(maxHeight: maxSheetHeight),
+              decoration: BoxDecoration(
+                color: context.surfaceColor,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(28))),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.22),
+                    blurRadius: 28,
+                    offset: const Offset(0, -8),
                   ),
                 ],
-                SizedBox(height: r.s(14)),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: context.cardBg,
-                      borderRadius: BorderRadius.circular(r.s(18)),
-                      border: Border.all(
-                        color: _showPreview
-                            ? context.dividerClr
-                            : AppTheme.accentColor.withValues(alpha: 0.55),
-                        width: 1.4,
+              ),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(16)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(context),
+                    SizedBox(height: r.s(12)),
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isWide = constraints.maxWidth >= 920;
+                          return isWide
+                              ? _buildWideStudio(context)
+                              : _buildMobileStudio(
+                                  context,
+                                  keyboardVisible: bottomInset > 0,
+                                );
+                        },
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(
-                            r.s(10),
-                            r.s(10),
-                            r.s(10),
-                            r.s(8),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: SegmentedButton<bool>(
-                                  showSelectedIcon: true,
-                                  segments: [
-                                    ButtonSegment<bool>(
-                                      value: false,
-                                      icon: const Icon(Icons.edit_rounded),
-                                      label: Text(widget.editorLabel),
-                                    ),
-                                    ButtonSegment<bool>(
-                                      value: true,
-                                      icon: const Icon(Icons.visibility_rounded),
-                                      label: Text(widget.previewLabel),
-                                    ),
-                                  ],
-                                  selected: {_showPreview},
-                                  onSelectionChanged: (selection) {
-                                    setState(() => _showPreview = selection.first);
-                                    if (!_showPreview) {
-                                      WidgetsBinding.instance
-                                          .addPostFrameCallback((_) {
-                                        if (mounted) _focusNode.requestFocus();
-                                      });
-                                    } else {
-                                      _focusNode.unfocus();
-                                    }
-                                  },
-                                ),
-                              ),
-                              SizedBox(width: r.s(10)),
-                              ValueListenableBuilder<TextEditingValue>(
-                                valueListenable: _controller,
-                                builder: (_, value, __) => Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      '${value.text.length}/${widget.maxLength}',
-                                      style: TextStyle(
-                                        color: context.textSecondary,
-                                        fontSize: r.fs(12),
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    SizedBox(height: r.s(2)),
-                                    Text(
-                                      _isUploading
-                                          ? 'Enviando mídia...'
-                                          : (_showPreview
-                                              ? 'Prévia rica ativa'
-                                              : 'Editor ativo'),
-                                      style: TextStyle(
-                                        color: context.textHint,
-                                        fontSize: r.fs(10),
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(
-                            r.s(12),
-                            0,
-                            r.s(12),
-                            r.s(10),
-                          ),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              _showPreview
-                                  ? 'Veja abaixo como a bio vai aparecer com texto e mídia.'
-                                  : 'O texto continua em Markdown e a prévia rica mostra cor e mídias anexadas.',
-                              style: TextStyle(
-                                color: context.textSecondary,
-                                fontSize: r.fs(11),
-                                height: 1.35,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const Divider(height: 1),
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.vertical(
-                              bottom: Radius.circular(r.s(18)),
-                            ),
-                            child: ValueListenableBuilder<TextEditingValue>(
-                              valueListenable: _controller,
-                              builder: (_, value, __) {
-                                if (_showPreview) {
-                                  final preview = RichBioContent(
-                                    markdown: value.text,
-                                    textColorHex:
-                                        RichBioCodec.colorToHex(_textColor),
-                                    media: _media,
-                                  );
-                                  return SingleChildScrollView(
-                                    padding: EdgeInsets.all(r.s(16)),
-                                    child: RichBioRenderer(
-                                      rawContent: RichBioCodec.encode(preview),
-                                      emptyPlaceholder: widget.hintText,
-                                      fontSize: r.fs(14),
-                                      fallbackTextColor: context.textPrimary,
-                                    ),
-                                  );
-                                }
-
-                                return TextField(
-                                  controller: _controller,
-                                  focusNode: _focusNode,
-                                  autofocus: true,
-                                  maxLines: null,
-                                  expands: true,
-                                  maxLength: widget.maxLength,
-                                  style: TextStyle(
-                                    color: context.textPrimary,
-                                    fontSize: r.fs(14),
-                                    height: 1.45,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: widget.hintText,
-                                    hintStyle: TextStyle(
-                                      color: context.textHint,
-                                      fontSize: r.fs(14),
-                                    ),
-                                    contentPadding: EdgeInsets.all(r.s(16)),
-                                    border: InputBorder.none,
-                                    counterText: '',
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -1130,13 +1564,233 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
   }
 }
 
-class _FormatActionChip extends StatelessWidget {
+class _MiniStudioButton extends StatelessWidget {
   final IconData icon;
+  final VoidCallback onTap;
+
+  const _MiniStudioButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return Padding(
+      padding: EdgeInsets.only(right: r.s(8)),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(r.s(12)),
+          onTap: onTap,
+          child: Ink(
+            padding: EdgeInsets.all(r.s(10)),
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(r.s(12)),
+              border: Border.all(color: context.dividerClr),
+            ),
+            child: Icon(
+              icon,
+              size: r.s(18),
+              color: context.textPrimary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ModeButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ModeButton({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return InkWell(
+      borderRadius: BorderRadius.circular(r.s(14)),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: EdgeInsets.symmetric(
+          horizontal: r.s(14),
+          vertical: r.s(12),
+        ),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppTheme.primaryColor.withValues(alpha: 0.14)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(r.s(14)),
+          border: Border.all(
+            color: selected
+                ? AppTheme.primaryColor.withValues(alpha: 0.35)
+                : Colors.transparent,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: r.s(18),
+              color: selected ? AppTheme.primaryColor : context.textSecondary,
+            ),
+            SizedBox(width: r.s(8)),
+            Text(
+              label,
+              style: TextStyle(
+                color: selected ? context.textPrimary : context.textSecondary,
+                fontSize: r.fs(12),
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PaletteChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _PaletteChip({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return InkWell(
+      borderRadius: BorderRadius.circular(r.s(14)),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: EdgeInsets.symmetric(
+          horizontal: r.s(12),
+          vertical: r.s(11),
+        ),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppTheme.accentColor.withValues(alpha: 0.14)
+              : context.surfaceColor,
+          borderRadius: BorderRadius.circular(r.s(14)),
+          border: Border.all(
+            color: selected
+                ? AppTheme.accentColor.withValues(alpha: 0.35)
+                : context.dividerClr,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: r.s(16),
+              color: selected ? AppTheme.accentColor : context.textSecondary,
+            ),
+            SizedBox(width: r.s(7)),
+            Text(
+              label,
+              style: TextStyle(
+                color: context.textPrimary,
+                fontSize: r.fs(11),
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StudioActionTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String caption;
+  final VoidCallback onTap;
+
+  const _StudioActionTile({
+    required this.icon,
+    required this.label,
+    required this.caption,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return InkWell(
+      borderRadius: BorderRadius.circular(r.s(16)),
+      onTap: onTap,
+      child: Container(
+        width: r.s(150),
+        padding: EdgeInsets.all(r.s(12)),
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: BorderRadius.circular(r.s(16)),
+          border: Border.all(color: context.dividerClr),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: EdgeInsets.all(r.s(8)),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(r.s(12)),
+              ),
+              child: Icon(icon, size: r.s(18), color: AppTheme.primaryColor),
+            ),
+            SizedBox(height: r.s(10)),
+            Text(
+              label,
+              style: TextStyle(
+                color: context.textPrimary,
+                fontSize: r.fs(12),
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            SizedBox(height: r.s(4)),
+            Text(
+              caption,
+              style: TextStyle(
+                color: context.textSecondary,
+                fontSize: r.fs(10),
+                height: 1.35,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TemplateChip extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _FormatActionChip({
-    required this.icon,
+  const _TemplateChip({
     required this.label,
     required this.onTap,
   });
@@ -1150,28 +1804,62 @@ class _FormatActionChip extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: r.s(12),
-          vertical: r.s(10),
+          vertical: r.s(9),
         ),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(r.s(999)),
           border: Border.all(color: context.dividerClr),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: context.textPrimary, size: r.s(16)),
-            SizedBox(width: r.s(8)),
-            Text(
-              label,
-              style: TextStyle(
-                color: context.textPrimary,
-                fontSize: r.fs(12),
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
+        child: Text(
+          label,
+          style: TextStyle(
+            color: context.textPrimary,
+            fontSize: r.fs(11),
+            fontWeight: FontWeight.w700,
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _StatusPill({
+    required this.icon,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: r.s(10),
+        vertical: r.s(8),
+      ),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(r.s(999)),
+        border: Border.all(color: context.dividerClr),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: r.s(14), color: context.textSecondary),
+          SizedBox(width: r.s(6)),
+          Text(
+            label,
+            style: TextStyle(
+              color: context.textPrimary,
+              fontSize: r.fs(11),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
