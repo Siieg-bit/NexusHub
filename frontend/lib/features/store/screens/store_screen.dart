@@ -676,12 +676,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
       onRefresh: _loadStore,
       child: GridView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.all(r.s(16)),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(80)),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 0.66,
+          mainAxisSpacing: r.s(12),
+          crossAxisSpacing: r.s(12),
+          childAspectRatio: 0.62,
         ),
         itemCount: items.length,
         itemBuilder: (context, index) {

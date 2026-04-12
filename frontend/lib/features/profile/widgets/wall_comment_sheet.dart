@@ -681,27 +681,25 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
                           },
                         ),
                       ),
-                      // Botão sticker
+                      // Botão unificado: emoji + figurinha
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: r.s(6)),
-                        child: _ActionButton(
-                          icon: Icons.sticky_note_2_outlined,
-                          onTap: () async {
+                        padding: EdgeInsets.symmetric(horizontal: r.s(4)),
+                        child: _MediaMenuButton(
+                          r: r,
+                          isUploadingMedia: _isUploadingMedia,
+                          showEmojiPicker: _showEmojiPicker,
+                          onToggleEmoji: () {
+                            _focusNode.unfocus();
+                            setState(() => _showEmojiPicker = !_showEmojiPicker);
+                          },
+                          onOpenSticker: () async {
                             _focusNode.unfocus();
                             await StickerPickerV2.show(
                               context,
                               onStickerSelected: _sendSticker,
                             );
                           },
-                        ),
-                      ),
-                      // Botão mídia (imagem ou vídeo)
-                      Padding(
-                        padding: EdgeInsets.only(right: r.s(10)),
-                        child: _ActionButton(
-                          icon: Icons.perm_media_outlined,
-                          onTap: _isUploadingMedia ? null : _pickMedia,
-                          isLoading: _isUploadingMedia,
+                          onPickMedia: _isUploadingMedia ? null : _pickMedia,
                         ),
                       ),
                     ],
@@ -1276,5 +1274,149 @@ class _ActionButton extends StatelessWidget {
               ),
       ),
     );
+  }
+}
+
+// =============================================================================
+// BOTÃO UNIFICADO: emoji + figurinha + mídia (menu popup)
+// =============================================================================
+
+class _MediaMenuButton extends StatelessWidget {
+  final dynamic r;
+  final bool isUploadingMedia;
+  final bool showEmojiPicker;
+  final VoidCallback onToggleEmoji;
+  final Future<void> Function() onOpenSticker;
+  final VoidCallback? onPickMedia;
+
+  const _MediaMenuButton({
+    required this.r,
+    required this.isUploadingMedia,
+    required this.showEmojiPicker,
+    required this.onToggleEmoji,
+    required this.onOpenSticker,
+    required this.onPickMedia,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showMenu(context),
+      child: SizedBox(
+        width: r.s(30),
+        height: r.s(30),
+        child: Icon(
+          showEmojiPicker
+              ? Icons.add_reaction
+              : Icons.add_reaction_outlined,
+          size: r.s(22),
+          color: showEmojiPicker
+              ? AppTheme.primaryColor
+              : Colors.grey[500],
+        ),
+      ),
+    );
+  }
+
+  void _showMenu(BuildContext context) {
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+        Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
+    final RelativeRect position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        button.localToGlobal(Offset.zero, ancestor: overlay),
+        button.localToGlobal(button.size.bottomRight(Offset.zero),
+            ancestor: overlay),
+      ),
+      Offset.zero & overlay.size,
+    );
+
+    showMenu<String>(
+      context: context,
+      position: position,
+      elevation: 8,
+      color: const Color(0xFF1A2332),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      items: [
+        PopupMenuItem<String>(
+          value: 'emoji',
+          padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
+          child: Row(
+            children: [
+              Icon(Icons.emoji_emotions_outlined,
+                  color: Colors.amber[400], size: r.s(20)),
+              SizedBox(width: r.s(10)),
+              Text(
+                'Emoji',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: r.s(14),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'sticker',
+          padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
+          child: Row(
+            children: [
+              Icon(Icons.sticky_note_2_outlined,
+                  color: Colors.purple[300], size: r.s(20)),
+              SizedBox(width: r.s(10)),
+              Text(
+                'Figurinha',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: r.s(14),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'media',
+          enabled: !isUploadingMedia,
+          padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
+          child: Row(
+            children: [
+              isUploadingMedia
+                  ? SizedBox(
+                      width: r.s(20),
+                      height: r.s(20),
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppTheme.primaryColor,
+                      ),
+                    )
+                  : Icon(Icons.perm_media_outlined,
+                      color: Colors.blue[300], size: r.s(20)),
+              SizedBox(width: r.s(10)),
+              Text(
+                'Mídia',
+                style: TextStyle(
+                  color: isUploadingMedia ? Colors.grey[600] : Colors.white,
+                  fontSize: r.s(14),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ).then((value) {
+      if (value == 'emoji') {
+        onToggleEmoji();
+      } else if (value == 'sticker') {
+        onOpenSticker();
+      } else if (value == 'media' && onPickMedia != null) {
+        onPickMedia!();
+      }
+    });
   }
 }

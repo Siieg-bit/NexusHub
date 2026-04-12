@@ -118,9 +118,10 @@ class _PostCardState extends ConsumerState<PostCard>
     if (confirm != true || !mounted) return;
 
     try {
+      final communityId = _post.communityId.isNotEmpty ? _post.communityId : null;
       await SupabaseService.rpc('repost_post', params: {
         'p_original_post_id': _post.id,
-        'p_community_id': _post.communityId,
+        'p_community_id': communityId,
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1061,7 +1062,13 @@ class _PostCardState extends ConsumerState<PostCard>
   Widget _buildActions(BuildContext context) {
     final s = ref.read(stringsProvider);
     final r = context.r;
-    return Padding(
+    // GestureDetector com behavior.opaque absorve o toque nesta área,
+    // impedindo que o _CardPressWidget pai navegue para o post ao clicar
+    // nos botões de like, repost, etc.
+    return GestureDetector(
+      onTap: () {}, // absorve o toque — impede propagação ao cardPress
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
       padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(10)),
       child: Row(
         children: [
@@ -1191,6 +1198,7 @@ class _PostCardState extends ConsumerState<PostCard>
             ),
         ],
       ),
+    ),
     );
   }
 
