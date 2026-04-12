@@ -139,10 +139,10 @@ final userCosmeticsProvider =
     }
 
     final profile = await SupabaseService.table('profiles')
-        .select('amino_plus')
+        .select('is_amino_plus')
         .eq('id', userId)
         .maybeSingle();
-    final isAminoPlus = profile?['amino_plus'] as bool? ?? false;
+    final isAminoPlus = profile?['is_amino_plus'] as bool? ?? false;
 
     return UserCosmetics(
       userId: userId,
