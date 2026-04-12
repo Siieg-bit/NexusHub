@@ -12,6 +12,7 @@ import '../../../core/services/media_upload_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../widgets/rich_bio.dart';
 
 /// Tela de edição de perfil do usuário com Rich Bio Editor.
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -319,262 +320,39 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
       padding: padding ?? EdgeInsets.all(r.s(12)),
       child: ValueListenableBuilder<TextEditingValue>(
         valueListenable: _bioController,
-        builder: (context, value, _) {
-          final text = value.text.trim();
-          if (text.isEmpty) {
-            return Text(
-              s.noContentYet,
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontStyle: FontStyle.italic,
-                fontSize: fontSize ?? r.fs(13),
-              ),
-            );
-          }
-          return MarkdownBody(
-            data: text,
-            styleSheet: MarkdownStyleSheet(
-              p: TextStyle(
-                color: context.textPrimary,
-                fontSize: fontSize ?? r.fs(14),
-              ),
-              strong: TextStyle(
-                color: context.textPrimary,
-                fontWeight: FontWeight.w700,
-                fontSize: fontSize ?? r.fs(14),
-              ),
-              em: TextStyle(
-                color: context.textPrimary,
-                fontStyle: FontStyle.italic,
-                fontSize: fontSize ?? r.fs(14),
-              ),
-              del: TextStyle(
-                color: Colors.grey[500],
-                decoration: TextDecoration.lineThrough,
-                fontSize: fontSize ?? r.fs(14),
-              ),
-              a: const TextStyle(
-                color: AppTheme.primaryColor,
-                decoration: TextDecoration.underline,
-              ),
-            ),
-          );
-        },
+        builder: (context, value, _) => RichBioRenderer(
+          rawContent: value.text,
+          emptyPlaceholder: s.noContentYet,
+          fontSize: fontSize ?? r.fs(14),
+          fallbackTextColor: context.textPrimary,
+        ),
       ),
     );
   }
 
   Future<void> _openBioEditorSheet() async {
     final s = getStrings();
-    final r = context.r;
-    var previewMode = _bioPreviewMode;
-
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) {
-        return StatefulBuilder(
-          builder: (sheetContext, modalSetState) {
-            return FractionallySizedBox(
-              heightFactor: 0.92,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: context.scaffoldBg,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(r.s(28)),
-                  ),
-                ),
-                child: SafeArea(
-                  top: false,
-                  child: Column(
-                    children: [
-                      SizedBox(height: r.s(10)),
-                      Container(
-                        width: r.s(48),
-                        height: r.s(5),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[700],
-                          borderRadius: BorderRadius.circular(r.s(999)),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          r.s(20),
-                          r.s(18),
-                          r.s(12),
-                          r.s(8),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.article_outlined,
-                              color: AppTheme.primaryColor,
-                              size: r.s(22),
-                            ),
-                            SizedBox(width: r.s(10)),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    s.bio,
-                                    style: TextStyle(
-                                      color: context.textPrimary,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: r.fs(18),
-                                    ),
-                                  ),
-                                  Text(
-                                    'Editor expandido com formatação e prévia.',
-                                    style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontSize: r.fs(12),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.of(sheetContext).pop(),
-                              child: const Text(
-                                'Concluir',
-                                style: TextStyle(
-                                  color: AppTheme.primaryColor,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      _buildFormatToolbar(r),
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: r.s(20),
-                          vertical: r.s(8),
-                        ),
-                        child: Container(
-                          padding: EdgeInsets.all(r.s(4)),
-                          decoration: BoxDecoration(
-                            color: context.surfaceColor,
-                            borderRadius: BorderRadius.circular(r.s(14)),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => modalSetState(() => previewMode = false),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 180),
-                                    padding: EdgeInsets.symmetric(vertical: r.s(10)),
-                                    decoration: BoxDecoration(
-                                      color: previewMode
-                                          ? Colors.transparent
-                                          : AppTheme.primaryColor,
-                                      borderRadius: BorderRadius.circular(r.s(10)),
-                                    ),
-                                    child: Text(
-                                      s.edit,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: previewMode
-                                            ? Colors.grey[500]
-                                            : Colors.white,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: r.s(6)),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => modalSetState(() => previewMode = true),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 180),
-                                    padding: EdgeInsets.symmetric(vertical: r.s(10)),
-                                    decoration: BoxDecoration(
-                                      color: previewMode
-                                          ? AppTheme.primaryColor
-                                          : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(r.s(10)),
-                                    ),
-                                    child: Text(
-                                      s.preview,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: previewMode
-                                            ? Colors.white
-                                            : Colors.grey[500],
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          margin: EdgeInsets.fromLTRB(
-                            r.s(20),
-                            r.s(8),
-                            r.s(20),
-                            r.s(16),
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.surfaceColor,
-                            borderRadius: BorderRadius.circular(r.s(18)),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.05),
-                            ),
-                          ),
-                          child: previewMode
-                              ? _buildBioPreviewPane(
-                                  r,
-                                  padding: EdgeInsets.all(r.s(18)),
-                                  fontSize: r.fs(15),
-                                )
-                              : TextField(
-                                  controller: _bioController,
-                                  focusNode: _bioFocusNode,
-                                  autofocus: true,
-                                  maxLines: null,
-                                  expands: true,
-                                  maxLength: 500,
-                                  style: TextStyle(
-                                    color: context.textPrimary,
-                                    fontSize: r.fs(15),
-                                    height: 1.45,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: s.writeBioHint,
-                                    hintStyle: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: r.fs(14),
-                                    ),
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.all(r.s(18)),
-                                    counterStyle: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: r.fs(11),
-                                    ),
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
+    final updatedBio = await showRichBioEditorSheet(
+      context,
+      initialValue: _bioController.text,
+      title: s.bio,
+      hintText: s.writeBioHint,
+      saveLabel: s.save,
+      cancelLabel: s.cancel,
+      editorLabel: s.edit,
+      previewLabel: s.preview,
+      markdownLabel: 'Formate sua bio com Markdown',
+      maxLength: 500,
     );
+
+    if (updatedBio == null || !mounted) return;
+
+    setState(() {
+      _bioController.value = TextEditingValue(
+        text: updatedBio,
+        selection: TextSelection.collapsed(offset: updatedBio.length),
+      );
+    });
   }
 
   @override
@@ -784,87 +562,77 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
         borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header com tabs Editar / Prévia
-          Padding(
-            padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(8), 0),
-            child: Row(
+      child: Padding(
+        padding: EdgeInsets.all(r.s(16)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Icon(Icons.edit_note_rounded,
-                    color: AppTheme.primaryColor, size: r.s(20)),
-                SizedBox(width: r.s(8)),
-                Text(s.bio,
-                    style:
-                        TextStyle(color: Colors.grey[500], fontSize: r.fs(14))),
-                const Spacer(),
-                IconButton(
-                  onPressed: _openBioEditorSheet,
-                  tooltip: 'Abrir editor expandido',
-                  icon: Icon(
-                    Icons.open_in_full_rounded,
-                    color: Colors.grey[400],
-                    size: r.s(18),
-                  ),
+                Icon(
+                  Icons.edit_note_rounded,
+                  color: AppTheme.primaryColor,
+                  size: r.s(20),
                 ),
-                Flexible(
-                  child: TabBar(
-                    controller: _bioTabController,
-                    isScrollable: true,
-                    tabAlignment: TabAlignment.start,
-                    labelColor: AppTheme.primaryColor,
-                    unselectedLabelColor: Colors.grey[600],
-                    indicatorColor: AppTheme.primaryColor,
-                    indicatorSize: TabBarIndicatorSize.label,
-                    labelStyle: TextStyle(
-                        fontSize: r.fs(12), fontWeight: FontWeight.w700),
-                    dividerHeight: 0,
-                    tabs:  [
-                      Tab(text: s.edit),
-                      Tab(text: s.preview),
+                SizedBox(width: r.s(8)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        s.bio,
+                        style: TextStyle(
+                          color: context.textPrimary,
+                          fontSize: r.fs(15),
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: r.s(4)),
+                      Text(
+                        'Use o editor completo para formatar a bio, trocar a cor do texto e anexar mídia.',
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: r.fs(12),
+                          height: 1.35,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-
-          // Toolbar de formatação (visível apenas no modo edição)
-          if (!_bioPreviewMode) _buildFormatToolbar(r),
-
-          // Área de edição ou prévia
-          SizedBox(
-            height: r.s(180),
-            child: TabBarView(
-              controller: _bioTabController,
-              children: [
-                // Aba Editar — FIX Bug #4: focusNode persistente
-                TextField(
-                  controller: _bioController,
-                  focusNode: _bioFocusNode,
-                  maxLines: null,
-                  expands: true,
-                  maxLength: 500,
-                  style:
-                      TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
-                  decoration: InputDecoration(
-                    hintText:
-                        s.writeBioHint,
-                    hintStyle:
-                        TextStyle(color: Colors.grey[600], fontSize: r.fs(13)),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(r.s(12)),
-                    counterStyle:
-                        TextStyle(color: Colors.grey[600], fontSize: r.fs(11)),
-                  ),
+                SizedBox(width: r.s(12)),
+                FilledButton.icon(
+                  onPressed: _openBioEditorSheet,
+                  icon: const Icon(Icons.open_in_full_rounded),
+                  label: Text(s.edit),
                 ),
-                // Aba Prévia
-                _buildBioPreviewPane(r),
               ],
             ),
-          ),
-        ],
+            SizedBox(height: r.s(14)),
+            Container(
+              width: double.infinity,
+              constraints: BoxConstraints(minHeight: r.s(140)),
+              decoration: BoxDecoration(
+                color: context.cardBg,
+                borderRadius: BorderRadius.circular(r.s(14)),
+                border: Border.all(color: context.dividerClr),
+              ),
+              child: _buildBioPreviewPane(
+                r,
+                padding: EdgeInsets.all(r.s(14)),
+                fontSize: r.fs(14),
+              ),
+            ),
+            SizedBox(height: r.s(10)),
+            Text(
+              'A mesma experiência de edição também será usada nas comunidades, mas o salvamento global continua separado.',
+              style: TextStyle(
+                color: context.textHint,
+                fontSize: r.fs(11),
+                height: 1.35,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

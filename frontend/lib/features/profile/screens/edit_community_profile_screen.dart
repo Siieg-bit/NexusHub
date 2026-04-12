@@ -10,6 +10,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import '../../communities/providers/community_detail_providers.dart';
+import '../widgets/rich_bio.dart';
 import '../widgets/frame_picker_sheet.dart';
 
 /// Editar Perfil da Comunidade — estilo Amino Apps.
@@ -195,31 +196,21 @@ class _EditCommunityProfileScreenState
 
   Future<void> _openBioEditor() async {
     final s = ref.read(stringsProvider);
-    final updatedBio = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _BioRichEditorSheet(
-        initialValue: _bioController.text,
-        title: s.bioInCommunityLabel,
-        hintText: s.writeBioHint,
-        saveLabel: s.saveChangesAction,
-        cancelLabel: s.cancel,
-        editorLabel: s.editor,
-        previewLabel: s.preview,
-        markdownLabel: s.supportsMarkdown,
-        maxLength: 500,
-      ),
+    final updatedBio = await showRichBioEditorSheet(
+      context,
+      initialValue: _bioController.text,
+      title: s.bioInCommunityLabel,
+      hintText: s.writeBioHint,
+      saveLabel: s.save,
+      cancelLabel: s.cancel,
+      editorLabel: s.edit,
+      previewLabel: s.preview,
+      markdownLabel: 'Markdown disponível',
+      maxLength: 500,
     );
 
     if (!mounted || updatedBio == null) return;
-
-    setState(() {
-      _bioController.value = TextEditingValue(
-        text: updatedBio,
-        selection: TextSelection.collapsed(offset: updatedBio.length),
-      );
-    });
+    setState(() => _bioController.text = updatedBio);
   }
 
   // ─── Upload helpers ──────────────────────────────────────────────────────────
@@ -1407,17 +1398,24 @@ class _CommunityBioField extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: r.s(4)),
-      child: Text(
-        hasBio ? bio : hintText,
-        maxLines: hasBio ? 3 : 2,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: hasBio ? context.textPrimary : context.textHint,
-          fontSize: r.fs(14),
-          height: 1.45,
-          fontWeight: hasBio ? FontWeight.w500 : FontWeight.w400,
-        ),
-      ),
+      child: hasBio
+          ? RichBioRenderer(
+              rawContent: bio,
+              fontSize: r.fs(14),
+              maxPreviewLines: 3,
+              fallbackTextColor: context.textPrimary,
+            )
+          : Text(
+              hintText,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: context.textHint,
+                fontSize: r.fs(14),
+                height: 1.45,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
     );
   }
 }

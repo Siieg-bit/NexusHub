@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/user_model.dart';
@@ -16,6 +15,7 @@ import '../widgets/profile_linked_communities.dart';
 import '../widgets/profile_stories_tab.dart';
 import '../widgets/profile_wall_tab.dart';
 import '../widgets/profile_pinned_wikis.dart';
+import '../widgets/rich_bio.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/block_provider.dart';
 import '../../../core/services/deep_link_service.dart';
@@ -451,36 +451,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                        horizontal: r.s(16), vertical: r.s(4)),
+                      horizontal: r.s(16),
+                      vertical: r.s(4),
+                    ),
                     child: user.bio.isNotEmpty
-                        ? MarkdownBody(
-                            data: user.bio,
-                            styleSheet: MarkdownStyleSheet(
-                              p: TextStyle(
-                                color: Colors.grey[300],
-                                height: 1.5,
-                                fontSize: r.fs(14),
-                              ),
-                              strong: TextStyle(
-                                color: Colors.grey[300],
-                                fontWeight: FontWeight.w700,
-                                fontSize: r.fs(14),
-                              ),
-                              em: TextStyle(
-                                color: Colors.grey[300],
-                                fontStyle: FontStyle.italic,
-                                fontSize: r.fs(14),
-                              ),
-                              del: TextStyle(
-                                color: Colors.grey[500],
-                                decoration: TextDecoration.lineThrough,
-                                fontSize: r.fs(14),
-                              ),
-                              a: const TextStyle(
-                                color: AppTheme.primaryColor,
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
+                        ? RichBioRenderer(
+                            rawContent: user.bio,
+                            fontSize: r.fs(14),
+                            fallbackTextColor: Colors.grey[300],
                           )
                         : isOwnProfile
                             ? GestureDetector(

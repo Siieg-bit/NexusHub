@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/utils/responsive.dart';
+import '../widgets/rich_bio.dart';
 import '../widgets/wall_comment_sheet.dart';
 
 /// Tela expandida de Biografia & Mural — acessível ao tocar no título "Biografia"
@@ -170,13 +171,11 @@ class _BioTab extends StatelessWidget {
           SizedBox(height: r.s(16)),
           // Bio completa
           if (bio.isNotEmpty)
-            SelectableText(
-              bio,
-              style: TextStyle(
-                color: Colors.grey[300],
-                fontSize: r.fs(15),
-                height: 1.7,
-              ),
+            RichBioRenderer(
+              rawContent: bio,
+              selectable: true,
+              fontSize: r.fs(15),
+              fallbackTextColor: Colors.grey[300],
             )
           else
             Center(
