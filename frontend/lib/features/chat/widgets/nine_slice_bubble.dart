@@ -147,10 +147,10 @@ class _NineSliceImage extends StatelessWidget {
           decoration: BoxDecoration(
             image: DecorationImage(
               image: imageProvider,
-              fit: BoxFit.fill,
-              // centerSlice é o coração do 9-slice no Flutter.
-              // Define o retângulo central que será esticado.
-              // Os 4 cantos fora desse rect são renderizados em tamanho fixo.
+              // NÃO usar fit: BoxFit.fill com centerSlice — o Flutter proibe
+              // essa combinação (assertion: 'sourceSize == inputSize').
+              // Quando centerSlice está definido, o Flutter já gerencia o
+              // scaling automaticamente: os cantos são fixos e o centro estica.
               centerSlice: centerSlice,
             ),
           ),

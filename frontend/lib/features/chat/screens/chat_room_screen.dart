@@ -3381,7 +3381,7 @@ class _BubblePreview extends StatelessWidget {
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     image: img,
-                    fit: BoxFit.fill,
+                    // NÃO usar fit com centerSlice — Flutter proíbe a combinação
                     centerSlice: const Rect.fromLTRB(38, 38, 90, 90),
                   ),
                 ),
