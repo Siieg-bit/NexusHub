@@ -1074,9 +1074,8 @@ class _BannerAvatarSection extends ConsumerWidget {
               ),
             ],
           ),
-        ),
 
-        // Espaço para o avatar que sobrepõe
+        // Espaço para o avatar sobrepor o conteúdo seguinte
         SizedBox(height: r.s(60)),
 
         // "Editar Molduras de Perfil" — abre o FramePickerSheet
