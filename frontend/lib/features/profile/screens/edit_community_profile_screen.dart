@@ -682,9 +682,6 @@ class _EditCommunityProfileScreenState
                     frameUrl: _selectedFrameUrl,
                     editFramesLabel: s.editProfileFrames,
                     onTapAvatar: _pickAvatar,
-                    galleryBannerHint: _gallery.isNotEmpty
-                        ? 'A primeira imagem da galeria está sendo usada como capa.'
-                        : 'Adicione uma imagem na galeria para definir a capa da comunidade.',
                     onTapEditFrames: () async {
                       final result = await showFramePickerSheet(
                         context,
@@ -988,7 +985,6 @@ class _BannerAvatarSection extends ConsumerWidget {
   final String? avatarUrl;
   final String? frameUrl;
   final String editFramesLabel;
-  final String galleryBannerHint;
   final VoidCallback onTapAvatar;
   final VoidCallback onTapEditFrames;
 
@@ -997,7 +993,6 @@ class _BannerAvatarSection extends ConsumerWidget {
     required this.avatarUrl,
     this.frameUrl,
     required this.editFramesLabel,
-    required this.galleryBannerHint,
     required this.onTapAvatar,
     required this.onTapEditFrames,
   });
@@ -1028,39 +1023,6 @@ class _BannerAvatarSection extends ConsumerWidget {
                       color: Colors.black.withValues(alpha: 0.15),
                       colorBlendMode: BlendMode.darken,
                     ),
-                  Positioned(
-                    left: r.s(12),
-                    right: r.s(12),
-                    bottom: r.s(12),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: r.s(12),
-                        vertical: r.s(8),
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.45),
-                        borderRadius: BorderRadius.circular(r.s(12)),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.photo_library_rounded,
-                              color: Colors.white, size: r.s(14)),
-                          SizedBox(width: r.s(8)),
-                          Expanded(
-                            child: Text(
-                              galleryBannerHint,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: r.fs(11),
-                                fontWeight: FontWeight.w600,
-                                height: 1.35,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
