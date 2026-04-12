@@ -26,6 +26,9 @@ import '../widgets/chat_date_separator.dart';
 import '../widgets/chat_media_sheet.dart';
 import '../widgets/chat_message_actions.dart';
 import '../widgets/nine_slice_bubble.dart';
+import '../widgets/chat_background_picker.dart';
+import '../widgets/chat_cover_picker.dart';
+import '../widgets/chat_moderation_sheet.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
 import 'chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
@@ -89,6 +92,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   bool _isOpeningVoiceCall = false;
   List<Map<String, dynamic>> _pinnedMessages = [];
   String? _chatBackground;
+  String? _chatCoverUrl;
+  String? _callerRole; // 'host', 'co_host', 'member'
+  bool _isAnnouncementOnly = false;
   // Fluxo de DM invite
   // _isDmInvitePending: true quando o usuário atual é o destinatário de um convite pendente (status='invite_sent')
   // _isDmInviteSender:  true quando o usuário atual é o remetente e aguarda aceitação
@@ -121,6 +127,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     _subscribeToRealtime();
     if (!mounted || _isDisposed) return;
     _loadChatBackground();
+    if (!mounted || _isDisposed) return;
+    _loadChatCoverAndRole();
     if (!mounted || _isDisposed) return;
     // Marcar chat como lido ao abrir — zera unread_count no banco
     _markChatRead();
@@ -398,127 +406,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   void _showBackgroundPicker() {
-    final s = getStrings();
-    final r = context.r;
-    final urlCtrl = TextEditingController(text: _chatBackground ?? '');
-    final presets = [
-      null,
-      'https://images.unsplash.com/photo-1518655048521-f130df041f66?w=800',
-      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
-      'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800',
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
-    ];
-    showModalBottomSheet(
+    showChatBackgroundPicker(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: context.surfaceColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
-      ),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setModalState) => Padding(
-          padding: EdgeInsets.only(
-            left: r.s(16),
-            right: r.s(16),
-            top: r.s(20),
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + r.s(24),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(s.chatBackground,
-                  style: TextStyle(
-                      fontSize: r.fs(18),
-                      fontWeight: FontWeight.w800,
-                      color: context.textPrimary)),
-              SizedBox(height: r.s(16)),
-              SizedBox(
-                height: r.s(80),
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: presets.length,
-                  itemBuilder: (_, i) {
-                    final url = presets[i];
-                    final isSelected = _chatBackground == url;
-                    return GestureDetector(
-                      onTap: () async {
-                        await _saveChatBackground(url);
-                        if (ctx.mounted) Navigator.pop(ctx);
-                      },
-                      child: Container(
-                        width: r.s(80),
-                        height: r.s(80),
-                        margin: EdgeInsets.only(right: r.s(8)),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(r.s(10)),
-                          border: Border.all(
-                            color: isSelected
-                                ? AppTheme.primaryColor
-                                : Colors.transparent,
-                            width: 2,
-                          ),
-                          color: url == null ? context.cardBg : null,
-                          image: url != null
-                              ? DecorationImage(
-                                  image: NetworkImage(url), fit: BoxFit.cover)
-                              : null,
-                        ),
-                        child: url == null
-                            ? Icon(Icons.block_rounded,
-                                color: Colors.grey[500], size: r.s(28))
-                            : null,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(height: r.s(12)),
-              TextField(
-                controller: urlCtrl,
-                style:
-                    TextStyle(color: context.textPrimary, fontSize: r.fs(13)),
-                decoration: InputDecoration(
-                  hintText: s.customBgUrlHint,
-                  hintStyle: TextStyle(color: Colors.grey[600]),
-                  filled: true,
-                  fillColor: context.cardBg,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(r.s(10)),
-                    borderSide: BorderSide.none,
-                  ),
-                  prefixIcon: Icon(Icons.link_rounded,
-                      size: r.s(18), color: Colors.grey[600]),
-                ),
-              ),
-              SizedBox(height: r.s(12)),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(r.s(12))),
-                    padding: EdgeInsets.symmetric(vertical: r.s(12)),
-                  ),
-                  onPressed: () async {
-                    final url = urlCtrl.text.trim().isNotEmpty
-                        ? urlCtrl.text.trim()
-                        : null;
-                    await _saveChatBackground(url);
-                    if (ctx.mounted) Navigator.pop(ctx);
-                  },
-                  child: Text(s.apply,
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: r.fs(14))),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      threadId: widget.threadId,
+      currentBackground: _chatBackground,
+      onChanged: (url) {
+        if (mounted) setState(() => _chatBackground = url);
+      },
     );
   }
 
@@ -535,6 +429,43 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) setState(() => _chatBackground = url);
     } catch (e) {
       debugPrint('[ChatRoom] Background save error: $e');
+    }
+  }
+
+  /// Carrega a capa do chat e o role do usuário atual neste thread.
+  Future<void> _loadChatCoverAndRole() async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      // Capa do chat
+      final threadData = await SupabaseService.table('chat_threads')
+          .select('cover_image_url, is_announcement_only')
+          .eq('id', widget.threadId)
+          .single();
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _chatCoverUrl = threadData['cover_image_url'] as String?;
+          _isAnnouncementOnly = threadData['is_announcement_only'] as bool? ?? false;
+        });
+      }
+      // Role do usuário atual
+      if (userId != null) {
+        final memberData = await SupabaseService.table('chat_members')
+            .select('role')
+            .eq('thread_id', widget.threadId)
+            .eq('user_id', userId)
+            .maybeSingle();
+        if (mounted && !_isDisposed) {
+          // Verificar também se é host pelo host_id do thread
+          final hostId = _threadInfo?['host_id'] as String?;
+          final coHosts = _threadInfo?['co_hosts'] as List?;
+          String? role = memberData?['role'] as String?;
+          if (userId == hostId) role = 'host';
+          else if (coHosts != null && coHosts.contains(userId)) role = 'co_host';
+          setState(() => _callerRole = role ?? 'member');
+        }
+      }
+    } catch (e) {
+      debugPrint('[ChatRoom] _loadChatCoverAndRole error: $e');
     }
   }
 
@@ -936,24 +867,23 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   void _showChatMembers() {
-    final r = context.r;
-    showModalBottomSheet(
+    showChatModerationSheet(
       context: context,
-      backgroundColor: context.surfaceColor,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
-      ),
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.3,
-        maxChildSize: 0.85,
-        expand: false,
-        builder: (ctx, scrollCtrl) => _ChatMembersSheet(
-          threadId: widget.threadId,
-          scrollController: scrollCtrl,
-        ),
-      ),
+      threadId: widget.threadId,
+      callerRole: _callerRole,
+      isAnnouncementOnly: _isAnnouncementOnly,
+      currentCover: _chatCoverUrl,
+      currentTitle: _threadInfo?['title'] as String?,
+      onTitleChanged: () {
+        // Recarregar info do thread após renomear
+        _loadThreadInfo();
+      },
+      onCoverChanged: (url) {
+        if (mounted) setState(() => _chatCoverUrl = url);
+      },
+      onAnnouncementOnlyChanged: (val) {
+        if (mounted) setState(() => _isAnnouncementOnly = val);
+      },
     );
   }
 
@@ -995,6 +925,19 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               Navigator.pop(ctx);
               _showBackgroundPicker();
             }),
+            if (_callerRole == 'host' || _callerRole == 'co_host')
+              _settingsTile(r, Icons.image_rounded, 'Capa do chat', () {
+                Navigator.pop(ctx);
+                showChatCoverPicker(
+                  context: context,
+                  threadId: widget.threadId,
+                  currentCover: _chatCoverUrl,
+                  canEdit: true,
+                  onChanged: (url) {
+                    if (mounted) setState(() => _chatCoverUrl = url);
+                  },
+                );
+              }),
             _settingsTile(r, Icons.chat_bubble_rounded, 'Meu Bubble', () {
               Navigator.pop(ctx);
               _showBubblePicker();
@@ -2071,21 +2014,34 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         titleSpacing: 0,
         title: Row(
           children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: context.surfaceColor,
-              backgroundImage: threadIcon != null
-                  ? CachedNetworkImageProvider(threadIcon)
+            GestureDetector(
+              onTap: (_chatCoverUrl != null)
+                  ? () => showChatCoverPicker(
+                        context: context,
+                        threadId: widget.threadId,
+                        currentCover: _chatCoverUrl,
+                        canEdit: _callerRole == 'host' || _callerRole == 'co_host',
+                        onChanged: (url) {
+                          if (mounted) setState(() => _chatCoverUrl = url);
+                        },
+                      )
                   : null,
-              child: threadIcon == null
-                  ? Icon(
-                      threadType == 'dm'
-                          ? Icons.person_rounded
-                          : Icons.group_rounded,
-                      color: Colors.grey[500],
-                      size: r.s(16),
-                    )
-                  : null,
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: context.surfaceColor,
+                backgroundImage: (_chatCoverUrl ?? threadIcon) != null
+                    ? CachedNetworkImageProvider(_chatCoverUrl ?? threadIcon!)
+                    : null,
+                child: (_chatCoverUrl == null && threadIcon == null)
+                    ? Icon(
+                        threadType == 'dm'
+                            ? Icons.person_rounded
+                            : Icons.group_rounded,
+                        color: Colors.grey[500],
+                        size: r.s(16),
+                      )
+                    : null,
+              ),
             ),
             SizedBox(width: r.s(10)),
             Expanded(
@@ -2655,6 +2611,36 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 );
               }),
 
+            // ── Announcement-only banner (bloqueia input para não-admin) ──
+            if (_isAnnouncementOnly &&
+                _callerRole != 'host' &&
+                _callerRole != 'co_host' &&
+                _membershipConfirmed)
+              Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(16), vertical: r.s(12)),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withValues(alpha: 0.08),
+                  border: Border(
+                      top: BorderSide(
+                          color: Colors.amber.withValues(alpha: 0.2))),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.campaign_rounded,
+                        color: Colors.amber, size: r.s(18)),
+                    SizedBox(width: r.s(8)),
+                    Expanded(
+                      child: Text(
+                        'Apenas admins podem enviar mensagens neste chat.',
+                        style: TextStyle(
+                            color: Colors.grey[400], fontSize: r.fs(12)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
             // ── Voice recorder / Input bar ──
             if (_isRecordingVoice)
               SafeArea(
@@ -2713,7 +2699,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   },
                 ),
               )
-            else if (_membershipConfirmed || _isLoading)
+            else if ((_membershipConfirmed || _isLoading) &&
+                !(_isAnnouncementOnly &&
+                    _callerRole != 'host' &&
+                    _callerRole != 'co_host'))
               ChatInputBar(
                 controller: _messageController,
                 isSending: _isSending,

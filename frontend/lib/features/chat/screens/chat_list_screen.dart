@@ -1124,9 +1124,9 @@ class _AminoChatTile extends ConsumerWidget {
                       ),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: chatRoom.iconUrl != null && chatRoom.iconUrl!.isNotEmpty
+                    child: (chatRoom.coverImageUrl ?? chatRoom.iconUrl) != null && (chatRoom.coverImageUrl ?? chatRoom.iconUrl)!.isNotEmpty
                         ? CachedNetworkImage(
-                            imageUrl: chatRoom.iconUrl!,
+                            imageUrl: (chatRoom.coverImageUrl ?? chatRoom.iconUrl)!,
                             fit: BoxFit.cover,
                             placeholder: (_, __) => Container(
                               color: context.cardBg,

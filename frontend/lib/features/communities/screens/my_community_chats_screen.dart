@@ -609,7 +609,7 @@ class _MyCommunityChatsScreenState
               return GestureDetector(
                 onTap: () {
                   if (userId != null) {
-                    context.push('/profile/$userId');
+                    context.push('/user/$userId');
                   }
                 },
                 child: Container(
@@ -958,9 +958,9 @@ class _CommunityChatTile extends ConsumerWidget {
                       width: r.s(72),
                       height: r.s(72),
                       color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                      child: chatRoom.iconUrl != null
+                      child: (chatRoom.coverImageUrl ?? chatRoom.iconUrl) != null
                           ? CachedNetworkImage(
-                              imageUrl: chatRoom.iconUrl!,
+                              imageUrl: (chatRoom.coverImageUrl ?? chatRoom.iconUrl)!,
                               fit: BoxFit.cover,
                               placeholder: (_, __) => Container(
                                 color: AppTheme.primaryColor

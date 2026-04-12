@@ -14,6 +14,7 @@ class ChatRoomModel {
   final String? iconUrl;
   final String? description;
   final String? backgroundUrl;
+  final String? coverImageUrl;
   final bool isPinned;
   final bool isAnnouncementOnly;
   final bool isVoiceEnabled;
@@ -60,6 +61,7 @@ class ChatRoomModel {
     this.iconUrl,
     this.description,
     this.backgroundUrl,
+    this.coverImageUrl,
     this.isPinned = false,
     this.isAnnouncementOnly = false,
     this.isVoiceEnabled = false,
@@ -90,6 +92,7 @@ class ChatRoomModel {
       iconUrl: json['icon_url'] as String?,
       description: json['description'] as String?,
       backgroundUrl: json['background_url'] as String?,
+      coverImageUrl: json['cover_image_url'] as String?,
       isPinned: json['is_pinned'] as bool? ?? false,
       isAnnouncementOnly: json['is_announcement_only'] as bool? ?? false,
       isVoiceEnabled: json['is_voice_enabled'] as bool? ?? false,
