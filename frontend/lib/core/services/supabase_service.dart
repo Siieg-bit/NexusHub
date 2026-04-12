@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Serviço centralizado para acesso ao Supabase.
@@ -43,15 +46,34 @@ class SupabaseService {
     return client.functions.invoke(functionName, body: body);
   }
 
-  /// Upload de arquivo para o Storage
+  /// Upload de arquivo para o Storage.
+  ///
+  /// Aceita tanto [File] quanto bytes brutos ([Uint8List] ou [List<int>]).
   static Future<String> uploadFile({
     required String bucket,
     required String path,
     required dynamic file,
     FileOptions fileOptions = const FileOptions(),
   }) async {
-    await storage.from(bucket).upload(path, file, fileOptions: fileOptions);
-    return storage.from(bucket).getPublicUrl(path);
+    final storageBucket = storage.from(bucket);
+
+    if (file is Uint8List) {
+      await storageBucket.uploadBinary(path, file, fileOptions: fileOptions);
+    } else if (file is List<int>) {
+      await storageBucket.uploadBinary(
+        path,
+        Uint8List.fromList(file),
+        fileOptions: fileOptions,
+      );
+    } else if (file is File) {
+      await storageBucket.upload(path, file, fileOptions: fileOptions);
+    } else {
+      throw ArgumentError(
+        'Tipo de arquivo não suportado para upload: ${file.runtimeType}',
+      );
+    }
+
+    return storageBucket.getPublicUrl(path);
   }
 
   /// Inscrever-se em canal Realtime
