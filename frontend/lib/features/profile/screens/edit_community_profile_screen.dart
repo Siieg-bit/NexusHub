@@ -736,12 +736,10 @@ class _EditCommunityProfileScreenState
                                   leading: Icon(Icons.notes_rounded,
                                       color: Colors.grey[300], size: r.s(22)),
                                   title: 'Bio',
+                                  onTap: _openBioEditor,
                                   content: _CommunityBioField(
                                     controller: _bioController,
                                     hintText: s.leaveEmptyBio,
-                                    markdownLabel: s.markdown,
-                                    previewLabel: s.preview,
-                                    onTap: _openBioEditor,
                                   ),
                                   trailing: Icon(Icons.chevron_right_rounded,
                                       color: context.textHint, size: r.s(20)),
@@ -1056,69 +1054,82 @@ class _AminoListTile extends StatelessWidget {
   final String? title;
   final Widget content;
   final Widget? trailing;
+  final VoidCallback? onTap;
 
   const _AminoListTile({
     required this.leading,
     required this.content,
     this.title,
     this.trailing,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    return Container(
-      padding: EdgeInsets.all(r.s(14)),
-      decoration: BoxDecoration(
-        color: context.scaffoldBg.withValues(alpha: 0.42),
-        borderRadius: BorderRadius.circular(r.s(18)),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.06),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: r.s(40),
-            height: r.s(40),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(r.s(14)),
+    final borderRadius = BorderRadius.circular(r.s(18));
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: borderRadius,
+        child: Ink(
+          padding: EdgeInsets.all(r.s(14)),
+          decoration: BoxDecoration(
+            color: context.scaffoldBg.withValues(alpha: 0.42),
+            borderRadius: borderRadius,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.06),
             ),
-            child: leading,
           ),
-          SizedBox(width: r.s(12)),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (title != null) ...[
-                  Text(
-                    title!,
-                    style: TextStyle(
-                      color: context.textSecondary,
-                      fontSize: r.fs(11),
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.3,
-                    ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: r.s(40),
+                height: r.s(40),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(r.s(14)),
+                ),
+                child: leading,
+              ),
+              SizedBox(width: r.s(12)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (title != null) ...[
+                      Text(
+                        title!,
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: r.fs(11),
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      SizedBox(height: r.s(6)),
+                    ],
+                    content,
+                  ],
+                ),
+              ),
+              if (trailing != null) ...[
+                SizedBox(width: r.s(10)),
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: title != null ? r.s(18) : r.s(6),
                   ),
-                  SizedBox(height: r.s(6)),
-                ],
-                content,
+                  child: trailing!,
+                ),
               ],
-            ),
+            ],
           ),
-          if (trailing != null) ...[
-            SizedBox(width: r.s(10)),
-            Padding(
-              padding: EdgeInsets.only(top: title != null ? r.s(18) : r.s(6)),
-              child: trailing!,
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
@@ -1336,6 +1347,11 @@ class _InlineTextField extends StatelessWidget {
         hintText: hintText,
         hintStyle: TextStyle(color: context.textHint, fontSize: r.fs(14)),
         border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        disabledBorder: InputBorder.none,
+        filled: false,
+        fillColor: Colors.transparent,
         isDense: true,
         contentPadding: EdgeInsets.zero,
         counterText: '',
@@ -1369,16 +1385,10 @@ class _InlineTextField extends StatelessWidget {
 class _CommunityBioField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
-  final String markdownLabel;
-  final String previewLabel;
-  final VoidCallback onTap;
 
   const _CommunityBioField({
     required this.controller,
     required this.hintText,
-    required this.markdownLabel,
-    required this.previewLabel,
-    required this.onTap,
   });
 
   @override
@@ -1387,24 +1397,17 @@ class _CommunityBioField extends StatelessWidget {
     final bio = controller.text.trim();
     final hasBio = bio.isNotEmpty;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(r.s(14)),
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: r.s(2)),
-          child: Text(
-            hasBio ? bio : hintText,
-            maxLines: hasBio ? 3 : 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: hasBio ? context.textPrimary : context.textHint,
-              fontSize: r.fs(14),
-              height: 1.45,
-              fontWeight: hasBio ? FontWeight.w500 : FontWeight.w400,
-            ),
-          ),
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: r.s(4)),
+      child: Text(
+        hasBio ? bio : hintText,
+        maxLines: hasBio ? 3 : 2,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: hasBio ? context.textPrimary : context.textHint,
+          fontSize: r.fs(14),
+          height: 1.45,
+          fontWeight: hasBio ? FontWeight.w500 : FontWeight.w400,
         ),
       ),
     );

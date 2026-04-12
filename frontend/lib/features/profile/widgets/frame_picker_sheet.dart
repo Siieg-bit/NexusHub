@@ -116,7 +116,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
         // Compras do usuário (apenas avatar_frame)
         if (userId != null)
           SupabaseService.table('user_purchases')
-              .select('id, item_id, store_items!user_purchases_item_id_fkey(id, name, preview_url, asset_url, asset_config)')
+              .select('id, item_id, store_items!user_purchases_item_id_fkey(id, type, name, preview_url, asset_url, asset_config)')
               .eq('user_id', userId)
               .order('purchased_at', ascending: false),
       ]);
@@ -126,10 +126,10 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
           ? List<Map<String, dynamic>>.from(futures[1] as List? ?? [])
           : <Map<String, dynamic>>[];
 
-      // Filtrar compras de avatar_frame
+      // Filtrar apenas compras de avatar_frame
       final ownedPurchases = userPurchases.where((p) {
         final si = p['store_items'] as Map<String, dynamic>?;
-        return si != null;
+        return si != null && (si['type'] as String?) == 'avatar_frame';
       }).toList();
 
       // Mapear IDs possuídos
@@ -173,12 +173,11 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
     }
   }
 
-  /// Extrai a URL do frame de um store_item (preview_url > asset_url > asset_config.frame_url)
+  /// Extrai a URL real do frame de um store_item.
+  ///
+  /// Priorizamos asset_config.frame_url / image_url para mostrar somente a
+  /// moldura transparente no seletor, evitando thumbs promocionais tortas.
   String? _extractFrameUrl(Map<String, dynamic> item) {
-    final previewUrl = item['preview_url'] as String?;
-    if (previewUrl != null && previewUrl.isNotEmpty) return previewUrl;
-    final assetUrl = item['asset_url'] as String?;
-    if (assetUrl != null && assetUrl.isNotEmpty) return assetUrl;
     final config = item['asset_config'];
     if (config is Map) {
       final fu = config['frame_url'] as String?;
@@ -186,6 +185,10 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
       final iu = config['image_url'] as String?;
       if (iu != null && iu.isNotEmpty) return iu;
     }
+    final assetUrl = item['asset_url'] as String?;
+    if (assetUrl != null && assetUrl.isNotEmpty) return assetUrl;
+    final previewUrl = item['preview_url'] as String?;
+    if (previewUrl != null && previewUrl.isNotEmpty) return previewUrl;
     return null;
   }
 
@@ -501,9 +504,13 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
   }
 
   Widget _buildFrameImage(_FrameGridItem item, Responsive r) {
-    final url = item.previewUrl ?? item.frameUrl;
+    final url = item.frameUrl ?? item.previewUrl;
+    final previewSize = r.s(54);
+
     if (url == null || url.isEmpty) {
       return Container(
+        width: previewSize,
+        height: previewSize,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.grey[300],
@@ -512,42 +519,44 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
             color: Colors.grey[500], size: r.s(28)),
       );
     }
-    // Molduras animadas usam Image.network para preservar a animação no grid
-    if (item.isAnimated) {
-      return Image.network(
-        url,
-        fit: BoxFit.contain,
-        gaplessPlayback: true,
-        errorBuilder: (_, __, ___) => Icon(
+
+    Widget placeholder() => Container(
+          width: previewSize,
+          height: previewSize,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(r.s(14)),
+            color: Colors.grey[200],
+          ),
+        );
+
+    Widget fallback() => Icon(
           Icons.photo_filter_outlined,
           color: Colors.grey[400],
           size: r.s(28),
-        ),
-        loadingBuilder: (_, child, progress) {
-          if (progress == null) return child;
-          return Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey[200],
-            ),
+        );
+
+    final image = item.isAnimated
+        ? Image.network(
+            url,
+            fit: BoxFit.contain,
+            gaplessPlayback: true,
+            errorBuilder: (_, __, ___) => fallback(),
+            loadingBuilder: (_, child, progress) {
+              if (progress == null) return child;
+              return placeholder();
+            },
+          )
+        : CachedNetworkImage(
+            imageUrl: url,
+            fit: BoxFit.contain,
+            placeholder: (_, __) => placeholder(),
+            errorWidget: (_, __, ___) => fallback(),
           );
-        },
-      );
-    }
-    return CachedNetworkImage(
-      imageUrl: url,
-      fit: BoxFit.contain,
-      placeholder: (_, __) => Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.grey[200],
-        ),
-      ),
-      errorWidget: (_, __, ___) => Icon(
-        Icons.photo_filter_outlined,
-        color: Colors.grey[400],
-        size: r.s(28),
-      ),
+
+    return SizedBox(
+      width: previewSize,
+      height: previewSize,
+      child: Center(child: image),
     );
   }
 }
