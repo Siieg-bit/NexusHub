@@ -5782,4 +5782,9 @@ class AppStringsDe implements AppStrings {
   String get localAvatarRemoved => 'Lokaler Avatar entfernt';
   @override
   String get maxGalleryPhotos => 'Fotos aus der Max-Galerie';
+  String get backgroundColorSolid => 'Einfarbig';
+  String get backgroundFromGallery => 'Galeriebild';
+  String get backgroundTypeLabel => 'Hintergrundtyp';
+  String get galleryAsBannerHint => 'Galeriebilder werden als Profilcover angezeigt und wechseln alle 20s';
+  String get bioAndWallTitle => 'Biografie & Pinnwand';
 }

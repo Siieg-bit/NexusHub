@@ -2979,5 +2979,13 @@ abstract class AppStrings {
   String get tapToEditAvatar;
   String get localAvatarRemoved;
   String get maxGalleryPhotos;
+  // ── Fundo, galeria como banner e bio expandida ──
+  String get backgroundColorSolid;
+  String get backgroundTypeImage;
+  String get backgroundTypeColor;
+  String get pickSolidColor;
+  String get bannerImages;
+  String get bannerImagesHint;
+  String get bioAndWallTitle;
 
 }
