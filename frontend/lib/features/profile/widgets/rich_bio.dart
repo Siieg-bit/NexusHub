@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:markdown/markdown.dart' as md;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../config/app_theme.dart';
@@ -234,6 +235,43 @@ class RichBioCodec {
   }
 }
 
+const _richBioColorTag = 'rich-bio-color';
+
+class _RichBioColorSyntax extends md.InlineSyntax {
+  _RichBioColorSyntax()
+      : super(r'\[color=(#[0-9A-Fa-f]{6})\]([\s\S]+?)\[/color\]');
+
+  @override
+  bool onMatch(md.InlineParser parser, Match match) {
+    final element = md.Element.text(_richBioColorTag, match.group(2) ?? '');
+    element.attributes['hex'] = (match.group(1) ?? '').toUpperCase();
+    parser.addNode(element);
+    return true;
+  }
+}
+
+class _RichBioColorBuilder extends MarkdownElementBuilder {
+  const _RichBioColorBuilder();
+
+  @override
+  Widget? visitElementAfterWithContext(
+    BuildContext context,
+    md.Element element,
+    TextStyle? preferredStyle,
+    TextStyle? parentStyle,
+  ) {
+    final baseStyle =
+        parentStyle ?? preferredStyle ?? DefaultTextStyle.of(context).style;
+    final resolvedColor = RichBioCodec.parseColor(element.attributes['hex']);
+    return Text.rich(
+      TextSpan(
+        text: element.textContent,
+        style: baseStyle.copyWith(color: resolvedColor ?? baseStyle.color),
+      ),
+    );
+  }
+}
+
 Future<String?> showRichBioEditorSheet(
   BuildContext context, {
   required String initialValue,
@@ -296,6 +334,10 @@ class RichBioRenderer extends StatelessWidget {
   String _toPreviewText(String markdown) {
     return markdown
         .replaceAll(RegExp(r'!\[[^\]]*\]\([^\)]*\)'), '')
+        .replaceAllMapped(
+          RegExp(r'\[color=(#[0-9A-Fa-f]{6})\]([\s\S]+?)\[/color\]'),
+          (match) => match.group(2) ?? '',
+        )
         .replaceAllMapped(
           RegExp(r'\[([^\]]+)\]\([^\)]+\)'),
           (match) => match.group(1) ?? '',
@@ -367,6 +409,8 @@ class RichBioRenderer extends StatelessWidget {
           data: text,
           selectable: selectable,
           onTapLink: (_, href, __) => _openLink(href),
+          inlineSyntaxes: [_RichBioColorSyntax()],
+          builders: const {_richBioColorTag: _RichBioColorBuilder()},
           styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
             p: TextStyle(
               color: textColor,
@@ -498,7 +542,12 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
   bool _showPreview = false;
   bool _isUploading = false;
   Color? _textColor;
+  Color? _legacyTextColor;
   String _activeToolSection = 'text';
+
+  static final RegExp _inlineTextColorPattern = RegExp(
+    r'\[color=(#[0-9A-Fa-f]{6})\]([\s\S]+?)\[/color\]',
+  );
 
   @override
   void initState() {
@@ -507,7 +556,8 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
     _controller = TextEditingController(text: content.markdown);
     _focusNode = FocusNode();
     _media = List<RichBioMediaItem>.from(content.media);
-    _textColor = RichBioCodec.parseColor(content.textColorHex);
+    _legacyTextColor = RichBioCodec.parseColor(content.textColorHex);
+    _textColor = _legacyTextColor;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNode.requestFocus();
     });
@@ -634,14 +684,74 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
     );
   }
 
+  bool get _hasInlineTextColors =>
+      _inlineTextColorPattern.hasMatch(_controller.text);
+
+  String? get _effectiveGlobalTextColorHex => _hasInlineTextColors
+      ? null
+      : RichBioCodec.colorToHex(_legacyTextColor);
+
+  void _applyTextColorToSelection(Color color) {
+    final hex = RichBioCodec.colorToHex(color);
+    if (hex == null) return;
+
+    final value = _controller.value;
+    final selection = value.selection;
+    final text = value.text;
+    final prefix = '[color=$hex]';
+    const suffix = '[/color]';
+
+    if (!selection.isValid ||
+        selection.start < 0 ||
+        selection.end < 0 ||
+        selection.isCollapsed) {
+      const placeholder = 'texto';
+      final insertion = '$prefix$placeholder$suffix';
+      final cursor = selection.isValid && selection.start >= 0
+          ? selection.start
+          : text.length;
+      final updated = text.replaceRange(cursor, cursor, insertion);
+      _replaceValue(
+        updated,
+        selection: TextSelection(
+          baseOffset: cursor + prefix.length,
+          extentOffset: cursor + prefix.length + placeholder.length,
+        ),
+      );
+      setState(() {
+        _textColor = color;
+        _legacyTextColor = null;
+      });
+      return;
+    }
+
+    final selectedText = text.substring(selection.start, selection.end);
+    final updated = text.replaceRange(
+      selection.start,
+      selection.end,
+      '$prefix$selectedText$suffix',
+    );
+    _replaceValue(
+      updated,
+      selection: TextSelection(
+        baseOffset: selection.start + prefix.length,
+        extentOffset: selection.start + prefix.length + selectedText.length,
+      ),
+    );
+    setState(() {
+      _textColor = color;
+      _legacyTextColor = null;
+    });
+  }
+
   Future<void> _pickTextColor() async {
     final selected = await showRGBColorPicker(
       context,
       initialColor: _textColor ?? AppTheme.primaryColor,
-      title: 'Cor do texto da bio',
+      title: 'Cor do texto selecionado',
     );
     if (selected == null || !mounted) return;
-    setState(() => _textColor = selected);
+    _applyTextColorToSelection(selected);
   }
 
   Future<void> _pickAndUploadImage() async {
@@ -753,7 +863,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
   String _buildResult() {
     final content = RichBioContent(
       markdown: _controller.text,
-      textColorHex: RichBioCodec.colorToHex(_textColor),
+      textColorHex: _effectiveGlobalTextColorHex,
       media: _media,
     );
     return RichBioCodec.encode(content);
@@ -847,7 +957,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
             if (_textColor != null)
               _StatusPill(
                 icon: Icons.palette_outlined,
-                label: RichBioCodec.colorToHex(_textColor) ?? 'Cor',
+                label: 'Seleção ${RichBioCodec.colorToHex(_textColor) ?? 'Cor'}',
               ),
             if (_isUploading)
               _StatusPill(
@@ -1065,11 +1175,12 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: _controller,
       builder: (_, value, __) {
-        final preview = RichBioContent(
-          markdown: value.text,
-          textColorHex: RichBioCodec.colorToHex(_textColor),
-          media: _media,
-        );
+          final preview = RichBioContent(
+            markdown: value.text,
+            textColorHex: _effectiveGlobalTextColorHex,
+            media: _media,
+          );
+
 
         return Container(
           decoration: BoxDecoration(
@@ -1305,48 +1416,38 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
         ],
       ),
     );
-
     final compactMeta = <Widget>[
       if (_textColor != null)
-        GestureDetector(
-          onTap: () => setState(() => _textColor = null),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
-            decoration: BoxDecoration(
-              color: (_textColor ?? AppTheme.primaryColor).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(r.s(999)),
-              border: Border.all(
-                color: (_textColor ?? AppTheme.primaryColor).withValues(alpha: 0.28),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
+          decoration: BoxDecoration(
+            color: (_textColor ?? AppTheme.primaryColor).withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(r.s(999)),
+            border: Border.all(
+              color: (_textColor ?? AppTheme.primaryColor).withValues(alpha: 0.28),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: r.s(10),
+                height: r.s(10),
+                decoration: BoxDecoration(
+                  color: _textColor,
+                  shape: BoxShape.circle,
+                ),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: r.s(10),
-                  height: r.s(10),
-                  decoration: BoxDecoration(
-                    color: _textColor,
-                    shape: BoxShape.circle,
-                  ),
+              SizedBox(width: r.s(6)),
+              Text(
+                'Seleção ${RichBioCodec.colorToHex(_textColor) ?? ''}',
+                style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: r.fs(11),
+                  fontWeight: FontWeight.w700,
                 ),
-                SizedBox(width: r.s(6)),
-                Text(
-                  RichBioCodec.colorToHex(_textColor) ?? '',
-                  style: TextStyle(
-                    color: context.textPrimary,
-                    fontSize: r.fs(11),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(width: r.s(4)),
-                Icon(
-                  Icons.close_rounded,
-                  size: r.s(14),
-                  color: context.textSecondary,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       if (_media.isNotEmpty)
