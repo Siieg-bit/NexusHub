@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
@@ -27,6 +28,12 @@ class RichBioMediaItem {
     required this.url,
   });
 
+  bool get isInlineImage => RichBioInlineImageToken.isInlineImageId(id);
+
+  String? get inlineImageToken => isInlineImage
+      ? RichBioInlineImageToken.buildToken(id)
+      : null;
+
   factory RichBioMediaItem.fromJson(Map<String, dynamic> json) {
     return RichBioMediaItem(
       id: (json['id'] as String?)?.trim().isNotEmpty == true
@@ -50,6 +57,72 @@ class RichBioMediaItem {
       url: url ?? this.url,
     );
   }
+}
+
+class RichBioInlineImageToken {
+  static final RegExp tokenPattern = RegExp(r'\[(IMG-[A-Z0-9]{7})\]');
+  static final RegExp idPattern = RegExp(r'^IMG-[A-Z0-9]{7}$');
+  static const String _alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+  static String? normalizeId(String? value) {
+    final normalized = value?.trim().toUpperCase();
+    if (normalized == null || !idPattern.hasMatch(normalized)) return null;
+    return normalized;
+  }
+
+  static bool isInlineImageId(String? value) => normalizeId(value) != null;
+
+  static String buildToken(String id) {
+    final normalized = normalizeId(id) ?? id.trim().toUpperCase();
+    return '[$normalized]';
+  }
+
+  static bool containsToken(String markdown, String id) {
+    final normalized = normalizeId(id);
+    if (normalized == null) return false;
+    return markdown.contains(buildToken(normalized));
+  }
+
+  static Iterable<String> extractIds(String markdown) sync* {
+    for (final match in tokenPattern.allMatches(markdown)) {
+      final id = normalizeId(match.group(1));
+      if (id != null) yield id;
+    }
+  }
+
+  static String stripTokens(String markdown) {
+    return markdown.replaceAll(tokenPattern, '');
+  }
+
+  static String generateId({Iterable<String> existingIds = const []}) {
+    final random = Random.secure();
+    final reserved = existingIds
+        .map(normalizeId)
+        .whereType<String>()
+        .toSet();
+
+    while (true) {
+      final code = List.generate(
+        7,
+        (_) => _alphabet[random.nextInt(_alphabet.length)],
+      ).join();
+      final id = 'IMG-$code';
+      if (!reserved.contains(id)) {
+        return id;
+      }
+    }
+  }
+}
+
+class _RichBioRenderPart {
+  final String markdown;
+  final String? inlineImageId;
+
+  const _RichBioRenderPart.markdown(this.markdown) : inlineImageId = null;
+
+  const _RichBioRenderPart.inlineImage(this.inlineImageId) : markdown = '';
+
+  bool get isInlineImage => inlineImageId != null;
 }
 
 class RichBioContent {
@@ -464,6 +537,7 @@ class RichBioRenderer extends StatelessWidget {
 
   String _toPreviewText(String markdown) {
     return markdown
+        .replaceAll(RichBioInlineImageToken.tokenPattern, '')
         .replaceAll(RegExp(r'!\[[^\]]*\]\([^\)]*\)'), '')
         .replaceAllMapped(
           RegExp(r'\[color=(#[0-9A-Fa-f]{6})\]([\s\S]+?)\[/color\]'),
@@ -513,6 +587,149 @@ class RichBioRenderer extends StatelessWidget {
         .trim();
   }
 
+  List<_RichBioRenderPart> _splitRichContent(String markdown) {
+    final parts = <_RichBioRenderPart>[];
+    var cursor = 0;
+
+    for (final match in RichBioInlineImageToken.tokenPattern.allMatches(markdown)) {
+      if (match.start > cursor) {
+        parts.add(
+          _RichBioRenderPart.markdown(markdown.substring(cursor, match.start)),
+        );
+      }
+
+      final id = RichBioInlineImageToken.normalizeId(match.group(1));
+      if (id != null) {
+        parts.add(_RichBioRenderPart.inlineImage(id));
+      }
+      cursor = match.end;
+    }
+
+    if (cursor < markdown.length) {
+      parts.add(_RichBioRenderPart.markdown(markdown.substring(cursor)));
+    }
+
+    return parts;
+  }
+
+  MarkdownBody _buildMarkdownSegment(
+    BuildContext context,
+    String markdown, {
+    required Color textColor,
+    required double? fontSize,
+  }) {
+    final r = context.r;
+    return MarkdownBody(
+      data: markdown,
+      selectable: selectable,
+      onTapLink: (_, href, __) => _openLink(href),
+      inlineSyntaxes: [_RichBioColorSyntax()],
+      builders: {
+        _richBioColorTag: _RichBioColorBuilder(onTapLink: _openLink),
+      },
+      styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+        p: TextStyle(
+          color: textColor,
+          fontSize: fontSize ?? r.fs(14),
+          height: 1.55,
+        ),
+        strong: TextStyle(
+          color: textColor,
+          fontWeight: FontWeight.w700,
+          fontSize: fontSize ?? r.fs(14),
+        ),
+        em: TextStyle(
+          color: textColor,
+          fontStyle: FontStyle.italic,
+          fontSize: fontSize ?? r.fs(14),
+        ),
+        del: TextStyle(
+          color: textColor.withValues(alpha: 0.72),
+          decoration: TextDecoration.lineThrough,
+          fontSize: fontSize ?? r.fs(14),
+        ),
+        h1: TextStyle(
+          color: textColor,
+          fontSize: (fontSize ?? r.fs(14)) + 6,
+          fontWeight: FontWeight.w800,
+        ),
+        h2: TextStyle(
+          color: textColor,
+          fontSize: (fontSize ?? r.fs(14)) + 4,
+          fontWeight: FontWeight.w700,
+        ),
+        h3: TextStyle(
+          color: textColor,
+          fontSize: (fontSize ?? r.fs(14)) + 2,
+          fontWeight: FontWeight.w700,
+        ),
+        a: const TextStyle(
+          color: AppTheme.primaryColor,
+          decoration: TextDecoration.underline,
+        ),
+        blockquote: TextStyle(
+          color: textColor.withValues(alpha: 0.86),
+          fontStyle: FontStyle.italic,
+          fontSize: fontSize ?? r.fs(14),
+        ),
+        blockquoteDecoration: BoxDecoration(
+          color: AppTheme.primaryColor.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(r.s(12)),
+          border: Border.all(
+            color: AppTheme.primaryColor.withValues(alpha: 0.14),
+          ),
+        ),
+        listBullet: TextStyle(
+          color: textColor,
+          fontSize: fontSize ?? r.fs(14),
+        ),
+        horizontalRuleDecoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(color: context.dividerClr),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInlineImage(
+    BuildContext context,
+    RichBioMediaItem media,
+  ) {
+    final r = context.r;
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: r.s(4)),
+      child: TappableImage(
+        url: media.url,
+        width: double.infinity,
+        height: r.s(220),
+        fit: BoxFit.cover,
+        borderRadius: BorderRadius.circular(r.s(16)),
+      ),
+    );
+  }
+
+  Widget _buildMissingInlineImage(BuildContext context, String id) {
+    final r = context.r;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(r.s(14)),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(r.s(16)),
+        border: Border.all(color: context.dividerClr),
+      ),
+      child: Text(
+        'Imagem inline indisponível ($id)',
+        style: TextStyle(
+          color: context.textSecondary,
+          fontSize: r.fs(12),
+          fontStyle: FontStyle.italic,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final r = context.r;
@@ -521,8 +738,15 @@ class RichBioRenderer extends StatelessWidget {
     final textColor = RichBioCodec.parseColor(parsed.textColorHex) ??
         fallbackTextColor ??
         context.textPrimary;
+    final inlineMediaById = {
+      for (final item in parsed.media)
+        if (item.isInlineImage) item.id.toUpperCase(): item,
+    };
+    final attachmentMedia = parsed.media
+        .where((item) => !item.isInlineImage)
+        .toList(growable: false);
 
-    if (text.isEmpty && parsed.media.isEmpty) {
+    if (text.isEmpty && attachmentMedia.isEmpty && inlineMediaById.isEmpty) {
       return Padding(
         padding: padding ?? EdgeInsets.zero,
         child: Text(
@@ -540,7 +764,9 @@ class RichBioRenderer extends StatelessWidget {
       final previewText = _toPreviewText(text);
       final summary = previewText.isNotEmpty
           ? previewText
-          : (parsed.media.isNotEmpty ? '${parsed.media.length} mídia(s) adicionada(s)' : emptyPlaceholder);
+          : ((attachmentMedia.isNotEmpty || inlineMediaById.isNotEmpty)
+              ? '${attachmentMedia.length + inlineMediaById.length} mídia(s) adicionada(s)'
+              : emptyPlaceholder);
       final preview = Text(
         summary,
         maxLines: maxPreviewLines,
@@ -558,87 +784,44 @@ class RichBioRenderer extends StatelessWidget {
     final children = <Widget>[];
 
     if (text.isNotEmpty) {
-      children.add(
-        MarkdownBody(
-          data: text,
-          selectable: selectable,
-          onTapLink: (_, href, __) => _openLink(href),
-          inlineSyntaxes: [_RichBioColorSyntax()],
-          builders: {
-            _richBioColorTag: _RichBioColorBuilder(onTapLink: _openLink),
-          },
-          styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-            p: TextStyle(
-              color: textColor,
-              fontSize: fontSize ?? r.fs(14),
-              height: 1.55,
-            ),
-            strong: TextStyle(
-              color: textColor,
-              fontWeight: FontWeight.w700,
-              fontSize: fontSize ?? r.fs(14),
-            ),
-            em: TextStyle(
-              color: textColor,
-              fontStyle: FontStyle.italic,
-              fontSize: fontSize ?? r.fs(14),
-            ),
-            del: TextStyle(
-              color: textColor.withValues(alpha: 0.72),
-              decoration: TextDecoration.lineThrough,
-              fontSize: fontSize ?? r.fs(14),
-            ),
-            h1: TextStyle(
-              color: textColor,
-              fontSize: (fontSize ?? r.fs(14)) + 6,
-              fontWeight: FontWeight.w800,
-            ),
-            h2: TextStyle(
-              color: textColor,
-              fontSize: (fontSize ?? r.fs(14)) + 4,
-              fontWeight: FontWeight.w700,
-            ),
-            h3: TextStyle(
-              color: textColor,
-              fontSize: (fontSize ?? r.fs(14)) + 2,
-              fontWeight: FontWeight.w700,
-            ),
-            a: const TextStyle(
-              color: AppTheme.primaryColor,
-              decoration: TextDecoration.underline,
-            ),
-            blockquote: TextStyle(
-              color: textColor.withValues(alpha: 0.86),
-              fontStyle: FontStyle.italic,
-              fontSize: fontSize ?? r.fs(14),
-            ),
-            blockquoteDecoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(r.s(12)),
-              border: Border.all(
-                color: AppTheme.primaryColor.withValues(alpha: 0.14),
-              ),
-            ),
-            listBullet: TextStyle(
-              color: textColor,
-              fontSize: fontSize ?? r.fs(14),
-            ),
-            horizontalRuleDecoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(color: context.dividerClr),
-              ),
-            ),
+      for (final part in _splitRichContent(text)) {
+        if (part.isInlineImage) {
+          final media = inlineMediaById[part.inlineImageId];
+          if (children.isNotEmpty) {
+            children.add(SizedBox(height: r.s(12)));
+          }
+          children.add(
+            media != null
+                ? _buildInlineImage(context, media)
+                : _buildMissingInlineImage(context, part.inlineImageId!),
+          );
+          continue;
+        }
+
+        if (part.markdown.trim().isEmpty) {
+          continue;
+        }
+
+        if (children.isNotEmpty) {
+          children.add(SizedBox(height: r.s(12)));
+        }
+        children.add(
+          _buildMarkdownSegment(
+            context,
+            part.markdown,
+            textColor: textColor,
+            fontSize: fontSize,
           ),
-        ),
-      );
+        );
+      }
     }
 
-    if (parsed.media.isNotEmpty) {
+    if (attachmentMedia.isNotEmpty) {
       if (children.isNotEmpty) {
         children.add(SizedBox(height: r.s(14)));
       }
       children.addAll(
-        parsed.media.map(
+        attachmentMedia.map(
           (item) => Padding(
             padding: EdgeInsets.only(bottom: r.s(12)),
             child: TappableImage(
@@ -697,6 +880,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
   late List<RichBioMediaItem> _media;
   bool _showPreview = false;
   bool _isUploading = false;
+  bool _isAwaitingInlineImageTap = false;
   Color? _textColor;
   Color? _legacyTextColor;
   String _activeToolSection = 'text';
@@ -846,6 +1030,132 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
   String? get _effectiveGlobalTextColorHex =>
       RichBioCodec.colorToHex(_legacyTextColor);
 
+  List<RichBioMediaItem> _sanitizeMediaForMarkdown(String markdown) {
+    return _media.where((item) {
+      if (!item.isInlineImage) return true;
+      return RichBioInlineImageToken.containsToken(markdown, item.id);
+    }).toList(growable: false);
+  }
+
+  String _generateInlineImageId() {
+    return RichBioInlineImageToken.generateId(
+      existingIds: _media.map((item) => item.id),
+    );
+  }
+
+  void _armInlineImageInsertion() {
+    if (_isUploading) return;
+    setState(() => _isAwaitingInlineImageTap = true);
+    _focusNode.requestFocus();
+  }
+
+  void _handleEditorTap() {
+    if (!_isAwaitingInlineImageTap) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted || !_isAwaitingInlineImageTap) return;
+      setState(() => _isAwaitingInlineImageTap = false);
+      await _openInlineImageOptions();
+    });
+  }
+
+  Future<void> _openInlineImageOptions() async {
+    final r = context.r;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: context.surfaceColor,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(r.s(16)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Inserir imagem inline',
+                  style: TextStyle(
+                    color: context.textPrimary,
+                    fontSize: r.fs(18),
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: r.s(6)),
+                Text(
+                  'A imagem será enviada e um código [IMG-XXXXXXX] será inserido exatamente no ponto atual do texto.',
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontSize: r.fs(12),
+                    height: 1.45,
+                  ),
+                ),
+                SizedBox(height: r.s(12)),
+                ListTile(
+                  leading: const Icon(Icons.image_outlined),
+                  title: const Text('Selecionar da galeria'),
+                  subtitle: const Text('Faz upload e insere o marcador automaticamente'),
+                  onTap: () async {
+                    Navigator.of(sheetContext).pop();
+                    await _pickAndInsertInlineImage();
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _insertInlineMediaToken(RichBioMediaItem item) {
+    final value = _controller.value;
+    final selection = value.selection;
+    final text = value.text;
+    final start = selection.isValid && selection.start >= 0
+        ? selection.start
+        : text.length;
+    final end = selection.isValid && selection.end >= 0
+        ? selection.end
+        : start;
+    final token = item.inlineImageToken ??
+        RichBioInlineImageToken.buildToken(item.id);
+    final needsLeadingBreak = start > 0 && !text.substring(0, start).endsWith('\n');
+    final needsTrailingBreak = end < text.length && !text.substring(end).startsWith('\n');
+    final insertion = '${needsLeadingBreak ? '\n' : ''}$token${needsTrailingBreak ? '\n' : ''}';
+    final updated = text.replaceRange(start, end, insertion);
+
+    _media = [
+      ..._media.where((media) => media.id != item.id),
+      item,
+    ];
+    _replaceValue(
+      updated,
+      selection: TextSelection.collapsed(offset: start + insertion.length),
+    );
+    _focusNode.requestFocus();
+  }
+
+  void _removeMediaItem(RichBioMediaItem item) {
+    final remaining = _media.where((media) => media.id != item.id).toList();
+    if (!item.isInlineImage) {
+      setState(() => _media = remaining);
+      return;
+    }
+
+    final token = item.inlineImageToken;
+    var updated = _controller.text;
+    if (token != null && token.isNotEmpty) {
+      updated = updated
+          .replaceAll(token, '')
+          .replaceAll(RegExp(r'\n{3,}'), '\n\n');
+    }
+
+    _media = remaining;
+    _replaceValue(
+      updated,
+      selection: TextSelection.collapsed(offset: updated.length),
+    );
+  }
+
   void _applyTextColorToSelection(Color color) {
     final hex = RichBioCodec.colorToHex(color);
     if (hex == null) return;
@@ -909,10 +1219,10 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
     _applyTextColorToSelection(selected);
   }
 
-  Future<void> _pickAndUploadImage() async {
+  Future<void> _pickAndInsertInlineImage() async {
     final file = await MediaUploadService.pickImage(source: ImageSource.gallery);
     if (file == null || !mounted) return;
-    await _uploadMediaFile(file, type: 'image');
+    await _uploadInlineImageFile(file);
   }
 
   Future<void> _pickAndUploadVideo() async {
@@ -945,6 +1255,26 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
         ),
       ];
     });
+  }
+
+  Future<void> _uploadInlineImageFile(File file) async {
+    final inlineId = _generateInlineImageId();
+    setState(() => _isUploading = true);
+    final result = await MediaUploadService.uploadFile(
+      file: file,
+      bucket: MediaBucket.postMedia,
+    );
+    if (!mounted) return;
+    setState(() => _isUploading = false);
+    if (result == null) return;
+
+    _insertInlineMediaToken(
+      RichBioMediaItem(
+        id: inlineId,
+        type: 'image',
+        url: result.url,
+      ),
+    );
   }
 
   Future<void> _uploadMediaFile(File file, {required String type}) async {
@@ -1019,7 +1349,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
     final content = RichBioContent(
       markdown: _controller.text,
       textColorHex: _effectiveGlobalTextColorHex,
-      media: _media,
+      media: _sanitizeMediaForMarkdown(_controller.text),
     );
     return RichBioCodec.encode(content);
   }
@@ -1097,17 +1427,18 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
       child: ValueListenableBuilder<TextEditingValue>(
         valueListenable: _controller,
         builder: (_, value, __) {
-          final mediaLabel = _media.isEmpty ? 'Sem mídia' : '${_media.length} mídia(s)';
+          final activeMedia = _sanitizeMediaForMarkdown(value.text);
+          final mediaLabel = activeMedia.isEmpty ? 'Sem mídia' : '${activeMedia.length} mídia(s)';
 
           final chips = <Widget>[
             _StatusPill(
               icon: Icons.auto_awesome_rounded,
               label: 'Markdown',
             ),
-            if (_media.isNotEmpty)
+            if (activeMedia.isNotEmpty)
               _StatusPill(
                 icon: Icons.collections_outlined,
-                label: '${_media.length} mídia(s)',
+                label: '${activeMedia.length} mídia(s)',
               ),
             if (_textColor != null)
               _StatusPill(
@@ -1289,6 +1620,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
               controller: _controller,
               focusNode: _focusNode,
               autofocus: true,
+              onTap: _handleEditorTap,
               keyboardType: TextInputType.multiline,
               textInputAction: TextInputAction.newline,
               textCapitalization: TextCapitalization.sentences,
@@ -1303,7 +1635,9 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                 height: 1.55,
               ),
               decoration: InputDecoration(
-                hintText: widget.hintText,
+                hintText: _isAwaitingInlineImageTap
+                    ? 'Toque no ponto do texto para inserir a imagem inline.'
+                    : widget.hintText,
                 hintStyle: TextStyle(
                   color: context.textHint,
                   fontSize: r.fs(14),
@@ -1333,7 +1667,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
           final preview = RichBioContent(
             markdown: value.text,
             textColorHex: _effectiveGlobalTextColorHex,
-            media: _media,
+            media: _sanitizeMediaForMarkdown(value.text),
           );
 
 
@@ -1445,8 +1779,8 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
         _StudioActionTile(
           icon: Icons.image_outlined,
           label: 'Imagem',
-          caption: 'Adicionar da galeria',
-          onTap: _pickAndUploadImage,
+          caption: 'Toque no texto e insira inline',
+          onTap: _armInlineImageInsertion,
         ),
         _StudioActionTile(
           icon: Icons.gif_box_outlined,
@@ -1605,7 +1939,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
             ],
           ),
         ),
-      if (_media.isNotEmpty)
+      if (_sanitizeMediaForMarkdown(_controller.text).isNotEmpty)
         Container(
           padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
           decoration: BoxDecoration(
@@ -1616,7 +1950,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
             ),
           ),
           child: Text(
-            '${_media.length} mídia(s)',
+            '${_sanitizeMediaForMarkdown(_controller.text).length} mídia(s)',
             style: TextStyle(
               color: context.textPrimary,
               fontSize: r.fs(11),
@@ -1712,7 +2046,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
               SizedBox(height: r.s(8)),
             ],
             compactTemplates,
-            if (!compact && _media.isNotEmpty) ...[
+            if (!compact && _sanitizeMediaForMarkdown(_controller.text).isNotEmpty) ...[
               SizedBox(height: r.s(12)),
               Text(
                 'Mídia anexada',
@@ -1727,10 +2061,10 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                 height: r.s(112),
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: _media.length,
+                  itemCount: _sanitizeMediaForMarkdown(_controller.text).length,
                   separatorBuilder: (_, __) => SizedBox(width: r.s(10)),
                   itemBuilder: (_, index) {
-                    final item = _media[index];
+                    final item = _sanitizeMediaForMarkdown(_controller.text)[index];
                     return Container(
                       width: r.s(132),
                       decoration: BoxDecoration(
@@ -1776,9 +2110,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                                 ),
                                 InkWell(
                                   borderRadius: BorderRadius.circular(r.s(999)),
-                                  onTap: () => setState(() {
-                                    _media = _media.where((m) => m.id != item.id).toList();
-                                  }),
+                                  onTap: () => _removeMediaItem(item),
                                   child: Padding(
                                     padding: EdgeInsets.all(r.s(2)),
                                     child: Icon(
@@ -1851,7 +2183,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
               ),
               _MiniStudioButton(
                 icon: Icons.image_outlined,
-                onTap: _pickAndUploadImage,
+                onTap: _armInlineImageInsertion,
               ),
               _MiniStudioButton(
                 icon: Icons.gif_box_outlined,
