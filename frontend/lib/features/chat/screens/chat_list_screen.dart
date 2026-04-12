@@ -47,10 +47,24 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
       .where((e) => e['chat_threads'] != null)
       .toList();
 
+  bool isDirectLikeThread(Map<String, dynamic>? thread) {
+    if (thread == null) return false;
+    final type = thread['type'] as String? ?? '';
+    if (type == 'dm') return true;
+    if (type == 'public') return false;
+
+    final communityId = thread['community_id'] as String?;
+    final membersCount = thread['members_count'] as int? ?? 0;
+    final hasGenericTitle =
+        ((thread['title'] as String?) ?? '').trim().toLowerCase() == 'chat';
+
+    return communityId == null && (membersCount <= 2 || hasGenericTitle);
+  }
+
   final dmThreadIds = rawChats
       .where((e) {
         final thread = e['chat_threads'] as Map<String, dynamic>?;
-        return thread?['type'] == 'dm';
+        return isDirectLikeThread(thread);
       })
       .map((e) => e['thread_id'] as String?)
       .whereType<String>()
@@ -89,13 +103,15 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
     threadMap['pinned_at'] = e['pinned_at'];
     threadMap['membership_status'] = e['status'] as String? ?? 'active';
 
-    if (threadMap['type'] == 'dm') {
-      final dmThreadId = e['thread_id'] as String? ?? threadMap['id'] as String? ?? '';
+    if (isDirectLikeThread(threadMap)) {
+      final dmThreadId =
+          e['thread_id'] as String? ?? threadMap['id'] as String? ?? '';
       final counterpart = dmCounterparts[dmThreadId];
       if (counterpart != null) {
         threadMap['title'] = counterpart['nickname'] ?? threadMap['title'];
         threadMap['icon_url'] = counterpart['icon_url'];
-        threadMap['host_id'] = counterpart['id'] ?? counterpart['user_id'] ?? threadMap['host_id'];
+        threadMap['host_id'] =
+            counterpart['id'] ?? counterpart['user_id'] ?? threadMap['host_id'];
       }
     }
 
@@ -1051,6 +1067,11 @@ class _AminoChatTile extends ConsumerWidget {
     final r = context.r;
     final hasUnread = chatRoom.unreadCount > 0;
     final isPinned = chatRoom.isPinnedByUser;
+    final isDirectLikeChat = chatRoom.type == 'dm' ||
+        (chatRoom.type != 'public' &&
+            chatRoom.communityId == null &&
+            (chatRoom.membersCount <= 2 ||
+                chatRoom.title.trim().toLowerCase() == 'chat'));
 
     // GestureDetector com HitTestBehavior.translucent:
     // - translucent permite que o ListView receba o scroll normalmente
@@ -1076,7 +1097,7 @@ class _AminoChatTile extends ConsumerWidget {
             : null,
         child: Row(
           children: [
-            chatRoom.type == 'dm'
+            isDirectLikeChat
                 ? CosmeticAvatar(
                     userId: chatRoom.hostId,
                     avatarUrl: chatRoom.iconUrl,
