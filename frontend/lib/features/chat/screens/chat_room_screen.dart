@@ -1024,6 +1024,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       builder: (ctx) => _BubblePickerSheet(
         onBubbleSelected: (purchaseId, itemType) async {
           try {
+            debugPrint('[EquipBubble] Chamando RPC equip_store_item '
+                'purchase_id=$purchaseId item_type=$itemType');
             final result = await SupabaseService.client.rpc(
               'equip_store_item',
               params: {
@@ -1031,8 +1033,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 'p_item_type': itemType,
               },
             );
-            final ok = (result as Map<String, dynamic>?)?['success'] as bool? ?? false;
-            final equipped = (result as Map<String, dynamic>?)?['equipped'] as bool? ?? false;
+            debugPrint('[EquipBubble] RPC result: $result (${result.runtimeType})');
+            final resultMap = result is Map
+                ? Map<String, dynamic>.from(result as Map)
+                : null;
+            final ok = resultMap?['success'] as bool? ?? false;
+            final equipped = resultMap?['equipped'] as bool? ?? false;
+            debugPrint('[EquipBubble] ok=$ok equipped=$equipped');
             final userId = SupabaseService.currentUserId;
             if (userId != null) {
               ref.invalidate(userCosmeticsProvider(userId));
@@ -1051,13 +1058,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
               );
             }
-          } catch (e) {
+          } catch (e, st) {
+            debugPrint('[EquipBubble] ERRO: $e');
+            debugPrint('[EquipBubble] STACK TRACE:\n$st');
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Erro ao equipar bubble.'),
+                  content: Text('Erro ao equipar bubble: $e'),
                   backgroundColor: AppTheme.errorColor,
                   behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 6),
                 ),
               );
             }
@@ -3081,8 +3091,9 @@ class _BubblePickerSheetState extends ConsumerState<_BubblePickerSheet> {
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (e, st) {
       debugPrint('[BubblePicker] Erro ao carregar bubbles: $e');
+      debugPrint('[BubblePicker] STACK TRACE:\n$st');
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -3090,13 +3101,22 @@ class _BubblePickerSheetState extends ConsumerState<_BubblePickerSheet> {
   Future<void> _onTap(Map<String, dynamic> bubble) async {
     final purchaseId = bubble['purchase_id'] as String? ?? '';
     final itemType = bubble['type'] as String? ?? 'chat_bubble';
-    if (purchaseId.isEmpty || _busyPurchaseId != null) return;
+    debugPrint('[BubblePicker] _onTap purchase_id=$purchaseId type=$itemType');
+    if (purchaseId.isEmpty || _busyPurchaseId != null) {
+      debugPrint('[BubblePicker] _onTap ignorado: '
+          'purchaseId.isEmpty=${purchaseId.isEmpty} '
+          'busy=$_busyPurchaseId');
+      return;
+    }
 
     setState(() => _busyPurchaseId = purchaseId);
     try {
       await widget.onBubbleSelected(purchaseId, itemType);
       // Recarrega para refletir novo estado is_equipped
       await _loadOwnedBubbles();
+    } catch (e, st) {
+      debugPrint('[BubblePicker] _onTap ERRO: $e');
+      debugPrint('[BubblePicker] STACK TRACE:\n$st');
     } finally {
       if (mounted) setState(() => _busyPurchaseId = null);
     }
