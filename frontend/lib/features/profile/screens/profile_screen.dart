@@ -139,62 +139,64 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         color: Colors.white, size: r.s(20)),
                     onPressed: () => context.pop(),
                   ),
-                  title: GestureDetector(
-                    onTap: () => context.push('/wallet'),
-                    child: Container(
-                      height: r.s(28),
-                      padding: EdgeInsets.symmetric(horizontal: r.s(10)),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
-                        ),
-                        borderRadius: BorderRadius.circular(r.s(14)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: r.s(16),
-                            height: r.s(16),
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                              ),
-                            ),
-                            child: Center(
-                              child: Text('A',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: r.fs(9),
-                                      fontWeight: FontWeight.w900,
-                                      height: 1.0)),
-                            ),
-                          ),
-                          SizedBox(width: r.s(4)),
-                          Text(
-                            _formatCoins(user.coins),
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: r.fs(12),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          SizedBox(width: r.s(4)),
-                          Container(
-                            width: r.s(16),
-                            height: r.s(16),
+                  title: isOwnProfile
+                      ? GestureDetector(
+                          onTap: () => context.push('/wallet'),
+                          child: Container(
+                            height: r.s(28),
+                            padding: EdgeInsets.symmetric(horizontal: r.s(10)),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.3),
-                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
+                              ),
+                              borderRadius: BorderRadius.circular(r.s(14)),
                             ),
-                            child: Icon(Icons.add,
-                                color: Colors.white, size: r.s(11)),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: r.s(16),
+                                  height: r.s(16),
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text('A',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: r.fs(9),
+                                            fontWeight: FontWeight.w900,
+                                            height: 1.0)),
+                                  ),
+                                ),
+                                SizedBox(width: r.s(4)),
+                                Text(
+                                  _formatCoins(user.coins),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: r.fs(12),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                SizedBox(width: r.s(4)),
+                                Container(
+                                  width: r.s(16),
+                                  height: r.s(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.3),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(Icons.add,
+                                      color: Colors.white, size: r.s(11)),
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
+                        )
+                      : const SizedBox.shrink(),
                   centerTitle: true,
                   actions: [
                     IconButton(

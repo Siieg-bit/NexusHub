@@ -1010,10 +1010,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             children: [
                               CosmeticAvatar(
                                 userId: post.authorId,
-                                avatarUrl: post.author?.iconUrl,
+                                avatarUrl:
+                                    post.authorLocalIconUrl?.trim().isNotEmpty ==
+                                            true
+                                        ? post.authorLocalIconUrl!.trim()
+                                        : post.author?.iconUrl,
                                 size: r.s(40),
-                                onTap: () =>
-                                    context.push('/user/${post.authorId}'),
+                                onTap: () => context.push(
+                                  '/community/${post.communityId}/profile/${post.authorId}',
+                                ),
                               ),
                               SizedBox(width: r.s(10)),
                               Expanded(
@@ -1024,7 +1029,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                       children: [
                                         Flexible(
                                           child: Text(
-                                            post.author?.nickname ?? s.user,
+                                            post.authorLocalNickname
+                                                        ?.trim()
+                                                        .isNotEmpty ==
+                                                    true
+                                                ? post.authorLocalNickname!.trim()
+                                                : (post.author?.nickname ?? s.user),
                                             style: TextStyle(
                                               fontWeight: FontWeight.w700,
                                               color: context.textPrimary,
@@ -2063,7 +2073,11 @@ class _CommentTileState extends ConsumerState<_CommentTile> {
                 userId: comment.authorId,
                 avatarUrl: comment.author?.iconUrl,
                 size: r.s(widget.depth > 0 ? 30 : 36),
-                onTap: () => context.push('/user/${comment.authorId}'),
+                onTap: () => context.push(
+                  widget.communityId?.isNotEmpty == true
+                      ? '/community/${widget.communityId}/profile/${comment.authorId}'
+                      : '/user/${comment.authorId}',
+                ),
               ),
               SizedBox(width: r.s(10)),
               Expanded(

@@ -620,7 +620,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
     final reputation = member['reputation'] as int? ?? 0;
 
     return InkWell(
-      onTap: () => context.push('/user/${member["id"]}'),
+      onTap: () =>
+          context.push('/community/${widget.communityId}/profile/${member["id"]}'),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
         decoration: BoxDecoration(

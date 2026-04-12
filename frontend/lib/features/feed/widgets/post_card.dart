@@ -381,7 +381,11 @@ class _PostCardState extends ConsumerState<PostCard>
             userId: _post.authorId,
             avatarUrl: displayAuthorAvatar,
             size: r.s(36),
-            onTap: () => context.push('/user/${_post.authorId}'),
+            onTap: () => context.push(
+              _post.communityId.isNotEmpty
+                  ? '/community/${_post.communityId}/profile/${_post.authorId}'
+                  : '/user/${_post.authorId}',
+            ),
           ),
           SizedBox(width: r.s(10)),
           Expanded(
