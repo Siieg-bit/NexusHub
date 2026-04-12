@@ -613,8 +613,6 @@ class CallService {
     await _engine!.enableAudio();
     _isMuted = false;
 
-    await _engine!.setEnableSpeakerphone(_isSpeakerOn);
-
     final channelName = _channelName(session);
 
     _agoraToken = await _fetchAgoraToken(channelName);
@@ -631,6 +629,18 @@ class CallService {
         clientRoleType: ClientRoleType.clientRoleBroadcaster,
       ),
     );
+
+    try {
+      await _engine!.setEnableSpeakerphone(_isSpeakerOn);
+    } catch (e, st) {
+      debugPrint(
+        '[CallService][joinAgora.speakerphone] Non-fatal speakerphone setup failure: $e',
+      );
+      debugPrintStack(
+        label: '[CallService][joinAgora.speakerphone][stackTrace]',
+        stackTrace: st,
+      );
+    }
   }
 
   /// Toggle mute do microfone
@@ -730,10 +740,37 @@ class CallService {
     if (call == null) return [];
     try {
       final res = await SupabaseService.table('call_participants')
-          .select('*, profiles!call_participants_user_id_fkey(*)')
+          .select()
           .eq('call_session_id', call.id)
           .eq('status', 'connected');
-      return List<Map<String, dynamic>>.from(res as List? ?? []);
+
+      final participants = List<Map<String, dynamic>>.from(res as List? ?? []);
+      if (participants.isEmpty) return participants;
+
+      final userIds = participants
+          .map((row) => row['user_id'] as String?)
+          .whereType<String>()
+          .toSet()
+          .toList();
+
+      if (userIds.isEmpty) return participants;
+
+      final profilesRes = await SupabaseService.table('profiles')
+          .select('id, nickname, icon_url, amino_id')
+          .inFilter('id', userIds);
+
+      final profiles = {
+        for (final row in List<Map<String, dynamic>>.from(profilesRes as List? ?? []))
+          (row['id'] as String?) ?? '': row,
+      };
+
+      return participants.map((participant) {
+        final userId = participant['user_id'] as String? ?? '';
+        return {
+          ...participant,
+          'profiles': profiles[userId],
+        };
+      }).toList();
     } catch (e, st) {
       _recordFailure(
         stage: 'getParticipants.exception',
