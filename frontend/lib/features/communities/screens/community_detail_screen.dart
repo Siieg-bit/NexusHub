@@ -25,6 +25,8 @@ import '../widgets/community_chat_tab.dart';
 import '../widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/deep_link_service.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // MAIN SCREEN — Estilo Amino Apps
@@ -165,7 +167,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return AppTheme.primaryColor;
+      return context.nexusTheme.accentPrimary;
     }
   }
 
@@ -200,7 +202,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(displayMsg),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 4),
             shape: RoundedRectangleBorder(
@@ -245,18 +247,18 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
     return communityAsync.when(
       loading: () => Scaffold(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         body: Center(
           child: CircularProgressIndicator(
-              color: AppTheme.primaryColor, strokeWidth: 2.5),
+              color: context.nexusTheme.accentPrimary, strokeWidth: 2.5),
         ),
       ),
       error: (error, _) => Scaffold(
-        backgroundColor: context.scaffoldBg,
-        appBar: AppBar(backgroundColor: context.scaffoldBg),
+        backgroundColor: context.nexusTheme.backgroundPrimary,
+        appBar: AppBar(backgroundColor: context.nexusTheme.backgroundPrimary),
         body: Center(
             child: Text(s.errorGeneric(error.toString()),
-                style: TextStyle(color: context.textSecondary))),
+                style: TextStyle(color: context.nexusTheme.textSecondary))),
       ),
       data: (community) {
         final themeColor = _parseColor(community.themeColor);
@@ -292,7 +294,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             membership: membership,
           ),
           child: Scaffold(
-            backgroundColor: context.scaffoldBg,
+            backgroundColor: context.nexusTheme.backgroundPrimary,
             // extendBody: true faz o conteúdo passar por baixo do nav flutuante
             extendBody: true,
             body: _bottomIndex == 0
@@ -378,10 +380,10 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             // (o FAB de criar post está no próprio nav capsule)
             floatingActionButton: !isMember
                 ? AminoAnimations.pulseGlow(
-                    glowColor: AppTheme.primaryColor,
+                    glowColor: context.nexusTheme.accentPrimary,
                     child: FloatingActionButton.extended(
                       onPressed: _joinCommunity,
-                      backgroundColor: AppTheme.primaryColor,
+                      backgroundColor: context.nexusTheme.accentPrimary,
                       elevation: 4,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(r.s(16))),
@@ -421,7 +423,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         SliverAppBar(
           expandedHeight: 180,
           pinned: true,
-          backgroundColor: context.scaffoldBg,
+          backgroundColor: context.nexusTheme.backgroundPrimary,
           elevation: 0,
           leading: Builder(
             builder: (ctx) => Padding(
@@ -559,7 +561,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     gradient: LinearGradient(
                       colors: [
                         Colors.black.withValues(alpha: 0.4),
-                        context.scaffoldBg,
+                        context.nexusTheme.backgroundPrimary,
                       ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -647,7 +649,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                       padding: EdgeInsets.symmetric(
                                           horizontal: r.s(8), vertical: r.s(3)),
                                       decoration: BoxDecoration(
-                                        color: AppTheme.primaryColor,
+                                        color: context.nexusTheme.accentPrimary,
                                         borderRadius:
                                             BorderRadius.circular(r.s(12)),
                                       ),
@@ -713,14 +715,14 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                         welcomeBanner['text'] as String? ??
                             s.welcomeToCommunity,
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(13),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                     Icon(Icons.chevron_right_rounded,
-                        color: context.textHint, size: r.s(20)),
+                        color: context.nexusTheme.textHint, size: r.s(20)),
                   ],
                 ),
               ),
@@ -745,7 +747,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
                 labelColor: Colors.white,
-                unselectedLabelColor: context.textHint,
+                unselectedLabelColor: context.nexusTheme.textHint,
                 indicatorColor: Colors.white,
                 indicatorWeight: 2,
                 indicatorSize: TabBarIndicatorSize.label,
@@ -786,7 +788,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             )
           : Center(
               child: Text(s.noSectionsEnabled,
-                  style: TextStyle(color: context.textSecondary)),
+                  style: TextStyle(color: context.nexusTheme.textSecondary)),
             ),
     );
   }
@@ -900,7 +902,7 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: context.scaffoldBg,
+      color: context.nexusTheme.backgroundPrimary,
       child: tabBar,
     );
   }

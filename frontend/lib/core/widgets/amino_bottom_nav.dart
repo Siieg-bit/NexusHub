@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../config/nexus_theme_extension.dart';
 import '../utils/responsive.dart';
 import '../l10n/locale_provider.dart';
 
@@ -63,7 +64,7 @@ class AminoBottomNavBar extends ConsumerWidget {
         child: Container(
           height: r.s(62),
           decoration: BoxDecoration(
-            color: const Color(0xFF1A1A2E).withValues(alpha: 0.92),
+            color: context.nexusTheme.bottomNavBackground.withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(r.s(40)),
             boxShadow: [
               BoxShadow(
@@ -78,7 +79,7 @@ class AminoBottomNavBar extends ConsumerWidget {
               ),
             ],
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.08),
+              color: context.nexusTheme.borderSubtle,
               width: 0.5,
             ),
           ),
@@ -143,22 +144,15 @@ class AminoBottomNavBar extends ConsumerWidget {
                         width: r.s(48),
                         height: r.s(48),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFF2D2D4E),
-                              Color(0xFF1A1A35),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
+                          gradient: context.nexusTheme.accentGradient,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.15),
+                            color: context.nexusTheme.borderSubtle,
                             width: 1.5,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.4),
+                              color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 3),
                             ),
@@ -298,12 +292,31 @@ class AminoCommunityFab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
-    return FloatingActionButton(
-      onPressed: onTap,
-      backgroundColor: const Color(0xFF7B2FBE),
-      elevation: 6,
-      shape: const CircleBorder(),
-      child: Icon(Icons.add_rounded, color: Colors.white, size: r.s(28)),
+    return Container(
+      width: r.s(56),
+      height: r.s(56),
+      decoration: BoxDecoration(
+        gradient: context.nexusTheme.fabGradient,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: Center(
+            child: Icon(Icons.add_rounded, color: Colors.white, size: r.s(28)),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -334,7 +347,7 @@ class _CapsuleNavItem extends ConsumerWidget {
           margin: EdgeInsets.symmetric(horizontal: r.s(3), vertical: r.s(6)),
           decoration: BoxDecoration(
             color: isSelected
-                ? Colors.white.withValues(alpha: 0.1)
+                ? context.nexusTheme.bottomNavSelectedItem.withValues(alpha: 0.12)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(r.s(20)),
           ),
@@ -367,16 +380,18 @@ class _NavContent extends ConsumerWidget {
       children: [
         Icon(
           icon,
-          color:
-              isSelected ? Colors.white : Colors.white.withValues(alpha: 0.5),
+          color: isSelected
+              ? context.nexusTheme.bottomNavSelectedItem
+              : context.nexusTheme.bottomNavUnselectedItem,
           size: r.s(22),
         ),
         SizedBox(height: r.s(2)),
         Text(
           label,
           style: TextStyle(
-            color:
-                isSelected ? Colors.white : Colors.white.withValues(alpha: 0.5),
+            color: isSelected
+                ? context.nexusTheme.bottomNavSelectedItem
+                : context.nexusTheme.bottomNavUnselectedItem,
             fontSize: r.fs(10),
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
           ),
@@ -434,7 +449,7 @@ class _OnlineAvatarStack extends ConsumerWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color(0xFF1A1A2E),
+                  color: context.nexusTheme.bottomNavBackground,
                   width: 1.5,
                 ),
               ),

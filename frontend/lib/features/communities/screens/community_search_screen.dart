@@ -8,6 +8,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de busca dentro de uma comunidade específica.
 /// Permite pesquisar posts, membros e wiki com filtros e autocomplete.
@@ -203,21 +205,21 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: context.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded, color: context.nexusTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: _buildSearchField(r),
         titleSpacing: 0,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppTheme.primaryColor,
-          labelColor: AppTheme.primaryColor,
-          unselectedLabelColor: context.textSecondary,
+          indicatorColor: context.nexusTheme.accentPrimary,
+          labelColor: context.nexusTheme.accentPrimary,
+          unselectedLabelColor: context.nexusTheme.textSecondary,
           labelStyle:
               TextStyle(fontSize: r.fs(13), fontWeight: FontWeight.w700),
           tabs: [
@@ -250,23 +252,23 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
     return Container(
       height: r.s(40),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(20)),
       ),
       child: TextField(
         controller: _searchController,
         focusNode: _focusNode,
         autofocus: true,
-        style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+        style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
         decoration: InputDecoration(
           hintText: 'Buscar em ${widget.communityName}...',
-          hintStyle: TextStyle(color: context.textHint, fontSize: r.fs(14)),
+          hintStyle: TextStyle(color: context.nexusTheme.textHint, fontSize: r.fs(14)),
           prefixIcon: Icon(Icons.search_rounded,
-              color: context.textHint, size: r.s(18)),
+              color: context.nexusTheme.textHint, size: r.s(18)),
           suffixIcon: _query.isNotEmpty
               ? IconButton(
                   icon: Icon(Icons.close_rounded,
-                      color: context.textHint, size: r.s(16)),
+                      color: context.nexusTheme.textHint, size: r.s(16)),
                   onPressed: () {
                     _searchController.clear();
                     _onSearchChanged('');
@@ -295,7 +297,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
       left: 0,
       right: 0,
       child: Material(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         elevation: 8,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(r.s(12)),
@@ -310,13 +312,13 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
               dense: true,
               leading: Icon(
                 isRecent ? Icons.history_rounded : Icons.search_rounded,
-                color: context.textHint,
+                color: context.nexusTheme.textHint,
                 size: r.s(18),
               ),
               title: Text(
                 items[index],
                 style:
-                    TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+                    TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
               ),
               onTap: () => _selectSuggestion(items[index]),
             );
@@ -341,7 +343,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
               : _isSearching
                   ? const Center(
                       child: CircularProgressIndicator(
-                          color: AppTheme.primaryColor))
+                          color: context.nexusTheme.accentPrimary))
                   : _posts.isEmpty
                       ? _buildNoResults(r, s.noPostFound)
                       : ListView.builder(
@@ -398,7 +400,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
     final s = getStrings();
     showModalBottomSheet(
       context: context,
-      backgroundColor: context.cardBg,
+      backgroundColor: context.nexusTheme.surfacePrimary,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(16))),
       ),
@@ -410,7 +412,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
           children: [
             Text(s.sortBy,
                 style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(16),
                     fontWeight: FontWeight.w800)),
             SizedBox(height: r.s(12)),
@@ -457,7 +459,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
     final s = getStrings();
     showModalBottomSheet(
       context: context,
-      backgroundColor: context.cardBg,
+      backgroundColor: context.nexusTheme.surfacePrimary,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(16))),
       ),
@@ -469,7 +471,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
           children: [
             Text(s.postType,
                 style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(16),
                     fontWeight: FontWeight.w800)),
             SizedBox(height: r.s(12)),
@@ -539,7 +541,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                   Text(
                     title,
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(14),
                       fontWeight: FontWeight.w600,
                     ),
@@ -559,28 +561,28 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                         Text(
                           author['nickname'] as String? ?? '',
                           style: TextStyle(
-                            color: context.textSecondary,
+                            color: context.nexusTheme.textSecondary,
                             fontSize: r.fs(11),
                           ),
                         ),
                         SizedBox(width: r.s(8)),
                       ],
                       Icon(Icons.favorite_rounded,
-                          color: context.textHint, size: r.s(11)),
+                          color: context.nexusTheme.textHint, size: r.s(11)),
                       SizedBox(width: r.s(2)),
                       Text(
                         '$likesCount',
                         style: TextStyle(
-                            color: context.textHint, fontSize: r.fs(11)),
+                            color: context.nexusTheme.textHint, fontSize: r.fs(11)),
                       ),
                       SizedBox(width: r.s(8)),
                       Icon(Icons.comment_rounded,
-                          color: context.textHint, size: r.s(11)),
+                          color: context.nexusTheme.textHint, size: r.s(11)),
                       SizedBox(width: r.s(2)),
                       Text(
                         '$commentsCount',
                         style: TextStyle(
-                            color: context.textHint, fontSize: r.fs(11)),
+                            color: context.nexusTheme.textHint, fontSize: r.fs(11)),
                       ),
                     ],
                   ),
@@ -602,7 +604,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
         ? _buildEmptySearch(r, s.searchCommunityMembers)
         : _isSearching
             ? const Center(
-                child: CircularProgressIndicator(color: AppTheme.primaryColor))
+                child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
             : _members.isEmpty
                 ? _buildNoResults(r, s.noMemberFound)
                 : ListView.builder(
@@ -644,7 +646,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                   Text(
                     nickname,
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(14),
                       fontWeight: FontWeight.w600,
                     ),
@@ -653,13 +655,13 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                   Text(
                     s.levelAndRep(level, reputation),
                     style: TextStyle(
-                        color: context.textSecondary, fontSize: r.fs(12)),
+                        color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
                   ),
                 ],
               ),
             ),
             Icon(Icons.chevron_right_rounded,
-                color: context.textHint, size: r.s(20)),
+                color: context.nexusTheme.textHint, size: r.s(20)),
           ],
         ),
       ),
@@ -675,7 +677,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
         ? _buildEmptySearch(r, s.searchWikiArticles)
         : _isSearching
             ? const Center(
-                child: CircularProgressIndicator(color: AppTheme.primaryColor))
+                child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
             : _wikis.isEmpty
                 ? _buildNoResults(r, 'Nenhum artigo wiki encontrado')
                 : ListView.builder(
@@ -710,11 +712,11 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
               width: r.s(40),
               height: r.s(40),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(r.s(8)),
               ),
               child: Icon(Icons.article_rounded,
-                  color: AppTheme.primaryColor, size: r.s(20)),
+                  color: context.nexusTheme.accentPrimary, size: r.s(20)),
             ),
             SizedBox(width: r.s(12)),
             Expanded(
@@ -724,7 +726,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                   Text(
                     title,
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(14),
                       fontWeight: FontWeight.w600,
                     ),
@@ -735,7 +737,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                   Text(
                     preview,
                     style: TextStyle(
-                        color: context.textSecondary, fontSize: r.fs(12)),
+                        color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -744,7 +746,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                     Text(
                       'por ${author["nickname"] ?? ""}',
                       style: TextStyle(
-                          color: context.textHint, fontSize: r.fs(11)),
+                          color: context.nexusTheme.textHint, fontSize: r.fs(11)),
                     ),
                   ],
                 ],
@@ -765,11 +767,11 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.search_rounded, color: context.textHint, size: r.s(48)),
+          Icon(Icons.search_rounded, color: context.nexusTheme.textHint, size: r.s(48)),
           SizedBox(height: r.s(12)),
           Text(
             message,
-            style: TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
+            style: TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
             textAlign: TextAlign.center,
           ),
           if (_recentSearches.isNotEmpty) ...[
@@ -782,7 +784,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                   Text(
                     s.recentSearches,
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(13),
                       fontWeight: FontWeight.w700,
                     ),
@@ -799,13 +801,13 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                                 padding: EdgeInsets.symmetric(
                                     horizontal: r.s(12), vertical: r.s(6)),
                                 decoration: BoxDecoration(
-                                  color: context.cardBg,
+                                  color: context.nexusTheme.surfacePrimary,
                                   borderRadius: BorderRadius.circular(r.s(16)),
                                 ),
                                 child: Text(
                                   s,
                                   style: TextStyle(
-                                      color: context.textSecondary,
+                                      color: context.nexusTheme.textSecondary,
                                       fontSize: r.fs(12)),
                                 ),
                               ),
@@ -827,17 +829,17 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.search_off_rounded,
-              color: context.textHint, size: r.s(48)),
+              color: context.nexusTheme.textHint, size: r.s(48)),
           SizedBox(height: r.s(12)),
           Text(
             message,
-            style: TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
+            style: TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
           ),
           SizedBox(height: r.s(6)),
           Text(
             'para "$_query"',
             style: TextStyle(
-                color: context.textHint,
+                color: context.nexusTheme.textHint,
                 fontSize: r.fs(12),
                 fontStyle: FontStyle.italic),
           ),
@@ -871,28 +873,28 @@ class _FilterChip extends ConsumerWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
         decoration: BoxDecoration(
-          color: AppTheme.primaryColor.withValues(alpha: 0.12),
+          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(r.s(12)),
           border: Border.all(
-            color: AppTheme.primaryColor.withValues(alpha: 0.3),
+            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: AppTheme.primaryColor, size: r.s(14)),
+            Icon(icon, color: context.nexusTheme.accentPrimary, size: r.s(14)),
             SizedBox(width: r.s(4)),
             Text(
               label,
               style: TextStyle(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
                 fontSize: r.fs(12),
                 fontWeight: FontWeight.w600,
               ),
             ),
             SizedBox(width: r.s(2)),
             Icon(Icons.arrow_drop_down_rounded,
-                color: AppTheme.primaryColor, size: r.s(16)),
+                color: context.nexusTheme.accentPrimary, size: r.s(16)),
           ],
         ),
       ),
@@ -920,19 +922,19 @@ class _SortOption extends ConsumerWidget {
     return ListTile(
       dense: true,
       leading: Icon(icon,
-          color: selected ? AppTheme.primaryColor : context.textSecondary,
+          color: selected ? context.nexusTheme.accentPrimary : context.nexusTheme.textSecondary,
           size: r.s(20)),
       title: Text(
         label,
         style: TextStyle(
-          color: selected ? AppTheme.primaryColor : context.textPrimary,
+          color: selected ? context.nexusTheme.accentPrimary : context.nexusTheme.textPrimary,
           fontSize: r.fs(14),
           fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
         ),
       ),
       trailing: selected
           ? Icon(Icons.check_rounded,
-              color: AppTheme.primaryColor, size: r.s(18))
+              color: context.nexusTheme.accentPrimary, size: r.s(18))
           : null,
       onTap: onTap,
     );

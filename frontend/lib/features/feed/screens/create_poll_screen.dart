@@ -13,6 +13,8 @@ import '../../../core/models/post_editor_model.dart';
 import '../../../core/providers/post_provider.dart';
 import '../../../core/providers/draft_provider.dart';
 import 'dart:async';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CREATE POLL SCREEN — Enquete com múltiplas opções
@@ -162,7 +164,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Rascunho restaurado.'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -177,7 +179,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Adicione conteúdo antes de salvar.'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -226,7 +228,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Rascunho salvo.'),
-          backgroundColor: AppTheme.successColor,
+          backgroundColor: context.nexusTheme.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -235,7 +237,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Erro ao salvar rascunho.'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -326,7 +328,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -343,7 +345,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(s.pollQuestionRequired),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -355,7 +357,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(s.addAtLeast2Options),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -404,7 +406,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.postUpdated),
-                backgroundColor: AppTheme.successColor,
+                backgroundColor: context.nexusTheme.success,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -412,7 +414,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.anErrorOccurredTryAgain),
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -448,7 +450,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.pollCreatedSuccess),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -459,7 +461,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorCreatingPoll),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -474,18 +476,18 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
     final accent = const Color(0xFF0891B2);
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
           _isEditing ? s.editPost : s.newPoll,
           style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(17),
               fontWeight: FontWeight.w700),
         ),
         leading: IconButton(
-          icon: Icon(Icons.close_rounded, color: context.textPrimary),
+          icon: Icon(Icons.close_rounded, color: context.nexusTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -499,22 +501,22 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                   : _visibility == 'followers'
                       ? Icons.people_rounded
                       : Icons.lock_rounded,
-              color: AppTheme.accentColor,
+              color: context.nexusTheme.accentSecondary,
               size: r.s(20),
             ),
             itemBuilder: (_) => [
               PopupMenuItem(
                   value: 'public',
                   child: Text(s.publicLabel,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
               PopupMenuItem(
                   value: 'followers',
                   child: Text(s.followers,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
               PopupMenuItem(
                   value: 'private',
                   child: Text(s.privateLabel,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
             ],
           ),
           TextButton(
@@ -524,12 +526,12 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                     width: r.s(18),
                     height: r.s(18),
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: AppTheme.primaryColor),
+                        strokeWidth: 2, color: context.nexusTheme.accentPrimary),
                   )
                 : Text(
                     _isEditing ? s.save : s.publish,
                     style: TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         fontSize: r.fs(14),
                         fontWeight: FontWeight.w700),
                   ),
@@ -565,7 +567,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
             Text(
               s.question,
               style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(13),
                   fontWeight: FontWeight.w600),
             ),
@@ -584,7 +586,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
             Text(
               s.descriptionOptional2,
               style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(13),
                   fontWeight: FontWeight.w600),
             ),
@@ -605,7 +607,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                 Text(
                   s.optionsLabel,
                   style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(13),
                       fontWeight: FontWeight.w600),
                 ),
@@ -613,14 +615,14 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                 Text(
                   '${_options.length}/10',
                   style: TextStyle(
-                      color: context.textSecondary, fontSize: r.fs(12)),
+                      color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
                 ),
                 if (_options.length > 2) ...[
                   SizedBox(width: r.s(8)),
                   Text(
                     'Segure para reordenar',
                     style: TextStyle(
-                      color: context.textSecondary.withValues(alpha: 0.6),
+                      color: context.nexusTheme.textSecondary.withValues(alpha: 0.6),
                       fontSize: r.fs(10),
                       fontStyle: FontStyle.italic,
                     ),
@@ -668,15 +670,15 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                             maxLength: 100,
                             textCapitalization: TextCapitalization.sentences,
                             style: TextStyle(
-                                color: context.textPrimary,
+                                color: context.nexusTheme.textPrimary,
                                 fontSize: r.fs(14)),
                             decoration: InputDecoration(
                               hintText: s.optionNumber(i + 1),
                               hintStyle: TextStyle(
-                                  color: context.textSecondary,
+                                  color: context.nexusTheme.textSecondary,
                                   fontSize: r.fs(14)),
                               filled: true,
-                              fillColor: context.cardBg,
+                              fillColor: context.nexusTheme.surfacePrimary,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(r.s(10)),
                                 borderSide: BorderSide.none,
@@ -697,12 +699,12 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                           GestureDetector(
                             onTap: () => _removeOption(i),
                             child: Icon(Icons.remove_circle_outline_rounded,
-                                color: AppTheme.errorColor, size: r.s(20)),
+                                color: context.nexusTheme.error, size: r.s(20)),
                           ),
                         ],
                         SizedBox(width: r.s(4)),
                         Icon(Icons.drag_handle_rounded,
-                            color: context.textSecondary, size: r.s(18)),
+                            color: context.nexusTheme.textSecondary, size: r.s(18)),
                       ],
                     ),
                   ),
@@ -714,11 +716,11 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
               TextButton.icon(
                 onPressed: _addOption,
                 icon: Icon(Icons.add_rounded,
-                    color: AppTheme.primaryColor, size: r.s(18)),
+                    color: context.nexusTheme.accentPrimary, size: r.s(18)),
                 label: Text(
                   s.addOption,
                   style: TextStyle(
-                      color: AppTheme.primaryColor, fontSize: r.fs(14)),
+                      color: context.nexusTheme.accentPrimary, fontSize: r.fs(14)),
                 ),
               ),
 
@@ -730,7 +732,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
             Text(
               'Duração da enquete',
               style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(13),
                   fontWeight: FontWeight.w600),
             ),
@@ -748,7 +750,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                     decoration: BoxDecoration(
                       color: selected
                           ? accent.withValues(alpha: 0.2)
-                          : context.cardBg,
+                          : context.nexusTheme.surfacePrimary,
                       borderRadius: BorderRadius.circular(r.s(20)),
                       border: Border.all(
                         color: selected
@@ -760,7 +762,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                     child: Text(
                       e.value,
                       style: TextStyle(
-                        color: selected ? accent : context.textSecondary,
+                        color: selected ? accent : context.nexusTheme.textSecondary,
                         fontSize: r.fs(12),
                         fontWeight:
                             selected ? FontWeight.w700 : FontWeight.w500,
@@ -791,7 +793,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
               subtitle: 'Não mostrar quem votou em cada opção',
               value: _anonymousVotes,
               onChanged: (v) => setState(() => _anonymousVotes = v),
-              color: context.textSecondary,
+              color: context.nexusTheme.textSecondary,
               r: r,
             ),
 
@@ -836,7 +838,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
       child: Container(
         height: r.s(64),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(12)),
           border:
               Border.all(color: context.dividerClr.withValues(alpha: 0.4)),
@@ -848,12 +850,12 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.add_photo_alternate_rounded,
-                        color: context.textSecondary, size: r.s(20)),
+                        color: context.nexusTheme.textSecondary, size: r.s(20)),
                     SizedBox(width: r.s(8)),
                     Text(
                       'Adicionar imagem de capa',
                       style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(13)),
                     ),
                   ],
@@ -890,13 +892,13 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
       maxLength: maxLength,
       maxLines: maxLines,
       textCapitalization: TextCapitalization.sentences,
-      style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+      style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle:
-            TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
+            TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
         filled: true,
-        fillColor: context.cardBg,
+        fillColor: context.nexusTheme.surfacePrimary,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(r.s(12)),
           borderSide: BorderSide.none,
@@ -933,12 +935,12 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
               children: [
                 Text(label,
                     style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(13),
                         fontWeight: FontWeight.w600)),
                 Text(subtitle,
                     style: TextStyle(
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                         fontSize: r.fs(11))),
               ],
             ),

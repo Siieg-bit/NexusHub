@@ -7,6 +7,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Ações de Moderação — Tela para aplicar ações em um usuário/conteúdo.
 /// Suporta: Ban, Mute, Warn, Hide Post, Delete Post, Strike, Transfer Leader.
@@ -328,18 +330,18 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(s.moderationActionTitle,
             style: TextStyle(
-                fontWeight: FontWeight.w800, color: context.textPrimary)),
-        iconTheme: IconThemeData(color: context.textPrimary),
+                fontWeight: FontWeight.w800, color: context.nexusTheme.textPrimary)),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor))
+              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : SingleChildScrollView(
               padding: EdgeInsets.all(r.s(16)),
               child: Column(
@@ -359,14 +361,14 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
                         children: [
                           CircleAvatar(
                             radius: 24,
-                            backgroundColor: context.scaffoldBg,
+                            backgroundColor: context.nexusTheme.backgroundPrimary,
                             backgroundImage: _targetUser?['icon_url'] != null
                                 ? CachedNetworkImageProvider(
                                     _targetUser?['icon_url'] as String? ?? '')
                                 : null,
                             child: _targetUser?['icon_url'] == null
                                 ? Icon(Icons.person_rounded,
-                                    color: context.textPrimary)
+                                    color: context.nexusTheme.textPrimary)
                                 : null,
                           ),
                           SizedBox(width: r.s(12)),
@@ -377,7 +379,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
                                 _targetUser?['nickname'] as String? ??
                                     s.user,
                                 style: TextStyle(
-                                    color: context.textPrimary,
+                                    color: context.nexusTheme.textPrimary,
                                     fontWeight: FontWeight.w700,
                                     fontSize: r.fs(16)),
                               ),
@@ -397,7 +399,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
                   // Seleção de ação
                   Text(s.actionType,
                       style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontWeight: FontWeight.w800,
                           fontSize: r.fs(16))),
                   SizedBox(height: r.s(12)),
@@ -438,7 +440,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
                                         color: isSelected
                                             ? Color(
                                                 action['color'] as int? ?? 0)
-                                            : context.textPrimary,
+                                            : context.nexusTheme.textPrimary,
                                         fontWeight: FontWeight.w700,
                                         fontSize: r.fs(14)),
                                   ),
@@ -467,7 +469,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
                     SizedBox(height: r.s(16)),
                     Text(s.duration,
                         style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontWeight: FontWeight.w800,
                             fontSize: r.fs(16))),
                     SizedBox(height: r.s(8)),
@@ -520,14 +522,14 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
                   SizedBox(height: r.s(16)),
                   Text(s.reason,
                       style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontWeight: FontWeight.w800,
                           fontSize: r.fs(16))),
                   SizedBox(height: r.s(8)),
                   TextField(
                     controller: _reasonController,
                     maxLines: 3,
-                    style: TextStyle(color: context.textPrimary),
+                    style: TextStyle(color: context.nexusTheme.textPrimary),
                     decoration: InputDecoration(
                       hintText: s.describeActionReason,
                       hintStyle: TextStyle(color: Colors.grey[600]),
@@ -546,7 +548,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(r.s(16)),
                         borderSide:
-                            const BorderSide(color: AppTheme.primaryColor),
+                            const BorderSide(color: context.nexusTheme.accentPrimary),
                       ),
                     ),
                   ),
@@ -560,14 +562,14 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
                       height: r.s(52),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [AppTheme.errorColor, Color(0xFFD32F2F)],
+                          colors: [context.nexusTheme.error, Color(0xFFD32F2F)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(r.s(16)),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.errorColor.withValues(alpha: 0.3),
+                            color: context.nexusTheme.error.withValues(alpha: 0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -614,19 +616,19 @@ class _DurationChip extends ConsumerWidget {
         padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(10)),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.errorColor.withValues(alpha: 0.15)
+              ? context.nexusTheme.error.withValues(alpha: 0.15)
               : context.surfaceColor,
           borderRadius: BorderRadius.circular(r.s(20)),
           border: Border.all(
             color: isSelected
-                ? AppTheme.errorColor.withValues(alpha: 0.5)
+                ? context.nexusTheme.error.withValues(alpha: 0.5)
                 : Colors.white.withValues(alpha: 0.05),
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? AppTheme.errorColor : Colors.grey[500],
+            color: isSelected ? context.nexusTheme.error : Colors.grey[500],
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
             fontSize: r.fs(13),
           ),

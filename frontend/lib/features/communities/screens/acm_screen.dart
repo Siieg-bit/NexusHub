@@ -7,6 +7,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// ACM — Amino Community Manager.
 /// Gerenciamento de módulos (JSONB), Join Types, customização visual,
@@ -217,7 +219,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.settingsSaved),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(r.s(10))),
@@ -243,7 +245,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return AppTheme.primaryColor;
+      return context.nexusTheme.accentPrimary;
     }
   }
 
@@ -252,7 +254,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
     final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -268,12 +270,12 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                  colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 ),
                 borderRadius: BorderRadius.circular(r.s(20)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -289,9 +291,9 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           controller: _tabController,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
-          labelColor: AppTheme.primaryColor,
+          labelColor: context.nexusTheme.accentPrimary,
           unselectedLabelColor: Colors.grey[500],
-          indicatorColor: AppTheme.primaryColor,
+          indicatorColor: context.nexusTheme.accentPrimary,
           tabs: _tabs.map((t) => Tab(text: t)).toList(),
         ),
       ),
@@ -355,13 +357,13 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           ),
           child: SwitchListTile(
             secondary: Icon(mod.icon,
-                color: isEnabled ? AppTheme.primaryColor : Colors.grey[600]),
+                color: isEnabled ? context.nexusTheme.accentPrimary : Colors.grey[600]),
             title: Text(mod.label,
                 style: const TextStyle(fontWeight: FontWeight.w500)),
             subtitle: Text(mod.description,
                 style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
             value: isEnabled,
-            activeColor: AppTheme.primaryColor,
+            activeColor: context.nexusTheme.accentPrimary,
             onChanged: (val) {
               setState(() => _config[mod.key] = val);
             },
@@ -475,7 +477,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           child: Row(
             children: [
               const Icon(Icons.color_lens_rounded,
-                  color: AppTheme.primaryColor),
+                  color: context.nexusTheme.accentPrimary),
               SizedBox(width: r.s(12)),
               Expanded(
                 child: Column(
@@ -525,7 +527,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
             children: [
               Row(
                 children: [
-                  Icon(Icons.image_rounded, color: AppTheme.primaryColor),
+                  Icon(Icons.image_rounded, color: context.nexusTheme.accentPrimary),
                   SizedBox(width: r.s(12)),
                   Text(s.communityIcon,
                       style: TextStyle(fontWeight: FontWeight.w600)),
@@ -556,7 +558,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                   hintText: s.iconImageUrl,
                   prefixIcon: Icon(Icons.link_rounded, size: r.s(18)),
                   filled: true,
-                  fillColor: context.scaffoldBg,
+                  fillColor: context.nexusTheme.backgroundPrimary,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(r.s(8)),
                     borderSide: BorderSide.none,
@@ -584,7 +586,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
             children: [
               Row(
                 children: [
-                  Icon(Icons.panorama_rounded, color: AppTheme.primaryColor),
+                  Icon(Icons.panorama_rounded, color: context.nexusTheme.accentPrimary),
                   SizedBox(width: r.s(12)),
                   Text(s.bannerCover,
                       style: TextStyle(fontWeight: FontWeight.w600)),
@@ -613,7 +615,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                   hintText: s.bannerImageUrl,
                   prefixIcon: Icon(Icons.link_rounded, size: r.s(18)),
                   filled: true,
-                  fillColor: context.scaffoldBg,
+                  fillColor: context.nexusTheme.backgroundPrimary,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(r.s(8)),
                     borderSide: BorderSide.none,
@@ -655,7 +657,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           children: [
             Row(
               children: [
-                Icon(icon, color: AppTheme.primaryColor, size: r.s(20)),
+                Icon(icon, color: context.nexusTheme.accentPrimary, size: r.s(20)),
                 SizedBox(width: r.s(10)),
                 Expanded(
                   child: Text(label,
@@ -676,7 +678,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
                     height: r.s(90),
-                    color: context.scaffoldBg,
+                    color: context.nexusTheme.backgroundPrimary,
                     child: const Center(
                         child: Icon(Icons.broken_image_rounded)),
                   ),
@@ -690,7 +692,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                 hintText: hint,
                 prefixIcon: Icon(Icons.link_rounded, size: r.s(16)),
                 filled: true,
-                fillColor: context.scaffoldBg,
+                fillColor: context.nexusTheme.backgroundPrimary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(8)),
                   borderSide: BorderSide.none,
@@ -767,7 +769,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
               borderRadius: BorderRadius.circular(r.s(12)),
               border: Border.all(
                 color: _themeApplyMode == key
-                    ? AppTheme.primaryColor
+                    ? context.nexusTheme.accentPrimary
                     : Colors.white.withValues(alpha: 0.05),
                 width: _themeApplyMode == key ? 1.5 : 1,
               ),
@@ -781,7 +783,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
               value: key,
               groupValue: _themeApplyMode,
               onChanged: (v) => setState(() => _themeApplyMode = v!),
-              activeColor: AppTheme.primaryColor,
+              activeColor: context.nexusTheme.accentPrimary,
             ),
           );
         }),
@@ -811,7 +813,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                     hintText: '#RRGGBB (cor final do gradiente)',
                     prefixIcon: Icon(Icons.tag_rounded, size: r.s(16)),
                     filled: true,
-                    fillColor: context.scaffoldBg,
+                    fillColor: context.nexusTheme.backgroundPrimary,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(r.s(8)),
                       borderSide: BorderSide.none,
@@ -896,7 +898,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
               Row(
                 children: [
                   Icon(Icons.gavel_rounded,
-                      color: AppTheme.primaryColor, size: r.s(20)),
+                      color: context.nexusTheme.accentPrimary, size: r.s(20)),
                   SizedBox(width: r.s(10)),
                   const Text('Regras',
                       style: TextStyle(fontWeight: FontWeight.w600)),
@@ -910,7 +912,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                 decoration: InputDecoration(
                   hintText: '## Regra 1\nNão seja ofensivo...\n\n## Regra 2\n...',
                   filled: true,
-                  fillColor: context.scaffoldBg,
+                  fillColor: context.nexusTheme.backgroundPrimary,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(r.s(8)),
                     borderSide: BorderSide.none,
@@ -1019,7 +1021,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                 title: const Text('Ativar Banner',
                     style: TextStyle(fontWeight: FontWeight.w500)),
                 value: welcomeBanner['enabled'] as bool? ?? false,
-                activeColor: AppTheme.primaryColor,
+                activeColor: context.nexusTheme.accentPrimary,
                 onChanged: (val) {
                   setState(() {
                     welcomeBanner['enabled'] = val;
@@ -1040,7 +1042,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                     hintText: s.bannerTextHint,
                     prefixIcon: Icon(Icons.text_fields_rounded, size: r.s(18)),
                     filled: true,
-                    fillColor: context.scaffoldBg,
+                    fillColor: context.nexusTheme.backgroundPrimary,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(r.s(8)),
                       borderSide: BorderSide.none,
@@ -1061,7 +1063,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                     hintText: s.bannerImageUrlOptional,
                     prefixIcon: Icon(Icons.image_rounded, size: r.s(18)),
                     filled: true,
-                    fillColor: context.scaffoldBg,
+                    fillColor: context.nexusTheme.backgroundPrimary,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(r.s(8)),
                       borderSide: BorderSide.none,
@@ -1082,7 +1084,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                     hintText: s.linkOnClick,
                     prefixIcon: Icon(Icons.link_rounded, size: r.s(18)),
                     filled: true,
-                    fillColor: context.scaffoldBg,
+                    fillColor: context.nexusTheme.backgroundPrimary,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(r.s(8)),
                       borderSide: BorderSide.none,
@@ -1122,7 +1124,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                     style:
                         TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
                 value: bottomBar['show_online_count'] as bool? ?? true,
-                activeColor: AppTheme.primaryColor,
+                activeColor: context.nexusTheme.accentPrimary,
                 onChanged: (val) {
                   setState(() {
                     bottomBar['show_online_count'] = val;
@@ -1138,7 +1140,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                     style:
                         TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
                 value: bottomBar['show_create_button'] as bool? ?? true,
-                activeColor: AppTheme.primaryColor,
+                activeColor: context.nexusTheme.accentPrimary,
                 onChanged: (val) {
                   setState(() {
                     bottomBar['show_create_button'] = val;
@@ -1162,7 +1164,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(s.layoutResetToDefault),
-                  backgroundColor: AppTheme.warningColor,
+                  backgroundColor: context.nexusTheme.warning,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(r.s(10))),
@@ -1232,13 +1234,13 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
         ),
         child: SwitchListTile(
           secondary: Icon(s.icon,
-              color: isEnabled ? AppTheme.primaryColor : Colors.grey[600]),
+              color: isEnabled ? context.nexusTheme.accentPrimary : Colors.grey[600]),
           title: Text(s.label,
               style: const TextStyle(fontWeight: FontWeight.w500)),
           subtitle: Text(s.description,
               style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
           value: isEnabled,
-          activeColor: AppTheme.primaryColor,
+          activeColor: context.nexusTheme.accentPrimary,
           onChanged: (val) {
             setState(() {
               visible[s.key] = val;
@@ -1282,19 +1284,19 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
             icon: Icons.people_rounded,
             label: s.totalMembers2,
             value: _community?.membersCount.toString() ?? '0',
-            color: AppTheme.primaryColor,
+            color: context.nexusTheme.accentPrimary,
           ),
           _StatCard(
             icon: Icons.person_add_rounded,
             label: s.newMembers7d,
             value: _newMembers7d.toString(),
-            color: AppTheme.successColor,
+            color: context.nexusTheme.success,
           ),
           _StatCard(
             icon: Icons.article_rounded,
             label: s.posts,
             value: _totalPosts.toString(),
-            color: AppTheme.accentColor,
+            color: context.nexusTheme.accentSecondary,
           ),
           _StatCard(
             icon: Icons.chat_rounded,
@@ -1309,13 +1311,13 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
             icon: Icons.flag_rounded,
             label: s.pendingReports,
             value: _pendingFlags.toString(),
-            color: AppTheme.errorColor,
+            color: context.nexusTheme.error,
           ),
           _StatCard(
             icon: Icons.gavel_rounded,
             label: s.moderationActions30d,
             value: _modActions30d.toString(),
-            color: AppTheme.warningColor,
+            color: context.nexusTheme.warning,
           ),
           SizedBox(height: r.s(12)),
           // Botão de acesso à Central de Moderação Avançada
@@ -1326,21 +1328,21 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
             child: Container(
               padding: EdgeInsets.all(r.s(14)),
               decoration: BoxDecoration(
-                color: AppTheme.errorColor.withValues(alpha: 0.08),
+                color: context.nexusTheme.error.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(r.s(12)),
                 border: Border.all(
-                    color: AppTheme.errorColor.withValues(alpha: 0.25)),
+                    color: context.nexusTheme.error.withValues(alpha: 0.25)),
               ),
               child: Row(
                 children: [
                   Container(
                     padding: EdgeInsets.all(r.s(8)),
                     decoration: BoxDecoration(
-                      color: AppTheme.errorColor.withValues(alpha: 0.15),
+                      color: context.nexusTheme.error.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(r.s(8)),
                     ),
                     child: Icon(Icons.shield_rounded,
-                        color: AppTheme.errorColor, size: r.s(20)),
+                        color: context.nexusTheme.error, size: r.s(20)),
                   ),
                   SizedBox(width: r.s(12)),
                   Expanded(
@@ -1357,7 +1359,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                         Text(
                           'Denúncias, snapshots e bot de controle',
                           style: TextStyle(
-                            color: context.textSecondary,
+                            color: context.nexusTheme.textSecondary,
                             fontSize: r.fs(12),
                           ),
                         ),
@@ -1369,7 +1371,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(8), vertical: r.s(4)),
                       decoration: BoxDecoration(
-                        color: AppTheme.errorColor,
+                        color: context.nexusTheme.error,
                         borderRadius: BorderRadius.circular(r.s(10)),
                       ),
                       child: Text(
@@ -1384,7 +1386,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                   SizedBox(width: r.s(8)),
                   Icon(Icons.arrow_forward_ios_rounded,
                       size: r.s(14),
-                      color: context.textSecondary),
+                      color: context.nexusTheme.textSecondary),
                 ],
               ),
             ),
@@ -1571,7 +1573,7 @@ class _CategoriesTabContentState
             content: Text(existing == null
                 ? 'Categoria criada!'
                 : 'Categoria atualizada!'),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
             behavior: SnackBarBehavior.floating,
           ));
         }
@@ -1652,7 +1654,7 @@ class _CategoriesTabContentState
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor))
+              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : _categories.isEmpty
               ? Center(
                   child: Column(
@@ -1694,7 +1696,7 @@ class _CategoriesTabContentState
                               .replaceFirst('#', '0xFF')));
                       return Container(
                         decoration: BoxDecoration(
-                          color: context.cardBg,
+                          color: context.nexusTheme.surfacePrimary,
                           borderRadius: BorderRadius.circular(r.s(12)),
                           border: Border.all(
                             color: catColor.withValues(alpha: 0.3),
@@ -1717,7 +1719,7 @@ class _CategoriesTabContentState
                           title: Text(
                             cat['name'] as String? ?? '',
                             style: TextStyle(
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                               fontWeight: FontWeight.w600,
                               fontSize: r.fs(14),
                             ),
@@ -1726,7 +1728,7 @@ class _CategoriesTabContentState
                               ? Text(
                                   cat['description'] as String,
                                   style: TextStyle(
-                                    color: context.textSecondary,
+                                    color: context.nexusTheme.textSecondary,
                                     fontSize: r.fs(12),
                                   ),
                                 )
@@ -1805,12 +1807,12 @@ class _FeaturedStyleOption extends ConsumerWidget {
           padding: EdgeInsets.symmetric(vertical: r.s(16)),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppTheme.primaryColor.withValues(alpha: 0.15)
+                ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
                 : context.surfaceColor,
             borderRadius: BorderRadius.circular(r.s(12)),
             border: Border.all(
               color: isSelected
-                  ? AppTheme.primaryColor
+                  ? context.nexusTheme.accentPrimary
                   : Colors.white.withValues(alpha: 0.05),
               width: isSelected ? 2 : 1,
             ),
@@ -1818,14 +1820,14 @@ class _FeaturedStyleOption extends ConsumerWidget {
           child: Column(
             children: [
               Icon(icon,
-                  color: isSelected ? AppTheme.primaryColor : Colors.grey[600],
+                  color: isSelected ? context.nexusTheme.accentPrimary : Colors.grey[600],
                   size: r.s(24)),
               SizedBox(height: r.s(6)),
               Text(label,
                   style: TextStyle(
                     color: isSelected
-                        ? AppTheme.primaryColor
-                        : context.textSecondary,
+                        ? context.nexusTheme.accentPrimary
+                        : context.nexusTheme.textSecondary,
                     fontSize: r.fs(11),
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   )),
@@ -1862,19 +1864,19 @@ class _AccessOption extends ConsumerWidget {
         padding: EdgeInsets.all(r.s(16)),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.primaryColor.withValues(alpha: 0.1)
+              ? context.nexusTheme.accentPrimary.withValues(alpha: 0.1)
               : context.surfaceColor,
           borderRadius: BorderRadius.circular(r.s(12)),
           border: Border.all(
             color: isSelected
-                ? AppTheme.primaryColor
+                ? context.nexusTheme.accentPrimary
                 : Colors.white.withValues(alpha: 0.05),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                     blurRadius: 8,
                   )
                 ]
@@ -1883,7 +1885,7 @@ class _AccessOption extends ConsumerWidget {
         child: Row(
           children: [
             Icon(icon,
-                color: isSelected ? AppTheme.primaryColor : Colors.grey[600]),
+                color: isSelected ? context.nexusTheme.accentPrimary : Colors.grey[600]),
             SizedBox(width: r.s(16)),
             Expanded(
               child: Column(
@@ -1899,7 +1901,7 @@ class _AccessOption extends ConsumerWidget {
               ),
             ),
             if (isSelected)
-              Icon(Icons.check_circle_rounded, color: AppTheme.primaryColor),
+              Icon(Icons.check_circle_rounded, color: context.nexusTheme.accentPrimary),
           ],
         ),
       ),
@@ -2018,7 +2020,7 @@ class _ContentField extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: AppTheme.primaryColor, size: r.s(20)),
+              Icon(icon, color: context.nexusTheme.accentPrimary, size: r.s(20)),
               SizedBox(width: r.s(10)),
               Text(label,
                   style: TextStyle(
@@ -2033,7 +2035,7 @@ class _ContentField extends StatelessWidget {
             decoration: InputDecoration(
               hintText: hint,
               filled: true,
-              fillColor: context.scaffoldBg,
+              fillColor: context.nexusTheme.backgroundPrimary,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(8)),
                 borderSide: BorderSide.none,

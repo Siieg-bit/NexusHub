@@ -8,6 +8,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Wizard de seleção de interesses em 4 passos, inspirado no Amino Apps.
 /// Passo 1: Boas-vindas e avatar
@@ -257,7 +259,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       body: SafeArea(
         child: Column(
           children: [
@@ -297,7 +299,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
                 GestureDetector(
                   onTap: _prevStep,
                   child: Icon(Icons.arrow_back_ios_rounded,
-                      size: r.s(20), color: context.textPrimary),
+                      size: r.s(20), color: context.nexusTheme.textPrimary),
                 )
               else
                 SizedBox(width: r.s(20)),
@@ -314,7 +316,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
                 child: Text(
                   s.skip,
                   style: TextStyle(
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                       fontSize: r.fs(14),
                       fontWeight: FontWeight.w700),
                 ),
@@ -328,7 +330,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
             child: LinearProgressIndicator(
               value: (_currentStep + 1) / 4,
               backgroundColor: Colors.white.withValues(alpha: 0.05),
-              valueColor: const AlwaysStoppedAnimation(AppTheme.primaryColor),
+              valueColor: const AlwaysStoppedAnimation(context.nexusTheme.accentPrimary),
               minHeight: 4,
             ),
           ),
@@ -351,13 +353,13 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: const LinearGradient(
-                colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                   blurRadius: 20,
                   spreadRadius: 2,
                 ),
@@ -370,7 +372,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
           Text(
             s.welcomeMessage,
             style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(28),
               fontWeight: FontWeight.w800,
             ),
@@ -400,7 +402,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
             controller: _bioController,
             maxLines: 3,
             maxLength: 200,
-            style: TextStyle(color: context.textPrimary),
+            style: TextStyle(color: context.nexusTheme.textPrimary),
             decoration: InputDecoration(
               hintText: s.tellAboutYourself,
               hintStyle: TextStyle(color: Colors.grey[600]),
@@ -419,7 +421,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(16)),
-                borderSide: const BorderSide(color: AppTheme.primaryColor),
+                borderSide: const BorderSide(color: context.nexusTheme.accentPrimary),
               ),
             ),
           ),
@@ -446,23 +448,23 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
             height: r.s(100),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.primaryColor.withValues(alpha: 0.15),
+              color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                   blurRadius: 15,
                   spreadRadius: 1,
                 ),
               ],
             ),
             child: Icon(Icons.badge_rounded,
-                size: r.s(48), color: AppTheme.primaryColor),
+                size: r.s(48), color: context.nexusTheme.accentPrimary),
           ),
           SizedBox(height: r.s(32)),
           Text(
             'Escolha seu @username',
             style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(28),
               fontWeight: FontWeight.w800,
             ),
@@ -482,12 +484,12 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
           TextField(
             controller: _aminoIdController,
             maxLength: 30,
-            style: TextStyle(color: context.textPrimary),
+            style: TextStyle(color: context.nexusTheme.textPrimary),
             decoration: InputDecoration(
               hintText: 'ex: nexus_user_2026',
               hintStyle: TextStyle(color: Colors.grey[600]),
               prefixIcon: const Icon(Icons.alternate_email_rounded,
-                  color: AppTheme.primaryColor),
+                  color: context.nexusTheme.accentPrimary),
               counterStyle: TextStyle(color: Colors.grey[600]),
               filled: true,
               fillColor: context.surfaceColor,
@@ -503,7 +505,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(16)),
-                borderSide: const BorderSide(color: AppTheme.primaryColor),
+                borderSide: const BorderSide(color: context.nexusTheme.accentPrimary),
               ),
               suffixIcon: _isCheckingAminoId
                   ? Padding(
@@ -513,22 +515,22 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
                         height: r.s(18),
                         child: const CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                          valueColor: AlwaysStoppedAnimation<Color>(context.nexusTheme.accentPrimary),
                         ),
                       ),
                     )
                   : _isAminoIdAvailable == null
                       ? (_aminoIdController.text.length >= 3
                           ? const Icon(Icons.alternate_email_rounded,
-                              color: AppTheme.primaryColor)
+                              color: context.nexusTheme.accentPrimary)
                           : null)
                       : Icon(
                           _isAminoIdAvailable!
                               ? Icons.check_circle_rounded
                               : Icons.error_outline_rounded,
                           color: _isAminoIdAvailable!
-                              ? AppTheme.primaryColor
-                              : AppTheme.errorColor,
+                              ? context.nexusTheme.accentPrimary
+                              : context.nexusTheme.error,
                         ),
             ),
             onChanged: _onAminoIdChanged,
@@ -539,9 +541,9 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
                 'Mínimo 3 caracteres. Use letras minúsculas, números e underscores. Esse @username é global e aparece só no seu perfil principal.',
             style: TextStyle(
               color: (_isAminoIdAvailable == false)
-                  ? AppTheme.errorColor
+                  ? context.nexusTheme.error
                   : (_isAminoIdAvailable == true
-                      ? AppTheme.primaryColor
+                      ? context.nexusTheme.accentPrimary
                       : Colors.grey[600]),
               fontSize: r.fs(12),
             ),
@@ -580,7 +582,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
         Text(
           'O que te interessa?',
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(24),
             fontWeight: FontWeight.w800,
           ),
@@ -603,8 +605,8 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
           '${_selectedInterests.length} selecionados',
           style: TextStyle(
             color: _selectedInterests.length >= 3
-                ? AppTheme.primaryColor
-                : AppTheme.accentColor,
+                ? context.nexusTheme.accentPrimary
+                : context.nexusTheme.accentSecondary,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -669,7 +671,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
                           item.name,
                           style: TextStyle(
                             color:
-                                isSelected ? item.color : context.textPrimary,
+                                isSelected ? item.color : context.nexusTheme.textPrimary,
                             fontSize: r.fs(11),
                             fontWeight: isSelected
                                 ? FontWeight.w700
@@ -717,23 +719,23 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
             height: r.s(100),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.primaryColor.withValues(alpha: 0.15),
+              color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                   blurRadius: 15,
                   spreadRadius: 1,
                 ),
               ],
             ),
             child: Icon(Icons.celebration_rounded,
-                size: r.s(48), color: AppTheme.primaryColor),
+                size: r.s(48), color: context.nexusTheme.accentPrimary),
           ),
           SizedBox(height: r.s(24)),
           Text(
             'Tudo Pronto!',
             style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(28),
               fontWeight: FontWeight.w800,
             ),
@@ -759,7 +761,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
               final item = _getInterestCategories(s).firstWhere(
                 (i) => i.name == interest,
                 orElse: () => _InterestItem(
-                    interest, Icons.star_rounded, AppTheme.primaryColor),
+                    interest, Icons.star_rounded, context.nexusTheme.accentPrimary),
               );
               return Container(
                 padding:
@@ -799,7 +801,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
             child: Text(
               s.skipForNow,
               style: TextStyle(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
                 fontSize: r.fs(14),
                 fontWeight: FontWeight.w700,
               ),
@@ -826,7 +828,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
           borderRadius: BorderRadius.circular(r.s(24)),
           gradient: isEnabled
               ? const LinearGradient(
-                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                  colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 )
@@ -835,7 +837,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
           boxShadow: isEnabled
               ? [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),

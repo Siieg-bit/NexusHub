@@ -8,6 +8,8 @@ import '../../../core/widgets/level_progress_bar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Conquistas / Achievements — Layout estilo Amino Apps.
 ///
@@ -234,22 +236,22 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
         _allAchievements.where((a) => !_unlockedIds.contains(a['id'])).toList();
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         title: Text(
           s.achievements,
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
           ),
         ),
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor),
+              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
             )
           : SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: r.s(16)),
@@ -288,7 +290,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: r.fs(16),
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                     ),
                   ),
                   SizedBox(height: r.s(12)),
@@ -309,14 +311,14 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: r.fs(16),
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                     ),
                   ),
                   SizedBox(height: r.s(4)),
                   Text(
                     s.statsUpdatedWithDelay,
                     style: TextStyle(
-                      color: context.textSecondary,
+                      color: context.nexusTheme.textSecondary,
                       fontSize: r.fs(12),
                     ),
                   ),
@@ -333,11 +335,11 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                       width: double.infinity,
                       padding: EdgeInsets.all(r.s(16)),
                       decoration: BoxDecoration(
-                        color: AppTheme.successColor.withValues(alpha: 0.12),
+                        color: context.nexusTheme.success.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(r.s(16)),
                         border: Border.all(
                           color:
-                              AppTheme.successColor.withValues(alpha: 0.35),
+                              context.nexusTheme.success.withValues(alpha: 0.35),
                         ),
                       ),
                       child: Column(
@@ -347,7 +349,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                             children: [
                               Icon(
                                 Icons.emoji_events_rounded,
-                                color: AppTheme.successColor,
+                                color: context.nexusTheme.success,
                                 size: r.s(22),
                               ),
                               SizedBox(width: r.s(10)),
@@ -355,7 +357,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                                 child: Text(
                                   s.newAchievementsUnlocked,
                                   style: TextStyle(
-                                    color: context.textPrimary,
+                                    color: context.nexusTheme.textPrimary,
                                     fontWeight: FontWeight.w800,
                                     fontSize: r.fs(15),
                                   ),
@@ -371,7 +373,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                                 '• ${achievement['achievement_name'] ?? s.achievements}'
                                 '${((achievement['reward_coins'] as int?) ?? 0) > 0 ? ' · +${achievement['reward_coins']} coins' : ''}',
                                 style: TextStyle(
-                                  color: context.textSecondary,
+                                  color: context.nexusTheme.textSecondary,
                                   fontSize: r.fs(13),
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -394,15 +396,15 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppTheme.warningColor,
-                            AppTheme.warningColor.withValues(alpha: 0.7),
+                            context.nexusTheme.warning,
+                            context.nexusTheme.warning.withValues(alpha: 0.7),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(r.s(16)),
                         boxShadow: [
                           BoxShadow(
                             color:
-                                AppTheme.warningColor.withValues(alpha: 0.3),
+                                context.nexusTheme.warning.withValues(alpha: 0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -451,7 +453,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: r.fs(16),
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                         ),
                       ),
                     ),
@@ -475,7 +477,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: r.fs(16),
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                         ),
                       ),
                     ),
@@ -539,7 +541,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
               Text(
                 '$_onlineMinutes',
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(36),
                   fontWeight: FontWeight.w800,
                 ),
@@ -555,7 +557,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
               Text(
                 s.last24Hours,
                 style: TextStyle(
-                  color: context.textSecondary,
+                  color: context.nexusTheme.textSecondary,
                   fontSize: r.fs(11),
                 ),
               ),
@@ -613,13 +615,13 @@ class _AchievementTile extends ConsumerWidget {
         borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(
           color: isUnlocked
-              ? AppTheme.warningColor.withValues(alpha: 0.3)
+              ? context.nexusTheme.warning.withValues(alpha: 0.3)
               : Colors.white.withValues(alpha: 0.05),
         ),
         boxShadow: isUnlocked
             ? [
                 BoxShadow(
-                  color: AppTheme.warningColor.withValues(alpha: 0.1),
+                  color: context.nexusTheme.warning.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 )
@@ -634,13 +636,13 @@ class _AchievementTile extends ConsumerWidget {
             height: r.s(48),
             decoration: BoxDecoration(
               color: isUnlocked
-                  ? AppTheme.warningColor.withValues(alpha: 0.15)
+                  ? context.nexusTheme.warning.withValues(alpha: 0.15)
                   : Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(r.s(12)),
             ),
             child: Icon(
               Icons.emoji_events_rounded,
-              color: isUnlocked ? AppTheme.warningColor : Colors.grey[600],
+              color: isUnlocked ? context.nexusTheme.warning : Colors.grey[600],
               size: r.s(24),
             ),
           ),
@@ -659,7 +661,7 @@ class _AchievementTile extends ConsumerWidget {
                           fontWeight: FontWeight.w700,
                           fontSize: r.fs(14),
                           color: isUnlocked
-                              ? context.textPrimary
+                              ? context.nexusTheme.textPrimary
                               : Colors.grey[500],
                         ),
                       ),
@@ -700,7 +702,7 @@ class _AchievementTile extends ConsumerWidget {
                             backgroundColor:
                                 Colors.white.withValues(alpha: 0.05),
                             valueColor: const AlwaysStoppedAnimation(
-                                AppTheme.primaryColor),
+                                context.nexusTheme.accentPrimary),
                             minHeight: 6,
                           ),
                         ),
@@ -725,11 +727,11 @@ class _AchievementTile extends ConsumerWidget {
             Column(
               children: [
                 Icon(Icons.monetization_on_rounded,
-                    color: AppTheme.warningColor, size: r.s(16)),
+                    color: context.nexusTheme.warning, size: r.s(16)),
                 Text(
                   '+$reward',
                   style: TextStyle(
-                    color: AppTheme.warningColor,
+                    color: context.nexusTheme.warning,
                     fontSize: r.fs(10),
                     fontWeight: FontWeight.w800,
                   ),

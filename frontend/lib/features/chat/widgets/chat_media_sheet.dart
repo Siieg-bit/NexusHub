@@ -5,6 +5,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'message_bubble.dart' show MediaOptionItem;
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Bottom sheet com as opções de mídia do chat — Estilo Amino.
 ///
@@ -63,7 +65,7 @@ class ChatMediaSheet extends ConsumerWidget {
               MediaOptionItem(
                 icon: Icons.image_rounded,
                 label: s.image2,
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
                 onTap: () {
                   Navigator.pop(context);
                   onImage();
@@ -108,7 +110,7 @@ class ChatMediaSheet extends ConsumerWidget {
               MediaOptionItem(
                 icon: Icons.monetization_on_rounded,
                 label: s.tip,
-                color: AppTheme.warningColor,
+                color: context.nexusTheme.warning,
                 onTap: () {
                   Navigator.pop(context);
                   onTip();

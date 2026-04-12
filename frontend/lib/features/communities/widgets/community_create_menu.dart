@@ -6,6 +6,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // COMMUNITY CREATE MENU — Bottom sheet grid estilo Amino Apps
@@ -190,7 +192,7 @@ class _CommunityCreateMenuSheet extends ConsumerWidget {
                 Text(
                   s.create,
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(18),
                     fontWeight: FontWeight.w800,
                   ),
@@ -199,7 +201,7 @@ class _CommunityCreateMenuSheet extends ConsumerWidget {
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Icon(Icons.close_rounded,
-                      color: context.textPrimary.withValues(alpha: 0.5),
+                      color: context.nexusTheme.textPrimary.withValues(alpha: 0.5),
                       size: r.s(22)),
                 ),
               ],
@@ -270,7 +272,7 @@ class _CreateItemTile extends ConsumerWidget {
             item.label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(11),
               fontWeight: FontWeight.w500,
               height: 1.2,

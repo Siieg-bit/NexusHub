@@ -12,6 +12,8 @@ import '../../../core/models/post_model.dart';
 import '../../../core/providers/post_provider.dart';
 import '../../../core/providers/draft_provider.dart';
 import 'dart:async';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CREATE WIKI SCREEN — Entrada de Wiki/Enciclopédia da comunidade
@@ -183,7 +185,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Rascunho restaurado.'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -198,7 +200,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Adicione conteúdo antes de salvar.'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -257,7 +259,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Rascunho salvo.'),
-          backgroundColor: AppTheme.successColor,
+          backgroundColor: context.nexusTheme.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -266,7 +268,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Erro ao salvar rascunho.'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -349,7 +351,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -382,7 +384,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -397,7 +399,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(s.wikiTitleRequired),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -413,7 +415,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(s.wikiNeedOneSection),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -488,7 +490,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.postUpdated),
-                backgroundColor: AppTheme.successColor,
+                backgroundColor: context.nexusTheme.success,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -496,7 +498,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.anErrorOccurredTryAgain),
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -605,7 +607,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.wikiPublishedSuccess),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -616,7 +618,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorPublishing2),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -631,18 +633,18 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
     final accent = const Color(0xFF059669);
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
           _isEditing ? s.editPost : s.wikiEntry,
           style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(17),
               fontWeight: FontWeight.w700),
         ),
         leading: IconButton(
-          icon: Icon(Icons.close_rounded, color: context.textPrimary),
+          icon: Icon(Icons.close_rounded, color: context.nexusTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -656,22 +658,22 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                   : _visibility == 'followers'
                       ? Icons.people_rounded
                       : Icons.lock_rounded,
-              color: AppTheme.accentColor,
+              color: context.nexusTheme.accentSecondary,
               size: r.s(20),
             ),
             itemBuilder: (_) => [
               PopupMenuItem(
                   value: 'public',
                   child: Text(s.publicLabel,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
               PopupMenuItem(
                   value: 'followers',
                   child: Text(s.followers,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
               PopupMenuItem(
                   value: 'private',
                   child: Text(s.privateLabel,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
             ],
           ),
           TextButton(
@@ -681,12 +683,12 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                     width: r.s(18),
                     height: r.s(18),
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: AppTheme.primaryColor),
+                        strokeWidth: 2, color: context.nexusTheme.accentPrimary),
                   )
                 : Text(
                     _isEditing ? s.save : s.publish,
                     style: TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         fontSize: r.fs(14),
                         fontWeight: FontWeight.w700),
                   ),
@@ -718,7 +720,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                 s.wikiDescription,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    color: context.textSecondary, fontSize: r.fs(12)),
+                    color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
               ),
             ),
             SizedBox(height: r.s(20)),
@@ -803,7 +805,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                         child: Text(
                           '${i + 1}. $title',
                           style: TextStyle(
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                               fontSize: r.fs(12)),
                         ),
                       );
@@ -820,7 +822,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                 Text(
                   'Seções',
                   style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(15),
                       fontWeight: FontWeight.w700),
                 ),
@@ -828,7 +830,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                 Text(
                   '${_sections.length}/20',
                   style: TextStyle(
-                      color: context.textSecondary, fontSize: r.fs(12)),
+                      color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
                 ),
               ],
             ),
@@ -861,7 +863,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
             Text(
               'Adicione links ou citações de fontes',
               style: TextStyle(
-                  color: context.textSecondary, fontSize: r.fs(11)),
+                  color: context.nexusTheme.textSecondary, fontSize: r.fs(11)),
             ),
             SizedBox(height: r.s(8)),
             if (_references.isNotEmpty) ...[
@@ -882,7 +884,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                         child: Text(
                           _references[i],
                           style: TextStyle(
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                               fontSize: r.fs(12)),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -892,7 +894,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                         onTap: () => setState(
                             () => _references.removeAt(i)),
                         child: Icon(Icons.close_rounded,
-                            color: AppTheme.errorColor,
+                            color: context.nexusTheme.error,
                             size: r.s(14)),
                       ),
                     ],
@@ -908,17 +910,17 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                     child: TextField(
                       controller: _referenceController,
                       style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(12)),
                       decoration: InputDecoration(
                         hintText: 'URL ou citação...',
                         hintStyle: TextStyle(
-                            color: context.textSecondary,
+                            color: context.nexusTheme.textSecondary,
                             fontSize: r.fs(12)),
                         border: InputBorder.none,
                         isDense: true,
                         prefixIcon: Icon(Icons.link_rounded,
-                            color: context.textSecondary,
+                            color: context.nexusTheme.textSecondary,
                             size: r.s(16)),
                       ),
                       onSubmitted: (_) => _addReference(),
@@ -984,7 +986,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
       child: Container(
         height: r.s(80),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(12)),
           border:
               Border.all(color: context.dividerClr.withValues(alpha: 0.4)),
@@ -996,12 +998,12 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.add_photo_alternate_rounded,
-                        color: context.textSecondary, size: r.s(20)),
+                        color: context.nexusTheme.textSecondary, size: r.s(20)),
                     SizedBox(width: r.s(8)),
                     Text(
                       'Adicionar imagem de capa',
                       style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(13)),
                     ),
                   ],
@@ -1031,7 +1033,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
       margin: EdgeInsets.only(bottom: r.s(16)),
       padding: EdgeInsets.all(r.s(14)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(14)),
         border:
             Border.all(color: context.dividerClr.withValues(alpha: 0.3)),
@@ -1062,7 +1064,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                 GestureDetector(
                   onTap: () => _removeSection(index),
                   child: Icon(Icons.delete_outline_rounded,
-                      color: AppTheme.errorColor, size: r.s(18)),
+                      color: context.nexusTheme.error, size: r.s(18)),
                 ),
             ],
           ),
@@ -1075,17 +1077,17 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
             textCapitalization: TextCapitalization.sentences,
             onChanged: (_) => setState(() {}), // Atualizar sumário
             style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(15),
                 fontWeight: FontWeight.w600),
             decoration: InputDecoration(
               hintText: 'Título da seção',
               hintStyle: TextStyle(
-                  color: context.textSecondary,
+                  color: context.nexusTheme.textSecondary,
                   fontSize: r.fs(15),
                   fontWeight: FontWeight.w600),
               filled: true,
-              fillColor: context.scaffoldBg,
+              fillColor: context.nexusTheme.backgroundPrimary,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(10)),
                 borderSide: BorderSide.none,
@@ -1109,15 +1111,15 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
             minLines: 4,
             textCapitalization: TextCapitalization.sentences,
             style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(14),
                 height: 1.5),
             decoration: InputDecoration(
               hintText: 'Conteúdo da seção...',
               hintStyle: TextStyle(
-                  color: context.textSecondary, fontSize: r.fs(14)),
+                  color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
               filled: true,
-              fillColor: context.scaffoldBg,
+              fillColor: context.nexusTheme.backgroundPrimary,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(10)),
                 borderSide: BorderSide.none,
@@ -1160,7 +1162,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
               child: Container(
                 height: r.s(40),
                 decoration: BoxDecoration(
-                  color: context.scaffoldBg,
+                  color: context.nexusTheme.backgroundPrimary,
                   borderRadius: BorderRadius.circular(r.s(8)),
                   border: Border.all(
                       color:
@@ -1171,12 +1173,12 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.image_rounded,
-                          color: context.textSecondary, size: r.s(16)),
+                          color: context.nexusTheme.textSecondary, size: r.s(16)),
                       SizedBox(width: r.s(6)),
                       Text(
                         'Adicionar imagem à seção',
                         style: TextStyle(
-                            color: context.textSecondary,
+                            color: context.nexusTheme.textSecondary,
                             fontSize: r.fs(11)),
                       ),
                     ],
@@ -1203,7 +1205,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(10), vertical: r.s(4)),
                       decoration: BoxDecoration(
-                        color: AppTheme.accentColor
+                        color: context.nexusTheme.accentSecondary
                             .withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(r.s(12)),
                       ),
@@ -1212,7 +1214,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                         children: [
                           Text('#$tag',
                               style: TextStyle(
-                                  color: AppTheme.accentColor,
+                                  color: context.nexusTheme.accentSecondary,
                                   fontSize: r.fs(12),
                                   fontWeight: FontWeight.w600)),
                           SizedBox(width: r.s(4)),
@@ -1220,7 +1222,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                             onTap: () =>
                                 setState(() => _tags.remove(tag)),
                             child: Icon(Icons.close_rounded,
-                                color: AppTheme.accentColor,
+                                color: context.nexusTheme.accentSecondary,
                                 size: r.s(14)),
                           ),
                         ],
@@ -1237,16 +1239,16 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                 child: TextField(
                   controller: _tagController,
                   style: TextStyle(
-                      color: context.textPrimary, fontSize: r.fs(13)),
+                      color: context.nexusTheme.textPrimary, fontSize: r.fs(13)),
                   decoration: InputDecoration(
                     hintText: 'Ex: lore, personagem, evento...',
                     hintStyle: TextStyle(
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                         fontSize: r.fs(13)),
                     border: InputBorder.none,
                     isDense: true,
                     prefixIcon: Icon(Icons.tag_rounded,
-                        color: context.textSecondary, size: r.s(16)),
+                        color: context.nexusTheme.textSecondary, size: r.s(16)),
                   ),
                   onSubmitted: (_) => _addTag(),
                 ),
@@ -1257,13 +1259,13 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(12), vertical: r.s(6)),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentColor
+                    color: context.nexusTheme.accentSecondary
                         .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(r.s(8)),
                   ),
                   child: Text('Adicionar',
                       style: TextStyle(
-                          color: AppTheme.accentColor,
+                          color: context.nexusTheme.accentSecondary,
                           fontSize: r.fs(12),
                           fontWeight: FontWeight.w600)),
                 ),
@@ -1277,7 +1279,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
   Widget _buildLabel(String text, Responsive r) => Text(
         text,
         style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(13),
             fontWeight: FontWeight.w600),
       );
@@ -1295,13 +1297,13 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
         maxLength: maxLength,
         maxLines: maxLines,
         textCapitalization: TextCapitalization.sentences,
-        style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+        style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle:
-              TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
+              TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
           filled: true,
-          fillColor: context.cardBg,
+          fillColor: context.nexusTheme.surfacePrimary,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(r.s(12)),
             borderSide: BorderSide.none,

@@ -10,6 +10,7 @@ import 'package:gal/gal.dart';
 import 'package:video_player/video_player.dart';
 import '../utils/responsive.dart';
 import '../../config/app_theme.dart';
+import '../../config/nexus_theme_extension.dart';
 
 // ============================================================================
 // MediaViewer — Visualizador de mídia fullscreen (imagem, GIF, vídeo)
@@ -186,7 +187,7 @@ class _MediaViewerScreenState extends State<_MediaViewerScreen>
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: const Text('Permissão negada para acessar a galeria'),
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -254,7 +255,7 @@ class _MediaViewerScreenState extends State<_MediaViewerScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(msg),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -267,7 +268,7 @@ class _MediaViewerScreenState extends State<_MediaViewerScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Erro ao salvar mídia'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -346,7 +347,7 @@ class _MediaViewerScreenState extends State<_MediaViewerScreen>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const CircularProgressIndicator(
-                        color: AppTheme.accentColor,
+                        color: context.nexusTheme.accentSecondary,
                         strokeWidth: 3,
                       ),
                       SizedBox(height: r.s(12)),
@@ -396,7 +397,7 @@ class _MediaViewerScreenState extends State<_MediaViewerScreen>
                         ? null
                         : event.cumulativeBytesLoaded /
                             (event.expectedTotalBytes ?? 1),
-                    color: AppTheme.accentColor,
+                    color: context.nexusTheme.accentSecondary,
                     strokeWidth: 3,
                   ),
                   SizedBox(height: r.s(12)),
@@ -466,7 +467,7 @@ class _MediaViewerScreenState extends State<_MediaViewerScreen>
               ? null
               : event.cumulativeBytesLoaded /
                   (event.expectedTotalBytes ?? 1),
-          color: AppTheme.accentColor,
+          color: context.nexusTheme.accentSecondary,
           strokeWidth: 3,
         ),
       ),
@@ -629,7 +630,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const CircularProgressIndicator(
-              color: AppTheme.accentColor,
+              color: context.nexusTheme.accentSecondary,
               strokeWidth: 3,
             ),
             SizedBox(height: r.s(12)),
@@ -702,7 +703,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                     _controller,
                     allowScrubbing: true,
                     colors: VideoProgressColors(
-                      playedColor: AppTheme.accentColor,
+                      playedColor: context.nexusTheme.accentSecondary,
                       bufferedColor: Colors.white30,
                       backgroundColor: Colors.white12,
                     ),
@@ -909,7 +910,7 @@ class TappableImage extends StatelessWidget {
               child: const Center(
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: AppTheme.accentColor,
+                  color: context.nexusTheme.accentSecondary,
                 ),
               ),
             ),

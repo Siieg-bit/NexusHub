@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../utils/responsive.dart';
 import '../l10n/locale_provider.dart';
+import '../../config/nexus_theme_extension.dart';
 
 /// Heatmap de Check-in estilo GitHub contributions / Amino Apps.
 ///
@@ -114,7 +115,7 @@ class CheckinHeatmap extends ConsumerWidget {
     return Container(
       padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -125,12 +126,12 @@ class CheckinHeatmap extends ConsumerWidget {
           Row(
             children: [
               Icon(Icons.calendar_month_rounded,
-                  color: AppTheme.accentColor, size: r.s(20)),
+                  color: context.nexusTheme.accentSecondary, size: r.s(20)),
               SizedBox(width: r.s(8)),
               Text(
                 s.checkInHistory,
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontWeight: FontWeight.w700,
                   fontSize: r.fs(15),
                 ),
@@ -235,7 +236,7 @@ class CheckinHeatmap extends ConsumerWidget {
                   icon: Icons.local_fire_department_rounded,
                   label: s.currentStreak,
                   value: '$currentStreak dias',
-                  color: AppTheme.warningColor,
+                  color: context.nexusTheme.warning,
                 ),
               ),
               SizedBox(width: r.s(8)),
@@ -253,7 +254,7 @@ class CheckinHeatmap extends ConsumerWidget {
                   icon: Icons.calendar_today_rounded,
                   label: s.total,
                   value: '$totalCheckins dias',
-                  color: AppTheme.accentColor,
+                  color: context.nexusTheme.accentSecondary,
                 ),
               ),
             ],
@@ -296,7 +297,7 @@ class _HeatmapCell extends ConsumerWidget {
         color: color,
         borderRadius: BorderRadius.circular(2),
         border: isToday
-            ? Border.all(color: AppTheme.warningColor, width: 1.5)
+            ? Border.all(color: context.nexusTheme.warning, width: 1.5)
             : null,
       ),
     );

@@ -11,8 +11,10 @@ import 'package:go_router/go_router.dart';
 
 import 'config/app_config.dart';
 import 'config/app_theme.dart';
+import 'config/nexus_theme_data.dart';
 import 'router/app_router.dart';
 import 'core/providers/theme_provider.dart';
+import 'core/providers/nexus_theme_provider.dart';
 import 'core/services/device_fingerprint_service.dart';
 import 'core/services/deep_link_service.dart';
 import 'core/services/push_notification_service.dart';
@@ -243,7 +245,9 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
   Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final router = ref.watch(appRouterProvider);
+    // ignore: unused_local_variable
     final themeMode = ref.watch(themeProvider);
+    final nexusTheme = ref.watch(nexusThemeProvider);
     final currentLocale = ref.watch(localeProvider);
 
     // Inicializar Deep Link service com o router
@@ -253,7 +257,9 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
     _setupPushNotificationListener(router);
 
     // Manter edge-to-edge com contraste e legibilidade adequados em Android 15/16.
-    final isDark = themeMode == ThemeMode.dark;
+    // O SystemUiOverlayStyle é derivado do baseMode do tema NexusHub ativo,
+    // garantindo que os ícones da status bar sejam legíveis em qualquer tema.
+    final isDark = nexusTheme.baseMode == NexusThemeMode.dark;
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -271,9 +277,12 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
       title: s.nexusHub,
       debugShowCheckedModeBanner: false,
       scaffoldMessengerKey: ErrorHandler.scaffoldKey,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode,
+      // O ThemeData é gerado dinamicamente a partir do NexusThemeData ativo.
+      // Isso garante que todos os widgets nativos do Material (BottomSheet,
+      // Dialog, SnackBar, etc.) herdem as cores corretas do tema escolhido.
+      theme: nexusTheme.toMaterialTheme(),
+      darkTheme: nexusTheme.toMaterialTheme(),
+      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
       locale: Locale(currentLocale.code),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,

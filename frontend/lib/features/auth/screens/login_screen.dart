@@ -9,6 +9,8 @@ import '../../../core/services/supabase_service.dart';
 import '../providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de login — visual Amino Apps (fundo escuro, inputs arredondados, verde).
 class LoginScreen extends ConsumerStatefulWidget {
@@ -51,7 +53,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authProvider);
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: r.s(28)),
@@ -70,11 +72,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       width: r.s(40),
                       height: r.s(40),
                       decoration: BoxDecoration(
-                        color: context.cardBg,
+                        color: context.nexusTheme.surfacePrimary,
                         borderRadius: BorderRadius.circular(r.s(12)),
                       ),
                       child: Icon(Icons.arrow_back_rounded,
-                          color: context.textPrimary, size: r.s(20)),
+                          color: context.nexusTheme.textPrimary, size: r.s(20)),
                     ),
                   ),
                 ),
@@ -89,7 +91,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Text(
                         'Bem-vindo\nde volta!',
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(32),
                           fontWeight: FontWeight.w800,
                           height: 1.1,
@@ -99,7 +101,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Text(
                         s.logInToContinue,
                         style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(15),
                         ),
                       ),
@@ -143,7 +145,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         _obscurePassword
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
-                        color: context.textHint,
+                        color: context.nexusTheme.textHint,
                         size: r.s(20),
                       ),
                     ),
@@ -183,7 +185,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       );
                     },
                     style: TextButton.styleFrom(
-                      foregroundColor: AppTheme.primaryColor,
+                      foregroundColor: context.nexusTheme.accentPrimary,
                       textStyle: TextStyle(
                         fontSize: r.fs(13),
                         fontWeight: FontWeight.w600,
@@ -200,21 +202,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       padding: EdgeInsets.all(r.s(12)),
                       margin: EdgeInsets.only(bottom: r.s(16)),
                       decoration: BoxDecoration(
-                        color: AppTheme.errorColor.withValues(alpha: 0.1),
+                        color: context.nexusTheme.error.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(r.s(12)),
                         border: Border.all(
-                          color: AppTheme.errorColor.withValues(alpha: 0.3),
+                          color: context.nexusTheme.error.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
                         children: [
                           Icon(Icons.error_outline,
-                              color: AppTheme.errorColor, size: r.s(20)),
+                              color: context.nexusTheme.error, size: r.s(20)),
                           SizedBox(width: r.s(8)),
                           Expanded(
                             child: Text(authState.error!,
                                 style: TextStyle(
-                                    color: AppTheme.errorColor,
+                                    color: context.nexusTheme.error,
                                     fontSize: r.fs(13))),
                           ),
                         ],
@@ -233,10 +235,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: ElevatedButton(
                       onPressed: authState.isLoading ? null : _handleLogin,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor,
+                        backgroundColor: context.nexusTheme.accentPrimary,
                         foregroundColor: Colors.white,
                         disabledBackgroundColor:
-                            AppTheme.primaryColor.withValues(alpha: 0.5),
+                            context.nexusTheme.accentPrimary.withValues(alpha: 0.5),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(r.s(14)),
@@ -275,7 +277,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                       child: Text(s.orLabel,
                           style: TextStyle(
-                              color: context.textHint, fontSize: r.fs(13))),
+                              color: context.nexusTheme.textHint, fontSize: r.fs(13))),
                     ),
                     Expanded(
                       child: Container(
@@ -311,10 +313,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 .read(authProvider.notifier)
                                 .signInWithGoogle(),
                             icon: Icon(Icons.g_mobiledata_rounded,
-                                size: r.s(28), color: context.textPrimary),
+                                size: r.s(28), color: context.nexusTheme.textPrimary),
                             label: const Text('Continuar com Google'),
                             style: TextButton.styleFrom(
-                              foregroundColor: context.textPrimary,
+                              foregroundColor: context.nexusTheme.textPrimary,
                               textStyle: TextStyle(
                                 fontSize: r.fs(15),
                                 fontWeight: FontWeight.w600,
@@ -351,10 +353,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 .read(authProvider.notifier)
                                 .signInWithApple(),
                             icon: Icon(Icons.apple_rounded,
-                                size: r.s(24), color: context.textPrimary),
+                                size: r.s(24), color: context.nexusTheme.textPrimary),
                             label: const Text('Continuar com Apple'),
                             style: TextButton.styleFrom(
-                              foregroundColor: context.textPrimary,
+                              foregroundColor: context.nexusTheme.textPrimary,
                               textStyle: TextStyle(
                                 fontSize: r.fs(15),
                                 fontWeight: FontWeight.w600,
@@ -374,13 +376,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       Text(s.dontHaveAccount2,
                           style: TextStyle(
-                              color: context.textSecondary,
+                              color: context.nexusTheme.textSecondary,
                               fontSize: r.fs(14))),
                       GestureDetector(
                         onTap: () => context.go('/signup'),
                         child: Text(s.createAccount,
                             style: TextStyle(
-                              color: AppTheme.primaryColor,
+                              color: context.nexusTheme.accentPrimary,
                               fontWeight: FontWeight.w700,
                               fontSize: r.fs(14),
                             )),
@@ -429,12 +431,12 @@ class _AminoTextField extends ConsumerWidget {
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
+      style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(15)),
       validator: validator,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: context.textHint, fontSize: r.fs(15)),
-        prefixIcon: Icon(icon, color: context.textHint, size: r.s(20)),
+        hintStyle: TextStyle(color: context.nexusTheme.textHint, fontSize: r.fs(15)),
+        prefixIcon: Icon(icon, color: context.nexusTheme.textHint, size: r.s(20)),
         suffixIcon: suffixIcon != null
             ? Padding(
                 padding: EdgeInsets.only(right: r.s(12)),
@@ -442,7 +444,7 @@ class _AminoTextField extends ConsumerWidget {
               )
             : null,
         filled: true,
-        fillColor: context.cardBg,
+        fillColor: context.nexusTheme.surfacePrimary,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(r.s(14)),
           borderSide: BorderSide.none,
@@ -457,14 +459,14 @@ class _AminoTextField extends ConsumerWidget {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(r.s(14)),
           borderSide: const BorderSide(
-            color: AppTheme.primaryColor,
+            color: context.nexusTheme.accentPrimary,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(r.s(14)),
           borderSide: const BorderSide(
-            color: AppTheme.errorColor,
+            color: context.nexusTheme.error,
             width: 1,
           ),
         ),

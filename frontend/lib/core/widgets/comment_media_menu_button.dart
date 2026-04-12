@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../utils/responsive.dart';
+import '../../config/nexus_theme_extension.dart';
 
 /// Botão unificado para o input bar de comentários.
 /// Ao ser tocado, abre um menu popup com as opções:
@@ -37,7 +38,7 @@ class CommentMediaMenuButton extends StatelessWidget {
               : Icons.add_reaction_outlined,
           size: r.s(22),
           color: showEmojiPicker
-              ? AppTheme.primaryColor
+              ? context.nexusTheme.accentPrimary
               : Colors.grey[500],
         ),
       ),
@@ -118,7 +119,7 @@ class CommentMediaMenuButton extends StatelessWidget {
                       height: r.s(20),
                       child: const CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                       ),
                     )
                   : Icon(Icons.perm_media_outlined,

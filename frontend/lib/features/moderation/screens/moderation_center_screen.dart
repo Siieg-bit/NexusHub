@@ -6,6 +6,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // ============================================================================
 // MODERATION CENTER SCREEN
@@ -135,15 +137,15 @@ class _ModerationCenterScreenState
     final r = context.r;
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         title: const Text('Central de Moderação'),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppTheme.errorColor,
-          labelColor: AppTheme.errorColor,
-          unselectedLabelColor: context.textSecondary,
+          indicatorColor: context.nexusTheme.error,
+          labelColor: context.nexusTheme.error,
+          unselectedLabelColor: context.nexusTheme.textSecondary,
           tabs: [
             Tab(
               child: Row(
@@ -156,7 +158,7 @@ class _ModerationCenterScreenState
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(6), vertical: r.s(2)),
                       decoration: BoxDecoration(
-                        color: AppTheme.errorColor,
+                        color: context.nexusTheme.error,
                         borderRadius: BorderRadius.circular(r.s(8)),
                       ),
                       child: Text(
@@ -242,14 +244,14 @@ class _ModerationCenterScreenState
         children: [
           Icon(Icons.shield_rounded,
               size: r.s(52),
-              color: AppTheme.successColor.withValues(alpha: 0.5)),
+              color: context.nexusTheme.success.withValues(alpha: 0.5)),
           SizedBox(height: r.s(12)),
           Text(
             _currentFilter == 'pending'
                 ? 'Nenhuma denúncia pendente'
                 : 'Nenhuma denúncia encontrada',
             style: TextStyle(
-              color: context.textSecondary,
+              color: context.nexusTheme.textSecondary,
               fontSize: r.fs(15),
               fontWeight: FontWeight.w600,
             ),
@@ -258,7 +260,7 @@ class _ModerationCenterScreenState
           Text(
             'A comunidade está segura!',
             style: TextStyle(
-              color: context.textSecondary.withValues(alpha: 0.6),
+              color: context.nexusTheme.textSecondary.withValues(alpha: 0.6),
               fontSize: r.fs(13),
             ),
           ),
@@ -287,7 +289,7 @@ class _BotStatsBar extends StatelessWidget {
       padding: EdgeInsets.symmetric(
           horizontal: r.s(16), vertical: r.s(10)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         border: Border(
           bottom: BorderSide(
               color: Colors.white.withValues(alpha: 0.06)),
@@ -297,34 +299,34 @@ class _BotStatsBar extends StatelessWidget {
         children: [
           Icon(Icons.smart_toy_rounded,
               size: r.s(16),
-              color: AppTheme.primaryColor),
+              color: context.nexusTheme.accentPrimary),
           SizedBox(width: r.s(6)),
           Text(
             'Bot (30 dias):',
             style: TextStyle(
-              color: context.textSecondary,
+              color: context.nexusTheme.textSecondary,
               fontSize: r.fs(12),
               fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(width: r.s(12)),
           _StatChip(
-              label: 'Total', value: total, color: context.textSecondary),
+              label: 'Total', value: total, color: context.nexusTheme.textSecondary),
           SizedBox(width: r.s(8)),
           _StatChip(
               label: 'Pendentes',
               value: pending,
-              color: AppTheme.warningColor),
+              color: context.nexusTheme.warning),
           SizedBox(width: r.s(8)),
           _StatChip(
               label: 'Analisados',
               value: analyzed,
-              color: AppTheme.primaryColor),
+              color: context.nexusTheme.accentPrimary),
           SizedBox(width: r.s(8)),
           _StatChip(
               label: 'Auto-removidos',
               value: autoActioned,
-              color: AppTheme.errorColor),
+              color: context.nexusTheme.error),
         ],
       ),
     );
@@ -395,13 +397,13 @@ class _FlagCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(12)),
           border: Border.all(
             color: autoActioned
-                ? AppTheme.errorColor.withValues(alpha: 0.3)
+                ? context.nexusTheme.error.withValues(alpha: 0.3)
                 : isPending
-                    ? AppTheme.warningColor.withValues(alpha: 0.15)
+                    ? context.nexusTheme.warning.withValues(alpha: 0.15)
                     : Colors.white.withValues(alpha: 0.06),
           ),
         ),
@@ -446,7 +448,7 @@ class _FlagCard extends StatelessWidget {
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(6), vertical: r.s(3)),
                       decoration: BoxDecoration(
-                        color: AppTheme.errorColor.withValues(alpha: 0.15),
+                        color: context.nexusTheme.error.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(r.s(6)),
                       ),
                       child: Row(
@@ -454,12 +456,12 @@ class _FlagCard extends StatelessWidget {
                         children: [
                           Icon(Icons.smart_toy_rounded,
                               size: r.s(10),
-                              color: AppTheme.errorColor),
+                              color: context.nexusTheme.error),
                           SizedBox(width: r.s(3)),
                           Text(
                             'Auto-removido',
                             style: TextStyle(
-                              color: AppTheme.errorColor,
+                              color: context.nexusTheme.error,
                               fontSize: r.fs(10),
                               fontWeight: FontWeight.w700,
                             ),
@@ -473,7 +475,7 @@ class _FlagCard extends StatelessWidget {
                   Text(
                     _formatDate(createdAt),
                     style: TextStyle(
-                      color: context.textSecondary,
+                      color: context.nexusTheme.textSecondary,
                       fontSize: r.fs(10),
                     ),
                   ),
@@ -489,7 +491,7 @@ class _FlagCard extends StatelessWidget {
                   width: double.infinity,
                   padding: EdgeInsets.all(r.s(10)),
                   decoration: BoxDecoration(
-                    color: context.scaffoldBg.withValues(alpha: 0.5),
+                    color: context.nexusTheme.backgroundPrimary.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(r.s(8)),
                     border: Border.all(
                         color: Colors.white.withValues(alpha: 0.05)),
@@ -499,7 +501,7 @@ class _FlagCard extends StatelessWidget {
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(13),
                       height: 1.4,
                       fontStyle: FontStyle.italic,
@@ -526,7 +528,7 @@ class _FlagCard extends StatelessWidget {
                     Text(
                       reporter['nickname'] as String? ?? 'Anônimo',
                       style: TextStyle(
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                         fontSize: r.fs(11),
                       ),
                     ),
@@ -548,7 +550,7 @@ class _FlagCard extends StatelessWidget {
                         child: Text(
                           'Rejeitar',
                           style: TextStyle(
-                            color: context.textSecondary,
+                            color: context.nexusTheme.textSecondary,
                             fontSize: r.fs(11),
                             fontWeight: FontWeight.w600,
                           ),
@@ -562,16 +564,16 @@ class _FlagCard extends StatelessWidget {
                         padding: EdgeInsets.symmetric(
                             horizontal: r.s(10), vertical: r.s(5)),
                         decoration: BoxDecoration(
-                          color: AppTheme.errorColor.withValues(alpha: 0.15),
+                          color: context.nexusTheme.error.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(r.s(6)),
                           border: Border.all(
-                              color: AppTheme.errorColor
+                              color: context.nexusTheme.error
                                   .withValues(alpha: 0.3)),
                         ),
                         child: Text(
                           'Ver detalhes',
                           style: TextStyle(
-                            color: AppTheme.errorColor,
+                            color: context.nexusTheme.error,
                             fontSize: r.fs(11),
                             fontWeight: FontWeight.w600,
                           ),
@@ -584,7 +586,7 @@ class _FlagCard extends StatelessWidget {
                       child: Text(
                         'Ver detalhes →',
                         style: TextStyle(
-                          color: AppTheme.primaryColor,
+                          color: context.nexusTheme.accentPrimary,
                           fontSize: r.fs(11),
                           fontWeight: FontWeight.w600,
                         ),
@@ -649,19 +651,19 @@ class _BotBadge extends StatelessWidget {
     IconData icon;
     switch (verdict) {
       case 'clean':
-        color = AppTheme.successColor;
+        color = context.nexusTheme.success;
         icon = Icons.check_circle_rounded;
         break;
       case 'suspicious':
-        color = AppTheme.warningColor;
+        color = context.nexusTheme.warning;
         icon = Icons.warning_rounded;
         break;
       case 'auto_removed':
-        color = AppTheme.errorColor;
+        color = context.nexusTheme.error;
         icon = Icons.remove_circle_rounded;
         break;
       default:
-        color = AppTheme.primaryColor;
+        color = context.nexusTheme.accentPrimary;
         icon = Icons.info_rounded;
     }
 

@@ -7,6 +7,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // PINNED WIKIS SECTION — Wikis fixadas no perfil (via bookmarks.wiki_id)
@@ -68,7 +70,7 @@ class _ProfilePinnedWikisState extends ConsumerState<ProfilePinnedWikis> {
           Row(
             children: [
               Icon(Icons.push_pin_rounded,
-                  size: r.s(14), color: AppTheme.primaryColor),
+                  size: r.s(14), color: context.nexusTheme.accentPrimary),
               SizedBox(width: r.s(6)),
               Text(
                 'Wikis Fixadas',
@@ -138,7 +140,7 @@ class _ProfilePinnedWikisState extends ConsumerState<ProfilePinnedWikis> {
                                 Text(
                                   title,
                                   style: TextStyle(
-                                    color: context.textPrimary,
+                                    color: context.nexusTheme.textPrimary,
                                     fontWeight: FontWeight.w700,
                                     fontSize: r.fs(11),
                                   ),
@@ -175,10 +177,10 @@ class _ProfilePinnedWikisState extends ConsumerState<ProfilePinnedWikis> {
     return Container(
       height: r.s(50),
       width: r.s(140),
-      color: AppTheme.primaryColor.withValues(alpha: 0.15),
+      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
       child: Center(
         child: Icon(Icons.auto_stories_rounded,
-            color: AppTheme.primaryColor, size: r.s(20)),
+            color: context.nexusTheme.accentPrimary, size: r.s(20)),
       ),
     );
   }

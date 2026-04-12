@@ -6,6 +6,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Sticker Picker — carrega packs reais de stickers comprados na loja e
 /// permite selecionar um sticker para envio no chat.
@@ -399,7 +401,7 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
 
     return Container(
       decoration: BoxDecoration(
-        color: context.scaffoldBg,
+        color: context.nexusTheme.backgroundPrimary,
         borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(16))),
       ),
       child: _isLoading || controller == null
@@ -412,7 +414,7 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
                     width: r.s(40),
                     height: r.s(4),
                     decoration: BoxDecoration(
-                      color: context.textHint,
+                      color: context.nexusTheme.textHint,
                       borderRadius: BorderRadius.circular(r.s(2)),
                     ),
                   ),
@@ -433,7 +435,7 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
                         s.holdToFavorite,
                         style: TextStyle(
                           fontSize: r.fs(11),
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                         ),
                       ),
                     ],
@@ -442,9 +444,9 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
                 TabBar(
                   controller: controller,
                   isScrollable: true,
-                  labelColor: AppTheme.primaryColor,
-                  unselectedLabelColor: context.textSecondary,
-                  indicatorColor: AppTheme.primaryColor,
+                  labelColor: context.nexusTheme.accentPrimary,
+                  unselectedLabelColor: context.nexusTheme.textSecondary,
+                  indicatorColor: context.nexusTheme.accentPrimary,
                   tabs: _packs
                       .map((pack) => Tab(text: _string(pack['name'])))
                       .toList(),
@@ -501,7 +503,7 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
           }),
           child: Container(
             decoration: BoxDecoration(
-              color: context.cardBg,
+              color: context.nexusTheme.surfacePrimary,
               borderRadius: BorderRadius.circular(r.s(12)),
             ),
             child: Center(
@@ -539,7 +541,7 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
                   ? 'Nenhum favorito ainda.\nSegure um sticker para favoritar.'
                   : emptyMessage,
               textAlign: TextAlign.center,
-              style: TextStyle(color: context.textSecondary),
+              style: TextStyle(color: context.nexusTheme.textSecondary),
             ),
           ],
         ),
@@ -576,11 +578,11 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: context.cardBg,
+                  color: context.nexusTheme.surfacePrimary,
                   borderRadius: BorderRadius.circular(r.s(12)),
                   border: isFav
                       ? Border.all(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.6),
+                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.6),
                           width: 1.5,
                         )
                       : null,
@@ -611,7 +613,7 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
                   child: Icon(
                     Icons.favorite_rounded,
                     size: r.s(12),
-                    color: AppTheme.primaryColor,
+                    color: context.nexusTheme.accentPrimary,
                   ),
                 ),
             ],

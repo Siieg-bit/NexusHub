@@ -6,6 +6,8 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../widgets/rich_bio.dart';
 import '../widgets/wall_comment_sheet.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela expandida de Biografia & Mural — acessível ao tocar no título "Biografia"
 /// no perfil de comunidade. Exibe a bio completa e o mural do usuário.
@@ -53,13 +55,13 @@ class _BioAndWallScreenState extends ConsumerState<BioAndWallScreen>
     final r = context.r;
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_rounded,
-              color: context.textPrimary, size: r.s(20)),
+              color: context.nexusTheme.textPrimary, size: r.s(20)),
           onPressed: () => context.pop(),
         ),
         title: Column(
@@ -68,7 +70,7 @@ class _BioAndWallScreenState extends ConsumerState<BioAndWallScreen>
             Text(
               widget.displayName,
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(16),
                 fontWeight: FontWeight.w700,
               ),
@@ -84,9 +86,9 @@ class _BioAndWallScreenState extends ConsumerState<BioAndWallScreen>
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppTheme.primaryColor,
+          labelColor: context.nexusTheme.accentPrimary,
           unselectedLabelColor: Colors.grey[500],
-          indicatorColor: AppTheme.primaryColor,
+          indicatorColor: context.nexusTheme.accentPrimary,
           dividerColor: Colors.transparent,
           labelStyle:
               TextStyle(fontWeight: FontWeight.w700, fontSize: r.fs(14)),
@@ -157,7 +159,7 @@ class _BioTab extends StatelessWidget {
                 child: Text(
                   displayName,
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(18),
                     fontWeight: FontWeight.w700,
                   ),

@@ -6,6 +6,8 @@ import '../screens/story_viewer_screen.dart';
 import '../screens/create_story_screen.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Story Carousel — Carrossel horizontal de stories no topo do feed.
 ///
@@ -102,7 +104,7 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
                 width: r.s(20),
                 height: r.s(20),
                 child: CircularProgressIndicator(
-                    strokeWidth: 2, color: AppTheme.accentColor),
+                    strokeWidth: 2, color: context.nexusTheme.accentSecondary),
               ),
             )
           : ListView.builder(
@@ -139,14 +141,14 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
                   height: r.s(60),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: context.cardBg,
+                    color: context.nexusTheme.surfacePrimary,
                     border: Border.all(
-                      color: AppTheme.accentColor.withValues(alpha: 0.3),
+                      color: context.nexusTheme.accentSecondary.withValues(alpha: 0.3),
                       width: 2,
                     ),
                   ),
                   child: Icon(Icons.add_rounded,
-                      color: AppTheme.accentColor, size: r.s(28)),
+                      color: context.nexusTheme.accentSecondary, size: r.s(28)),
                 ),
               ],
             ),
@@ -154,7 +156,7 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
             Text(
               s.yourStory,
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(10),
                 fontWeight: FontWeight.w600,
               ),
@@ -214,18 +216,18 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: context.scaffoldBg, width: 2),
+                  border: Border.all(color: context.nexusTheme.backgroundPrimary, width: 2),
                 ),
                 child: CircleAvatar(
                   radius: 26,
-                  backgroundColor: context.cardBg,
+                  backgroundColor: context.nexusTheme.surfacePrimary,
                   backgroundImage:
                       avatarUrl != null ? NetworkImage(avatarUrl) : null,
                   child: avatarUrl == null
                       ? Text(
                           username[0].toUpperCase(),
                           style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontWeight: FontWeight.w700,
                           ),
                         )
@@ -239,7 +241,7 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
               child: Text(
                 username,
                 style: TextStyle(
-                  color: hasUnviewed ? context.textPrimary : Colors.grey[600],
+                  color: hasUnviewed ? context.nexusTheme.textPrimary : Colors.grey[600],
                   fontSize: r.fs(10),
                   fontWeight: hasUnviewed ? FontWeight.w700 : FontWeight.w500,
                 ),

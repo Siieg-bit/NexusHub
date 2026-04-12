@@ -51,6 +51,7 @@ import '../features/settings/screens/app_permissions_screen.dart';
 import '../features/settings/screens/privacy_policy_screen.dart';
 import '../features/settings/screens/terms_of_use_screen.dart';
 import '../features/settings/screens/linked_accounts_screen.dart';
+import '../features/settings/screens/theme_selector_screen.dart';
 import '../features/explore/screens/search_screen.dart';
 import '../features/profile/screens/user_wall_screen.dart';
 import '../features/profile/screens/followers_screen.dart';
@@ -617,12 +618,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'terms-of-use',
         builder: (context, state) => const TermsOfUseScreen(),
       ),
-      GoRoute(
+       GoRoute(
         path: '/settings/linked-accounts',
         name: 'linked-accounts',
         builder: (context, state) => const LinkedAccountsScreen(),
       ),
-
+      GoRoute(
+        path: '/settings/themes',
+        name: 'theme-selector',
+        builder: (context, state) => const ThemeSelectorScreen(),
+      ),
       // ====================================================================
       // BUSCA GLOBAL
       // ====================================================================

@@ -5,6 +5,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Painel de Administração Global — Team Amino.
 /// Visão geral de todas as comunidades, usuários e ações de moderação.
@@ -76,7 +78,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
   Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -84,14 +86,14 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
           'Admin Panel',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
           ),
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppTheme.primaryColor,
+          labelColor: context.nexusTheme.accentPrimary,
           unselectedLabelColor: Colors.grey[500],
-          indicatorColor: AppTheme.primaryColor,
+          indicatorColor: context.nexusTheme.accentPrimary,
           dividerColor: Colors.transparent,
           tabs:  [
             Tab(text: 'Overview'),
@@ -102,7 +104,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor))
+              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : TabBarView(
               controller: _tabController,
               children: [
@@ -128,7 +130,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
                 icon: Icons.people_rounded,
                 label: s.usersLabel,
                 value: _totalUsers.toString(),
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
               ),
             ),
             SizedBox(width: r.s(12)),
@@ -137,7 +139,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
                 icon: Icons.groups_rounded,
                 label: s.communities,
                 value: _totalCommunities.toString(),
-                color: AppTheme.accentColor,
+                color: context.nexusTheme.accentSecondary,
               ),
             ),
           ],
@@ -150,7 +152,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
                 icon: Icons.article_rounded,
                 label: s.posts,
                 value: _totalPosts.toString(),
-                color: AppTheme.successColor,
+                color: context.nexusTheme.success,
               ),
             ),
             SizedBox(width: r.s(12)),
@@ -159,7 +161,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
                 icon: Icons.flag_rounded,
                 label: s.pendingFlags,
                 value: _pendingFlags.toString(),
-                color: AppTheme.errorColor,
+                color: context.nexusTheme.error,
               ),
             ),
           ],
@@ -199,11 +201,11 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
               Container(
                 padding: EdgeInsets.all(r.s(10)),
                 decoration: BoxDecoration(
-                  color: AppTheme.warningColor.withValues(alpha: 0.1),
+                  color: context.nexusTheme.warning.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.gavel_rounded,
-                    color: AppTheme.warningColor, size: r.s(20)),
+                    color: context.nexusTheme.warning, size: r.s(20)),
               ),
               SizedBox(width: r.s(16)),
               Expanded(
@@ -215,7 +217,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: r.fs(15),
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                       ),
                     ),
                     SizedBox(height: r.s(4)),
@@ -265,7 +267,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
         builder: (ctx, setDialogState) => AlertDialog(
           backgroundColor: context.surfaceColor,
           title: Text(s.sendBroadcast,
-              style: TextStyle(color: context.textPrimary)),
+              style: TextStyle(color: context.nexusTheme.textPrimary)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -278,12 +280,12 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
               DropdownButtonFormField<String>(
                 value: selectedCommunityId,
                 dropdownColor: context.surfaceColor,
-                style: TextStyle(color: context.textPrimary),
+                style: TextStyle(color: context.nexusTheme.textPrimary),
                 decoration: InputDecoration(
                   labelText: s.community,
                   labelStyle: TextStyle(color: Colors.grey[500]),
                   filled: true,
-                  fillColor: context.scaffoldBg,
+                  fillColor: context.nexusTheme.backgroundPrimary,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(r.s(12)),
                     borderSide: BorderSide.none,
@@ -303,12 +305,12 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
               // Título
               TextField(
                 controller: titleCtrl,
-                style: TextStyle(color: context.textPrimary),
+                style: TextStyle(color: context.nexusTheme.textPrimary),
                 decoration: InputDecoration(
                   labelText: s.title,
                   labelStyle: TextStyle(color: Colors.grey[500]),
                   filled: true,
-                  fillColor: context.scaffoldBg,
+                  fillColor: context.nexusTheme.backgroundPrimary,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(r.s(12)),
                     borderSide: BorderSide.none,
@@ -320,12 +322,12 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
               TextField(
                 controller: msgCtrl,
                 maxLines: 4,
-                style: TextStyle(color: context.textPrimary),
+                style: TextStyle(color: context.nexusTheme.textPrimary),
                 decoration: InputDecoration(
                   hintText: s.typeMessageHint,
                   hintStyle: TextStyle(color: Colors.grey[600]),
                   filled: true,
-                  fillColor: context.scaffoldBg,
+                  fillColor: context.nexusTheme.backgroundPrimary,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(r.s(12)),
                     borderSide: BorderSide.none,
@@ -390,7 +392,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
+                backgroundColor: context.nexusTheme.accentPrimary,
               ),
               child: Text(s.send),
             ),
@@ -539,10 +541,10 @@ class _ToolItem extends ConsumerWidget {
             Container(
               padding: EdgeInsets.all(r.s(12)),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(r.s(12)),
               ),
-              child: Icon(icon, color: AppTheme.primaryColor, size: r.s(24)),
+              child: Icon(icon, color: context.nexusTheme.accentPrimary, size: r.s(24)),
             ),
             SizedBox(width: r.s(16)),
             Expanded(
@@ -554,7 +556,7 @@ class _ToolItem extends ConsumerWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: r.fs(16),
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                     ),
                   ),
                   SizedBox(height: r.s(4)),

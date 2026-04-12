@@ -4,6 +4,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Resultado da seleção de moldura.
 ///
@@ -285,7 +287,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
                     width: r.s(36),
                     height: r.s(36),
                     decoration: const BoxDecoration(
-                      color: AppTheme.accentColor,
+                      color: context.nexusTheme.accentSecondary,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(Icons.check_rounded,
@@ -313,7 +315,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
             child: _isLoading
                 ? const Center(
                     child: CircularProgressIndicator(
-                      color: AppTheme.accentColor,
+                      color: context.nexusTheme.accentSecondary,
                       strokeWidth: 2.5,
                     ),
                   )
@@ -398,11 +400,11 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(r.s(10)),
           border: Border.all(
-            color: isSelected ? AppTheme.accentColor : Colors.transparent,
+            color: isSelected ? context.nexusTheme.accentSecondary : Colors.transparent,
             width: 2.5,
           ),
           color: isSelected
-              ? AppTheme.accentColor.withValues(alpha: 0.08)
+              ? context.nexusTheme.accentSecondary.withValues(alpha: 0.08)
               : Colors.grey[100],
         ),
         child: Column(
@@ -458,7 +460,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
                         width: r.s(18),
                         height: r.s(18),
                         decoration: const BoxDecoration(
-                          color: AppTheme.accentColor,
+                          color: context.nexusTheme.accentSecondary,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(Icons.check_rounded,

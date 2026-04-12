@@ -5,6 +5,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de gerenciamento de Links Gerais da comunidade.
 /// Permite que líderes/agentes adicionem, editem, reordenem e removam
@@ -66,7 +68,7 @@ class _CommunityGeneralLinksScreenState
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.nexusTheme.surfacePrimary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -95,7 +97,7 @@ class _CommunityGeneralLinksScreenState
                     borderSide: BorderSide.none,
                   ),
                   prefixIcon: const Icon(Icons.title_rounded,
-                      color: AppTheme.accentColor),
+                      color: context.nexusTheme.accentSecondary),
                 ),
               ),
               const SizedBox(height: 12),
@@ -114,7 +116,7 @@ class _CommunityGeneralLinksScreenState
                     borderSide: BorderSide.none,
                   ),
                   prefixIcon: const Icon(Icons.link_rounded,
-                      color: AppTheme.accentColor),
+                      color: context.nexusTheme.accentSecondary),
                 ),
               ),
               const SizedBox(height: 12),
@@ -126,7 +128,7 @@ class _CommunityGeneralLinksScreenState
                   onChanged: (v) => isActive.value = v,
                   title: Text(s.active,
                       style: TextStyle(color: Colors.white70)),
-                  activeColor: AppTheme.accentColor,
+                  activeColor: context.nexusTheme.accentSecondary,
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
@@ -153,7 +155,7 @@ class _CommunityGeneralLinksScreenState
               Navigator.pop(ctx, true);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.accentColor,
+              backgroundColor: context.nexusTheme.accentSecondary,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -192,7 +194,7 @@ class _CommunityGeneralLinksScreenState
             content: Text(existing == null
                 ? 'Link adicionado com sucesso!'
                 : 'Link atualizado com sucesso!'),
-            backgroundColor: AppTheme.accentColor,
+            backgroundColor: context.nexusTheme.accentSecondary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -209,7 +211,7 @@ class _CommunityGeneralLinksScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.nexusTheme.surfacePrimary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -298,9 +300,9 @@ class _CommunityGeneralLinksScreenState
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.nexusTheme.surfacePrimary,
         elevation: 0,
         leading: IconButton(
           icon:
@@ -322,7 +324,7 @@ class _CommunityGeneralLinksScreenState
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
-                  color: AppTheme.accentColor,
+                  color: context.nexusTheme.accentSecondary,
                   strokeWidth: 2,
                 ),
               ),
@@ -331,7 +333,7 @@ class _CommunityGeneralLinksScreenState
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.accentColor))
+              child: CircularProgressIndicator(color: context.nexusTheme.accentSecondary))
           : Column(
               children: [
                 // Cabeçalho informativo
@@ -340,16 +342,16 @@ class _CommunityGeneralLinksScreenState
                   margin: EdgeInsets.all(r.s(16)),
                   padding: EdgeInsets.all(r.s(14)),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentColor.withValues(alpha: 0.1),
+                    color: context.nexusTheme.accentSecondary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(r.s(12)),
                     border: Border.all(
-                      color: AppTheme.accentColor.withValues(alpha: 0.3),
+                      color: context.nexusTheme.accentSecondary.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(
                     children: [
                       Icon(Icons.info_outline_rounded,
-                          color: AppTheme.accentColor, size: r.s(18)),
+                          color: context.nexusTheme.accentSecondary, size: r.s(18)),
                       SizedBox(width: r.s(10)),
                       Expanded(
                         child: Text(
@@ -411,7 +413,7 @@ class _CommunityGeneralLinksScreenState
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isSaving ? null : () => _addOrEditLink(),
-        backgroundColor: AppTheme.accentColor,
+        backgroundColor: context.nexusTheme.accentSecondary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_link_rounded),
         label: const Text(
@@ -479,11 +481,11 @@ class _LinkTile extends ConsumerWidget {
     return Container(
       margin: EdgeInsets.only(bottom: r.s(8)),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(12)),
         border: Border.all(
           color: isActive
-              ? AppTheme.accentColor.withValues(alpha: 0.2)
+              ? context.nexusTheme.accentSecondary.withValues(alpha: 0.2)
               : Colors.white.withValues(alpha: 0.05),
         ),
       ),
@@ -507,7 +509,7 @@ class _LinkTile extends ConsumerWidget {
           link['url'] as String? ?? '',
           style: TextStyle(
             color: isActive
-                ? AppTheme.accentColor.withValues(alpha: 0.8)
+                ? context.nexusTheme.accentSecondary.withValues(alpha: 0.8)
                 : Colors.grey[700],
             fontSize: r.fs(11),
           ),
@@ -524,7 +526,7 @@ class _LinkTile extends ConsumerWidget {
                 isActive
                     ? Icons.visibility_rounded
                     : Icons.visibility_off_rounded,
-                color: isActive ? AppTheme.accentColor : Colors.grey[700],
+                color: isActive ? context.nexusTheme.accentSecondary : Colors.grey[700],
                 size: r.s(20),
               ),
             ),

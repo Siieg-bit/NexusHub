@@ -5,6 +5,7 @@ import 'package:badges/badges.dart' as badges;
 import '../config/app_theme.dart';
 import '../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../config/nexus_theme_extension.dart';
 
 /// Bottom Navigation Bar Global — réplica pixel-perfect do Amino Apps.
 ///
@@ -146,7 +147,7 @@ class _AminoNavItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Amino: ativo = ciano brilhante, inativo = cinza claro translúcido
     final color = isSelected
-        ? AppTheme.accentColor // #00BCD4 ciano
+        ? context.nexusTheme.accentSecondary // #00BCD4 ciano
         : Colors.white.withValues(alpha: 0.40);
     final displayIcon = isSelected ? activeIcon : icon;
 
@@ -159,7 +160,7 @@ class _AminoNavItem extends ConsumerWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AppTheme.accentColor.withValues(alpha: 0.30),
+              color: context.nexusTheme.accentSecondary.withValues(alpha: 0.30),
               blurRadius: 12,
               spreadRadius: 1,
             ),
@@ -176,7 +177,7 @@ class _AminoNavItem extends ConsumerWidget {
           style: const TextStyle(color: Colors.white, fontSize: 9),
         ),
         badgeStyle: const badges.BadgeStyle(
-          badgeColor: AppTheme.aminoRed,
+          badgeColor: context.nexusTheme.error,
           padding: EdgeInsets.all(4),
         ),
         child: iconWidget,

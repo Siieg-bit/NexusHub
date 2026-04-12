@@ -9,6 +9,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CREATE GROUP CHAT SCREEN — Estilo Amino Apps
@@ -204,7 +206,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.groupCreatedSuccessfully),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -226,19 +228,19 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         title: Text(
           s.createGroup,
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(18),
           ),
         ),
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         actions: [
           if (_currentStep == 2)
             TextButton(
@@ -248,12 +250,12 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                       width: r.s(16),
                       height: r.s(16),
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: AppTheme.primaryColor),
+                          strokeWidth: 2, color: context.nexusTheme.accentPrimary),
                     )
                   : Text(
                       s.create,
                       style: TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         fontWeight: FontWeight.w700,
                         fontSize: r.fs(15),
                       ),
@@ -311,17 +313,17 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           height: isCurrent ? 32 : 24,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isActive ? AppTheme.primaryColor : context.surfaceColor,
+            color: isActive ? context.nexusTheme.accentPrimary : context.surfaceColor,
             border: Border.all(
               color: isActive
-                  ? AppTheme.primaryColor
+                  ? context.nexusTheme.accentPrimary
                   : (Colors.grey[700] ?? Colors.grey),
               width: 2,
             ),
             boxShadow: isCurrent
                 ? [
                     BoxShadow(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                       blurRadius: 8,
                     ),
                   ]
@@ -342,7 +344,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         Text(
           label,
           style: TextStyle(
-            color: isActive ? context.textPrimary : Colors.grey[600],
+            color: isActive ? context.nexusTheme.textPrimary : Colors.grey[600],
             fontSize: r.fs(10),
             fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
           ),
@@ -358,7 +360,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
       child: Container(
         height: 2,
         margin: EdgeInsets.only(bottom: r.s(16)),
-        color: isActive ? AppTheme.primaryColor : Colors.grey[800],
+        color: isActive ? context.nexusTheme.accentPrimary : Colors.grey[800],
       ),
     );
   }
@@ -372,7 +374,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
     if (_isLoadingCommunities) {
       return const Center(
         child: CircularProgressIndicator(
-            color: AppTheme.primaryColor, strokeWidth: 2),
+            color: context.nexusTheme.accentPrimary, strokeWidth: 2),
       );
     }
 
@@ -430,12 +432,12 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
               padding: EdgeInsets.all(r.s(14)),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppTheme.primaryColor.withValues(alpha: 0.15)
+                    ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
                     : context.surfaceColor,
                 borderRadius: BorderRadius.circular(r.s(12)),
                 border: Border.all(
                   color: isSelected
-                      ? AppTheme.primaryColor
+                      ? context.nexusTheme.accentPrimary
                       : Colors.white.withValues(alpha: 0.08),
                   width: isSelected ? 2 : 1,
                 ),
@@ -447,21 +449,21 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                     height: r.s(44),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(r.s(12)),
-                      color: context.cardBg,
+                      color: context.nexusTheme.surfacePrimary,
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: iconUrl != null
                         ? CachedNetworkImage(
                             imageUrl: iconUrl, fit: BoxFit.cover)
                         : Icon(Icons.groups_rounded,
-                            color: context.textHint, size: r.s(22)),
+                            color: context.nexusTheme.textHint, size: r.s(22)),
                   ),
                   SizedBox(width: r.s(14)),
                   Expanded(
                     child: Text(
                       name,
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontWeight:
                             isSelected ? FontWeight.w700 : FontWeight.w500,
                         fontSize: r.fs(15),
@@ -470,7 +472,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                   ),
                   if (isSelected)
                     Icon(Icons.check_circle_rounded,
-                        color: AppTheme.primaryColor, size: r.s(22)),
+                        color: context.nexusTheme.accentPrimary, size: r.s(22)),
                 ],
               ),
             ),
@@ -533,7 +535,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         SizedBox(height: r.s(8)),
         TextField(
           controller: _nameController,
-          style: TextStyle(color: context.textPrimary, fontSize: r.fs(16)),
+          style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(16)),
           decoration: InputDecoration(
             hintText: s.exampleGroupName,
             hintStyle: TextStyle(color: Colors.grey[600]),
@@ -558,7 +560,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         SizedBox(height: r.s(8)),
         TextField(
           controller: _descriptionController,
-          style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+          style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
           maxLines: 3,
           decoration: InputDecoration(
             hintText: s.describeGroup,
@@ -586,7 +588,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
             children: [
               Icon(
                 _isPublic ? Icons.public_rounded : Icons.lock_rounded,
-                color: _isPublic ? AppTheme.primaryColor : Colors.orange,
+                color: _isPublic ? context.nexusTheme.accentPrimary : Colors.orange,
                 size: r.s(22),
               ),
               SizedBox(width: r.s(12)),
@@ -597,7 +599,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                     Text(
                       _isPublic ? s.publicChat : s.privateChatLabel,
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: r.fs(14),
                       ),
@@ -615,7 +617,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
               Switch(
                 value: _isPublic,
                 onChanged: (v) => setState(() => _isPublic = v),
-                activeColor: AppTheme.primaryColor,
+                activeColor: context.nexusTheme.accentPrimary,
               ),
             ],
           ),
@@ -626,13 +628,13 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         Container(
           padding: EdgeInsets.all(r.s(12)),
           decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(r.s(10)),
           ),
           child: Row(
             children: [
               Icon(Icons.groups_rounded,
-                  color: AppTheme.primaryColor, size: r.s(18)),
+                  color: context.nexusTheme.accentPrimary, size: r.s(18)),
               SizedBox(width: r.s(8)),
               Expanded(
                 child: Column(
@@ -650,7 +652,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                       Text(
                         _selectedCommunityName!,
                         style: TextStyle(
-                          color: AppTheme.primaryColor,
+                          color: context.nexusTheme.accentPrimary,
                           fontSize: r.fs(13),
                           fontWeight: FontWeight.w700,
                         ),
@@ -663,7 +665,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                 onTap: () => setState(() => _currentStep = 0),
                 child: Text(s.change,
                     style: TextStyle(
-                        color: AppTheme.accentColor,
+                        color: context.nexusTheme.accentSecondary,
                         fontSize: r.fs(12),
                         fontWeight: FontWeight.w600)),
               ),
@@ -688,12 +690,12 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
             padding: EdgeInsets.symmetric(vertical: r.s(14)),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
               ),
               borderRadius: BorderRadius.circular(r.s(12)),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -728,7 +730,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(8)),
           child: TextField(
             controller: _searchController,
-            style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+            style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
             decoration: InputDecoration(
               hintText: s.searchMembers,
               hintStyle: TextStyle(color: Colors.grey[600]),
@@ -757,13 +759,13 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(10), vertical: r.s(4)),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(r.s(12)),
                   ),
                   child: Text(
                     '${_selectedMemberIds.length} selecionado(s)',
                     style: TextStyle(
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                       fontSize: r.fs(12),
                       fontWeight: FontWeight.w600,
                     ),
@@ -787,7 +789,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           child: _isLoadingMembers
               ? const Center(
                   child: CircularProgressIndicator(
-                      color: AppTheme.primaryColor, strokeWidth: 2),
+                      color: context.nexusTheme.accentPrimary, strokeWidth: 2),
                 )
               : _filteredMembers.isEmpty
                   ? Center(
@@ -840,11 +842,11 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: isSelected
-                                        ? AppTheme.primaryColor
+                                        ? context.nexusTheme.accentPrimary
                                         : Colors.transparent,
                                     border: Border.all(
                                       color: isSelected
-                                          ? AppTheme.primaryColor
+                                          ? context.nexusTheme.accentPrimary
                                           : (Colors.grey[600] ?? Colors.grey),
                                       width: 2,
                                     ),
@@ -858,7 +860,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                 // Avatar
                                 CircleAvatar(
                                   radius: 20,
-                                  backgroundColor: AppTheme.primaryColor
+                                  backgroundColor: context.nexusTheme.accentPrimary
                                       .withValues(alpha: 0.2),
                                   backgroundImage: avatarUrl != null
                                       ? CachedNetworkImageProvider(avatarUrl)
@@ -867,7 +869,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                       ? Text(
                                           nickname[0].toUpperCase(),
                                           style: const TextStyle(
-                                            color: AppTheme.primaryColor,
+                                            color: context.nexusTheme.accentPrimary,
                                             fontWeight: FontWeight.w700,
                                           ),
                                         )
@@ -883,7 +885,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                       Text(
                                         nickname,
                                         style: TextStyle(
-                                          color: context.textPrimary,
+                                          color: context.nexusTheme.textPrimary,
                                           fontWeight: FontWeight.w600,
                                           fontSize: r.fs(14),
                                         ),
@@ -897,7 +899,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                             color: role == 'leader'
                                                 ? Colors.amber
                                                     .withValues(alpha: 0.2)
-                                                : AppTheme.primaryColor
+                                                : context.nexusTheme.accentPrimary
                                                     .withValues(alpha: 0.2),
                                             borderRadius:
                                                 BorderRadius.circular(r.s(4)),
@@ -911,7 +913,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                             style: TextStyle(
                                               color: role == 'leader'
                                                   ? Colors.amber
-                                                  : AppTheme.primaryColor,
+                                                  : context.nexusTheme.accentPrimary,
                                               fontSize: r.fs(10),
                                               fontWeight: FontWeight.w700,
                                             ),

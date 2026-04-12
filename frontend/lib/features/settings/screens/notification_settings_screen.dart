@@ -4,6 +4,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Configurações de Notificações — Controles granulares de push e in-app.
 class NotificationSettingsScreen extends ConsumerStatefulWidget {
@@ -139,16 +141,16 @@ class _NotificationSettingsScreenState
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         title: Text(
           s.notifications,
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
           ),
         ),
         actions: [
@@ -161,12 +163,12 @@ class _NotificationSettingsScreenState
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                  colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 ),
                 borderRadius: BorderRadius.circular(r.s(20)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -188,7 +190,7 @@ class _NotificationSettingsScreenState
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
               ),
             )
           : ListView(
@@ -206,7 +208,7 @@ class _NotificationSettingsScreenState
                     boxShadow: [
                       if (_pushEnabled)
                         BoxShadow(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -217,12 +219,12 @@ class _NotificationSettingsScreenState
                       Container(
                         padding: EdgeInsets.all(r.s(10)),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(r.s(12)),
                         ),
                         child: Icon(
                           Icons.notifications_rounded,
-                          color: AppTheme.primaryColor,
+                          color: context.nexusTheme.accentPrimary,
                           size: r.s(24),
                         ),
                       ),
@@ -236,7 +238,7 @@ class _NotificationSettingsScreenState
                               style: TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: r.fs(16),
-                                color: context.textPrimary,
+                                color: context.nexusTheme.textPrimary,
                               ),
                             ),
                             SizedBox(height: r.s(4)),
@@ -253,9 +255,9 @@ class _NotificationSettingsScreenState
                       Switch(
                         value: _pushEnabled,
                         onChanged: (v) => setState(() => _pushEnabled = v),
-                        activeColor: AppTheme.primaryColor,
+                        activeColor: context.nexusTheme.accentPrimary,
                         activeTrackColor:
-                            AppTheme.primaryColor.withValues(alpha: 0.3),
+                            context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                         inactiveThumbColor: Colors.grey[400],
                         inactiveTrackColor: Colors.grey[800],
                       ),
@@ -293,7 +295,7 @@ class _NotificationSettingsScreenState
                         ? s.fromFriendsOnly
                         : s.whenSomeoneComments,
                     value: _pushComments,
-                    color: AppTheme.primaryColor,
+                    color: context.nexusTheme.accentPrimary,
                     onChanged: (v) => setState(() => _pushComments = v),
                     filterWidget: _pushComments
                         ? _FriendsOnlyChip(
@@ -308,7 +310,7 @@ class _NotificationSettingsScreenState
                     title: 'Novos Seguidores',
                     subtitle: s.whenSomeoneFollows,
                     value: _pushFollows,
-                    color: AppTheme.accentColor,
+                    color: context.nexusTheme.accentSecondary,
                     onChanged: (v) => setState(() => _pushFollows = v),
                   ),
                   _NotifToggle(
@@ -328,7 +330,7 @@ class _NotificationSettingsScreenState
                         ? s.fromFriendsOnly
                         : 'Novas mensagens no chat',
                     value: _pushChatMessages,
-                    color: AppTheme.primaryColor,
+                    color: context.nexusTheme.accentPrimary,
                     onChanged: (v) => setState(() => _pushChatMessages = v),
                     filterWidget: _pushChatMessages
                         ? _FriendsOnlyChip(
@@ -343,7 +345,7 @@ class _NotificationSettingsScreenState
                     title: 'Convites de Comunidade',
                     subtitle: 'Convites para entrar em comunidades',
                     value: _pushCommunityInvites,
-                    color: AppTheme.successColor,
+                    color: context.nexusTheme.success,
                     onChanged: (v) => setState(() => _pushCommunityInvites = v),
                   ),
                   SizedBox(height: r.s(24)),
@@ -353,7 +355,7 @@ class _NotificationSettingsScreenState
                     title: s.achievements,
                     subtitle: 'Quando desbloqueia uma conquista',
                     value: _pushAchievements,
-                    color: AppTheme.warningColor,
+                    color: context.nexusTheme.warning,
                     onChanged: (v) => setState(() => _pushAchievements = v),
                   ),
                   _NotifToggle(
@@ -371,7 +373,7 @@ class _NotificationSettingsScreenState
                     title: s.moderationActionsTitle,
                     subtitle: s.warningsStrikesActions,
                     value: _pushModeration,
-                    color: AppTheme.errorColor,
+                    color: context.nexusTheme.error,
                     onChanged: (v) => setState(() => _pushModeration = v),
                   ),
                 ],
@@ -390,7 +392,7 @@ class _NotificationSettingsScreenState
                     borderRadius: BorderRadius.circular(r.s(16)),
                     border: Border.all(
                       color: _pauseAllUntil
-                          ? AppTheme.warningColor.withValues(alpha: 0.4)
+                          ? context.nexusTheme.warning.withValues(alpha: 0.4)
                           : Colors.white.withValues(alpha: 0.05),
                     ),
                   ),
@@ -404,11 +406,11 @@ class _NotificationSettingsScreenState
                             height: r.s(40),
                             decoration: BoxDecoration(
                               color:
-                                  AppTheme.warningColor.withValues(alpha: 0.15),
+                                  context.nexusTheme.warning.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(r.s(12)),
                             ),
                             child: Icon(Icons.do_not_disturb_on_rounded,
-                                color: AppTheme.warningColor, size: r.s(20)),
+                                color: context.nexusTheme.warning, size: r.s(20)),
                           ),
                           SizedBox(width: r.s(16)),
                           Expanded(
@@ -419,7 +421,7 @@ class _NotificationSettingsScreenState
                                     style: TextStyle(
                                         fontWeight: FontWeight.w700,
                                         fontSize: r.fs(15),
-                                        color: context.textPrimary)),
+                                        color: context.nexusTheme.textPrimary)),
                                 SizedBox(height: r.s(4)),
                                 Text(
                                   _pauseAllUntil && _pauseUntilDate != null
@@ -458,9 +460,9 @@ class _NotificationSettingsScreenState
                                 });
                               }
                             },
-                            activeColor: AppTheme.warningColor,
+                            activeColor: context.nexusTheme.warning,
                             activeTrackColor:
-                                AppTheme.warningColor.withValues(alpha: 0.3),
+                                context.nexusTheme.warning.withValues(alpha: 0.3),
                             inactiveThumbColor: Colors.grey[400],
                             inactiveTrackColor: Colors.grey[800],
                           ),
@@ -508,7 +510,7 @@ class _SectionTitle extends ConsumerWidget {
         style: TextStyle(
           fontWeight: FontWeight.w800,
           fontSize: r.fs(16),
-          color: context.textPrimary,
+          color: context.nexusTheme.textPrimary,
           letterSpacing: 0.5,
         ),
       ),
@@ -568,7 +570,7 @@ class _NotifToggle extends ConsumerWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(15),
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                   ),
                 ),
                 SizedBox(height: r.s(4)),
@@ -616,12 +618,12 @@ class _FriendsOnlyChip extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
           color: value
-              ? AppTheme.accentColor.withValues(alpha: 0.2)
+              ? context.nexusTheme.accentSecondary.withValues(alpha: 0.2)
               : Colors.grey.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: value
-                ? AppTheme.accentColor.withValues(alpha: 0.6)
+                ? context.nexusTheme.accentSecondary.withValues(alpha: 0.6)
                 : Colors.grey.withValues(alpha: 0.3),
           ),
         ),
@@ -631,7 +633,7 @@ class _FriendsOnlyChip extends ConsumerWidget {
             Icon(
               Icons.people_rounded,
               size: 12,
-              color: value ? AppTheme.accentColor : Colors.grey[500],
+              color: value ? context.nexusTheme.accentSecondary : Colors.grey[500],
             ),
             const SizedBox(width: 4),
             Text(
@@ -639,7 +641,7 @@ class _FriendsOnlyChip extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: value ? AppTheme.accentColor : Colors.grey[500],
+                color: value ? context.nexusTheme.accentSecondary : Colors.grey[500],
               ),
             ),
           ],

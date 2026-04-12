@@ -13,6 +13,8 @@ import '../../chat/screens/chat_list_screen.dart' show chatListProvider, chatCom
 import '../../../core/providers/chat_provider.dart' show unreadCountProvider, unreadCountByCommunityProvider;
 import '../widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 Map<String, dynamic>? _extractProfile(dynamic rawProfile) {
   if (rawProfile is Map<String, dynamic>) return rawProfile;
@@ -313,7 +315,7 @@ class _MyCommunityChatsScreenState
         ref.watch(favoriteMembersProvider(widget.communityId));
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       body: SafeArea(
         child: Column(
           children: [
@@ -324,7 +326,7 @@ class _MyCommunityChatsScreenState
             // ── Conteúdo scrollável ──
             Expanded(
               child: RefreshIndicator(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
                 onRefresh: () async {
                   ref.invalidate(communityMyChatsProvider(widget.communityId));
                   ref.invalidate(
@@ -359,7 +361,7 @@ class _MyCommunityChatsScreenState
                         padding: EdgeInsets.only(top: r.s(40)),
                         child: const Center(
                           child: CircularProgressIndicator(
-                            color: AppTheme.primaryColor,
+                            color: context.nexusTheme.accentPrimary,
                           ),
                         ),
                       ),
@@ -369,7 +371,7 @@ class _MyCommunityChatsScreenState
                           child: Text(
                             'Erro ao carregar chats.',
                             style: TextStyle(
-                                color: context.textSecondary,
+                                color: context.nexusTheme.textSecondary,
                                 fontSize: r.fs(13)),
                           ),
                         ),
@@ -417,7 +419,7 @@ class _MyCommunityChatsScreenState
             onTap: () => context.pop(),
             behavior: HitTestBehavior.opaque,
             child: Icon(Icons.arrow_back_rounded,
-                color: context.textPrimary, size: r.s(24)),
+                color: context.nexusTheme.textPrimary, size: r.s(24)),
           ),
           SizedBox(width: r.s(12)),
           // Título
@@ -425,7 +427,7 @@ class _MyCommunityChatsScreenState
             child: Text(
               'Meus Chats',
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(18),
                 fontWeight: FontWeight.w700,
               ),
@@ -478,22 +480,22 @@ class _MyCommunityChatsScreenState
       margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
       padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(24)),
       ),
       child: Row(
         children: [
-          Icon(Icons.search_rounded, color: context.textHint, size: r.s(18)),
+          Icon(Icons.search_rounded, color: context.nexusTheme.textHint, size: r.s(18)),
           SizedBox(width: r.s(8)),
           Expanded(
             child: TextField(
               controller: _searchController,
               onChanged: (v) => setState(() => _searchQuery = v),
-              style: TextStyle(color: context.textPrimary, fontSize: r.fs(13)),
+              style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(13)),
               decoration: InputDecoration(
                 hintText: s.searchMyChats,
                 hintStyle:
-                    TextStyle(color: context.textHint, fontSize: r.fs(13)),
+                    TextStyle(color: context.nexusTheme.textHint, fontSize: r.fs(13)),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
@@ -507,7 +509,7 @@ class _MyCommunityChatsScreenState
                 setState(() => _searchQuery = '');
               },
               child: Icon(Icons.close_rounded,
-                  color: context.textHint, size: r.s(16)),
+                  color: context.nexusTheme.textHint, size: r.s(16)),
             ),
         ],
       ),
@@ -536,7 +538,7 @@ class _MyCommunityChatsScreenState
         margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
         padding: EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(10)),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(12)),
         ),
         child: Row(
@@ -558,7 +560,7 @@ class _MyCommunityChatsScreenState
               child: Text(
                 'Todos os Membros (${members.length})',
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(14),
                   fontWeight: FontWeight.w600,
                 ),
@@ -580,8 +582,8 @@ class _MyCommunityChatsScreenState
                         height: r.s(30),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: context.cardBg, width: 2),
-                          color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                          border: Border.all(color: context.nexusTheme.surfacePrimary, width: 2),
+                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.4),
                           image: url != null
                               ? DecorationImage(
                                   image: CachedNetworkImageProvider(url),
@@ -605,7 +607,7 @@ class _MyCommunityChatsScreenState
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.grey[700],
-                        border: Border.all(color: context.cardBg, width: 2),
+                        border: Border.all(color: context.nexusTheme.surfacePrimary, width: 2),
                       ),
                       child: Icon(Icons.more_horiz_rounded,
                           color: Colors.white, size: r.s(14)),
@@ -634,20 +636,20 @@ class _MyCommunityChatsScreenState
           child: Row(
             children: [
               Icon(Icons.star_rounded,
-                  color: AppTheme.warningColor, size: r.s(18)),
+                  color: context.nexusTheme.warning, size: r.s(18)),
               SizedBox(width: r.s(6)),
               Expanded(
                 child: Text(
                   'Meus Membros Favoritos',
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(14),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
               Icon(Icons.more_horiz_rounded,
-                  color: context.textHint, size: r.s(20)),
+                  color: context.nexusTheme.textHint, size: r.s(20)),
             ],
           ),
         ),
@@ -679,7 +681,7 @@ class _MyCommunityChatsScreenState
                         height: r.s(52),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                           image: iconUrl != null
                               ? DecorationImage(
                                   image: CachedNetworkImageProvider(iconUrl),
@@ -696,7 +698,7 @@ class _MyCommunityChatsScreenState
                       Text(
                         nickname,
                         style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(10),
                         ),
                         maxLines: 1,
@@ -731,14 +733,14 @@ class _MyCommunityChatsScreenState
         child: Column(
           children: [
             Icon(Icons.chat_bubble_outline_rounded,
-                color: context.textHint, size: r.s(48)),
+                color: context.nexusTheme.textHint, size: r.s(48)),
             SizedBox(height: r.s(12)),
             Text(
               _searchQuery.isEmpty
                   ? s.noChatsJoinedYet
                   : 'Nenhum chat encontrado para "$_searchQuery".',
               style:
-                  TextStyle(color: context.textSecondary, fontSize: r.fs(13)),
+                  TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(13)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -757,14 +759,14 @@ class _MyCommunityChatsScreenState
                 child: Text(
                   'Meus Chats',
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(14),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
               Icon(Icons.more_horiz_rounded,
-                  color: context.textHint, size: r.s(20)),
+                  color: context.nexusTheme.textHint, size: r.s(20)),
             ],
           ),
         ),
@@ -798,7 +800,7 @@ class _CommunityChatTile extends ConsumerWidget {
 
     await showModalBottomSheet<void>(
       context: context,
-      backgroundColor: context.cardBg,
+      backgroundColor: context.nexusTheme.surfacePrimary,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
       ),
@@ -821,7 +823,7 @@ class _CommunityChatTile extends ConsumerWidget {
               child: Text(
                 chatRoom.title,
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(15),
                   fontWeight: FontWeight.w700,
                 ),
@@ -835,13 +837,13 @@ class _CommunityChatTile extends ConsumerWidget {
             ListTile(
               leading: Icon(
                 isPinned ? Icons.push_pin_outlined : Icons.push_pin_rounded,
-                color: isPinned ? AppTheme.accentColor : context.textSecondary,
+                color: isPinned ? context.nexusTheme.accentSecondary : context.nexusTheme.textSecondary,
                 size: r.s(22),
               ),
               title: Text(
                 isPinned ? s.unpinFromTop : s.pinToTop,
                 style:
-                    TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+                    TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
               ),
               onTap: () async {
                 Navigator.of(ctx).pop();
@@ -865,13 +867,13 @@ class _CommunityChatTile extends ConsumerWidget {
             // Sair / Apagar
             ListTile(
               leading: Icon(Icons.exit_to_app_rounded,
-                  color: AppTheme.errorColor, size: r.s(22)),
+                  color: context.nexusTheme.error, size: r.s(22)),
               title: Text(
                 _usesDmDeleteFlow(chatRoom, communityId)
                     ? s.deleteConversation
                     : s.leaveChat,
                 style:
-                    TextStyle(color: AppTheme.errorColor, fontSize: r.fs(14)),
+                    TextStyle(color: context.nexusTheme.error, fontSize: r.fs(14)),
               ),
               onTap: () async {
                 Navigator.of(ctx).pop();
@@ -879,13 +881,13 @@ class _CommunityChatTile extends ConsumerWidget {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (dCtx) => AlertDialog(
-                    backgroundColor: context.cardBg,
+                    backgroundColor: context.nexusTheme.surfacePrimary,
                     title: Text(
                       _usesDmDeleteFlow(chatRoom, communityId)
                           ? 'Apagar conversa?'
                           : 'Sair do chat?',
                       style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(16),
                           fontWeight: FontWeight.w700),
                     ),
@@ -894,14 +896,14 @@ class _CommunityChatTile extends ConsumerWidget {
                           ? s.conversationRemovedFromList
                           : 'Você poderá entrar novamente depois.',
                       style: TextStyle(
-                          color: context.textSecondary, fontSize: r.fs(13)),
+                          color: context.nexusTheme.textSecondary, fontSize: r.fs(13)),
                     ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(dCtx).pop(false),
                         child: Text(s.cancel,
                             style: TextStyle(
-                                color: context.textSecondary,
+                                color: context.nexusTheme.textSecondary,
                                 fontSize: r.fs(13))),
                       ),
                       TextButton(
@@ -911,7 +913,7 @@ class _CommunityChatTile extends ConsumerWidget {
                               ? s.deleteAction
                               : s.logout,
                           style: TextStyle(
-                              color: AppTheme.errorColor,
+                              color: context.nexusTheme.error,
                               fontWeight: FontWeight.w700,
                               fontSize: r.fs(13)),
                         ),
@@ -964,7 +966,7 @@ class _CommunityChatTile extends ConsumerWidget {
             ? BoxDecoration(
                 border: Border(
                   left: BorderSide(
-                    color: AppTheme.accentColor.withValues(alpha: 0.6),
+                    color: context.nexusTheme.accentSecondary.withValues(alpha: 0.6),
                     width: 3,
                   ),
                 ),
@@ -993,7 +995,7 @@ class _CommunityChatTile extends ConsumerWidget {
                               height: r.s(56),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: AppTheme.primaryColor
+                                color: context.nexusTheme.accentPrimary
                                     .withValues(alpha: 0.35),
                               ),
                               alignment: Alignment.center,
@@ -1014,13 +1016,13 @@ class _CommunityChatTile extends ConsumerWidget {
                     child: Container(
                       width: r.s(72),
                       height: r.s(72),
-                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                       child: (chatRoom.coverImageUrl ?? chatRoom.iconUrl) != null
                           ? CachedNetworkImage(
                               imageUrl: (chatRoom.coverImageUrl ?? chatRoom.iconUrl)!,
                               fit: BoxFit.cover,
                               placeholder: (_, __) => Container(
-                                color: AppTheme.primaryColor
+                                color: context.nexusTheme.accentPrimary
                                     .withValues(alpha: 0.3),
                               ),
                               errorWidget: (_, __, ___) => Icon(
@@ -1041,10 +1043,10 @@ class _CommunityChatTile extends ConsumerWidget {
                       width: r.s(10),
                       height: r.s(10),
                       decoration: BoxDecoration(
-                        color: AppTheme.errorColor,
+                        color: context.nexusTheme.error,
                         shape: BoxShape.circle,
                         border:
-                            Border.all(color: context.scaffoldBg, width: 1.5),
+                            Border.all(color: context.nexusTheme.backgroundPrimary, width: 1.5),
                       ),
                     ),
                   ),
@@ -1060,7 +1062,7 @@ class _CommunityChatTile extends ConsumerWidget {
                   Text(
                     _typeLabelForChat(chatRoom, communityId),
                     style: TextStyle(
-                      color: context.textHint,
+                      color: context.nexusTheme.textHint,
                       fontSize: r.fs(10),
                       fontWeight: FontWeight.w400,
                     ),
@@ -1071,14 +1073,14 @@ class _CommunityChatTile extends ConsumerWidget {
                     children: [
                       if (isPinned) ...[
                         Icon(Icons.push_pin_rounded,
-                            size: r.s(11), color: AppTheme.accentColor),
+                            size: r.s(11), color: context.nexusTheme.accentSecondary),
                         SizedBox(width: r.s(3)),
                       ],
                       Expanded(
                         child: Text(
                           chatRoom.title,
                           style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontSize: r.fs(14),
                             fontWeight:
                                 hasUnread ? FontWeight.w700 : FontWeight.w600,
@@ -1095,7 +1097,7 @@ class _CommunityChatTile extends ConsumerWidget {
                     chatRoom.lastMessagePreview ?? s.noMessages,
                     style: TextStyle(
                       color:
-                          hasUnread ? context.textSecondary : context.textHint,
+                          hasUnread ? context.nexusTheme.textSecondary : context.nexusTheme.textHint,
                       fontSize: r.fs(12),
                       fontWeight: hasUnread ? FontWeight.w500 : FontWeight.w400,
                     ),
@@ -1114,7 +1116,7 @@ class _CommunityChatTile extends ConsumerWidget {
                       ? timeago.format(chatRoom.lastMessageAt!, locale: 'pt_BR')
                       : '',
                   style: TextStyle(
-                    color: hasUnread ? AppTheme.accentColor : context.textHint,
+                    color: hasUnread ? context.nexusTheme.accentSecondary : context.nexusTheme.textHint,
                     fontSize: r.fs(10),
                     fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
                   ),
@@ -1125,7 +1127,7 @@ class _CommunityChatTile extends ConsumerWidget {
                     padding:
                         EdgeInsets.symmetric(horizontal: r.s(6), vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppTheme.accentColor,
+                      color: context.nexusTheme.accentSecondary,
                       borderRadius: BorderRadius.circular(r.s(10)),
                     ),
                     child: Text(

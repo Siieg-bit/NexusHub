@@ -10,6 +10,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/community_shared_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// ============================================================================
 /// CommunityInfoScreen — Tela de detalhes/informações da comunidade.
@@ -129,7 +131,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(displayMsg),
-            backgroundColor: AppTheme.accentColor,
+            backgroundColor: context.nexusTheme.accentSecondary,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 4),
           ),
@@ -141,7 +143,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Erro ao entrar na comunidade.'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -159,7 +161,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return AppTheme.aminoPurple;
+      return context.nexusTheme.accentPrimary;
     }
   }
 
@@ -170,36 +172,36 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
 
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_rounded, color: context.textPrimary),
+            icon: Icon(Icons.arrow_back_rounded, color: context.nexusTheme.textPrimary),
             onPressed: () => Navigator.pop(context),
           ),
         ),
         body: const Center(
-          child: CircularProgressIndicator(color: AppTheme.accentColor),
+          child: CircularProgressIndicator(color: context.nexusTheme.accentSecondary),
         ),
       );
     }
 
     if (_community == null) {
       return Scaffold(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_rounded, color: context.textPrimary),
+            icon: Icon(Icons.arrow_back_rounded, color: context.nexusTheme.textPrimary),
             onPressed: () => Navigator.pop(context),
           ),
         ),
         body: Center(
           child: Text(
             s.communityNotFound,
-            style: TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
+            style: TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
           ),
         ),
       );
@@ -209,7 +211,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
     final themeColor = _parseColor(community.themeColor);
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       body: CustomScrollView(
         slivers: [
           // ── AppBar com banner ──
@@ -324,7 +326,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            context.scaffoldBg.withValues(alpha: 0.8),
+                            context.nexusTheme.backgroundPrimary.withValues(alpha: 0.8),
                           ],
                         ),
                       ),
@@ -354,7 +356,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                         height: r.s(80),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(r.s(16)),
-                          color: context.cardBg,
+                          color: context.nexusTheme.surfacePrimary,
                           border: Border.all(color: themeColor, width: 2.5),
                           boxShadow: [
                             BoxShadow(
@@ -372,7 +374,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                                 fit: BoxFit.cover,
                               )
                             : Icon(Icons.groups_rounded,
-                                color: context.textHint, size: r.s(36)),
+                                color: context.nexusTheme.textHint, size: r.s(36)),
                       ),
                       SizedBox(width: r.s(16)),
                       // Name + stats
@@ -383,7 +385,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                             Text(
                               community.name,
                               style: TextStyle(
-                                color: context.textPrimary,
+                                color: context.nexusTheme.textPrimary,
                                 fontSize: r.fs(22),
                                 fontWeight: FontWeight.w900,
                               ),
@@ -397,7 +399,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                             Text(
                               '${_formatCount(community.membersCount)} Members',
                               style: TextStyle(
-                                color: context.textSecondary,
+                                color: context.nexusTheme.textSecondary,
                                 fontSize: r.fs(14),
                                 fontWeight: FontWeight.w600,
                               ),
@@ -443,14 +445,14 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                         Text(
                           'Amino ID: ',
                           style: TextStyle(
-                            color: context.textSecondary,
+                            color: context.nexusTheme.textSecondary,
                             fontSize: r.fs(13),
                           ),
                         ),
                         Text(
                           community.endpoint ?? community.id.substring(0, 8),
                           style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontSize: r.fs(15),
                             fontWeight: FontWeight.w800,
                           ),
@@ -466,7 +468,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                     Text(
                       community.tagline,
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(14),
                         fontWeight: FontWeight.w600,
                       ),
@@ -489,14 +491,14 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                             borderRadius: BorderRadius.circular(r.s(16)),
                             border: Border.all(
                               color:
-                                  AppTheme.accentColor.withValues(alpha: 0.6),
+                                  context.nexusTheme.accentSecondary.withValues(alpha: 0.6),
                               width: 1,
                             ),
                           ),
                           child: Text(
                             tag,
                             style: TextStyle(
-                              color: AppTheme.accentColor,
+                              color: context.nexusTheme.accentSecondary,
                               fontSize: r.fs(12),
                               fontWeight: FontWeight.w600,
                             ),
@@ -521,7 +523,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                       child: Container(
                         padding: EdgeInsets.symmetric(vertical: r.s(14)),
                         decoration: BoxDecoration(
-                          color: AppTheme.accentColor,
+                          color: context.nexusTheme.accentSecondary,
                           borderRadius: BorderRadius.circular(r.s(24)),
                         ),
                         child: Row(
@@ -569,7 +571,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                       child: Text(
                         'Sobre a Comunidade',
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(16),
                           fontWeight: FontWeight.w800,
                         ),
@@ -583,7 +585,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                             ? community.aboutText
                             : community.description,
                         style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(14),
                           height: 1.6,
                         ),
@@ -599,7 +601,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                       child: Text(
                         'Regras da Comunidade',
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(16),
                           fontWeight: FontWeight.w800,
                         ),
@@ -610,7 +612,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                       width: double.infinity,
                       padding: EdgeInsets.all(r.s(14)),
                       decoration: BoxDecoration(
-                        color: context.cardBg,
+                        color: context.nexusTheme.surfacePrimary,
                         borderRadius: BorderRadius.circular(r.s(12)),
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.06),
@@ -619,7 +621,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                       child: Text(
                         community.rules,
                         style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(13),
                           height: 1.6,
                         ),
@@ -705,7 +707,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
             child: Text(
               label,
               style: TextStyle(
-                color: context.textSecondary,
+                color: context.nexusTheme.textSecondary,
                 fontSize: r.fs(13),
                 fontWeight: FontWeight.w600,
               ),
@@ -716,7 +718,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
             child: Text(
               value,
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(13),
               ),
             ),

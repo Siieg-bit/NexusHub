@@ -4,6 +4,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Diálogo de denúncia — permite reportar posts, comentários, mensagens ou usuários.
 /// Categorias: Bullying, Art Theft, Conteúdo Impróprio, Spam, Off-Topic, Outro.
@@ -141,7 +143,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.reportSubmittedThanks),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
           ),
         );
       }
@@ -195,7 +197,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
           SizedBox(height: r.s(4)),
           Text(
             s.selectReportReason,
-            style: TextStyle(color: context.textSecondary, fontSize: r.fs(13)),
+            style: TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(13)),
           ),
           SizedBox(height: r.s(16)),
 
@@ -212,7 +214,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? Color(type['color'] as int? ?? 0).withValues(alpha: 0.1)
-                      : context.cardBg,
+                      : context.nexusTheme.surfacePrimary,
                   borderRadius: BorderRadius.circular(r.s(12)),
                   border: isSelected
                       ? Border.all(
@@ -250,7 +252,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
             decoration: InputDecoration(
               hintText: s.additionalDetailsHint,
               filled: true,
-              fillColor: context.cardBg,
+              fillColor: context.nexusTheme.surfacePrimary,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(12)),
                 borderSide: BorderSide.none,
@@ -266,7 +268,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
             child: ElevatedButton(
               onPressed: _isSubmitting ? null : _submit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
                 ),

@@ -7,6 +7,8 @@ import '../models/sticker_model.dart';
 import '../providers/sticker_providers.dart';
 import '../repositories/sticker_repository.dart';
 import 'sticker_creator_screen.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de detalhes de um pack de stickers.
 /// Permite visualizar, editar (se dono), salvar e usar stickers.
@@ -54,7 +56,7 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(saved ? 'Pack salvo!' : 'Pack removido dos salvos'),
-          backgroundColor: saved ? AppTheme.primaryColor : Colors.grey[700],
+          backgroundColor: saved ? context.nexusTheme.accentPrimary : Colors.grey[700],
           duration: const Duration(seconds: 2),
         ),
       );
@@ -68,7 +70,7 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         title: Text('Deletar pack?',
-            style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
+            style: TextStyle(color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
         content: Text(
           'Todos os stickers deste pack serão removidos permanentemente.',
           style: TextStyle(color: Colors.grey[400]),
@@ -108,7 +110,7 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         title: Text('Remover sticker?',
-            style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
+            style: TextStyle(color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
         content: Text(
           'Este sticker será removido do pack.',
           style: TextStyle(color: Colors.grey[400]),
@@ -149,10 +151,10 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
     final pickerState = ref.watch(stickerPickerProvider);
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       body: packAsync.when(
         loading: () => const Center(
-          child: CircularProgressIndicator(color: AppTheme.primaryColor, strokeWidth: 2),
+          child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary, strokeWidth: 2),
         ),
         error: (e, _) => Center(
           child: Text('Erro ao carregar pack', style: TextStyle(color: Colors.grey[500])),
@@ -185,8 +187,8 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [
-                                AppTheme.primaryColor.withValues(alpha: 0.3),
-                                AppTheme.accentColor.withValues(alpha: 0.2),
+                                context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
+                                context.nexusTheme.accentSecondary.withValues(alpha: 0.2),
                               ],
                             ),
                           ),
@@ -213,9 +215,9 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
                         PopupMenuItem(
                           value: 'edit',
                           child: Row(children: [
-                            Icon(Icons.edit_rounded, size: r.s(16), color: context.textPrimary),
+                            Icon(Icons.edit_rounded, size: r.s(16), color: context.nexusTheme.textPrimary),
                             SizedBox(width: r.s(8)),
-                            Text('Editar pack', style: TextStyle(color: context.textPrimary)),
+                            Text('Editar pack', style: TextStyle(color: context.nexusTheme.textPrimary)),
                           ]),
                         ),
                         PopupMenuItem(
@@ -224,12 +226,12 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
                             Icon(
                               pack.isPublic ? Icons.lock_rounded : Icons.public_rounded,
                               size: r.s(16),
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                             ),
                             SizedBox(width: r.s(8)),
                             Text(
                               pack.isPublic ? 'Tornar privado' : 'Tornar público',
-                              style: TextStyle(color: context.textPrimary),
+                              style: TextStyle(color: context.nexusTheme.textPrimary),
                             ),
                           ]),
                         ),
@@ -262,7 +264,7 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
                                 Text(
                                   pack.name,
                                   style: TextStyle(
-                                    color: context.textPrimary,
+                                    color: context.nexusTheme.textPrimary,
                                     fontSize: r.fs(20),
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -290,7 +292,7 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
                                 decoration: BoxDecoration(
                                   color: isSaved
                                       ? Colors.grey[800]
-                                      : AppTheme.primaryColor,
+                                      : context.nexusTheme.accentPrimary,
                                   borderRadius: BorderRadius.circular(r.s(20)),
                                 ),
                                 child: _isSaving
@@ -357,7 +359,7 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
                           children: [
                             CircleAvatar(
                               radius: r.s(12),
-                              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+                              backgroundColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                               backgroundImage: pack.creatorIcon != null
                                   ? CachedNetworkImageProvider(pack.creatorIcon!)
                                   : null,
@@ -367,7 +369,7 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
                                           ? pack.authorName[0].toUpperCase()
                                           : '?',
                                       style: TextStyle(
-                                        color: AppTheme.primaryColor,
+                                        color: context.nexusTheme.accentPrimary,
                                         fontSize: r.fs(10),
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -394,13 +396,13 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
                               vertical: r.s(3),
                             ),
                             decoration: BoxDecoration(
-                              color: AppTheme.accentColor.withValues(alpha: 0.1),
+                              color: context.nexusTheme.accentSecondary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(r.s(8)),
                             ),
                             child: Text(
                               '#$tag',
                               style: TextStyle(
-                                color: AppTheme.accentColor,
+                                color: context.nexusTheme.accentSecondary,
                                 fontSize: r.fs(11),
                                 fontWeight: FontWeight.w500,
                               ),
@@ -422,7 +424,7 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
                         child: Padding(
                           padding: EdgeInsets.all(32),
                           child: CircularProgressIndicator(
-                            color: AppTheme.primaryColor,
+                            color: context.nexusTheme.accentPrimary,
                             strokeWidth: 2,
                           ),
                         ),
@@ -482,7 +484,7 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
                       icon: const Icon(Icons.add_rounded),
                       label: const Text('Adicionar Figurinha'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor,
+                        backgroundColor: context.nexusTheme.accentPrimary,
                         foregroundColor: Colors.white,
                         minimumSize: Size(double.infinity, r.s(48)),
                         shape: RoundedRectangleBorder(
@@ -526,18 +528,18 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         title: Text('Editar pack',
-            style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
+            style: TextStyle(color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameCtrl,
-              style: TextStyle(color: context.textPrimary),
+              style: TextStyle(color: context.nexusTheme.textPrimary),
               decoration: InputDecoration(
                 labelText: 'Nome',
                 labelStyle: TextStyle(color: Colors.grey[500]),
                 filled: true,
-                fillColor: context.cardBg,
+                fillColor: context.nexusTheme.surfacePrimary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(10)),
                   borderSide: BorderSide.none,
@@ -547,13 +549,13 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
             SizedBox(height: r.s(12)),
             TextField(
               controller: descCtrl,
-              style: TextStyle(color: context.textPrimary),
+              style: TextStyle(color: context.nexusTheme.textPrimary),
               maxLines: 3,
               decoration: InputDecoration(
                 labelText: 'Descrição',
                 labelStyle: TextStyle(color: Colors.grey[500]),
                 filled: true,
-                fillColor: context.cardBg,
+                fillColor: context.nexusTheme.surfacePrimary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(10)),
                   borderSide: BorderSide.none,
@@ -569,7 +571,7 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor),
+            style: ElevatedButton.styleFrom(backgroundColor: context.nexusTheme.accentPrimary),
             child: const Text('Salvar', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -606,7 +608,7 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(pack.isPublic ? 'Pack tornado privado' : 'Pack tornado público'),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
           ),
         );
       }
@@ -643,10 +645,10 @@ class _StickerGridItem extends ConsumerWidget {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: context.cardBg,
+              color: context.nexusTheme.surfacePrimary,
               borderRadius: BorderRadius.circular(r.s(12)),
               border: isFav
-                  ? Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.5), width: 1.5)
+                  ? Border.all(color: context.nexusTheme.accentPrimary.withValues(alpha: 0.5), width: 1.5)
                   : null,
             ),
             child: sticker.imageUrl.isNotEmpty
@@ -671,7 +673,7 @@ class _StickerGridItem extends ConsumerWidget {
             Positioned(
               top: r.s(2),
               right: r.s(2),
-              child: Icon(Icons.favorite_rounded, size: r.s(12), color: AppTheme.primaryColor),
+              child: Icon(Icons.favorite_rounded, size: r.s(12), color: context.nexusTheme.accentPrimary),
             ),
         ],
       ),
@@ -703,11 +705,11 @@ class _StickerGridItem extends ConsumerWidget {
             ListTile(
               leading: Icon(
                 isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                color: isFav ? AppTheme.primaryColor : context.textPrimary,
+                color: isFav ? context.nexusTheme.accentPrimary : context.nexusTheme.textPrimary,
               ),
               title: Text(
                 isFav ? 'Remover dos favoritos' : 'Adicionar aos favoritos',
-                style: TextStyle(color: context.textPrimary),
+                style: TextStyle(color: context.nexusTheme.textPrimary),
               ),
               onTap: () async {
                 Navigator.pop(ctx);

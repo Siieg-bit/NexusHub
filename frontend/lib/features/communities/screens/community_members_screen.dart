@@ -9,6 +9,8 @@ import '../../../core/utils/helpers.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // PROVIDER: Carrega todos os membros da comunidade
@@ -52,13 +54,13 @@ class CommunityMembersScreen extends ConsumerWidget {
   Color _roleColor(String role) {
     switch (role) {
       case 'agent':
-        return AppTheme.warningColor;
+        return context.nexusTheme.warning;
       case 'leader':
-        return AppTheme.errorColor;
+        return context.nexusTheme.error;
       case 'curator':
-        return AppTheme.accentColor;
+        return context.nexusTheme.accentSecondary;
       case 'moderator':
-        return AppTheme.primaryColor;
+        return context.nexusTheme.accentPrimary;
       default:
         return Colors.transparent;
     }
@@ -86,18 +88,18 @@ class CommunityMembersScreen extends ConsumerWidget {
     final membersAsync = ref.watch(allCommunityMembersProvider(communityId));
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: context.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded, color: context.nexusTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: Text(
           s.members,
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(18),
             fontWeight: FontWeight.w700,
           ),
@@ -107,16 +109,16 @@ class CommunityMembersScreen extends ConsumerWidget {
       body: membersAsync.when(
         loading: () => Center(
           child: CircularProgressIndicator(
-              color: AppTheme.primaryColor, strokeWidth: 2.5),
+              color: context.nexusTheme.accentPrimary, strokeWidth: 2.5),
         ),
         error: (error, _) => Center(
             child: Text(s.errorGeneric(error.toString()),
-                style: TextStyle(color: context.textSecondary))),
+                style: TextStyle(color: context.nexusTheme.textSecondary))),
         data: (members) {
           if (members.isEmpty) {
             return Center(
               child: Text(s.noMembers,
-                  style: TextStyle(color: context.textSecondary)),
+                  style: TextStyle(color: context.nexusTheme.textSecondary)),
             );
           }
 
@@ -143,7 +145,7 @@ class CommunityMembersScreen extends ConsumerWidget {
           // regular já vem ordenado por joined_at desc do provider
 
           return RefreshIndicator(
-            color: AppTheme.primaryColor,
+            color: context.nexusTheme.accentPrimary,
             onRefresh: () async {
               ref.invalidate(allCommunityMembersProvider(communityId));
               await Future.delayed(const Duration(milliseconds: 300));
@@ -171,7 +173,7 @@ class CommunityMembersScreen extends ConsumerWidget {
                   _SectionHeader(
                     title: s.leadersTitle,
                     count: leaders.length,
-                    color: AppTheme.errorColor,
+                    color: context.nexusTheme.error,
                   ),
                   ...leaders.asMap().entries.map((entry) => _MemberTile(
                       index: entry.key,
@@ -187,7 +189,7 @@ class CommunityMembersScreen extends ConsumerWidget {
                   _SectionHeader(
                     title: 'CURADORES',
                     count: curators.length,
-                    color: AppTheme.accentColor,
+                    color: context.nexusTheme.accentSecondary,
                   ),
                   ...curators.asMap().entries.map((entry) => _MemberTile(
                       index: entry.key,
@@ -203,7 +205,7 @@ class CommunityMembersScreen extends ConsumerWidget {
                   _SectionHeader(
                     title: 'MODERADORES',
                     count: moderators.length,
-                    color: AppTheme.primaryColor,
+                    color: context.nexusTheme.accentPrimary,
                   ),
                   ...moderators.asMap().entries.map((entry) => _MemberTile(
                       index: entry.key,
@@ -218,7 +220,7 @@ class CommunityMembersScreen extends ConsumerWidget {
                 _SectionHeader(
                   title: 'MEMBROS',
                   count: regular.length,
-                  color: context.textSecondary,
+                  color: context.nexusTheme.textSecondary,
                 ),
                 ...regular.asMap().entries.map((entry) => _MemberTile(
                     index: entry.key,
@@ -355,7 +357,7 @@ class _MemberTile extends ConsumerWidget {
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: r.fs(14),
-                                  color: context.textPrimary),
+                                  color: context.nexusTheme.textPrimary),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis),
                         ),

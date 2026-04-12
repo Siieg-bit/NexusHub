@@ -11,6 +11,8 @@ import '../../feed/widgets/post_card.dart';
 import '../../stories/widgets/story_carousel.dart';
 import '../providers/community_detail_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // TAB: Feed (Destaque / Recentes)
@@ -74,11 +76,11 @@ class _FeaturedTab extends ConsumerWidget {
   Color _accentColor(WidgetRef ref) {
     final community =
         ref.watch(communityDetailProvider(communityId)).valueOrNull;
-    if (community == null) return AppTheme.primaryColor;
+    if (community == null) return context.nexusTheme.accentPrimary;
     try {
       return Color(int.parse(community.themeColor.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return AppTheme.primaryColor;
+      return context.nexusTheme.accentPrimary;
     }
   }
 
@@ -190,12 +192,12 @@ class _FeaturedTab extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.article_outlined,
-                          size: r.s(40), color: context.textHint),
+                          size: r.s(40), color: context.nexusTheme.textHint),
                       SizedBox(height: r.s(8)),
                       Text(
                         'Nenhum post ainda. Seja o primeiro a postar!',
                         style: TextStyle(
-                            color: context.textHint, fontSize: r.fs(13)),
+                            color: context.nexusTheme.textHint, fontSize: r.fs(13)),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -239,11 +241,11 @@ class _FeaturedArchiveTab extends ConsumerWidget {
   Color _accentColor(WidgetRef ref) {
     final community =
         ref.watch(communityDetailProvider(communityId)).valueOrNull;
-    if (community == null) return AppTheme.primaryColor;
+    if (community == null) return context.nexusTheme.accentPrimary;
     try {
       return Color(int.parse(community.themeColor.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return AppTheme.primaryColor;
+      return context.nexusTheme.accentPrimary;
     }
   }
 
@@ -277,13 +279,13 @@ class _FeaturedArchiveTab extends ConsumerWidget {
                         Icon(
                           Icons.inventory_2_outlined,
                           size: r.s(42),
-                          color: context.textHint,
+                          color: context.nexusTheme.textHint,
                         ),
                         SizedBox(height: r.s(10)),
                         Text(
                           'Ainda não há destaques arquivados.',
                           style: TextStyle(
-                            color: context.textSecondary,
+                            color: context.nexusTheme.textSecondary,
                             fontSize: r.fs(13),
                             fontWeight: FontWeight.w600,
                           ),
@@ -293,7 +295,7 @@ class _FeaturedArchiveTab extends ConsumerWidget {
                         Text(
                           'Os conteúdos mais antigos aparecem aqui quando novos destaques entram na vitrine principal.',
                           style: TextStyle(
-                            color: context.textHint,
+                            color: context.nexusTheme.textHint,
                             fontSize: r.fs(12),
                           ),
                           textAlign: TextAlign.center,
@@ -339,11 +341,11 @@ class _LatestTab extends ConsumerWidget {
     return feedAsync.when(
       loading: () => Center(
         child: CircularProgressIndicator(
-            color: AppTheme.primaryColor, strokeWidth: 2.5),
+            color: context.nexusTheme.accentPrimary, strokeWidth: 2.5),
       ),
       error: (error, _) => RefreshIndicator(
         onRefresh: () => onRefresh(ref),
-        color: AppTheme.primaryColor,
+        color: context.nexusTheme.accentPrimary,
         backgroundColor: context.surfaceColor,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -351,7 +353,7 @@ class _LatestTab extends ConsumerWidget {
             height: MediaQuery.of(context).size.height * 0.5,
             child: Center(
               child: Text(s.errorLoadingPosts,
-                  style: TextStyle(color: context.textSecondary)),
+                  style: TextStyle(color: context.nexusTheme.textSecondary)),
             ),
           ),
         ),
@@ -360,7 +362,7 @@ class _LatestTab extends ConsumerWidget {
         if (posts.isEmpty) {
           return RefreshIndicator(
             onRefresh: () => onRefresh(ref),
-            color: AppTheme.primaryColor,
+            color: context.nexusTheme.accentPrimary,
             backgroundColor: context.surfaceColor,
             child: LayoutBuilder(
               builder: (ctx, constraints) => SingleChildScrollView(
@@ -372,7 +374,7 @@ class _LatestTab extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.article_outlined,
-                            size: r.s(48), color: context.textHint),
+                            size: r.s(48), color: context.nexusTheme.textHint),
                         SizedBox(height: r.s(12)),
                         Text(
                           'Nenhum post ainda. Seja o primeiro a postar!',
@@ -390,7 +392,7 @@ class _LatestTab extends ConsumerWidget {
 
         return RefreshIndicator(
           onRefresh: () => onRefresh(ref),
-          color: AppTheme.primaryColor,
+          color: context.nexusTheme.accentPrimary,
           backgroundColor: context.surfaceColor,
           child: ListView.builder(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -450,7 +452,7 @@ class _SectionHeader extends ConsumerWidget {
           Text(
             label,
             style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(14),
               fontWeight: FontWeight.w700,
               letterSpacing: 0.2,
@@ -502,7 +504,7 @@ class _PinnedPostRow extends ConsumerWidget {
                 child: Text(
                   post.title ?? post.content,
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(13),
                     fontWeight: FontWeight.w500,
                   ),
@@ -686,7 +688,7 @@ class _FeaturedPostCard extends ConsumerWidget {
                         child: Text(
                           post.title ?? post.content,
                           style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontSize: r.fs(12),
                             fontWeight: FontWeight.w600,
                             height: 1.3,
@@ -720,7 +722,7 @@ class _FeaturedPostCard extends ConsumerWidget {
                             child: Text(
                               post.author?.nickname ?? s.user,
                               style: TextStyle(
-                                color: context.textSecondary,
+                                color: context.nexusTheme.textSecondary,
                                 fontSize: r.fs(10),
                               ),
                               maxLines: 1,
@@ -736,21 +738,21 @@ class _FeaturedPostCard extends ConsumerWidget {
                       Row(
                         children: [
                           Icon(Icons.favorite_rounded,
-                              size: r.s(11), color: context.textHint),
+                              size: r.s(11), color: context.nexusTheme.textHint),
                           SizedBox(width: r.s(2)),
                           Text(
                             '${post.likesCount}',
                             style: TextStyle(
-                                color: context.textHint, fontSize: r.fs(10)),
+                                color: context.nexusTheme.textHint, fontSize: r.fs(10)),
                           ),
                           SizedBox(width: r.s(8)),
                           Icon(Icons.chat_bubble_outline_rounded,
-                              size: r.s(11), color: context.textHint),
+                              size: r.s(11), color: context.nexusTheme.textHint),
                           SizedBox(width: r.s(2)),
                           Text(
                             '${post.commentsCount}',
                             style: TextStyle(
-                                color: context.textHint, fontSize: r.fs(10)),
+                                color: context.nexusTheme.textHint, fontSize: r.fs(10)),
                           ),
                         ],
                       ),
@@ -797,7 +799,7 @@ class _DefaultAvatar extends ConsumerWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withValues(alpha: 0.3),
+        color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
         shape: BoxShape.circle,
       ),
       child: Icon(Icons.person, size: size * 0.65, color: Colors.white54),

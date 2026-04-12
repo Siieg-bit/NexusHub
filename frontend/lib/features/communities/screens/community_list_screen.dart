@@ -14,6 +14,8 @@ import '../../../core/utils/responsive.dart';
 import '../providers/community_shared_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/level_up_dialog.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 class CommunityListScreen extends ConsumerStatefulWidget {
   final bool isExplore;
@@ -62,7 +64,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
     ref.watch(checkInStatusProvider);
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       body: AminoParticlesBg(
         child: Column(
           children: [
@@ -75,7 +77,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             ),
             Expanded(
               child: RefreshIndicator(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
                 onRefresh: () async {
                   setState(() => _reorderedCommunities = null);
                   ref.invalidate(userCommunitiesProvider);
@@ -84,7 +86,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 child: communitiesAsync.when(
                   loading: () => const Center(
                     child: CircularProgressIndicator(
-                      color: AppTheme.accentColor,
+                      color: context.nexusTheme.accentSecondary,
                       strokeWidth: 2.5,
                     ),
                   ),
@@ -108,7 +110,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
     final s = getStrings();
     final r = context.r;
     return RefreshIndicator(
-      color: AppTheme.primaryColor,
+      color: context.nexusTheme.accentPrimary,
       onRefresh: () async {
         setState(() => _reorderedCommunities = null);
         ref.invalidate(userCommunitiesProvider);
@@ -130,7 +132,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 style: TextStyle(
                   fontSize: r.fs(20),
                   fontWeight: FontWeight.w800,
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                 ),
               ),
             ),
@@ -246,7 +248,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                     color: Colors.transparent,
                     borderRadius: BorderRadius.circular(r.s(8)),
                     border: Border.all(
-                      color: AppTheme.accentColor,
+                      color: context.nexusTheme.accentSecondary,
                       width: 1.5,
                     ),
                   ),
@@ -254,7 +256,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                     child: Text(
                       s.createCommunityTitle.toUpperCase(),
                       style: TextStyle(
-                        color: AppTheme.accentColor,
+                        color: context.nexusTheme.accentSecondary,
                         fontSize: r.fs(15),
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.5,
@@ -339,7 +341,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 // 1. Ver detalhes da comunidade
                 ListTile(
                   leading: Icon(Icons.info_outline_rounded,
-                      color: AppTheme.accentColor, size: r.s(22)),
+                      color: context.nexusTheme.accentSecondary, size: r.s(22)),
                   title: Text(
                     'Ver detalhes da comunidade',
                     style: TextStyle(
@@ -355,7 +357,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 // 2. Reordenar comunidades
                 ListTile(
                   leading: Icon(Icons.swap_vert_rounded,
-                      color: AppTheme.aminoPurple, size: r.s(22)),
+                      color: context.nexusTheme.accentPrimary, size: r.s(22)),
                   title: Text(
                     'Reordenar comunidades',
                     style: TextStyle(
@@ -371,11 +373,11 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 // 3. Sair da comunidade
                 ListTile(
                   leading: Icon(Icons.exit_to_app_rounded,
-                      color: AppTheme.errorColor, size: r.s(22)),
+                      color: context.nexusTheme.error, size: r.s(22)),
                   title: Text(
                     s.leaveCommunity,
                     style: TextStyle(
-                        color: AppTheme.errorColor,
+                        color: context.nexusTheme.error,
                         fontSize: r.fs(14),
                         fontWeight: FontWeight.w600),
                   ),
@@ -398,7 +400,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
       SnackBar(
         content: Text(
             s.holdAndDragToReorder),
-        backgroundColor: AppTheme.accentColor,
+        backgroundColor: context.nexusTheme.accentSecondary,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 3),
       ),
@@ -435,7 +437,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(s.logout,
                   style: TextStyle(
-                      color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
+                      color: context.nexusTheme.error, fontWeight: FontWeight.w700)),
             ),
           ],
         );
@@ -458,7 +460,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(s.leftCommunityMsg(community.name)),
-              backgroundColor: AppTheme.accentColor,
+              backgroundColor: context.nexusTheme.accentSecondary,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -469,7 +471,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             SnackBar(
               content:
                   const Text('Erro ao sair da comunidade. Tente novamente.'),
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: context.nexusTheme.error,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -523,7 +525,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                       Text(
                         'Entrar em uma comunidade',
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(18),
                           fontWeight: FontWeight.w800,
                         ),
@@ -532,7 +534,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                       Text(
                         'Abra rapidamente comunidades sugeridas para descobrir algo novo sem sair do seu hub atual.',
                         style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(13),
                           height: 1.4,
                         ),
@@ -550,7 +552,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                             vertical: r.s(14),
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryColor,
+                            color: context.nexusTheme.accentPrimary,
                             borderRadius: BorderRadius.circular(r.s(14)),
                           ),
                           child: Row(
@@ -575,7 +577,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                       Text(
                         'Sugestões para entrar agora',
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(14),
                           fontWeight: FontWeight.w700,
                         ),
@@ -587,7 +589,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                             child: Padding(
                               padding: EdgeInsets.all(24),
                               child: CircularProgressIndicator(
-                                color: AppTheme.accentColor,
+                                color: context.nexusTheme.accentSecondary,
                                 strokeWidth: 2.4,
                               ),
                             ),
@@ -597,7 +599,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                               padding: EdgeInsets.symmetric(vertical: r.s(24)),
                               child: Text(
                                 'Não foi possível carregar sugestões agora.',
-                                style: TextStyle(color: context.textSecondary),
+                                style: TextStyle(color: context.nexusTheme.textSecondary),
                                 textAlign: TextAlign.center,
                               ),
                             ),
@@ -614,7 +616,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                                   padding: EdgeInsets.symmetric(vertical: r.s(24)),
                                   child: Text(
                                     'Você já entrou nas principais sugestões. Toque acima para explorar outras comunidades.',
-                                    style: TextStyle(color: context.textSecondary),
+                                    style: TextStyle(color: context.nexusTheme.textSecondary),
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
@@ -635,7 +637,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                                   child: Container(
                                     padding: EdgeInsets.all(r.s(12)),
                                     decoration: BoxDecoration(
-                                      color: context.cardBgAlt.withValues(alpha: 0.42),
+                                      color: context.nexusTheme.surfaceSecondary.withValues(alpha: 0.42),
                                       borderRadius: BorderRadius.circular(r.s(14)),
                                       border: Border.all(
                                         color: Colors.white.withValues(alpha: 0.05),
@@ -670,7 +672,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
-                                                  color: context.textPrimary,
+                                                  color: context.nexusTheme.textPrimary,
                                                   fontSize: r.fs(14),
                                                   fontWeight: FontWeight.w700,
                                                 ),
@@ -682,7 +684,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                                                   maxLines: 2,
                                                   overflow: TextOverflow.ellipsis,
                                                   style: TextStyle(
-                                                    color: context.textSecondary,
+                                                    color: context.nexusTheme.textSecondary,
                                                     fontSize: r.fs(12),
                                                     height: 1.3,
                                                   ),
@@ -707,13 +709,13 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                                             vertical: r.s(8),
                                           ),
                                           decoration: BoxDecoration(
-                                            color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                                            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.12),
                                             borderRadius: BorderRadius.circular(r.s(999)),
                                           ),
                                           child: Text(
                                             'Abrir',
                                             style: TextStyle(
-                                              color: AppTheme.primaryColor,
+                                              color: context.nexusTheme.accentPrimary,
                                               fontSize: r.fs(11),
                                               fontWeight: FontWeight.w700,
                                             ),
@@ -759,12 +761,12 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.groups_rounded, color: context.textHint, size: r.s(48)),
+            Icon(Icons.groups_rounded, color: context.nexusTheme.textHint, size: r.s(48)),
             SizedBox(height: r.s(12)),
             Text(
               'Nenhuma comunidade',
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(16),
                 fontWeight: FontWeight.w700,
               ),
@@ -773,7 +775,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             Text(
               s.exploreCommunities,
               style: TextStyle(
-                color: context.textSecondary,
+                color: context.nexusTheme.textSecondary,
                 fontSize: r.fs(13),
               ),
               textAlign: TextAlign.center,
@@ -785,7 +787,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 padding: EdgeInsets.symmetric(
                     horizontal: r.s(24), vertical: r.s(10)),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                   borderRadius: BorderRadius.circular(r.s(20)),
                 ),
                 child: Text(
@@ -812,11 +814,11 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.error_outline_rounded,
-              color: AppTheme.errorColor, size: r.s(40)),
+              color: context.nexusTheme.error, size: r.s(40)),
           SizedBox(height: r.s(10)),
           Text(
             'Erro ao carregar comunidades',
-            style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+            style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
           ),
           SizedBox(height: r.s(12)),
           GestureDetector(
@@ -825,7 +827,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(20), vertical: r.s(10)),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
                 borderRadius: BorderRadius.circular(r.s(16)),
               ),
               child: Text(
@@ -889,7 +891,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return AppTheme.aminoPurple;
+      return context.nexusTheme.accentPrimary;
     }
   }
 
@@ -920,7 +922,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
               content: Text(
                 s.checkInStreakMsg(streak, coins),
               ),
-              backgroundColor: AppTheme.accentColor,
+              backgroundColor: context.nexusTheme.accentSecondary,
               behavior: SnackBarBehavior.floating,
               duration: const Duration(seconds: 2),
             ),
@@ -944,7 +946,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorCheckIn),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -1140,9 +1142,9 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                                         EdgeInsets.symmetric(vertical: r.s(4)),
                                     decoration: BoxDecoration(
                                       color: _isCheckingIn
-                                          ? AppTheme.accentColor
+                                          ? context.nexusTheme.accentSecondary
                                               .withValues(alpha: 0.5)
-                                          : AppTheme.accentColor,
+                                          : context.nexusTheme.accentSecondary,
                                       borderRadius:
                                           BorderRadius.circular(r.s(6)),
                                     ),
@@ -1196,14 +1198,14 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                                     children: [
                                       Icon(
                                         Icons.local_fire_department_rounded,
-                                        color: AppTheme.warningColor,
+                                        color: context.nexusTheme.warning,
                                         size: r.s(12),
                                       ),
                                       const SizedBox(width: 2),
                                       Text(
                                         '$streak dia${streak > 1 ? 's' : ''}',
                                         style: TextStyle(
-                                          color: AppTheme.warningColor,
+                                          color: context.nexusTheme.warning,
                                           fontSize: r.fs(9),
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -1311,7 +1313,7 @@ class _JoinCommunityCard extends ConsumerWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(r.s(10)),
-              color: context.cardBgAlt.withValues(alpha: 0.5),
+              color: context.nexusTheme.surfaceSecondary.withValues(alpha: 0.5),
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.06),
                 width: 0.5,
@@ -1368,7 +1370,7 @@ class _CommunityPreviewSheetState
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return AppTheme.aminoPurple;
+      return context.nexusTheme.accentPrimary;
     }
   }
 
@@ -1404,7 +1406,7 @@ class _CommunityPreviewSheetState
               content: Text(
                 s.checkInStreakMsg(streak, coins),
               ),
-              backgroundColor: AppTheme.accentColor,
+              backgroundColor: context.nexusTheme.accentSecondary,
               behavior: SnackBarBehavior.floating,
               duration: const Duration(seconds: 2),
             ),
@@ -1428,7 +1430,7 @@ class _CommunityPreviewSheetState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorCheckIn),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -1537,7 +1539,7 @@ class _CommunityPreviewSheetState
                   height: r.s(48),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(r.s(12)),
-                    color: context.cardBg,
+                    color: context.nexusTheme.surfacePrimary,
                     border: Border.all(color: color, width: 2),
                   ),
                   clipBehavior: Clip.antiAlias,
@@ -1548,7 +1550,7 @@ class _CommunityPreviewSheetState
                           fit: BoxFit.cover,
                         )
                       : Icon(Icons.groups_rounded,
-                          color: context.textHint, size: r.s(24)),
+                          color: context.nexusTheme.textHint, size: r.s(24)),
                 ),
                 SizedBox(width: r.s(12)),
                 Expanded(
@@ -1558,7 +1560,7 @@ class _CommunityPreviewSheetState
                       Text(
                         widget.community.name,
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(16),
                           fontWeight: FontWeight.w800,
                         ),
@@ -1570,7 +1572,7 @@ class _CommunityPreviewSheetState
                         Text(
                           widget.community.tagline,
                           style: TextStyle(
-                            color: context.textSecondary,
+                            color: context.nexusTheme.textSecondary,
                             fontSize: r.fs(11),
                           ),
                           maxLines: 1,
@@ -1595,20 +1597,20 @@ class _CommunityPreviewSheetState
                   icon: Icons.people_rounded,
                   label:
                       '${_formatCount(widget.community.membersCount)} membros',
-                  color: AppTheme.accentColor,
+                  color: context.nexusTheme.accentSecondary,
                 ),
                 SizedBox(width: r.s(8)),
                 _StatChip(
                   icon: Icons.article_rounded,
                   label: '${_formatCount(widget.community.postsCount)} posts',
-                  color: AppTheme.aminoPurple,
+                  color: context.nexusTheme.accentPrimary,
                 ),
                 if (hasCheckedIn && streak > 0) ...[
                   SizedBox(width: r.s(8)),
                   _StatChip(
                     icon: Icons.local_fire_department_rounded,
                     label: '$streak dia${streak > 1 ? 's' : ''}',
-                    color: AppTheme.warningColor,
+                    color: context.nexusTheme.warning,
                   ),
                 ],
               ],
@@ -1623,7 +1625,7 @@ class _CommunityPreviewSheetState
               child: Text(
                 widget.community.description,
                 style: TextStyle(
-                  color: context.textSecondary,
+                  color: context.nexusTheme.textSecondary,
                   fontSize: r.fs(12),
                   height: 1.4,
                 ),
@@ -1653,7 +1655,7 @@ class _CommunityPreviewSheetState
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: r.s(11)),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         borderRadius: BorderRadius.circular(r.s(8)),
                       ),
                       child: Text(
@@ -1677,7 +1679,7 @@ class _CommunityPreviewSheetState
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(16), vertical: r.s(11)),
                       decoration: BoxDecoration(
-                        color: AppTheme.accentColor,
+                        color: context.nexusTheme.accentSecondary,
                         borderRadius: BorderRadius.circular(r.s(8)),
                       ),
                       child: _isCheckingIn
@@ -1704,22 +1706,22 @@ class _CommunityPreviewSheetState
                     padding: EdgeInsets.symmetric(
                         horizontal: r.s(12), vertical: r.s(11)),
                     decoration: BoxDecoration(
-                      color: context.cardBg,
+                      color: context.nexusTheme.surfacePrimary,
                       borderRadius: BorderRadius.circular(r.s(8)),
                       border: Border.all(
-                          color: AppTheme.warningColor.withValues(alpha: 0.4),
+                          color: context.nexusTheme.warning.withValues(alpha: 0.4),
                           width: 1),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.local_fire_department_rounded,
-                            color: AppTheme.warningColor, size: r.s(16)),
+                            color: context.nexusTheme.warning, size: r.s(16)),
                         SizedBox(width: r.s(4)),
                         Text(
                           '$streak dia${streak > 1 ? 's' : ''}',
                           style: TextStyle(
-                            color: AppTheme.warningColor,
+                            color: context.nexusTheme.warning,
                             fontSize: r.fs(13),
                             fontWeight: FontWeight.w700,
                           ),

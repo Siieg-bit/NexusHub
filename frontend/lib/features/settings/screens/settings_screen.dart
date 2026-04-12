@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../config/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../config/app_theme.dart';
+import '../../../config/nexus_theme_extension.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/providers/theme_provider.dart';
+import '../../../core/providers/nexus_theme_provider.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/cache_service.dart';
@@ -42,11 +44,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         title: Row(
           children: [
-            Icon(Icons.download_rounded, color: AppTheme.primaryColor),
+            Icon(Icons.download_rounded, color: context.nexusTheme.accentPrimary),
             SizedBox(width: r.s(8)),
             Text(s.exportData2,
                 style: TextStyle(
-                    color: context.textPrimary, fontWeight: FontWeight.w800)),
+                    color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
           ],
         ),
         content: Text('${s.prepareDataFile}\n${s.notificationWhenReady}',
@@ -88,12 +90,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                  colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 ),
                 borderRadius: BorderRadius.circular(r.s(12)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -122,11 +124,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         title: Row(
           children: [
-            Icon(Icons.warning_rounded, color: AppTheme.errorColor),
+            Icon(Icons.warning_rounded, color: context.nexusTheme.error),
             SizedBox(width: r.s(8)),
             Text(s.deleteAccount2,
                 style: TextStyle(
-                    color: context.textPrimary, fontWeight: FontWeight.w800)),
+                    color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
           ],
         ),
         content: Text('${s.irreversibleActionWarning}\nmensagens e itens comprados serão permanentemente deletados.\n\n${s.confirmContinue}',
@@ -148,11 +150,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
-                color: AppTheme.errorColor,
+                color: context.nexusTheme.error,
                 borderRadius: BorderRadius.circular(r.s(12)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.errorColor.withValues(alpha: 0.3),
+                    color: context.nexusTheme.error.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -181,7 +183,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         title: Text(s.finalConfirmation,
             style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w800)),
+                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -191,7 +193,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             SizedBox(height: r.s(12)),
             TextField(
               controller: confirmCtrl,
-              style: TextStyle(color: context.textPrimary),
+              style: TextStyle(color: context.nexusTheme.textPrimary),
               decoration: InputDecoration(
                 hintText: s.deleteButton,
                 hintStyle: TextStyle(color: Colors.grey[600]),
@@ -202,7 +204,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
-                  borderSide: const BorderSide(color: AppTheme.errorColor),
+                  borderSide: const BorderSide(color: context.nexusTheme.error),
                 ),
               ),
             ),
@@ -229,11 +231,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
-                color: AppTheme.errorColor,
+                color: context.nexusTheme.error,
                 borderRadius: BorderRadius.circular(r.s(12)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.errorColor.withValues(alpha: 0.3),
+                    color: context.nexusTheme.error.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -317,7 +319,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         title: Text(s.confirmYourPassword,
             style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w800)),
+                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -328,12 +330,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               controller: passwordCtrl,
               obscureText: true,
               autofocus: true,
-              style: TextStyle(color: context.textPrimary),
+              style: TextStyle(color: context.nexusTheme.textPrimary),
               decoration: InputDecoration(
                 hintText: s.currentPassword,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 filled: true,
-                fillColor: context.scaffoldBg,
+                fillColor: context.nexusTheme.backgroundPrimary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide.none,
@@ -352,7 +354,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor),
+                backgroundColor: context.nexusTheme.accentPrimary),
             child: Text(s.confirm),
           ),
         ],
@@ -371,7 +373,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(s.incorrectPassword),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: context.nexusTheme.error,
       ));
       return;
     } finally {
@@ -393,7 +395,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         title: Text(s.changeEmail,
             style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w800)),
+                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
         content: Form(
           key: emailFormKey,
           child: Column(
@@ -406,12 +408,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 controller: emailCtrl,
                 keyboardType: TextInputType.emailAddress,
                 autofocus: true,
-                style: TextStyle(color: context.textPrimary),
+                style: TextStyle(color: context.nexusTheme.textPrimary),
                 decoration: InputDecoration(
                   hintText: s.newEmail,
                   hintStyle: TextStyle(color: Colors.grey[600]),
                   filled: true,
-                  fillColor: context.scaffoldBg,
+                  fillColor: context.nexusTheme.backgroundPrimary,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(r.s(12)),
                     borderSide: BorderSide.none,
@@ -457,13 +459,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(s.anErrorOccurredTryAgain),
                     behavior: SnackBarBehavior.floating,
-                    backgroundColor: AppTheme.errorColor,
+                    backgroundColor: context.nexusTheme.error,
                   ));
                 }
               }
             },
             style:
-                ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor),
+                ElevatedButton.styleFrom(backgroundColor: context.nexusTheme.accentPrimary),
             child: Text(s.save),
           ),
         ],
@@ -496,18 +498,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(s.settings,
             style: TextStyle(
-                fontWeight: FontWeight.w800, color: context.textPrimary)),
-        iconTheme: IconThemeData(color: context.textPrimary),
+                fontWeight: FontWeight.w800, color: context.nexusTheme.textPrimary)),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor))
+              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : ListView(
               padding: EdgeInsets.all(r.s(16)),
               children: [
@@ -529,7 +531,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           color: Colors.white.withValues(alpha: 0.05)),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -542,7 +544,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.primaryColor
+                                color: context.nexusTheme.accentPrimary
                                     .withValues(alpha: 0.2),
                                 blurRadius: 8,
                               ),
@@ -551,14 +553,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           child: CircleAvatar(
                             radius: 28,
                             backgroundColor:
-                                AppTheme.primaryColor.withValues(alpha: 0.2),
+                                context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                             backgroundImage: _profile?['icon_url'] != null
                                 ? CachedNetworkImageProvider(
                                     _profile!['icon_url'] as String? ?? '')
                                 : null,
                             child: _profile?['icon_url'] == null
                                 ? Icon(Icons.person_rounded,
-                                    color: AppTheme.primaryColor, size: r.s(28))
+                                    color: context.nexusTheme.accentPrimary, size: r.s(28))
                                 : null,
                           ),
                         ),
@@ -570,7 +572,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               Text(
                                 _profile?['nickname'] as String? ?? s.user,
                                 style: TextStyle(
-                                    color: context.textPrimary,
+                                    color: context.nexusTheme.textPrimary,
                                     fontWeight: FontWeight.w800,
                                     fontSize: r.fs(16)),
                               ),
@@ -633,10 +635,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     title: s.privacy,
                     onTap: () => context.push('/settings/privacy'),
                   ),
-                  _ThemeSelectorItem(
-                    currentMode: ref.watch(themeProvider),
-                    onSelect: (mode) =>
-                        ref.read(themeProvider.notifier).setTheme(mode),
+                  const _ThemeSelectorItem(
+                    currentMode: ThemeMode.system,
+                    onSelect: _noopThemeSelect,
                   ),
                   _SettingsItem(
                     icon: Icons.language_rounded,
@@ -658,7 +659,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             children: [
                               Text(s.language,
                                   style: TextStyle(
-                                      color: context.textPrimary,
+                                      color: context.nexusTheme.textPrimary,
                                       fontSize: r.fs(18),
                                       fontWeight: FontWeight.w800)),
                               SizedBox(height: r.s(16)),
@@ -667,10 +668,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                         style: TextStyle(fontSize: r.fs(24))),
                                     title: Text(locale.label,
                                         style: TextStyle(
-                                            color: context.textPrimary)),
+                                            color: context.nexusTheme.textPrimary)),
                                     trailing: currentLocale == locale
                                         ? const Icon(Icons.check_circle_rounded,
-                                            color: AppTheme.primaryColor)
+                                            color: context.nexusTheme.accentPrimary)
                                         : null,
                                     onTap: () {
                                       ref
@@ -711,11 +712,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           title: Row(
                             children: [
                               Icon(Icons.cleaning_services_rounded,
-                                  color: AppTheme.accentColor),
+                                  color: context.nexusTheme.accentSecondary),
                               SizedBox(width: r.s(8)),
                               Text(s.clearCache2,
                                   style: TextStyle(
-                                      color: context.textPrimary,
+                                      color: context.nexusTheme.textPrimary,
                                       fontWeight: FontWeight.w800)),
                             ],
                           ),
@@ -742,8 +743,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
                                     colors: [
-                                      AppTheme.primaryColor,
-                                      AppTheme.accentColor
+                                      context.nexusTheme.accentPrimary,
+                                      context.nexusTheme.accentSecondary
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(r.s(12)),
@@ -834,10 +835,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         builder: (ctx) => AlertDialog(
                           backgroundColor: context.surfaceColor,
                           title: Text(s.helpCenter,
-                              style: TextStyle(color: context.textPrimary)),
+                              style: TextStyle(color: context.nexusTheme.textPrimary)),
                           content: Text(
                             'Para suporte, entre em contato:\n\n\u2022 Email: suporte@nexushub.app\n\u2022 Discord: discord.gg/nexushub\n\u2022 FAQ: nexushub.app/faq',
-                            style: TextStyle(color: context.textSecondary),
+                            style: TextStyle(color: context.nexusTheme.textSecondary),
                           ),
                           actions: [
                             TextButton(
@@ -860,16 +861,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           return AlertDialog(
                             backgroundColor: context.surfaceColor,
                             title: Text(s.reportBug,
-                                style: TextStyle(color: context.textPrimary)),
+                                style: TextStyle(color: context.nexusTheme.textPrimary)),
                             content: TextField(
                               controller: bugCtrl,
                               maxLines: 5,
-                              style: TextStyle(color: context.textPrimary),
+                              style: TextStyle(color: context.nexusTheme.textPrimary),
                               decoration: InputDecoration(
                                 hintText: s.describeBugHint,
                                 hintStyle: TextStyle(color: Colors.grey[600]),
                                 filled: true,
-                                fillColor: context.scaffoldBg,
+                                fillColor: context.nexusTheme.backgroundPrimary,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(r.s(12)),
                                   borderSide: BorderSide.none,
@@ -893,7 +894,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.primaryColor,
+                                  backgroundColor: context.nexusTheme.accentPrimary,
                                 ),
                                 child: Text(s.send),
                               ),
@@ -964,7 +965,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         title: Text(s.logout,
                             style: TextStyle(
-                                color: context.textPrimary,
+                                color: context.nexusTheme.textPrimary,
                                 fontWeight: FontWeight.w800)),
                         content: Text(
                             'Tem certeza que deseja sair da sua conta?',
@@ -987,11 +988,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: r.s(16), vertical: r.s(8)),
                               decoration: BoxDecoration(
-                                color: AppTheme.errorColor,
+                                color: context.nexusTheme.error,
                                 borderRadius: BorderRadius.circular(r.s(12)),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppTheme.errorColor
+                                    color: context.nexusTheme.error
                                         .withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
@@ -1019,16 +1020,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     decoration: BoxDecoration(
                       color: Colors.transparent,
                       borderRadius: BorderRadius.circular(r.s(12)),
-                      border: Border.all(color: AppTheme.errorColor),
+                      border: Border.all(color: context.nexusTheme.error),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.logout_rounded, color: AppTheme.errorColor),
+                        Icon(Icons.logout_rounded, color: context.nexusTheme.error),
                         SizedBox(width: r.s(8)),
                         Text(s.logOutAction,
                             style: TextStyle(
-                                color: AppTheme.errorColor,
+                                color: context.nexusTheme.error,
                                 fontWeight: FontWeight.w800)),
                       ],
                     ),
@@ -1111,10 +1112,10 @@ class _SettingsItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
     return ListTile(
-      leading: Icon(icon, color: AppTheme.primaryColor, size: r.s(22)),
+      leading: Icon(icon, color: context.nexusTheme.accentPrimary, size: r.s(22)),
       title: Text(title,
           style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontWeight: FontWeight.w700,
               fontSize: r.fs(14))),
       subtitle: subtitle != null
@@ -1128,6 +1129,7 @@ class _SettingsItem extends ConsumerWidget {
   }
 }
 
+/// Item de Aparência — navega para a ThemeSelectorScreen com preview visual dos temas.
 class _ThemeSelectorItem extends ConsumerWidget {
   final ThemeMode currentMode;
   final ValueChanged<ThemeMode> onSelect;
@@ -1136,72 +1138,91 @@ class _ThemeSelectorItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
-    final labels = {
-      ThemeMode.light: 'Claro',
-      ThemeMode.dark: 'Escuro',
-      ThemeMode.system: 'Sistema',
-    };
-    final icons = {
-      ThemeMode.light: Icons.light_mode_rounded,
-      ThemeMode.dark: Icons.dark_mode_rounded,
-      ThemeMode.system: Icons.brightness_auto_rounded,
-    };
+    final nexusTheme = context.nexusTheme;
+    final activeTheme = ref.watch(nexusThemeProvider);
+
     return ListTile(
-      leading: Icon(
-        icons[currentMode]!,
-        color: AppTheme.primaryColor,
-        size: r.s(22),
+      leading: Container(
+        width: r.s(36),
+        height: r.s(36),
+        decoration: BoxDecoration(
+          gradient: nexusTheme.accentGradient,
+          borderRadius: BorderRadius.circular(r.s(10)),
+        ),
+        child: Icon(
+          Icons.palette_rounded,
+          color: Colors.white,
+          size: r.s(20),
+        ),
       ),
-      title: Text(s.appearance,
-          style: TextStyle(
-              color: context.textPrimary,
-              fontWeight: FontWeight.w700,
-              fontSize: r.fs(14))),
+      title: Text(
+        s.appearance,
+        style: TextStyle(
+          color: nexusTheme.textPrimary,
+          fontWeight: FontWeight.w700,
+          fontSize: r.fs(14),
+        ),
+      ),
       subtitle: Text(
-        labels[currentMode]!,
-        style: TextStyle(color: Colors.grey[600], fontSize: r.fs(11)),
+        activeTheme.name,
+        style: TextStyle(
+          color: nexusTheme.accentPrimary,
+          fontSize: r.fs(11),
+          fontWeight: FontWeight.w600,
+        ),
       ),
-      trailing: Icon(Icons.chevron_right_rounded,
-          color: Colors.grey[600], size: r.s(20)),
-      onTap: () {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: context.surfaceColor,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Mini preview das cores do tema ativo
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _ColorDot(color: nexusTheme.accentPrimary, size: r.s(10)),
+              SizedBox(width: r.s(3)),
+              _ColorDot(color: nexusTheme.accentSecondary, size: r.s(10)),
+              SizedBox(width: r.s(3)),
+              _ColorDot(color: nexusTheme.backgroundPrimary, size: r.s(10)),
+            ],
           ),
-          builder: (ctx) => Padding(
-            padding: EdgeInsets.all(r.s(24)),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(s.appearance,
-                    style: TextStyle(
-                        color: context.textPrimary,
-                        fontSize: r.fs(18),
-                        fontWeight: FontWeight.w800)),
-                SizedBox(height: r.s(16)),
-                ...ThemeMode.values.map((mode) => ListTile(
-                      leading: Icon(icons[mode]!, color: AppTheme.primaryColor),
-                      title: Text(labels[mode]!,
-                          style: TextStyle(color: context.textPrimary)),
-                      trailing: currentMode == mode
-                          ? const Icon(Icons.check_circle_rounded,
-                              color: AppTheme.primaryColor)
-                          : null,
-                      onTap: () {
-                        onSelect(mode);
-                        Navigator.pop(ctx);
-                      },
-                    )),
-                SizedBox(height: r.s(8)),
-              ],
-            ),
+          SizedBox(width: r.s(8)),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: nexusTheme.textHint,
+            size: r.s(20),
           ),
-        );
-      },
+        ],
+      ),
+      onTap: () => context.push('/settings/themes'),
     );
   }
 }
+
+/// Ponto colorido para preview rápido do tema.
+class _ColorDot extends StatelessWidget {
+  final Color color;
+  final double size;
+  const _ColorDot({required this.color, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+/// Função noop para o parâmetro onSelect do _ThemeSelectorItem.
+/// O item agora navega diretamente para /settings/themes, então onSelect não é usado.
+void _noopThemeSelect(ThemeMode _) {}

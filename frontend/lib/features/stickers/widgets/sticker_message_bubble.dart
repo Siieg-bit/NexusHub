@@ -6,6 +6,8 @@ import '../../../core/utils/responsive.dart';
 import '../models/sticker_model.dart';
 import '../providers/sticker_providers.dart';
 import '../screens/sticker_pack_screen.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Widget para exibir um sticker dentro de uma mensagem ou comentário.
 /// Ao segurar, exibe opções: favoritar, salvar pack, ver pack.
@@ -79,7 +81,7 @@ class StickerMessageBubble extends ConsumerWidget {
                           height: r.s(20),
                           child: const CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: AppTheme.primaryColor,
+                            color: context.nexusTheme.accentPrimary,
                           ),
                         ),
                       ),
@@ -130,7 +132,7 @@ class StickerMessageBubble extends ConsumerWidget {
                 child: Icon(
                   Icons.favorite_rounded,
                   size: r.s(10),
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                 ),
               ),
             ),
@@ -181,7 +183,7 @@ class StickerMessageBubble extends ConsumerWidget {
                 child: Text(
                   stickerName,
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(14),
                     fontWeight: FontWeight.w700,
                   ),
@@ -194,12 +196,12 @@ class StickerMessageBubble extends ConsumerWidget {
             ListTile(
               leading: Icon(
                 isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                color: isFav ? AppTheme.primaryColor : context.textPrimary,
+                color: isFav ? context.nexusTheme.accentPrimary : context.nexusTheme.textPrimary,
                 size: r.s(20),
               ),
               title: Text(
                 isFav ? 'Remover dos favoritos' : 'Adicionar aos favoritos',
-                style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+                style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
               ),
               onTap: () async {
                 Navigator.pop(ctx);
@@ -214,7 +216,7 @@ class StickerMessageBubble extends ConsumerWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(isFav ? 'Removido dos favoritos' : 'Adicionado aos favoritos!'),
-                      backgroundColor: isFav ? Colors.grey[700] : AppTheme.primaryColor,
+                      backgroundColor: isFav ? Colors.grey[700] : context.nexusTheme.accentPrimary,
                       duration: const Duration(seconds: 2),
                     ),
                   );
@@ -227,12 +229,12 @@ class StickerMessageBubble extends ConsumerWidget {
               ListTile(
                 leading: Icon(
                   isPackSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                  color: isPackSaved ? AppTheme.accentColor : context.textPrimary,
+                  color: isPackSaved ? context.nexusTheme.accentSecondary : context.nexusTheme.textPrimary,
                   size: r.s(20),
                 ),
                 title: Text(
                   isPackSaved ? 'Pack já salvo' : 'Salvar pack de figurinhas',
-                  style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+                  style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
                 ),
                 subtitle: isPackSaved
                     ? null
@@ -255,7 +257,7 @@ class StickerMessageBubble extends ConsumerWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(saved ? 'Pack salvo!' : 'Pack removido dos salvos'),
-                              backgroundColor: saved ? AppTheme.primaryColor : Colors.grey[700],
+                              backgroundColor: saved ? context.nexusTheme.accentPrimary : Colors.grey[700],
                               duration: const Duration(seconds: 2),
                             ),
                           );
@@ -268,12 +270,12 @@ class StickerMessageBubble extends ConsumerWidget {
               ListTile(
                 leading: Icon(
                   Icons.collections_rounded,
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   size: r.s(20),
                 ),
                 title: Text(
                   'Ver pack completo',
-                  style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+                  style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
                 ),
                 onTap: () {
                   Navigator.pop(ctx);

@@ -8,6 +8,8 @@ import '../providers/sticker_providers.dart';
 import '../screens/sticker_gallery_screen.dart';
 import '../screens/sticker_explore_screen.dart';
 import '../screens/create_pack_screen.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Callback quando um sticker é selecionado.
 typedef OnStickerSelected = void Function(StickerModel sticker);
@@ -106,12 +108,12 @@ class _StickerPickerV2State extends ConsumerState<StickerPickerV2>
                     child: TextField(
                       controller: _searchCtrl,
                       autofocus: true,
-                      style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+                      style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
                       decoration: InputDecoration(
                         hintText: 'Buscar figurinhas...',
                         hintStyle: TextStyle(color: Colors.grey[600]),
                         filled: true,
-                        fillColor: context.cardBg,
+                        fillColor: context.nexusTheme.surfacePrimary,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(r.s(10)),
                           borderSide: BorderSide.none,
@@ -134,14 +136,14 @@ class _StickerPickerV2State extends ConsumerState<StickerPickerV2>
                     }),
                     child: Text(
                       'Cancelar',
-                      style: TextStyle(color: AppTheme.primaryColor, fontSize: r.fs(13)),
+                      style: TextStyle(color: context.nexusTheme.accentPrimary, fontSize: r.fs(13)),
                     ),
                   ),
                 ] else ...[
                   Text(
                     'Figurinhas',
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(16),
                       fontWeight: FontWeight.w800,
                     ),
@@ -199,7 +201,7 @@ class _StickerPickerV2State extends ConsumerState<StickerPickerV2>
               child: pickerState.isLoading
                   ? const Center(
                       child: CircularProgressIndicator(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         strokeWidth: 2,
                       ),
                     )
@@ -273,8 +275,8 @@ class _StickerPickerV2State extends ConsumerState<StickerPickerV2>
       child: TabBar(
         controller: _tabController,
         isScrollable: true,
-        indicatorColor: AppTheme.primaryColor,
-        labelColor: AppTheme.primaryColor,
+        indicatorColor: context.nexusTheme.accentPrimary,
+        labelColor: context.nexusTheme.accentPrimary,
         unselectedLabelColor: Colors.grey[600],
         labelStyle: TextStyle(fontSize: r.fs(12), fontWeight: FontWeight.w600),
         unselectedLabelStyle: TextStyle(fontSize: r.fs(12)),
@@ -464,7 +466,7 @@ class _PacksTabState extends ConsumerState<_PacksTab> {
               Text(
                 widget.emptyTitle,
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(14),
                   fontWeight: FontWeight.w700,
                 ),
@@ -480,7 +482,7 @@ class _PacksTabState extends ConsumerState<_PacksTab> {
                 ElevatedButton(
                   onPressed: widget.onEmptyAction,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
+                    backgroundColor: context.nexusTheme.accentPrimary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(r.s(10)),
@@ -518,12 +520,12 @@ class _PacksTabState extends ConsumerState<_PacksTab> {
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? AppTheme.primaryColor.withValues(alpha: 0.15)
-                        : context.cardBg,
+                        ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
+                        : context.nexusTheme.surfacePrimary,
                     borderRadius: BorderRadius.circular(r.s(20)),
                     border: Border.all(
                       color: isSelected
-                          ? AppTheme.primaryColor
+                          ? context.nexusTheme.accentPrimary
                           : Colors.white.withValues(alpha: 0.08),
                       width: isSelected ? 1.5 : 1,
                     ),
@@ -542,7 +544,7 @@ class _PacksTabState extends ConsumerState<_PacksTab> {
                             errorWidget: (_, __, ___) => Icon(
                               Icons.emoji_emotions_rounded,
                               size: r.s(20),
-                              color: isSelected ? AppTheme.primaryColor : Colors.grey[600],
+                              color: isSelected ? context.nexusTheme.accentPrimary : Colors.grey[600],
                             ),
                           ),
                         )
@@ -550,13 +552,13 @@ class _PacksTabState extends ConsumerState<_PacksTab> {
                         Icon(
                           Icons.emoji_emotions_rounded,
                           size: r.s(20),
-                          color: isSelected ? AppTheme.primaryColor : Colors.grey[600],
+                          color: isSelected ? context.nexusTheme.accentPrimary : Colors.grey[600],
                         ),
                       SizedBox(width: r.s(6)),
                       Text(
                         pack.name,
                         style: TextStyle(
-                          color: isSelected ? AppTheme.primaryColor : Colors.grey[500],
+                          color: isSelected ? context.nexusTheme.accentPrimary : Colors.grey[500],
                           fontSize: r.fs(12),
                           fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
                         ),
@@ -604,7 +606,7 @@ class _PackStickerGrid extends ConsumerWidget {
 
     return stickersAsync.when(
       loading: () => const Center(
-        child: CircularProgressIndicator(color: AppTheme.primaryColor, strokeWidth: 2),
+        child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary, strokeWidth: 2),
       ),
       error: (e, _) => Center(
         child: Text('Erro ao carregar', style: TextStyle(color: Colors.grey[600])),
@@ -742,11 +744,11 @@ class _StickerCell extends StatelessWidget {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: context.cardBg,
+              color: context.nexusTheme.surfacePrimary,
               borderRadius: BorderRadius.circular(r.s(10)),
               border: isFavorite
                   ? Border.all(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.5),
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.5),
                       width: 1.5,
                     )
                   : null,
@@ -765,7 +767,7 @@ class _StickerCell extends StatelessWidget {
                             height: r.s(16),
                             child: const CircularProgressIndicator(
                               strokeWidth: 1.5,
-                              color: AppTheme.primaryColor,
+                              color: context.nexusTheme.accentPrimary,
                             ),
                           ),
                         ),
@@ -794,7 +796,7 @@ class _StickerCell extends StatelessWidget {
               child: Icon(
                 Icons.favorite_rounded,
                 size: r.s(10),
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
               ),
             ),
         ],
@@ -840,7 +842,7 @@ void _showStickerOptions(
               child: Text(
                 sticker.name,
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(14),
                   fontWeight: FontWeight.w700,
                 ),
@@ -851,12 +853,12 @@ void _showStickerOptions(
           ListTile(
             leading: Icon(
               isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-              color: isFav ? AppTheme.primaryColor : context.textPrimary,
+              color: isFav ? context.nexusTheme.accentPrimary : context.nexusTheme.textPrimary,
               size: r.s(20),
             ),
             title: Text(
               isFav ? 'Remover dos favoritos' : 'Adicionar aos favoritos',
-              style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+              style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
             ),
             onTap: () async {
               Navigator.pop(ctx);

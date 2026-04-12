@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
+import '../../config/nexus_theme_extension.dart';
 import '../utils/responsive.dart';
 import '../utils/helpers.dart';
 import '../l10n/locale_provider.dart';
@@ -116,13 +117,14 @@ class _LevelUpContentState extends ConsumerState<_LevelUpContent>
         y: _random.nextDouble() * -1.0,
         speed: 0.2 + _random.nextDouble() * 0.5,
         size: 4 + _random.nextDouble() * 8,
-        color: [
-          AppTheme.accentColor,
-          AppTheme.fabPink,
-          const Color(0xFFFFD700),
-          const Color(0xFF00E676),
-          const Color(0xFF7C4DFF),
-          const Color(0xFFFF6D00),
+        // Cores de confetti são intencionalmente fixas e festivas — independentes do tema
+        color: const [
+          Color(0xFF7B2FBE),
+          Color(0xFFE91E8C),
+          Color(0xFFFFD700),
+          Color(0xFF00E676),
+          Color(0xFF7C4DFF),
+          Color(0xFFFF6D00),
         ][_random.nextInt(6)],
         rotation: _random.nextDouble() * 360,
         rotationSpeed: _random.nextDouble() * 4 - 2,
@@ -195,7 +197,7 @@ class _LevelUpContentState extends ConsumerState<_LevelUpContent>
                       style: TextStyle(
                         fontSize: r.fs(16),
                         fontWeight: FontWeight.w800,
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                         letterSpacing: 4,
                       ),
                     ),
@@ -286,7 +288,7 @@ class _LevelUpContentState extends ConsumerState<_LevelUpContent>
                       s.newTitleUnlocked,
                       style: TextStyle(
                         fontSize: r.fs(13),
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                       ),
                     ),
                     SizedBox(height: r.s(40)),

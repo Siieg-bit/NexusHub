@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../utils/responsive.dart';
 import '../../config/app_theme.dart';
+import '../../config/nexus_theme_extension.dart';
 
 // ============================================================================
 // RGBColorPicker — Modal seletor de cor RGB inovador e profissional
@@ -419,7 +420,7 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
                   content: const Text('Cor copiada!'),
                   duration: const Duration(seconds: 1),
                   behavior: SnackBarBehavior.floating,
-                  backgroundColor: AppTheme.accentColor,
+                  backgroundColor: context.nexusTheme.accentSecondary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

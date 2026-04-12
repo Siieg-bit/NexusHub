@@ -8,6 +8,8 @@ import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // LIVE PROJECTIONS SECTION
@@ -115,7 +117,7 @@ class _CommunityLiveProjectionsState extends ConsumerState<CommunityLiveProjecti
                   child: Text(
                     'Projeções em Andamento',
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(13),
                       fontWeight: FontWeight.w700,
                     ),
@@ -142,7 +144,7 @@ class _CommunityLiveProjectionsState extends ConsumerState<CommunityLiveProjecti
                     width: r.s(160),
                     margin: EdgeInsets.only(right: r.s(8)),
                     decoration: BoxDecoration(
-                      color: context.cardBg,
+                      color: context.nexusTheme.surfacePrimary,
                       borderRadius: BorderRadius.circular(r.s(12)),
                       border: Border.all(
                         color: Colors.red.withValues(alpha: 0.4),
@@ -255,7 +257,7 @@ class _CommunityLiveProjectionsState extends ConsumerState<CommunityLiveProjecti
                           child: Text(
                             chat['title'] as String? ?? s.projection,
                             style: TextStyle(
-                                color: context.textPrimary,
+                                color: context.nexusTheme.textPrimary,
                                 fontSize: r.fs(11),
                                 fontWeight: FontWeight.w600),
                             maxLines: 1,

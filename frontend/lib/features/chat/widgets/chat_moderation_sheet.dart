@@ -19,6 +19,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import 'chat_cover_picker.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Abre o sheet de moderação do chat.
 Future<void> showChatModerationSheet({
@@ -197,7 +199,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
         actions.add(_MemberAction(
           icon: Icons.block_rounded,
           label: 'Banir do chat',
-          color: AppTheme.errorColor,
+          color: context.nexusTheme.error,
           onTap: () async {
             Navigator.pop(ctx);
             await _showBanDialog(targetId, nickname);
@@ -249,7 +251,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                 CircleAvatar(
                   radius: r.s(20),
                   backgroundColor:
-                      AppTheme.primaryColor.withValues(alpha: 0.2),
+                      context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                   backgroundImage: (profile['icon_url'] as String?) != null
                       ? CachedNetworkImageProvider(
                           profile['icon_url'] as String)
@@ -260,7 +262,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                               ? nickname[0].toUpperCase()
                               : '?',
                           style: const TextStyle(
-                              color: AppTheme.primaryColor,
+                              color: context.nexusTheme.accentPrimary,
                               fontWeight: FontWeight.w700))
                       : null,
                 ),
@@ -280,7 +282,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                               ? 'Administrador'
                               : 'Co-administrador',
                           style: TextStyle(
-                              color: AppTheme.primaryColor,
+                              color: context.nexusTheme.accentPrimary,
                               fontSize: r.fs(11),
                               fontWeight: FontWeight.w600),
                         ),
@@ -288,7 +290,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                         Text(
                           'Banido',
                           style: TextStyle(
-                              color: AppTheme.errorColor,
+                              color: context.nexusTheme.error,
                               fontSize: r.fs(11),
                               fontWeight: FontWeight.w600),
                         ),
@@ -471,7 +473,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(r.s(10))),
               ),
@@ -513,7 +515,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
           content: Text(durationHours == null
               ? 'Membro banido permanentemente'
               : 'Membro banido por ${_formatDuration(durationHours)}'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ));
       }
@@ -586,7 +588,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                         style: TextStyle(
                           fontSize: r.fs(18),
                           fontWeight: FontWeight.w800,
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                         ),
                       ),
                       const Spacer(),
@@ -661,7 +663,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                       style: TextStyle(
                         fontSize: r.fs(13),
                         fontWeight: FontWeight.w600,
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                       ),
                     ),
                   ],
@@ -675,7 +677,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
               child: _isLoading
                   ? const Center(
                       child: CircularProgressIndicator(
-                          color: AppTheme.primaryColor, strokeWidth: 2))
+                          color: context.nexusTheme.accentPrimary, strokeWidth: 2))
                   : _members.isEmpty
                       ? Center(
                           child: Text('Nenhum membro',
@@ -759,7 +761,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                                               width: r.s(14),
                                               height: r.s(14),
                                               decoration: const BoxDecoration(
-                                                color: AppTheme.errorColor,
+                                                color: context.nexusTheme.error,
                                                 shape: BoxShape.circle,
                                               ),
                                               child: Icon(
@@ -783,7 +785,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                                             style: TextStyle(
                                               color: isBanned
                                                   ? Colors.grey[600]
-                                                  : context.textPrimary,
+                                                  : context.nexusTheme.textPrimary,
                                               fontWeight: FontWeight.w500,
                                               fontSize: r.fs(14),
                                             ),
@@ -794,7 +796,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
-                                                  color: AppTheme.errorColor,
+                                                  color: context.nexusTheme.error,
                                                   fontSize: r.fs(10)),
                                             ),
                                         ],
@@ -808,7 +810,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                                             vertical: r.s(3)),
                                         decoration: BoxDecoration(
                                           color: role == 'host'
-                                              ? AppTheme.primaryColor
+                                              ? context.nexusTheme.accentPrimary
                                                   .withValues(alpha: 0.15)
                                               : Colors.amber
                                                   .withValues(alpha: 0.15),
@@ -821,7 +823,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                                               : 'CO-ADMIN',
                                           style: TextStyle(
                                             color: role == 'host'
-                                                ? AppTheme.primaryColor
+                                                ? context.nexusTheme.accentPrimary
                                                 : Colors.amber,
                                             fontSize: r.fs(9),
                                             fontWeight: FontWeight.w700,
@@ -882,7 +884,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
+              backgroundColor: context.nexusTheme.accentPrimary,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(10))),
             ),
@@ -949,12 +951,12 @@ class _ControlTile extends StatelessWidget {
       padding:
           EdgeInsets.symmetric(vertical: r.s(10), horizontal: r.s(14)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(12)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppTheme.primaryColor, size: r.s(20)),
+          Icon(icon, color: context.nexusTheme.accentPrimary, size: r.s(20)),
           SizedBox(width: r.s(12)),
           Expanded(
             child: Column(
@@ -962,19 +964,19 @@ class _ControlTile extends StatelessWidget {
               children: [
                 Text(label,
                     style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: r.fs(13))),
                 Text(subtitle,
                     style: TextStyle(
-                        color: context.textHint, fontSize: r.fs(11))),
+                        color: context.nexusTheme.textHint, fontSize: r.fs(11))),
               ],
             ),
           ),
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppTheme.primaryColor,
+            activeColor: context.nexusTheme.accentPrimary,
           ),
         ],
       ),
@@ -1005,16 +1007,16 @@ class _ButtonTile extends StatelessWidget {
         padding:
             EdgeInsets.symmetric(vertical: r.s(12), horizontal: r.s(14)),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(12)),
         ),
         child: Row(
           children: [
-            Icon(icon, color: AppTheme.primaryColor, size: r.s(20)),
+            Icon(icon, color: context.nexusTheme.accentPrimary, size: r.s(20)),
             SizedBox(width: r.s(12)),
             Text(label,
                 style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontWeight: FontWeight.w600,
                     fontSize: r.fs(13))),
             const Spacer(),
@@ -1047,19 +1049,19 @@ class _DurationChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: selected
-              ? AppTheme.errorColor
-              : AppTheme.errorColor.withValues(alpha: 0.1),
+              ? context.nexusTheme.error
+              : context.nexusTheme.error.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: selected
-                ? AppTheme.errorColor
-                : AppTheme.errorColor.withValues(alpha: 0.3),
+                ? context.nexusTheme.error
+                : context.nexusTheme.error.withValues(alpha: 0.3),
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.white : AppTheme.errorColor,
+            color: selected ? Colors.white : context.nexusTheme.error,
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),

@@ -9,6 +9,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // LIVE CHATROOMS SECTION — Estilo Amino (horizontal scroll cards)
@@ -84,7 +86,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(isPinned ? 'Chat desafixado.' : 'Chat fixado.'),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -95,7 +97,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Erro ao alterar fixação. Tente novamente.'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -116,7 +118,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(wasDeleted ? s.chatDeletedMsg : s.leftChat),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -127,7 +129,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
         ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(
             content: Text(s.errorExecutingActionRetry),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -167,7 +169,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
               Text(
                 chat['title'] as String? ?? s.chat,
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontWeight: FontWeight.w700,
                   fontSize: r.fs(15),
                 ),
@@ -216,7 +218,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
         title: Text(
           isDelete ? 'Apagar Chat' : s.leaveChatTitle,
           style: TextStyle(
-              color: context.textPrimary, fontWeight: FontWeight.w700),
+              color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700),
         ),
         content: Text(
           isDelete
@@ -237,7 +239,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
             child: Text(
               isDelete ? s.deleteAction : s.logout,
               style: TextStyle(
-                  color: AppTheme.errorColor, fontWeight: FontWeight.w700),
+                  color: context.nexusTheme.error, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -248,7 +250,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
   Widget _menuTile(
       Responsive r, IconData icon, String label, VoidCallback onTap,
       {bool isDestructive = false}) {
-    final color = isDestructive ? AppTheme.errorColor : Colors.grey[400]!;
+    final color = isDestructive ? context.nexusTheme.error : Colors.grey[400]!;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -267,8 +269,8 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
                 label,
                 style: TextStyle(
                     color: isDestructive
-                        ? AppTheme.errorColor
-                        : context.textPrimary,
+                        ? context.nexusTheme.error
+                        : context.nexusTheme.textPrimary,
                     fontSize: r.fs(14)),
               ),
             ),
@@ -297,12 +299,12 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
             child: Row(
               children: [
                 Icon(Icons.chat_bubble_rounded,
-                    color: AppTheme.primaryColor, size: r.s(16)),
+                    color: context.nexusTheme.accentPrimary, size: r.s(16)),
                 SizedBox(width: r.s(6)),
                 Text(
                   s.publicChatsLabel,
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(13),
                     fontWeight: FontWeight.w700,
                   ),
@@ -329,11 +331,11 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
                       width: r.s(150),
                       margin: EdgeInsets.only(right: r.s(8)),
                       decoration: BoxDecoration(
-                        color: context.cardBg,
+                        color: context.nexusTheme.surfacePrimary,
                         borderRadius: BorderRadius.circular(r.s(12)),
                         border: isPinned
                             ? Border.all(
-                                color: AppTheme.primaryColor
+                                color: context.nexusTheme.accentPrimary
                                     .withValues(alpha: 0.6),
                                 width: 1.5)
                             : null,
@@ -355,10 +357,10 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
                                           fit: BoxFit.cover,
                                         )
                                       : Container(
-                                          color: AppTheme.primaryColor
+                                          color: context.nexusTheme.accentPrimary
                                               .withValues(alpha: 0.2),
                                           child: Icon(Icons.chat_bubble_rounded,
-                                              color: AppTheme.primaryColor
+                                              color: context.nexusTheme.accentPrimary
                                                   .withValues(alpha: 0.5),
                                               size: r.s(28)),
                                         ),
@@ -401,7 +403,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
                                     child: Container(
                                       padding: EdgeInsets.all(r.s(3)),
                                       decoration: BoxDecoration(
-                                        color: AppTheme.primaryColor
+                                        color: context.nexusTheme.accentPrimary
                                             .withValues(alpha: 0.85),
                                         borderRadius:
                                             BorderRadius.circular(r.s(6)),
@@ -419,7 +421,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
                             child: Text(
                               chat['title'] as String? ?? s.chat,
                               style: TextStyle(
-                                  color: context.textPrimary,
+                                  color: context.nexusTheme.textPrimary,
                                   fontSize: r.fs(11),
                                   fontWeight: FontWeight.w600),
                               maxLines: 1,

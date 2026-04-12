@@ -15,6 +15,8 @@ import '../../stickers/widgets/sticker_message_bubble.dart';
 import 'chat_bubble.dart' show ChatBubble;
 import 'voice_recorder.dart' show VoiceNotePlayer;
 import '../../../core/widgets/image_viewer.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// ============================================================================
 /// MESSAGE BUBBLE (suporta todos os 19+ tipos) — Estilo Amino
@@ -109,7 +111,7 @@ class MessageBubble extends ConsumerWidget {
   }) {
     final accentColor = isMe
         ? Colors.white.withValues(alpha: 0.82)
-        : AppTheme.primaryColor;
+        : context.nexusTheme.accentPrimary;
     final subtitleColor = isMe
         ? Colors.white.withValues(alpha: 0.72)
         : Colors.grey[400]!;
@@ -507,7 +509,7 @@ class MessageBubble extends ConsumerWidget {
                             child: Text(
                               authorName,
                               style: TextStyle(
-                                color: AppTheme.primaryColor,
+                                color: context.nexusTheme.accentPrimary,
                                 fontSize: r.fs(11),
                                 fontWeight: FontWeight.w700,
                               ),
@@ -612,7 +614,7 @@ class MessageBubble extends ConsumerWidget {
                                 vertical: r.s(isAudioType ? 4 : 10)),
                             decoration: BoxDecoration(
                               color: isMe
-                                  ? AppTheme.primaryColor
+                                  ? context.nexusTheme.accentPrimary
                                   : context.surfaceColor,
                               borderRadius: BorderRadius.only(
                                 topLeft: const Radius.circular(16),
@@ -633,7 +635,7 @@ class MessageBubble extends ConsumerWidget {
                                     style: TextStyle(
                                       color: isMe
                                           ? Colors.white.withValues(alpha: 0.9)
-                                          : AppTheme.primaryColor,
+                                          : context.nexusTheme.accentPrimary,
                                       fontSize: r.fs(11),
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -725,12 +727,12 @@ class MessageBubble extends ConsumerWidget {
                     EdgeInsets.symmetric(horizontal: r.s(6), vertical: r.s(2)),
                 decoration: BoxDecoration(
                   color: iReacted
-                      ? AppTheme.primaryColor.withValues(alpha: 0.25)
+                      ? context.nexusTheme.accentPrimary.withValues(alpha: 0.25)
                       : context.surfaceColor,
                   borderRadius: BorderRadius.circular(r.s(10)),
                   border: Border.all(
                     color: iReacted
-                        ? AppTheme.primaryColor.withValues(alpha: 0.5)
+                        ? context.nexusTheme.accentPrimary.withValues(alpha: 0.5)
                         : Colors.white.withValues(alpha: 0.1),
                     width: 1,
                   ),
@@ -745,7 +747,7 @@ class MessageBubble extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: r.fs(10),
                         color:
-                            iReacted ? AppTheme.primaryColor : Colors.grey[500],
+                            iReacted ? context.nexusTheme.accentPrimary : Colors.grey[500],
                         fontWeight:
                             iReacted ? FontWeight.w600 : FontWeight.normal,
                       ),
@@ -764,7 +766,7 @@ class MessageBubble extends ConsumerWidget {
     final s = getStrings();
     final r = context.r;
     final type = message.type;
-    final textColor = isMe ? Colors.white : context.textPrimary;
+    final textColor = isMe ? Colors.white : context.nexusTheme.textPrimary;
 
     // Imagem: tipo 'image' (nativo) OU tipo 'text' com media_type == 'image' (legado)
     if ((type == 'image' && message.mediaUrl != null) ||
@@ -924,18 +926,18 @@ class MessageBubble extends ConsumerWidget {
       return Container(
         padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
-          color: AppTheme.warningColor.withValues(alpha: 0.15),
+          color: context.nexusTheme.warning.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(r.s(12)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.monetization_on_rounded,
-                color: AppTheme.warningColor),
+                color: context.nexusTheme.warning),
             SizedBox(width: r.s(8)),
             Text(s.amountCoins(amount),
                 style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: AppTheme.warningColor)),
+                    fontWeight: FontWeight.bold, color: context.nexusTheme.warning)),
           ],
         ),
       );

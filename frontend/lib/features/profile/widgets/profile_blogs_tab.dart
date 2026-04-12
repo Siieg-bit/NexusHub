@@ -8,6 +8,8 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../feed/widgets/post_card.dart';
 import '../providers/profile_providers.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 class ProfileBlogsTab extends ConsumerWidget {
   final String userId;
@@ -29,7 +31,7 @@ class ProfileBlogsTab extends ConsumerWidget {
     return blogsAsync.when(
       loading: () => const Center(
         child: CircularProgressIndicator(
-          color: AppTheme.primaryColor,
+          color: context.nexusTheme.accentPrimary,
           strokeWidth: 2,
         ),
       ),
@@ -119,7 +121,7 @@ class ProfileBlogsTab extends ConsumerWidget {
     }
 
     return RefreshIndicator(
-      color: AppTheme.primaryColor,
+      color: context.nexusTheme.accentPrimary,
       onRefresh: () async {
         ref.invalidate(userBlogsProvider(userId));
         ref.invalidate(pinnedProfileBlogProvider(userId));
@@ -159,7 +161,7 @@ class ProfileBlogsTab extends ConsumerWidget {
             Container(
               padding: EdgeInsets.all(r.s(18)),
               decoration: BoxDecoration(
-                color: context.cardBg,
+                color: context.nexusTheme.surfacePrimary,
                 borderRadius: BorderRadius.circular(r.s(14)),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
@@ -272,7 +274,7 @@ class ProfileBlogsTab extends ConsumerWidget {
         SnackBar(
           content: Text('Não foi possível atualizar o blog fixado do perfil.'),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
         ),
       );
     }
@@ -301,10 +303,10 @@ class _SectionHeader extends StatelessWidget {
             width: r.s(34),
             height: r.s(34),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.12),
+              color: context.nexusTheme.accentPrimary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(r.s(10)),
             ),
-            child: Icon(icon, color: AppTheme.primaryColor, size: r.s(18)),
+            child: Icon(icon, color: context.nexusTheme.accentPrimary, size: r.s(18)),
           ),
           SizedBox(width: r.s(10)),
           Expanded(
@@ -314,7 +316,7 @@ class _SectionHeader extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontWeight: FontWeight.w800,
                     fontSize: r.fs(15),
                   ),
@@ -372,9 +374,9 @@ class _ProfileBlogCard extends StatelessWidget {
                   icon: Icon(actionIcon, size: r.s(16)),
                   label: Text(actionLabel),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.primaryColor,
+                    foregroundColor: context.nexusTheme.accentPrimary,
                     side: BorderSide(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.4),
                     ),
                     padding: EdgeInsets.symmetric(
                       horizontal: r.s(12),

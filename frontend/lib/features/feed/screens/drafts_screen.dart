@@ -8,6 +8,8 @@ import '../../../core/models/post_draft_model.dart';
 import '../../../core/providers/draft_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 class DraftsScreen extends ConsumerWidget {
   const DraftsScreen({super.key});
@@ -19,18 +21,18 @@ class DraftsScreen extends ConsumerWidget {
     final draftsAsync = ref.watch(postDraftsProvider);
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         leading: IconButton(
           icon:
-              Icon(Icons.arrow_back, color: context.textPrimary, size: r.s(22)),
+              Icon(Icons.arrow_back, color: context.nexusTheme.textPrimary, size: r.s(22)),
           onPressed: () => context.pop(),
         ),
         title: Text(
           s.drafts,
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontWeight: FontWeight.w700,
             fontSize: r.fs(18),
           ),
@@ -55,7 +57,7 @@ class DraftsScreen extends ConsumerWidget {
                 onPressed: () =>
                     ref.read(postDraftsProvider.notifier).refresh(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
+                  backgroundColor: context.nexusTheme.accentPrimary,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(r.s(10))),
                 ),
@@ -112,7 +114,7 @@ class DraftsScreen extends ConsumerWidget {
             context.push('/community/$cid/create-post', extra: {'draftId': draft.id});
           }
         },
-        backgroundColor: AppTheme.primaryColor,
+        backgroundColor: context.nexusTheme.accentPrimary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -138,7 +140,7 @@ class _DraftCard extends ConsumerWidget {
         padding: EdgeInsets.only(right: r.s(20)),
         margin: EdgeInsets.only(bottom: r.s(12)),
         decoration: BoxDecoration(
-          color: AppTheme.errorColor,
+          color: context.nexusTheme.error,
           borderRadius: BorderRadius.circular(r.s(14)),
         ),
         child: Icon(Icons.delete_rounded, color: Colors.white, size: r.s(24)),
@@ -152,7 +154,7 @@ class _DraftCard extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(r.s(16))),
             title: Text(s.deleteDraftQuestion,
                 style: TextStyle(
-                    color: context.textPrimary, fontWeight: FontWeight.w700)),
+                    color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
             content: Text(s.actionCannotBeUndone,
                 style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14))),
             actions: [
@@ -164,7 +166,7 @@ class _DraftCard extends ConsumerWidget {
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx, true),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.errorColor,
+                  backgroundColor: context.nexusTheme.error,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(r.s(10))),
                 ),
@@ -203,7 +205,7 @@ class _DraftCard extends ConsumerWidget {
                     child: Text(
                       draft.preview,
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(15),
                         fontWeight: FontWeight.w600,
                       ),

@@ -12,6 +12,8 @@ import '../../../core/models/post_model.dart';
 import '../../../core/providers/post_provider.dart';
 import '../../../core/providers/draft_provider.dart';
 import 'dart:async';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CREATE IMAGE POST SCREEN — Post com galeria de imagens
@@ -142,7 +144,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Rascunho restaurado.'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -157,7 +159,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Adicione conteúdo antes de salvar.'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -198,7 +200,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Rascunho salvo.'),
-          backgroundColor: AppTheme.successColor,
+          backgroundColor: context.nexusTheme.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -207,7 +209,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Erro ao salvar rascunho.'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -247,7 +249,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Máximo de $_maxImages imagens atingido'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -281,7 +283,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -347,18 +349,18 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         title: Text('Legenda da imagem ${index + 1}',
-            style: TextStyle(color: context.textPrimary, fontSize: r.fs(16))),
+            style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(16))),
         content: TextField(
           controller: controller,
           maxLength: 200,
           maxLines: 3,
-          style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+          style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
           decoration: InputDecoration(
             hintText: 'Descreva esta imagem...',
             hintStyle:
-                TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
+                TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
             filled: true,
-            fillColor: context.cardBg,
+            fillColor: context.nexusTheme.surfacePrimary,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(r.s(10)),
               borderSide: BorderSide.none,
@@ -370,7 +372,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text('Cancelar',
-                style: TextStyle(color: context.textSecondary)),
+                style: TextStyle(color: context.nexusTheme.textSecondary)),
           ),
           TextButton(
             onPressed: () {
@@ -379,7 +381,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
               Navigator.pop(ctx);
             },
             child: Text('Salvar',
-                style: TextStyle(color: AppTheme.primaryColor)),
+                style: TextStyle(color: context.nexusTheme.accentPrimary)),
           ),
         ],
       ),
@@ -392,7 +394,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(s.addAtLeastOneImage),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -447,7 +449,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.postUpdated),
-                backgroundColor: AppTheme.successColor,
+                backgroundColor: context.nexusTheme.success,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -455,7 +457,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.anErrorOccurredTryAgain),
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -534,7 +536,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.postPublishedSuccess),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -545,7 +547,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorPublishing2),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -558,18 +560,18 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
     final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
           _isEditing ? s.editPost : 'Post de Imagem',
           style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(17),
               fontWeight: FontWeight.w700),
         ),
         leading: IconButton(
-          icon: Icon(Icons.close_rounded, color: context.textPrimary),
+          icon: Icon(Icons.close_rounded, color: context.nexusTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -583,22 +585,22 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                   : _visibility == 'followers'
                       ? Icons.people_rounded
                       : Icons.lock_rounded,
-              color: AppTheme.accentColor,
+              color: context.nexusTheme.accentSecondary,
               size: r.s(20),
             ),
             itemBuilder: (_) => [
               PopupMenuItem(
                   value: 'public',
                   child: Text(s.publicLabel,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
               PopupMenuItem(
                   value: 'followers',
                   child: Text(s.followers,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
               PopupMenuItem(
                   value: 'private',
                   child: Text(s.privateLabel,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
             ],
           ),
           TextButton(
@@ -608,12 +610,12 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                     width: r.s(18),
                     height: r.s(18),
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: AppTheme.primaryColor),
+                        strokeWidth: 2, color: context.nexusTheme.accentPrimary),
                   )
                 : Text(
                     _isEditing ? s.save : s.publish,
                     style: TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         fontSize: r.fs(14),
                         fontWeight: FontWeight.w700),
                   ),
@@ -630,12 +632,12 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
             Row(
               children: [
                 Icon(Icons.photo_library_rounded,
-                    color: AppTheme.primaryColor, size: r.s(20)),
+                    color: context.nexusTheme.accentPrimary, size: r.s(20)),
                 SizedBox(width: r.s(8)),
                 Text(
                   '${_images.length}/$_maxImages imagens',
                   style: TextStyle(
-                    color: context.textSecondary,
+                    color: context.nexusTheme.textSecondary,
                     fontSize: r.fs(13),
                     fontWeight: FontWeight.w600,
                   ),
@@ -645,7 +647,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                   Text(
                     'Segure para reordenar',
                     style: TextStyle(
-                      color: context.textSecondary.withValues(alpha: 0.6),
+                      color: context.nexusTheme.textSecondary.withValues(alpha: 0.6),
                       fontSize: r.fs(11),
                       fontStyle: FontStyle.italic,
                     ),
@@ -664,13 +666,13 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
               maxLength: 120,
               textCapitalization: TextCapitalization.sentences,
               style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(18),
                   fontWeight: FontWeight.w600),
               decoration: InputDecoration(
                 hintText: s.titleOptionalHint,
                 hintStyle:
-                    TextStyle(color: context.textSecondary, fontSize: r.fs(18)),
+                    TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(18)),
                 border: InputBorder.none,
                 counterText: '',
               ),
@@ -685,11 +687,11 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
               maxLines: 5,
               minLines: 2,
               textCapitalization: TextCapitalization.sentences,
-              style: TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
+              style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(15)),
               decoration: InputDecoration(
                 hintText: s.writeCaptionHint,
                 hintStyle:
-                    TextStyle(color: context.textSecondary, fontSize: r.fs(15)),
+                    TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(15)),
                 border: InputBorder.none,
                 counterText: '',
               ),
@@ -709,7 +711,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
               subtitle: 'Marcar como conteúdo adulto',
               value: _isNsfw,
               onChanged: (v) => setState(() => _isNsfw = v),
-              color: AppTheme.errorColor,
+              color: context.nexusTheme.error,
               r: r,
             ),
             _buildToggleRow(
@@ -718,7 +720,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
               subtitle: 'Esconder imagens até o usuário tocar',
               value: _isSpoiler,
               onChanged: (v) => setState(() => _isSpoiler = v),
-              color: AppTheme.accentColor,
+              color: context.nexusTheme.accentSecondary,
               r: r,
             ),
 
@@ -736,7 +738,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
         child: Container(
           height: r.s(200),
           decoration: BoxDecoration(
-            color: context.cardBg,
+            color: context.nexusTheme.surfacePrimary,
             borderRadius: BorderRadius.circular(r.s(16)),
             border:
                 Border.all(color: context.dividerClr.withValues(alpha: 0.4)),
@@ -747,21 +749,21 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
               children: [
                 if (_isUploading)
                   CircularProgressIndicator(
-                      color: AppTheme.primaryColor, strokeWidth: 2)
+                      color: context.nexusTheme.accentPrimary, strokeWidth: 2)
                 else ...[
                   Icon(Icons.add_photo_alternate_rounded,
-                      color: AppTheme.primaryColor, size: r.s(48)),
+                      color: context.nexusTheme.accentPrimary, size: r.s(48)),
                   SizedBox(height: r.s(8)),
                   Text(
                     'Toque para adicionar imagens',
                     style: TextStyle(
-                        color: context.textSecondary, fontSize: r.fs(14)),
+                        color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
                   ),
                   SizedBox(height: r.s(4)),
                   Text(
                     'Até $_maxImages imagens',
                     style: TextStyle(
-                        color: context.textSecondary.withValues(alpha: 0.6),
+                        color: context.nexusTheme.textSecondary.withValues(alpha: 0.6),
                         fontSize: r.fs(12)),
                   ),
                 ],
@@ -788,7 +790,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
               child: Container(
                 margin: EdgeInsets.only(bottom: r.s(8)),
                 decoration: BoxDecoration(
-                  color: context.cardBg,
+                  color: context.nexusTheme.surfacePrimary,
                   borderRadius: BorderRadius.circular(r.s(12)),
                   border: Border.all(
                       color: context.dividerClr.withValues(alpha: 0.3)),
@@ -818,7 +820,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                           Text(
                             'Imagem ${index + 1}',
                             style: TextStyle(
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                               fontSize: r.fs(13),
                               fontWeight: FontWeight.w600,
                             ),
@@ -830,7 +832,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                color: context.textSecondary,
+                                color: context.nexusTheme.textSecondary,
                                 fontSize: r.fs(11),
                               ),
                             ),
@@ -843,7 +845,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                                   ? 'Adicionar legenda'
                                   : 'Editar legenda',
                               style: TextStyle(
-                                color: AppTheme.accentColor,
+                                color: context.nexusTheme.accentSecondary,
                                 fontSize: r.fs(11),
                                 fontWeight: FontWeight.w600,
                               ),
@@ -855,11 +857,11 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                     // Actions
                     IconButton(
                       icon: Icon(Icons.close_rounded,
-                          color: AppTheme.errorColor, size: r.s(18)),
+                          color: context.nexusTheme.error, size: r.s(18)),
                       onPressed: () => _removeImage(index),
                     ),
                     Icon(Icons.drag_handle_rounded,
-                        color: context.textSecondary, size: r.s(20)),
+                        color: context.nexusTheme.textSecondary, size: r.s(20)),
                     SizedBox(width: r.s(8)),
                   ],
                 ),
@@ -874,25 +876,25 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
             child: Container(
               height: r.s(56),
               decoration: BoxDecoration(
-                color: context.cardBg,
+                color: context.nexusTheme.surfacePrimary,
                 borderRadius: BorderRadius.circular(r.s(12)),
                 border: Border.all(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3)),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3)),
               ),
               child: Center(
                 child: _isUploading
                     ? CircularProgressIndicator(
-                        color: AppTheme.primaryColor, strokeWidth: 2)
+                        color: context.nexusTheme.accentPrimary, strokeWidth: 2)
                     : Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.add_rounded,
-                              color: AppTheme.primaryColor, size: r.s(20)),
+                              color: context.nexusTheme.accentPrimary, size: r.s(20)),
                           SizedBox(width: r.s(8)),
                           Text(
                             'Adicionar mais imagens',
                             style: TextStyle(
-                              color: AppTheme.primaryColor,
+                              color: context.nexusTheme.accentPrimary,
                               fontSize: r.fs(14),
                               fontWeight: FontWeight.w600,
                             ),
@@ -919,7 +921,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(10), vertical: r.s(4)),
                       decoration: BoxDecoration(
-                        color: AppTheme.accentColor.withValues(alpha: 0.15),
+                        color: context.nexusTheme.accentSecondary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(r.s(12)),
                       ),
                       child: Row(
@@ -927,14 +929,14 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                         children: [
                           Text('#$tag',
                               style: TextStyle(
-                                  color: AppTheme.accentColor,
+                                  color: context.nexusTheme.accentSecondary,
                                   fontSize: r.fs(12),
                                   fontWeight: FontWeight.w600)),
                           SizedBox(width: r.s(4)),
                           GestureDetector(
                             onTap: () => setState(() => _tags.remove(tag)),
                             child: Icon(Icons.close_rounded,
-                                color: AppTheme.accentColor, size: r.s(14)),
+                                color: context.nexusTheme.accentSecondary, size: r.s(14)),
                           ),
                         ],
                       ),
@@ -950,15 +952,15 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                 child: TextField(
                   controller: _tagController,
                   style: TextStyle(
-                      color: context.textPrimary, fontSize: r.fs(13)),
+                      color: context.nexusTheme.textPrimary, fontSize: r.fs(13)),
                   decoration: InputDecoration(
                     hintText: 'Adicionar tag...',
                     hintStyle: TextStyle(
-                        color: context.textSecondary, fontSize: r.fs(13)),
+                        color: context.nexusTheme.textSecondary, fontSize: r.fs(13)),
                     border: InputBorder.none,
                     isDense: true,
                     prefixIcon: Icon(Icons.tag_rounded,
-                        color: context.textSecondary, size: r.s(16)),
+                        color: context.nexusTheme.textSecondary, size: r.s(16)),
                   ),
                   onSubmitted: (_) => _addTag(),
                 ),
@@ -969,12 +971,12 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(12), vertical: r.s(6)),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentColor.withValues(alpha: 0.15),
+                    color: context.nexusTheme.accentSecondary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(r.s(8)),
                   ),
                   child: Text('Adicionar',
                       style: TextStyle(
-                          color: AppTheme.accentColor,
+                          color: context.nexusTheme.accentSecondary,
                           fontSize: r.fs(12),
                           fontWeight: FontWeight.w600)),
                 ),
@@ -1006,12 +1008,12 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
               children: [
                 Text(label,
                     style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(13),
                         fontWeight: FontWeight.w600)),
                 Text(subtitle,
                     style: TextStyle(
-                        color: context.textSecondary, fontSize: r.fs(11))),
+                        color: context.nexusTheme.textSecondary, fontSize: r.fs(11))),
               ],
             ),
           ),

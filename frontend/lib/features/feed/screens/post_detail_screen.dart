@@ -26,6 +26,8 @@ import '../../../core/services/deep_link_service.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/comment_media_menu_button.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 enum _CommentSortOrder { mostRecent, oldest, mostPopular }
 
@@ -244,13 +246,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         title: Text(
           'Excluir comentário',
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontWeight: FontWeight.w700,
           ),
         ),
         content: Text(
           'Deseja excluir este comentário? Esta ação não pode ser desfeita.',
-          style: TextStyle(color: context.textSecondary),
+          style: TextStyle(color: context.nexusTheme.textSecondary),
         ),
         actions: [
           TextButton(
@@ -262,7 +264,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             child: const Text(
               'Excluir',
               style: TextStyle(
-                color: AppTheme.errorColor,
+                color: context.nexusTheme.error,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -295,7 +297,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         const SnackBar(
           content: Text('Não foi possível excluir o comentário.'),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
         ),
       );
     }
@@ -423,7 +425,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
           ),
         );
       }
@@ -539,7 +541,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: const Text('Não é possível republicar seu próprio post.'),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: context.nexusTheme.error,
       ));
       return;
     }
@@ -549,7 +551,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: const Text('Não é possível republicar um repost.'),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: context.nexusTheme.error,
       ));
       return;
     }
@@ -601,7 +603,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(isAlreadyReposted ? s.repostAlreadyExists : s.anErrorOccurredTryAgain),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: isAlreadyReposted ? AppTheme.warningColor : AppTheme.errorColor,
+        backgroundColor: isAlreadyReposted ? context.nexusTheme.warning : context.nexusTheme.error,
       ));
     }
   }
@@ -627,7 +629,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final post = postAsync.valueOrNull;
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       // Barra Share/Like/Save/Next fora do body para não ser afetada pelo teclado
       bottomNavigationBar: post == null
           ? null
@@ -652,7 +654,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           ? Icons.favorite_rounded
                           : Icons.favorite_border_rounded,
                       label: s.like,
-                      color: post.isLiked ? AppTheme.errorColor : null,
+                      color: post.isLiked ? context.nexusTheme.error : null,
                       onTap: _toggleLike,
                     ),
                     _BottomBarButton(
@@ -660,7 +662,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           ? Icons.bookmark_rounded
                           : Icons.bookmark_border_rounded,
                       label: s.save,
-                      color: _isBookmarked ? AppTheme.primaryColor : null,
+                      color: _isBookmarked ? context.nexusTheme.accentPrimary : null,
                       onTap: _toggleBookmark,
                     ),
                     _BottomBarButton(
@@ -681,10 +683,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           postAsync.valueOrNull?.type == 'blog' ? s.blog : s.post,
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
           ),
         ),
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         actions: [
           IconButton(
             icon: const Icon(Icons.share_outlined),
@@ -732,11 +734,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       ),
                       title: Text(s.deletePost2,
                           style: TextStyle(
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                               fontWeight: FontWeight.w700)),
                       content: Text(
                         s.confirmDeletePost,
-                        style: TextStyle(color: context.textSecondary),
+                        style: TextStyle(color: context.nexusTheme.textSecondary),
                       ),
                       actions: [
                         TextButton(
@@ -748,7 +750,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           onPressed: () => Navigator.pop(ctx, true),
                           child: Text(s.deleteAction2,
                               style: TextStyle(
-                                  color: AppTheme.errorColor,
+                                  color: context.nexusTheme.error,
                                   fontWeight: FontWeight.w700)),
                         ),
                       ],
@@ -852,17 +854,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           size: r.s(18), color: const Color(0xFF607D8B)),
                       SizedBox(width: r.s(10)),
                       Text(s.repostAction,
-                          style: TextStyle(color: context.textPrimary)),
+                          style: TextStyle(color: context.nexusTheme.textPrimary)),
                     ]),
                   ),
                 PopupMenuItem(
                   value: 'copy_link',
                   child: Row(children: [
                     Icon(Icons.link_rounded,
-                        size: r.s(18), color: context.textSecondary),
+                        size: r.s(18), color: context.nexusTheme.textSecondary),
                     SizedBox(width: r.s(10)),
                     Text(s.copyLink,
-                        style: TextStyle(color: context.textPrimary)),
+                        style: TextStyle(color: context.nexusTheme.textPrimary)),
                   ]),
                 ),
                 PopupMenuItem(
@@ -872,7 +874,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         size: r.s(18), color: Colors.orange),
                     SizedBox(width: r.s(10)),
                     Text(s.reportAction,
-                        style: TextStyle(color: context.textPrimary)),
+                        style: TextStyle(color: context.nexusTheme.textPrimary)),
                   ]),
                 ),
                 if (isAuthor)
@@ -880,10 +882,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     value: 'edit',
                     child: Row(children: [
                       Icon(Icons.edit_rounded,
-                          size: r.s(18), color: AppTheme.primaryColor),
+                          size: r.s(18), color: context.nexusTheme.accentPrimary),
                       SizedBox(width: r.s(10)),
                       Text(s.edit,
-                          style: TextStyle(color: context.textPrimary)),
+                          style: TextStyle(color: context.nexusTheme.textPrimary)),
                     ]),
                   ),
                 if (isAuthor)
@@ -895,14 +897,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             ? Icons.push_pin_rounded
                             : Icons.push_pin_outlined,
                         size: r.s(18),
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                       ),
                       SizedBox(width: r.s(10)),
                       Text(
                         (post?.isPinned == true)
                             ? 'Desafixar do Perfil'
                             : 'Fixar no Perfil',
-                        style: TextStyle(color: context.textPrimary),
+                        style: TextStyle(color: context.nexusTheme.textPrimary),
                       ),
                     ]),
                   ),
@@ -914,7 +916,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           size: r.s(18), color: Colors.grey),
                       SizedBox(width: r.s(10)),
                       Text(s.hidePost,
-                          style: TextStyle(color: context.textPrimary)),
+                          style: TextStyle(color: context.nexusTheme.textPrimary)),
                     ]),
                   ),
                 if (isAuthor)
@@ -922,10 +924,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     value: 'delete',
                     child: Row(children: [
                       Icon(Icons.delete_rounded,
-                          size: r.s(18), color: AppTheme.errorColor),
+                          size: r.s(18), color: context.nexusTheme.error),
                       SizedBox(width: r.s(10)),
                       Text(s.deleteAction2,
-                          style: TextStyle(color: AppTheme.errorColor)),
+                          style: TextStyle(color: context.nexusTheme.error)),
                     ]),
                   ),
                 // Menu de Moderação — visível apenas para staff
@@ -934,10 +936,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     value: 'moderation_menu',
                     child: Row(children: [
                       Icon(Icons.admin_panel_settings_rounded,
-                          size: r.s(18), color: AppTheme.primaryColor),
+                          size: r.s(18), color: context.nexusTheme.accentPrimary),
                       SizedBox(width: r.s(10)),
                       Text('Menu de Moderação',
-                          style: TextStyle(color: context.textPrimary)),
+                          style: TextStyle(color: context.nexusTheme.textPrimary)),
                     ]),
                   ),
               ];
@@ -948,18 +950,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       body: postAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+            valueColor: AlwaysStoppedAnimation<Color>(context.nexusTheme.accentPrimary),
           ),
         ),
         error: (error, _) => Center(
           child: Text(s.errorGeneric(error.toString()),
-              style: const TextStyle(color: AppTheme.errorColor)),
+              style: const TextStyle(color: context.nexusTheme.error)),
         ),
         data: (post) {
           if (post == null) {
             return Center(
               child: Text(s.postNotFoundMsg,
-                  style: TextStyle(color: context.textSecondary)),
+                  style: TextStyle(color: context.nexusTheme.textSecondary)),
             );
           }
           if (!_viewRecorded) _recordView();
@@ -970,7 +972,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               // ================================================================
               Expanded(
                 child: RefreshIndicator(
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                   onRefresh: () async {
                     ref.invalidate(postDetailProvider);
                     ref.invalidate(postCommentsProvider);
@@ -995,7 +997,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                               style: TextStyle(
                                 fontSize: r.fs(22),
                                 fontWeight: FontWeight.w800,
-                                color: context.textPrimary,
+                                color: context.nexusTheme.textPrimary,
                               ),
                             ),
                           ),
@@ -1037,7 +1039,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                                 : (post.author?.nickname ?? s.user),
                                             style: TextStyle(
                                               fontWeight: FontWeight.w700,
-                                              color: context.textPrimary,
+                                              color: context.nexusTheme.textPrimary,
                                               fontSize: r.fs(15),
                                             ),
                                             overflow: TextOverflow.ellipsis,
@@ -1095,14 +1097,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                       horizontal: r.s(14), vertical: r.s(7)),
                                   decoration: BoxDecoration(
                                     color: post.isLiked
-                                        ? AppTheme.errorColor
+                                        ? context.nexusTheme.error
                                             .withValues(alpha: 0.12)
                                         : Colors.grey.withValues(alpha: 0.12),
                                     borderRadius:
                                         BorderRadius.circular(r.s(20)),
                                     border: Border.all(
                                       color: post.isLiked
-                                          ? AppTheme.errorColor
+                                          ? context.nexusTheme.error
                                               .withValues(alpha: 0.4)
                                           : Colors.grey.withValues(alpha: 0.25),
                                     ),
@@ -1116,7 +1118,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                             : Icons.favorite_border_rounded,
                                         size: r.s(16),
                                         color: post.isLiked
-                                            ? AppTheme.errorColor
+                                            ? context.nexusTheme.error
                                             : Colors.grey[500],
                                       ),
                                       SizedBox(width: r.s(5)),
@@ -1124,7 +1126,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                         s.like,
                                         style: TextStyle(
                                           color: post.isLiked
-                                              ? AppTheme.errorColor
+                                              ? context.nexusTheme.error
                                               : Colors.grey[500],
                                           fontSize: r.fs(13),
                                           fontWeight: FontWeight.w600,
@@ -1156,19 +1158,19 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                     padding: EdgeInsets.symmetric(
                                         horizontal: r.s(10), vertical: r.s(4)),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.primaryColor
+                                      color: context.nexusTheme.accentPrimary
                                           .withValues(alpha: 0.15),
                                       borderRadius:
                                           BorderRadius.circular(r.s(12)),
                                       border: Border.all(
-                                        color: AppTheme.primaryColor
+                                        color: context.nexusTheme.accentPrimary
                                             .withValues(alpha: 0.3),
                                       ),
                                     ),
                                     child: Text(
                                       '#$tag',
                                       style: TextStyle(
-                                        color: AppTheme.primaryColor,
+                                        color: context.nexusTheme.accentPrimary,
                                         fontSize: r.fs(12),
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -1205,7 +1207,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                               style: TextStyle(
                                 fontSize: r.fs(15),
                                 height: 1.7,
-                                color: context.textPrimary,
+                                color: context.nexusTheme.textPrimary,
                               ),
                             ),
                           ),
@@ -1322,21 +1324,21 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                     value: _CommentSortOrder.mostRecent,
                                     child: Text(
                                       s.mostRecent,
-                                      style: TextStyle(color: context.textPrimary),
+                                      style: TextStyle(color: context.nexusTheme.textPrimary),
                                     ),
                                   ),
                                   PopupMenuItem(
                                     value: _CommentSortOrder.oldest,
                                     child: Text(
                                       s.oldest,
-                                      style: TextStyle(color: context.textPrimary),
+                                      style: TextStyle(color: context.nexusTheme.textPrimary),
                                     ),
                                   ),
                                   PopupMenuItem(
                                     value: _CommentSortOrder.mostPopular,
                                     child: Text(
                                       s.mostPopular,
-                                      style: TextStyle(color: context.textPrimary),
+                                      style: TextStyle(color: context.nexusTheme.textPrimary),
                                     ),
                                   ),
                                 ],
@@ -1351,7 +1353,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                     size: r.s(20),
                                     color: _commentSortOrder == _CommentSortOrder.oldest
                                         ? Colors.grey[500]
-                                        : AppTheme.primaryColor,
+                                        : context.nexusTheme.accentPrimary,
                                   ),
                                 ),
                               ),
@@ -1384,7 +1386,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                     vertical: r.s(8),
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
                                     borderRadius: BorderRadius.circular(r.s(12)),
                                   ),
                                   child: Row(
@@ -1393,7 +1395,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                         child: Text(
                                           'Respondendo a @${_replyingToComment!.author?.nickname ?? s.user}',
                                           style: TextStyle(
-                                            color: AppTheme.primaryColor,
+                                            color: context.nexusTheme.accentPrimary,
                                             fontSize: r.fs(12),
                                             fontWeight: FontWeight.w700,
                                           ),
@@ -1462,8 +1464,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                       columns: 8,
                                       emojiSizeMax: 28,
                                       bgColor: context.surfaceColor,
-                                      indicatorColor: AppTheme.primaryColor,
-                                      iconColorSelected: AppTheme.primaryColor,
+                                      indicatorColor: context.nexusTheme.accentPrimary,
+                                      iconColorSelected: context.nexusTheme.accentPrimary,
                                       iconColor: Colors.grey[600] ?? Colors.grey,
                                       checkPlatformCompatibility: true,
                                       recentTabBehavior: RecentTabBehavior.RECENT,
@@ -1510,7 +1512,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                         controller: _commentController,
                                         focusNode: _commentFocusNode,
                                         style: TextStyle(
-                                          color: context.textPrimary,
+                                          color: context.nexusTheme.textPrimary,
                                           fontSize: r.fs(14),
                                         ),
                                         decoration: InputDecoration(
@@ -1539,7 +1541,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                       child: Container(
                                         padding: EdgeInsets.all(r.s(9)),
                                         decoration: const BoxDecoration(
-                                          color: AppTheme.primaryColor,
+                                          color: context.nexusTheme.accentPrimary,
                                           shape: BoxShape.circle,
                                         ),
                                         child: _isSending
@@ -1570,7 +1572,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppTheme.primaryColor),
+                                    context.nexusTheme.accentPrimary),
                               ),
                             ),
                           ),
@@ -1579,7 +1581,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             child: Text(
                               'Erro ao carregar comentários. Tente novamente.',
                               style:
-                                  const TextStyle(color: AppTheme.errorColor),
+                                  const TextStyle(color: context.nexusTheme.error),
                             ),
                           ),
                           data: (comments) {
@@ -1796,10 +1798,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           errorWidget: (_, __, ___) => CircleAvatar(
                             radius: r.s(16),
                             backgroundColor:
-                                AppTheme.primaryColor.withValues(alpha: 0.3),
+                                context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                             child: Icon(Icons.person_rounded,
                                 size: r.s(16),
-                                color: AppTheme.primaryColor),
+                                color: context.nexusTheme.accentPrimary),
                           ),
                         ),
                       )
@@ -1807,17 +1809,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       CircleAvatar(
                         radius: r.s(16),
                         backgroundColor:
-                            AppTheme.primaryColor.withValues(alpha: 0.3),
+                            context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                         child: Icon(Icons.person_rounded,
                             size: r.s(16),
-                            color: AppTheme.primaryColor),
+                            color: context.nexusTheme.accentPrimary),
                       ),
                     SizedBox(width: r.s(10)),
                     Expanded(
                       child: Text(
                         originalAuthor?.nickname ?? s.user,
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontWeight: FontWeight.w600,
                           fontSize: r.fs(14),
                         ),
@@ -1837,7 +1839,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   child: Text(
                     originalPost!.title!,
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontWeight: FontWeight.w700,
                       fontSize: r.fs(15),
                       height: 1.3,
@@ -2098,7 +2100,7 @@ class _CommentTileState extends ConsumerState<_CommentTile> {
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: r.fs(14),
-                                  color: context.textPrimary,
+                                  color: context.nexusTheme.textPrimary,
                                 ),
                               ),
                               Text(
@@ -2143,7 +2145,7 @@ class _CommentTileState extends ConsumerState<_CommentTile> {
                         style: TextStyle(
                           fontSize: r.fs(14),
                           height: 1.4,
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                         ),
                       ),
                     // Sticker com suporte a favoritar/salvar pack

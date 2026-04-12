@@ -8,6 +8,8 @@ import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/deep_link_service.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // ============================================================================
 // WIKI LIST SCREEN
@@ -86,14 +88,14 @@ class _WikiListScreenState extends ConsumerState<WikiListScreen> {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         title: Text(s.catalog,
             style: TextStyle(
                 fontWeight: FontWeight.w800,
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(20))),
         actions: [
           // Botão de revisão para curadores/leaders
@@ -105,11 +107,11 @@ class _WikiListScreenState extends ConsumerState<WikiListScreen> {
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(8)),
               decoration: BoxDecoration(
-                color: AppTheme.warningColor.withValues(alpha: 0.15),
+                color: context.nexusTheme.warning.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: Icon(Icons.pending_actions_rounded,
-                  color: AppTheme.warningColor, size: r.s(20)),
+                  color: context.nexusTheme.warning, size: r.s(20)),
             ),
           ),
           SizedBox(width: r.s(4)),
@@ -123,34 +125,34 @@ class _WikiListScreenState extends ConsumerState<WikiListScreen> {
                   EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                  colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(r.s(20)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.5),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.5),
                     blurRadius: 8,
                     spreadRadius: 1,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
-              child: Icon(Icons.add_rounded, color: context.textPrimary),
+              child: Icon(Icons.add_rounded, color: context.nexusTheme.textPrimary),
             ),
           ),
         ],
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
       ),
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
               ),
             )
           : RefreshIndicator(
-              color: AppTheme.primaryColor,
+              color: context.nexusTheme.accentPrimary,
               onRefresh: () async {
                 await _loadEntries();
                 if (!mounted) return;
@@ -162,12 +164,12 @@ class _WikiListScreenState extends ConsumerState<WikiListScreen> {
                     child: TextField(
                       controller: _searchController,
                       onChanged: (_) => setState(() {}),
-                      style: TextStyle(color: context.textPrimary),
+                      style: TextStyle(color: context.nexusTheme.textPrimary),
                       decoration: InputDecoration(
                         hintText: s.searchCatalog,
-                        hintStyle: TextStyle(color: context.textSecondary),
+                        hintStyle: TextStyle(color: context.nexusTheme.textSecondary),
                         prefixIcon: Icon(Icons.search_rounded,
-                            size: r.s(20), color: context.textSecondary),
+                            size: r.s(20), color: context.nexusTheme.textSecondary),
                         filled: true,
                         fillColor: context.surfaceColor,
                         border: OutlineInputBorder(
@@ -211,7 +213,7 @@ class _WikiListScreenState extends ConsumerState<WikiListScreen> {
                               Center(
                                 child: Text(s.noEntriesFound,
                                     style: TextStyle(
-                                        color: context.textSecondary)),
+                                        color: context.nexusTheme.textSecondary)),
                               ),
                             ],
                           )
@@ -264,19 +266,19 @@ class _CategoryChip extends ConsumerWidget {
         padding: EdgeInsets.symmetric(horizontal: r.s(18), vertical: r.s(8)),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.primaryColor.withValues(alpha: 0.15)
+              ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
               : context.surfaceColor,
           borderRadius: BorderRadius.circular(r.s(24)),
           border: Border.all(
             color: isSelected
-                ? AppTheme.primaryColor
+                ? context.nexusTheme.accentPrimary
                 : Colors.white.withValues(alpha: 0.05),
             width: 1.2,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     spreadRadius: 1,
                     offset: const Offset(0, 2),
@@ -287,7 +289,7 @@ class _CategoryChip extends ConsumerWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? AppTheme.primaryColor : context.textSecondary,
+            color: isSelected ? context.nexusTheme.accentPrimary : context.nexusTheme.textSecondary,
             fontSize: r.fs(13),
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
           ),
@@ -322,7 +324,7 @@ class _WikiEntryCard extends ConsumerWidget {
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
               blurRadius: 6,
               spreadRadius: 1,
               offset: const Offset(0, 3),
@@ -338,7 +340,7 @@ class _WikiEntryCard extends ConsumerWidget {
                 decoration: BoxDecoration(
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(16)),
-                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
                 ),
                 child: imageUrl != null
                     ? ClipRRect(
@@ -366,7 +368,7 @@ class _WikiEntryCard extends ConsumerWidget {
                       Text(
                         category.toUpperCase(),
                         style: TextStyle(
-                          color: AppTheme.primaryColor,
+                          color: context.nexusTheme.accentPrimary,
                           fontSize: r.fs(10),
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.5,
@@ -378,7 +380,7 @@ class _WikiEntryCard extends ConsumerWidget {
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: r.fs(14),
-                          color: context.textPrimary),
+                          color: context.nexusTheme.textPrimary),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -503,7 +505,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                 ? s.wikiPinned
                 : s.wikiRemoved),
             backgroundColor:
-                isNowBookmarked ? AppTheme.primaryColor : context.surfaceColor,
+                isNowBookmarked ? context.nexusTheme.accentPrimary : context.surfaceColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(r.s(12))),
@@ -557,25 +559,25 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
     final r = context.r;
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         body: Center(
             child: CircularProgressIndicator(
-          color: AppTheme.primaryColor,
+          color: context.nexusTheme.accentPrimary,
         )),
       );
     }
 
     if (_entry == null) {
       return Scaffold(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         appBar: AppBar(
-          backgroundColor: context.scaffoldBg,
+          backgroundColor: context.nexusTheme.backgroundPrimary,
           elevation: 0,
-          iconTheme: IconThemeData(color: context.textPrimary),
+          iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         ),
         body: Center(
             child: Text(s.entryNotFound,
-                style: TextStyle(color: context.textSecondary))),
+                style: TextStyle(color: context.nexusTheme.textSecondary))),
       );
     }
 
@@ -589,15 +591,15 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
     final infoboxData = _entry?['infobox'] as Map<String, dynamic>?;
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            backgroundColor: context.scaffoldBg,
+            backgroundColor: context.nexusTheme.backgroundPrimary,
             expandedHeight: coverUrl != null ? 200 : 0,
             pinned: true,
             elevation: 0,
-            iconTheme: IconThemeData(color: context.textPrimary),
+            iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
             flexibleSpace: coverUrl != null
                 ? FlexibleSpaceBar(
                     background: CachedNetworkImage(
@@ -608,7 +610,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                 : null,
             title: Text(title,
                 style: TextStyle(
-                    fontWeight: FontWeight.w800, color: context.textPrimary)),
+                    fontWeight: FontWeight.w800, color: context.nexusTheme.textPrimary)),
             actions: [
               // Share
               GestureDetector(
@@ -626,7 +628,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.share_outlined,
-                      color: context.textPrimary, size: r.s(20)),
+                      color: context.nexusTheme.textPrimary, size: r.s(20)),
                 ),
               ),
               // Pin to profile button
@@ -637,7 +639,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                   padding: EdgeInsets.all(r.s(8)),
                   decoration: BoxDecoration(
                     color: _isPinnedToProfile
-                        ? AppTheme.primaryColor.withValues(alpha: 0.2)
+                        ? context.nexusTheme.accentPrimary.withValues(alpha: 0.2)
                         : Colors.black.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
@@ -646,8 +648,8 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                         ? Icons.push_pin_rounded
                         : Icons.push_pin_outlined,
                     color: _isPinnedToProfile
-                        ? AppTheme.primaryColor
-                        : context.textPrimary,
+                        ? context.nexusTheme.accentPrimary
+                        : context.nexusTheme.textPrimary,
                     size: r.s(20),
                   ),
                 ),
@@ -665,13 +667,13 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(14), vertical: r.s(6)),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                        color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(r.s(16)),
                       ),
                       child: Text(
                         category,
                         style: TextStyle(
-                          color: AppTheme.primaryColor,
+                          color: context.nexusTheme.accentPrimary,
                           fontSize: r.fs(13),
                           fontWeight: FontWeight.w700,
                         ),
@@ -695,7 +697,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                               style: TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: r.fs(16),
-                                  color: context.textPrimary)),
+                                  color: context.nexusTheme.textPrimary)),
                           SizedBox(height: r.s(8)),
                           ...infoboxData.entries.map((e) => Padding(
                                 padding: EdgeInsets.symmetric(vertical: r.s(6)),
@@ -707,7 +709,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                                       child: Text(
                                         e.key,
                                         style: TextStyle(
-                                            color: context.textSecondary,
+                                            color: context.nexusTheme.textSecondary,
                                             fontSize: r.fs(14)),
                                       ),
                                     ),
@@ -716,7 +718,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                                         e.value.toString(),
                                         style: TextStyle(
                                             fontSize: r.fs(14),
-                                            color: context.textPrimary),
+                                            color: context.nexusTheme.textPrimary),
                                       ),
                                     ),
                                   ],
@@ -732,7 +734,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                     style: TextStyle(
                         fontSize: r.fs(16),
                         height: 1.7,
-                        color: context.textPrimary),
+                        color: context.nexusTheme.textPrimary),
                   ),
                   SizedBox(height: r.s(24)),
                   if (author != null)
@@ -747,7 +749,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                         Text(
                           '${s.byAuthor}${author['nickname'] ?? s.anonymous}',
                           style: TextStyle(
-                              color: context.textSecondary, fontSize: r.fs(14)),
+                              color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
                         ),
                       ],
                     ),
@@ -760,7 +762,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                       style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: r.fs(18),
-                          color: context.textPrimary)),
+                          color: context.nexusTheme.textPrimary)),
                   SizedBox(height: r.s(8)),
                   Row(
                     children: List.generate(5, (i) {
@@ -772,13 +774,13 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                               ? Icons.star_rounded
                               : Icons.star_border_rounded,
                           color: star <= _userRating
-                              ? AppTheme.warningColor
+                              ? context.nexusTheme.warning
                               : Colors.grey.withValues(alpha: 0.3),
                           size: r.s(34),
                           shadows: star <= _userRating
                               ? [
                                   BoxShadow(
-                                    color: AppTheme.warningColor
+                                    color: context.nexusTheme.warning
                                         .withValues(alpha: 0.6),
                                     blurRadius: 8,
                                     spreadRadius: 1,
@@ -797,8 +799,8 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                         : s.averageRating,
                     style: TextStyle(
                         color: _totalRatings > 0
-                            ? AppTheme.warningColor
-                            : context.textSecondary,
+                            ? context.nexusTheme.warning
+                            : context.nexusTheme.textSecondary,
                         fontSize: r.fs(13),
                         fontWeight: _totalRatings > 0
                             ? FontWeight.w600
@@ -813,17 +815,17 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                       style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: r.fs(18),
-                          color: context.textPrimary)),
+                          color: context.nexusTheme.textPrimary)),
                   SizedBox(height: r.s(8)),
                   Row(
                     children: [
                       Expanded(
                         child: TextField(
                           controller: _whatILikeController,
-                          style: TextStyle(color: context.textPrimary),
+                          style: TextStyle(color: context.nexusTheme.textPrimary),
                           decoration: InputDecoration(
                             hintText: s.writeWhatYouLike,
-                            hintStyle: TextStyle(color: context.textSecondary),
+                            hintStyle: TextStyle(color: context.nexusTheme.textSecondary),
                             filled: true,
                             fillColor: context.surfaceColor,
                             border: OutlineInputBorder(
@@ -844,8 +846,8 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               colors: [
-                                AppTheme.primaryColor,
-                                AppTheme.accentColor
+                                context.nexusTheme.accentPrimary,
+                                context.nexusTheme.accentSecondary
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
@@ -853,7 +855,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                             borderRadius: BorderRadius.circular(r.s(24)),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.primaryColor
+                                color: context.nexusTheme.accentPrimary
                                     .withValues(alpha: 0.5),
                                 blurRadius: 8,
                                 spreadRadius: 1,
@@ -862,7 +864,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                             ],
                           ),
                           child: Icon(Icons.send_rounded,
-                              color: context.textPrimary, size: r.s(24)),
+                              color: context.nexusTheme.textPrimary, size: r.s(24)),
                         ),
                       ),
                     ],
@@ -881,7 +883,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                         boxShadow: [
                           BoxShadow(
                             color:
-                                AppTheme.primaryColor.withValues(alpha: 0.05),
+                                context.nexusTheme.accentPrimary.withValues(alpha: 0.05),
                             blurRadius: 6,
                             spreadRadius: 1,
                             offset: const Offset(0, 2),
@@ -906,14 +908,14 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                                   style: TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: r.fs(14),
-                                      color: context.textPrimary),
+                                      color: context.nexusTheme.textPrimary),
                                 ),
                                 SizedBox(height: r.s(4)),
                                 Text(
                                   item['content'] as String? ?? '',
                                   style: TextStyle(
                                       fontSize: r.fs(14),
-                                      color: context.textPrimary),
+                                      color: context.nexusTheme.textPrimary),
                                 ),
                               ],
                             ),

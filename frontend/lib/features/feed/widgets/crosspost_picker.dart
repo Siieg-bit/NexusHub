@@ -5,6 +5,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Picker de comunidade destino para Crosspost — estilo Amino.
 ///
@@ -98,12 +100,12 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
           Row(
             children: [
               Icon(Icons.share_rounded,
-                  color: AppTheme.accentColor, size: r.s(20)),
+                  color: context.nexusTheme.accentSecondary, size: r.s(20)),
               SizedBox(width: r.s(8)),
               Text(
                 'Crosspost para:',
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontWeight: FontWeight.w700,
                   fontSize: r.fs(15),
                 ),
@@ -115,7 +117,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
                   child: Text(
                     s.change,
                     style: TextStyle(
-                      color: AppTheme.accentColor,
+                      color: context.nexusTheme.accentSecondary,
                       fontWeight: FontWeight.w600,
                       fontSize: r.fs(13),
                     ),
@@ -141,9 +143,9 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
     return Container(
       padding: EdgeInsets.all(r.s(12)),
       decoration: BoxDecoration(
-        color: AppTheme.accentColor.withValues(alpha: 0.1),
+        color: context.nexusTheme.accentSecondary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(r.s(12)),
-        border: Border.all(color: AppTheme.accentColor.withValues(alpha: 0.3)),
+        border: Border.all(color: context.nexusTheme.accentSecondary.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -153,7 +155,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
             height: r.s(40),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(r.s(10)),
-              color: AppTheme.primaryColor.withValues(alpha: 0.2),
+              color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
               image: community['icon_url'] != null
                   ? DecorationImage(
                       image: CachedNetworkImageProvider(
@@ -164,7 +166,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
             ),
             child: community['icon_url'] == null
                 ? Icon(Icons.groups_rounded,
-                    color: AppTheme.accentColor, size: r.s(20))
+                    color: context.nexusTheme.accentSecondary, size: r.s(20))
                 : null,
           ),
           SizedBox(width: r.s(12)),
@@ -175,7 +177,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
                 Text(
                   community['name'] as String? ?? s.community,
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(14),
                   ),
@@ -191,7 +193,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
             ),
           ),
           Icon(Icons.check_circle_rounded,
-              color: AppTheme.accentColor, size: r.s(22)),
+              color: context.nexusTheme.accentSecondary, size: r.s(22)),
         ],
       ),
     );
@@ -207,7 +209,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
           color: Colors.white.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(r.s(12)),
           border: Border.all(
-            color: AppTheme.accentColor.withValues(alpha: 0.3),
+            color: context.nexusTheme.accentSecondary.withValues(alpha: 0.3),
             style: BorderStyle.solid,
           ),
         ),
@@ -215,12 +217,12 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.add_circle_outline_rounded,
-                color: AppTheme.accentColor, size: r.s(22)),
+                color: context.nexusTheme.accentSecondary, size: r.s(22)),
             SizedBox(width: r.s(8)),
             Text(
               'Selecionar comunidade destino',
               style: TextStyle(
-                color: AppTheme.accentColor,
+                color: context.nexusTheme.accentSecondary,
                 fontWeight: FontWeight.w600,
                 fontSize: r.fs(14),
               ),
@@ -236,7 +238,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
     final r = context.r;
     showModalBottomSheet(
       context: context,
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -264,7 +266,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
               child: Text(
                 'Selecionar Comunidade',
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontWeight: FontWeight.w800,
                   fontSize: r.fs(18),
                 ),
@@ -276,7 +278,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
               child: _loading
                   ? const Center(
                       child: CircularProgressIndicator(
-                          color: AppTheme.accentColor))
+                          color: context.nexusTheme.accentSecondary))
                   : _loadError != null
                       ? Center(
                           child: Column(
@@ -353,7 +355,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
                                       decoration: BoxDecoration(
                                         borderRadius:
                                             BorderRadius.circular(r.s(10)),
-                                        color: AppTheme.primaryColor
+                                        color: context.nexusTheme.accentPrimary
                                             .withValues(alpha: 0.2),
                                         image: c['icon_url'] != null
                                             ? DecorationImage(
@@ -368,14 +370,14 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
                                       ),
                                       child: c['icon_url'] == null
                                           ? Icon(Icons.groups_rounded,
-                                              color: AppTheme.accentColor,
+                                              color: context.nexusTheme.accentSecondary,
                                               size: r.s(22))
                                           : null,
                                     ),
                                     title: Text(
                                       c['name'] as String? ?? '',
                                       style: TextStyle(
-                                        color: context.textPrimary,
+                                        color: context.nexusTheme.textPrimary,
                                         fontWeight: FontWeight.w700,
                                       ),
                                     ),
@@ -388,7 +390,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
                                     trailing: Icon(
                                         Icons.arrow_forward_ios_rounded,
                                         size: r.s(16),
-                                        color: context.textHint),
+                                        color: context.nexusTheme.textHint),
                                   ),
                                 );
                               },

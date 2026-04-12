@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
+import '../../config/nexus_theme_extension.dart';
 import '../utils/responsive.dart';
 
 /// Widget de shimmer/skeleton loading para exibir enquanto dados carregam.
@@ -42,9 +43,9 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseColor = isDark ? context.cardBg : const Color(0xFFE0E0E8);
-    final highlightColor = isDark ? context.cardBgAlt : const Color(0xFFF5F5F8);
+    final nexusTheme = context.nexusTheme;
+    final baseColor = nexusTheme.shimmerBase;
+    final highlightColor = nexusTheme.shimmerHighlight;
 
     return AnimatedBuilder(
       animation: _animation,
@@ -81,12 +82,11 @@ class ShimmerBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: isDark ? context.cardBg : const Color(0xFFE0E0E8),
+        color: context.nexusTheme.shimmerBase,
         borderRadius: BorderRadius.circular(borderRadius),
       ),
     );
@@ -101,12 +101,11 @@ class ShimmerCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: isDark ? context.cardBg : const Color(0xFFE0E0E8),
+        color: context.nexusTheme.shimmerBase,
         shape: BoxShape.circle,
       ),
     );
@@ -125,7 +124,7 @@ class PostCardSkeleton extends StatelessWidget {
         margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
         padding: EdgeInsets.all(r.s(16)),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(16)),
         ),
         child: Column(
@@ -219,7 +218,7 @@ class CommunityCardSkeleton extends StatelessWidget {
         width: r.s(140),
         margin: EdgeInsets.only(right: r.s(12)),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(16)),
         ),
         child: Column(

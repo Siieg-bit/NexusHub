@@ -12,6 +12,8 @@ import '../../../core/widgets/amino_particles_bg.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/notification_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Provider para busca de comunidades.
 final searchCommunitiesProvider =
@@ -212,7 +214,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 // 1. Ver detalhes
                 ListTile(
                   leading: Icon(Icons.info_outline_rounded,
-                      color: AppTheme.accentColor, size: r.s(22)),
+                      color: context.nexusTheme.accentSecondary, size: r.s(22)),
                   title: Text(
                     'Ver detalhes da comunidade',
                     style: TextStyle(
@@ -228,7 +230,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 // 2. Reordenar
                 ListTile(
                   leading: Icon(Icons.swap_vert_rounded,
-                      color: AppTheme.aminoPurple, size: r.s(22)),
+                      color: context.nexusTheme.accentPrimary, size: r.s(22)),
                   title: Text(
                     'Reordenar comunidades',
                     style: TextStyle(
@@ -242,7 +244,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       SnackBar(
                         content: const Text(
                             'Segure e arraste os cards para reordenar suas comunidades.'),
-                        backgroundColor: AppTheme.accentColor,
+                        backgroundColor: context.nexusTheme.accentSecondary,
                         behavior: SnackBarBehavior.floating,
                         duration: const Duration(seconds: 3),
                       ),
@@ -252,11 +254,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 // 3. Sair
                 ListTile(
                   leading: Icon(Icons.exit_to_app_rounded,
-                      color: AppTheme.errorColor, size: r.s(22)),
+                      color: context.nexusTheme.error, size: r.s(22)),
                   title: Text(
                     s.leaveCommunity,
                     style: TextStyle(
-                        color: AppTheme.errorColor,
+                        color: context.nexusTheme.error,
                         fontSize: r.fs(14),
                         fontWeight: FontWeight.w600),
                   ),
@@ -304,7 +306,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(s.leaveCommunity,
                   style: TextStyle(
-                      color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
+                      color: context.nexusTheme.error, fontWeight: FontWeight.w700)),
             ),
           ],
         );
@@ -327,7 +329,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(s.leftCommunityMsg(community.name)),
-              backgroundColor: AppTheme.accentColor,
+              backgroundColor: context.nexusTheme.accentSecondary,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -338,7 +340,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             SnackBar(
               content:
                   const Text('Erro ao sair da comunidade. Tente novamente.'),
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: context.nexusTheme.error,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -352,7 +354,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       body: AminoParticlesBg(
         child: Column(
           children: [
@@ -370,12 +372,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               child: _isLoading
                   ? const Center(
                       child: CircularProgressIndicator(
-                        color: AppTheme.accentColor,
+                        color: context.nexusTheme.accentSecondary,
                         strokeWidth: 2.5,
                       ),
                     )
                   : RefreshIndicator(
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                       onRefresh: _loadData,
                       child: ListView(
                         padding: EdgeInsets.only(
@@ -475,7 +477,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   margin: EdgeInsets.symmetric(horizontal: r.s(4)),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(r.s(12)),
-                    color: context.cardBg,
+                    color: context.nexusTheme.surfacePrimary,
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: Stack(
@@ -488,7 +490,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           imageUrl: community.bannerUrl ?? '',
                           fit: BoxFit.cover,
                           placeholder: (_, __) => Container(
-                            color: context.cardBg,
+                            color: context.nexusTheme.surfacePrimary,
                           ),
                           errorWidget: (_, __, ___) => Container(
                             decoration: BoxDecoration(
@@ -546,7 +548,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               height: r.s(36),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(r.s(10)),
-                                color: context.cardBg,
+                                color: context.nexusTheme.surfacePrimary,
                               ),
                               clipBehavior: Clip.antiAlias,
                               child: community.iconUrl != null &&
@@ -556,7 +558,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                       fit: BoxFit.cover,
                                     )
                                   : Icon(Icons.groups_rounded,
-                                      color: context.textHint, size: r.s(20)),
+                                      color: context.nexusTheme.textHint, size: r.s(20)),
                             ),
                             SizedBox(width: r.s(10)),
                             Expanded(
@@ -590,7 +592,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: r.s(16), vertical: r.s(8)),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryColor,
+                                color: context.nexusTheme.accentPrimary,
                                 borderRadius: BorderRadius.circular(r.s(20)),
                               ),
                               child: Text(
@@ -626,7 +628,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               decoration: BoxDecoration(
                 color: _currentBanner == i
                     ? Colors.white
-                    : context.textHint.withValues(alpha: 0.4),
+                    : context.nexusTheme.textHint.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(r.s(3)),
               ),
             ),
@@ -652,7 +654,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               style: TextStyle(
                   fontSize: r.fs(18),
                   fontWeight: FontWeight.w700,
-                  color: context.textPrimary)),
+                  color: context.nexusTheme.textPrimary)),
           if (onSeeAll != null)
             GestureDetector(
               onTap: onSeeAll,
@@ -660,12 +662,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 children: [
                   Text(s.seeAll2,
                       style: TextStyle(
-                          color: AppTheme.accentColor,
+                          color: context.nexusTheme.accentSecondary,
                           fontSize: r.fs(13),
                           fontWeight: FontWeight.w600)),
                   const SizedBox(width: 2),
                   Icon(Icons.chevron_right_rounded,
-                      color: AppTheme.accentColor, size: r.s(18)),
+                      color: context.nexusTheme.accentSecondary, size: r.s(18)),
                 ],
               ),
             ),
@@ -678,7 +680,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return AppTheme.aminoPurple;
+      return context.nexusTheme.accentPrimary;
     }
   }
 }
@@ -699,7 +701,7 @@ class _MyCommunityCard extends StatelessWidget {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return AppTheme.aminoPurple;
+      return context.nexusTheme.accentPrimary;
     }
   }
 
@@ -716,7 +718,7 @@ class _MyCommunityCard extends StatelessWidget {
         margin: EdgeInsets.only(right: r.s(12)),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(r.s(12)),
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
@@ -787,7 +789,7 @@ class _MyCommunityCard extends StatelessWidget {
                   height: r.s(44),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(r.s(12)),
-                    color: context.cardBg.withValues(alpha: 0.8),
+                    color: context.nexusTheme.surfacePrimary.withValues(alpha: 0.8),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.2),
                       width: 1,
@@ -800,7 +802,7 @@ class _MyCommunityCard extends StatelessWidget {
                           fit: BoxFit.cover,
                         )
                       : Icon(Icons.groups_rounded,
-                          color: context.textHint, size: r.s(22)),
+                          color: context.nexusTheme.textHint, size: r.s(22)),
                 ),
               ),
             ),
@@ -862,7 +864,7 @@ class _NewCommunityCard extends ConsumerWidget {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return AppTheme.aminoPurple;
+      return context.nexusTheme.accentPrimary;
     }
   }
 
@@ -877,7 +879,7 @@ class _NewCommunityCard extends ConsumerWidget {
         margin: EdgeInsets.only(right: r.s(12)),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(r.s(12)),
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
@@ -927,7 +929,7 @@ class _NewCommunityCard extends ConsumerWidget {
                 padding:
                     EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(3)),
                 decoration: BoxDecoration(
-                  color: AppTheme.successColor,
+                  color: context.nexusTheme.success,
                   borderRadius: BorderRadius.circular(r.s(6)),
                 ),
                 child: Text(
@@ -953,7 +955,7 @@ class _NewCommunityCard extends ConsumerWidget {
                     height: r.s(32),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(r.s(8)),
-                      color: context.cardBg,
+                      color: context.nexusTheme.surfacePrimary,
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: community.iconUrl != null &&
@@ -963,7 +965,7 @@ class _NewCommunityCard extends ConsumerWidget {
                             fit: BoxFit.cover,
                           )
                         : Icon(Icons.groups_rounded,
-                            color: context.textHint, size: r.s(16)),
+                            color: context.nexusTheme.textHint, size: r.s(16)),
                   ),
                   SizedBox(width: r.s(8)),
                   Expanded(
@@ -1024,7 +1026,7 @@ class _ForYouPostTile extends ConsumerWidget {
         margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
         padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
-          color: context.cardBg.withValues(alpha: 0.6),
+          color: context.nexusTheme.surfacePrimary.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(r.s(12)),
         ),
         child: Row(
@@ -1068,7 +1070,7 @@ class _ForYouPostTile extends ConsumerWidget {
                           child: Text(
                             community['name'] as String? ?? '',
                             style: TextStyle(
-                              color: context.textHint,
+                              color: context.nexusTheme.textHint,
                               fontSize: r.fs(10),
                               fontWeight: FontWeight.w600,
                             ),
@@ -1086,7 +1088,7 @@ class _ForYouPostTile extends ConsumerWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: r.fs(14),
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -1098,7 +1100,7 @@ class _ForYouPostTile extends ConsumerWidget {
                     Text(
                       content,
                       style: TextStyle(
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                         fontSize: r.fs(12),
                         height: 1.3,
                       ),
@@ -1113,7 +1115,7 @@ class _ForYouPostTile extends ConsumerWidget {
                         CircleAvatar(
                           radius: 10,
                           backgroundColor:
-                              AppTheme.primaryColor.withValues(alpha: 0.2),
+                              context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                           backgroundImage: author['icon_url'] != null
                               ? CachedNetworkImageProvider(
                                   author['icon_url'] as String? ?? '')
@@ -1123,7 +1125,7 @@ class _ForYouPostTile extends ConsumerWidget {
                                   ((author['nickname'] as String?) ?? '?')[0]
                                       .toUpperCase(),
                                   style: TextStyle(
-                                    color: AppTheme.primaryColor,
+                                    color: context.nexusTheme.accentPrimary,
                                     fontWeight: FontWeight.w800,
                                     fontSize: r.fs(8),
                                   ),
@@ -1135,7 +1137,7 @@ class _ForYouPostTile extends ConsumerWidget {
                           child: Text(
                             author['nickname'] as String? ?? '',
                             style: TextStyle(
-                              color: context.textHint,
+                              color: context.nexusTheme.textHint,
                               fontSize: r.fs(11),
                               fontWeight: FontWeight.w500,
                             ),
@@ -1146,18 +1148,18 @@ class _ForYouPostTile extends ConsumerWidget {
                         SizedBox(width: r.s(8)),
                       ],
                       Icon(Icons.favorite_rounded,
-                          size: r.s(12), color: context.textHint),
+                          size: r.s(12), color: context.nexusTheme.textHint),
                       const SizedBox(width: 2),
                       Text('$likesCount',
                           style: TextStyle(
-                              color: context.textHint, fontSize: r.fs(11))),
+                              color: context.nexusTheme.textHint, fontSize: r.fs(11))),
                       SizedBox(width: r.s(8)),
                       Icon(Icons.chat_bubble_rounded,
-                          size: r.s(12), color: context.textHint),
+                          size: r.s(12), color: context.nexusTheme.textHint),
                       const SizedBox(width: 2),
                       Text('$commentsCount',
                           style: TextStyle(
-                              color: context.textHint, fontSize: r.fs(11))),
+                              color: context.nexusTheme.textHint, fontSize: r.fs(11))),
                     ],
                   ),
                 ],
@@ -1185,7 +1187,7 @@ class _RecommendedCommunityTile extends ConsumerWidget {
         margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
         padding: EdgeInsets.all(r.s(10)),
         decoration: BoxDecoration(
-          color: context.cardBg.withValues(alpha: 0.6),
+          color: context.nexusTheme.surfacePrimary.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(r.s(12)),
         ),
         child: Row(
@@ -1203,7 +1205,7 @@ class _RecommendedCommunityTile extends ConsumerWidget {
                   ? CachedNetworkImage(
                       imageUrl: community.iconUrl ?? '', fit: BoxFit.cover)
                   : Icon(Icons.groups_rounded,
-                      color: context.textHint, size: r.s(24)),
+                      color: context.nexusTheme.textHint, size: r.s(24)),
             ),
             SizedBox(width: r.s(12)),
             // Info
@@ -1215,12 +1217,12 @@ class _RecommendedCommunityTile extends ConsumerWidget {
                       style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: r.fs(14),
-                          color: context.textPrimary)),
+                          color: context.nexusTheme.textPrimary)),
                   const SizedBox(height: 2),
                   Text(
                     '${formatCount(community.membersCount)} membros',
                     style: TextStyle(
-                        color: context.textSecondary, fontSize: r.fs(12)),
+                        color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
                   ),
                 ],
               ),
@@ -1230,7 +1232,7 @@ class _RecommendedCommunityTile extends ConsumerWidget {
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(7)),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: Text(

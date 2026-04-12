@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Preview de resposta exibido acima da barra de input quando o usuário
 /// seleciona "Responder" em uma mensagem.
@@ -30,7 +32,7 @@ class ChatReplyPreview extends StatelessWidget {
             width: r.s(3),
             height: r.s(32),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor,
+              color: context.nexusTheme.accentPrimary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -43,7 +45,7 @@ class ChatReplyPreview extends StatelessWidget {
                 Text(
                   replyingTo.author?.nickname ?? 'User',
                   style: TextStyle(
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                       fontSize: r.fs(12),
                       fontWeight: FontWeight.w600),
                 ),

@@ -7,6 +7,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de check-in diário com gamificação — Estilo Amino Apps.
 class CheckInScreen extends ConsumerStatefulWidget {
@@ -118,7 +120,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               SnackBar(
                 content: Text(
                     ref.read(stringsProvider).streakRestoredMsg(_consecutiveDays)),
-                backgroundColor: AppTheme.primaryColor,
+                backgroundColor: context.nexusTheme.accentPrimary,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(r.s(10))),
@@ -131,7 +133,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               SnackBar(
                 content:
                     Text(data['message'] as String? ?? ref.read(stringsProvider).insufficientCoins),
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(r.s(10))),
@@ -145,7 +147,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.anErrorOccurredTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(r.s(10))),
@@ -183,7 +185,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               SnackBar(
                 content: Text(
                     data['message'] as String? ?? s.alreadyCheckedInToday),
-                backgroundColor: AppTheme.warningColor,
+                backgroundColor: context.nexusTheme.warning,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(r.s(10))),
@@ -197,7 +199,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.anErrorOccurredTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(r.s(10))),
@@ -214,20 +216,20 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_rounded,
-              color: context.textPrimary, size: r.s(20)),
+              color: context.nexusTheme.textPrimary, size: r.s(20)),
           onPressed: () => context.pop(),
         ),
         title: Text(s.dailyCheckIn2,
             style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: r.fs(18),
-                color: context.textPrimary)),
+                color: context.nexusTheme.textPrimary)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -267,7 +269,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               style: TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: r.fs(24),
-                  color: context.textPrimary),
+                  color: context.nexusTheme.textPrimary),
             ),
             SizedBox(height: r.s(8)),
             Text(
@@ -317,10 +319,10 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   color: context.surfaceColor,
                   borderRadius: BorderRadius.circular(r.s(16)),
                   border: Border.all(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2)),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
                       blurRadius: 12,
                     ),
                   ],
@@ -331,7 +333,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: r.fs(16),
-                            color: context.textPrimary)),
+                            color: context.nexusTheme.textPrimary)),
                     SizedBox(height: r.s(16)),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -339,7 +341,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                         _RewardItem(
                           icon: Icons.star_rounded,
                           label: s.xpEarnedLabel(_xpEarned),
-                          color: AppTheme.primaryColor,
+                          color: context.nexusTheme.accentPrimary,
                         ),
                         Container(
                           width: 1,
@@ -349,7 +351,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                         _RewardItem(
                           icon: Icons.monetization_on_rounded,
                           label: s.coinsEarnedLabel(_coinsEarned),
-                          color: AppTheme.warningColor,
+                          color: context.nexusTheme.warning,
                         ),
                       ],
                     ),
@@ -442,7 +444,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   Text(s.howItWorks,
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          color: context.textPrimary)),
+                          color: context.nexusTheme.textPrimary)),
                   SizedBox(height: r.s(10)),
                   _InfoRow(
                       icon: Icons.calendar_today_rounded,
@@ -475,14 +477,14 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
         shape: BoxShape.circle,
         gradient: LinearGradient(
           colors: completed
-              ? [AppTheme.primaryColor, AppTheme.accentColor]
+              ? [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary]
               : [const Color(0xFFFF9800), const Color(0xFFFF5722)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: (completed ? AppTheme.primaryColor : const Color(0xFFFF9800))
+            color: (completed ? context.nexusTheme.accentPrimary : const Color(0xFFFF9800))
                 .withValues(alpha: 0.4),
             blurRadius: 24,
             spreadRadius: 4,
@@ -507,12 +509,12 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.warningColor.withValues(alpha: 0.1),
-            AppTheme.accentColor.withValues(alpha: 0.08),
+            context.nexusTheme.warning.withValues(alpha: 0.1),
+            context.nexusTheme.accentSecondary.withValues(alpha: 0.08),
           ],
         ),
         borderRadius: BorderRadius.circular(r.s(16)),
-        border: Border.all(color: AppTheme.warningColor.withValues(alpha: 0.2)),
+        border: Border.all(color: context.nexusTheme.warning.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -520,20 +522,20 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.casino_rounded,
-                  color: AppTheme.warningColor, size: r.s(20)),
+                  color: context.nexusTheme.warning, size: r.s(20)),
               SizedBox(width: r.s(8)),
               Text(s.luckyDraw,
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: r.fs(16),
-                      color: context.textPrimary)),
+                      color: context.nexusTheme.textPrimary)),
             ],
           ),
           SizedBox(height: r.s(10)),
           if (_luckyDrawUsed && _luckyDrawPrize > 0)
             Text(s.wonExtraCoins(_luckyDrawPrize),
                 style: const TextStyle(
-                    color: AppTheme.primaryColor, fontWeight: FontWeight.w700))
+                    color: context.nexusTheme.accentPrimary, fontWeight: FontWeight.w700))
           else if (_luckyDrawUsed)
             Text(s.betterLuckNextTime,
                 style: TextStyle(color: Colors.grey[500]))
@@ -586,9 +588,9 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     return Container(
       padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
-        color: AppTheme.errorColor.withValues(alpha: 0.06),
+        color: context.nexusTheme.error.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(r.s(16)),
-        border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.15)),
+        border: Border.all(color: context.nexusTheme.error.withValues(alpha: 0.15)),
       ),
       child: Column(
         children: [
@@ -596,13 +598,13 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.build_circle_rounded,
-                  color: AppTheme.errorColor, size: r.s(20)),
+                  color: context.nexusTheme.error, size: r.s(20)),
               SizedBox(width: r.s(8)),
               Text(s.streakLost,
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: r.fs(16),
-                      color: context.textPrimary)),
+                      color: context.nexusTheme.textPrimary)),
             ],
           ),
           SizedBox(height: r.s(8)),
@@ -618,11 +620,11 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(20), vertical: r.s(10)),
               decoration: BoxDecoration(
-                color: AppTheme.errorColor,
+                color: context.nexusTheme.error,
                 borderRadius: BorderRadius.circular(r.s(12)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.errorColor.withValues(alpha: 0.3),
+                    color: context.nexusTheme.error.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -678,7 +680,7 @@ class _DayCircle extends ConsumerWidget {
         shape: BoxShape.circle,
         gradient: active
             ? const LinearGradient(
-                colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
@@ -695,7 +697,7 @@ class _DayCircle extends ConsumerWidget {
         boxShadow: active
             ? [
                 BoxShadow(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                   blurRadius: 6,
                 ),
               ]

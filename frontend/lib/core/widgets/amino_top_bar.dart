@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/app_theme.dart';
+import '../../config/nexus_theme_extension.dart';
 import '../l10n/locale_provider.dart';
 import '../utils/responsive.dart';
 import '../l10n/app_strings.dart';
@@ -59,7 +60,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
       child: Container(
         height: r.s(50),
         padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
-        color: context.scaffoldBg,
+        color: context.nexusTheme.backgroundPrimary,
         child: Row(
           children: [
             // ── Avatar circular 30px ──
@@ -95,7 +96,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
         height: r.s(30),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.08),
             width: 1,
@@ -120,7 +121,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
   Widget _avatarPlaceholder(BuildContext context) {
     final r = context.r;
     return Container(
-      color: context.cardBg,
+      color: context.nexusTheme.surfacePrimary,
       child: Icon(
         Icons.person,
         color: Colors.white.withValues(alpha: 0.30),
@@ -139,7 +140,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
       child: Container(
         height: r.s(32),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: context.nexusTheme.inputBackground.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(r.s(16)),
         ),
         padding: EdgeInsets.symmetric(horizontal: r.s(10)),
@@ -154,7 +155,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
                   children: [
                     Icon(
                       Icons.search_rounded,
-                      color: Colors.white.withValues(alpha: 0.40),
+                      color: context.nexusTheme.textHint,
                       size: r.s(17),
                     ),
                     SizedBox(width: r.s(6)),
@@ -162,7 +163,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
                       child: Text(
                         s.search,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.35),
+                          color: context.nexusTheme.textHint,
                           fontSize: r.fs(13),
                           fontWeight: FontWeight.w400,
                         ),
@@ -179,7 +180,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: r.s(4), vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.06),
+                  color: context.nexusTheme.surfaceSecondary.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(r.s(8)),
                 ),
                 child: Row(
@@ -188,14 +189,14 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
                     Text(
                       currentLocale.code.toUpperCase(),
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.65),
+                        color: context.nexusTheme.textSecondary,
                         fontSize: r.fs(10),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Icon(
                       Icons.arrow_drop_down_rounded,
-                      color: Colors.white.withValues(alpha: 0.45),
+                      color: context.nexusTheme.textHint,
                       size: r.s(14),
                     ),
                   ],
@@ -223,7 +224,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
         offset.dx + box.size.width,
         0,
       ),
-      color: const Color(0xFF1E2A3A),
+      color: context.nexusTheme.surfacePrimary,
       shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
       items: AppLocale.values.map((locale) {
@@ -277,7 +278,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
               child: Container(
                 height: r.s(26),
                 padding: EdgeInsets.only(left: r.s(5), right: r.s(5)),
-                color: const Color(0xFF4FC3F7),
+                color: context.nexusTheme.walletGradient.colors.first,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -332,7 +333,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
               child: Container(
                 height: r.s(26),
                 width: r.s(26),
-                color: const Color(0xFF1565C0),
+                color: context.nexusTheme.accentPrimary,
                 child: Center(
                   child: Icon(
                     Icons.add_rounded,
@@ -361,7 +362,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
             Center(
               child: Icon(
                 Icons.notifications_none_rounded,
-                color: Colors.white.withValues(alpha: 0.85),
+                color: context.nexusTheme.appBarForeground.withValues(alpha: 0.85),
                 size: r.s(22),
               ),
             ),
@@ -375,10 +376,10 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
                         padding: EdgeInsets.symmetric(
                             horizontal: r.s(4), vertical: r.s(1)),
                         decoration: BoxDecoration(
-                          color: AppTheme.aminoRed,
+                          color: context.nexusTheme.error,
                           borderRadius: BorderRadius.circular(r.s(8)),
                           border: Border.all(
-                            color: context.scaffoldBg,
+                            color: context.nexusTheme.backgroundPrimary,
                             width: 1.5,
                           ),
                         ),
@@ -402,10 +403,10 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
                         width: r.s(8),
                         height: r.s(8),
                         decoration: BoxDecoration(
-                          color: AppTheme.aminoRed,
+                          color: context.nexusTheme.error,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: context.scaffoldBg,
+                            color: context.nexusTheme.backgroundPrimary,
                             width: 1,
                           ),
                         ),

@@ -9,6 +9,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/call_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// ============================================================================
 /// CallScreen — UI de chamada com Agora.io RTC real.
@@ -147,7 +149,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
         : isVideo
             ? 'Video Chat'
             : 'Voice Chat';
-    final bgColor = context.scaffoldBg;
+    final bgColor = context.nexusTheme.backgroundPrimary;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -225,7 +227,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.arrow_back_rounded, color: context.textPrimary),
+            icon: Icon(Icons.arrow_back_rounded, color: context.nexusTheme.textPrimary),
             onPressed: () => Navigator.of(context).pop(),
           ),
           const Spacer(),
@@ -233,7 +235,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
             children: [
               Text(title,
                   style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(18),
                       fontWeight: FontWeight.w800)),
               Row(
@@ -243,7 +245,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                     width: r.s(8),
                     height: r.s(8),
                     decoration: const BoxDecoration(
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -260,18 +262,18 @@ class _CallScreenState extends ConsumerState<CallScreen> {
             padding:
                 EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.2),
+              color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(r.s(20)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.people_rounded,
-                    color: AppTheme.primaryColor, size: r.s(16)),
+                    color: context.nexusTheme.accentPrimary, size: r.s(16)),
                 SizedBox(width: r.s(4)),
                 Text('${_participants.length + _remoteUsers.length}',
                     style: const TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         fontWeight: FontWeight.w700)),
               ],
             ),
@@ -287,7 +289,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     final r = context.r;
     if (CallService.engine == null) {
       return const Center(
-        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+        child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
       );
     }
 
@@ -347,7 +349,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(color: AppTheme.primaryColor),
+            const CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
             SizedBox(height: r.s(16)),
             Text('Aguardando participantes...',
                 style: TextStyle(color: Colors.grey[500])),
@@ -386,12 +388,12 @@ class _CallScreenState extends ConsumerState<CallScreen> {
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(r.s(16)),
         border: isSpeaking
-            ? Border.all(color: AppTheme.primaryColor, width: 2.5)
+            ? Border.all(color: context.nexusTheme.accentPrimary, width: 2.5)
             : Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
         boxShadow: isSpeaking
             ? [
                 BoxShadow(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                   blurRadius: 12,
                   spreadRadius: 2,
                 )
@@ -407,14 +409,14 @@ class _CallScreenState extends ConsumerState<CallScreen> {
             children: [
               CircleAvatar(
                 radius: 36,
-                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
+                backgroundColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                 backgroundImage: iconUrl != null
                     ? CachedNetworkImageProvider(iconUrl)
                     : null,
                 child: iconUrl == null
                     ? Text(nickname[0].toUpperCase(),
                         style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontSize: r.fs(28),
                             fontWeight: FontWeight.w800))
                     : null,
@@ -424,7 +426,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                   width: r.s(20),
                   height: r.s(20),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor,
+                    color: context.nexusTheme.accentPrimary,
                     shape: BoxShape.circle,
                     border: Border.all(color: context.surfaceColor, width: 2),
                   ),
@@ -436,7 +438,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
           SizedBox(height: r.s(12)),
           Text(nickname,
               style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(14),
                   fontWeight: FontWeight.w700)),
           SizedBox(height: r.s(4)),
@@ -447,7 +449,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                 width: r.s(8),
                 height: r.s(8),
                 decoration: const BoxDecoration(
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -479,17 +481,17 @@ class _CallScreenState extends ConsumerState<CallScreen> {
         children: [
           CircleAvatar(
             radius: 48,
-            backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
+            backgroundColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
             child: Text(name[0].toUpperCase(),
                 style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(36),
                     fontWeight: FontWeight.w800)),
           ),
           SizedBox(height: r.s(16)),
           Text(name,
               style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(18),
                   fontWeight: FontWeight.w700)),
         ],
@@ -610,7 +612,7 @@ class _AudioLevelBar extends ConsumerWidget {
           margin: const EdgeInsets.symmetric(horizontal: 1),
           decoration: BoxDecoration(
             color: isActive
-                ? AppTheme.primaryColor
+                ? context.nexusTheme.accentPrimary
                 : Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(2),
           ),
@@ -648,16 +650,16 @@ class _ControlButton extends ConsumerWidget {
             height: r.s(56),
             decoration: BoxDecoration(
               color: isEnd
-                  ? AppTheme.errorColor
+                  ? context.nexusTheme.error
                   : isActive
-                      ? AppTheme.primaryColor.withValues(alpha: 0.15)
+                      ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
                       : Colors.white.withValues(alpha: 0.05),
               shape: BoxShape.circle,
               border: Border.all(
                 color: isEnd
                     ? Colors.transparent
                     : isActive
-                        ? AppTheme.primaryColor.withValues(alpha: 0.5)
+                        ? context.nexusTheme.accentPrimary.withValues(alpha: 0.5)
                         : Colors.white.withValues(alpha: 0.05),
                 width: 1,
               ),
@@ -666,14 +668,14 @@ class _ControlButton extends ConsumerWidget {
                 color: isEnd
                     ? Colors.white
                     : isActive
-                        ? AppTheme.primaryColor
+                        ? context.nexusTheme.accentPrimary
                         : Colors.grey[500],
                 size: r.s(24)),
           ),
           SizedBox(height: r.s(6)),
           Text(label,
               style: TextStyle(
-                  color: isEnd ? AppTheme.errorColor : Colors.grey[500],
+                  color: isEnd ? context.nexusTheme.error : Colors.grey[500],
                   fontSize: r.fs(11),
                   fontWeight: FontWeight.w700)),
         ],

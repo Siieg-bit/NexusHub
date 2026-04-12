@@ -5,6 +5,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Configurações de Privacidade — Controles de quem pode ver perfil, enviar DM, etc.
 /// Réplica 1:1 das opções de privacidade do Amino.
@@ -139,7 +141,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -147,10 +149,10 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
           s.privacy,
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
           ),
         ),
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         actions: [
           GestureDetector(
             onTap: _saveSettings,
@@ -161,12 +163,12 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                  colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 ),
                 borderRadius: BorderRadius.circular(r.s(20)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -187,7 +189,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor))
+              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : ListView(
               padding: EdgeInsets.all(r.s(16)),
               children: [
@@ -331,7 +333,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: r.fs(14),
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                         ),
                       ),
                       SizedBox(height: r.s(12)),
@@ -375,11 +377,11 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                     children: [
                       ListTile(
                         leading: const Icon(Icons.download_rounded,
-                            color: AppTheme.primaryColor),
+                            color: context.nexusTheme.accentPrimary),
                         title: Text(
                           s.exportMyData,
                           style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -408,7 +410,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                         title: Text(
                           s.blockedUsers2,
                           style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -423,11 +425,11 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                           color: Colors.white.withValues(alpha: 0.05)),
                       ListTile(
                         leading: const Icon(Icons.delete_forever_rounded,
-                            color: AppTheme.errorColor),
+                            color: context.nexusTheme.error),
                         title:  Text(
                           s.deleteAccount2,
                           style: TextStyle(
-                            color: AppTheme.errorColor,
+                            color: context.nexusTheme.error,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -445,7 +447,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                               title: Text(
                                 s.deleteAccount2,
                                 style: TextStyle(
-                                  color: context.textPrimary,
+                                  color: context.nexusTheme.textPrimary,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -475,7 +477,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                                           title: const Text(
                                               'Confirmar Exclus\u00e3o',
                                               style: TextStyle(
-                                                  color: AppTheme.errorColor)),
+                                                  color: context.nexusTheme.error)),
                                           content: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
@@ -487,13 +489,13 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                                               TextField(
                                                 controller: confirmCtrl,
                                                 style: TextStyle(
-                                                    color: context.textPrimary),
+                                                    color: context.nexusTheme.textPrimary),
                                                 decoration: InputDecoration(
                                                   hintText: s.deleteButton,
                                                   hintStyle: TextStyle(
                                                       color: Colors.grey[600]),
                                                   filled: true,
-                                                  fillColor: context.scaffoldBg,
+                                                  fillColor: context.nexusTheme.backgroundPrimary,
                                                   border: OutlineInputBorder(
                                                     borderRadius:
                                                         BorderRadius.circular(
@@ -554,7 +556,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                                               },
                                               style: ElevatedButton.styleFrom(
                                                 backgroundColor:
-                                                    AppTheme.errorColor,
+                                                    context.nexusTheme.error,
                                               ),
                                               child:  Text(
                                                   s.permanentDelete),
@@ -568,12 +570,12 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                                     padding: EdgeInsets.symmetric(
                                         horizontal: r.s(16), vertical: r.s(8)),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.errorColor,
+                                      color: context.nexusTheme.error,
                                       borderRadius:
                                           BorderRadius.circular(r.s(12)),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: AppTheme.errorColor
+                                          color: context.nexusTheme.error
                                               .withValues(alpha: 0.3),
                                           blurRadius: 8,
                                           offset: const Offset(0, 2),
@@ -618,7 +620,7 @@ class _SectionHeader extends ConsumerWidget {
         style: TextStyle(
           fontWeight: FontWeight.w800,
           fontSize: r.fs(16),
-          color: AppTheme.primaryColor,
+          color: context.nexusTheme.accentPrimary,
         ),
       ),
     );
@@ -658,10 +660,10 @@ class _SettingToggle extends ConsumerWidget {
           Container(
             padding: EdgeInsets.all(r.s(8)),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: AppTheme.primaryColor, size: r.s(20)),
+            child: Icon(icon, color: context.nexusTheme.accentPrimary, size: r.s(20)),
           ),
           SizedBox(width: r.s(12)),
           Expanded(
@@ -673,7 +675,7 @@ class _SettingToggle extends ConsumerWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(14),
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -690,8 +692,8 @@ class _SettingToggle extends ConsumerWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppTheme.primaryColor,
-            activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.3),
+            activeColor: context.nexusTheme.accentPrimary,
+            activeTrackColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
             inactiveThumbColor: Colors.grey[500],
             inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
           ),
@@ -726,14 +728,14 @@ class _RadioOption extends ConsumerWidget {
           label,
           style: TextStyle(
             fontSize: r.fs(14),
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontWeight: FontWeight.w500,
           ),
         ),
         value: value,
         groupValue: groupValue,
         onChanged: onChanged,
-        activeColor: AppTheme.primaryColor,
+        activeColor: context.nexusTheme.accentPrimary,
         dense: true,
         contentPadding: EdgeInsets.zero,
       ),

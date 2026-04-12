@@ -9,6 +9,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../repositories/sticker_repository.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de criação de stickers personalizados.
 /// Permite: escolher imagem, adicionar texto, emojis, molduras e bordas.
@@ -157,7 +159,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Figurinha adicionada ao pack!'),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
           ),
         );
         Navigator.pop(context, true);
@@ -178,14 +180,14 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
     final r = context.r;
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         elevation: 0,
         title: Text(
           'Criar Figurinha',
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(17),
             fontWeight: FontWeight.w800,
           ),
@@ -199,13 +201,13 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
                     height: r.s(16),
                     child: const CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                     ),
                   )
                 : Text(
                     'Salvar',
                     style: TextStyle(
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                       fontWeight: FontWeight.w800,
                       fontSize: r.fs(15),
                     ),
@@ -237,12 +239,12 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
             padding: EdgeInsets.symmetric(horizontal: r.s(16)),
             child: TextField(
               controller: _nameCtrl,
-              style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+              style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
               decoration: InputDecoration(
                 hintText: 'Nome da figurinha...',
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 filled: true,
-                fillColor: context.cardBg,
+                fillColor: context.nexusTheme.surfacePrimary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(10)),
                   borderSide: BorderSide.none,
@@ -340,7 +342,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
               Container(
                 color: Colors.black.withValues(alpha: 0.6),
                 child: const Center(
-                  child: CircularProgressIndicator(color: AppTheme.primaryColor),
+                  child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
                 ),
               ),
           ],
@@ -354,7 +356,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
       height: r.s(56),
       margin: EdgeInsets.symmetric(horizontal: r.s(16)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(14)),
       ),
       child: Row(
@@ -411,7 +413,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
       margin: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), 0),
       padding: EdgeInsets.all(r.s(12)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(14)),
       ),
       child: switch (_activeTool) {
@@ -433,7 +435,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
             Expanded(
               child: TextField(
                 controller: _textCtrl,
-                style: TextStyle(color: context.textPrimary, fontSize: r.fs(13)),
+                style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(13)),
                 decoration: InputDecoration(
                   hintText: 'Digite o texto...',
                   hintStyle: TextStyle(color: Colors.grey[600]),
@@ -458,14 +460,14 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
                 padding: EdgeInsets.all(r.s(8)),
                 decoration: BoxDecoration(
                   color: _textBold
-                      ? AppTheme.primaryColor.withValues(alpha: 0.2)
+                      ? context.nexusTheme.accentPrimary.withValues(alpha: 0.2)
                       : context.surfaceColor,
                   borderRadius: BorderRadius.circular(r.s(8)),
                 ),
                 child: Text(
                   'B',
                   style: TextStyle(
-                    color: _textBold ? AppTheme.primaryColor : Colors.grey[500],
+                    color: _textBold ? context.nexusTheme.accentPrimary : Colors.grey[500],
                     fontWeight: FontWeight.w900,
                     fontSize: r.fs(16),
                   ),
@@ -484,7 +486,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
                 value: _textSize,
                 min: 12,
                 max: 48,
-                activeColor: AppTheme.primaryColor,
+                activeColor: context.nexusTheme.accentPrimary,
                 inactiveColor: Colors.grey[700],
                 onChanged: (v) => setState(() => _textSize = v),
               ),
@@ -533,7 +535,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
             child: Container(
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppTheme.primaryColor.withValues(alpha: 0.2)
+                    ? context.nexusTheme.accentPrimary.withValues(alpha: 0.2)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(r.s(6)),
               ),
@@ -572,18 +574,18 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
             decoration: BoxDecoration(
-              color: AppTheme.accentColor.withValues(alpha: 0.1),
+              color: context.nexusTheme.accentSecondary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(r.s(8)),
-              border: Border.all(color: AppTheme.accentColor.withValues(alpha: 0.3)),
+              border: Border.all(color: context.nexusTheme.accentSecondary.withValues(alpha: 0.3)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.image_rounded, color: AppTheme.accentColor, size: r.s(16)),
+                Icon(Icons.image_rounded, color: context.nexusTheme.accentSecondary, size: r.s(16)),
                 SizedBox(width: r.s(6)),
                 Text(
                   _imageBytes != null ? 'Trocar imagem' : 'Usar imagem da galeria',
-                  style: TextStyle(color: AppTheme.accentColor, fontSize: r.fs(12)),
+                  style: TextStyle(color: context.nexusTheme.accentSecondary, fontSize: r.fs(12)),
                 ),
               ],
             ),
@@ -606,7 +608,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
                 min: 0,
                 max: 12,
                 divisions: 12,
-                activeColor: AppTheme.primaryColor,
+                activeColor: context.nexusTheme.accentPrimary,
                 inactiveColor: Colors.grey[700],
                 onChanged: (v) => setState(() {
                   _borderWidth = v;
@@ -647,7 +649,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isSelected
-                          ? AppTheme.primaryColor
+                          ? context.nexusTheme.accentPrimary
                           : Colors.white.withValues(alpha: 0.2),
                       width: isSelected ? 2.5 : 1,
                     ),
@@ -691,14 +693,14 @@ class _ToolButton extends StatelessWidget {
           Icon(
             icon,
             size: r.s(20),
-            color: isActive ? AppTheme.primaryColor : Colors.grey[500],
+            color: isActive ? context.nexusTheme.accentPrimary : Colors.grey[500],
           ),
           SizedBox(height: r.s(2)),
           Text(
             label,
             style: TextStyle(
               fontSize: r.fs(9),
-              color: isActive ? AppTheme.primaryColor : Colors.grey[600],
+              color: isActive ? context.nexusTheme.accentPrimary : Colors.grey[600],
               fontWeight: isActive ? FontWeight.w700 : FontWeight.normal,
             ),
           ),

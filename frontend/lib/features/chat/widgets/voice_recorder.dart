@@ -8,6 +8,8 @@ import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Widget de gravação de Voice Notes — réplica pixel-perfect do Amino.
 ///
@@ -193,7 +195,7 @@ class _VoiceRecorderState extends State<VoiceRecorder>
     return Container(
       padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         border: Border(
           top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
@@ -207,11 +209,11 @@ class _VoiceRecorderState extends State<VoiceRecorder>
               width: r.s(40),
               height: r.s(40),
               decoration: BoxDecoration(
-                color: AppTheme.errorColor.withValues(alpha: 0.15),
+                color: context.nexusTheme.error.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.delete_rounded,
-                  color: AppTheme.errorColor, size: r.s(20)),
+                  color: context.nexusTheme.error, size: r.s(20)),
             ),
           ),
           SizedBox(width: r.s(12)),
@@ -231,11 +233,11 @@ class _VoiceRecorderState extends State<VoiceRecorder>
                         width: r.s(8),
                         height: r.s(8),
                         decoration: BoxDecoration(
-                          color: AppTheme.errorColor,
+                          color: context.nexusTheme.error,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.errorColor.withValues(
+                              color: context.nexusTheme.error.withValues(
                                   alpha: 0.5 * _pulseAnimation.value),
                               blurRadius: 4 * _pulseAnimation.value,
                             ),
@@ -247,7 +249,7 @@ class _VoiceRecorderState extends State<VoiceRecorder>
                     Text(
                       _formatDuration(_seconds),
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(16),
                         fontWeight: FontWeight.w700,
                         fontFeatures: [FontFeature.tabularFigures()],
@@ -264,7 +266,7 @@ class _VoiceRecorderState extends State<VoiceRecorder>
                     size: const Size(double.infinity, 32),
                     painter: _WaveformPainter(
                       amplitudes: _amplitudes,
-                      color: AppTheme.accentColor,
+                      color: context.nexusTheme.accentSecondary,
                     ),
                   ),
                 ),
@@ -280,7 +282,7 @@ class _VoiceRecorderState extends State<VoiceRecorder>
               width: r.s(48),
               height: r.s(48),
               decoration: const BoxDecoration(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
                 shape: BoxShape.circle,
               ),
               child:
@@ -449,8 +451,8 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
     final r = context.r;
     final bgColor = widget.isMine
         ? Colors.white.withValues(alpha: 0.15)
-        : AppTheme.accentColor.withValues(alpha: 0.1);
-    final fgColor = widget.isMine ? Colors.white : AppTheme.accentColor;
+        : context.nexusTheme.accentSecondary.withValues(alpha: 0.1);
+    final fgColor = widget.isMine ? Colors.white : context.nexusTheme.accentSecondary;
 
     // Largura da waveform proporcional à duração do áudio:
     // mínimo 160px, máximo 220px, crescendo 3px por segundo.

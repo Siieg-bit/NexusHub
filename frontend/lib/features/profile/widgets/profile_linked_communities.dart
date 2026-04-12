@@ -7,6 +7,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/profile_providers.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // LINKED COMMUNITIES SECTION
@@ -28,7 +30,7 @@ class ProfileLinkedCommunities extends ConsumerWidget {
           height: r.s(20),
           width: r.s(20),
           child: CircularProgressIndicator(
-              color: AppTheme.accentColor, strokeWidth: 2),
+              color: context.nexusTheme.accentSecondary, strokeWidth: 2),
         ),
       ),
       error: (_, __) => const SizedBox.shrink(),
@@ -82,7 +84,7 @@ class ProfileLinkedCommunities extends ConsumerWidget {
                                 Text(
                                   community.name,
                                   style: TextStyle(
-                                    color: context.textPrimary,
+                                    color: context.nexusTheme.textPrimary,
                                     fontWeight: FontWeight.w700,
                                     fontSize: r.fs(13),
                                   ),
@@ -128,7 +130,7 @@ class ProfileLinkedCommunities extends ConsumerWidget {
         child: Text(
           community.name.isNotEmpty ? community.name[0].toUpperCase() : '?',
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontWeight: FontWeight.w800,
             fontSize: r.fs(14),
           ),

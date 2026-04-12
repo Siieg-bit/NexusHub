@@ -16,6 +16,8 @@ import '../../profile/providers/profile_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/level_up_dialog.dart';
 import '../../../core/providers/chat_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // COMMUNITY DRAWER — Réplica fiel do painel lateral do Amino Apps
@@ -75,7 +77,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return AppTheme.primaryColor;
+      return context.nexusTheme.accentPrimary;
     }
   }
 
@@ -116,7 +118,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               s.checkInStreakMsg(streak, coins)),
-          backgroundColor: AppTheme.accentColor,
+          backgroundColor: context.nexusTheme.accentSecondary,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
         ));
@@ -135,7 +137,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s.errorCheckIn),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ));
       }
@@ -192,7 +194,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             // ══════════════════════════════════════════════════════════════
             Expanded(
               child: RefreshIndicator(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
                 onRefresh: () async {
                   ref.invalidate(checkInStatusProvider);
                   ref.invalidate(userCommunitiesProvider);
@@ -1055,7 +1057,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           ),
         _AminoDrawerTile(
           icon: Icons.flag_rounded,
-          iconColor: AppTheme.errorColor,
+          iconColor: context.nexusTheme.error,
           label: s.drawerFlagCenter,
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/flags');

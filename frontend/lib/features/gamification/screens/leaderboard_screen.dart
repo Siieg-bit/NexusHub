@@ -9,6 +9,8 @@ import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // PROVIDERS
@@ -110,9 +112,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
     final leaderboardAsync = ref.watch(leaderboardProvider(params));
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       body: RefreshIndicator(
-        color: AppTheme.primaryColor,
+        color: context.nexusTheme.accentPrimary,
         onRefresh: () async {
           ref.invalidate(leaderboardProvider(params));
         },
@@ -122,7 +124,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           SliverAppBar(
             expandedHeight: r.s(160),
             pinned: true,
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
             iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
@@ -133,7 +135,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                     colors: [
                       Color(0xFF1A237E),
                       Color(0xFF0D47A1),
-                      AppTheme.primaryColor,
+                      context.nexusTheme.accentPrimary,
                     ],
                   ),
                 ),
@@ -199,18 +201,18 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                         padding: EdgeInsets.symmetric(vertical: r.s(10)),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppTheme.accentColor
+                              ? context.nexusTheme.accentSecondary
                               : context.surfaceColor,
                           borderRadius: BorderRadius.circular(r.s(12)),
                           border: Border.all(
                             color: isSelected
-                                ? AppTheme.accentColor
+                                ? context.nexusTheme.accentSecondary
                                 : Colors.white.withValues(alpha: 0.08),
                           ),
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: AppTheme.accentColor
+                                    color: context.nexusTheme.accentSecondary
                                         .withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 4),
@@ -240,7 +242,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           leaderboardAsync.when(
             loading: () => const SliverFillRemaining(
               child: Center(
-                child: CircularProgressIndicator(color: AppTheme.accentColor),
+                child: CircularProgressIndicator(color: context.nexusTheme.accentSecondary),
               ),
             ),
             error: (error, _) => SliverFillRemaining(
@@ -460,7 +462,7 @@ class _PodiumItem extends ConsumerWidget {
           Text(
             data['nickname'] as String? ?? s.user,
             style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontWeight: FontWeight.w700,
               fontSize: r.fs(isFirst ? 13 : 11),
             ),
@@ -607,7 +609,7 @@ class _LeaderboardTile extends ConsumerWidget {
                       child: Text(
                         data['nickname'] as String? ?? s.user,
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontWeight: FontWeight.w700,
                           fontSize: r.fs(15),
                         ),
@@ -644,7 +646,7 @@ class _LeaderboardTile extends ConsumerWidget {
                   Text(
                     (data['role'] as String? ?? '').toUpperCase(),
                     style: TextStyle(
-                      color: AppTheme.accentColor,
+                      color: context.nexusTheme.accentSecondary,
                       fontSize: r.fs(10),
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
@@ -668,13 +670,13 @@ class _LeaderboardTile extends ConsumerWidget {
                     formatCount(rep),
                     style: TextStyle(
                       fontWeight: FontWeight.w900,
-                      color: AppTheme.warningColor,
+                      color: context.nexusTheme.warning,
                       fontSize: r.fs(16),
                     ),
                   ),
                   SizedBox(width: r.s(3)),
                   Icon(Icons.star_rounded,
-                      color: AppTheme.warningColor, size: r.s(16)),
+                      color: context.nexusTheme.warning, size: r.s(16)),
                 ],
               ),
               Text(

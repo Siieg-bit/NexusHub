@@ -1,0 +1,669 @@
+import 'package:flutter/material.dart';
+
+// =============================================================================
+// NexusThemeData — Interface central de Design Tokens do NexusHub
+//
+// Define TODOS os tokens visuais usados pelo app. Cada tema concreto
+// (Principal, Midnight, GreenLeaf) implementa esta interface com seus
+// próprios valores de cor, gradiente e sombra.
+//
+// Princípios:
+//  - Tokens semânticos: os nomes descrevem o USO, não a cor em si.
+//    Ex: "accentPrimary" em vez de "cyan" ou "green".
+//  - Cobertura total: todos os elementos visuais do app têm um token.
+//  - Compatibilidade: `toMaterialTheme()` gera ThemeData para widgets nativos.
+//  - Imutabilidade: todos os tokens são `final` e o objeto é `const`.
+// =============================================================================
+
+/// Identificador único de cada tema disponível no app.
+enum NexusThemeId {
+  principal,
+  midnight,
+  greenLeaf,
+}
+
+/// Modo base do tema (claro ou escuro).
+enum NexusThemeMode {
+  light,
+  dark,
+}
+
+/// Contrato de tokens visuais do NexusHub.
+///
+/// Todos os temas concretos devem implementar esta classe.
+/// Acesse via `ref.watch(nexusThemeProvider)` ou `context.nexusTheme`.
+class NexusThemeData {
+  // ── Identidade ─────────────────────────────────────────────────────────────
+
+  /// Identificador único do tema.
+  final NexusThemeId id;
+
+  /// Nome legível do tema (ex: "Principal", "Midnight").
+  final String name;
+
+  /// Descrição curta exibida na tela de seleção.
+  final String? description;
+
+  /// Define se o tema é claro ou escuro (afeta SystemUiOverlayStyle).
+  final NexusThemeMode baseMode;
+
+  // ── Fundos ─────────────────────────────────────────────────────────────────
+
+  /// Fundo principal do Scaffold.
+  final Color backgroundPrimary;
+
+  /// Fundo secundário (ex: seções alternadas, headers).
+  final Color backgroundSecondary;
+
+  // ── Superfícies ────────────────────────────────────────────────────────────
+
+  /// Superfície principal (ex: modais, bottom sheets).
+  final Color surfacePrimary;
+
+  /// Superfície secundária (ex: inputs, chips, itens de lista).
+  final Color surfaceSecondary;
+
+  /// Fundo de cards.
+  final Color cardBackground;
+
+  /// Fundo de cards elevados (hover, pressed).
+  final Color cardBackgroundElevated;
+
+  /// Fundo de modais e dialogs.
+  final Color modalBackground;
+
+  // ── Overlay ────────────────────────────────────────────────────────────────
+
+  /// Cor do overlay escuro (ex: drawer, dialogs).
+  final Color overlayColor;
+
+  /// Opacidade padrão do overlay.
+  final double overlayOpacity;
+
+  // ── Textos ─────────────────────────────────────────────────────────────────
+
+  /// Texto principal (títulos, conteúdo).
+  final Color textPrimary;
+
+  /// Texto secundário (subtítulos, metadados).
+  final Color textSecondary;
+
+  /// Texto de dica / placeholder.
+  final Color textHint;
+
+  /// Texto desativado.
+  final Color textDisabled;
+
+  // ── Ícones ─────────────────────────────────────────────────────────────────
+
+  /// Ícone principal.
+  final Color iconPrimary;
+
+  /// Ícone secundário.
+  final Color iconSecondary;
+
+  /// Ícone desativado.
+  final Color iconDisabled;
+
+  // ── Destaques (Accent) ─────────────────────────────────────────────────────
+
+  /// Cor de destaque principal (nav ativa, links, seleção).
+  final Color accentPrimary;
+
+  /// Cor de destaque secundária (variação mais clara ou complementar).
+  final Color accentSecondary;
+
+  // ── Botões ─────────────────────────────────────────────────────────────────
+
+  /// Fundo do botão primário (CTA principal).
+  final Color buttonPrimaryBackground;
+
+  /// Texto/ícone do botão primário.
+  final Color buttonPrimaryForeground;
+
+  /// Fundo do botão secundário (outlined/ghost).
+  final Color buttonSecondaryBackground;
+
+  /// Texto/ícone do botão secundário.
+  final Color buttonSecondaryForeground;
+
+  /// Fundo do botão destrutivo (ex: banir, deletar).
+  final Color buttonDestructiveBackground;
+
+  /// Texto/ícone do botão destrutivo.
+  final Color buttonDestructiveForeground;
+
+  // ── Estados Semânticos ─────────────────────────────────────────────────────
+
+  /// Cor de sucesso (ex: check-in, join, confirmação).
+  final Color success;
+
+  /// Fundo do container de sucesso.
+  final Color successContainer;
+
+  /// Cor de erro (ex: formulários, alertas críticos).
+  final Color error;
+
+  /// Fundo do container de erro.
+  final Color errorContainer;
+
+  /// Cor de aviso (ex: strikes, alertas moderados).
+  final Color warning;
+
+  /// Fundo do container de aviso.
+  final Color warningContainer;
+
+  /// Cor informativa (ex: dicas, notificações neutras).
+  final Color info;
+
+  /// Fundo do container informativo.
+  final Color infoContainer;
+
+  // ── Bordas ─────────────────────────────────────────────────────────────────
+
+  /// Borda principal (cards, inputs, separadores visíveis).
+  final Color borderPrimary;
+
+  /// Borda sutil (separadores leves, divisórias).
+  final Color borderSubtle;
+
+  /// Borda de foco (input em foco).
+  final Color borderFocus;
+
+  // ── Inputs ─────────────────────────────────────────────────────────────────
+
+  /// Fundo do campo de input.
+  final Color inputBackground;
+
+  /// Borda do campo de input.
+  final Color inputBorder;
+
+  /// Placeholder do input.
+  final Color inputHint;
+
+  // ── Interação ──────────────────────────────────────────────────────────────
+
+  /// Cor do item selecionado (ex: tab ativa, opção marcada).
+  final Color selectedState;
+
+  /// Cor do item desativado.
+  final Color disabledState;
+
+  /// Opacidade aplicada a elementos desativados.
+  final double disabledOpacity;
+
+  // ── Sombras ────────────────────────────────────────────────────────────────
+
+  /// Sombra de cards.
+  final List<BoxShadow> cardShadow;
+
+  /// Sombra de modais e bottom sheets.
+  final List<BoxShadow> modalShadow;
+
+  /// Sombra de botões primários.
+  final List<BoxShadow> buttonShadow;
+
+  // ── Gradientes ─────────────────────────────────────────────────────────────
+
+  /// Gradiente principal do app (ex: banners, headers de perfil).
+  final LinearGradient primaryGradient;
+
+  /// Gradiente de destaque (ex: badges de nível, elementos premium).
+  final LinearGradient accentGradient;
+
+  /// Gradiente do FAB de criação.
+  final LinearGradient fabGradient;
+
+  /// Gradiente de streak/check-in.
+  final LinearGradient streakGradient;
+
+  /// Gradiente da wallet/moedas.
+  final LinearGradient walletGradient;
+
+  /// Gradiente do banner Amino Plus.
+  final LinearGradient aminoPlusGradient;
+
+  // ── Bottom Navigation ──────────────────────────────────────────────────────
+
+  /// Fundo da bottom nav bar.
+  final Color bottomNavBackground;
+
+  /// Cor do item ativo na bottom nav.
+  final Color bottomNavSelectedItem;
+
+  /// Cor do item inativo na bottom nav.
+  final Color bottomNavUnselectedItem;
+
+  // ── App Bar ────────────────────────────────────────────────────────────────
+
+  /// Fundo da app bar.
+  final Color appBarBackground;
+
+  /// Cor dos ícones e texto da app bar.
+  final Color appBarForeground;
+
+  // ── Drawer ─────────────────────────────────────────────────────────────────
+
+  /// Fundo do drawer lateral.
+  final Color drawerBackground;
+
+  /// Fundo do header do drawer.
+  final Color drawerHeaderBackground;
+
+  /// Sidebar escura do drawer de comunidade.
+  final Color drawerSidebarBackground;
+
+  // ── Chips ──────────────────────────────────────────────────────────────────
+
+  /// Fundo do chip não selecionado.
+  final Color chipBackground;
+
+  /// Fundo do chip selecionado.
+  final Color chipSelectedBackground;
+
+  /// Texto do chip.
+  final Color chipText;
+
+  /// Texto do chip selecionado.
+  final Color chipSelectedText;
+
+  // ── Divider ────────────────────────────────────────────────────────────────
+
+  /// Cor do divisor.
+  final Color divider;
+
+  // ── Shimmer / Loading ──────────────────────────────────────────────────────
+
+  /// Cor base do shimmer.
+  final Color shimmerBase;
+
+  /// Cor de destaque do shimmer (brilho animado).
+  final Color shimmerHighlight;
+
+  // ── Gamificação ────────────────────────────────────────────────────────────
+
+  /// Cor do badge de nível.
+  final Color levelBadgeBackground;
+
+  /// Cor do texto do badge de nível.
+  final Color levelBadgeForeground;
+
+  /// Cor da moeda.
+  final Color coinColor;
+
+  /// Cor do indicador online.
+  final Color onlineIndicator;
+
+  // ── Preview (usado na ThemeSelectorScreen) ─────────────────────────────────
+
+  /// Cor de destaque usada no preview do card de seleção.
+  final Color previewAccent;
+
+  // ── Construtor ─────────────────────────────────────────────────────────────
+
+  const NexusThemeData({
+    required this.id,
+    required this.name,
+    this.description,
+    required this.baseMode,
+    // Fundos
+    required this.backgroundPrimary,
+    required this.backgroundSecondary,
+    // Superfícies
+    required this.surfacePrimary,
+    required this.surfaceSecondary,
+    required this.cardBackground,
+    required this.cardBackgroundElevated,
+    required this.modalBackground,
+    // Overlay
+    required this.overlayColor,
+    required this.overlayOpacity,
+    // Textos
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.textHint,
+    required this.textDisabled,
+    // Ícones
+    required this.iconPrimary,
+    required this.iconSecondary,
+    required this.iconDisabled,
+    // Destaques
+    required this.accentPrimary,
+    required this.accentSecondary,
+    // Botões
+    required this.buttonPrimaryBackground,
+    required this.buttonPrimaryForeground,
+    required this.buttonSecondaryBackground,
+    required this.buttonSecondaryForeground,
+    required this.buttonDestructiveBackground,
+    required this.buttonDestructiveForeground,
+    // Estados
+    required this.success,
+    required this.successContainer,
+    required this.error,
+    required this.errorContainer,
+    required this.warning,
+    required this.warningContainer,
+    required this.info,
+    required this.infoContainer,
+    // Bordas
+    required this.borderPrimary,
+    required this.borderSubtle,
+    required this.borderFocus,
+    // Inputs
+    required this.inputBackground,
+    required this.inputBorder,
+    required this.inputHint,
+    // Interação
+    required this.selectedState,
+    required this.disabledState,
+    required this.disabledOpacity,
+    // Sombras
+    required this.cardShadow,
+    required this.modalShadow,
+    required this.buttonShadow,
+    // Gradientes
+    required this.primaryGradient,
+    required this.accentGradient,
+    required this.fabGradient,
+    required this.streakGradient,
+    required this.walletGradient,
+    required this.aminoPlusGradient,
+    // Bottom Nav
+    required this.bottomNavBackground,
+    required this.bottomNavSelectedItem,
+    required this.bottomNavUnselectedItem,
+    // App Bar
+    required this.appBarBackground,
+    required this.appBarForeground,
+    // Drawer
+    required this.drawerBackground,
+    required this.drawerHeaderBackground,
+    required this.drawerSidebarBackground,
+    // Chips
+    required this.chipBackground,
+    required this.chipSelectedBackground,
+    required this.chipText,
+    required this.chipSelectedText,
+    // Divider
+    required this.divider,
+    // Shimmer
+    required this.shimmerBase,
+    required this.shimmerHighlight,
+    // Gamificação
+    required this.levelBadgeBackground,
+    required this.levelBadgeForeground,
+    required this.coinColor,
+    required this.onlineIndicator,
+    // Preview
+    required this.previewAccent,
+  });
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  /// Retorna o Brightness do Material equivalente ao baseMode.
+  Brightness get brightness =>
+      baseMode == NexusThemeMode.dark ? Brightness.dark : Brightness.light;
+
+  /// Gera um [ThemeData] do Material Design a partir dos tokens do tema.
+  ///
+  /// Usado no MaterialApp para garantir que widgets nativos (BottomSheet,
+  /// Dialog, SnackBar, etc.) herdem as cores corretas do tema ativo.
+  ThemeData toMaterialTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
+      primaryColor: accentPrimary,
+      scaffoldBackgroundColor: backgroundPrimary,
+      colorScheme: ColorScheme(
+        brightness: brightness,
+        primary: accentPrimary,
+        onPrimary: buttonPrimaryForeground,
+        primaryContainer: accentSecondary.withValues(alpha: 0.2),
+        onPrimaryContainer: accentPrimary,
+        secondary: buttonPrimaryBackground,
+        onSecondary: buttonPrimaryForeground,
+        secondaryContainer: buttonPrimaryBackground.withValues(alpha: 0.15),
+        onSecondaryContainer: buttonPrimaryBackground,
+        tertiary: accentSecondary,
+        onTertiary: Colors.white,
+        tertiaryContainer: accentSecondary.withValues(alpha: 0.15),
+        onTertiaryContainer: accentSecondary,
+        error: error,
+        onError: buttonDestructiveForeground,
+        errorContainer: errorContainer,
+        onErrorContainer: error,
+        surface: surfacePrimary,
+        onSurface: textPrimary,
+        onSurfaceVariant: textSecondary,
+        outline: borderPrimary,
+        outlineVariant: borderSubtle,
+        shadow: Colors.black,
+        scrim: overlayColor,
+        inverseSurface: textPrimary,
+        onInverseSurface: backgroundPrimary,
+        inversePrimary: accentSecondary,
+        surfaceTint: accentPrimary.withValues(alpha: 0.05),
+      ),
+      fontFamily: 'PlusJakartaSans',
+      textTheme: TextTheme(
+        displayLarge: TextStyle(
+            color: textPrimary, fontSize: 32, fontWeight: FontWeight.bold),
+        displayMedium: TextStyle(
+            color: textPrimary, fontSize: 28, fontWeight: FontWeight.bold),
+        displaySmall: TextStyle(
+            color: textPrimary, fontSize: 24, fontWeight: FontWeight.bold),
+        headlineLarge: TextStyle(
+            color: textPrimary, fontSize: 22, fontWeight: FontWeight.w600),
+        headlineMedium: TextStyle(
+            color: textPrimary, fontSize: 20, fontWeight: FontWeight.w600),
+        headlineSmall: TextStyle(
+            color: textPrimary, fontSize: 18, fontWeight: FontWeight.w600),
+        titleLarge: TextStyle(
+            color: textPrimary, fontSize: 16, fontWeight: FontWeight.w600),
+        titleMedium: TextStyle(
+            color: textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+        titleSmall: TextStyle(
+            color: textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
+        bodyLarge: TextStyle(color: textPrimary, fontSize: 16),
+        bodyMedium: TextStyle(color: textPrimary, fontSize: 14),
+        bodySmall: TextStyle(color: textSecondary, fontSize: 12),
+        labelLarge: TextStyle(
+            color: textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+        labelMedium: TextStyle(color: textSecondary, fontSize: 12),
+        labelSmall: TextStyle(color: textHint, fontSize: 10),
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: appBarBackground,
+        foregroundColor: appBarForeground,
+        elevation: 0,
+        centerTitle: false,
+        iconTheme: IconThemeData(color: appBarForeground),
+        titleTextStyle: TextStyle(
+            color: appBarForeground,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'PlusJakartaSans'),
+        surfaceTintColor: Colors.transparent,
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: bottomNavBackground,
+        selectedItemColor: bottomNavSelectedItem,
+        unselectedItemColor: bottomNavUnselectedItem,
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+      ),
+      cardTheme: CardThemeData(
+        color: cardBackground,
+        elevation: 0,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        shadowColor: cardShadow.isNotEmpty
+            ? cardShadow.first.color
+            : Colors.transparent,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: inputBackground,
+        hintStyle: TextStyle(color: inputHint),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: inputBorder, width: 1)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: borderFocus, width: 2)),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: buttonPrimaryBackground,
+          foregroundColor: buttonPrimaryForeground,
+          elevation: 0,
+          padding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
+          textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'PlusJakartaSans'),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: buttonSecondaryForeground,
+          side: BorderSide(color: borderPrimary, width: 1.5),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: chipBackground,
+        selectedColor: chipSelectedBackground,
+        labelStyle: TextStyle(color: chipText, fontSize: 12),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
+        side: BorderSide.none,
+      ),
+      dividerTheme:
+          DividerThemeData(color: divider, thickness: 0.5, space: 0),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: surfacePrimary,
+        contentTextStyle: TextStyle(color: textPrimary),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12)),
+        behavior: SnackBarBehavior.floating,
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: modalBackground,
+        shape: const RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.vertical(top: Radius.circular(20))),
+        surfaceTintColor: Colors.transparent,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: modalBackground,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
+        surfaceTintColor: Colors.transparent,
+      ),
+      tabBarTheme: TabBarThemeData(
+        labelColor: accentPrimary,
+        unselectedLabelColor: textSecondary,
+        indicatorColor: accentPrimary,
+        indicatorSize: TabBarIndicatorSize.label,
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: buttonPrimaryBackground,
+        foregroundColor: buttonPrimaryForeground,
+        elevation: 4,
+        shape: const CircleBorder(),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return accentPrimary;
+          }
+          return disabledState;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return accentPrimary.withValues(alpha: 0.4);
+          }
+          return disabledState.withValues(alpha: 0.3);
+        }),
+      ),
+      checkboxTheme: CheckboxThemeData(
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return accentPrimary;
+          }
+          return Colors.transparent;
+        }),
+        checkColor: WidgetStateProperty.all(buttonPrimaryForeground),
+        side: BorderSide(color: borderPrimary, width: 1.5),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4)),
+      ),
+      radioTheme: RadioThemeData(
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return accentPrimary;
+          }
+          return borderPrimary;
+        }),
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: accentPrimary,
+        linearTrackColor: borderSubtle,
+        circularTrackColor: borderSubtle,
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: surfaceSecondary,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: borderSubtle),
+        ),
+        textStyle: TextStyle(color: textPrimary, fontSize: 12),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: surfacePrimary,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: borderSubtle)),
+        textStyle: TextStyle(color: textPrimary),
+        elevation: 4,
+        shadowColor: cardShadow.isNotEmpty
+            ? cardShadow.first.color
+            : Colors.transparent,
+      ),
+    );
+  }
+
+  // ── Compatibilidade com a extensão NexusColors legada ──────────────────────
+
+  /// Alias para manter compatibilidade com `context.scaffoldBg`.
+  Color get scaffoldBg => backgroundPrimary;
+
+  /// Alias para manter compatibilidade com `context.surfaceColor`.
+  Color get surfaceColor => surfacePrimary;
+
+  /// Alias para manter compatibilidade com `context.cardBg`.
+  Color get cardBg => cardBackground;
+
+  /// Alias para manter compatibilidade com `context.cardBgAlt`.
+  Color get cardBgAlt => cardBackgroundElevated;
+
+  /// Alias para manter compatibilidade com `context.bottomNavBg`.
+  Color get bottomNavBg => bottomNavBackground;
+
+  /// Alias para manter compatibilidade com `context.dividerClr`.
+  Color get dividerClr => divider;
+}

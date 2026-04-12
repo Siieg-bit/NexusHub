@@ -7,6 +7,8 @@ import '../../../core/models/message_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Ações disponíveis ao fazer long-press em uma mensagem.
 enum ChatMessageAction {
@@ -81,7 +83,7 @@ class ChatMessageActionsSheet extends ConsumerWidget {
                       child: Container(
                         padding: EdgeInsets.all(r.s(10)),
                         decoration: BoxDecoration(
-                          color: context.cardBg,
+                          color: context.nexusTheme.surfacePrimary,
                           shape: BoxShape.circle,
                         ),
                         child:
@@ -140,7 +142,7 @@ class ChatMessageActionsSheet extends ConsumerWidget {
   Widget _actionTile(BuildContext context, Responsive r, IconData icon,
       String label, VoidCallback onTap,
       {bool isDestructive = false}) {
-    final color = isDestructive ? AppTheme.errorColor : Colors.grey[400];
+    final color = isDestructive ? context.nexusTheme.error : Colors.grey[400];
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,

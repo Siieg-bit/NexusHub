@@ -10,6 +10,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show FileOptions;
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CREATE PUBLIC CHAT SCREEN — Personalização Avançada
@@ -159,7 +161,7 @@ class _CreatePublicChatScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Aguarde o upload das imagens...'),
-          backgroundColor: AppTheme.primaryColor,
+          backgroundColor: context.nexusTheme.accentPrimary,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -194,7 +196,7 @@ class _CreatePublicChatScreenState
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(s.chatCreatedSuccess),
-              backgroundColor: AppTheme.primaryColor,
+              backgroundColor: context.nexusTheme.accentPrimary,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -248,7 +250,7 @@ class _CreatePublicChatScreenState
       child: Text(
         title.toUpperCase(),
         style: TextStyle(
-          color: AppTheme.primaryColor,
+          color: context.nexusTheme.accentPrimary,
           fontSize: r.fs(11),
           fontWeight: FontWeight.w700,
           letterSpacing: 0.8,
@@ -269,7 +271,7 @@ class _CreatePublicChatScreenState
     return Container(
       margin: EdgeInsets.only(bottom: r.s(8)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(12)),
       ),
       child: SwitchListTile(
@@ -279,16 +281,16 @@ class _CreatePublicChatScreenState
           width: r.s(36),
           height: r.s(36),
           decoration: BoxDecoration(
-            color: (iconColor ?? AppTheme.primaryColor).withValues(alpha: 0.12),
+            color: (iconColor ?? context.nexusTheme.accentPrimary).withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(r.s(10)),
           ),
           child: Icon(icon,
-              color: iconColor ?? AppTheme.primaryColor, size: r.s(18)),
+              color: iconColor ?? context.nexusTheme.accentPrimary, size: r.s(18)),
         ),
         title: Text(
           title,
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(14),
             fontWeight: FontWeight.w600,
           ),
@@ -296,13 +298,13 @@ class _CreatePublicChatScreenState
         subtitle: Text(
           subtitle,
           style: TextStyle(
-            color: context.textPrimary.withValues(alpha: 0.55),
+            color: context.nexusTheme.textPrimary.withValues(alpha: 0.55),
             fontSize: r.fs(11),
           ),
         ),
         value: value,
         onChanged: onChanged,
-        activeColor: AppTheme.primaryColor,
+        activeColor: context.nexusTheme.accentPrimary,
       ),
     );
   }
@@ -338,13 +340,13 @@ class _CreatePublicChatScreenState
                       height: r.s(16),
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                       ),
                     )
                   : Text(
                       s.create,
                       style: TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         fontSize: r.fs(15),
                         fontWeight: FontWeight.w700,
                       ),
@@ -365,10 +367,10 @@ class _CreatePublicChatScreenState
               child: Container(
                 height: r.s(160),
                 decoration: BoxDecoration(
-                  color: context.cardBg,
+                  color: context.nexusTheme.surfacePrimary,
                   borderRadius: BorderRadius.circular(r.s(14)),
                   border: Border.all(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                     width: 1.5,
                   ),
                 ),
@@ -379,11 +381,11 @@ class _CreatePublicChatScreenState
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             CircularProgressIndicator(
-                                color: AppTheme.primaryColor),
+                                color: context.nexusTheme.accentPrimary),
                             SizedBox(height: r.s(8)),
                             Text('Enviando...',
                                 style: TextStyle(
-                                    color: context.textPrimary
+                                    color: context.nexusTheme.textPrimary
                                         .withValues(alpha: 0.6),
                                     fontSize: r.fs(12))),
                           ],
@@ -468,7 +470,7 @@ class _CreatePublicChatScreenState
                                 children: [
                                   Icon(
                                     Icons.add_photo_alternate_rounded,
-                                    color: AppTheme.primaryColor
+                                    color: context.nexusTheme.accentPrimary
                                         .withValues(alpha: 0.5),
                                     size: r.s(40),
                                   ),
@@ -476,7 +478,7 @@ class _CreatePublicChatScreenState
                                   Text(
                                     s.coverPhotoHint,
                                     style: TextStyle(
-                                      color: context.textPrimary
+                                      color: context.nexusTheme.textPrimary
                                           .withValues(alpha: 0.5),
                                       fontSize: r.fs(13),
                                     ),
@@ -500,10 +502,10 @@ class _CreatePublicChatScreenState
                         width: r.s(72),
                         height: r.s(72),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(r.s(18)),
                           border: Border.all(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                             width: 1.5,
                           ),
                         ),
@@ -511,7 +513,7 @@ class _CreatePublicChatScreenState
                         child: _isUploadingIcon
                             ? Center(
                                 child: CircularProgressIndicator(
-                                    color: AppTheme.primaryColor,
+                                    color: context.nexusTheme.accentPrimary,
                                     strokeWidth: 2),
                               )
                             : _iconImageUrl != null
@@ -524,7 +526,7 @@ class _CreatePublicChatScreenState
                                         fit: BoxFit.cover)
                                     : Icon(
                                         Icons.camera_alt_rounded,
-                                        color: AppTheme.primaryColor
+                                        color: context.nexusTheme.accentPrimary
                                             .withValues(alpha: 0.6),
                                         size: r.s(28),
                                       ),
@@ -534,7 +536,7 @@ class _CreatePublicChatScreenState
                     Text(
                       s.chatIcon,
                       style: TextStyle(
-                        color: context.textPrimary.withValues(alpha: 0.5),
+                        color: context.nexusTheme.textPrimary.withValues(alpha: 0.5),
                         fontSize: r.fs(10),
                       ),
                     ),
@@ -549,7 +551,7 @@ class _CreatePublicChatScreenState
                       Text(
                         s.chatName2,
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(13),
                           fontWeight: FontWeight.w600,
                         ),
@@ -563,7 +565,7 @@ class _CreatePublicChatScreenState
                           hintText: s.exampleChatName,
                           counterText: '',
                           filled: true,
-                          fillColor: context.cardBg,
+                          fillColor: context.nexusTheme.surfacePrimary,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(r.s(12)),
                             borderSide: BorderSide.none,
@@ -571,7 +573,7 @@ class _CreatePublicChatScreenState
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(r.s(12)),
                             borderSide: BorderSide(
-                                color: AppTheme.primaryColor, width: 1.5),
+                                color: context.nexusTheme.accentPrimary, width: 1.5),
                           ),
                         ),
                         validator: (value) {
@@ -595,7 +597,7 @@ class _CreatePublicChatScreenState
             Text(
               s.descriptionOptional2,
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(13),
                 fontWeight: FontWeight.w600,
               ),
@@ -610,7 +612,7 @@ class _CreatePublicChatScreenState
                 hintText: s.describeChatPurpose,
                 counterText: '',
                 filled: true,
-                fillColor: context.cardBg,
+                fillColor: context.nexusTheme.surfacePrimary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide.none,
@@ -618,7 +620,7 @@ class _CreatePublicChatScreenState
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide:
-                      BorderSide(color: AppTheme.primaryColor, width: 1.5),
+                      BorderSide(color: context.nexusTheme.accentPrimary, width: 1.5),
                 ),
               ),
             ),
@@ -643,13 +645,13 @@ class _CreatePublicChatScreenState
                           horizontal: r.s(14), vertical: r.s(6)),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppTheme.primaryColor
-                            : context.cardBg,
+                            ? context.nexusTheme.accentPrimary
+                            : context.nexusTheme.surfacePrimary,
                         borderRadius: BorderRadius.circular(r.s(20)),
                         border: Border.all(
                           color: isSelected
-                              ? AppTheme.primaryColor
-                              : context.textPrimary.withValues(alpha: 0.15),
+                              ? context.nexusTheme.accentPrimary
+                              : context.nexusTheme.textPrimary.withValues(alpha: 0.15),
                         ),
                       ),
                       child: Text(
@@ -657,7 +659,7 @@ class _CreatePublicChatScreenState
                         style: TextStyle(
                           color: isSelected
                               ? Colors.white
-                              : context.textPrimary.withValues(alpha: 0.7),
+                              : context.nexusTheme.textPrimary.withValues(alpha: 0.7),
                           fontSize: r.fs(12),
                           fontWeight: isSelected
                               ? FontWeight.w700
@@ -676,7 +678,7 @@ class _CreatePublicChatScreenState
             Container(
               padding: EdgeInsets.all(r.s(14)),
               decoration: BoxDecoration(
-                color: context.cardBg,
+                color: context.nexusTheme.surfacePrimary,
                 borderRadius: BorderRadius.circular(r.s(12)),
               ),
               child: Column(
@@ -702,7 +704,7 @@ class _CreatePublicChatScreenState
                             Text(
                               s.slowMode,
                               style: TextStyle(
-                                color: context.textPrimary,
+                                color: context.nexusTheme.textPrimary,
                                 fontSize: r.fs(14),
                                 fontWeight: FontWeight.w600,
                               ),
@@ -711,7 +713,7 @@ class _CreatePublicChatScreenState
                               s.slowModeDesc,
                               style: TextStyle(
                                 color:
-                                    context.textPrimary.withValues(alpha: 0.55),
+                                    context.nexusTheme.textPrimary.withValues(alpha: 0.55),
                                 fontSize: r.fs(11),
                               ),
                             ),
@@ -807,23 +809,23 @@ class _CreatePublicChatScreenState
             Container(
               padding: EdgeInsets.all(r.s(12)),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(r.s(12)),
                 border: Border.all(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                 ),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.info_outline_rounded,
-                      color: AppTheme.primaryColor, size: r.s(16)),
+                      color: context.nexusTheme.accentPrimary, size: r.s(16)),
                   SizedBox(width: r.s(8)),
                   Expanded(
                     child: Text(
                       '${s.publicChatsVisible}\n${s.anyMemberCanParticipate}',
                       style: TextStyle(
-                        color: context.textPrimary.withValues(alpha: 0.7),
+                        color: context.nexusTheme.textPrimary.withValues(alpha: 0.7),
                         fontSize: r.fs(12),
                         height: 1.4,
                       ),
@@ -840,7 +842,7 @@ class _CreatePublicChatScreenState
               child: ElevatedButton(
                 onPressed: _isCreating ? null : _createChat,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
+                  backgroundColor: context.nexusTheme.accentPrimary,
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: r.s(14)),
                   shape: RoundedRectangleBorder(

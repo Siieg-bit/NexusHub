@@ -37,6 +37,8 @@ import 'chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/deep_link_service.dart';
 import 'call_screen.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 // screening_room_screen.dart — navegação via GoRouter ('/screening-room/:threadId')
 
 /// =============================================================================
@@ -938,7 +940,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.sessionExpiredPleaseLogInAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -977,7 +979,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           SnackBar(
             content:
                 Text(s.couldNotConfirmParticipation),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -1060,7 +1062,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMsg),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 10),
             action: SnackBarAction(
@@ -1133,7 +1135,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(16),
-                    color: context.textPrimary)),
+                    color: context.nexusTheme.textPrimary)),
             SizedBox(height: r.s(16)),
             _settingsTile(r, Icons.wallpaper_rounded, s.chatBackground, () {
               Navigator.pop(ctx);
@@ -1161,7 +1163,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                  SnackBar(
                   content: Text(s.notificationSettingsComingSoon),
-                  backgroundColor: AppTheme.primaryColor,
+                  backgroundColor: context.nexusTheme.accentPrimary,
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -1209,7 +1211,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   Widget _settingsTile(
       Responsive r, IconData icon, String label, VoidCallback onTap,
       {bool isDestructive = false}) {
-    final color = isDestructive ? AppTheme.errorColor : Colors.grey[400]!;
+    final color = isDestructive ? context.nexusTheme.error : Colors.grey[400]!;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -1227,8 +1229,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               child: Text(label,
                   style: TextStyle(
                       color: isDestructive
-                          ? AppTheme.errorColor
-                          : context.textPrimary,
+                          ? context.nexusTheme.error
+                          : context.nexusTheme.textPrimary,
                       fontSize: r.fs(14))),
             ),
             Icon(Icons.chevron_right_rounded,
@@ -1286,7 +1288,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   content: Text(ok
                       ? (equipped ? 'Bubble equipado!' : 'Bubble removido.')
                       : 'Não foi possível atualizar o bubble.'),
-                  backgroundColor: ok ? AppTheme.primaryColor : AppTheme.errorColor,
+                  backgroundColor: ok ? context.nexusTheme.accentPrimary : context.nexusTheme.error,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(r.s(10)),
@@ -1301,7 +1303,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Erro ao equipar bubble: $e'),
-                  backgroundColor: AppTheme.errorColor,
+                  backgroundColor: context.nexusTheme.error,
                   behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 6),
                 ),
@@ -1328,7 +1330,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             borderRadius: BorderRadius.circular(r.s(16))),
         title: Text(s.leaveChatTitle,
             style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w700)),
+                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
         content: Text(s.confirmLeaveChat,
             style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14))),
         actions: [
@@ -1343,7 +1345,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             },
             child: Text(s.logout,
                 style: TextStyle(
-                    color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
+                    color: context.nexusTheme.error, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -1372,7 +1374,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(wasDeleted ? s.chatDeletedMsg : s.leftChat),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -1384,7 +1386,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(
             content: Text(s.errorLeavingChat),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -1409,7 +1411,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(
             content: Text(s.chatDeletedMsg),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -1421,7 +1423,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(
             content: Text(s.errorDeletingChat),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -1440,7 +1442,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             borderRadius: BorderRadius.circular(r.s(16))),
         title: Text(s.deleteChatTitle,
             style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w700)),
+                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
         content: Text(
             s.confirmDeleteChat2,
             style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14))),
@@ -1456,7 +1458,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             },
             child: Text(s.delete,
                 style: TextStyle(
-                    color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
+                    color: context.nexusTheme.error, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -1495,7 +1497,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('❌ Imagem: $e'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 10),
           ),
@@ -1518,7 +1520,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -1542,7 +1544,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('❌ Vídeo: $e'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 10),
           ),
@@ -1630,11 +1632,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     width: r.s(44),
                     height: r.s(44),
                     decoration: BoxDecoration(
-                      color: AppTheme.warningColor.withValues(alpha: 0.15),
+                      color: context.nexusTheme.warning.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(Icons.monetization_on_rounded,
-                        color: AppTheme.warningColor, size: r.s(24)),
+                        color: context.nexusTheme.warning, size: r.s(24)),
                   ),
                   SizedBox(width: r.s(12)),
                   Column(
@@ -1642,7 +1644,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     children: [
                       Text(s.sendTip,
                           style: TextStyle(
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                               fontWeight: FontWeight.w800,
                               fontSize: r.fs(18))),
                       Text(s.sendCoinsToThisChat,
@@ -1667,12 +1669,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       height: r.s(72),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppTheme.warningColor.withValues(alpha: 0.15)
-                            : context.cardBg,
+                            ? context.nexusTheme.warning.withValues(alpha: 0.15)
+                            : context.nexusTheme.surfacePrimary,
                         borderRadius: BorderRadius.circular(r.s(14)),
                         border: Border.all(
                           color: isSelected
-                              ? AppTheme.warningColor
+                              ? context.nexusTheme.warning
                               : Colors.white.withValues(alpha: 0.05),
                           width: isSelected ? 2 : 1,
                         ),
@@ -1682,15 +1684,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         children: [
                           Icon(Icons.monetization_on_rounded,
                               color: isSelected
-                                  ? AppTheme.warningColor
+                                  ? context.nexusTheme.warning
                                   : Colors.grey[600],
                               size: r.s(22)),
                           SizedBox(height: r.s(4)),
                           Text('$amount',
                               style: TextStyle(
                                 color: isSelected
-                                    ? AppTheme.warningColor
-                                    : context.textPrimary,
+                                    ? context.nexusTheme.warning
+                                    : context.nexusTheme.textPrimary,
                                 fontWeight: FontWeight.w800,
                                 fontSize: r.fs(15),
                               )),
@@ -1704,7 +1706,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               TextField(
                 controller: customController,
                 keyboardType: TextInputType.number,
-                style: TextStyle(color: context.textPrimary),
+                style: TextStyle(color: context.nexusTheme.textPrimary),
                 onChanged: (val) => setModalState(() {
                   selectedAmount = int.tryParse(val);
                 }),
@@ -1712,9 +1714,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   hintText: s.orTypeValue,
                   hintStyle: TextStyle(color: Colors.grey[600]),
                   prefixIcon: Icon(Icons.edit_rounded,
-                      color: AppTheme.warningColor, size: r.s(18)),
+                      color: context.nexusTheme.warning, size: r.s(18)),
                   filled: true,
-                  fillColor: context.cardBg,
+                  fillColor: context.nexusTheme.surfacePrimary,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(r.s(12)),
                     borderSide: BorderSide.none,
@@ -1734,7 +1736,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     padding: EdgeInsets.symmetric(vertical: r.s(14)),
                     decoration: BoxDecoration(
                       color: selectedAmount != null && selectedAmount! > 0
-                          ? AppTheme.warningColor
+                          ? context.nexusTheme.warning
                           : Colors.grey[800],
                       borderRadius: BorderRadius.circular(r.s(12)),
                     ),
@@ -1795,7 +1797,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               borderRadius: BorderRadius.circular(r.s(16))),
           title: Text(s.createPoll,
               style: TextStyle(
-                  color: context.textPrimary, fontWeight: FontWeight.w700)),
+                  color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1818,11 +1820,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.add_rounded,
-                            size: r.s(16), color: AppTheme.primaryColor),
+                            size: r.s(16), color: context.nexusTheme.accentPrimary),
                         SizedBox(width: r.s(4)),
                         Text(s.addOptionLabel,
                             style: TextStyle(
-                                color: AppTheme.primaryColor,
+                                color: context.nexusTheme.accentPrimary,
                                 fontSize: r.fs(13),
                                 fontWeight: FontWeight.w600)),
                       ],
@@ -1863,7 +1865,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
+                backgroundColor: context.nexusTheme.accentPrimary,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(r.s(10))),
               ),
@@ -1894,7 +1896,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             borderRadius: BorderRadius.circular(r.s(16))),
         title: Text(s.shareLinkTitle,
             style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w700)),
+                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
         content:
             _dialogInput(linkCtrl, 'https://...', icon: Icons.link_rounded),
         actions: [
@@ -1911,7 +1913,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               linkCtrl.dispose();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
+              backgroundColor: context.nexusTheme.accentPrimary,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(10))),
             ),
@@ -1929,13 +1931,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final r = context.r;
     return Container(
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(10)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: TextField(
         controller: controller,
-        style: TextStyle(color: context.textPrimary, fontSize: r.fs(13)),
+        style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(13)),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(color: Colors.grey[700], fontSize: r.fs(13)),
@@ -1962,17 +1964,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             borderRadius: BorderRadius.circular(r.s(16))),
         title: Text(s.editMessage,
             style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w700)),
+                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
         content: Container(
           decoration: BoxDecoration(
-            color: context.cardBg,
+            color: context.nexusTheme.surfacePrimary,
             borderRadius: BorderRadius.circular(r.s(10)),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: TextField(
             controller: editController,
             autofocus: true,
-            style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+            style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
             decoration: InputDecoration(
               hintText: s.editMessageHint,
               hintStyle: TextStyle(color: Colors.grey[700], fontSize: r.fs(14)),
@@ -2018,7 +2020,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(s.errorEditingTryAgain),
-                        backgroundColor: AppTheme.errorColor,
+                        backgroundColor: context.nexusTheme.error,
                       ),
                     );
                   }
@@ -2027,7 +2029,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               editController.dispose();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
+              backgroundColor: context.nexusTheme.accentPrimary,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(10))),
             ),
@@ -2067,7 +2069,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(
             content: Text(s.copiedMsg),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
           ),
         );
         break;
@@ -2100,7 +2102,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.errorDeletingTryAgain),
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
               ),
             );
           }
@@ -2128,7 +2130,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.errorDeletingTryAgain),
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
               ),
             );
           }
@@ -2138,7 +2140,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(
             content: Text(s.reportSubmittedThankYou),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
           ),
         );
         break;
@@ -2177,13 +2179,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(16),
-                    color: context.textPrimary)),
+                    color: context.nexusTheme.textPrimary)),
             SizedBox(height: r.s(12)),
             ..._pinnedMessages.map((m) => Container(
                   margin: EdgeInsets.only(bottom: r.s(8)),
                   padding: EdgeInsets.all(r.s(12)),
                   decoration: BoxDecoration(
-                    color: context.cardBg,
+                    color: context.nexusTheme.surfacePrimary,
                     borderRadius: BorderRadius.circular(r.s(12)),
                     border:
                         Border.all(color: Colors.white.withValues(alpha: 0.05)),
@@ -2216,13 +2218,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_rounded,
-              color: context.textPrimary, size: r.s(20)),
+              color: context.nexusTheme.textPrimary, size: r.s(20)),
           onPressed: () => context.pop(),
         ),
         titleSpacing: 0,
@@ -2266,7 +2268,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: r.fs(15),
-                          color: context.textPrimary)),
+                          color: context.nexusTheme.textPrimary)),
                   if (threadType != 'dm')
                     Text(s.memberCountMembers(memberCount),
                         style: TextStyle(
@@ -2297,7 +2299,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       padding: EdgeInsets.all(r.s(9)),
                       child: const CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                       ),
                     )
                   : Icon(Icons.headset_mic_rounded,
@@ -2390,7 +2392,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 width: double.infinity,
                 padding:
                     EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
-                color: AppTheme.warningColor.withValues(alpha: 0.12),
+                color: context.nexusTheme.warning.withValues(alpha: 0.12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -2399,7 +2401,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       height: r.s(12),
                       child: CircularProgressIndicator(
                         strokeWidth: 1.5,
-                        color: AppTheme.warningColor,
+                        color: context.nexusTheme.warning,
                       ),
                     ),
                     SizedBox(width: r.s(8)),
@@ -2407,7 +2409,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       'Reconectando...',
                       style: TextStyle(
                         fontSize: r.fs(12),
-                        color: AppTheme.warningColor,
+                        color: context.nexusTheme.warning,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -2424,16 +2426,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(16), vertical: r.s(8)),
                   decoration: BoxDecoration(
-                    color: AppTheme.warningColor.withValues(alpha: 0.08),
+                    color: context.nexusTheme.warning.withValues(alpha: 0.08),
                     border: Border(
                       bottom: BorderSide(
-                          color: AppTheme.warningColor.withValues(alpha: 0.2)),
+                          color: context.nexusTheme.warning.withValues(alpha: 0.2)),
                     ),
                   ),
                   child: Row(
                     children: [
                       Icon(Icons.push_pin_rounded,
-                          size: r.s(14), color: AppTheme.warningColor),
+                          size: r.s(14), color: context.nexusTheme.warning),
                       SizedBox(width: r.s(8)),
                       Expanded(
                         child: Text(
@@ -2457,7 +2459,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               child: _isLoading
                   ? const Center(
                       child: CircularProgressIndicator(
-                          color: AppTheme.primaryColor, strokeWidth: 2))
+                          color: context.nexusTheme.accentPrimary, strokeWidth: 2))
                   : _messages.isEmpty
                       ? Center(
                           child: Column(
@@ -2529,12 +2531,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: isReplyTargetHighlighted
-                                          ? AppTheme.primaryColor.withValues(alpha: 0.12)
+                                          ? context.nexusTheme.accentPrimary.withValues(alpha: 0.12)
                                           : Colors.transparent,
                                       borderRadius: BorderRadius.circular(r.s(18)),
                                       border: isReplyTargetHighlighted
                                           ? Border.all(
-                                              color: AppTheme.primaryColor
+                                              color: context.nexusTheme.accentPrimary
                                                   .withValues(alpha: 0.35),
                                             )
                                           : null,
@@ -2582,10 +2584,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 padding: EdgeInsets.symmetric(
                     horizontal: r.s(16), vertical: r.s(14)),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
                   border: Border(
                       top: BorderSide(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.2))),
+                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2))),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -2594,7 +2596,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     Row(
                       children: [
                         Icon(Icons.mail_rounded,
-                            color: AppTheme.primaryColor, size: r.s(18)),
+                            color: context.nexusTheme.accentPrimary, size: r.s(18)),
                         SizedBox(width: r.s(8)),
                         Expanded(
                           child: Text(
@@ -2633,7 +2635,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
                                           content: const Text('Erro ao recusar convite.'),
-                                          backgroundColor: AppTheme.errorColor,
+                                          backgroundColor: context.nexusTheme.error,
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -2675,7 +2677,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
                                           content: const Text('Convite aceito! Agora você pode conversar.'),
-                                          backgroundColor: AppTheme.primaryColor,
+                                          backgroundColor: context.nexusTheme.accentPrimary,
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -2687,7 +2689,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
                                           content: const Text('Erro ao aceitar convite.'),
-                                          backgroundColor: AppTheme.errorColor,
+                                          backgroundColor: context.nexusTheme.error,
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -2695,7 +2697,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
+                            backgroundColor: context.nexusTheme.accentPrimary,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(r.s(10))),
                             padding: EdgeInsets.symmetric(
@@ -2757,12 +2759,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       horizontal: r.s(16), vertical: r.s(12)),
                   decoration: BoxDecoration(
                     color:
-                        (isPublic ? AppTheme.primaryColor : Colors.grey[700]!)
+                        (isPublic ? context.nexusTheme.accentPrimary : Colors.grey[700]!)
                             .withValues(alpha: 0.08),
                     border: Border(
                         top: BorderSide(
                             color: (isPublic
-                                    ? AppTheme.primaryColor
+                                    ? context.nexusTheme.accentPrimary
                                     : Colors.grey[700]!)
                                 .withValues(alpha: 0.2))),
                   ),
@@ -2809,7 +2811,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                          SnackBar(
                                           content: Text(s.joinedChat),
                                           backgroundColor:
-                                              AppTheme.primaryColor,
+                                              context.nexusTheme.accentPrimary,
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -2824,7 +2826,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                          SnackBar(
                                           content: Text(
                                               s.errorJoiningChat),
-                                          backgroundColor: AppTheme.errorColor,
+                                          backgroundColor: context.nexusTheme.error,
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -2832,7 +2834,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
+                            backgroundColor: context.nexusTheme.accentPrimary,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(r.s(10))),
                             padding: EdgeInsets.symmetric(
@@ -2931,7 +2933,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('❌ Áudio: $e'),
-                            backgroundColor: AppTheme.errorColor,
+                            backgroundColor: context.nexusTheme.error,
                             behavior: SnackBarBehavior.floating,
                             duration: const Duration(seconds: 10),
                           ),
@@ -2977,9 +2979,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   config: Config(
                     columns: 8,
                     emojiSizeMax: 28,
-                    bgColor: context.scaffoldBg,
-                    indicatorColor: AppTheme.primaryColor,
-                    iconColorSelected: AppTheme.primaryColor,
+                    bgColor: context.nexusTheme.backgroundPrimary,
+                    indicatorColor: context.nexusTheme.accentPrimary,
+                    iconColorSelected: context.nexusTheme.accentPrimary,
                     iconColor: (Colors.grey[600] ?? Colors.grey),
                     checkPlatformCompatibility: true,
                     recentTabBehavior: RecentTabBehavior.RECENT,
@@ -3057,18 +3059,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             backgroundColor: context.surfaceColor,
             title: Text(s.nameLink,
                 style: TextStyle(
-                    color: context.textPrimary, fontWeight: FontWeight.w700)),
+                    color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(s.nameLinkOptional,
                     style:
-                        TextStyle(color: context.textSecondary, fontSize: 13)),
+                        TextStyle(color: context.nexusTheme.textSecondary, fontSize: 13)),
                 const SizedBox(height: 8),
                 TextField(
                   controller: nameCtrl,
                   autofocus: true,
-                  style: TextStyle(color: context.textPrimary),
+                  style: TextStyle(color: context.nexusTheme.textPrimary),
                   decoration: InputDecoration(
                     hintText: s.clickHereExample,
                     hintStyle: TextStyle(color: Colors.grey[600]),
@@ -3096,7 +3098,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 },
                 child: Text(s.confirm,
                     style: TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         fontWeight: FontWeight.w700)),
               ),
             ],
@@ -3134,9 +3136,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               child: Container(
                 padding: EdgeInsets.all(r.s(3)),
                 decoration: BoxDecoration(
-                  color: AppTheme.warningColor,
+                  color: context.nexusTheme.warning,
                   shape: BoxShape.circle,
-                  border: Border.all(color: context.scaffoldBg, width: 1.5),
+                  border: Border.all(color: context.nexusTheme.backgroundPrimary, width: 1.5),
                 ),
                 constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
                 child: Text(
@@ -3163,11 +3165,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         children: [
           Icon(icon,
               size: r.s(18),
-              color: isDestructive ? AppTheme.errorColor : Colors.grey[400]),
+              color: isDestructive ? context.nexusTheme.error : Colors.grey[400]),
           SizedBox(width: r.s(10)),
           Text(label,
               style: TextStyle(
-                  color: isDestructive ? AppTheme.errorColor : Colors.grey[300],
+                  color: isDestructive ? context.nexusTheme.error : Colors.grey[300],
                   fontSize: r.fs(13))),
         ],
       ),
@@ -3244,7 +3246,7 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: r.fs(16),
-                      color: context.textPrimary)),
+                      color: context.nexusTheme.textPrimary)),
               const Spacer(),
               Text('${_members.length}',
                   style:
@@ -3256,7 +3258,7 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
           child: _isLoading
               ? const Center(
                   child: CircularProgressIndicator(
-                      color: AppTheme.primaryColor, strokeWidth: 2))
+                      color: context.nexusTheme.accentPrimary, strokeWidth: 2))
               : _members.isEmpty
                   ? Center(
                       child: Text(s.noMemberFound,
@@ -3288,7 +3290,7 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                             children: [
                               CircleAvatar(
                                 radius: r.s(18),
-                                backgroundColor: AppTheme.primaryColor
+                                backgroundColor: context.nexusTheme.accentPrimary
                                     .withValues(alpha: 0.2),
                                 backgroundImage: iconUrl != null
                                     ? CachedNetworkImageProvider(iconUrl)
@@ -3299,7 +3301,7 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                                             ? nickname[0].toUpperCase()
                                             : '?',
                                         style: const TextStyle(
-                                            color: AppTheme.primaryColor,
+                                            color: context.nexusTheme.accentPrimary,
                                             fontWeight: FontWeight.w700))
                                     : null,
                               ),
@@ -3307,7 +3309,7 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                               Expanded(
                                 child: Text(nickname,
                                     style: TextStyle(
-                                        color: context.textPrimary,
+                                        color: context.nexusTheme.textPrimary,
                                         fontWeight: FontWeight.w500,
                                         fontSize: r.fs(14))),
                               ),
@@ -3316,14 +3318,14 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                                   padding: EdgeInsets.symmetric(
                                       horizontal: r.s(8), vertical: r.s(3)),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primaryColor
+                                    color: context.nexusTheme.accentPrimary
                                         .withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(r.s(8)),
                                   ),
                                   child: Text(
                                     role.toUpperCase(),
                                     style: TextStyle(
-                                      color: AppTheme.primaryColor,
+                                      color: context.nexusTheme.accentPrimary,
                                       fontSize: r.fs(9),
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -3476,14 +3478,14 @@ class _BubblePickerSheetState extends ConsumerState<_BubblePickerSheet> {
           Row(
             children: [
               Icon(Icons.chat_bubble_rounded,
-                  color: AppTheme.primaryColor, size: r.s(20)),
+                  color: context.nexusTheme.accentPrimary, size: r.s(20)),
               SizedBox(width: r.s(8)),
               Text(
                 'Meu Bubble',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: r.fs(16),
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                 ),
               ),
             ],
@@ -3501,7 +3503,7 @@ class _BubblePickerSheetState extends ConsumerState<_BubblePickerSheet> {
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: r.s(32)),
                 child: CircularProgressIndicator(
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                   strokeWidth: 2,
                 ),
               ),
@@ -3646,7 +3648,7 @@ class _BubblePickerItem extends StatelessWidget {
                   Text(
                     name,
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontWeight: FontWeight.w600,
                       fontSize: r.fs(14),
                     ),
@@ -3656,7 +3658,7 @@ class _BubblePickerItem extends StatelessWidget {
                     subtitle,
                     style: TextStyle(
                       color: isEquipped
-                          ? AppTheme.primaryColor
+                          ? context.nexusTheme.accentPrimary
                           : Colors.grey[500],
                       fontSize: r.fs(12),
                     ),
@@ -3672,12 +3674,12 @@ class _BubblePickerItem extends StatelessWidget {
                 height: r.s(20),
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                 ),
               )
             else if (isEquipped)
               Icon(Icons.check_circle_rounded,
-                  color: AppTheme.primaryColor, size: r.s(22))
+                  color: context.nexusTheme.accentPrimary, size: r.s(22))
             else
               Icon(Icons.radio_button_unchecked_rounded,
                   color: Colors.grey[600], size: r.s(22)),
@@ -3702,7 +3704,7 @@ class _DefaultBubblePreview extends StatelessWidget {
         padding: EdgeInsets.symmetric(
             horizontal: r.s(12), vertical: r.s(8)),
         decoration: BoxDecoration(
-          color: AppTheme.primaryColor,
+          color: context.nexusTheme.accentPrimary,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(14),
             topRight: Radius.circular(14),
@@ -3774,7 +3776,7 @@ class _BubblePreview extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
       decoration: BoxDecoration(
-        color: bubbleColor ?? AppTheme.primaryColor,
+        color: bubbleColor ?? context.nexusTheme.accentPrimary,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(14),
           topRight: Radius.circular(14),
@@ -3799,7 +3801,7 @@ class _BubblePreview extends StatelessWidget {
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(r.s(10)),
         border: Border.all(
-          color: AppTheme.primaryColor.withValues(alpha: 0.3),
+          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

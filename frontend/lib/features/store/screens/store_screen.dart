@@ -9,6 +9,8 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../stickers/providers/sticker_providers.dart';
 import '../../chat/widgets/nine_slice_bubble.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela Store — Loja de itens virtuais (Avatar Frames, Chat Bubbles, Sticker Packs).
 ///
@@ -185,7 +187,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Moedas insuficientes!'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(r.s(10)),
@@ -303,7 +305,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? AppTheme.errorColor : AppTheme.primaryColor,
+        backgroundColor: isError ? context.nexusTheme.error : context.nexusTheme.accentPrimary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(r.s(10)),
@@ -351,7 +353,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
     final r = context.r;
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverToBoxAdapter(
@@ -591,7 +593,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
                 labelColor: Colors.white,
-                unselectedLabelColor: context.textHint,
+                unselectedLabelColor: context.nexusTheme.textHint,
                 indicatorColor: Colors.white,
                 indicatorWeight: 2.5,
                 indicatorSize: TabBarIndicatorSize.label,
@@ -624,7 +626,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
         body: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                   strokeWidth: 2,
                 ),
               )
@@ -645,7 +647,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
 
     if (items.isEmpty) {
       return RefreshIndicator(
-        color: AppTheme.primaryColor,
+        color: context.nexusTheme.accentPrimary,
         onRefresh: _loadStore,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -672,7 +674,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
     }
 
     return RefreshIndicator(
-      color: AppTheme.primaryColor,
+      color: context.nexusTheme.accentPrimary,
       onRefresh: _loadStore,
       child: GridView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -717,7 +719,7 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: context.scaffoldBg,
+      color: context.nexusTheme.backgroundPrimary,
       child: tabBar,
     );
   }
@@ -787,19 +789,19 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
 
     return Container(
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(
           color: widget.isEquipped
-              ? AppTheme.primaryColor.withValues(alpha: 0.35)
+              ? context.nexusTheme.accentPrimary.withValues(alpha: 0.35)
               : isLimited
-                  ? AppTheme.errorColor.withValues(alpha: 0.25)
+                  ? context.nexusTheme.error.withValues(alpha: 0.25)
                   : Colors.white.withValues(alpha: 0.05),
         ),
         boxShadow: widget.isEquipped
             ? [
                 BoxShadow(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
                   blurRadius: 12,
                   spreadRadius: 1,
                 ),
@@ -820,8 +822,8 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                     ),
                     gradient: LinearGradient(
                       colors: [
-                        AppTheme.primaryColor.withValues(alpha: 0.08),
-                        AppTheme.accentColor.withValues(alpha: 0.05),
+                        context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
+                        context.nexusTheme.accentSecondary.withValues(alpha: 0.05),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -878,7 +880,7 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                     right: 8,
                     child: _Badge(
                       label: isSoldOut ? 'ESGOTADO' : 'LIMITADO',
-                      color: AppTheme.errorColor,
+                      color: context.nexusTheme.error,
                     ),
                   ),
                 Positioned(
@@ -897,7 +899,7 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                     child: _Badge(
                       label: widget.isEquipped ? 'ATIVO' : 'SEU ITEM',
                       color: widget.isEquipped
-                          ? AppTheme.primaryColor
+                          ? context.nexusTheme.accentPrimary
                           : const Color(0xFF2E7D32),
                     ),
                   ),
@@ -914,7 +916,7 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(13),
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -925,7 +927,7 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                   style: TextStyle(
                     fontSize: r.fs(10.5),
                     height: 1.25,
-                    color: context.textHint,
+                    color: context.nexusTheme.textHint,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -947,22 +949,22 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                                       Colors.grey.shade800,
                                     ]
                                   : [
-                                      AppTheme.warningColor
+                                      context.nexusTheme.warning
                                           .withValues(alpha: 0.25),
-                                      AppTheme.warningColor
+                                      context.nexusTheme.warning
                                           .withValues(alpha: 0.12),
                                     ],
                             ),
                       color: widget.isEquipped
-                          ? AppTheme.primaryColor.withValues(alpha: 0.18)
+                          ? context.nexusTheme.accentPrimary.withValues(alpha: 0.18)
                           : null,
                       borderRadius: BorderRadius.circular(r.s(10)),
                       border: Border.all(
                         color: widget.isEquipped
-                            ? AppTheme.primaryColor.withValues(alpha: 0.45)
+                            ? context.nexusTheme.accentPrimary.withValues(alpha: 0.45)
                             : isActionDisabled
                                 ? Colors.grey.shade700
-                                : AppTheme.warningColor.withValues(alpha: 0.3),
+                                : context.nexusTheme.warning.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Center(
@@ -985,10 +987,10 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                                           : Icons.auto_awesome_rounded)
                                       : Icons.monetization_on_rounded,
                                   color: widget.isEquipped
-                                      ? AppTheme.primaryColor
+                                      ? context.nexusTheme.accentPrimary
                                       : isActionDisabled
                                           ? Colors.white70
-                                          : AppTheme.warningColor,
+                                          : context.nexusTheme.warning,
                                   size: r.s(14),
                                 ),
                                 SizedBox(width: r.s(4)),
@@ -998,10 +1000,10 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                                       : widget.actionLabel,
                                   style: TextStyle(
                                     color: widget.isEquipped
-                                        ? AppTheme.primaryColor
+                                        ? context.nexusTheme.accentPrimary
                                         : isActionDisabled
                                             ? Colors.white70
-                                            : AppTheme.warningColor,
+                                            : context.nexusTheme.warning,
                                     fontWeight: FontWeight.w800,
                                     fontSize: r.fs(12.5),
                                   ),
@@ -1011,7 +1013,7 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                                   Text(
                                     'coins',
                                     style: TextStyle(
-                                      color: AppTheme.warningColor
+                                      color: context.nexusTheme.warning
                                           .withValues(alpha: 0.8),
                                       fontWeight: FontWeight.w600,
                                       fontSize: r.fs(9),

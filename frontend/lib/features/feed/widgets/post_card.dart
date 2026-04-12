@@ -14,6 +14,8 @@ import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Card de post no feed — estilo Amino Apps (web-preview).
 /// Suporta todos os 9 tipos de post com renderização interativa.
@@ -87,7 +89,7 @@ class _PostCardState extends ConsumerState<PostCard>
         SnackBar(
           content: Text('Não é possível republicar seu próprio post.'),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
         ),
       );
       return;
@@ -99,7 +101,7 @@ class _PostCardState extends ConsumerState<PostCard>
         SnackBar(
           content: Text('Não é possível republicar um repost.'),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
         ),
       );
       return;
@@ -140,7 +142,7 @@ class _PostCardState extends ConsumerState<PostCard>
         SnackBar(
           content: Text(isAlreadyReposted ? s.repostAlreadyExists : s.anErrorOccurredTryAgain),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: isAlreadyReposted ? AppTheme.warningColor : AppTheme.errorColor,
+          backgroundColor: isAlreadyReposted ? context.nexusTheme.warning : context.nexusTheme.error,
         ),
       );
     }
@@ -206,7 +208,7 @@ class _PostCardState extends ConsumerState<PostCard>
       child: Container(
         margin: EdgeInsets.only(bottom: r.s(10)),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(12)),
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.03),
@@ -228,7 +230,7 @@ class _PostCardState extends ConsumerState<PostCard>
                 child: Text(
                   _post.title ?? '',
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(14),
                     height: 1.3,
@@ -286,7 +288,7 @@ class _PostCardState extends ConsumerState<PostCard>
                         ),
                         child: Center(
                           child: CircularProgressIndicator(
-                            color: AppTheme.primaryColor,
+                            color: context.nexusTheme.accentPrimary,
                             strokeWidth: 2,
                           ),
                         ),
@@ -297,7 +299,7 @@ class _PostCardState extends ConsumerState<PostCard>
                           borderRadius: BorderRadius.circular(r.s(10)),
                         ),
                         child: Icon(Icons.broken_image_rounded,
-                            color: context.textHint),
+                            color: context.nexusTheme.textHint),
                       ),
                     ),
                   ),
@@ -331,7 +333,7 @@ class _PostCardState extends ConsumerState<PostCard>
                 height: r.s(16),
                 color: context.surfaceColor,
                 child: Icon(Icons.groups_rounded,
-                    size: r.s(10), color: context.textHint),
+                    size: r.s(10), color: context.nexusTheme.textHint),
               ),
             ),
           SizedBox(width: r.s(6)),
@@ -399,7 +401,7 @@ class _PostCardState extends ConsumerState<PostCard>
                       child: Text(
                         displayAuthorName,
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontWeight: FontWeight.w600,
                           fontSize: r.fs(13),
                         ),
@@ -480,18 +482,18 @@ class _PostCardState extends ConsumerState<PostCard>
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(6), vertical: r.s(3)),
               decoration: BoxDecoration(
-                color: AppTheme.warningColor.withValues(alpha: 0.15),
+                color: context.nexusTheme.warning.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(r.s(6)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.star_rounded,
-                      size: r.s(10), color: AppTheme.warningColor),
+                      size: r.s(10), color: context.nexusTheme.warning),
                   SizedBox(width: 2),
                   Text(s.featured,
                       style: TextStyle(
-                          color: AppTheme.warningColor,
+                          color: context.nexusTheme.warning,
                           fontSize: r.fs(8),
                           fontWeight: FontWeight.w700)),
                 ],
@@ -554,12 +556,12 @@ class _PostCardState extends ConsumerState<PostCard>
                     horizontal: r.s(12), vertical: r.s(10)),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppTheme.primaryColor.withValues(alpha: 0.15)
-                      : context.scaffoldBg,
+                      ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
+                      : context.nexusTheme.backgroundPrimary,
                   borderRadius: BorderRadius.circular(r.s(8)),
                   border: Border.all(
                     color: isSelected
-                        ? AppTheme.primaryColor
+                        ? context.nexusTheme.accentPrimary
                         : Colors.white.withValues(alpha: 0.05),
                   ),
                 ),
@@ -569,15 +571,15 @@ class _PostCardState extends ConsumerState<PostCard>
                         child: Text(text,
                             style: TextStyle(
                                 fontSize: r.fs(12),
-                                color: context.textPrimary))),
+                                color: context.nexusTheme.textPrimary))),
                     if (_selectedPollOption != null) ...[
                       Text('${(pct * 100).toStringAsFixed(0)}%',
                           style: TextStyle(
                             fontSize: r.fs(11),
                             fontWeight: FontWeight.w700,
                             color: isSelected
-                                ? AppTheme.primaryColor
-                                : context.textSecondary,
+                                ? context.nexusTheme.accentPrimary
+                                : context.nexusTheme.textSecondary,
                           )),
                     ],
                   ],
@@ -615,7 +617,7 @@ class _PostCardState extends ConsumerState<PostCard>
       child: Container(
         padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
-          color: context.scaffoldBg,
+          color: context.nexusTheme.backgroundPrimary,
           borderRadius: BorderRadius.circular(r.s(10)),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
@@ -625,13 +627,13 @@ class _PostCardState extends ConsumerState<PostCard>
             Row(
               children: [
                 Icon(Icons.quiz_rounded,
-                    size: r.s(14), color: AppTheme.accentColor),
+                    size: r.s(14), color: context.nexusTheme.accentSecondary),
                 SizedBox(width: r.s(6)),
                 Text(s.quiz,
                     style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: r.fs(11),
-                        color: AppTheme.accentColor)),
+                        color: context.nexusTheme.accentSecondary)),
                 if (questions.length > 1) ...[
                   SizedBox(width: r.s(4)),
                   Text('(${questions.length} perguntas)',
@@ -645,21 +647,21 @@ class _PostCardState extends ConsumerState<PostCard>
                 style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: r.fs(13),
-                    color: context.textPrimary)),
+                    color: context.nexusTheme.textPrimary)),
             SizedBox(height: r.s(8)),
             ...List.generate(opts.length, (i) {
               final optText = opts[i] as String? ?? s.optionNumber(i + 1);
               final isCorrect = i == correctIndex;
               final isSelected = _selectedQuizOption == i;
-              Color bgColor = context.cardBg;
+              Color bgColor = context.nexusTheme.surfacePrimary;
               Color borderColor = Colors.white.withValues(alpha: 0.05);
               if (_quizAnswered) {
                 if (isCorrect) {
-                  bgColor = AppTheme.successColor.withValues(alpha: 0.15);
-                  borderColor = AppTheme.successColor;
+                  bgColor = context.nexusTheme.success.withValues(alpha: 0.15);
+                  borderColor = context.nexusTheme.success;
                 } else if (isSelected && !isCorrect) {
-                  bgColor = AppTheme.errorColor.withValues(alpha: 0.15);
-                  borderColor = AppTheme.errorColor;
+                  bgColor = context.nexusTheme.error.withValues(alpha: 0.15);
+                  borderColor = context.nexusTheme.error;
                 }
               }
               return GestureDetector(
@@ -679,13 +681,13 @@ class _PostCardState extends ConsumerState<PostCard>
                           child: Text(optText,
                               style: TextStyle(
                                   fontSize: r.fs(12),
-                                  color: context.textPrimary))),
+                                  color: context.nexusTheme.textPrimary))),
                       if (_quizAnswered && isCorrect)
                         Icon(Icons.check_circle_rounded,
-                            size: r.s(16), color: AppTheme.successColor),
+                            size: r.s(16), color: context.nexusTheme.success),
                       if (_quizAnswered && isSelected && !isCorrect)
                         Icon(Icons.cancel_rounded,
-                            size: r.s(16), color: AppTheme.errorColor),
+                            size: r.s(16), color: context.nexusTheme.error),
                     ],
                   ),
                 ),
@@ -774,7 +776,7 @@ class _PostCardState extends ConsumerState<PostCard>
         },
         child: Container(
           decoration: BoxDecoration(
-            color: context.scaffoldBg,
+            color: context.nexusTheme.backgroundPrimary,
             borderRadius: BorderRadius.circular(r.s(10)),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
@@ -802,7 +804,7 @@ class _PostCardState extends ConsumerState<PostCard>
                         style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: r.fs(12),
-                            color: context.textPrimary),
+                            color: context.nexusTheme.textPrimary),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis),
                     if (linkDesc != null) ...[
@@ -823,7 +825,7 @@ class _PostCardState extends ConsumerState<PostCard>
                           child: Text(
                             Uri.tryParse(url)?.host ?? url,
                             style: TextStyle(
-                                color: AppTheme.primaryColor,
+                                color: context.nexusTheme.accentPrimary,
                                 fontSize: r.fs(10)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -952,10 +954,10 @@ class _PostCardState extends ConsumerState<PostCard>
                               errorWidget: (_, __, ___) => CircleAvatar(
                                 radius: r.s(14),
                                 backgroundColor:
-                                    AppTheme.primaryColor.withValues(alpha: 0.3),
+                                    context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                                 child: Icon(Icons.person_rounded,
                                     size: r.s(14),
-                                    color: AppTheme.primaryColor),
+                                    color: context.nexusTheme.accentPrimary),
                               ),
                             ),
                           )
@@ -963,17 +965,17 @@ class _PostCardState extends ConsumerState<PostCard>
                           CircleAvatar(
                             radius: r.s(14),
                             backgroundColor:
-                                AppTheme.primaryColor.withValues(alpha: 0.3),
+                                context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                             child: Icon(Icons.person_rounded,
                                 size: r.s(14),
-                                color: AppTheme.primaryColor),
+                                color: context.nexusTheme.accentPrimary),
                           ),
                         SizedBox(width: r.s(8)),
                         Expanded(
                           child: Text(
                             originalAuthor?.nickname ?? s.user,
                             style: TextStyle(
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                               fontWeight: FontWeight.w600,
                               fontSize: r.fs(12),
                             ),
@@ -994,7 +996,7 @@ class _PostCardState extends ConsumerState<PostCard>
                       child: Text(
                         originalPost!.title!,
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontWeight: FontWeight.w700,
                           fontSize: r.fs(13),
                           height: 1.3,
@@ -1190,11 +1192,11 @@ class _PostCardState extends ConsumerState<PostCard>
               child: Row(
                 children: [
                   Icon(Icons.monetization_on_rounded,
-                      size: r.s(12), color: AppTheme.warningColor),
+                      size: r.s(12), color: context.nexusTheme.warning),
                   const SizedBox(width: 2),
                   Text('${_post.tipsTotal}',
                       style: TextStyle(
-                          color: AppTheme.warningColor,
+                          color: context.nexusTheme.warning,
                           fontSize: r.fs(10),
                           fontWeight: FontWeight.w600)),
                 ],
@@ -1236,18 +1238,18 @@ class _PostCardState extends ConsumerState<PostCard>
       case 'poll':
         return const Color(0xFF00BCD4);
       case 'quiz':
-        return AppTheme.accentColor;
+        return context.nexusTheme.accentSecondary;
       case 'qa':
         return const Color(0xFF3F51B5);
       case 'link':
       case 'external':
-        return AppTheme.primaryColor;
+        return context.nexusTheme.accentPrimary;
       case 'crosspost':
         return const Color(0xFF9C27B0);
       case 'repost':
         return const Color(0xFF607D8B);
       default:
-        return context.textSecondary;
+        return context.nexusTheme.textSecondary;
     }
   }
 }
@@ -1332,7 +1334,7 @@ class _RepostConfirmSheet extends ConsumerWidget {
                     Text(
                       s.repostConfirmTitle,
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(17),
                         fontWeight: FontWeight.w800,
                       ),
@@ -1341,7 +1343,7 @@ class _RepostConfirmSheet extends ConsumerWidget {
                     Text(
                       s.repostConfirmMsg,
                       style: TextStyle(
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                         fontSize: r.fs(12),
                       ),
                     ),
@@ -1387,7 +1389,7 @@ class _RepostConfirmSheet extends ConsumerWidget {
                       Text(
                         '@${post.author?.nickname ?? s.user}',
                         style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(11),
                           fontWeight: FontWeight.w600,
                         ),
@@ -1396,7 +1398,7 @@ class _RepostConfirmSheet extends ConsumerWidget {
                         Text(
                           post.title!,
                           style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontSize: r.fs(12),
                             fontWeight: FontWeight.w600,
                           ),
@@ -1426,7 +1428,7 @@ class _RepostConfirmSheet extends ConsumerWidget {
                   child: Text(
                     s.cancel,
                     style: TextStyle(
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                         fontWeight: FontWeight.w600),
                   ),
                 ),

@@ -6,6 +6,8 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 export '../../../core/widgets/avatar_with_frame.dart';
 
 /// Custom Chat Bubble com suporte a frames equipáveis — estilo Amino Apps.
@@ -52,12 +54,12 @@ class ChatBubble extends ConsumerWidget {
       case 'agent':
         return const Color(0xFF6C5CE7); // Roxo para Agent
       case 'leader':
-        return AppTheme.primaryColor; // Verde Amino para Leader
+        return context.nexusTheme.accentPrimary; // Verde Amino para Leader
       case 'curator':
         return const Color(0xFFE040FB); // Rosa/Magenta para Curator
       default:
         return isMine
-            ? AppTheme.primaryColor
+            ? context.nexusTheme.accentPrimary
             : context.surfaceColor; // Surface escuro para outros
     }
   }
@@ -70,7 +72,7 @@ class ChatBubble extends ConsumerWidget {
         userRole == 'curator') {
       return Colors.white;
     }
-    return context.textPrimary;
+    return context.nexusTheme.textPrimary;
   }
 
   @override
@@ -306,11 +308,11 @@ class StreakBar extends ConsumerWidget {
     return Container(
       padding: EdgeInsets.all(r.s(12)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(12)),
         border: Border.all(
           color: currentStreak > 0
-              ? AppTheme.warningColor.withValues(alpha: 0.3)
+              ? context.nexusTheme.warning.withValues(alpha: 0.3)
               : Colors.white.withValues(alpha: 0.05),
         ),
       ),
@@ -324,7 +326,7 @@ class StreakBar extends ConsumerWidget {
                     ? Icons.local_fire_department_rounded
                     : Icons.local_fire_department_outlined,
                 color: currentStreak > 0
-                    ? AppTheme.warningColor
+                    ? context.nexusTheme.warning
                     : Colors.grey[600],
                 size: r.s(20),
               ),
@@ -333,7 +335,7 @@ class StreakBar extends ConsumerWidget {
                 s.checkInSequence,
                 style: TextStyle(
                   color: currentStreak > 0
-                      ? context.textPrimary
+                      ? context.nexusTheme.textPrimary
                       : Colors.grey[600],
                   fontWeight: FontWeight.w600,
                   fontSize: r.fs(13),
@@ -363,12 +365,12 @@ class StreakBar extends ConsumerWidget {
                     height: r.s(32),
                     decoration: BoxDecoration(
                       color: isActive
-                          ? AppTheme.warningColor.withValues(alpha: 0.2)
+                          ? context.nexusTheme.warning.withValues(alpha: 0.2)
                           : Colors.white.withValues(alpha: 0.03),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: isActive
-                            ? AppTheme.warningColor
+                            ? context.nexusTheme.warning
                             : Colors.white.withValues(alpha: 0.1),
                         width: 1.5,
                       ),
@@ -376,7 +378,7 @@ class StreakBar extends ConsumerWidget {
                     child: Center(
                       child: isActive
                           ? Icon(Icons.check_rounded,
-                              size: r.s(16), color: AppTheme.warningColor)
+                              size: r.s(16), color: context.nexusTheme.warning)
                           : Text(
                               '${i + 1}',
                               style: TextStyle(
@@ -391,7 +393,7 @@ class StreakBar extends ConsumerWidget {
                     _dayLabel(i, s),
                     style: TextStyle(
                       color:
-                          isActive ? AppTheme.warningColor : Colors.grey[600],
+                          isActive ? context.nexusTheme.warning : Colors.grey[600],
                       fontSize: r.fs(9),
                       fontWeight:
                           isActive ? FontWeight.w600 : FontWeight.normal,
@@ -406,12 +408,12 @@ class StreakBar extends ConsumerWidget {
             Row(
               children: [
                 Icon(Icons.local_fire_department_rounded,
-                    size: r.s(14), color: AppTheme.warningColor),
+                    size: r.s(14), color: context.nexusTheme.warning),
                 SizedBox(width: r.s(4)),
                 Text(
                   '$currentStreak dia${currentStreak > 1 ? 's' : ''} seguido${currentStreak > 1 ? 's' : ''}',
                   style: TextStyle(
-                    color: AppTheme.warningColor,
+                    color: context.nexusTheme.warning,
                     fontWeight: FontWeight.bold,
                     fontSize: r.fs(12),
                   ),

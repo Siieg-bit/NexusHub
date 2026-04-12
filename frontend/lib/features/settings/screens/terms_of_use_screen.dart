@@ -4,6 +4,8 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de Termos de Uso do NexusHub.
 class TermsOfUseScreen extends ConsumerWidget {
@@ -144,16 +146,16 @@ Para dúvidas sobre estes Termos:
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         title: Text(
           s.termsOfUse,
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
           ),
         ),
       ),
@@ -162,31 +164,31 @@ Para dúvidas sobre estes Termos:
         padding: EdgeInsets.all(r.s(16)),
         styleSheet: MarkdownStyleSheet(
           h1: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(22),
             fontWeight: FontWeight.w800,
           ),
           h2: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(17),
             fontWeight: FontWeight.w700,
           ),
           h3: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(15),
             fontWeight: FontWeight.w600,
           ),
           p: TextStyle(
-            color: context.textSecondary,
+            color: context.nexusTheme.textSecondary,
             fontSize: r.fs(14),
             height: 1.6,
           ),
           strong: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontWeight: FontWeight.w700,
           ),
           listBullet: TextStyle(
-            color: AppTheme.primaryColor,
+            color: context.nexusTheme.accentPrimary,
             fontSize: r.fs(14),
           ),
           horizontalRuleDecoration: BoxDecoration(

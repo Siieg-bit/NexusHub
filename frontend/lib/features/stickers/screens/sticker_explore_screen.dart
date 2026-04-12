@@ -6,6 +6,8 @@ import '../../../core/utils/responsive.dart';
 import '../models/sticker_model.dart';
 import '../providers/sticker_providers.dart';
 import 'sticker_pack_screen.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de exploração de packs públicos de outros usuários.
 class StickerExploreScreen extends ConsumerStatefulWidget {
@@ -30,14 +32,14 @@ class _StickerExploreScreenState extends ConsumerState<StickerExploreScreen> {
     final r = context.r;
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         elevation: 0,
         title: Text(
           'Explorar Figurinhas',
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(17),
             fontWeight: FontWeight.w800,
           ),
@@ -50,12 +52,12 @@ class _StickerExploreScreenState extends ConsumerState<StickerExploreScreen> {
             padding: EdgeInsets.all(r.s(16)),
             child: TextField(
               controller: _searchCtrl,
-              style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+              style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
               decoration: InputDecoration(
                 hintText: 'Buscar packs de figurinhas...',
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 filled: true,
-                fillColor: context.cardBg,
+                fillColor: context.nexusTheme.surfacePrimary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide.none,
@@ -101,7 +103,7 @@ class _PublicPacksList extends ConsumerWidget {
 
     return packsAsync.when(
       loading: () => const Center(
-        child: CircularProgressIndicator(color: AppTheme.primaryColor, strokeWidth: 2),
+        child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary, strokeWidth: 2),
       ),
       error: (e, _) => Center(
         child: Text('Erro ao carregar packs', style: TextStyle(color: Colors.grey[500])),
@@ -127,7 +129,7 @@ class _PublicPacksList extends ConsumerWidget {
         }
 
         return RefreshIndicator(
-          color: AppTheme.primaryColor,
+          color: context.nexusTheme.accentPrimary,
           onRefresh: () async => ref.invalidate(publicPacksProvider(searchQuery)),
           child: ListView.builder(
             padding: EdgeInsets.symmetric(horizontal: r.s(16)),
@@ -168,7 +170,7 @@ class _ExplorePackCardState extends ConsumerState<_ExplorePackCard> {
         margin: EdgeInsets.only(bottom: r.s(12)),
         padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(16)),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
@@ -199,7 +201,7 @@ class _ExplorePackCardState extends ConsumerState<_ExplorePackCard> {
                   Text(
                     widget.pack.name,
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(14),
                       fontWeight: FontWeight.w700,
                     ),
@@ -222,7 +224,7 @@ class _ExplorePackCardState extends ConsumerState<_ExplorePackCard> {
                       if (widget.pack.authorName.isNotEmpty) ...[
                         CircleAvatar(
                           radius: r.s(8),
-                          backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+                          backgroundColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                           backgroundImage: widget.pack.creatorIcon != null
                               ? CachedNetworkImageProvider(widget.pack.creatorIcon!)
                               : null,
@@ -230,7 +232,7 @@ class _ExplorePackCardState extends ConsumerState<_ExplorePackCard> {
                               ? Text(
                                   widget.pack.authorName[0].toUpperCase(),
                                   style: TextStyle(
-                                    color: AppTheme.primaryColor,
+                                    color: context.nexusTheme.accentPrimary,
                                     fontSize: r.fs(8),
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -277,12 +279,12 @@ class _ExplorePackCardState extends ConsumerState<_ExplorePackCard> {
                 decoration: BoxDecoration(
                   color: isSaved
                       ? Colors.grey[800]
-                      : AppTheme.primaryColor.withValues(alpha: 0.15),
+                      : context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(r.s(20)),
                   border: Border.all(
                     color: isSaved
                         ? Colors.grey[700]!
-                        : AppTheme.primaryColor.withValues(alpha: 0.4),
+                        : context.nexusTheme.accentPrimary.withValues(alpha: 0.4),
                   ),
                 ),
                 child: _isSaving
@@ -291,13 +293,13 @@ class _ExplorePackCardState extends ConsumerState<_ExplorePackCard> {
                         height: r.s(14),
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: isSaved ? Colors.grey[400] : AppTheme.primaryColor,
+                          color: isSaved ? Colors.grey[400] : context.nexusTheme.accentPrimary,
                         ),
                       )
                     : Text(
                         isSaved ? 'Salvo' : 'Salvar',
                         style: TextStyle(
-                          color: isSaved ? Colors.grey[400] : AppTheme.primaryColor,
+                          color: isSaved ? Colors.grey[400] : context.nexusTheme.accentPrimary,
                           fontSize: r.fs(12),
                           fontWeight: FontWeight.w700,
                         ),
@@ -325,12 +327,12 @@ class _PackCoverPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = context.r;
     return Container(
-      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
       child: Center(
         child: Icon(
           Icons.emoji_emotions_rounded,
           size: r.s(32),
-          color: AppTheme.primaryColor.withValues(alpha: 0.5),
+          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.5),
         ),
       ),
     );

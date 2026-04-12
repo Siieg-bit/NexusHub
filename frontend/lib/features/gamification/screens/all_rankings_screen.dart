@@ -5,6 +5,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela "Todos os Rankings" — lista dos 20 níveis com banner da comunidade
 /// ao fundo com opacidade, destaque do nível atual do usuário.
@@ -40,14 +42,14 @@ class AllRankingsScreen extends ConsumerWidget {
                 color: Colors.black.withValues(alpha: 0.65),
                 colorBlendMode: BlendMode.darken,
                 errorWidget: (_, __, ___) => Container(
-                  color: context.scaffoldBg,
+                  color: context.nexusTheme.backgroundPrimary,
                 ),
               ),
             )
           else
             Positioned.fill(
               child: Container(
-                color: context.scaffoldBg,
+                color: context.nexusTheme.backgroundPrimary,
               ),
             ),
 

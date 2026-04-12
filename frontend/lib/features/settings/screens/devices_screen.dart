@@ -4,6 +4,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de Dispositivos Conectados — lista sessões ativas e permite revogar.
 /// Baseado na tabela device_fingerprints do schema v5.
@@ -56,7 +58,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
         ),
         title: Text(s.revokeDevice,
             style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w800)),
+                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
         content: Text('${s.revokeDeviceConfirmation}\n${s.userReLogin}',
             style: TextStyle(color: Colors.grey[500])),
         actions: [
@@ -70,11 +72,11 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
-                color: AppTheme.errorColor,
+                color: context.nexusTheme.error,
                 borderRadius: BorderRadius.circular(r.s(20)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.errorColor.withValues(alpha: 0.3),
+                    color: context.nexusTheme.error.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -103,7 +105,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.deviceRevoked,
-                style: TextStyle(color: context.textPrimary)),
+                style: TextStyle(color: context.nexusTheme.textPrimary)),
             backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -118,7 +120,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
           SnackBar(
             content: Text(s.anErrorOccurredTryAgain,
                 style: const TextStyle(color: Colors.white)),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(r.s(12))),
@@ -141,7 +143,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
         ),
         title: Text(s.revokeAllOthers,
             style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w800)),
+                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
         content: Text('${s.revokeOtherSessions}\n${s.otherDevicesReLogin}',
             style: TextStyle(color: Colors.grey[500])),
         actions: [
@@ -155,11 +157,11 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
-                color: AppTheme.errorColor,
+                color: context.nexusTheme.error,
                 borderRadius: BorderRadius.circular(r.s(20)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.errorColor.withValues(alpha: 0.3),
+                    color: context.nexusTheme.error.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -183,7 +185,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.allSessionsRevoked,
-                style: TextStyle(color: context.textPrimary)),
+                style: TextStyle(color: context.nexusTheme.textPrimary)),
             backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -198,7 +200,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
           SnackBar(
             content: Text(s.anErrorOccurredTryAgain,
                 style: const TextStyle(color: Colors.white)),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(r.s(12))),
@@ -228,14 +230,14 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         title: Text(s.connectedDevices,
             style: TextStyle(
-                fontWeight: FontWeight.w800, color: context.textPrimary)),
+                fontWeight: FontWeight.w800, color: context.nexusTheme.textPrimary)),
         actions: [
           if (_devices.length > 1)
             GestureDetector(
@@ -245,14 +247,14 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                 padding:
                     EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
                 decoration: BoxDecoration(
-                  color: AppTheme.errorColor.withValues(alpha: 0.1),
+                  color: context.nexusTheme.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(r.s(20)),
                   border: Border.all(
-                      color: AppTheme.errorColor.withValues(alpha: 0.3)),
+                      color: context.nexusTheme.error.withValues(alpha: 0.3)),
                 ),
                 child: Text(s.revokeOthers,
                     style: TextStyle(
-                        color: AppTheme.errorColor,
+                        color: context.nexusTheme.error,
                         fontSize: r.fs(12),
                         fontWeight: FontWeight.w700)),
               ),
@@ -261,7 +263,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor))
+              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : _devices.isEmpty
               ? Center(
                   child: Column(
@@ -297,12 +299,12 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                             Container(
                               padding: EdgeInsets.all(r.s(8)),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryColor
+                                color: context.nexusTheme.accentPrimary
                                     .withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(Icons.info_rounded,
-                                  color: AppTheme.primaryColor, size: r.s(20)),
+                                  color: context.nexusTheme.accentPrimary, size: r.s(20)),
                             ),
                             SizedBox(width: r.s(12)),
                             Expanded(
@@ -340,12 +342,12 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                         borderRadius: BorderRadius.circular(r.s(16)),
                         border: Border.all(
                             color: isCurrentDevice
-                                ? AppTheme.primaryColor.withValues(alpha: 0.3)
+                                ? context.nexusTheme.accentPrimary.withValues(alpha: 0.3)
                                 : Colors.white.withValues(alpha: 0.05)),
                         boxShadow: isCurrentDevice
                             ? [
                                 BoxShadow(
-                                  color: AppTheme.primaryColor
+                                  color: context.nexusTheme.accentPrimary
                                       .withValues(alpha: 0.1),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
@@ -362,9 +364,9 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                               gradient: isCurrentDevice
                                   ? LinearGradient(
                                       colors: [
-                                        AppTheme.primaryColor
+                                        context.nexusTheme.accentPrimary
                                             .withValues(alpha: 0.2),
-                                        AppTheme.accentColor
+                                        context.nexusTheme.accentSecondary
                                             .withValues(alpha: 0.2),
                                       ],
                                       begin: Alignment.topLeft,
@@ -379,8 +381,8 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                             child: Icon(
                               _getDeviceIcon(deviceType),
                               color: isCurrentDevice
-                                  ? AppTheme.primaryColor
-                                  : context.textPrimary,
+                                  ? context.nexusTheme.accentPrimary
+                                  : context.nexusTheme.textPrimary,
                             ),
                           ),
                           SizedBox(width: r.s(16)),
@@ -393,7 +395,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                                     Expanded(
                                       child: Text(deviceName,
                                           style: TextStyle(
-                                              color: context.textPrimary,
+                                              color: context.nexusTheme.textPrimary,
                                               fontWeight: FontWeight.w700,
                                               fontSize: r.fs(15))),
                                     ),
@@ -406,8 +408,8 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                                         decoration: BoxDecoration(
                                           gradient: const LinearGradient(
                                             colors: [
-                                              AppTheme.primaryColor,
-                                              AppTheme.accentColor,
+                                              context.nexusTheme.accentPrimary,
+                                              context.nexusTheme.accentSecondary,
                                             ],
                                           ),
                                           borderRadius:
@@ -458,12 +460,12 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                               child: Container(
                                 padding: EdgeInsets.all(r.s(8)),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.errorColor
+                                  color: context.nexusTheme.error
                                       .withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(Icons.close_rounded,
-                                    color: AppTheme.errorColor, size: r.s(20)),
+                                    color: context.nexusTheme.error, size: r.s(20)),
                               ),
                             ),
                           ],

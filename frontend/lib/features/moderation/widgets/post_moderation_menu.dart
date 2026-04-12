@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // Menu de Moderação de Post — Estilo Amino
@@ -93,7 +95,7 @@ class _PostModerationMenuSheetState
           content: Text(newPinned
               ? 'Post fixado no Feed de Destaques!'
               : 'Post desafixado.'),
-          backgroundColor: AppTheme.primaryColor,
+          backgroundColor: context.nexusTheme.accentPrimary,
           behavior: SnackBarBehavior.floating,
         ));
         Navigator.of(context).pop(true);
@@ -131,7 +133,7 @@ class _PostModerationMenuSheetState
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Post adicionado aos destaques!'),
-        backgroundColor: AppTheme.warningColor,
+        backgroundColor: context.nexusTheme.warning,
         behavior: SnackBarBehavior.floating,
       ));
       Navigator.of(context).pop(true);
@@ -274,7 +276,7 @@ class _PostModerationMenuSheetState
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(
             'Notificação enviada para ${memberIds.length} membro(s)!'),
-        backgroundColor: AppTheme.primaryColor,
+        backgroundColor: context.nexusTheme.accentPrimary,
         behavior: SnackBarBehavior.floating,
       ));
       Navigator.of(context).pop(true);
@@ -353,7 +355,7 @@ class _PostModerationMenuSheetState
             child: Text(
               'Menu de Moderação',
               style: TextStyle(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
                 fontSize: r.fs(18),
                 fontWeight: FontWeight.w800,
               ),
@@ -364,7 +366,7 @@ class _PostModerationMenuSheetState
             Padding(
               padding: EdgeInsets.all(r.s(24)),
               child: const CircularProgressIndicator(
-                  color: AppTheme.primaryColor),
+                  color: context.nexusTheme.accentPrimary),
             )
           else ...[
             // 1. Fixar no Feed de Destaques
@@ -618,7 +620,7 @@ class _ModerationHistorySheetState
             child: Text(
               'Histórico da Moderação',
               style: TextStyle(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
                 fontSize: r.fs(18),
                 fontWeight: FontWeight.w800,
               ),
@@ -629,7 +631,7 @@ class _ModerationHistorySheetState
             child: _isLoading
                 ? const Center(
                     child: CircularProgressIndicator(
-                        color: AppTheme.primaryColor))
+                        color: context.nexusTheme.accentPrimary))
                 : _logs.isEmpty
                     ? Center(
                         child: Text(
@@ -661,7 +663,7 @@ class _ModerationHistorySheetState
                                 CircleAvatar(
                                   radius: r.s(18),
                                   backgroundColor:
-                                      AppTheme.primaryColor.withValues(alpha: 0.2),
+                                      context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                                   backgroundImage: moderator?['icon_url'] !=
                                           null
                                       ? NetworkImage(
@@ -670,7 +672,7 @@ class _ModerationHistorySheetState
                                   child: moderator?['icon_url'] == null
                                       ? Icon(Icons.person_rounded,
                                           size: r.s(18),
-                                          color: AppTheme.primaryColor)
+                                          color: context.nexusTheme.accentPrimary)
                                       : null,
                                 ),
                                 SizedBox(width: r.s(10)),
@@ -693,7 +695,7 @@ class _ModerationHistorySheetState
                                       Text(
                                         _actionLabel(action),
                                         style: TextStyle(
-                                          color: AppTheme.primaryColor,
+                                          color: context.nexusTheme.accentPrimary,
                                           fontSize: r.fs(12),
                                         ),
                                       ),
@@ -826,7 +828,7 @@ class _ManageCategoriesSheetState
         setState(() => _currentCategoryId = categoryId);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Categoria atualizada!'),
-          backgroundColor: AppTheme.primaryColor,
+          backgroundColor: context.nexusTheme.accentPrimary,
           behavior: SnackBarBehavior.floating,
         ));
         Navigator.of(context).pop(true);
@@ -869,7 +871,7 @@ class _ManageCategoriesSheetState
             child: Text(
               'Gerenciar Categorias',
               style: TextStyle(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
                 fontSize: r.fs(18),
                 fontWeight: FontWeight.w800,
               ),
@@ -880,7 +882,7 @@ class _ManageCategoriesSheetState
             child: _isLoading
                 ? const Center(
                     child: CircularProgressIndicator(
-                        color: AppTheme.primaryColor))
+                        color: context.nexusTheme.accentPrimary))
                 : _categories.isEmpty
                     ? Center(
                         child: Padding(
@@ -903,7 +905,7 @@ class _ManageCategoriesSheetState
                             onChanged: _isSaving
                                 ? null
                                 : (v) => _saveCategory(v),
-                            activeColor: AppTheme.primaryColor,
+                            activeColor: context.nexusTheme.accentPrimary,
                           ),
                           ..._categories.map((cat) => RadioListTile<String?>(
                                 title: Text(cat['name'] as String? ?? ''),
@@ -912,7 +914,7 @@ class _ManageCategoriesSheetState
                                 onChanged: _isSaving
                                     ? null
                                     : (v) => _saveCategory(v),
-                                activeColor: AppTheme.primaryColor,
+                                activeColor: context.nexusTheme.accentPrimary,
                               )),
                         ],
                       ),

@@ -19,6 +19,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Abre o bottom sheet de seleção de capa do chat.
 /// [threadId] — ID do chat thread.
@@ -104,7 +106,7 @@ class _ChatCoverPickerSheetState extends State<_ChatCoverPickerSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erro ao enviar capa: $e'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -161,7 +163,7 @@ class _ChatCoverPickerSheetState extends State<_ChatCoverPickerSheet> {
             style: TextStyle(
               fontSize: r.fs(18),
               fontWeight: FontWeight.w800,
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
             ),
           ),
           SizedBox(height: r.s(4)),
@@ -171,7 +173,7 @@ class _ChatCoverPickerSheetState extends State<_ChatCoverPickerSheet> {
                 : 'Apenas o host e co-administradores podem alterar a capa',
             style: TextStyle(
               fontSize: r.fs(12),
-              color: context.textHint,
+              color: context.nexusTheme.textHint,
             ),
           ),
           SizedBox(height: r.s(20)),
@@ -187,10 +189,10 @@ class _ChatCoverPickerSheetState extends State<_ChatCoverPickerSheet> {
                 fit: BoxFit.cover,
                 placeholder: (_, __) => Container(
                   height: r.s(140),
-                  color: context.cardBg,
+                  color: context.nexusTheme.surfacePrimary,
                   child: const Center(
                     child: CircularProgressIndicator(
-                        color: AppTheme.primaryColor, strokeWidth: 2),
+                        color: context.nexusTheme.accentPrimary, strokeWidth: 2),
                   ),
                 ),
               ),
@@ -206,7 +208,7 @@ class _ChatCoverPickerSheetState extends State<_ChatCoverPickerSheet> {
               label: widget.currentCover != null
                   ? 'Alterar capa da galeria'
                   : 'Escolher capa da galeria',
-              color: AppTheme.primaryColor,
+              color: context.nexusTheme.accentPrimary,
               isLoading: _isUploading,
               onTap: _pickFromGallery,
             ),
@@ -216,7 +218,7 @@ class _ChatCoverPickerSheetState extends State<_ChatCoverPickerSheet> {
                 r: r,
                 icon: Icons.delete_outline_rounded,
                 label: 'Remover capa',
-                color: AppTheme.errorColor,
+                color: context.nexusTheme.error,
                 onTap: _removeCover,
               ),
             ],
@@ -229,7 +231,7 @@ class _ChatCoverPickerSheetState extends State<_ChatCoverPickerSheet> {
                   child: Text(
                     'Nenhuma capa definida',
                     style: TextStyle(
-                        color: context.textHint, fontSize: r.fs(13)),
+                        color: context.nexusTheme.textHint, fontSize: r.fs(13)),
                   ),
                 ),
               ),

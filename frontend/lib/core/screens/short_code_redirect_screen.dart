@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../config/app_theme.dart';
 import '../services/deep_link_service.dart';
+import '../../config/nexus_theme_extension.dart';
 
 /// Tela de redirecionamento para short codes de URLs curtas.
 ///
@@ -94,7 +95,7 @@ class _ShortCodeRedirectScreenState extends State<ShortCodeRedirectScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       // SafeArea garante que o conteúdo não fique atrás da status bar ou
       // navigation bar em dispositivos com edge-to-edge (Android 15+).
       body: SafeArea(
@@ -123,12 +124,12 @@ class _ShortCodeRedirectScreenState extends State<ShortCodeRedirectScreen> {
                     TextButton(
                       onPressed: () => context.go('/explore'),
                       child: const Text('Voltar ao início',
-                          style: TextStyle(color: AppTheme.primaryColor)),
+                          style: TextStyle(color: context.nexusTheme.accentPrimary)),
                     ),
                   ],
                 )
               : const CircularProgressIndicator(
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                   strokeWidth: 2,
                 ),
         ),

@@ -8,6 +8,8 @@ import '../../../core/services/supabase_service.dart';
 import '../widgets/post_card.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Provider para feed global (posts de todas as comunidades do usuário).
 final globalFeedProvider = FutureProvider<List<PostModel>>((ref) async {
@@ -45,9 +47,9 @@ class GlobalFeedScreen extends ConsumerWidget {
     final feedAsync = ref.watch(globalFeedProvider);
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       body: RefreshIndicator(
-        color: AppTheme.primaryColor,
+        color: context.nexusTheme.accentPrimary,
         onRefresh: () async {
           ref.invalidate(globalFeedProvider);
           await Future.delayed(const Duration(milliseconds: 300));
@@ -58,7 +60,7 @@ class GlobalFeedScreen extends ConsumerWidget {
             // HEADER
             // ================================================================
             SliverAppBar(
-              backgroundColor: context.scaffoldBg,
+              backgroundColor: context.nexusTheme.backgroundPrimary,
               elevation: 0,
               floating: true,
               title: Row(
@@ -67,12 +69,12 @@ class GlobalFeedScreen extends ConsumerWidget {
                     padding: EdgeInsets.all(r.s(6)),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                        colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                       ),
                       borderRadius: BorderRadius.circular(r.s(8)),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -85,7 +87,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                   Text(
                     s.nexusHub,
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontWeight: FontWeight.w800,
                       fontSize: r.fs(20),
                     ),
@@ -96,7 +98,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                 // Check-in
                 IconButton(
                   icon: Icon(Icons.calendar_today_rounded,
-                      color: context.textPrimary),
+                      color: context.nexusTheme.textPrimary),
                   onPressed: () => context.push('/check-in'),
                   tooltip: s.dailyCheckIn2,
                 ),
@@ -105,7 +107,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                   icon: Badge(
                     smallSize: 8,
                     child: Icon(Icons.notifications_outlined,
-                        color: context.textPrimary),
+                        color: context.nexusTheme.textPrimary),
                   ),
                   onPressed: () => context.push('/notifications'),
                 ),
@@ -126,31 +128,31 @@ class GlobalFeedScreen extends ConsumerWidget {
                     _QuickAction(
                       icon: Icons.add_circle_rounded,
                       label: s.createCommunityNewline,
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                       onTap: () => context.push('/create-community'),
                     ),
                     _QuickAction(
                       icon: Icons.calendar_today_rounded,
                       label: s.checkInDaily,
-                      color: AppTheme.warningColor,
+                      color: context.nexusTheme.warning,
                       onTap: () => context.push('/check-in'),
                     ),
                     _QuickAction(
                       icon: Icons.leaderboard_rounded,
                       label: s.globalRankingNewline,
-                      color: AppTheme.accentColor,
+                      color: context.nexusTheme.accentSecondary,
                       onTap: () => context.push('/leaderboard'),
                     ),
                     _QuickAction(
                       icon: Icons.quiz_rounded,
                       label: s.quizDaily,
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                       onTap: () => context.push('/quiz'),
                     ),
                     _QuickAction(
                       icon: Icons.store_rounded,
                       label: s.coinShopNewline,
-                      color: AppTheme.warningColor,
+                      color: context.nexusTheme.warning,
                       onTap: () => context.push('/wallet'),
                     ),
                   ],
@@ -170,7 +172,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                     Text(
                       s.feed,
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(20),
                         fontWeight: FontWeight.w800,
                       ),
@@ -190,7 +192,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                         child: Text(
                           s.refresh,
                           style: TextStyle(
-                            color: AppTheme.primaryColor,
+                            color: context.nexusTheme.accentPrimary,
                             fontWeight: FontWeight.w700,
                             fontSize: r.fs(12),
                           ),
@@ -206,7 +208,7 @@ class GlobalFeedScreen extends ConsumerWidget {
               loading: () => const SliverFillRemaining(
                 child: Center(
                     child: CircularProgressIndicator(
-                        color: AppTheme.primaryColor)),
+                        color: context.nexusTheme.accentPrimary)),
               ),
               error: (error, _) => SliverFillRemaining(
                 child: Center(
@@ -214,11 +216,11 @@ class GlobalFeedScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.error_outline_rounded,
-                          size: r.s(48), color: AppTheme.errorColor),
+                          size: r.s(48), color: context.nexusTheme.error),
                       SizedBox(height: r.s(16)),
                       Text(
                         'Erro ao carregar feed. Tente novamente.',
-                        style: TextStyle(color: context.textPrimary),
+                        style: TextStyle(color: context.nexusTheme.textPrimary),
                         textAlign: TextAlign.center,
                       ),
                       SizedBox(height: r.s(16)),
@@ -230,14 +232,14 @@ class GlobalFeedScreen extends ConsumerWidget {
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               colors: [
-                                AppTheme.primaryColor,
-                                AppTheme.accentColor
+                                context.nexusTheme.accentPrimary,
+                                context.nexusTheme.accentSecondary
                               ],
                             ),
                             borderRadius: BorderRadius.circular(r.s(24)),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.primaryColor
+                                color: context.nexusTheme.accentPrimary
                                     .withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
@@ -269,7 +271,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                           SizedBox(height: r.s(16)),
                           Text(s.feedEmpty,
                               style: TextStyle(
-                                  color: context.textPrimary,
+                                  color: context.nexusTheme.textPrimary,
                                   fontSize: r.fs(18),
                                   fontWeight: FontWeight.w700)),
                           SizedBox(height: r.s(8)),

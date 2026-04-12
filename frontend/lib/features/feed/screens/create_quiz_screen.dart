@@ -12,6 +12,8 @@ import '../../../core/models/post_model.dart';
 import '../../../core/providers/post_provider.dart';
 import '../../../core/providers/draft_provider.dart';
 import 'dart:async';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CREATE QUIZ SCREEN — Quiz interativo com perguntas e respostas corretas
@@ -236,7 +238,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Rascunho restaurado.'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -251,7 +253,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Adicione conteúdo antes de salvar.'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -326,7 +328,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Rascunho salvo.'),
-          backgroundColor: AppTheme.successColor,
+          backgroundColor: context.nexusTheme.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -335,7 +337,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Erro ao salvar rascunho.'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -408,7 +410,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -441,7 +443,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -456,7 +458,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(s.quizTitleRequired),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -469,7 +471,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(s.addAtLeastOneQuestion),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -535,7 +537,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.postUpdated),
-                backgroundColor: AppTheme.successColor,
+                backgroundColor: context.nexusTheme.success,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -543,7 +545,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.anErrorOccurredTryAgain),
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -608,7 +610,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.quizCreatedSuccess),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -619,7 +621,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorCreatingQuiz),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -634,18 +636,18 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     final accent = const Color(0xFFDB2777);
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
           _isEditing ? s.editPost : s.newQuiz,
           style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(17),
               fontWeight: FontWeight.w700),
         ),
         leading: IconButton(
-          icon: Icon(Icons.close_rounded, color: context.textPrimary),
+          icon: Icon(Icons.close_rounded, color: context.nexusTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -659,22 +661,22 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                   : _visibility == 'followers'
                       ? Icons.people_rounded
                       : Icons.lock_rounded,
-              color: AppTheme.accentColor,
+              color: context.nexusTheme.accentSecondary,
               size: r.s(20),
             ),
             itemBuilder: (_) => [
               PopupMenuItem(
                   value: 'public',
                   child: Text(s.publicLabel,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
               PopupMenuItem(
                   value: 'followers',
                   child: Text(s.followers,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
               PopupMenuItem(
                   value: 'private',
                   child: Text(s.privateLabel,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
             ],
           ),
           TextButton(
@@ -684,12 +686,12 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                     width: r.s(18),
                     height: r.s(18),
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: AppTheme.primaryColor),
+                        strokeWidth: 2, color: context.nexusTheme.accentPrimary),
                   )
                 : Text(
                     _isEditing ? s.save : s.publish,
                     style: TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         fontSize: r.fs(14),
                         fontWeight: FontWeight.w700),
                   ),
@@ -773,7 +775,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             Row(
               children: [
                 Icon(Icons.shuffle_rounded,
-                    color: context.textSecondary, size: r.s(20)),
+                    color: context.nexusTheme.textSecondary, size: r.s(20)),
                 SizedBox(width: r.s(12)),
                 Expanded(
                   child: Column(
@@ -781,12 +783,12 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                     children: [
                       Text('Embaralhar perguntas',
                           style: TextStyle(
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                               fontSize: r.fs(13),
                               fontWeight: FontWeight.w600)),
                       Text('Ordem aleatória para cada participante',
                           style: TextStyle(
-                              color: context.textSecondary,
+                              color: context.nexusTheme.textSecondary,
                               fontSize: r.fs(11))),
                     ],
                   ),
@@ -810,7 +812,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                 Text(
                   'Perguntas',
                   style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(15),
                       fontWeight: FontWeight.w700),
                 ),
@@ -818,7 +820,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                 Text(
                   '${_questions.length}/20',
                   style: TextStyle(
-                      color: context.textSecondary, fontSize: r.fs(12)),
+                      color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
                 ),
               ],
             ),
@@ -833,11 +835,11 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                 child: TextButton.icon(
                   onPressed: _addQuestion,
                   icon: Icon(Icons.add_rounded,
-                      color: AppTheme.primaryColor, size: r.s(18)),
+                      color: context.nexusTheme.accentPrimary, size: r.s(18)),
                   label: Text(
                     s.addQuestion,
                     style: TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         fontSize: r.fs(14)),
                   ),
                 ),
@@ -883,7 +885,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       child: Container(
         height: r.s(64),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(12)),
           border:
               Border.all(color: context.dividerClr.withValues(alpha: 0.4)),
@@ -895,12 +897,12 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.add_photo_alternate_rounded,
-                        color: context.textSecondary, size: r.s(20)),
+                        color: context.nexusTheme.textSecondary, size: r.s(20)),
                     SizedBox(width: r.s(8)),
                     Text(
                       'Adicionar capa do quiz',
                       style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(13)),
                     ),
                   ],
@@ -935,7 +937,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         decoration: BoxDecoration(
           color: selected
               ? color.withValues(alpha: 0.2)
-              : context.cardBg,
+              : context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(20)),
           border: Border.all(
             color: selected
@@ -947,7 +949,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? color : context.textSecondary,
+            color: selected ? color : context.nexusTheme.textSecondary,
             fontSize: r.fs(12),
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           ),
@@ -969,7 +971,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(10), vertical: r.s(4)),
                       decoration: BoxDecoration(
-                        color: AppTheme.accentColor
+                        color: context.nexusTheme.accentSecondary
                             .withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(r.s(12)),
                       ),
@@ -978,7 +980,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                         children: [
                           Text('#$tag',
                               style: TextStyle(
-                                  color: AppTheme.accentColor,
+                                  color: context.nexusTheme.accentSecondary,
                                   fontSize: r.fs(12),
                                   fontWeight: FontWeight.w600)),
                           SizedBox(width: r.s(4)),
@@ -986,7 +988,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                             onTap: () =>
                                 setState(() => _tags.remove(tag)),
                             child: Icon(Icons.close_rounded,
-                                color: AppTheme.accentColor,
+                                color: context.nexusTheme.accentSecondary,
                                 size: r.s(14)),
                           ),
                         ],
@@ -1003,16 +1005,16 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                 child: TextField(
                   controller: _tagController,
                   style: TextStyle(
-                      color: context.textPrimary, fontSize: r.fs(13)),
+                      color: context.nexusTheme.textPrimary, fontSize: r.fs(13)),
                   decoration: InputDecoration(
                     hintText: 'Ex: ciência, história...',
                     hintStyle: TextStyle(
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                         fontSize: r.fs(13)),
                     border: InputBorder.none,
                     isDense: true,
                     prefixIcon: Icon(Icons.tag_rounded,
-                        color: context.textSecondary, size: r.s(16)),
+                        color: context.nexusTheme.textSecondary, size: r.s(16)),
                   ),
                   onSubmitted: (_) => _addTag(),
                 ),
@@ -1023,13 +1025,13 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(12), vertical: r.s(6)),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentColor
+                    color: context.nexusTheme.accentSecondary
                         .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(r.s(8)),
                   ),
                   child: Text('Adicionar',
                       style: TextStyle(
-                          color: AppTheme.accentColor,
+                          color: context.nexusTheme.accentSecondary,
                           fontSize: r.fs(12),
                           fontWeight: FontWeight.w600)),
                 ),
@@ -1047,7 +1049,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       margin: EdgeInsets.only(bottom: r.s(16)),
       padding: EdgeInsets.all(r.s(14)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(14)),
         border:
             Border.all(color: context.dividerClr.withValues(alpha: 0.3)),
@@ -1086,7 +1088,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                   decoration: BoxDecoration(
                     color: q.timerSeconds > 0
                         ? accent.withValues(alpha: 0.1)
-                        : context.scaffoldBg,
+                        : context.nexusTheme.backgroundPrimary,
                     borderRadius: BorderRadius.circular(r.s(8)),
                   ),
                   child: Row(
@@ -1095,7 +1097,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                       Icon(Icons.timer_rounded,
                           color: q.timerSeconds > 0
                               ? accent
-                              : context.textSecondary,
+                              : context.nexusTheme.textSecondary,
                           size: r.s(14)),
                       SizedBox(width: r.s(4)),
                       Text(
@@ -1103,7 +1105,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                         style: TextStyle(
                             color: q.timerSeconds > 0
                                 ? accent
-                                : context.textSecondary,
+                                : context.nexusTheme.textSecondary,
                             fontSize: r.fs(11)),
                       ),
                     ],
@@ -1114,7 +1116,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                           value: e.key,
                           child: Text(e.value,
                               style: TextStyle(
-                                  color: context.textPrimary)),
+                                  color: context.nexusTheme.textPrimary)),
                         ))
                     .toList(),
               ),
@@ -1123,7 +1125,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                 GestureDetector(
                   onTap: () => _removeQuestion(qi),
                   child: Icon(Icons.delete_outline_rounded,
-                      color: AppTheme.errorColor, size: r.s(18)),
+                      color: context.nexusTheme.error, size: r.s(18)),
                 ),
               ],
             ],
@@ -1158,7 +1160,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
               child: Container(
                 height: r.s(40),
                 decoration: BoxDecoration(
-                  color: context.scaffoldBg,
+                  color: context.nexusTheme.backgroundPrimary,
                   borderRadius: BorderRadius.circular(r.s(8)),
                   border: Border.all(
                       color:
@@ -1169,12 +1171,12 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.image_rounded,
-                          color: context.textSecondary, size: r.s(16)),
+                          color: context.nexusTheme.textSecondary, size: r.s(16)),
                       SizedBox(width: r.s(6)),
                       Text(
                         'Adicionar imagem',
                         style: TextStyle(
-                            color: context.textSecondary,
+                            color: context.nexusTheme.textSecondary,
                             fontSize: r.fs(11)),
                       ),
                     ],
@@ -1191,13 +1193,13 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             maxLength: 200,
             textCapitalization: TextCapitalization.sentences,
             style: TextStyle(
-                color: context.textPrimary, fontSize: r.fs(14)),
+                color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
             decoration: InputDecoration(
               hintText: s.typeQuestionHint,
               hintStyle: TextStyle(
-                  color: context.textSecondary, fontSize: r.fs(14)),
+                  color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
               filled: true,
-              fillColor: context.scaffoldBg,
+              fillColor: context.nexusTheme.backgroundPrimary,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(10)),
                 borderSide: BorderSide.none,
@@ -1217,7 +1219,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
           Text(
             s.optionsMarkCorrect,
             style: TextStyle(
-                color: context.textSecondary,
+                color: context.nexusTheme.textSecondary,
                 fontSize: r.fs(12),
                 fontWeight: FontWeight.w500),
           ),
@@ -1237,11 +1239,11 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: isCorrect
-                            ? AppTheme.primaryColor
+                            ? context.nexusTheme.accentPrimary
                             : Colors.transparent,
                         border: Border.all(
                           color: isCorrect
-                              ? AppTheme.primaryColor
+                              ? context.nexusTheme.accentPrimary
                               : context.dividerClr,
                           width: 2,
                         ),
@@ -1259,15 +1261,15 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                       maxLength: 100,
                       textCapitalization: TextCapitalization.sentences,
                       style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(13)),
                       decoration: InputDecoration(
                         hintText: s.optionNumber(oi + 1),
                         hintStyle: TextStyle(
-                            color: context.textSecondary,
+                            color: context.nexusTheme.textSecondary,
                             fontSize: r.fs(13)),
                         filled: true,
-                        fillColor: context.scaffoldBg,
+                        fillColor: context.nexusTheme.backgroundPrimary,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(r.s(8)),
                           borderSide: BorderSide.none,
@@ -1276,7 +1278,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                           borderRadius: BorderRadius.circular(r.s(8)),
                           borderSide: BorderSide(
                               color: isCorrect
-                                  ? AppTheme.primaryColor
+                                  ? context.nexusTheme.accentPrimary
                                   : accent,
                               width: 1.5),
                         ),
@@ -1300,13 +1302,13 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             maxLines: 2,
             textCapitalization: TextCapitalization.sentences,
             style: TextStyle(
-                color: context.textPrimary, fontSize: r.fs(12)),
+                color: context.nexusTheme.textPrimary, fontSize: r.fs(12)),
             decoration: InputDecoration(
               hintText: 'Explicação da resposta correta (opcional)',
               hintStyle: TextStyle(
-                  color: context.textSecondary, fontSize: r.fs(12)),
+                  color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
               filled: true,
-              fillColor: AppTheme.primaryColor.withValues(alpha: 0.05),
+              fillColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.05),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(8)),
                 borderSide: BorderSide.none,
@@ -1314,11 +1316,11 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(8)),
                 borderSide: BorderSide(
-                    color: AppTheme.primaryColor, width: 1),
+                    color: context.nexusTheme.accentPrimary, width: 1),
               ),
               counterText: '',
               prefixIcon: Icon(Icons.lightbulb_outline_rounded,
-                  color: AppTheme.primaryColor.withValues(alpha: 0.6),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.6),
                   size: r.s(16)),
               contentPadding: EdgeInsets.symmetric(
                   horizontal: r.s(10), vertical: r.s(8)),
@@ -1332,7 +1334,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
   Widget _buildLabel(String text, Responsive r) => Text(
         text,
         style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(13),
             fontWeight: FontWeight.w600),
       );
@@ -1350,13 +1352,13 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         maxLength: maxLength,
         maxLines: maxLines,
         textCapitalization: TextCapitalization.sentences,
-        style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+        style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle:
-              TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
+              TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
           filled: true,
-          fillColor: context.cardBg,
+          fillColor: context.nexusTheme.surfacePrimary,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(r.s(12)),
             borderSide: BorderSide.none,

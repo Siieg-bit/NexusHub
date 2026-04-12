@@ -7,6 +7,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Shared Folder — Pasta Compartilhada da Comunidade.
 ///
@@ -146,7 +148,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
             Text(
               'Upload para Shared Folder',
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontWeight: FontWeight.w800,
                 fontSize: r.fs(18),
               ),
@@ -260,7 +262,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
         ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(
             content: Text(s.fileSentSuccess),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -270,7 +272,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -291,7 +293,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
             borderRadius: BorderRadius.circular(r.s(16))),
         title: Text(s.deleteFile,
             style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w700)),
+                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
         content: const Text('Tem certeza que deseja excluir este arquivo?',
             style: TextStyle(color: Colors.grey)),
         actions: [
@@ -302,7 +304,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: context.nexusTheme.error,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(10))),
             ),
@@ -350,11 +352,11 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -362,7 +364,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
               'Shared Folder',
               style: TextStyle(
                 fontWeight: FontWeight.w800,
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(18),
               ),
             ),
@@ -374,9 +376,9 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppTheme.accentColor,
+          indicatorColor: context.nexusTheme.accentSecondary,
           indicatorWeight: 3,
-          labelColor: AppTheme.accentColor,
+          labelColor: context.nexusTheme.accentSecondary,
           unselectedLabelColor: Colors.grey[600],
           labelStyle:
               TextStyle(fontWeight: FontWeight.w700, fontSize: r.fs(13)),
@@ -385,7 +387,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _isUploading ? null : _uploadFile,
-        backgroundColor: AppTheme.aminoPink,
+        backgroundColor: context.nexusTheme.accentSecondary,
         child: _isUploading
             ? SizedBox(
                 width: r.s(24),
@@ -397,7 +399,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor))
+              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : TabBarView(
               controller: _tabController,
               children: List.generate(_tabs.length, (tabIndex) {
@@ -453,7 +455,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
         .toList();
 
     return RefreshIndicator(
-      color: AppTheme.primaryColor,
+      color: context.nexusTheme.accentPrimary,
       onRefresh: () async {
         setState(() => _isLoading = true);
         await _loadFolder();
@@ -503,7 +505,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
   Widget _buildListView(List<Map<String, dynamic>> files) {
     final r = context.r;
     return RefreshIndicator(
-      color: AppTheme.primaryColor,
+      color: context.nexusTheme.accentPrimary,
       onRefresh: () async {
         setState(() => _isLoading = true);
         await _loadFolder();
@@ -549,7 +551,7 @@ class _UploadOption extends ConsumerWidget {
         margin: EdgeInsets.only(bottom: r.s(8)),
         padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(14)),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(12)),
         ),
         child: Row(
@@ -567,7 +569,7 @@ class _UploadOption extends ConsumerWidget {
             Text(
               label,
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontWeight: FontWeight.w600,
                 fontSize: r.fs(15),
               ),
@@ -607,7 +609,7 @@ class _ImageTile extends ConsumerWidget {
               url,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(
-                color: context.cardBg,
+                color: context.nexusTheme.surfacePrimary,
                 child: Icon(Icons.broken_image_rounded,
                     color: Colors.grey[700], size: r.s(32)),
               ),
@@ -684,9 +686,9 @@ class _ImageTile extends ConsumerWidget {
             if (canDelete)
               ListTile(
                 leading: const Icon(Icons.delete_rounded,
-                    color: AppTheme.errorColor),
+                    color: context.nexusTheme.error),
                 title: Text(s.delete,
-                    style: TextStyle(color: AppTheme.errorColor)),
+                    style: TextStyle(color: context.nexusTheme.error)),
                 onTap: () {
                   Navigator.pop(ctx);
                   onDelete();
@@ -753,7 +755,7 @@ class _FileTile extends ConsumerWidget {
       margin: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
       padding: EdgeInsets.all(r.s(12)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(12)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -776,7 +778,7 @@ class _FileTile extends ConsumerWidget {
                 Text(
                   name,
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontWeight: FontWeight.w600,
                     fontSize: r.fs(14),
                   ),

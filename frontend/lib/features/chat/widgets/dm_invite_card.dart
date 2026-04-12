@@ -6,6 +6,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Card que mostra um convite de DM pendente com botões aceitar/recusar.
 class DmInviteCard extends ConsumerWidget {
@@ -34,7 +36,7 @@ class DmInviteCard extends ConsumerWidget {
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(r.s(14)),
         border: Border.all(
-          color: AppTheme.primaryColor.withValues(alpha: 0.3),
+          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -46,11 +48,11 @@ class DmInviteCard extends ConsumerWidget {
               Container(
                 padding: EdgeInsets.all(r.s(8)),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.mail_rounded,
-                    color: AppTheme.primaryColor, size: r.s(18)),
+                    color: context.nexusTheme.accentPrimary, size: r.s(18)),
               ),
               SizedBox(width: r.s(12)),
               Expanded(
@@ -60,7 +62,7 @@ class DmInviteCard extends ConsumerWidget {
                     Text(
                       'Convite de $senderName',
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(14),
                         fontWeight: FontWeight.w600,
                       ),
@@ -122,7 +124,7 @@ class DmInviteCard extends ConsumerWidget {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
+                    backgroundColor: context.nexusTheme.accentPrimary,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(r.s(10))),
                     padding: EdgeInsets.symmetric(vertical: r.s(10)),

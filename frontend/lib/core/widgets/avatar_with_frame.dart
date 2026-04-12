@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../config/app_theme.dart';
 import '../../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../config/nexus_theme_extension.dart';
 
 /// Widget de Avatar com Frame decorativo — réplica pixel-perfect do Amino.
 ///
@@ -166,7 +167,7 @@ class AvatarWithFrame extends ConsumerWidget {
                       colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
                     ),
                     shape: BoxShape.circle,
-                    border: Border.all(color: context.scaffoldBg, width: 2),
+                    border: Border.all(color: context.nexusTheme.backgroundPrimary, width: 2),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFFFF6B6B).withValues(alpha: 0.3),
@@ -191,9 +192,9 @@ class AvatarWithFrame extends ConsumerWidget {
                   width: size * 0.25,
                   height: size * 0.25,
                   decoration: BoxDecoration(
-                    color: AppTheme.onlineColor,
+                    color: context.nexusTheme.onlineIndicator,
                     shape: BoxShape.circle,
-                    border: Border.all(color: context.scaffoldBg, width: 2),
+                    border: Border.all(color: context.nexusTheme.backgroundPrimary, width: 2),
                   ),
                 ),
               ),

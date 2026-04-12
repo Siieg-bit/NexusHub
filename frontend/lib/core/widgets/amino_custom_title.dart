@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../utils/responsive.dart';
+import '../../config/nexus_theme_extension.dart';
 
 /// AminoCustomTitle — Pílula de título customizado estilo Amino.
 ///
@@ -85,7 +86,7 @@ class AminoCustomTitleList extends StatelessWidget {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return AppTheme.primaryColor.withValues(alpha: 0.3);
+      return context.nexusTheme.accentPrimary.withValues(alpha: 0.3);
     }
   }
 
@@ -103,7 +104,7 @@ class AminoCustomTitleList extends StatelessWidget {
           final titleText = t is Map ? (t['title'] ?? '') : t.toString();
           final titleColor = t is Map && t['color'] != null
               ? _parseColor(t['color'] as String? ?? '')
-              : AppTheme.primaryColor.withValues(alpha: 0.3);
+              : context.nexusTheme.accentPrimary.withValues(alpha: 0.3);
           return AminoCustomTitle(
             title: titleText,
             color: titleColor,
@@ -125,7 +126,7 @@ class AminoCustomTitleList extends StatelessWidget {
               style: TextStyle(
                 fontSize: r.fs(10),
                 fontWeight: FontWeight.w700,
-                color: context.textSecondary,
+                color: context.nexusTheme.textSecondary,
               ),
             ),
           ),

@@ -20,6 +20,8 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/block_provider.dart';
 import '../../../core/services/deep_link_service.dart';
 import '../../../core/widgets/image_viewer.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // PROFILE SCREEN — Layout fiel ao Amino Apps
@@ -63,20 +65,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
     return profileAsync.when(
       loading: () => Scaffold(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         body: const Center(
           child: CircularProgressIndicator(
-              color: AppTheme.accentColor, strokeWidth: 2),
+              color: context.nexusTheme.accentSecondary, strokeWidth: 2),
         ),
       ),
       error: (error, _) => Scaffold(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back_ios_rounded,
-                color: context.textPrimary, size: r.s(20)),
+                color: context.nexusTheme.textPrimary, size: r.s(20)),
             onPressed: () => context.pop(),
           ),
         ),
@@ -97,7 +99,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(20), vertical: r.s(10)),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor,
+                    color: context.nexusTheme.accentPrimary,
                     borderRadius: BorderRadius.circular(r.s(8)),
                   ),
                   child: Text(s.retry,
@@ -117,9 +119,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
         return Scaffold(
           resizeToAvoidBottomInset: true,
-          backgroundColor: context.scaffoldBg,
+          backgroundColor: context.nexusTheme.backgroundPrimary,
           body: RefreshIndicator(
-            color: AppTheme.primaryColor,
+            color: context.nexusTheme.accentPrimary,
             onRefresh: () async {
               ref.invalidate(userProfileProvider(widget.userId));
               ref.invalidate(equippedItemsProvider(widget.userId));
@@ -133,7 +135,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 // ================================================================
                 SliverAppBar(
                   pinned: true,
-                  backgroundColor: context.scaffoldBg.withValues(alpha: 0.95),
+                  backgroundColor: context.nexusTheme.backgroundPrimary.withValues(alpha: 0.95),
                   elevation: 0,
                   leading: IconButton(
                     icon: Icon(Icons.arrow_back_ios_rounded,
@@ -300,12 +302,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     decoration: BoxDecoration(
                                       color: user.isFollowing == true
                                           ? Colors.transparent
-                                          : AppTheme.accentColor,
+                                          : context.nexusTheme.accentSecondary,
                                       borderRadius:
                                           BorderRadius.circular(r.s(8)),
                                       border: user.isFollowing == true
                                           ? Border.all(
-                                              color: AppTheme.accentColor)
+                                              color: context.nexusTheme.accentSecondary)
                                           : null,
                                     ),
                                     child: Text(
@@ -341,7 +343,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               child: Text(
                                 user.nickname,
                                 style: TextStyle(
-                                  color: context.textPrimary,
+                                  color: context.nexusTheme.textPrimary,
                                   fontWeight: FontWeight.w800,
                                   fontSize: r.fs(22),
                                 ),
@@ -355,7 +357,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             if (user.isNicknameVerified) ...[
                               SizedBox(width: r.s(4)),
                               Icon(Icons.verified_rounded,
-                                  color: AppTheme.accentColor, size: r.s(18)),
+                                  color: context.nexusTheme.accentSecondary, size: r.s(18)),
                             ],
                           ],
                         ),
@@ -398,7 +400,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                   Text(
                                     _formatCount(user.followingCount),
                                     style: TextStyle(
-                                      color: context.textPrimary,
+                                      color: context.nexusTheme.textPrimary,
                                       fontWeight: FontWeight.w800,
                                       fontSize: r.fs(20),
                                     ),
@@ -434,7 +436,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                   Text(
                                     _formatCount(user.followersCount),
                                     style: TextStyle(
-                                      color: context.textPrimary,
+                                      color: context.nexusTheme.textPrimary,
                                       fontWeight: FontWeight.w800,
                                       fontSize: r.fs(20),
                                     ),
@@ -482,7 +484,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 child: Text(
                                   s.tapToAddBio,
                                   style: TextStyle(
-                                    color: AppTheme.accentColor,
+                                    color: context.nexusTheme.accentSecondary,
                                     fontSize: r.fs(13),
                                   ),
                                 ),
@@ -598,7 +600,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   delegate: _TabBarDelegate(
                     tabBar: TabBar(
                       controller: _tabController,
-                      labelColor: context.textPrimary,
+                      labelColor: context.nexusTheme.textPrimary,
                       unselectedLabelColor: Colors.grey[600],
                       labelStyle: TextStyle(
                         fontWeight: FontWeight.w800,
@@ -608,7 +610,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         fontWeight: FontWeight.w600,
                         fontSize: r.fs(16),
                       ),
-                      indicatorColor: context.textPrimary,
+                      indicatorColor: context.nexusTheme.textPrimary,
                       indicatorWeight: 3,
                       indicatorSize: TabBarIndicatorSize.label,
                       tabs: [
@@ -693,7 +695,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
           ),
           title: Text(s.unblockUser,
-              style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+              style: TextStyle(color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
           content: Text(s.confirmUnblockUser,
               style: TextStyle(color: Colors.grey[500])),
           actions: [
@@ -704,7 +706,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(s.unblock,
-                  style: const TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w800)),
+                  style: const TextStyle(color: context.nexusTheme.error, fontWeight: FontWeight.w800)),
             ),
           ],
         ),
@@ -731,7 +733,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
           ),
           title: Text(s.blockConfirmTitle,
-              style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+              style: TextStyle(color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
           content: Text(s.blockConfirmMsg,
               style: TextStyle(color: Colors.grey[500])),
           actions: [
@@ -742,7 +744,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(s.block,
-                  style: const TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w800)),
+                  style: const TextStyle(color: context.nexusTheme.error, fontWeight: FontWeight.w800)),
             ),
           ],
         ),
@@ -819,7 +821,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget _optionTile(IconData icon, String label, VoidCallback onTap,
       {bool isDestructive = false}) {
     final r = context.r;
-    final color = isDestructive ? AppTheme.errorColor : Colors.grey[400];
+    final color = isDestructive ? context.nexusTheme.error : Colors.grey[400];
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -859,7 +861,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: context.scaffoldBg,
+      color: context.nexusTheme.backgroundPrimary,
       child: tabBar,
     );
   }

@@ -7,6 +7,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/profile_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // STORIES TAB — Stories reais do usuário (tabela stories, NÃO posts)
@@ -25,7 +27,7 @@ class ProfileStoriesTab extends ConsumerWidget {
     return storiesAsync.when(
       loading: () => const Center(
         child: CircularProgressIndicator(
-            color: AppTheme.accentColor, strokeWidth: 2),
+            color: context.nexusTheme.accentSecondary, strokeWidth: 2),
       ),
       error: (error, _) => Center(
         child: Column(
@@ -109,7 +111,7 @@ class ProfileStoriesTab extends ConsumerWidget {
                         child: Center(
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: AppTheme.accentColor,
+                            color: context.nexusTheme.accentSecondary,
                           ),
                         ),
                       ),

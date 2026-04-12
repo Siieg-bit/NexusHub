@@ -13,6 +13,8 @@ import '../../../core/providers/post_provider.dart';
 import '../../../core/providers/draft_provider.dart';
 import 'dart:async';
 import '../../../core/services/og_tags_service.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CREATE LINK POST SCREEN — Post com URL externa
@@ -131,7 +133,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Rascunho restaurado.'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -146,7 +148,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Adicione conteúdo antes de salvar.'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -187,7 +189,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Rascunho salvo.'),
-          backgroundColor: AppTheme.successColor,
+          backgroundColor: context.nexusTheme.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -196,7 +198,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Erro ao salvar rascunho.'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -313,7 +315,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -332,7 +334,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(s.titleRequired),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -342,7 +344,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(s.enterValidLink),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -387,7 +389,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.postUpdated),
-                backgroundColor: AppTheme.successColor,
+                backgroundColor: context.nexusTheme.success,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -395,7 +397,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.anErrorOccurredTryAgain),
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -466,7 +468,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.linkSharedSuccess),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -477,7 +479,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorPublishing2),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -490,18 +492,18 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
     final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
           _isEditing ? s.editPost : s.shareLinkTitle,
           style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(17),
               fontWeight: FontWeight.w700),
         ),
         leading: IconButton(
-          icon: Icon(Icons.close_rounded, color: context.textPrimary),
+          icon: Icon(Icons.close_rounded, color: context.nexusTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -515,22 +517,22 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                   : _visibility == 'followers'
                       ? Icons.people_rounded
                       : Icons.lock_rounded,
-              color: AppTheme.accentColor,
+              color: context.nexusTheme.accentSecondary,
               size: r.s(20),
             ),
             itemBuilder: (_) => [
               PopupMenuItem(
                   value: 'public',
                   child: Text(s.publicLabel,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
               PopupMenuItem(
                   value: 'followers',
                   child: Text(s.followers,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
               PopupMenuItem(
                   value: 'private',
                   child: Text(s.privateLabel,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
             ],
           ),
           TextButton(
@@ -540,12 +542,12 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                     width: r.s(18),
                     height: r.s(18),
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: AppTheme.primaryColor),
+                        strokeWidth: 2, color: context.nexusTheme.accentPrimary),
                   )
                 : Text(
                     _isEditing ? s.save : s.publish,
                     style: TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         fontSize: r.fs(14),
                         fontWeight: FontWeight.w700),
                   ),
@@ -562,11 +564,11 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
             Container(
               padding: EdgeInsets.all(r.s(16)),
               decoration: BoxDecoration(
-                color: context.cardBg,
+                color: context.nexusTheme.surfacePrimary,
                 borderRadius: BorderRadius.circular(r.s(16)),
                 border: Border.all(
                     color: _urlValid
-                        ? AppTheme.successColor.withValues(alpha: 0.4)
+                        ? context.nexusTheme.success.withValues(alpha: 0.4)
                         : context.dividerClr.withValues(alpha: 0.3)),
               ),
               child: Column(
@@ -588,14 +590,14 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                       Text(
                         'URL do Link',
                         style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontSize: r.fs(14),
                             fontWeight: FontWeight.w600),
                       ),
                       const Spacer(),
                       if (_urlValid)
                         Icon(Icons.check_circle_rounded,
-                            color: AppTheme.successColor, size: r.s(18)),
+                            color: context.nexusTheme.success, size: r.s(18)),
                     ],
                   ),
                   SizedBox(height: r.s(12)),
@@ -604,14 +606,14 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                     keyboardType: TextInputType.url,
                     autocorrect: false,
                     style: TextStyle(
-                        color: context.textPrimary, fontSize: r.fs(14)),
+                        color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
                     decoration: InputDecoration(
                       hintText: 'https://...',
                       hintStyle: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(14)),
                       filled: true,
-                      fillColor: context.scaffoldBg,
+                      fillColor: context.nexusTheme.backgroundPrimary,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(r.s(10)),
                         borderSide: BorderSide.none,
@@ -620,12 +622,12 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                         borderRadius: BorderRadius.circular(r.s(10)),
                         borderSide: BorderSide(
                             color: _urlValid
-                                ? AppTheme.successColor
+                                ? context.nexusTheme.success
                                 : const Color(0xFF2563EB),
                             width: 1.5),
                       ),
                       prefixIcon: Icon(Icons.language_rounded,
-                          color: context.textSecondary, size: r.s(18)),
+                          color: context.nexusTheme.textSecondary, size: r.s(18)),
                     ),
                   ),
                 ],
@@ -646,13 +648,13 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
               maxLength: 120,
               textCapitalization: TextCapitalization.sentences,
               style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(20),
                   fontWeight: FontWeight.w700),
               decoration: InputDecoration(
                 hintText: s.postTitleHint,
                 hintStyle: TextStyle(
-                    color: context.textSecondary,
+                    color: context.nexusTheme.textSecondary,
                     fontSize: r.fs(20),
                     fontWeight: FontWeight.w700),
                 border: InputBorder.none,
@@ -670,11 +672,11 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
               minLines: 2,
               textCapitalization: TextCapitalization.sentences,
               style:
-                  TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
+                  TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(15)),
               decoration: InputDecoration(
                 hintText: s.describeLinkHint,
                 hintStyle: TextStyle(
-                    color: context.textSecondary, fontSize: r.fs(15)),
+                    color: context.nexusTheme.textSecondary, fontSize: r.fs(15)),
                 border: InputBorder.none,
                 counterText: '',
               ),
@@ -687,7 +689,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
             Text(
               'Thumbnail (opcional)',
               style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(13),
                   fontWeight: FontWeight.w600),
             ),
@@ -701,7 +703,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
             Text(
               'Tags',
               style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(13),
                   fontWeight: FontWeight.w600),
             ),
@@ -726,7 +728,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
     return Container(
       padding: EdgeInsets.all(r.s(12)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(12)),
         border: Border.all(
             color: const Color(0xFF2563EB).withValues(alpha: 0.3)),
@@ -775,7 +777,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(13),
                         fontWeight: FontWeight.w600,
                       ),
@@ -794,7 +796,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                 ),
               ),
               Icon(Icons.open_in_new_rounded,
-                  color: context.textSecondary, size: r.s(16)),
+                  color: context.nexusTheme.textSecondary, size: r.s(16)),
             ],
           ),
           // Mostrar descrição OG se disponível
@@ -805,7 +807,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: context.textSecondary,
+                color: context.nexusTheme.textSecondary,
                 fontSize: r.fs(11),
               ),
             ),
@@ -816,7 +818,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
             Text(
               'Buscando informa\u00e7\u00f5es do link...',
               style: TextStyle(
-                color: context.textSecondary,
+                color: context.nexusTheme.textSecondary,
                 fontSize: r.fs(10),
                 fontStyle: FontStyle.italic,
               ),
@@ -868,7 +870,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
       child: Container(
         height: r.s(72),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(12)),
           border:
               Border.all(color: context.dividerClr.withValues(alpha: 0.4)),
@@ -876,17 +878,17 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
         child: Center(
           child: _isUploadingThumb
               ? CircularProgressIndicator(
-                  color: AppTheme.primaryColor, strokeWidth: 2)
+                  color: context.nexusTheme.accentPrimary, strokeWidth: 2)
               : Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.add_photo_alternate_rounded,
-                        color: context.textSecondary, size: r.s(20)),
+                        color: context.nexusTheme.textSecondary, size: r.s(20)),
                     SizedBox(width: r.s(8)),
                     Text(
                       'Adicionar thumbnail',
                       style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(13)),
                     ),
                   ],
@@ -928,7 +930,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                           horizontal: r.s(10), vertical: r.s(4)),
                       decoration: BoxDecoration(
                         color:
-                            AppTheme.accentColor.withValues(alpha: 0.15),
+                            context.nexusTheme.accentSecondary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(r.s(12)),
                       ),
                       child: Row(
@@ -936,7 +938,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                         children: [
                           Text('#$tag',
                               style: TextStyle(
-                                  color: AppTheme.accentColor,
+                                  color: context.nexusTheme.accentSecondary,
                                   fontSize: r.fs(12),
                                   fontWeight: FontWeight.w600)),
                           SizedBox(width: r.s(4)),
@@ -944,7 +946,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                             onTap: () =>
                                 setState(() => _tags.remove(tag)),
                             child: Icon(Icons.close_rounded,
-                                color: AppTheme.accentColor,
+                                color: context.nexusTheme.accentSecondary,
                                 size: r.s(14)),
                           ),
                         ],
@@ -961,16 +963,16 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                 child: TextField(
                   controller: _tagController,
                   style: TextStyle(
-                      color: context.textPrimary, fontSize: r.fs(13)),
+                      color: context.nexusTheme.textPrimary, fontSize: r.fs(13)),
                   decoration: InputDecoration(
                     hintText: 'Adicionar tag...',
                     hintStyle: TextStyle(
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                         fontSize: r.fs(13)),
                     border: InputBorder.none,
                     isDense: true,
                     prefixIcon: Icon(Icons.tag_rounded,
-                        color: context.textSecondary, size: r.s(16)),
+                        color: context.nexusTheme.textSecondary, size: r.s(16)),
                   ),
                   onSubmitted: (_) => _addTag(),
                 ),
@@ -982,12 +984,12 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                       horizontal: r.s(12), vertical: r.s(6)),
                   decoration: BoxDecoration(
                     color:
-                        AppTheme.accentColor.withValues(alpha: 0.15),
+                        context.nexusTheme.accentSecondary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(r.s(8)),
                   ),
                   child: Text('Adicionar',
                       style: TextStyle(
-                          color: AppTheme.accentColor,
+                          color: context.nexusTheme.accentSecondary,
                           fontSize: r.fs(12),
                           fontWeight: FontWeight.w600)),
                 ),

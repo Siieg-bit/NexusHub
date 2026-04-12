@@ -4,6 +4,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Barra de input de mensagem do chat — estilo Amino.
 ///
@@ -59,11 +61,11 @@ class ChatInputBar extends ConsumerWidget {
                 width: r.s(36),
                 height: r.s(36),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.add_rounded,
-                    color: AppTheme.primaryColor, size: r.s(20)),
+                    color: context.nexusTheme.accentPrimary, size: r.s(20)),
               ),
             ),
             SizedBox(width: r.s(8)),
@@ -71,7 +73,7 @@ class ChatInputBar extends ConsumerWidget {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: context.cardBg,
+                  color: context.nexusTheme.surfacePrimary,
                   borderRadius: BorderRadius.circular(r.s(24)),
                   border:
                       Border.all(color: Colors.white.withValues(alpha: 0.05)),
@@ -82,7 +84,7 @@ class ChatInputBar extends ConsumerWidget {
                       child: TextField(
                         controller: controller,
                         style: TextStyle(
-                            color: context.textPrimary, fontSize: r.fs(14)),
+                            color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
                         decoration: InputDecoration(
                           hintText: s.messagePlaceholder,
                           hintStyle: TextStyle(
@@ -128,7 +130,7 @@ class ChatInputBar extends ConsumerWidget {
                 width: r.s(40),
                 height: r.s(40),
                 decoration: const BoxDecoration(
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                   shape: BoxShape.circle,
                 ),
                 child: isSending

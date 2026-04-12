@@ -6,6 +6,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/cosmetics_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Inventário — Itens comprados pelo usuário (Avatar Frames, Chat Bubbles, etc).
 class InventoryScreen extends ConsumerStatefulWidget {
@@ -92,7 +94,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
             SnackBar(
               content: Text(s.anErrorOccurredTryAgain,
                   style: const TextStyle(color: Colors.white)),
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: context.nexusTheme.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(12))),
@@ -144,7 +146,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
           SnackBar(
             content: Text(s.anErrorOccurredTryAgain,
                 style: const TextStyle(color: Colors.white)),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(r.s(12)),
@@ -165,24 +167,24 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
   Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         title: Text(
           s.inventory,
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
           ),
         ),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          labelColor: AppTheme.primaryColor,
+          labelColor: context.nexusTheme.accentPrimary,
           unselectedLabelColor: Colors.grey[500],
-          indicatorColor: AppTheme.primaryColor,
+          indicatorColor: context.nexusTheme.accentPrimary,
           dividerColor: Colors.transparent,
           tabAlignment: TabAlignment.start,
           labelStyle: const TextStyle(fontWeight: FontWeight.w700),
@@ -193,7 +195,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
               ),
             )
           : TabBarView(
@@ -238,14 +240,14 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                     horizontal: r.s(24), vertical: r.s(12)),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                    colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(r.s(24)),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -297,7 +299,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
               color: context.surfaceColor,
               borderRadius: BorderRadius.circular(r.s(16)),
               border: isEquipped
-                  ? Border.all(color: AppTheme.primaryColor, width: 2)
+                  ? Border.all(color: context.nexusTheme.accentPrimary, width: 2)
                   : Border.all(
                       color: Colors.white.withValues(alpha: 0.05),
                       width: 1,
@@ -305,7 +307,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
               boxShadow: isEquipped
                   ? [
                       BoxShadow(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                        color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                         blurRadius: 8,
                         spreadRadius: 1,
                       )
@@ -323,7 +325,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                           borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(14),
                           ),
-                          color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
                         ),
                         child: imageUrl != null
                             ? ClipRRect(
@@ -350,8 +352,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                             decoration: const BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  AppTheme.primaryColor,
-                                  AppTheme.accentColor
+                                  context.nexusTheme.accentPrimary,
+                                  context.nexusTheme.accentSecondary
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -375,7 +377,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
                     style: TextStyle(
                       fontSize: r.fs(12),
                       fontWeight: FontWeight.w600,
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

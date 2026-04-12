@@ -5,6 +5,8 @@ import '../../../core/services/supabase_service.dart';
 import 'screening_room_screen.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela Live — exibe Salas de Projeção, Voice Chats e Video Chats ativos.
 ///
@@ -62,20 +64,20 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
             borderRadius: BorderRadius.circular(r.s(16))),
         title: Text(s.createScreeningRoom,
             style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w800)),
+                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: titleController,
-              style: TextStyle(color: context.textPrimary),
+              style: TextStyle(color: context.nexusTheme.textPrimary),
               decoration: InputDecoration(
                 hintText: s.roomName,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 prefixIcon: const Icon(Icons.live_tv_rounded,
-                    color: AppTheme.accentColor),
+                    color: context.nexusTheme.accentSecondary),
                 filled: true,
-                fillColor: context.cardBg,
+                fillColor: context.nexusTheme.surfacePrimary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide.none,
@@ -94,7 +96,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
               'title': titleController.text.trim(),
             }),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
+              backgroundColor: context.nexusTheme.accentPrimary,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(10))),
             ),
@@ -142,7 +144,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorCreatingRoom),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -185,7 +187,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       case 'video':
         return const Color(0xFF2196F3);
       default:
-        return AppTheme.primaryColor;
+        return context.nexusTheme.accentPrimary;
     }
   }
 
@@ -204,32 +206,32 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   Widget build(BuildContext context) {
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         title: Text(
           'Live',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _createScreeningRoom,
-        backgroundColor: AppTheme.aminoPink,
+        backgroundColor: context.nexusTheme.accentSecondary,
         icon: const Icon(Icons.live_tv_rounded, color: Colors.white),
         label: const Text('Sala de Projeção',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor))
+              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : RefreshIndicator(
               onRefresh: _loadActiveSessions,
-              color: AppTheme.accentColor,
+              color: context.nexusTheme.accentSecondary,
               child: _activeSessions.isEmpty
                   ? _buildEmptyState()
                   : ListView.builder(
@@ -256,16 +258,16 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 height: r.s(100),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
                 ),
                 child: Icon(Icons.live_tv_rounded,
-                    size: r.s(48), color: AppTheme.primaryColor),
+                    size: r.s(48), color: context.nexusTheme.accentPrimary),
               ),
               SizedBox(height: r.s(24)),
               Text(
                 'Nenhuma Sala Ativa',
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontWeight: FontWeight.w800,
                   fontSize: r.fs(20),
                 ),
@@ -310,7 +312,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         margin: EdgeInsets.only(bottom: r.s(10)),
         padding: EdgeInsets.all(r.s(14)),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(16)),
           border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
@@ -335,7 +337,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                   Text(
                     _typeLabel(type),
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontWeight: FontWeight.w700,
                       fontSize: r.fs(15),
                     ),

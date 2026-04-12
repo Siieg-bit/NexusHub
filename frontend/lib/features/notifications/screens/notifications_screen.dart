@@ -10,6 +10,8 @@ import '../../../core/providers/notification_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // TELA DE ALERTAS — Estilo Amino Apps
@@ -72,26 +74,26 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         title: Text(
           'Limpar todos os alertas?',
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontWeight: FontWeight.w700,
             fontSize: 16,
           ),
         ),
         content: Text(
           s.actionCannotBeUndone,
-          style: TextStyle(color: context.textSecondary, fontSize: 14),
+          style: TextStyle(color: context.nexusTheme.textSecondary, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(s.cancel,
-                style: TextStyle(color: context.textSecondary)),
+                style: TextStyle(color: context.nexusTheme.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(s.clear,
                 style: TextStyle(
-                    color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
+                    color: context.nexusTheme.error, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -342,21 +344,21 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         : ref.watch(notificationProvider);
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       // ── AppBar estilo Amino: título centralizado + "Limpar Tudo" vermelho ──
       appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_rounded,
-              color: context.textPrimary, size: r.s(20)),
+              color: context.nexusTheme.textPrimary, size: r.s(20)),
           onPressed: () => context.pop(),
         ),
         title: Text(
           widget.isCommunityScoped ? 'Alertas da comunidade' : s.alerts,
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontWeight: FontWeight.w800,
             fontSize: r.fs(18),
           ),
@@ -369,7 +371,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(7)),
               decoration: BoxDecoration(
-                color: AppTheme.errorColor,
+                color: context.nexusTheme.error,
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: Text(
@@ -386,19 +388,19 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       ),
       body: notifAsync.when(
         loading: () => const Center(
-          child: CircularProgressIndicator(color: AppTheme.primaryColor),
+          child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
         ),
         error: (error, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.error_outline_rounded,
-                  size: r.s(48), color: AppTheme.errorColor),
+                  size: r.s(48), color: context.nexusTheme.error),
               SizedBox(height: r.s(12)),
               Text(
                 s.errorLoadingNotifications,
                 style: TextStyle(
-                    color: context.textSecondary,
+                    color: context.nexusTheme.textSecondary,
                     fontSize: r.fs(15),
                     fontWeight: FontWeight.w600),
               ),
@@ -417,7 +419,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(20), vertical: r.s(10)),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor,
+                    color: context.nexusTheme.accentPrimary,
                     borderRadius: BorderRadius.circular(r.s(12)),
                   ),
                   child: Text(
@@ -436,7 +438,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           final notifications = notifState.notifications;
 
           return RefreshIndicator(
-            color: AppTheme.primaryColor,
+            color: context.nexusTheme.accentPrimary,
             onRefresh: () async {
               if (widget.isCommunityScoped) {
                 await ref
@@ -469,19 +471,19 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                         child: Row(
                           children: [
                             Icon(Icons.settings_rounded,
-                                color: context.textSecondary, size: r.s(18)),
+                                color: context.nexusTheme.textSecondary, size: r.s(18)),
                             SizedBox(width: r.s(10)),
                             Text(
                               s.pushNotificationSettings,
                               style: TextStyle(
-                                color: context.textSecondary,
+                                color: context.nexusTheme.textSecondary,
                                 fontSize: r.fs(13),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             const Spacer(),
                             Icon(Icons.chevron_right_rounded,
-                                color: context.textSecondary, size: r.s(18)),
+                                color: context.nexusTheme.textSecondary, size: r.s(18)),
                           ],
                         ),
                       ),
@@ -503,13 +505,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       child: Row(
                         children: [
                           Icon(Icons.campaign_rounded,
-                              color: context.textSecondary, size: r.s(18)),
+                              color: context.nexusTheme.textSecondary, size: r.s(18)),
                           SizedBox(width: r.s(10)),
                           Expanded(
                             child: Text(
                               'Aqui aparecem apenas alertas desta comunidade.',
                               style: TextStyle(
-                                color: context.textSecondary,
+                                color: context.nexusTheme.textSecondary,
                                 fontSize: r.fs(13),
                                 fontWeight: FontWeight.w500,
                               ),
@@ -539,12 +541,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                 horizontal: r.s(14), vertical: r.s(4)),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? AppTheme.primaryColor
+                                  ? context.nexusTheme.accentPrimary
                                   : context.surfaceColor,
                               borderRadius: BorderRadius.circular(r.s(20)),
                               border: Border.all(
                                 color: isSelected
-                                    ? AppTheme.primaryColor
+                                    ? context.nexusTheme.accentPrimary
                                     : context.dividerClr.withValues(alpha: 0.3),
                               ),
                             ),
@@ -553,7 +555,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                               style: TextStyle(
                                 color: isSelected
                                     ? Colors.white
-                                    : context.textSecondary,
+                                    : context.nexusTheme.textSecondary,
                                 fontSize: r.fs(12),
                                 fontWeight: isSelected
                                     ? FontWeight.w700
@@ -615,7 +617,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           background: Container(
                             alignment: Alignment.centerRight,
                             padding: EdgeInsets.only(right: r.s(20)),
-                            color: AppTheme.errorColor.withValues(alpha: 0.85),
+                            color: context.nexusTheme.error.withValues(alpha: 0.85),
                             child: Icon(
                               Icons.delete_rounded,
                               color: Colors.white,
@@ -668,7 +670,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                     EdgeInsets.symmetric(vertical: r.s(20)),
                                 child: const Center(
                                   child: CircularProgressIndicator(
-                                    color: AppTheme.primaryColor,
+                                    color: context.nexusTheme.accentPrimary,
                                     strokeWidth: 2,
                                   ),
                                 ),
@@ -738,18 +740,18 @@ class _NotificationTile extends ConsumerWidget {
   Color _getIconColor(String type) {
     switch (type) {
       case 'like':
-        return AppTheme.errorColor;
+        return context.nexusTheme.error;
       case 'comment':
-        return AppTheme.accentColor;
+        return context.nexusTheme.accentSecondary;
       case 'follow':
-        return AppTheme.primaryColor;
+        return context.nexusTheme.accentPrimary;
       case 'mention':
       case 'chat_mention':
-        return AppTheme.warningColor;
+        return context.nexusTheme.warning;
       case 'level_up':
-        return AppTheme.successColor;
+        return context.nexusTheme.success;
       case 'achievement':
-        return AppTheme.warningColor;
+        return context.nexusTheme.warning;
       case 'chat_message':
         return const Color(0xFF4CAF50);
       case 'dm_invite':
@@ -759,7 +761,7 @@ class _NotificationTile extends ConsumerWidget {
       case 'moderation':
       case 'strike':
       case 'ban':
-        return AppTheme.errorColor;
+        return context.nexusTheme.error;
       default:
         return Colors.grey;
     }
@@ -791,7 +793,7 @@ class _NotificationTile extends ConsumerWidget {
           // Fundo levemente destacado para não lidas
           color: isRead
               ? Colors.transparent
-              : AppTheme.primaryColor.withValues(alpha: 0.05),
+              : context.nexusTheme.accentPrimary.withValues(alpha: 0.05),
           border: Border(
             bottom: BorderSide(
               color: context.dividerClr.withValues(alpha: 0.12),
@@ -842,7 +844,7 @@ class _NotificationTile extends ConsumerWidget {
                     decoration: BoxDecoration(
                       color: iconColor,
                       shape: BoxShape.circle,
-                      border: Border.all(color: context.scaffoldBg, width: 1.5),
+                      border: Border.all(color: context.nexusTheme.backgroundPrimary, width: 1.5),
                     ),
                     child: Icon(
                       _getIcon(type),
@@ -867,7 +869,7 @@ class _NotificationTile extends ConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                     text: TextSpan(
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(14),
                         height: 1.35,
                       ),
@@ -883,8 +885,8 @@ class _NotificationTile extends ConsumerWidget {
                             fontWeight:
                                 isRead ? FontWeight.w400 : FontWeight.w500,
                             color: isRead
-                                ? context.textSecondary
-                                : context.textPrimary,
+                                ? context.nexusTheme.textSecondary
+                                : context.nexusTheme.textPrimary,
                           ),
                         ),
                       ],
@@ -909,11 +911,11 @@ class _NotificationTile extends ConsumerWidget {
                           vertical: r.s(8),
                         ),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(r.s(10)),
                           border: Border.all(
                             color:
-                                AppTheme.primaryColor.withValues(alpha: 0.28),
+                                context.nexusTheme.accentPrimary.withValues(alpha: 0.28),
                           ),
                         ),
                         child: Row(
@@ -925,13 +927,13 @@ class _NotificationTile extends ConsumerWidget {
                                 height: r.s(14),
                                 child: const CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: AppTheme.primaryColor,
+                                  color: context.nexusTheme.accentPrimary,
                                 ),
                               )
                             else
                               Icon(
                                 Icons.check_circle_rounded,
-                                color: AppTheme.primaryColor,
+                                color: context.nexusTheme.accentPrimary,
                                 size: r.s(16),
                               ),
                             SizedBox(width: r.s(6)),
@@ -940,7 +942,7 @@ class _NotificationTile extends ConsumerWidget {
                                   ? 'Aceitando...'
                                   : s.acceptInvite,
                               style: TextStyle(
-                                color: AppTheme.primaryColor,
+                                color: context.nexusTheme.accentPrimary,
                                 fontSize: r.fs(12),
                                 fontWeight: FontWeight.w700,
                               ),
@@ -962,7 +964,7 @@ class _NotificationTile extends ConsumerWidget {
                 width: r.s(8),
                 height: r.s(8),
                 decoration: const BoxDecoration(
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                   shape: BoxShape.circle,
                 ),
               )

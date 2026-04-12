@@ -8,6 +8,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/realtime_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Sala de Projeção — sala de exibição coletiva de vídeos/streams.
 ///
@@ -349,7 +351,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
         title: Text(
           'Sessão encerrada',
           style: TextStyle(
-              color: context.textPrimary, fontWeight: FontWeight.w800),
+              color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800),
         ),
         content: Text(
           'O host encerrou a Sala de Projeção.',
@@ -362,7 +364,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
               if (mounted) Navigator.of(context).pop();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
+              backgroundColor: context.nexusTheme.accentPrimary,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(context.r.s(10))),
             ),
@@ -743,7 +745,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
           title: Text(
             'Encerrar Sala de Projeção?',
             style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w800),
+                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800),
           ),
           content: Text(
             'Como host, ao sair você encerrará a sala para todos os participantes.',
@@ -758,7 +760,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx, true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(context.r.s(10))),
               ),
@@ -899,7 +901,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
                 hintText: 'Cole o link do vídeo ou stream',
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 prefixIcon: const Icon(Icons.link_rounded,
-                    color: AppTheme.accentColor),
+                    color: context.nexusTheme.accentSecondary),
                 filled: true,
                 fillColor: ctx.cardBg,
                 border: OutlineInputBorder(
@@ -916,7 +918,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
                 hintText: 'Título (opcional)',
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 prefixIcon: const Icon(Icons.title_rounded,
-                    color: AppTheme.accentColor),
+                    color: context.nexusTheme.accentSecondary),
                 filled: true,
                 fillColor: ctx.cardBg,
                 border: OutlineInputBorder(
@@ -945,7 +947,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
+              backgroundColor: context.nexusTheme.accentPrimary,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(10))),
             ),
@@ -970,14 +972,14 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withValues(alpha: 0.15),
+        color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-            color: AppTheme.primaryColor.withValues(alpha: 0.3), width: 1),
+            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3), width: 1),
       ),
       child: Text(label,
           style: TextStyle(
-              color: AppTheme.primaryColor,
+              color: context.nexusTheme.accentPrimary,
               fontSize: ctx.r.fs(10),
               fontWeight: FontWeight.w600)),
     );
@@ -1013,7 +1015,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
       body: SafeArea(
         child: _isLoading
             ? const Center(
-                child: CircularProgressIndicator(color: AppTheme.accentColor))
+                child: CircularProgressIndicator(color: context.nexusTheme.accentSecondary))
             : _roomClosed
                 ? _buildRoomClosedState()
                 : Column(
@@ -1053,7 +1055,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
+              backgroundColor: context.nexusTheme.accentPrimary,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(12))),
               padding: EdgeInsets.symmetric(
@@ -1083,14 +1085,14 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
           GestureDetector(
             onTap: _leaveRoom,
             child: Icon(Icons.arrow_back_rounded,
-                color: context.textPrimary, size: r.s(24)),
+                color: context.nexusTheme.textPrimary, size: r.s(24)),
           ),
           SizedBox(width: r.s(12)),
           Container(
             width: r.s(8),
             height: r.s(8),
             decoration: const BoxDecoration(
-              color: AppTheme.errorColor,
+              color: context.nexusTheme.error,
               shape: BoxShape.circle,
             ),
           ),
@@ -1098,7 +1100,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
           Text(
             'SALA DE PROJEÇÃO',
             style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontWeight: FontWeight.w800,
               fontSize: r.fs(14),
               letterSpacing: 1.2,
@@ -1110,15 +1112,15 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
               padding: EdgeInsets.symmetric(
                   horizontal: r.s(6), vertical: r.s(2)),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(r.s(6)),
                 border: Border.all(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.5)),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.5)),
               ),
               child: Text(
                 'HOST',
                 style: TextStyle(
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                   fontSize: r.fs(9),
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.8,
@@ -1147,7 +1149,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
                 padding: EdgeInsets.symmetric(
                     horizontal: r.s(10), vertical: r.s(6)),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                   borderRadius: BorderRadius.circular(r.s(20)),
                 ),
                 child: Row(
@@ -1202,7 +1204,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
                     padding: EdgeInsets.symmetric(
                         horizontal: r.s(20), vertical: r.s(10)),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                       borderRadius: BorderRadius.circular(r.s(24)),
                     ),
                     child: Row(
@@ -1342,7 +1344,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
           if (_webViewLoading)
             const Center(
               child: CircularProgressIndicator(
-                  color: AppTheme.accentColor, strokeWidth: 2),
+                  color: context.nexusTheme.accentSecondary, strokeWidth: 2),
             ),
 
           // ── Badge da plataforma ──
@@ -1484,7 +1486,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
                     children: [
                       CircleAvatar(
                         radius: r.s(16),
-                        backgroundColor: context.cardBg,
+                        backgroundColor: context.nexusTheme.surfacePrimary,
                         backgroundImage:
                             avatarUrl != null && avatarUrl.isNotEmpty
                                 ? NetworkImage(avatarUrl)
@@ -1493,7 +1495,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
                             ? Text(
                                 username[0].toUpperCase(),
                                 style: TextStyle(
-                                    color: context.textPrimary,
+                                    color: context.nexusTheme.textPrimary,
                                     fontSize: r.fs(10)),
                               )
                             : null,
@@ -1561,7 +1563,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
               if (!isMe) ...[
                 CircleAvatar(
                   radius: 14,
-                  backgroundColor: context.cardBg,
+                  backgroundColor: context.nexusTheme.surfacePrimary,
                   backgroundImage:
                       avatarUrl != null ? NetworkImage(avatarUrl) : null,
                   child: avatarUrl == null
@@ -1570,7 +1572,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
                               ? username[0].toUpperCase()
                               : '?',
                           style: TextStyle(
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                               fontSize: r.fs(10),
                               fontWeight: FontWeight.w700),
                         )
@@ -1590,7 +1592,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
                         child: Text(
                           username,
                           style: TextStyle(
-                              color: AppTheme.accentColor,
+                              color: context.nexusTheme.accentSecondary,
                               fontSize: r.fs(10),
                               fontWeight: FontWeight.w600),
                         ),
@@ -1600,8 +1602,8 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
                           horizontal: r.s(12), vertical: r.s(8)),
                       decoration: BoxDecoration(
                         color: isMe
-                            ? AppTheme.primaryColor.withValues(alpha: 0.25)
-                            : context.cardBg,
+                            ? context.nexusTheme.accentPrimary.withValues(alpha: 0.25)
+                            : context.nexusTheme.surfacePrimary,
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(r.s(16)),
                           topRight: Radius.circular(r.s(16)),
@@ -1613,7 +1615,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
                       child: Text(
                         msg['text'] as String? ?? '',
                         style: TextStyle(
-                            color: context.textPrimary, fontSize: r.fs(13)),
+                            color: context.nexusTheme.textPrimary, fontSize: r.fs(13)),
                       ),
                     ),
                   ],
@@ -1644,13 +1646,13 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: context.cardBg,
+                  color: context.nexusTheme.surfacePrimary,
                   borderRadius: BorderRadius.circular(r.s(24)),
                 ),
                 child: TextField(
                   controller: _chatController,
                   style: TextStyle(
-                      color: context.textPrimary, fontSize: r.fs(14)),
+                      color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
                   decoration: InputDecoration(
                     hintText: 'Diga algo...',
                     hintStyle: TextStyle(
@@ -1671,7 +1673,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
                 width: r.s(40),
                 height: r.s(40),
                 decoration: const BoxDecoration(
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.send_rounded,

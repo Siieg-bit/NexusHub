@@ -20,6 +20,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Abre o bottom sheet de seleção de fundo de chat.
 /// [threadId] — ID do chat thread.
@@ -117,7 +119,7 @@ class _ChatBackgroundPickerSheetState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erro ao enviar imagem: $e'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -176,7 +178,7 @@ class _ChatBackgroundPickerSheetState
             style: TextStyle(
               fontSize: r.fs(18),
               fontWeight: FontWeight.w800,
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
             ),
           ),
           SizedBox(height: r.s(4)),
@@ -184,7 +186,7 @@ class _ChatBackgroundPickerSheetState
             'Escolha um fundo ou use uma imagem da sua galeria',
             style: TextStyle(
               fontSize: r.fs(12),
-              color: context.textHint,
+              color: context.nexusTheme.textHint,
             ),
           ),
           SizedBox(height: r.s(16)),
@@ -197,10 +199,10 @@ class _ChatBackgroundPickerSheetState
               padding: EdgeInsets.symmetric(
                   vertical: r.s(12), horizontal: r.s(16)),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                color: context.nexusTheme.accentPrimary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(r.s(12)),
                 border: Border.all(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3)),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -210,18 +212,18 @@ class _ChatBackgroundPickerSheetState
                       width: r.s(18),
                       height: r.s(18),
                       child: const CircularProgressIndicator(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         strokeWidth: 2,
                       ),
                     )
                   else
                     Icon(Icons.photo_library_rounded,
-                        color: AppTheme.primaryColor, size: r.s(20)),
+                        color: context.nexusTheme.accentPrimary, size: r.s(20)),
                   SizedBox(width: r.s(8)),
                   Text(
                     _isUploading ? 'Enviando...' : 'Escolher da galeria',
                     style: TextStyle(
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                       fontWeight: FontWeight.w600,
                       fontSize: r.fs(14),
                     ),
@@ -238,7 +240,7 @@ class _ChatBackgroundPickerSheetState
             style: TextStyle(
               fontSize: r.fs(13),
               fontWeight: FontWeight.w600,
-              color: context.textSecondary,
+              color: context.nexusTheme.textSecondary,
             ),
           ),
           SizedBox(height: r.s(10)),
@@ -265,11 +267,11 @@ class _ChatBackgroundPickerSheetState
                       borderRadius: BorderRadius.circular(r.s(12)),
                       border: Border.all(
                         color: isSelected
-                            ? AppTheme.primaryColor
+                            ? context.nexusTheme.accentPrimary
                             : Colors.transparent,
                         width: 2.5,
                       ),
-                      color: url == null ? context.cardBg : null,
+                      color: url == null ? context.nexusTheme.surfacePrimary : null,
                       image: url != null
                           ? DecorationImage(
                               image: CachedNetworkImageProvider(url),
@@ -279,7 +281,7 @@ class _ChatBackgroundPickerSheetState
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: AppTheme.primaryColor
+                                color: context.nexusTheme.accentPrimary
                                     .withValues(alpha: 0.4),
                                 blurRadius: 8,
                                 spreadRadius: 1,
@@ -308,7 +310,7 @@ class _ChatBackgroundPickerSheetState
                                 child: Container(
                                   padding: const EdgeInsets.all(4),
                                   decoration: const BoxDecoration(
-                                    color: AppTheme.primaryColor,
+                                    color: context.nexusTheme.accentPrimary,
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(Icons.check_rounded,

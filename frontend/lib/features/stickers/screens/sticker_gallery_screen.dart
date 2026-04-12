@@ -8,6 +8,8 @@ import '../providers/sticker_providers.dart';
 import 'sticker_pack_screen.dart';
 import 'create_pack_screen.dart';
 import 'sticker_explore_screen.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela principal de stickers — gerencia packs próprios, salvos e descobre novos.
 class StickerGalleryScreen extends ConsumerStatefulWidget {
@@ -38,21 +40,21 @@ class _StickerGalleryScreenState extends ConsumerState<StickerGalleryScreen>
     final r = context.r;
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         elevation: 0,
         title: Text(
           'Figurinhas',
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(18),
             fontWeight: FontWeight.w800,
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.explore_rounded, color: AppTheme.accentColor, size: r.s(22)),
+            icon: Icon(Icons.explore_rounded, color: context.nexusTheme.accentSecondary, size: r.s(22)),
             tooltip: 'Descobrir packs',
             onPressed: () => Navigator.push(
               context,
@@ -60,15 +62,15 @@ class _StickerGalleryScreenState extends ConsumerState<StickerGalleryScreen>
             ),
           ),
           IconButton(
-            icon: Icon(Icons.add_rounded, color: AppTheme.primaryColor, size: r.s(24)),
+            icon: Icon(Icons.add_rounded, color: context.nexusTheme.accentPrimary, size: r.s(24)),
             tooltip: 'Criar pack',
             onPressed: () => _openCreatePack(),
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppTheme.primaryColor,
-          labelColor: AppTheme.primaryColor,
+          indicatorColor: context.nexusTheme.accentPrimary,
+          labelColor: context.nexusTheme.accentPrimary,
           unselectedLabelColor: Colors.grey[500],
           labelStyle: TextStyle(fontSize: r.fs(13), fontWeight: FontWeight.w600),
           tabs: const [
@@ -115,7 +117,7 @@ class _MyPacksTab extends ConsumerWidget {
 
     return packsAsync.when(
       loading: () => const Center(
-        child: CircularProgressIndicator(color: AppTheme.primaryColor, strokeWidth: 2),
+        child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary, strokeWidth: 2),
       ),
       error: (e, _) => Center(
         child: Text('Erro ao carregar packs', style: TextStyle(color: Colors.grey[500])),
@@ -131,7 +133,7 @@ class _MyPacksTab extends ConsumerWidget {
           );
         }
         return RefreshIndicator(
-          color: AppTheme.primaryColor,
+          color: context.nexusTheme.accentPrimary,
           onRefresh: () async => ref.invalidate(myPacksProvider),
           child: GridView.builder(
             padding: EdgeInsets.all(r.s(16)),
@@ -168,7 +170,7 @@ class _SavedPacksTab extends ConsumerWidget {
 
     return packsAsync.when(
       loading: () => const Center(
-        child: CircularProgressIndicator(color: AppTheme.primaryColor, strokeWidth: 2),
+        child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary, strokeWidth: 2),
       ),
       error: (e, _) => Center(
         child: Text('Erro ao carregar packs', style: TextStyle(color: Colors.grey[500])),
@@ -187,7 +189,7 @@ class _SavedPacksTab extends ConsumerWidget {
           );
         }
         return RefreshIndicator(
-          color: AppTheme.primaryColor,
+          color: context.nexusTheme.accentPrimary,
           onRefresh: () async => ref.invalidate(savedPacksProvider),
           child: GridView.builder(
             padding: EdgeInsets.all(r.s(16)),
@@ -219,7 +221,7 @@ class _FavoritesTab extends ConsumerWidget {
 
     return favsAsync.when(
       loading: () => const Center(
-        child: CircularProgressIndicator(color: AppTheme.primaryColor, strokeWidth: 2),
+        child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary, strokeWidth: 2),
       ),
       error: (e, _) => Center(
         child: Text('Erro ao carregar favoritos', style: TextStyle(color: Colors.grey[500])),
@@ -233,7 +235,7 @@ class _FavoritesTab extends ConsumerWidget {
           );
         }
         return RefreshIndicator(
-          color: AppTheme.primaryColor,
+          color: context.nexusTheme.accentPrimary,
           onRefresh: () async => ref.invalidate(favoritesProvider),
           child: GridView.builder(
             padding: EdgeInsets.all(r.s(16)),
@@ -284,7 +286,7 @@ class _PackCard extends ConsumerWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(16)),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
@@ -314,7 +316,7 @@ class _PackCard extends ConsumerWidget {
                   Text(
                     pack.name,
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(13),
                       fontWeight: FontWeight.w700,
                     ),
@@ -360,20 +362,20 @@ class _PackCoverPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = context.r;
     return Container(
-      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.emoji_emotions_rounded,
-                size: r.s(40), color: AppTheme.primaryColor.withValues(alpha: 0.5)),
+                size: r.s(40), color: context.nexusTheme.accentPrimary.withValues(alpha: 0.5)),
             SizedBox(height: r.s(4)),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: r.s(8)),
               child: Text(
                 name,
                 style: TextStyle(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.7),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.7),
                   fontSize: r.fs(11),
                   fontWeight: FontWeight.w600,
                 ),
@@ -400,10 +402,10 @@ class _CreatePackCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppTheme.primaryColor.withValues(alpha: 0.08),
+          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(r.s(16)),
           border: Border.all(
-            color: AppTheme.primaryColor.withValues(alpha: 0.3),
+            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
             width: 1.5,
           ),
         ),
@@ -414,16 +416,16 @@ class _CreatePackCard extends StatelessWidget {
               width: r.s(48),
               height: r.s(48),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.add_rounded, color: AppTheme.primaryColor, size: r.s(28)),
+              child: Icon(Icons.add_rounded, color: context.nexusTheme.accentPrimary, size: r.s(28)),
             ),
             SizedBox(height: r.s(10)),
             Text(
               'Criar Pack',
               style: TextStyle(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
                 fontSize: r.fs(13),
                 fontWeight: FontWeight.w700,
               ),
@@ -455,10 +457,10 @@ class _StickerTile extends StatelessWidget {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: context.cardBg,
+              color: context.nexusTheme.surfacePrimary,
               borderRadius: BorderRadius.circular(r.s(12)),
               border: isFavorite
-                  ? Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.5), width: 1.5)
+                  ? Border.all(color: context.nexusTheme.accentPrimary.withValues(alpha: 0.5), width: 1.5)
                   : null,
             ),
             child: sticker.imageUrl.isNotEmpty
@@ -483,7 +485,7 @@ class _StickerTile extends StatelessWidget {
             Positioned(
               top: r.s(2),
               right: r.s(2),
-              child: Icon(Icons.favorite_rounded, size: r.s(12), color: AppTheme.primaryColor),
+              child: Icon(Icons.favorite_rounded, size: r.s(12), color: context.nexusTheme.accentPrimary),
             ),
         ],
       ),
@@ -520,7 +522,7 @@ class _EmptyState extends StatelessWidget {
             Text(
               title,
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(16),
                 fontWeight: FontWeight.w700,
               ),
@@ -537,7 +539,7 @@ class _EmptyState extends StatelessWidget {
               ElevatedButton(
                 onPressed: onAction,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
+                  backgroundColor: context.nexusTheme.accentPrimary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(r.s(12)),

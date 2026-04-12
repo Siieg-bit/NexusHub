@@ -8,6 +8,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de revisão de Wikis pendentes — estilo Amino Apps.
 /// Apenas curadores e leaders podem acessar.
@@ -129,8 +131,8 @@ class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScree
                 ? s.wikiApprovalSuccess
                 : s.wikiRejected),
             backgroundColor: action == 'approve'
-                ? AppTheme.successColor
-                : AppTheme.errorColor,
+                ? context.nexusTheme.success
+                : context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(r.s(12))),
@@ -142,7 +144,7 @@ class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScree
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.anErrorOccurredTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
           ),
         );
       }
@@ -156,19 +158,19 @@ class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScree
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: context.cardBg,
+        backgroundColor: context.nexusTheme.surfacePrimary,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(r.s(20))),
         title: Text(s.rejectionReason,
             style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w800)),
+                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
         content: TextField(
           controller: controller,
-          style: TextStyle(color: context.textPrimary),
+          style: TextStyle(color: context.nexusTheme.textPrimary),
           maxLines: 3,
           decoration: InputDecoration(
             hintText: s.describeCorrections,
-            hintStyle: TextStyle(color: context.textSecondary),
+            hintStyle: TextStyle(color: context.nexusTheme.textSecondary),
             filled: true,
             fillColor: context.surfaceColor,
             border: OutlineInputBorder(
@@ -181,7 +183,7 @@ class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScree
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(s.cancel,
-                style: TextStyle(color: context.textSecondary)),
+                style: TextStyle(color: context.nexusTheme.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -190,7 +192,7 @@ class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScree
                   ctx, text.isNotEmpty ? text : s.noReasonSpecified);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
+              backgroundColor: context.nexusTheme.error,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(12))),
             ),
@@ -207,30 +209,30 @@ class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScree
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         title: Row(
           children: [
             Text(s.wikiReview,
                 style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(20))),
             SizedBox(width: r.s(8)),
             if (_pendingEntries.isNotEmpty)
               Container(
                 padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppTheme.warningColor.withValues(alpha: 0.2),
+                  color: context.nexusTheme.warning.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(r.s(12)),
                 ),
                 child: Text(
                   '${_pendingEntries.length}',
                   style: TextStyle(
-                    color: AppTheme.warningColor,
+                    color: context.nexusTheme.warning,
                     fontWeight: FontWeight.w800,
                     fontSize: r.fs(14),
                   ),
@@ -241,7 +243,7 @@ class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScree
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor))
+              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : _pendingEntries.isEmpty
               ? Center(
                   child: Column(
@@ -249,23 +251,23 @@ class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScree
                     children: [
                       Icon(Icons.check_circle_outline_rounded,
                           size: r.s(64),
-                          color: AppTheme.successColor.withValues(alpha: 0.5)),
+                          color: context.nexusTheme.success.withValues(alpha: 0.5)),
                       SizedBox(height: r.s(16)),
                       Text(s.noPendingWiki,
                           style: TextStyle(
-                              color: context.textSecondary,
+                              color: context.nexusTheme.textSecondary,
                               fontSize: r.fs(16),
                               fontWeight: FontWeight.w600)),
                       SizedBox(height: r.s(8)),
                       Text(s.allSubmissionsReviewed,
                           style: TextStyle(
-                              color: context.textHint, fontSize: r.fs(14))),
+                              color: context.nexusTheme.textHint, fontSize: r.fs(14))),
                     ],
                   ),
                 )
               : RefreshIndicator(
                   onRefresh: _loadPending,
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                   child: ListView.builder(
                     padding: EdgeInsets.all(r.s(16)),
                     itemCount: _pendingEntries.length,
@@ -314,15 +316,15 @@ class _PendingWikiCard extends ConsumerWidget {
       child: Container(
         margin: EdgeInsets.only(bottom: r.s(16)),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(16)),
           border: Border.all(
-            color: AppTheme.warningColor.withValues(alpha: 0.3),
+            color: context.nexusTheme.warning.withValues(alpha: 0.3),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.warningColor.withValues(alpha: 0.08),
+              color: context.nexusTheme.warning.withValues(alpha: 0.08),
               blurRadius: 12,
               spreadRadius: 2,
               offset: const Offset(0, 4),
@@ -352,7 +354,7 @@ class _PendingWikiCard extends ConsumerWidget {
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
-                color: AppTheme.warningColor.withValues(alpha: 0.1),
+                color: context.nexusTheme.warning.withValues(alpha: 0.1),
                 borderRadius: coverUrl == null
                     ? const BorderRadius.vertical(top: Radius.circular(16))
                     : null,
@@ -360,17 +362,17 @@ class _PendingWikiCard extends ConsumerWidget {
               child: Row(
                 children: [
                   Icon(Icons.pending_actions_rounded,
-                      size: r.s(16), color: AppTheme.warningColor),
+                      size: r.s(16), color: context.nexusTheme.warning),
                   SizedBox(width: r.s(6)),
                   Text(s.pendingReview2,
                       style: TextStyle(
-                          color: AppTheme.warningColor,
+                          color: context.nexusTheme.warning,
                           fontSize: r.fs(12),
                           fontWeight: FontWeight.w700)),
                   const Spacer(),
                   Text(timeago.format(createdAt, locale: 'pt_BR'),
                       style: TextStyle(
-                          color: context.textHint, fontSize: r.fs(11))),
+                          color: context.nexusTheme.textHint, fontSize: r.fs(11))),
                 ],
               ),
             ),
@@ -388,12 +390,12 @@ class _PendingWikiCard extends ConsumerWidget {
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(10), vertical: r.s(4)),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                        color: context.nexusTheme.accentPrimary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(r.s(8)),
                       ),
                       child: Text(category,
                           style: TextStyle(
-                              color: AppTheme.primaryColor,
+                              color: context.nexusTheme.accentPrimary,
                               fontSize: r.fs(11),
                               fontWeight: FontWeight.w700)),
                     ),
@@ -403,13 +405,13 @@ class _PendingWikiCard extends ConsumerWidget {
                       style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: r.fs(18),
-                          color: context.textPrimary)),
+                          color: context.nexusTheme.textPrimary)),
                   SizedBox(height: r.s(8)),
 
                   // Content preview
                   Text(content,
                       style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(14),
                           height: 1.5),
                       maxLines: 4,
@@ -429,7 +431,7 @@ class _PendingWikiCard extends ConsumerWidget {
                         Text(
                           author['nickname'] as String? ?? s.anonymous2,
                           style: TextStyle(
-                              color: context.textSecondary,
+                              color: context.nexusTheme.textSecondary,
                               fontSize: r.fs(13),
                               fontWeight: FontWeight.w600),
                         ),
@@ -447,21 +449,21 @@ class _PendingWikiCard extends ConsumerWidget {
                             padding: EdgeInsets.symmetric(vertical: r.s(12)),
                             decoration: BoxDecoration(
                               color:
-                                  AppTheme.errorColor.withValues(alpha: 0.12),
+                                  context.nexusTheme.error.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(r.s(12)),
                               border: Border.all(
-                                  color: AppTheme.errorColor
+                                  color: context.nexusTheme.error
                                       .withValues(alpha: 0.3)),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.close_rounded,
-                                    size: r.s(18), color: AppTheme.errorColor),
+                                    size: r.s(18), color: context.nexusTheme.error),
                                 SizedBox(width: r.s(6)),
                                 Text(s.reject,
                                     style: TextStyle(
-                                        color: AppTheme.errorColor,
+                                        color: context.nexusTheme.error,
                                         fontWeight: FontWeight.w700,
                                         fontSize: r.fs(14))),
                               ],
@@ -478,14 +480,14 @@ class _PendingWikiCard extends ConsumerWidget {
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [
-                                  AppTheme.successColor,
+                                  context.nexusTheme.success,
                                   Color(0xFF00C853)
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(r.s(12)),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppTheme.successColor
+                                  color: context.nexusTheme.success
                                       .withValues(alpha: 0.4),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),

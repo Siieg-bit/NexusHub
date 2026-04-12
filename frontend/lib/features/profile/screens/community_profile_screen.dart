@@ -22,6 +22,8 @@ import '../widgets/rich_bio.dart';
 import '../../moderation/widgets/member_role_manager.dart';
 import '../../../core/widgets/image_viewer.dart';
 import 'bio_and_wall_screen.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Perfil dentro de uma Comunidade — Layout 1:1 com Amino Apps.
 ///
@@ -287,10 +289,10 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final r = context.r;
     if (_isInitialLoading) {
       return Scaffold(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         body: Center(
             child: CircularProgressIndicator(
-                color: AppTheme.primaryColor, strokeWidth: 2)),
+                color: context.nexusTheme.accentPrimary, strokeWidth: 2)),
       );
     }
 
@@ -376,7 +378,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         (titles.isNotEmpty ? r.s(40) : 0) +
         (roleTitle != null ? r.s(28) : 0);
 
-    final effectiveBgColor = dynamicBgColor ?? context.scaffoldBg;
+    final effectiveBgColor = dynamicBgColor ?? context.nexusTheme.backgroundPrimary;
     final layeredBgColor = hasProfileBackgroundImage
         ? effectiveBgColor.withValues(alpha: 0.84)
         : effectiveBgColor;
@@ -425,7 +427,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             ),
           ),
           RefreshIndicator(
-        color: AppTheme.primaryColor,
+        color: context.nexusTheme.accentPrimary,
         backgroundColor: context.surfaceColor,
         onRefresh: _loadProfile,
         edgeOffset: 0,
@@ -977,7 +979,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                           Text(
                             formatCount(reputation),
                             style: TextStyle(
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                               fontSize: r.fs(28),
                               fontWeight: FontWeight.w900,
                             ),
@@ -1003,7 +1005,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                             Text(
                               formatCount(_followingCount),
                               style: TextStyle(
-                                color: context.textPrimary,
+                                color: context.nexusTheme.textPrimary,
                                 fontSize: r.fs(28),
                                 fontWeight: FontWeight.w900,
                               ),
@@ -1030,7 +1032,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                             Text(
                               formatCount(_followersCount),
                               style: TextStyle(
-                                color: context.textPrimary,
+                                color: context.nexusTheme.textPrimary,
                                 fontSize: r.fs(28),
                                 fontWeight: FontWeight.w900,
                               ),
@@ -1078,7 +1080,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                         Text(
                           s.biography,
                           style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontSize: r.fs(18),
                             fontWeight: FontWeight.w800,
                           ),
@@ -1154,7 +1156,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                         child: Text(
                           s.tapToAddBio,
                           style: TextStyle(
-                            color: AppTheme.accentColor,
+                            color: context.nexusTheme.accentSecondary,
                             fontSize: r.fs(13),
                           ),
                         ),
@@ -1182,7 +1184,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
               delegate: _TabBarDelegate(
                 TabBar(
                   controller: _tabController,
-                  labelColor: AppTheme.primaryColor,
+                  labelColor: context.nexusTheme.accentPrimary,
                   unselectedLabelColor: Colors.grey[500],
                   indicatorColor: Colors.transparent,
                   dividerColor: Colors.transparent,
@@ -1283,7 +1285,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                   Text(
                     s.createNewPost,
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(15),
                       fontWeight: FontWeight.w600,
                     ),
@@ -1305,7 +1307,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                   Text(
                     s.myWikiEntries,
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(16),
                       fontWeight: FontWeight.w700,
                     ),
@@ -1393,7 +1395,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                           child: Text(
                             wikiTitle,
                             style: TextStyle(
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                               fontSize: r.fs(10),
                               fontWeight: FontWeight.w600,
                             ),
@@ -1420,7 +1422,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             child: Text(
               'Post fixado no perfil da comunidade',
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(14),
                 fontWeight: FontWeight.w800,
               ),
@@ -1488,13 +1490,13 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           borderRadius: BorderRadius.circular(r.s(12)),
           border: Border.all(
             color: highlighted
-                ? AppTheme.primaryColor.withValues(alpha: 0.45)
+                ? context.nexusTheme.accentPrimary.withValues(alpha: 0.45)
                 : Colors.white.withValues(alpha: 0.05),
           ),
           boxShadow: highlighted
               ? [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.14),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.14),
                     blurRadius: 18,
                     offset: const Offset(0, 6),
                   ),
@@ -1519,7 +1521,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                             vertical: r.s(5),
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.14),
+                            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.14),
                             borderRadius: BorderRadius.circular(r.s(999)),
                           ),
                           child: Row(
@@ -1528,13 +1530,13 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                               Icon(
                                 Icons.push_pin_rounded,
                                 size: r.s(14),
-                                color: AppTheme.primaryColor,
+                                color: context.nexusTheme.accentPrimary,
                               ),
                               SizedBox(width: r.s(6)),
                               Text(
                                 'Fixado no perfil',
                                 style: TextStyle(
-                                  color: AppTheme.primaryColor,
+                                  color: context.nexusTheme.accentPrimary,
                                   fontSize: r.fs(11),
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -1546,7 +1548,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                         Text(
                           post['title'] as String,
                           style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontWeight: FontWeight.w700,
                             fontSize: r.fs(15),
                           ),
@@ -1577,14 +1579,14 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                   ? Icons.push_pin_rounded
                                   : Icons.push_pin_outlined,
                               size: r.s(18),
-                              color: AppTheme.primaryColor,
+                              color: context.nexusTheme.accentPrimary,
                             ),
                             SizedBox(width: r.s(10)),
                             Text(
                               isPinnedProfile
                                   ? 'Desafixar do perfil'
                                   : 'Fixar no perfil',
-                              style: TextStyle(color: context.textPrimary),
+                              style: TextStyle(color: context.nexusTheme.textPrimary),
                             ),
                           ],
                         ),
@@ -1616,7 +1618,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                         ? Icons.favorite_rounded
                         : Icons.favorite_border_rounded,
                     label: '${post['likes_count'] ?? 0}',
-                    activeColor: AppTheme.errorColor,
+                    activeColor: context.nexusTheme.error,
                     isActive: post['is_liked'] == true,
                     onTap: () => _toggleCommunityProfilePostLike(post),
                   ),
@@ -1649,7 +1651,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     bool isActive = false,
   }) {
     final r = context.r;
-    final color = isActive ? (activeColor ?? AppTheme.primaryColor) : Colors.grey[600];
+    final color = isActive ? (activeColor ?? context.nexusTheme.accentPrimary) : Colors.grey[600];
 
     return GestureDetector(
       onTap: onTap,
@@ -1874,7 +1876,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     return Container(
       width: r.s(90),
       height: r.s(70),
-      color: context.scaffoldBg,
+      color: context.nexusTheme.backgroundPrimary,
       child:
           Icon(Icons.menu_book_rounded, size: r.s(28), color: Colors.grey[700]),
     );
@@ -1894,7 +1896,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     if (!_savedPostsLoaded) {
       _loadSavedPosts();
       return const Center(
-        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+        child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
       );
     }
 
@@ -1982,7 +1984,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                       Text(
                         post['title'] as String? ?? s.untitled,
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontWeight: FontWeight.w700,
                           fontSize: r.fs(14),
                         ),
@@ -2000,7 +2002,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                 ),
                 IconButton(
                   icon: Icon(Icons.bookmark_rounded,
-                      color: AppTheme.primaryColor, size: r.s(20)),
+                      color: context.nexusTheme.accentPrimary, size: r.s(20)),
                   onPressed: () async {
                     try {
                       await SupabaseService.table('bookmarks')
@@ -2126,7 +2128,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
           ),
           title: Text(s.unblockUser,
-              style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+              style: TextStyle(color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
           content: Text(s.confirmUnblockUser,
               style: TextStyle(color: Colors.grey[500])),
           actions: [
@@ -2137,7 +2139,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(s.unblock,
-                  style: const TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w800)),
+                  style: const TextStyle(color: context.nexusTheme.error, fontWeight: FontWeight.w800)),
             ),
           ],
         ),
@@ -2162,7 +2164,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
           ),
           title: Text(s.blockConfirmTitle,
-              style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+              style: TextStyle(color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
           content: Text(s.blockConfirmMsg,
               style: TextStyle(color: Colors.grey[500])),
           actions: [
@@ -2173,7 +2175,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(s.block,
-                  style: const TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w800)),
+                  style: const TextStyle(color: context.nexusTheme.error, fontWeight: FontWeight.w800)),
             ),
           ],
         ),
@@ -2282,7 +2284,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(s.profileLinkCopied),
-                    backgroundColor: AppTheme.primaryColor,
+                    backgroundColor: context.nexusTheme.accentPrimary,
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -2298,7 +2300,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   Widget _optionTile(IconData icon, String label, VoidCallback onTap,
       {bool isDestructive = false}) {
     final r = context.r;
-    final color = isDestructive ? AppTheme.errorColor : Colors.grey[400];
+    final color = isDestructive ? context.nexusTheme.error : Colors.grey[400];
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -2328,8 +2330,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.primaryColor.withValues(alpha: 0.6),
-            context.scaffoldBg,
+            context.nexusTheme.accentPrimary.withValues(alpha: 0.6),
+            context.nexusTheme.backgroundPrimary,
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,

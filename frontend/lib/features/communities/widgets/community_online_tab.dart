@@ -13,6 +13,8 @@ import '../../../core/providers/presence_provider.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../providers/community_detail_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // COMMUNITY ONLINE TAB — Estilo Amino Apps
@@ -46,7 +48,7 @@ class _CommunityOnlineTabState extends ConsumerState<CommunityOnlineTab> {
     final featuredAsync = ref.watch(activeFeaturedFeedProvider(communityId));
 
     return RefreshIndicator(
-      color: AppTheme.primaryColor,
+      color: context.nexusTheme.accentPrimary,
       onRefresh: () async {
         ref.invalidate(communityPresenceProvider(communityId));
         ref.invalidate(communityMembersProvider(communityId));
@@ -226,9 +228,9 @@ class _HappeningSection extends ConsumerWidget {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(r.s(10)),
                             color:
-                                AppTheme.primaryColor.withValues(alpha: 0.15),
+                                context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
                             border: Border.all(
-                                color: AppTheme.primaryColor
+                                color: context.nexusTheme.accentPrimary
                                     .withValues(alpha: 0.3),
                                 width: 0.5),
                           ),
@@ -279,7 +281,7 @@ class _HappeningSection extends ConsumerWidget {
                     width: r.s(20),
                     height: r.s(20),
                     child: const CircularProgressIndicator(
-                        strokeWidth: 2, color: AppTheme.primaryColor),
+                        strokeWidth: 2, color: context.nexusTheme.accentPrimary),
                   ),
                 ),
               ),
@@ -342,7 +344,7 @@ class _MembersOnlineSection extends ConsumerWidget {
                   width: r.s(10),
                   height: r.s(10),
                   decoration: const BoxDecoration(
-                    color: AppTheme.onlineColor,
+                    color: context.nexusTheme.onlineIndicator,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -396,7 +398,7 @@ class _MembersOnlineSection extends ConsumerWidget {
                             children: [
                               CircleAvatar(
                                 radius: r.s(24),
-                                backgroundColor: AppTheme.primaryColor
+                                backgroundColor: context.nexusTheme.accentPrimary
                                     .withValues(alpha: 0.2),
                                 backgroundImage: avatarUrl != null
                                     ? CachedNetworkImageProvider(avatarUrl)
@@ -405,7 +407,7 @@ class _MembersOnlineSection extends ConsumerWidget {
                                     ? Text(
                                         nickname[0].toUpperCase(),
                                         style: TextStyle(
-                                          color: AppTheme.primaryColor,
+                                          color: context.nexusTheme.accentPrimary,
                                           fontWeight: FontWeight.w700,
                                           fontSize: r.fs(16),
                                         ),
@@ -419,7 +421,7 @@ class _MembersOnlineSection extends ConsumerWidget {
                                   width: r.s(14),
                                   height: r.s(14),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.onlineColor,
+                                    color: context.nexusTheme.onlineIndicator,
                                     shape: BoxShape.circle,
                                     border: Border.all(
                                         color: const Color(0xFF0D0D1A),
@@ -490,7 +492,7 @@ class _BrowsingSection extends ConsumerWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.primaryColor.withValues(alpha: 0.25),
+            context.nexusTheme.accentPrimary.withValues(alpha: 0.25),
             const Color(0xFF1A1A2E).withValues(alpha: 0.6),
           ],
           begin: Alignment.centerLeft,
@@ -498,7 +500,7 @@ class _BrowsingSection extends ConsumerWidget {
         ),
         borderRadius: BorderRadius.circular(r.s(14)),
         border: Border.all(
-            color: AppTheme.primaryColor.withValues(alpha: 0.3), width: 0.5),
+            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3), width: 0.5),
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(14)),
@@ -710,7 +712,7 @@ class _MemberRow extends ConsumerWidget {
               children: [
                 CircleAvatar(
                   radius: r.s(22),
-                  backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+                  backgroundColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                   backgroundImage: avatarUrl != null
                       ? CachedNetworkImageProvider(avatarUrl)
                       : null,
@@ -718,7 +720,7 @@ class _MemberRow extends ConsumerWidget {
                       ? Text(
                           nickname[0].toUpperCase(),
                           style: TextStyle(
-                            color: AppTheme.primaryColor,
+                            color: context.nexusTheme.accentPrimary,
                             fontWeight: FontWeight.w700,
                             fontSize: r.fs(14),
                           ),
@@ -733,7 +735,7 @@ class _MemberRow extends ConsumerWidget {
                       width: r.s(12),
                       height: r.s(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.onlineColor,
+                        color: context.nexusTheme.onlineIndicator,
                         shape: BoxShape.circle,
                         border: Border.all(
                             color: const Color(0xFF0D0D1A), width: 2),
@@ -771,7 +773,7 @@ class _MemberRow extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: role == 'leader'
                                 ? const Color(0xFFFFD700).withValues(alpha: 0.2)
-                                : AppTheme.primaryColor.withValues(alpha: 0.2),
+                                : context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(r.s(4)),
                           ),
                           child: Text(
@@ -779,7 +781,7 @@ class _MemberRow extends ConsumerWidget {
                             style: TextStyle(
                               color: role == 'leader'
                                   ? const Color(0xFFFFD700)
-                                  : AppTheme.primaryColor,
+                                  : context.nexusTheme.accentPrimary,
                               fontSize: r.fs(9),
                               fontWeight: FontWeight.w800,
                             ),
@@ -895,12 +897,12 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
         decoration: BoxDecoration(
           color: _following
               ? Colors.transparent
-              : AppTheme.primaryColor.withValues(alpha: 0.15),
+              : context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(r.s(20)),
           border: Border.all(
             color: _following
                 ? Colors.white.withValues(alpha: 0.2)
-                : AppTheme.primaryColor.withValues(alpha: 0.6),
+                : context.nexusTheme.accentPrimary.withValues(alpha: 0.6),
             width: 1,
           ),
         ),
@@ -909,14 +911,14 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
                 width: r.s(14),
                 height: r.s(14),
                 child: const CircularProgressIndicator(
-                    strokeWidth: 1.5, color: AppTheme.primaryColor),
+                    strokeWidth: 1.5, color: context.nexusTheme.accentPrimary),
               )
             : Text(
                 _following ? 'Following' : '+ Follow',
                 style: TextStyle(
                   color: _following
                       ? Colors.white.withValues(alpha: 0.5)
-                      : AppTheme.primaryColor,
+                      : context.nexusTheme.accentPrimary,
                   fontSize: r.fs(11),
                   fontWeight: FontWeight.w600,
                 ),
@@ -963,14 +965,14 @@ class _AvatarStack extends ConsumerWidget {
                         imageUrl: url!,
                         fit: BoxFit.cover,
                         errorWidget: (_, __, ___) => Container(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                           child: Icon(Icons.person_rounded,
                               size: size * 0.5,
                               color: Colors.white.withValues(alpha: 0.5)),
                         ),
                       )
                     : Container(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                        color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                         child: Icon(Icons.person_rounded,
                             size: size * 0.5,
                             color: Colors.white.withValues(alpha: 0.5)),
@@ -1065,7 +1067,7 @@ class _MemberBottomSheet extends ConsumerWidget {
             children: [
               CircleAvatar(
                 radius: r.s(42),
-                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+                backgroundColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                 backgroundImage: avatarUrl != null
                     ? CachedNetworkImageProvider(avatarUrl!)
                     : null,
@@ -1073,7 +1075,7 @@ class _MemberBottomSheet extends ConsumerWidget {
                     ? Text(
                         nickname[0].toUpperCase(),
                         style: TextStyle(
-                          color: AppTheme.primaryColor,
+                          color: context.nexusTheme.accentPrimary,
                           fontWeight: FontWeight.w700,
                           fontSize: r.fs(28),
                         ),
@@ -1085,7 +1087,7 @@ class _MemberBottomSheet extends ConsumerWidget {
                   width: r.s(18),
                   height: r.s(18),
                   decoration: BoxDecoration(
-                    color: AppTheme.onlineColor,
+                    color: context.nexusTheme.onlineIndicator,
                     shape: BoxShape.circle,
                     border:
                         Border.all(color: const Color(0xFF1A1A2E), width: 2.5),
@@ -1113,7 +1115,7 @@ class _MemberBottomSheet extends ConsumerWidget {
             isOnline ? 'Currently Online' : s.offline,
             style: TextStyle(
               color: isOnline
-                  ? AppTheme.onlineColor
+                  ? context.nexusTheme.onlineIndicator
                   : Colors.white.withValues(alpha: 0.4),
               fontSize: r.fs(13),
             ),
@@ -1133,7 +1135,7 @@ class _MemberBottomSheet extends ConsumerWidget {
                       _openDm(context, communityId, userId);
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: AppTheme.onlineColor, width: 1.5),
+                      side: BorderSide(color: context.nexusTheme.onlineIndicator, width: 1.5),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(r.s(24))),
                       padding: EdgeInsets.symmetric(vertical: r.s(12)),
@@ -1141,7 +1143,7 @@ class _MemberBottomSheet extends ConsumerWidget {
                     child: Text(
                       'Start Chat',
                       style: TextStyle(
-                        color: AppTheme.onlineColor,
+                        color: context.nexusTheme.onlineIndicator,
                         fontWeight: FontWeight.w600,
                         fontSize: r.fs(14),
                       ),
@@ -1157,7 +1159,7 @@ class _MemberBottomSheet extends ConsumerWidget {
                       context.push('/community/$communityId/profile/$userId');
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
+                      backgroundColor: context.nexusTheme.accentPrimary,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(r.s(24))),
                       padding: EdgeInsets.symmetric(vertical: r.s(12)),
@@ -1185,7 +1187,7 @@ class _MemberBottomSheet extends ConsumerWidget {
                   context.push('/community/$communityId/profile/$userId');
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
+                  backgroundColor: context.nexusTheme.accentPrimary,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(r.s(24))),
                   padding: EdgeInsets.symmetric(vertical: r.s(12)),

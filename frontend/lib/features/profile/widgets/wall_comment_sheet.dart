@@ -16,6 +16,8 @@ import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../stickers/stickers.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/comment_media_menu_button.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // PROVIDER — carregamento de comentários do mural via RPC
@@ -221,7 +223,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erro ao comentar: ${e.toString().replaceAll('Exception: ', '')}'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
           ),
         );
       }
@@ -262,12 +264,12 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.image_outlined, color: AppTheme.primaryColor),
+              leading: const Icon(Icons.image_outlined, color: context.nexusTheme.accentPrimary),
               title: const Text('Imagem', style: TextStyle(color: Colors.white)),
               onTap: () => Navigator.pop(context, 'image'),
             ),
             ListTile(
-              leading: const Icon(Icons.videocam_outlined, color: AppTheme.primaryColor),
+              leading: const Icon(Icons.videocam_outlined, color: context.nexusTheme.accentPrimary),
               title: const Text('Vídeo', style: TextStyle(color: Colors.white)),
               onTap: () => Navigator.pop(context, 'video'),
             ),
@@ -311,7 +313,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao enviar imagem'), backgroundColor: AppTheme.errorColor),
+          SnackBar(content: Text('Erro ao enviar imagem'), backgroundColor: context.nexusTheme.error),
         );
       }
     } finally {
@@ -346,7 +348,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao enviar vídeo'), backgroundColor: AppTheme.errorColor),
+          SnackBar(content: Text('Erro ao enviar vídeo'), backgroundColor: context.nexusTheme.error),
         );
       }
     } finally {
@@ -370,7 +372,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
-        title: Text('Excluir comentário', style: TextStyle(color: context.textPrimary)),
+        title: Text('Excluir comentário', style: TextStyle(color: context.nexusTheme.textPrimary)),
         content: Text('Tem certeza que deseja excluir este comentário?',
             style: TextStyle(color: Colors.grey[400])),
         actions: [
@@ -395,7 +397,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir'), backgroundColor: AppTheme.errorColor),
+          SnackBar(content: Text('Erro ao excluir'), backgroundColor: context.nexusTheme.error),
         );
       }
     }
@@ -459,7 +461,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
   ) {
     return commentsAsync.when(
       loading: () => const Center(
-        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+        child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
       ),
       error: (e, _) => Center(
         child: Column(
@@ -474,7 +476,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => ref.invalidate(wallCommentsProvider(widget.wallUserId)),
-              child: const Text('Tentar novamente', style: TextStyle(color: AppTheme.primaryColor)),
+              child: const Text('Tentar novamente', style: TextStyle(color: context.nexusTheme.accentPrimary)),
             ),
           ],
         ),
@@ -502,7 +504,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
         }
 
         return RefreshIndicator(
-          color: AppTheme.primaryColor,
+          color: context.nexusTheme.accentPrimary,
           backgroundColor: context.surfaceColor,
           onRefresh: () async => ref.invalidate(wallCommentsProvider(widget.wallUserId)),
           child: ListView.builder(
@@ -532,7 +534,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
         : MediaQuery.of(context).padding.bottom + r.s(4);
 
     return Container(
-      color: context.scaffoldBg,
+      color: context.nexusTheme.backgroundPrimary,
       padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), bottomPad),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -543,18 +545,18 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
               margin: EdgeInsets.only(bottom: r.s(8)),
               padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(r.s(8)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.reply_rounded, color: AppTheme.primaryColor, size: r.s(14)),
+                  Icon(Icons.reply_rounded, color: context.nexusTheme.accentPrimary, size: r.s(14)),
                   SizedBox(width: r.s(6)),
                   Expanded(
                     child: Text(
                       'Respondendo @${_replyingTo!.author['nickname'] ?? 'usuário'}',
                       style: TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         fontSize: r.fs(12),
                         fontWeight: FontWeight.w600,
                       ),
@@ -596,7 +598,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
                                     width: r.s(52),
                                     height: r.s(52),
                                     decoration: BoxDecoration(
-                                      color: context.cardBg,
+                                      color: context.nexusTheme.surfacePrimary,
                                       borderRadius: BorderRadius.circular(r.s(8)),
                                     ),
                                     child: Icon(
@@ -647,11 +649,11 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
                 child: Container(
                   constraints: BoxConstraints(maxHeight: r.s(120)),
                   decoration: BoxDecoration(
-                    color: context.cardBg,
+                    color: context.nexusTheme.surfacePrimary,
                     borderRadius: BorderRadius.circular(r.s(24)),
                     border: Border.all(
                       color: _focusNode.hasFocus
-                          ? AppTheme.primaryColor
+                          ? context.nexusTheme.accentPrimary
                           : Colors.white.withValues(alpha: 0.1),
                       width: 1.5,
                     ),
@@ -665,7 +667,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
                           controller: _textCtrl,
                           focusNode: _focusNode,
                           maxLines: null,
-                          style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+                          style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
                           decoration: InputDecoration(
                             hintText: _replyingTo != null
                                 ? 'Respondendo...'
@@ -716,7 +718,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
                   width: r.s(42),
                   height: r.s(42),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor,
+                    color: context.nexusTheme.accentPrimary,
                     shape: BoxShape.circle,
                   ),
                   child: _isSending
@@ -754,9 +756,9 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
                 config: Config(
                   columns: 8,
                   emojiSizeMax: 28,
-                  bgColor: context.scaffoldBg,
-                  indicatorColor: AppTheme.primaryColor,
-                  iconColorSelected: AppTheme.primaryColor,
+                  bgColor: context.nexusTheme.backgroundPrimary,
+                  indicatorColor: context.nexusTheme.accentPrimary,
+                  iconColorSelected: context.nexusTheme.accentPrimary,
                   iconColor: Colors.grey[600] ?? Colors.grey,
                   checkPlatformCompatibility: true,
                   recentTabBehavior: RecentTabBehavior.RECENT,
@@ -832,7 +834,7 @@ class _WallCommentCard extends StatelessWidget {
                           width: 2,
                           height: r.s(40),
                           margin: EdgeInsets.only(right: r.s(10)),
-                          color: AppTheme.primaryColor.withValues(alpha: 0.25),
+                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.25),
                         ),
                         Expanded(
                           child: _CommentRow(
@@ -913,7 +915,7 @@ class _CommentRow extends StatelessWidget {
                       nickname,
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: isReply ? r.fs(12) : r.fs(13),
                       ),
                     ),
@@ -952,7 +954,7 @@ class _CommentRow extends StatelessWidget {
                 Text(
                   comment.content,
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(13),
                     height: 1.4,
                   ),
@@ -968,7 +970,7 @@ class _CommentRow extends StatelessWidget {
                 Text(
                   comment.content,
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(13),
                     height: 1.4,
                   ),
@@ -1060,9 +1062,9 @@ class _StickerDisplay extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.favorite_border_rounded, color: AppTheme.primaryColor),
+                  leading: const Icon(Icons.favorite_border_rounded, color: context.nexusTheme.accentPrimary),
                   title: Text('Favoritar figurinha',
-                      style: TextStyle(color: context.textPrimary)),
+                      style: TextStyle(color: context.nexusTheme.textPrimary)),
                   onTap: () async {
                     Navigator.pop(context);
                     final sticker = StickerModel(
@@ -1080,7 +1082,7 @@ class _StickerDisplay extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Figurinha favoritada!'),
-                          backgroundColor: AppTheme.primaryColor,
+                          backgroundColor: context.nexusTheme.accentPrimary,
                         ),
                       );
                     }
@@ -1088,8 +1090,8 @@ class _StickerDisplay extends ConsumerWidget {
                 ),
                 if (packId != null)
                   ListTile(
-                    leading: const Icon(Icons.bookmark_border_rounded, color: AppTheme.accentColor),
-                    title: Text('Salvar pack', style: TextStyle(color: context.textPrimary)),
+                    leading: const Icon(Icons.bookmark_border_rounded, color: context.nexusTheme.accentSecondary),
+                    title: Text('Salvar pack', style: TextStyle(color: context.nexusTheme.textPrimary)),
                     onTap: () async {
                       Navigator.pop(context);
                       await StickerRepository.instance.savePack(packId!);
@@ -1097,7 +1099,7 @@ class _StickerDisplay extends ConsumerWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Pack salvo!'),
-                            backgroundColor: AppTheme.accentColor,
+                            backgroundColor: context.nexusTheme.accentSecondary,
                           ),
                         );
                       }
@@ -1120,7 +1122,7 @@ class _StickerDisplay extends ConsumerWidget {
           child: const Center(
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: AppTheme.primaryColor,
+              color: context.nexusTheme.accentPrimary,
             ),
           ),
         ),
@@ -1227,7 +1229,7 @@ class _VideoDisplayState extends State<_VideoDisplay> {
                 child: const Center(
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: AppTheme.primaryColor,
+                    color: context.nexusTheme.accentPrimary,
                   ),
                 ),
               ),
@@ -1270,7 +1272,7 @@ class _MediaMenuButton extends StatelessWidget {
               : Icons.add_reaction_outlined,
           size: r.s(22),
           color: showEmojiPicker
-              ? AppTheme.primaryColor
+              ? context.nexusTheme.accentPrimary
               : Colors.grey[500],
         ),
       ),
@@ -1350,7 +1352,7 @@ class _MediaMenuButton extends StatelessWidget {
                       height: r.s(20),
                       child: const CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                       ),
                     )
                   : Icon(Icons.perm_media_outlined,

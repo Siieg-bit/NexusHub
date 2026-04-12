@@ -17,6 +17,8 @@ import '../../communities/providers/community_detail_providers.dart'
 import '../widgets/block_content_renderer.dart';
 import '../widgets/block_editor.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CREATE BLOG SCREEN — Editor de blogs estilo Amino
@@ -269,7 +271,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -336,7 +338,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Rascunho restaurado'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 2),
           ),
@@ -363,7 +365,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
           SnackBar(
             content: const Text(
                 'Adicione um título ou conteúdo antes de salvar.'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -404,7 +406,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Rascunho salvo'),
-          backgroundColor: AppTheme.successColor,
+          backgroundColor: context.nexusTheme.success,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
         ),
@@ -414,7 +416,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Não foi possível salvar o rascunho.'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -541,7 +543,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(s.titleRequired),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -557,7 +559,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
         SnackBar(
           content:
               const Text('Adicione conteúdo ao blog antes de publicar.'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -598,7 +600,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.postUpdated),
-                backgroundColor: AppTheme.successColor,
+                backgroundColor: context.nexusTheme.success,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -606,7 +608,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.anErrorOccurredTryAgain),
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -631,7 +633,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.postPublishedSuccess),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -643,7 +645,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('${s.errorPublishing2}: $detailedMessage'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -669,7 +671,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
         return Container(
           height: MediaQuery.of(context).size.height * 0.9,
           decoration: BoxDecoration(
-            color: context.scaffoldBg,
+            color: context.nexusTheme.backgroundPrimary,
             borderRadius: BorderRadius.vertical(
               top: Radius.circular(r.s(16)),
             ),
@@ -691,12 +693,12 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                 child: Row(
                   children: [
                     Icon(Icons.visibility_outlined,
-                        color: context.textSecondary, size: r.s(16)),
+                        color: context.nexusTheme.textSecondary, size: r.s(16)),
                     SizedBox(width: r.s(6)),
                     Text(
                       'Pré-visualização',
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(15),
                         fontWeight: FontWeight.w700,
                       ),
@@ -705,7 +707,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                     IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: Icon(Icons.close_rounded,
-                          color: context.textSecondary, size: r.s(20)),
+                          color: context.nexusTheme.textSecondary, size: r.s(20)),
                     ),
                   ],
                 ),
@@ -731,7 +733,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                             Text(
                               title.isEmpty ? 'Sem título' : title,
                               style: TextStyle(
-                                color: context.textPrimary,
+                                color: context.nexusTheme.textPrimary,
                                 fontSize: r.fs(22),
                                 fontWeight: FontWeight.w800,
                                 height: 1.2,
@@ -750,7 +752,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                               horizontal: r.s(8),
                                               vertical: r.s(3)),
                                           decoration: BoxDecoration(
-                                            color: AppTheme.accentColor
+                                            color: context.nexusTheme.accentSecondary
                                                 .withValues(alpha: 0.1),
                                             borderRadius:
                                                 BorderRadius.circular(
@@ -759,7 +761,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                           child: Text(
                                             '#$tag',
                                             style: TextStyle(
-                                              color: AppTheme.accentColor,
+                                              color: context.nexusTheme.accentSecondary,
                                               fontSize: r.fs(11),
                                               fontWeight: FontWeight.w600,
                                             ),
@@ -773,7 +775,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                               Text(
                                 'Nenhum conteúdo ainda.',
                                 style: TextStyle(
-                                  color: context.textHint,
+                                  color: context.nexusTheme.textHint,
                                   fontSize: r.fs(13),
                                   fontStyle: FontStyle.italic,
                                 ),
@@ -883,7 +885,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                       borderRadius: BorderRadius.circular(r.s(4)),
                                       child: LinearProgressIndicator(
                                         backgroundColor: Colors.white12,
-                                        color: AppTheme.primaryColor,
+                                        color: context.nexusTheme.accentPrimary,
                                       ),
                                     ),
                                   ),
@@ -923,7 +925,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                                 horizontal: r.s(12),
                                                 vertical: r.s(8)),
                                             decoration: BoxDecoration(
-                                              color: AppTheme.errorColor
+                                              color: context.nexusTheme.error
                                                   .withValues(alpha: 0.1),
                                               borderRadius:
                                                   BorderRadius.circular(
@@ -934,7 +936,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                                 'Remover',
                                                 style: TextStyle(
                                                   color:
-                                                      AppTheme.errorColor,
+                                                      context.nexusTheme.error,
                                                   fontSize: r.fs(12),
                                                   fontWeight:
                                                       FontWeight.w600,
@@ -1122,7 +1124,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                       ),
                                       decoration: BoxDecoration(
                                         color: isSelected
-                                            ? AppTheme.primaryColor
+                                            ? context.nexusTheme.accentPrimary
                                                 .withValues(
                                                     alpha: 0.12)
                                             : ctx.surfaceColor,
@@ -1215,7 +1217,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                         : 'Desativado',
                                     style: TextStyle(
                                       color: _pinToProfile
-                                          ? AppTheme.primaryColor
+                                          ? context.nexusTheme.accentPrimary
                                           : ctx.textSecondary,
                                       fontSize: r.fs(12),
                                       fontWeight:
@@ -1231,7 +1233,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                     setModalState(() {});
                                   },
                                   activeColor:
-                                      AppTheme.primaryColor,
+                                      context.nexusTheme.accentPrimary,
                                 ),
                               ],
                             ),
@@ -1373,7 +1375,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
         ref.watch(community_providers.communityDetailProvider(widget.communityId));
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       body: _restoringDraft
           ? Center(
               child: Column(
@@ -1383,7 +1385,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                     width: r.s(20),
                     height: r.s(20),
                     child: const CircularProgressIndicator(
-                      color: AppTheme.accentColor,
+                      color: context.nexusTheme.accentSecondary,
                       strokeWidth: 2,
                     ),
                   ),
@@ -1391,7 +1393,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                   Text(
                     'Carregando...',
                     style: TextStyle(
-                      color: context.textSecondary,
+                      color: context.nexusTheme.textSecondary,
                       fontSize: r.fs(12),
                     ),
                   ),
@@ -1433,7 +1435,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                 TextCapitalization.sentences,
                             onChanged: (_) => setState(() {}),
                             style: TextStyle(
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                               fontSize: r.fs(18),
                               fontWeight: FontWeight.w700,
                               height: 1.3,
@@ -1443,7 +1445,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                             decoration: InputDecoration(
                               hintText: 'Título',
                               hintStyle: TextStyle(
-                                color: context.textHint
+                                color: context.nexusTheme.textHint
                                     .withValues(alpha: 0.5),
                                 fontSize: r.fs(18),
                                 fontWeight: FontWeight.w700,
@@ -1485,7 +1487,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                 Text(
                                   '$_wordCount palavras',
                                   style: TextStyle(
-                                    color: context.textSecondary
+                                    color: context.nexusTheme.textSecondary
                                         .withValues(alpha: 0.5),
                                     fontSize: r.fs(10),
                                   ),
@@ -1497,7 +1499,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                     child: Text(
                                       '·',
                                       style: TextStyle(
-                                        color: context.textSecondary
+                                        color: context.nexusTheme.textSecondary
                                             .withValues(alpha: 0.3),
                                         fontSize: r.fs(10),
                                       ),
@@ -1506,7 +1508,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                   Text(
                                     _readingTime,
                                     style: TextStyle(
-                                      color: context.textSecondary
+                                      color: context.nexusTheme.textSecondary
                                           .withValues(alpha: 0.5),
                                       fontSize: r.fs(10),
                                     ),
@@ -1774,7 +1776,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
               padding: EdgeInsets.symmetric(
                   horizontal: r.s(12), vertical: r.s(6)),
               decoration: BoxDecoration(
-                color: context.cardBg.withValues(alpha: 0.5),
+                color: context.nexusTheme.surfacePrimary.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(r.s(6)),
                 border: Border.all(
                   color: context.dividerClr.withValues(alpha: 0.3),
@@ -1785,14 +1787,14 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                 children: [
                   Icon(
                     Icons.tune_rounded,
-                    color: context.textSecondary,
+                    color: context.nexusTheme.textSecondary,
                     size: r.s(14),
                   ),
                   SizedBox(width: r.s(4)),
                   Text(
                     'Opções',
                     style: TextStyle(
-                      color: context.textSecondary,
+                      color: context.nexusTheme.textSecondary,
                       fontSize: r.fs(12),
                       fontWeight: FontWeight.w600,
                     ),
@@ -1849,15 +1851,15 @@ class _BottomToolbarButton extends StatelessWidget {
                   height: r.s(16),
                   child: CircularProgressIndicator(
                     strokeWidth: 1.5,
-                    color: context.textSecondary,
+                    color: context.nexusTheme.textSecondary,
                   ),
                 )
               else
                 Icon(
                   icon,
                   color: onTap != null
-                      ? context.textSecondary
-                      : context.textHint,
+                      ? context.nexusTheme.textSecondary
+                      : context.nexusTheme.textHint,
                   size: r.s(20),
                 ),
               if (badge)
@@ -1868,7 +1870,7 @@ class _BottomToolbarButton extends StatelessWidget {
                     width: r.s(6),
                     height: r.s(6),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: context.surfaceColor,
@@ -1919,7 +1921,7 @@ class _InsertBlockOption extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: context.textSecondary,
+              color: context.nexusTheme.textSecondary,
               fontSize: r.fs(10),
               fontWeight: FontWeight.w600,
             ),
@@ -1951,12 +1953,12 @@ class _SettingsSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon, color: context.textSecondary, size: r.s(14)),
+            Icon(icon, color: context.nexusTheme.textSecondary, size: r.s(14)),
             SizedBox(width: r.s(6)),
             Text(
               title,
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(13),
                 fontWeight: FontWeight.w700,
               ),
@@ -1966,7 +1968,7 @@ class _SettingsSection extends StatelessWidget {
               Text(
                 subtitle!,
                 style: TextStyle(
-                  color: context.textSecondary,
+                  color: context.nexusTheme.textSecondary,
                   fontSize: r.fs(10),
                 ),
               ),
@@ -1993,10 +1995,10 @@ class _TagChip extends StatelessWidget {
       padding:
           EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
       decoration: BoxDecoration(
-        color: AppTheme.accentColor.withValues(alpha: 0.08),
+        color: context.nexusTheme.accentSecondary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(r.s(6)),
         border: Border.all(
-          color: AppTheme.accentColor.withValues(alpha: 0.15),
+          color: context.nexusTheme.accentSecondary.withValues(alpha: 0.15),
         ),
       ),
       child: Row(
@@ -2005,7 +2007,7 @@ class _TagChip extends StatelessWidget {
           Text(
             '#$tag',
             style: TextStyle(
-              color: AppTheme.accentColor,
+              color: context.nexusTheme.accentSecondary,
               fontSize: r.fs(11),
               fontWeight: FontWeight.w600,
             ),
@@ -2014,7 +2016,7 @@ class _TagChip extends StatelessWidget {
           GestureDetector(
             onTap: onRemove,
             child: Icon(Icons.close_rounded,
-                color: AppTheme.accentColor.withValues(alpha: 0.5),
+                color: context.nexusTheme.accentSecondary.withValues(alpha: 0.5),
                 size: r.s(12)),
           ),
         ],
@@ -2038,14 +2040,14 @@ class _SmallButton extends StatelessWidget {
         padding:
             EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
         decoration: BoxDecoration(
-          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(r.s(8)),
         ),
         child: Center(
           child: Text(
             label,
             style: TextStyle(
-              color: AppTheme.primaryColor,
+              color: context.nexusTheme.accentPrimary,
               fontSize: r.fs(12),
               fontWeight: FontWeight.w600,
             ),
@@ -2079,12 +2081,12 @@ class _VisibilityChip extends StatelessWidget {
           padding: EdgeInsets.symmetric(vertical: r.s(8)),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                ? context.nexusTheme.accentPrimary.withValues(alpha: 0.1)
                 : context.surfaceColor,
             borderRadius: BorderRadius.circular(r.s(8)),
             border: Border.all(
               color: isSelected
-                  ? AppTheme.primaryColor
+                  ? context.nexusTheme.accentPrimary
                   : context.dividerClr,
               width: isSelected ? 1.5 : 1,
             ),
@@ -2094,8 +2096,8 @@ class _VisibilityChip extends StatelessWidget {
               Icon(
                 icon,
                 color: isSelected
-                    ? AppTheme.primaryColor
-                    : context.textSecondary,
+                    ? context.nexusTheme.accentPrimary
+                    : context.nexusTheme.textSecondary,
                 size: r.s(16),
               ),
               SizedBox(height: r.s(3)),
@@ -2103,8 +2105,8 @@ class _VisibilityChip extends StatelessWidget {
                 label,
                 style: TextStyle(
                   color: isSelected
-                      ? AppTheme.primaryColor
-                      : context.textSecondary,
+                      ? context.nexusTheme.accentPrimary
+                      : context.nexusTheme.textSecondary,
                   fontSize: r.fs(10),
                   fontWeight:
                       isSelected ? FontWeight.w700 : FontWeight.w500,

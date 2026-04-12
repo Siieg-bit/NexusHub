@@ -6,6 +6,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de Seguidores / Seguindo — Lista de conexões sociais.
 class FollowersScreen extends ConsumerStatefulWidget {
@@ -80,23 +82,23 @@ class _FollowersScreenState extends ConsumerState<FollowersScreen>
   Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         title: Text(
           s.connections,
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
           ),
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppTheme.primaryColor,
+          labelColor: context.nexusTheme.accentPrimary,
           unselectedLabelColor: Colors.grey[500],
-          indicatorColor: AppTheme.primaryColor,
+          indicatorColor: context.nexusTheme.accentPrimary,
           dividerColor: Colors.white.withValues(alpha: 0.05),
           tabs: [
             Tab(text: 'Seguindo (${_following.length})'),
@@ -107,7 +109,7 @@ class _FollowersScreenState extends ConsumerState<FollowersScreen>
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
               ),
             )
           : TabBarView(
@@ -133,7 +135,7 @@ class _FollowersScreenState extends ConsumerState<FollowersScreen>
     }
 
     return RefreshIndicator(
-      color: AppTheme.primaryColor,
+      color: context.nexusTheme.accentPrimary,
       onRefresh: () async {
         await _loadData();
         if (!mounted) return;
@@ -174,7 +176,7 @@ class _FollowersScreenState extends ConsumerState<FollowersScreen>
                 nickname,
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                 ),
               ),
               subtitle: Text(
@@ -260,8 +262,8 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.anErrorOccurredTryAgain,
-                style: TextStyle(color: context.textPrimary)),
-            backgroundColor: AppTheme.errorColor,
+                style: TextStyle(color: context.nexusTheme.textPrimary)),
+            backgroundColor: context.nexusTheme.error,
           ),
         );
       }
@@ -285,7 +287,7 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
           gradient: _isFollowing
               ? null
               : const LinearGradient(
-                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                  colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 ),
           color: _isFollowing ? Colors.transparent : null,
           border: _isFollowing
@@ -295,7 +297,7 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
               ? null
               : [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -306,7 +308,7 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
           style: TextStyle(
             fontSize: r.fs(12),
             fontWeight: FontWeight.w700,
-            color: _isFollowing ? Colors.grey[500] : context.textPrimary,
+            color: _isFollowing ? Colors.grey[500] : context.nexusTheme.textPrimary,
           ),
         ),
       ),

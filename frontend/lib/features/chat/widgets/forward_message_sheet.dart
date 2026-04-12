@@ -7,6 +7,8 @@ import '../../../core/models/chat_room_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Bottom sheet para encaminhar uma mensagem para um ou mais chats.
 class ForwardMessageSheet extends ConsumerStatefulWidget {
@@ -158,7 +160,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                 Text(
                   s.forwardTo,
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(18),
                     fontWeight: FontWeight.w800,
                   ),
@@ -174,13 +176,13 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppTheme.primaryColor),
+                                  context.nexusTheme.accentPrimary),
                             ),
                           )
                         : Text(
                             'Enviar (${_selected.length})',
                             style: const TextStyle(
-                              color: AppTheme.primaryColor,
+                              color: context.nexusTheme.accentPrimary,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -193,15 +195,15 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
             margin: EdgeInsets.symmetric(horizontal: r.s(20)),
             padding: EdgeInsets.all(r.s(12)),
             decoration: BoxDecoration(
-              color: context.scaffoldBg,
+              color: context.nexusTheme.backgroundPrimary,
               borderRadius: BorderRadius.circular(r.s(12)),
               border: Border.all(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.3)),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
                 Icon(Icons.forward_rounded,
-                    color: AppTheme.primaryColor, size: r.s(16)),
+                    color: context.nexusTheme.accentPrimary, size: r.s(16)),
                 SizedBox(width: r.s(8)),
                 Expanded(
                   child: Text(
@@ -225,13 +227,13 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
             padding: EdgeInsets.symmetric(horizontal: r.s(20)),
             child: TextField(
               controller: _searchCtrl,
-              style: TextStyle(color: context.textPrimary),
+              style: TextStyle(color: context.nexusTheme.textPrimary),
               decoration: InputDecoration(
                 hintText: s.searchChatHint,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 prefixIcon: Icon(Icons.search_rounded, color: Colors.grey[600]),
                 filled: true,
-                fillColor: context.scaffoldBg,
+                fillColor: context.nexusTheme.backgroundPrimary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide.none,
@@ -262,7 +264,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                               children: [
                                 CircleAvatar(
                                   radius: r.s(22),
-                                  backgroundColor: AppTheme.primaryColor
+                                  backgroundColor: context.nexusTheme.accentPrimary
                                       .withValues(alpha: 0.2),
                                   backgroundImage: chat.iconUrl != null
                                       ? CachedNetworkImageProvider(
@@ -272,7 +274,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                                       ? Text(
                                           chat.title[0].toUpperCase(),
                                           style: TextStyle(
-                                            color: AppTheme.primaryColor,
+                                            color: context.nexusTheme.accentPrimary,
                                             fontWeight: FontWeight.w700,
                                             fontSize: r.fs(16),
                                           ),
@@ -287,7 +289,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                                       width: r.s(18),
                                       height: r.s(18),
                                       decoration: const BoxDecoration(
-                                        color: AppTheme.primaryColor,
+                                        color: context.nexusTheme.accentPrimary,
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(Icons.check_rounded,
@@ -299,7 +301,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                             title: Text(
                               chat.title,
                               style: TextStyle(
-                                color: context.textPrimary,
+                                color: context.nexusTheme.textPrimary,
                                 fontWeight: FontWeight.w600,
                                 fontSize: r.fs(14),
                               ),
@@ -320,7 +322,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                                   _selected.add(chat.id);
                                 }
                               }),
-                              activeColor: AppTheme.primaryColor,
+                              activeColor: context.nexusTheme.accentPrimary,
                               shape: const CircleBorder(),
                             ),
                             onTap: () => setState(() {

@@ -5,6 +5,8 @@ import '../../../core/models/post_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Widget de Enquete (Poll) para uso no PostDetailScreen.
 ///
@@ -196,10 +198,10 @@ class _PollDetailWidgetState extends ConsumerState<PollDetailWidget> {
       margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
       padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(14)),
         border: Border.all(
-          color: AppTheme.accentColor.withValues(alpha: 0.15),
+          color: context.nexusTheme.accentSecondary.withValues(alpha: 0.15),
         ),
       ),
       child: Column(
@@ -209,14 +211,14 @@ class _PollDetailWidgetState extends ConsumerState<PollDetailWidget> {
           Row(
             children: [
               Icon(Icons.poll_rounded,
-                  size: r.s(18), color: AppTheme.accentColor),
+                  size: r.s(18), color: context.nexusTheme.accentSecondary),
               SizedBox(width: r.s(8)),
               Text(
                 s.poll,
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: r.fs(14),
-                  color: AppTheme.accentColor,
+                  color: context.nexusTheme.accentSecondary,
                 ),
               ),
               const Spacer(),
@@ -224,7 +226,7 @@ class _PollDetailWidgetState extends ConsumerState<PollDetailWidget> {
                 '$_totalVotes votos',
                 style: TextStyle(
                   fontSize: r.fs(12),
-                  color: context.textHint,
+                  color: context.nexusTheme.textHint,
                 ),
               ),
             ],
@@ -251,7 +253,7 @@ class _PollDetailWidgetState extends ConsumerState<PollDetailWidget> {
                   borderRadius: BorderRadius.circular(r.s(10)),
                   border: Border.all(
                     color:
-                        isSelected ? AppTheme.accentColor : context.dividerClr,
+                        isSelected ? context.nexusTheme.accentSecondary : context.dividerClr,
                     width: isSelected ? 1.5 : 0.5,
                   ),
                 ),
@@ -268,9 +270,9 @@ class _PollDetailWidgetState extends ConsumerState<PollDetailWidget> {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? AppTheme.accentColor
+                                    ? context.nexusTheme.accentSecondary
                                         .withValues(alpha: 0.15)
-                                    : context.textHint.withValues(alpha: 0.05),
+                                    : context.nexusTheme.textHint.withValues(alpha: 0.05),
                               ),
                             ),
                           ),
@@ -289,7 +291,7 @@ class _PollDetailWidgetState extends ConsumerState<PollDetailWidget> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: context.textHint,
+                                    color: context.nexusTheme.textHint,
                                     width: 1.5,
                                   ),
                                 ),
@@ -301,7 +303,7 @@ class _PollDetailWidgetState extends ConsumerState<PollDetailWidget> {
                                 margin: EdgeInsets.only(right: r.s(10)),
                                 decoration: const BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: AppTheme.accentColor,
+                                  color: context.nexusTheme.accentSecondary,
                                 ),
                                 child: Icon(Icons.check_rounded,
                                     size: r.s(14), color: Colors.white),
@@ -313,7 +315,7 @@ class _PollDetailWidgetState extends ConsumerState<PollDetailWidget> {
                                 text,
                                 style: TextStyle(
                                   fontSize: r.fs(14),
-                                  color: context.textPrimary,
+                                  color: context.nexusTheme.textPrimary,
                                   fontWeight: isSelected
                                       ? FontWeight.w700
                                       : FontWeight.w400,
@@ -327,8 +329,8 @@ class _PollDetailWidgetState extends ConsumerState<PollDetailWidget> {
                                   fontSize: r.fs(13),
                                   fontWeight: FontWeight.w700,
                                   color: isSelected
-                                      ? AppTheme.accentColor
-                                      : context.textSecondary,
+                                      ? context.nexusTheme.accentSecondary
+                                      : context.nexusTheme.textSecondary,
                                 ),
                               ),
                           ],
@@ -464,10 +466,10 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
       margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
       padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(14)),
         border: Border.all(
-          color: AppTheme.accentColor.withValues(alpha: 0.15),
+          color: context.nexusTheme.accentSecondary.withValues(alpha: 0.15),
         ),
       ),
       child: _completed ? _buildResult() : _buildQuestion(),
@@ -492,7 +494,7 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
           style: TextStyle(
             fontSize: r.fs(22),
             fontWeight: FontWeight.w800,
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
           ),
         ),
         SizedBox(height: r.s(8)),
@@ -500,7 +502,7 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
           '${(pct * 100).toStringAsFixed(0)}% de acerto',
           style: TextStyle(
             fontSize: r.fs(14),
-            color: context.textSecondary,
+            color: context.nexusTheme.textSecondary,
           ),
         ),
         SizedBox(height: r.s(16)),
@@ -517,7 +519,7 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
               });
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.accentColor,
+              backgroundColor: context.nexusTheme.accentSecondary,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(r.s(10)),
@@ -558,14 +560,14 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
         Row(
           children: [
             Icon(Icons.quiz_rounded,
-                size: r.s(18), color: AppTheme.accentColor),
+                size: r.s(18), color: context.nexusTheme.accentSecondary),
             SizedBox(width: r.s(8)),
             Text(
               'Quiz — Pergunta ${_currentQuestion + 1}/${_questions.length}',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: r.fs(13),
-                color: AppTheme.accentColor,
+                color: context.nexusTheme.accentSecondary,
               ),
             ),
           ],
@@ -579,7 +581,7 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
             value: (_currentQuestion + 1) / _questions.length,
             backgroundColor: context.dividerClr,
             valueColor:
-                const AlwaysStoppedAnimation<Color>(AppTheme.accentColor),
+                const AlwaysStoppedAnimation<Color>(context.nexusTheme.accentSecondary),
             minHeight: 4,
           ),
         ),
@@ -592,7 +594,7 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
           style: TextStyle(
             fontSize: r.fs(16),
             fontWeight: FontWeight.w700,
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             height: 1.4,
           ),
         ),
@@ -610,22 +612,22 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
           final isCorrect = i == correctIndex;
           final isSelected = _selectedOption == i;
 
-          Color bgColor = context.scaffoldBg;
+          Color bgColor = context.nexusTheme.backgroundPrimary;
           Color borderColor = context.dividerClr;
           IconData? trailingIcon;
           Color? trailingColor;
 
           if (_answered) {
             if (isCorrect) {
-              bgColor = AppTheme.successColor.withValues(alpha: 0.12);
-              borderColor = AppTheme.successColor;
+              bgColor = context.nexusTheme.success.withValues(alpha: 0.12);
+              borderColor = context.nexusTheme.success;
               trailingIcon = Icons.check_circle_rounded;
-              trailingColor = AppTheme.successColor;
+              trailingColor = context.nexusTheme.success;
             } else if (isSelected && !isCorrect) {
-              bgColor = AppTheme.errorColor.withValues(alpha: 0.12);
-              borderColor = AppTheme.errorColor;
+              bgColor = context.nexusTheme.error.withValues(alpha: 0.12);
+              borderColor = context.nexusTheme.error;
               trailingIcon = Icons.cancel_rounded;
-              trailingColor = AppTheme.errorColor;
+              trailingColor = context.nexusTheme.error;
             }
           }
 
@@ -652,12 +654,12 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
                       shape: BoxShape.circle,
                       color: isSelected
                           ? (isCorrect
-                              ? AppTheme.successColor
-                              : AppTheme.errorColor)
+                              ? context.nexusTheme.success
+                              : context.nexusTheme.error)
                           : Colors.transparent,
                       border: Border.all(
                         color:
-                            isSelected ? Colors.transparent : context.textHint,
+                            isSelected ? Colors.transparent : context.nexusTheme.textHint,
                         width: 1.5,
                       ),
                     ),
@@ -675,7 +677,7 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
                                 fontWeight: FontWeight.w700,
                                 color: isSelected
                                     ? Colors.white
-                                    : context.textHint,
+                                    : context.nexusTheme.textHint,
                               ),
                             ),
                     ),
@@ -685,7 +687,7 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
                       optText,
                       style: TextStyle(
                         fontSize: r.fs(14),
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontWeight:
                             isSelected ? FontWeight.w700 : FontWeight.w400,
                       ),
@@ -706,21 +708,21 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
             child: Container(
               padding: EdgeInsets.all(r.s(12)),
               decoration: BoxDecoration(
-                color: AppTheme.accentColor.withValues(alpha: 0.08),
+                color: context.nexusTheme.accentSecondary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(r.s(8)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.lightbulb_outline_rounded,
-                      size: r.s(16), color: AppTheme.accentColor),
+                      size: r.s(16), color: context.nexusTheme.accentSecondary),
                   SizedBox(width: r.s(8)),
                   Expanded(
                     child: Text(
                       q['explanation'] as String? ?? '',
                       style: TextStyle(
                         fontSize: r.fs(12),
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                         height: 1.4,
                       ),
                     ),

@@ -8,6 +8,8 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/wall_comment_sheet.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Mural do Usuário (The Wall) — Mensagens públicas no perfil, estilo Amino.
 /// Refatorado para usar WallCommentSheet (corrige bugs de carregamento e envio).
@@ -24,7 +26,7 @@ class UserWallScreen extends ConsumerWidget {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         elevation: 0,

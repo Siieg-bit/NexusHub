@@ -17,6 +17,8 @@ import '../../../core/providers/dm_invite_provider.dart';
 import '../../../core/providers/chat_provider.dart' show unreadCountProvider, unreadCountByCommunityProvider;
 import '../widgets/dm_invite_card.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Provider para "Meus chats" — lista pessoal do usuário.
 /// Retorna apenas threads com membership ativo (status != 'left').
@@ -246,7 +248,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     final communitiesAsync = ref.watch(chatCommunitiesProvider);
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       body: AminoParticlesBg(
         child: Column(
           children: [
@@ -271,7 +273,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                       children: [
                         Text(s.newChatTitle,
                             style: TextStyle(
-                                color: context.textPrimary,
+                                color: context.nexusTheme.textPrimary,
                                 fontSize: r.fs(18),
                                 fontWeight: FontWeight.w800)),
                         SizedBox(height: r.s(20)),
@@ -281,15 +283,15 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             height: r.s(44),
                             decoration: BoxDecoration(
                               color:
-                                  AppTheme.primaryColor.withValues(alpha: 0.2),
+                                  context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(r.s(12)),
                             ),
                             child: const Icon(Icons.person_add_rounded,
-                                color: AppTheme.primaryColor),
+                                color: context.nexusTheme.accentPrimary),
                           ),
                           title: Text(s.privateChatLabel,
                               style: TextStyle(
-                                  color: context.textPrimary,
+                                  color: context.nexusTheme.textPrimary,
                                   fontWeight: FontWeight.w600)),
                          subtitle: Text(s.startConversationUser,
                               style: TextStyle(
@@ -305,15 +307,15 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             height: r.s(44),
                             decoration: BoxDecoration(
                               color:
-                                  AppTheme.accentColor.withValues(alpha: 0.2),
+                                  context.nexusTheme.accentSecondary.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(r.s(12)),
                             ),
                             child: const Icon(Icons.group_add_rounded,
-                                color: AppTheme.accentColor),
+                                color: context.nexusTheme.accentSecondary),
                           ),
                           title: Text(s.groupChatLabel,
                               style: TextStyle(
-                                  color: context.textPrimary,
+                                  color: context.nexusTheme.textPrimary,
                                   fontWeight: FontWeight.w600)),
                           subtitle: Text(
                               'Criar um grupo com v\u00e1rios membros',
@@ -420,7 +422,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                               width: r.s(36),
                               height: r.s(36),
                               decoration: BoxDecoration(
-                                color: context.cardBg,
+                                color: context.nexusTheme.surfacePrimary,
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color:
@@ -428,7 +430,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                 ),
                               ),
                               child: Icon(Icons.add,
-                                  color: context.textSecondary, size: r.s(20)),
+                                  color: context.nexusTheme.textSecondary, size: r.s(20)),
                             ),
                           ),
                         ),
@@ -443,7 +445,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     child: chatsAsync.when(
                       loading: () => const Center(
                         child: CircularProgressIndicator(
-                          color: AppTheme.accentColor,
+                          color: context.nexusTheme.accentSecondary,
                           strokeWidth: 2.5,
                         ),
                       ),
@@ -452,11 +454,11 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.error_outline_rounded,
-                                size: r.s(48), color: context.textHint),
+                                size: r.s(48), color: context.nexusTheme.textHint),
                             SizedBox(height: r.s(12)),
                             Text(s.errorLoadingChats,
                                 style: TextStyle(
-                                    color: context.textSecondary,
+                                    color: context.nexusTheme.textSecondary,
                                     fontSize: r.fs(14))),
                           ],
                         ),
@@ -507,7 +509,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     final r = context.r;
     final pendingInvites = ref.watch(pendingDmInvitesProvider);
     return RefreshIndicator(
-      color: AppTheme.primaryColor,
+      color: context.nexusTheme.accentPrimary,
       onRefresh: () async {
         ref.invalidate(chatListProvider);
         ref.invalidate(chatCommunitiesProvider);
@@ -535,12 +537,12 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   child: Row(
                     children: [
                       Icon(Icons.mail_rounded,
-                          color: AppTheme.accentColor, size: r.s(16)),
+                          color: context.nexusTheme.accentSecondary, size: r.s(16)),
                       SizedBox(width: r.s(6)),
                       Text(
                         s.pendingInvites,
                         style: TextStyle(
-                          color: AppTheme.accentColor,
+                          color: context.nexusTheme.accentSecondary,
                           fontSize: r.fs(13),
                           fontWeight: FontWeight.w700,
                         ),
@@ -586,7 +588,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             style: TextStyle(
               fontSize: r.fs(18),
               fontWeight: FontWeight.w700,
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
             ),
           ),
         ),
@@ -597,7 +599,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             height: r.s(120),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(r.s(12)),
-              color: context.cardBg,
+              color: context.nexusTheme.surfacePrimary,
             ),
             clipBehavior: Clip.antiAlias,
             child: Stack(
@@ -608,11 +610,11 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        [AppTheme.aminoPurple, AppTheme.aminoBlue],
-                        [AppTheme.aminoMagenta, AppTheme.aminoPurple],
-                        [AppTheme.aminoBlue, AppTheme.accentColor],
-                        [AppTheme.aminoOrange, AppTheme.aminoRed],
-                        [AppTheme.primaryColor, AppTheme.accentColor],
+                        [context.nexusTheme.accentPrimary, context.nexusTheme.accentPrimary],
+                        [context.nexusTheme.accentSecondary, context.nexusTheme.accentPrimary],
+                        [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
+                        [context.nexusTheme.warning, context.nexusTheme.error],
+                        [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                       ][index % 5],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -723,18 +725,18 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.chat_bubble_outline_rounded,
-                  size: r.s(36), color: context.textHint),
+                  size: r.s(36), color: context.nexusTheme.textHint),
             ),
             SizedBox(height: r.s(16)),
             Text(s.noChatsYet,
                 style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(16),
                     fontWeight: FontWeight.w600)),
             SizedBox(height: r.s(8)),
             Text(s.joinCommunityStartChat,
                 style:
-                    TextStyle(color: context.textSecondary, fontSize: r.fs(13)),
+                    TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(13)),
                 textAlign: TextAlign.center),
             SizedBox(height: r.s(24)),
             GestureDetector(
@@ -743,7 +745,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 padding: EdgeInsets.symmetric(
                     horizontal: r.s(20), vertical: r.s(10)),
                 decoration: BoxDecoration(
-                  color: AppTheme.accentColor,
+                  color: context.nexusTheme.accentSecondary,
                   borderRadius: BorderRadius.circular(r.s(20)),
                 ),
                 child: Text(
@@ -796,7 +798,7 @@ class _SidebarIcon extends ConsumerWidget {
               height: r.s(40),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppTheme.accentColor.withValues(alpha: 0.15)
+                    ? context.nexusTheme.accentSecondary.withValues(alpha: 0.15)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(r.s(12)),
               ),
@@ -805,7 +807,7 @@ class _SidebarIcon extends ConsumerWidget {
                 children: [
                   Icon(
                     icon,
-                    color: isSelected ? AppTheme.accentColor : context.textHint,
+                    color: isSelected ? context.nexusTheme.accentSecondary : context.nexusTheme.textHint,
                     size: r.s(22),
                   ),
                   if (badgeCount > 0)
@@ -816,7 +818,7 @@ class _SidebarIcon extends ConsumerWidget {
                         width: r.s(14),
                         height: r.s(14),
                         decoration: const BoxDecoration(
-                          color: AppTheme.aminoRed,
+                          color: context.nexusTheme.error,
                           shape: BoxShape.circle,
                         ),
                         child: Center(
@@ -838,7 +840,7 @@ class _SidebarIcon extends ConsumerWidget {
             Text(
               tooltip,
               style: TextStyle(
-                color: isSelected ? AppTheme.accentColor : context.textHint,
+                color: isSelected ? context.nexusTheme.accentSecondary : context.nexusTheme.textHint,
                 fontSize: r.fs(9),
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
@@ -877,7 +879,7 @@ class _SidebarCommunityIcon extends ConsumerWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(r.s(10)),
             border: isSelected
-                ? Border.all(color: AppTheme.accentColor, width: 2)
+                ? Border.all(color: context.nexusTheme.accentSecondary, width: 2)
                 : Border.all(
                     color: context.dividerClr.withValues(alpha: 0.3), width: 1),
           ),
@@ -887,20 +889,20 @@ class _SidebarCommunityIcon extends ConsumerWidget {
                   imageUrl: community.iconUrl ?? '',
                   fit: BoxFit.cover,
                   placeholder: (_, __) => Container(
-                    color: context.cardBg,
+                    color: context.nexusTheme.surfacePrimary,
                     child: Icon(Icons.groups_rounded,
-                        color: context.textHint, size: r.s(16)),
+                        color: context.nexusTheme.textHint, size: r.s(16)),
                   ),
                   errorWidget: (_, __, ___) => Container(
-                    color: context.cardBg,
+                    color: context.nexusTheme.surfacePrimary,
                     child: Icon(Icons.groups_rounded,
-                        color: context.textHint, size: r.s(16)),
+                        color: context.nexusTheme.textHint, size: r.s(16)),
                   ),
                 )
               : Container(
-                  color: context.cardBg,
+                  color: context.nexusTheme.surfacePrimary,
                   child: Icon(Icons.groups_rounded,
-                      color: context.textHint, size: r.s(16)),
+                      color: context.nexusTheme.textHint, size: r.s(16)),
                 ),
         ),
       ),
@@ -926,7 +928,7 @@ class _AminoChatTile extends ConsumerWidget {
 
     await showModalBottomSheet<void>(
       context: context,
-      backgroundColor: context.cardBg,
+      backgroundColor: context.nexusTheme.surfacePrimary,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
       ),
@@ -951,7 +953,7 @@ class _AminoChatTile extends ConsumerWidget {
               child: Text(
                 chatRoom.title,
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(15),
                   fontWeight: FontWeight.w700,
                 ),
@@ -965,13 +967,13 @@ class _AminoChatTile extends ConsumerWidget {
             ListTile(
               leading: Icon(
                 isPinned ? Icons.push_pin_outlined : Icons.push_pin_rounded,
-                color: isPinned ? AppTheme.accentColor : context.textSecondary,
+                color: isPinned ? context.nexusTheme.accentSecondary : context.nexusTheme.textSecondary,
                 size: r.s(22),
               ),
               title: Text(
                 isPinned ? s.unpinFromTop : s.pinToTop,
                 style:
-                    TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+                    TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
               ),
               onTap: () async {
                 Navigator.of(ctx).pop();
@@ -993,7 +995,7 @@ class _AminoChatTile extends ConsumerWidget {
                       SnackBar(
                         content: Text(
                             'Erro ao ${isPinned ? 'desafixar' : 'fixar'} chat.'),
-                        backgroundColor: AppTheme.errorColor,
+                        backgroundColor: context.nexusTheme.error,
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -1010,7 +1012,7 @@ class _AminoChatTile extends ConsumerWidget {
             ListTile(
               leading: Icon(
                 Icons.delete_outline_rounded,
-                color: AppTheme.errorColor,
+                color: context.nexusTheme.error,
                 size: r.s(22),
               ),
               title: Text(
@@ -1020,7 +1022,7 @@ class _AminoChatTile extends ConsumerWidget {
                         ? s.leaveGroup
                         : s.leaveChat,
                 style:
-                    TextStyle(color: AppTheme.errorColor, fontSize: r.fs(14)),
+                    TextStyle(color: context.nexusTheme.error, fontSize: r.fs(14)),
               ),
               onTap: () async {
                 Navigator.of(ctx).pop();
@@ -1028,7 +1030,7 @@ class _AminoChatTile extends ConsumerWidget {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (dCtx) => AlertDialog(
-                    backgroundColor: context.cardBg,
+                    backgroundColor: context.nexusTheme.surfacePrimary,
                     title: Text(
                       chatRoom.type == 'dm'
                           ? 'Apagar conversa?'
@@ -1036,7 +1038,7 @@ class _AminoChatTile extends ConsumerWidget {
                               ? 'Sair do grupo?'
                               : 'Sair do chat?',
                       style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(16),
                           fontWeight: FontWeight.w700),
                     ),
@@ -1047,14 +1049,14 @@ class _AminoChatTile extends ConsumerWidget {
                               ? s.needNewInvite
                               : 'Você poderá entrar novamente depois.',
                       style: TextStyle(
-                          color: context.textSecondary, fontSize: r.fs(13)),
+                          color: context.nexusTheme.textSecondary, fontSize: r.fs(13)),
                     ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(dCtx).pop(false),
                         child: Text(s.cancel,
                             style: TextStyle(
-                                color: context.textSecondary,
+                                color: context.nexusTheme.textSecondary,
                                 fontSize: r.fs(13))),
                       ),
                       TextButton(
@@ -1062,7 +1064,7 @@ class _AminoChatTile extends ConsumerWidget {
                         child: Text(
                           chatRoom.type == 'dm' ? s.deleteAction : s.logout,
                           style: TextStyle(
-                              color: AppTheme.errorColor,
+                              color: context.nexusTheme.error,
                               fontWeight: FontWeight.w700,
                               fontSize: r.fs(13)),
                         ),
@@ -1086,7 +1088,7 @@ class _AminoChatTile extends ConsumerWidget {
                             : chatRoom.type == 'group'
                                 ? s.leftGroup
                                 : s.leftChat),
-                        backgroundColor: AppTheme.primaryColor,
+                        backgroundColor: context.nexusTheme.accentPrimary,
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -1099,7 +1101,7 @@ class _AminoChatTile extends ConsumerWidget {
                         content: Text(chatRoom.type == 'dm'
                             ? 'Erro ao apagar conversa.'
                             : 'Erro ao sair do chat.'),
-                        backgroundColor: AppTheme.errorColor,
+                        backgroundColor: context.nexusTheme.error,
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -1149,7 +1151,7 @@ class _AminoChatTile extends ConsumerWidget {
             ? BoxDecoration(
                 border: Border(
                   left: BorderSide(
-                    color: AppTheme.accentColor.withValues(alpha: 0.6),
+                    color: context.nexusTheme.accentSecondary.withValues(alpha: 0.6),
                     width: 3,
                   ),
                 ),
@@ -1169,7 +1171,7 @@ class _AminoChatTile extends ConsumerWidget {
                     height: r.s(48),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(r.s(10)),
-                      color: context.cardBg,
+                      color: context.nexusTheme.surfacePrimary,
                       border: Border.all(
                         color: context.dividerClr.withValues(alpha: 0.25),
                         width: 1,
@@ -1181,27 +1183,27 @@ class _AminoChatTile extends ConsumerWidget {
                             imageUrl: (chatRoom.coverImageUrl ?? chatRoom.iconUrl)!,
                             fit: BoxFit.cover,
                             placeholder: (_, __) => Container(
-                              color: context.cardBg,
+                              color: context.nexusTheme.surfacePrimary,
                               child: Icon(
                                 Icons.forum_rounded,
-                                color: context.textSecondary,
+                                color: context.nexusTheme.textSecondary,
                                 size: r.s(22),
                               ),
                             ),
                             errorWidget: (_, __, ___) => Container(
-                              color: context.cardBg,
+                              color: context.nexusTheme.surfacePrimary,
                               child: Icon(
                                 Icons.forum_rounded,
-                                color: context.textSecondary,
+                                color: context.nexusTheme.textSecondary,
                                 size: r.s(22),
                               ),
                             ),
                           )
                         : Container(
-                            color: context.cardBg,
+                            color: context.nexusTheme.surfacePrimary,
                             child: Icon(
                               Icons.forum_rounded,
-                              color: context.textSecondary,
+                              color: context.nexusTheme.textSecondary,
                               size: r.s(22),
                             ),
                           ),
@@ -1219,7 +1221,7 @@ class _AminoChatTile extends ConsumerWidget {
                         Icon(
                           Icons.push_pin_rounded,
                           size: r.s(12),
-                          color: AppTheme.accentColor,
+                          color: context.nexusTheme.accentSecondary,
                         ),
                         SizedBox(width: r.s(4)),
                       ],
@@ -1227,7 +1229,7 @@ class _AminoChatTile extends ConsumerWidget {
                         child: Text(
                           chatRoom.title,
                           style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontSize: r.fs(14),
                             fontWeight:
                                 hasUnread ? FontWeight.w700 : FontWeight.w500,
@@ -1243,7 +1245,7 @@ class _AminoChatTile extends ConsumerWidget {
                     chatRoom.lastMessagePreview ?? s.noMessages,
                     style: TextStyle(
                       color:
-                          hasUnread ? context.textSecondary : context.textHint,
+                          hasUnread ? context.nexusTheme.textSecondary : context.nexusTheme.textHint,
                       fontSize: r.fs(12),
                       fontWeight: hasUnread ? FontWeight.w500 : FontWeight.w400,
                     ),
@@ -1263,7 +1265,7 @@ class _AminoChatTile extends ConsumerWidget {
                       ? timeago.format(chatRoom.lastMessageAt!, locale: 'pt_BR')
                       : '',
                   style: TextStyle(
-                    color: hasUnread ? AppTheme.accentColor : context.textHint,
+                    color: hasUnread ? context.nexusTheme.accentSecondary : context.nexusTheme.textHint,
                     fontSize: r.fs(10),
                     fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
                   ),
@@ -1274,7 +1276,7 @@ class _AminoChatTile extends ConsumerWidget {
                     padding:
                         EdgeInsets.symmetric(horizontal: r.s(6), vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppTheme.accentColor,
+                      color: context.nexusTheme.accentSecondary,
                       borderRadius: BorderRadius.circular(r.s(10)),
                     ),
                     child: Text(

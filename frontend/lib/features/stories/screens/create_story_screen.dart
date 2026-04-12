@@ -9,6 +9,8 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Create Story Screen — Criação de stories estilo Amino/Instagram.
 ///
@@ -136,7 +138,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -187,7 +189,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -201,7 +203,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(s.writeStoryHint),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
         ),
       );
       return;
@@ -210,7 +212,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(s.selectImage2),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
         ),
       );
       return;
@@ -254,7 +256,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.postUpdated),
-                backgroundColor: AppTheme.successColor,
+                backgroundColor: context.nexusTheme.success,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -264,7 +266,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.anErrorOccurredTryAgain),
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
               ),
             );
           }
@@ -304,7 +306,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.storyPublished),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -314,7 +316,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.anErrorOccurredTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
           ),
         );
       }
@@ -401,8 +403,8 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                           horizontal: r.s(16), vertical: r.s(8)),
                       decoration: BoxDecoration(
                         color: _isSubmitting
-                            ? AppTheme.accentColor.withValues(alpha: 0.5)
-                            : AppTheme.accentColor,
+                            ? context.nexusTheme.accentSecondary.withValues(alpha: 0.5)
+                            : context.nexusTheme.accentSecondary,
                         borderRadius: BorderRadius.circular(r.s(20)),
                       ),
                       child: _isSubmitting
@@ -473,7 +475,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                   borderRadius: BorderRadius.circular(r.s(16)),
                   color: _type == 'text'
                       ? (_isGradient ? null : _bgColors[_selectedBgIndex])
-                      : context.cardBg,
+                      : context.nexusTheme.surfacePrimary,
                   gradient: _type == 'text' && _isGradient
                       ? LinearGradient(
                           begin: Alignment.topLeft,
@@ -649,14 +651,14 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                               horizontal: r.s(14), vertical: r.s(6)),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? AppTheme.accentColor
+                                ? context.nexusTheme.accentSecondary
                                     .withValues(alpha: 0.3)
                                 : Colors.white.withValues(alpha: 0.08),
                             borderRadius:
                                 BorderRadius.circular(r.s(16)),
                             border: isSelected
                                 ? Border.all(
-                                    color: AppTheme.accentColor
+                                    color: context.nexusTheme.accentSecondary
                                         .withValues(alpha: 0.5))
                                 : null,
                           ),
@@ -664,7 +666,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                             _fontFamilies[i],
                             style: TextStyle(
                               color: isSelected
-                                  ? AppTheme.accentColor
+                                  ? context.nexusTheme.accentSecondary
                                   : Colors.grey[500],
                               fontSize: r.fs(12),
                               fontWeight: isSelected
@@ -692,7 +694,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                         value: _fontSize,
                         min: 14,
                         max: 40,
-                        activeColor: AppTheme.accentColor,
+                        activeColor: context.nexusTheme.accentSecondary,
                         inactiveColor:
                             Colors.white.withValues(alpha: 0.15),
                         onChanged: (v) =>
@@ -862,12 +864,12 @@ class _TypeChip extends ConsumerWidget {
             EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(8)),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.accentColor.withValues(alpha: 0.2)
+              ? context.nexusTheme.accentSecondary.withValues(alpha: 0.2)
               : Colors.white.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(r.s(20)),
           border: isSelected
               ? Border.all(
-                  color: AppTheme.accentColor.withValues(alpha: 0.5))
+                  color: context.nexusTheme.accentSecondary.withValues(alpha: 0.5))
               : null,
         ),
         child: Row(
@@ -876,14 +878,14 @@ class _TypeChip extends ConsumerWidget {
             Icon(icon,
                 size: r.s(16),
                 color: isSelected
-                    ? AppTheme.accentColor
+                    ? context.nexusTheme.accentSecondary
                     : Colors.grey[500]),
             SizedBox(width: r.s(6)),
             Text(
               label,
               style: TextStyle(
                 color: isSelected
-                    ? AppTheme.accentColor
+                    ? context.nexusTheme.accentSecondary
                     : Colors.grey[500],
                 fontSize: r.fs(13),
                 fontWeight:

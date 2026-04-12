@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
+import '../../config/nexus_theme_extension.dart';
 import '../utils/responsive.dart';
 import '../utils/helpers.dart';
 import '../l10n/app_strings.dart';
@@ -56,7 +57,7 @@ class LevelProgressBar extends StatelessWidget {
         Text(
           title,
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(15),
             fontWeight: FontWeight.w700,
           ),
@@ -78,7 +79,7 @@ class LevelProgressBar extends StatelessWidget {
             isMaxLevel ? s.levelMaxReached : s.beActiveMemberMsg,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: context.textSecondary,
+              color: context.nexusTheme.textSecondary,
               fontSize: r.fs(12),
             ),
           ),
@@ -91,7 +92,7 @@ class LevelProgressBar extends StatelessWidget {
           child: Text(
             s.viewAllRankings,
             style: TextStyle(
-              color: AppTheme.primaryColor,
+              color: context.nexusTheme.accentPrimary,
               fontSize: r.fs(13),
               fontWeight: FontWeight.w600,
             ),
@@ -176,7 +177,7 @@ class LevelProgressBar extends StatelessWidget {
           color: levelColor.withValues(alpha: 0.5),
           width: 1.5,
         ),
-        color: Colors.black.withValues(alpha: 0.3),
+        color: context.nexusTheme.overlayColor.withValues(alpha: 0.2),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(r.s(13)),

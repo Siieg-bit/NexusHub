@@ -13,6 +13,8 @@ import '../../auth/providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../widgets/rich_bio.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de edição de perfil do usuário com Rich Bio Editor.
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -257,7 +259,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(isDuplicate ? s.aminoIdInUse : s.tryAgainGeneric),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -281,7 +283,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorUploadingImage),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
           ),
         );
       }
@@ -324,7 +326,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
           rawContent: value.text,
           emptyPlaceholder: s.noContentYet,
           fontSize: fontSize ?? r.fs(14),
-          fallbackTextColor: context.textPrimary,
+          fallbackTextColor: context.nexusTheme.textPrimary,
         ),
       ),
     );
@@ -363,15 +365,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         title: Text(
           s.editProfile,
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -385,13 +387,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor:
-                          AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                          AlwaysStoppedAnimation<Color>(context.nexusTheme.accentPrimary),
                     ),
                   )
                 :  Text(
                     s.save,
                     style: TextStyle(
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -417,7 +419,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                           boxShadow: [
                             BoxShadow(
                               color:
-                                  AppTheme.primaryColor.withValues(alpha: 0.2),
+                                  context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                               blurRadius: 12,
                               spreadRadius: 2,
                             ),
@@ -436,7 +438,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                                   style: TextStyle(
                                     fontSize: r.fs(36),
                                     fontWeight: FontWeight.w800,
-                                    color: AppTheme.primaryColor,
+                                    color: context.nexusTheme.accentPrimary,
                                   ),
                                 )
                               : null,
@@ -450,15 +452,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               colors: [
-                                AppTheme.primaryColor,
-                                AppTheme.accentColor
+                                context.nexusTheme.accentPrimary,
+                                context.nexusTheme.accentSecondary
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: context.scaffoldBg,
+                              color: context.nexusTheme.backgroundPrimary,
                               width: r.s(3),
                             ),
                           ),
@@ -517,7 +519,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                           height: r.s(18),
                           child: const CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                            valueColor: AlwaysStoppedAnimation<Color>(context.nexusTheme.accentPrimary),
                           ),
                         ),
                       )
@@ -528,8 +530,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                                 ? Icons.check_circle_rounded
                                 : Icons.error_outline_rounded,
                             color: _isAminoIdAvailable!
-                                ? AppTheme.primaryColor
-                                : AppTheme.errorColor,
+                                ? context.nexusTheme.accentPrimary
+                                : context.nexusTheme.error,
                           ),
               ),
               SizedBox(height: r.s(6)),
@@ -538,9 +540,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                     'Esse @username é o identificador único da sua conta em todo o app. Ele não aparece dentro das comunidades.',
                 style: TextStyle(
                   color: (_isAminoIdAvailable == false)
-                      ? AppTheme.errorColor
+                      ? context.nexusTheme.error
                       : (_isAminoIdAvailable == true
-                          ? AppTheme.primaryColor
+                          ? context.nexusTheme.accentPrimary
                           : Colors.grey[500]),
                   fontSize: r.fs(12),
                 ),
@@ -571,7 +573,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
               children: [
                 Icon(
                   Icons.edit_note_rounded,
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                   size: r.s(20),
                 ),
                 SizedBox(width: r.s(8)),
@@ -582,7 +584,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                       Text(
                         s.bio,
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(15),
                           fontWeight: FontWeight.w800,
                         ),
@@ -591,7 +593,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                       Text(
                         'Use o editor completo para formatar a bio, trocar a cor do texto e anexar mídia.',
                         style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(12),
                           height: 1.35,
                         ),
@@ -612,7 +614,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
               width: double.infinity,
               constraints: BoxConstraints(minHeight: r.s(140)),
               decoration: BoxDecoration(
-                color: context.cardBg,
+                color: context.nexusTheme.surfacePrimary,
                 borderRadius: BorderRadius.circular(r.s(14)),
                 border: Border.all(color: context.dividerClr),
               ),
@@ -626,7 +628,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
             Text(
               'A mesma experiência de edição também será usada nas comunidades, mas o salvamento global continua separado.',
               style: TextStyle(
-                color: context.textHint,
+                color: context.nexusTheme.textHint,
                 fontSize: r.fs(11),
                 height: 1.35,
               ),
@@ -666,7 +668,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
       height: r.s(36),
       margin: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
       decoration: BoxDecoration(
-        color: context.scaffoldBg,
+        color: context.nexusTheme.backgroundPrimary,
         borderRadius: BorderRadius.circular(r.s(8)),
       ),
       child: Row(
@@ -678,9 +680,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                     child: InkWell(
                       onTap: b.onTap,
                       borderRadius: BorderRadius.circular(r.s(6)),
-                      splashColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+                      splashColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
                       highlightColor:
-                          AppTheme.primaryColor.withValues(alpha: 0.1),
+                          context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
                       child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: r.s(8)),
                         child: Icon(b.icon,
@@ -704,13 +706,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
         backgroundColor: context.surfaceColor,
         title: Text(s.insertLink2,
             style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w700)),
+                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: labelCtrl,
-              style: TextStyle(color: context.textPrimary),
+              style: TextStyle(color: context.nexusTheme.textPrimary),
               decoration: InputDecoration(
                 labelText: s.linkTitle,
                 labelStyle: TextStyle(color: Colors.grey[500]),
@@ -720,7 +722,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
             const SizedBox(height: 12),
             TextField(
               controller: urlCtrl,
-              style: TextStyle(color: context.textPrimary),
+              style: TextStyle(color: context.nexusTheme.textPrimary),
               decoration: InputDecoration(
                 labelText: s.linkUrl,
                 labelStyle: TextStyle(color: Colors.grey[500]),
@@ -749,7 +751,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
             },
             child: Text(s.insertLink,
                 style: const TextStyle(
-                    color: AppTheme.primaryColor, fontWeight: FontWeight.w700)),
+                    color: context.nexusTheme.accentPrimary, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -785,13 +787,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
         maxLength: maxLength,
         validator: validator,
         onChanged: onChanged,
-        style: TextStyle(color: context.textPrimary),
+        style: TextStyle(color: context.nexusTheme.textPrimary),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(color: Colors.grey[500]),
           hintText: hintText,
           hintStyle: TextStyle(color: Colors.grey[600]),
-          prefixIcon: Icon(icon, color: AppTheme.primaryColor),
+          prefixIcon: Icon(icon, color: context.nexusTheme.accentPrimary),
           suffixIcon: suffixIcon,
           alignLabelWithHint: maxLines > 1,
           border: InputBorder.none,

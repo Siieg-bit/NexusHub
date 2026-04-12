@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// NineSliceBubble — Motor de renderização 9-slice para Chat Bubbles.
 ///
@@ -153,7 +155,7 @@ class _NineSliceImageState extends State<_NineSliceImage> {
     if (_loading) {
       return Container(
         decoration: BoxDecoration(
-          color: AppTheme.primaryColor.withValues(alpha: 0.15),
+          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(16),
         ),
       );
@@ -164,7 +166,7 @@ class _NineSliceImageState extends State<_NineSliceImage> {
           color: context.surfaceColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: AppTheme.primaryColor.withValues(alpha: 0.3),
+            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
           ),
         ),
       );

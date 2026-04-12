@@ -5,6 +5,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Flag Center — Centro de denúncias para Leaders/Curators.
 /// Permite revisar denúncias (Art Theft, Bullying, etc.) e tomar ações.
@@ -82,7 +84,7 @@ class _FlagCenterScreenState extends ConsumerState<FlagCenterScreen>
   Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -90,15 +92,15 @@ class _FlagCenterScreenState extends ConsumerState<FlagCenterScreen>
           'Flag Center',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
           ),
         ),
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppTheme.primaryColor,
+          labelColor: context.nexusTheme.accentPrimary,
           unselectedLabelColor: Colors.grey[500],
-          indicatorColor: AppTheme.primaryColor,
+          indicatorColor: context.nexusTheme.accentPrimary,
           dividerColor: Colors.white.withValues(alpha: 0.05),
           tabs: [
             Tab(text: s.pendingFlagsCount),
@@ -109,7 +111,7 @@ class _FlagCenterScreenState extends ConsumerState<FlagCenterScreen>
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
               ),
             )
           : TabBarView(
@@ -154,7 +156,7 @@ class _FlagCenterScreenState extends ConsumerState<FlagCenterScreen>
 
     return RefreshIndicator(
       onRefresh: _loadFlags,
-      color: AppTheme.primaryColor,
+      color: context.nexusTheme.accentPrimary,
       backgroundColor: context.surfaceColor,
       child: ListView.builder(
         padding: EdgeInsets.all(r.s(16)),
@@ -189,15 +191,15 @@ class _FlagCard extends ConsumerWidget {
   Color _flagTypeColor(String type) {
     switch (type) {
       case 'bullying':
-        return AppTheme.errorColor;
+        return context.nexusTheme.error;
       case 'art_theft':
-        return AppTheme.warningColor;
+        return context.nexusTheme.warning;
       case 'inappropriate_content':
         return Colors.purpleAccent;
       case 'spam':
         return Colors.amber;
       case 'off_topic':
-        return AppTheme.accentColor;
+        return context.nexusTheme.accentSecondary;
       default:
         return (Colors.grey[500] ?? Colors.grey);
     }
@@ -238,13 +240,13 @@ class _FlagCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(
           color: isPending
-              ? AppTheme.warningColor.withValues(alpha: 0.3)
+              ? context.nexusTheme.warning.withValues(alpha: 0.3)
               : Colors.white.withValues(alpha: 0.05),
         ),
         boxShadow: isPending
             ? [
                 BoxShadow(
-                  color: AppTheme.warningColor.withValues(alpha: 0.05),
+                  color: context.nexusTheme.warning.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 )
@@ -283,21 +285,21 @@ class _FlagCard extends ConsumerWidget {
                       horizontal: r.s(10), vertical: r.s(4)),
                   decoration: BoxDecoration(
                     color: status == 'approved'
-                        ? AppTheme.primaryColor.withValues(alpha: 0.15)
-                        : AppTheme.errorColor.withValues(alpha: 0.15),
+                        ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
+                        : context.nexusTheme.error.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(r.s(12)),
                     border: Border.all(
                       color: status == 'approved'
-                          ? AppTheme.primaryColor.withValues(alpha: 0.3)
-                          : AppTheme.errorColor.withValues(alpha: 0.3),
+                          ? context.nexusTheme.accentPrimary.withValues(alpha: 0.3)
+                          : context.nexusTheme.error.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Text(
                     status == 'approved' ? s.approved2 : s.rejected2,
                     style: TextStyle(
                       color: status == 'approved'
-                          ? AppTheme.primaryColor
-                          : AppTheme.errorColor,
+                          ? context.nexusTheme.accentPrimary
+                          : context.nexusTheme.error,
                       fontSize: r.fs(12),
                       fontWeight: FontWeight.w700,
                     ),
@@ -332,7 +334,7 @@ class _FlagCard extends ConsumerWidget {
             Text(
               reason,
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(14),
                 height: 1.4,
               ),
@@ -376,8 +378,8 @@ class _FlagCard extends ConsumerWidget {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppTheme.errorColor,
-                            AppTheme.errorColor.withValues(alpha: 0.8),
+                            context.nexusTheme.error,
+                            context.nexusTheme.error.withValues(alpha: 0.8),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -385,7 +387,7 @@ class _FlagCard extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(r.s(20)),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.errorColor.withValues(alpha: 0.3),
+                            color: context.nexusTheme.error.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),

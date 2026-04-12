@@ -7,6 +7,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // ============================================================================
 // FLAG DETAIL SCREEN
@@ -79,8 +81,8 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
                 ? 'Denúncia aprovada e ação tomada'
                 : 'Denúncia rejeitada'),
             backgroundColor: action == 'approved'
-                ? AppTheme.errorColor
-                : AppTheme.successColor,
+                ? context.nexusTheme.error
+                : context.nexusTheme.success,
           ),
         );
         Navigator.pop(context, true); // retorna true para atualizar a lista
@@ -149,7 +151,7 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
                     _ActionChip(
                       label: 'Desabilitar post',
                       selected: moderateContent && moderateAction == 'delete',
-                      color: AppTheme.errorColor,
+                      color: context.nexusTheme.error,
                       onTap: () => setS(() {
                         moderateContent = true;
                         moderateAction = 'delete';
@@ -159,7 +161,7 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
                     _ActionChip(
                       label: 'Advertir usuário',
                       selected: moderateContent && moderateAction == 'warn',
-                      color: AppTheme.warningColor,
+                      color: context.nexusTheme.warning,
                       onTap: () => setS(() {
                         moderateContent = true;
                         moderateAction = 'warn';
@@ -177,8 +179,8 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
               FilledButton(
                 style: FilledButton.styleFrom(
                   backgroundColor: action == 'approved'
-                      ? AppTheme.errorColor
-                      : AppTheme.successColor,
+                      ? context.nexusTheme.error
+                      : context.nexusTheme.success,
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);
@@ -206,9 +208,9 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
 
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         appBar: AppBar(
-          backgroundColor: context.scaffoldBg,
+          backgroundColor: context.nexusTheme.backgroundPrimary,
           title: const Text('Detalhes da Denúncia'),
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -217,14 +219,14 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
 
     if (_error != null || _detail == null) {
       return Scaffold(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         appBar: AppBar(
-          backgroundColor: context.scaffoldBg,
+          backgroundColor: context.nexusTheme.backgroundPrimary,
           title: const Text('Detalhes da Denúncia'),
         ),
         body: Center(
           child: Text(_error ?? 'Erro ao carregar denúncia',
-              style: TextStyle(color: context.textSecondary)),
+              style: TextStyle(color: context.nexusTheme.textSecondary)),
         ),
       );
     }
@@ -236,22 +238,22 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
     final reporter   = flag['reporter'] as Map<String, dynamic>?;
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         title: const Text('Detalhes da Denúncia'),
         actions: [
           if (isPending) ...[
             TextButton(
               onPressed: _isActing ? null : () => _showResolveDialog('rejected'),
               child: Text('Rejeitar',
-                  style: TextStyle(color: context.textSecondary)),
+                  style: TextStyle(color: context.nexusTheme.textSecondary)),
             ),
             Padding(
               padding: EdgeInsets.only(right: r.s(8)),
               child: FilledButton(
                 style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.errorColor),
+                    backgroundColor: context.nexusTheme.error),
                 onPressed: _isActing ? null : () => _showResolveDialog('approved'),
                 child: const Text('Tomar Ação'),
               ),
@@ -294,7 +296,7 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
                         Text(
                           'Denunciado por: ${reporter['nickname'] ?? 'Anônimo'}',
                           style: TextStyle(
-                            color: context.textSecondary,
+                            color: context.nexusTheme.textSecondary,
                             fontSize: r.fs(13),
                           ),
                         ),
@@ -316,7 +318,7 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
                 child: Text(
                   'Snapshot não disponível para este conteúdo.',
                   style: TextStyle(
-                      color: context.textSecondary, fontSize: r.fs(13)),
+                      color: context.nexusTheme.textSecondary, fontSize: r.fs(13)),
                 ),
               ),
               SizedBox(height: r.s(12)),
@@ -358,7 +360,7 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
                             color: Colors.white.withValues(alpha: 0.15)),
                       ),
                       child: Text('Rejeitar',
-                          style: TextStyle(color: context.textSecondary)),
+                          style: TextStyle(color: context.nexusTheme.textSecondary)),
                     ),
                   ),
                   SizedBox(width: r.s(12)),
@@ -368,7 +370,7 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
                           ? null
                           : () => _showResolveDialog('approved'),
                       style: FilledButton.styleFrom(
-                        backgroundColor: AppTheme.errorColor,
+                        backgroundColor: context.nexusTheme.error,
                         padding: EdgeInsets.symmetric(vertical: r.s(14)),
                       ),
                       child: _isActing
@@ -434,23 +436,23 @@ class _StatusBanner extends StatelessWidget {
     IconData icon;
 
     if (autoActioned) {
-      color = AppTheme.errorColor;
+      color = context.nexusTheme.error;
       label = 'Removido automaticamente pelo Bot';
       icon = Icons.smart_toy_rounded;
     } else {
       switch (status) {
         case 'pending':
-          color = AppTheme.warningColor;
+          color = context.nexusTheme.warning;
           label = 'Aguardando revisão';
           icon = Icons.hourglass_empty_rounded;
           break;
         case 'approved':
-          color = AppTheme.errorColor;
+          color = context.nexusTheme.error;
           label = 'Ação tomada';
           icon = Icons.gavel_rounded;
           break;
         case 'rejected':
-          color = AppTheme.successColor;
+          color = context.nexusTheme.success;
           label = 'Denúncia rejeitada (conteúdo ok)';
           icon = Icons.check_circle_rounded;
           break;
@@ -500,7 +502,7 @@ class _SectionCard extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(r.s(14)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(12)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
@@ -512,7 +514,7 @@ class _SectionCard extends StatelessWidget {
             style: TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: r.fs(13),
-              color: context.textSecondary,
+              color: context.nexusTheme.textSecondary,
               letterSpacing: 0.5,
             ),
           ),
@@ -542,7 +544,7 @@ class _InfoRow extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: context.textSecondary,
+                color: context.nexusTheme.textSecondary,
                 fontSize: r.fs(12),
               ),
             ),
@@ -551,7 +553,7 @@ class _InfoRow extends StatelessWidget {
             child: Text(
               value,
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(13),
                 fontWeight: FontWeight.w500,
               ),
@@ -579,11 +581,11 @@ class _SnapshotCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(12)),
         border: Border.all(
           color: hasError
-              ? AppTheme.warningColor.withValues(alpha: 0.3)
+              ? context.nexusTheme.warning.withValues(alpha: 0.3)
               : Colors.white.withValues(alpha: 0.06),
         ),
       ),
@@ -596,8 +598,8 @@ class _SnapshotCard extends StatelessWidget {
                 horizontal: r.s(14), vertical: r.s(10)),
             decoration: BoxDecoration(
               color: hasError
-                  ? AppTheme.warningColor.withValues(alpha: 0.08)
-                  : AppTheme.primaryColor.withValues(alpha: 0.08),
+                  ? context.nexusTheme.warning.withValues(alpha: 0.08)
+                  : context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(r.s(12)),
                 topRight: Radius.circular(r.s(12)),
@@ -611,8 +613,8 @@ class _SnapshotCard extends StatelessWidget {
                       : Icons.camera_alt_rounded,
                   size: r.s(16),
                   color: hasError
-                      ? AppTheme.warningColor
-                      : AppTheme.primaryColor,
+                      ? context.nexusTheme.warning
+                      : context.nexusTheme.accentPrimary,
                 ),
                 SizedBox(width: r.s(6)),
                 Text(
@@ -623,8 +625,8 @@ class _SnapshotCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(12),
                     color: hasError
-                        ? AppTheme.warningColor
-                        : AppTheme.primaryColor,
+                        ? context.nexusTheme.warning
+                        : context.nexusTheme.accentPrimary,
                     letterSpacing: 0.4,
                   ),
                 ),
@@ -645,7 +647,7 @@ class _SnapshotCard extends StatelessWidget {
                     data['note'] as String? ??
                         'O conteúdo foi excluído antes do snapshot ser capturado.',
                     style: TextStyle(
-                      color: AppTheme.warningColor,
+                      color: context.nexusTheme.warning,
                       fontSize: r.fs(13),
                     ),
                   ),
@@ -675,7 +677,7 @@ class _SnapshotCard extends StatelessWidget {
                           _formatDate(
                               data['created_at'] as String?),
                           style: TextStyle(
-                            color: context.textSecondary,
+                            color: context.nexusTheme.textSecondary,
                             fontSize: r.fs(11),
                           ),
                         ),
@@ -701,7 +703,7 @@ class _SnapshotCard extends StatelessWidget {
                     Text(
                       data['body'] as String,
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(14),
                         height: 1.4,
                       ),
@@ -710,7 +712,7 @@ class _SnapshotCard extends StatelessWidget {
                     Text(
                       data['content'] as String,
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(14),
                         height: 1.4,
                       ),
@@ -751,7 +753,7 @@ class _SnapshotCard extends StatelessWidget {
                 Text(
                   'Capturado em: ${_formatDate(snapshot['captured_at'] as String?)}',
                   style: TextStyle(
-                    color: context.textSecondary,
+                    color: context.nexusTheme.textSecondary,
                     fontSize: r.fs(11),
                     fontStyle: FontStyle.italic,
                   ),
@@ -798,19 +800,19 @@ class _BotVerdictBadge extends StatelessWidget {
     String label;
     switch (verdict) {
       case 'clean':
-        color = AppTheme.successColor;
+        color = context.nexusTheme.success;
         label = 'Limpo';
         break;
       case 'suspicious':
-        color = AppTheme.warningColor;
+        color = context.nexusTheme.warning;
         label = 'Suspeito';
         break;
       case 'auto_removed':
-        color = AppTheme.errorColor;
+        color = context.nexusTheme.error;
         label = 'Auto-removido';
         break;
       case 'escalated':
-        color = AppTheme.primaryColor;
+        color = context.nexusTheme.accentPrimary;
         label = 'Escalado';
         break;
       default:
@@ -853,16 +855,16 @@ class _BotAnalysisCard extends StatelessWidget {
     Color verdictColor;
     switch (verdict) {
       case 'clean':
-        verdictColor = AppTheme.successColor;
+        verdictColor = context.nexusTheme.success;
         break;
       case 'suspicious':
-        verdictColor = AppTheme.warningColor;
+        verdictColor = context.nexusTheme.warning;
         break;
       case 'auto_removed':
-        verdictColor = AppTheme.errorColor;
+        verdictColor = context.nexusTheme.error;
         break;
       default:
-        verdictColor = AppTheme.primaryColor;
+        verdictColor = context.nexusTheme.accentPrimary;
     }
 
     return Container(
@@ -907,7 +909,7 @@ class _BotAnalysisCard extends StatelessWidget {
             Text(
               'Confiança: ${(score * 100).toStringAsFixed(1)}%',
               style: TextStyle(
-                color: context.textSecondary,
+                color: context.nexusTheme.textSecondary,
                 fontSize: r.fs(11),
               ),
             ),
@@ -931,10 +933,10 @@ class _BotActionTile extends StatelessWidget {
 
     Color color;
     switch (verdict) {
-      case 'clean':         color = AppTheme.successColor; break;
-      case 'suspicious':    color = AppTheme.warningColor; break;
-      case 'auto_removed':  color = AppTheme.errorColor;   break;
-      default:              color = AppTheme.primaryColor;
+      case 'clean':         color = context.nexusTheme.success; break;
+      case 'suspicious':    color = context.nexusTheme.warning; break;
+      case 'auto_removed':  color = context.nexusTheme.error;   break;
+      default:              color = context.nexusTheme.accentPrimary;
     }
 
     return Container(
@@ -964,7 +966,7 @@ class _BotActionTile extends StatelessWidget {
               Text(
                 _formatDate(createdAt),
                 style: TextStyle(
-                  color: context.textSecondary,
+                  color: context.nexusTheme.textSecondary,
                   fontSize: r.fs(10),
                 ),
               ),
@@ -975,7 +977,7 @@ class _BotActionTile extends StatelessWidget {
             Text(
               reasoning!,
               style: TextStyle(
-                color: context.textSecondary,
+                color: context.nexusTheme.textSecondary,
                 fontSize: r.fs(12),
                 height: 1.4,
               ),
@@ -1012,14 +1014,14 @@ class _ActionChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final c = color ?? AppTheme.primaryColor;
+    final c = color ?? context.nexusTheme.accentPrimary;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(
             horizontal: r.s(12), vertical: r.s(8)),
         decoration: BoxDecoration(
-          color: selected ? c.withValues(alpha: 0.12) : context.cardBg,
+          color: selected ? c.withValues(alpha: 0.12) : context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(8)),
           border: Border.all(
             color: selected
@@ -1034,13 +1036,13 @@ class _ActionChip extends StatelessWidget {
                   ? Icons.radio_button_checked_rounded
                   : Icons.radio_button_unchecked_rounded,
               size: r.s(16),
-              color: selected ? c : context.textSecondary,
+              color: selected ? c : context.nexusTheme.textSecondary,
             ),
             SizedBox(width: r.s(8)),
             Text(
               label,
               style: TextStyle(
-                color: selected ? c : context.textPrimary,
+                color: selected ? c : context.nexusTheme.textPrimary,
                 fontSize: r.fs(13),
                 fontWeight:
                     selected ? FontWeight.w600 : FontWeight.normal,

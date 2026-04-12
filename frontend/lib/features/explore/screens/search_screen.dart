@@ -7,6 +7,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Busca Global — Pesquisa por comunidades, usuários, posts e wiki.
 class SearchScreen extends ConsumerStatefulWidget {
@@ -88,9 +90,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Widget build(BuildContext context) {
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         titleSpacing: 0,
         title: Container(
@@ -104,7 +106,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           child: TextField(
             controller: _searchController,
             autofocus: true,
-            style: TextStyle(color: context.textPrimary),
+            style: TextStyle(color: context.nexusTheme.textPrimary),
             onChanged: (v) {
               _query = v;
               _performSearch(v);
@@ -132,9 +134,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppTheme.primaryColor,
+          labelColor: context.nexusTheme.accentPrimary,
           unselectedLabelColor: Colors.grey[500],
-          indicatorColor: AppTheme.primaryColor,
+          indicatorColor: context.nexusTheme.accentPrimary,
           indicatorWeight: 3,
           labelStyle: const TextStyle(fontWeight: FontWeight.w700),
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
@@ -147,7 +149,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       ),
       body: _isSearching
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor))
+              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
           : _query.isEmpty
               ? _buildEmptyState()
               : TabBarView(
@@ -207,7 +209,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               height: r.s(48),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(r.s(12)),
-                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
                 image: c['icon_url'] != null
                     ? DecorationImage(
                         image: CachedNetworkImageProvider(
@@ -218,12 +220,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               ),
               child: c['icon_url'] == null
                   ? const Icon(Icons.groups_rounded,
-                      color: AppTheme.primaryColor)
+                      color: context.nexusTheme.accentPrimary)
                   : null,
             ),
             title: Text(c['name'] as String? ?? '',
                 style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(16))),
             subtitle: Padding(
@@ -271,7 +273,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             ),
             title: Text(u['nickname'] as String? ?? '',
                 style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(16))),
             subtitle: Padding(
@@ -279,7 +281,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               child: Text(
                 s.levelLabel,
                 style: TextStyle(
-                    color: AppTheme.accentColor,
+                    color: context.nexusTheme.accentSecondary,
                     fontSize: r.fs(13),
                     fontWeight: FontWeight.w600),
               ),
@@ -320,15 +322,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               width: r.s(48),
               height: r.s(48),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(r.s(12)),
               ),
               child: Icon(Icons.article_rounded,
-                  color: AppTheme.primaryColor, size: r.s(24)),
+                  color: context.nexusTheme.accentPrimary, size: r.s(24)),
             ),
             title: Text(p['title'] as String? ?? s.post,
                 style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(16)),
                 maxLines: 1,

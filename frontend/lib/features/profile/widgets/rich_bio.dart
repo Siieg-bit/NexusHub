@@ -16,6 +16,8 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import '../../chat/widgets/giphy_picker.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 class RichBioMediaItem {
   final String id;
@@ -664,7 +666,7 @@ class RichBioRenderer extends StatelessWidget {
           fontWeight: FontWeight.w700,
         ),
         a: const TextStyle(
-          color: AppTheme.primaryColor,
+          color: context.nexusTheme.accentPrimary,
           decoration: TextDecoration.underline,
         ),
         blockquote: TextStyle(
@@ -673,10 +675,10 @@ class RichBioRenderer extends StatelessWidget {
           fontSize: fontSize ?? r.fs(14),
         ),
         blockquoteDecoration: BoxDecoration(
-          color: AppTheme.primaryColor.withValues(alpha: 0.08),
+          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(r.s(12)),
           border: Border.all(
-            color: AppTheme.primaryColor.withValues(alpha: 0.14),
+            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.14),
           ),
         ),
         listBullet: TextStyle(
@@ -722,7 +724,7 @@ class RichBioRenderer extends StatelessWidget {
       child: Text(
         'Imagem inline indisponível ($id)',
         style: TextStyle(
-          color: context.textSecondary,
+          color: context.nexusTheme.textSecondary,
           fontSize: r.fs(12),
           fontStyle: FontStyle.italic,
         ),
@@ -737,7 +739,7 @@ class RichBioRenderer extends StatelessWidget {
     final text = parsed.markdown.trim();
     final textColor = RichBioCodec.parseColor(parsed.textColorHex) ??
         fallbackTextColor ??
-        context.textPrimary;
+        context.nexusTheme.textPrimary;
     final inlineMediaById = {
       for (final item in parsed.media)
         if (item.isInlineImage) item.id.toUpperCase(): item,
@@ -1074,7 +1076,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                 Text(
                   'Inserir imagem inline',
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(18),
                     fontWeight: FontWeight.w800,
                   ),
@@ -1083,7 +1085,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                 Text(
                   'A imagem será enviada e um código [IMG-XXXXXXX] será inserido exatamente no ponto atual do texto.',
                   style: TextStyle(
-                    color: context.textSecondary,
+                    color: context.nexusTheme.textSecondary,
                     fontSize: r.fs(12),
                     height: 1.45,
                   ),
@@ -1212,7 +1214,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
   Future<void> _pickTextColor() async {
     final selected = await showRGBColorPicker(
       context,
-      initialColor: _textColor ?? AppTheme.primaryColor,
+      initialColor: _textColor ?? context.nexusTheme.accentPrimary,
       title: 'Cor do texto selecionado',
     );
     if (selected == null || !mounted) return;
@@ -1315,7 +1317,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                 Text(
                   'Adicionar GIF',
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(18),
                     fontWeight: FontWeight.w800,
                   ),
@@ -1425,7 +1427,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
     return Container(
       padding: EdgeInsets.fromLTRB(r.s(12), r.s(10), r.s(12), r.s(12)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(20)),
         border: Border.all(color: context.dividerClr),
       ),
@@ -1468,7 +1470,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(17),
                         fontWeight: FontWeight.w800,
                         height: 1.1,
@@ -1482,16 +1484,16 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                       vertical: r.s(6),
                     ),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.10),
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(r.s(999)),
                       border: Border.all(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.20),
+                        color: context.nexusTheme.accentPrimary.withValues(alpha: 0.20),
                       ),
                     ),
                     child: Text(
                       '${value.text.length}/${widget.maxLength}',
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(11),
                         fontWeight: FontWeight.w800,
                       ),
@@ -1543,7 +1545,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
     return Container(
       padding: EdgeInsets.all(r.s(4)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(18)),
         border: Border.all(color: context.dividerClr),
       ),
@@ -1575,10 +1577,10 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
     final r = context.r;
     return Container(
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(22)),
         border: Border.all(
-          color: AppTheme.accentColor.withValues(alpha: 0.35),
+          color: context.nexusTheme.accentSecondary.withValues(alpha: 0.35),
           width: 1.2,
         ),
         boxShadow: [
@@ -1600,7 +1602,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                   child: Text(
                     'Editor livre',
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(14),
                       fontWeight: FontWeight.w800,
                     ),
@@ -1634,7 +1636,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
               textAlignVertical: TextAlignVertical.top,
               scrollPadding: EdgeInsets.fromLTRB(r.s(20), r.s(20), r.s(20), r.s(140)),
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(15),
                 height: 1.55,
               ),
@@ -1643,7 +1645,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                     ? 'Toque no ponto do texto para inserir a imagem inline.'
                     : widget.hintText,
                 hintStyle: TextStyle(
-                  color: context.textHint,
+                  color: context.nexusTheme.textHint,
                   fontSize: r.fs(14),
                   height: 1.45,
                 ),
@@ -1677,7 +1679,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
 
         return Container(
           decoration: BoxDecoration(
-            color: context.cardBg,
+            color: context.nexusTheme.surfacePrimary,
             borderRadius: BorderRadius.circular(r.s(22)),
             border: Border.all(color: context.dividerClr),
           ),
@@ -1689,7 +1691,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                 child: Text(
                   'Prévia',
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(14),
                     fontWeight: FontWeight.w800,
                   ),
@@ -1703,7 +1705,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                     rawContent: RichBioCodec.encode(preview),
                     emptyPlaceholder: widget.hintText,
                     fontSize: r.fs(14),
-                    fallbackTextColor: context.textPrimary,
+                    fallbackTextColor: context.nexusTheme.textPrimary,
                   ),
                 ),
               ),
@@ -1915,10 +1917,10 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
           decoration: BoxDecoration(
-            color: (_textColor ?? AppTheme.primaryColor).withValues(alpha: 0.12),
+            color: (_textColor ?? context.nexusTheme.accentPrimary).withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(r.s(999)),
             border: Border.all(
-              color: (_textColor ?? AppTheme.primaryColor).withValues(alpha: 0.28),
+              color: (_textColor ?? context.nexusTheme.accentPrimary).withValues(alpha: 0.28),
             ),
           ),
           child: Row(
@@ -1936,7 +1938,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
               Text(
                 'Seleção ${RichBioCodec.colorToHex(_textColor) ?? ''}',
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(11),
                   fontWeight: FontWeight.w700,
                 ),
@@ -1948,16 +1950,16 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
           decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.08),
+            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(r.s(999)),
             border: Border.all(
-              color: AppTheme.primaryColor.withValues(alpha: 0.16),
+              color: context.nexusTheme.accentPrimary.withValues(alpha: 0.16),
             ),
           ),
           child: Text(
             '${activeMedia.length} mídia(s)',
             style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(11),
               fontWeight: FontWeight.w700,
             ),
@@ -1967,7 +1969,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
 
     return Container(
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(22)),
         border: Border.all(color: context.dividerClr),
       ),
@@ -1984,7 +1986,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                     child: Text(
                       'Ferramentas',
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(13),
                         fontWeight: FontWeight.w800,
                       ),
@@ -2014,7 +2016,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                     child: Text(
                       'Dock criativo',
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(14),
                         fontWeight: FontWeight.w800,
                       ),
@@ -2028,7 +2030,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
               Text(
                 'Ferramentas agrupadas para você focar no que está criando, sem tudo jogado na tela ao mesmo tempo.',
                 style: TextStyle(
-                  color: context.textSecondary,
+                  color: context.nexusTheme.textSecondary,
                   fontSize: r.fs(11),
                   height: 1.4,
                 ),
@@ -2043,7 +2045,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
               Text(
                 'Blocos rápidos',
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(12),
                   fontWeight: FontWeight.w800,
                 ),
@@ -2056,7 +2058,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
               Text(
                 'Mídia anexada',
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(12),
                   fontWeight: FontWeight.w800,
                 ),
@@ -2107,7 +2109,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      color: context.textPrimary,
+                                      color: context.nexusTheme.textPrimary,
                                       fontSize: r.fs(11),
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -2120,7 +2122,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                                     padding: EdgeInsets.all(r.s(2)),
                                     child: Icon(
                                       Icons.delete_outline_rounded,
-                                      color: AppTheme.errorColor,
+                                      color: context.nexusTheme.error,
                                       size: r.s(18),
                                     ),
                                   ),
@@ -2145,7 +2147,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
     final r = context.r;
     return Container(
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(18)),
         border: Border.all(color: context.dividerClr),
         boxShadow: [
@@ -2384,7 +2386,7 @@ class _MiniStudioButton extends StatelessWidget {
             child: Icon(
               icon,
               size: r.s(18),
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
             ),
           ),
         ),
@@ -2420,12 +2422,12 @@ class _ModeButton extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: selected
-              ? AppTheme.primaryColor.withValues(alpha: 0.14)
+              ? context.nexusTheme.accentPrimary.withValues(alpha: 0.14)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(r.s(14)),
           border: Border.all(
             color: selected
-                ? AppTheme.primaryColor.withValues(alpha: 0.35)
+                ? context.nexusTheme.accentPrimary.withValues(alpha: 0.35)
                 : Colors.transparent,
           ),
         ),
@@ -2435,13 +2437,13 @@ class _ModeButton extends StatelessWidget {
             Icon(
               icon,
               size: r.s(18),
-              color: selected ? AppTheme.primaryColor : context.textSecondary,
+              color: selected ? context.nexusTheme.accentPrimary : context.nexusTheme.textSecondary,
             ),
             SizedBox(width: r.s(8)),
             Text(
               label,
               style: TextStyle(
-                color: selected ? context.textPrimary : context.textSecondary,
+                color: selected ? context.nexusTheme.textPrimary : context.nexusTheme.textSecondary,
                 fontSize: r.fs(12),
                 fontWeight: FontWeight.w800,
               ),
@@ -2480,12 +2482,12 @@ class _PaletteChip extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: selected
-              ? AppTheme.accentColor.withValues(alpha: 0.14)
+              ? context.nexusTheme.accentSecondary.withValues(alpha: 0.14)
               : context.surfaceColor,
           borderRadius: BorderRadius.circular(r.s(14)),
           border: Border.all(
             color: selected
-                ? AppTheme.accentColor.withValues(alpha: 0.35)
+                ? context.nexusTheme.accentSecondary.withValues(alpha: 0.35)
                 : context.dividerClr,
           ),
         ),
@@ -2495,13 +2497,13 @@ class _PaletteChip extends StatelessWidget {
             Icon(
               icon,
               size: r.s(16),
-              color: selected ? AppTheme.accentColor : context.textSecondary,
+              color: selected ? context.nexusTheme.accentSecondary : context.nexusTheme.textSecondary,
             ),
             SizedBox(width: r.s(7)),
             Text(
               label,
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(11),
                 fontWeight: FontWeight.w800,
               ),
@@ -2547,16 +2549,16 @@ class _StudioActionTile extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(r.s(8)),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.10),
+                color: context.nexusTheme.accentPrimary.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(r.s(12)),
               ),
-              child: Icon(icon, size: r.s(18), color: AppTheme.primaryColor),
+              child: Icon(icon, size: r.s(18), color: context.nexusTheme.accentPrimary),
             ),
             SizedBox(height: r.s(10)),
             Text(
               label,
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(12),
                 fontWeight: FontWeight.w800,
               ),
@@ -2565,7 +2567,7 @@ class _StudioActionTile extends StatelessWidget {
             Text(
               caption,
               style: TextStyle(
-                color: context.textSecondary,
+                color: context.nexusTheme.textSecondary,
                 fontSize: r.fs(10),
                 height: 1.35,
               ),
@@ -2607,12 +2609,12 @@ class _CompactStudioActionChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: r.s(16), color: AppTheme.primaryColor),
+            Icon(icon, size: r.s(16), color: context.nexusTheme.accentPrimary),
             SizedBox(width: r.s(8)),
             Text(
               label,
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(11),
                 fontWeight: FontWeight.w700,
               ),
@@ -2652,7 +2654,7 @@ class _TemplateChip extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(11),
             fontWeight: FontWeight.w700,
           ),
@@ -2687,12 +2689,12 @@ class _StatusPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: r.s(14), color: context.textSecondary),
+          Icon(icon, size: r.s(14), color: context.nexusTheme.textSecondary),
           SizedBox(width: r.s(6)),
           Text(
             label,
             style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(11),
               fontWeight: FontWeight.w700,
             ),

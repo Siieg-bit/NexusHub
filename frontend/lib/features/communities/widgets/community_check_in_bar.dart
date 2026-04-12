@@ -9,6 +9,8 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/utils/helpers.dart'; // ReputationRewards
 import '../providers/community_shared_providers.dart'; // checkInStatusProvider
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CHECK-IN BAR — Design moderno com gradiente, ícone animado e streak visual
@@ -76,7 +78,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
             content: Text(
               s.checkInSuccessMsg(repEarned, newStreak),
             ),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
             behavior: SnackBarBehavior.floating,
           ));
           if (levelUp && newLevel > 0) {
@@ -88,7 +90,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('$error'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ));
         }
@@ -97,7 +99,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s.anErrorOccurredTryAgain),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ));
       }
@@ -126,12 +128,12 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
           end: Alignment.bottomRight,
           colors: [
             widget.themeColor.withValues(alpha: 0.15),
-            AppTheme.primaryColor.withValues(alpha: 0.10),
+            context.nexusTheme.accentPrimary.withValues(alpha: 0.10),
           ],
         ),
         borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(
-          color: AppTheme.primaryColor.withValues(alpha: 0.20),
+          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.20),
           width: 1,
         ),
       ),
@@ -148,7 +150,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
               Text(
                 s.dailyCheckIn2,
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(15),
                   fontWeight: FontWeight.w700,
                 ),
@@ -159,7 +161,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
           Text(
             s.plusReputationLabel(ReputationRewards.checkIn),
             style: TextStyle(
-              color: context.textSecondary,
+              color: context.nexusTheme.textSecondary,
               fontSize: r.fs(11),
               fontWeight: FontWeight.w500,
             ),
@@ -179,7 +181,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
               child: ElevatedButton(
                 onPressed: _loading ? null : _doCheckIn,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
+                  backgroundColor: context.nexusTheme.accentPrimary,
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -235,13 +237,13 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isDone
-                        ? AppTheme.primaryColor
+                        ? context.nexusTheme.accentPrimary
                         : isNext
-                            ? AppTheme.primaryColor.withValues(alpha: 0.20)
+                            ? context.nexusTheme.accentPrimary.withValues(alpha: 0.20)
                             : Colors.grey.withValues(alpha: 0.15),
                     border: isNext
                         ? Border.all(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.50),
+                            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.50),
                             width: 1.5,
                           )
                         : null,
@@ -249,7 +251,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
                         ? [
                             BoxShadow(
                               color:
-                                  AppTheme.primaryColor.withValues(alpha: 0.30),
+                                  context.nexusTheme.accentPrimary.withValues(alpha: 0.30),
                               blurRadius: 6,
                               spreadRadius: 1,
                             ),
@@ -261,7 +263,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
                           color: Colors.white, size: r.s(14))
                       : isNext
                           ? Icon(Icons.arrow_forward_rounded,
-                              color: AppTheme.primaryColor, size: r.s(12))
+                              color: context.nexusTheme.accentPrimary, size: r.s(12))
                           : null,
                 ),
                 SizedBox(height: r.s(3)),
@@ -270,8 +272,8 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
                   'D${i + 1}',
                   style: TextStyle(
                     color: isDone
-                        ? AppTheme.primaryColor
-                        : context.textSecondary.withValues(alpha: 0.50),
+                        ? context.nexusTheme.accentPrimary
+                        : context.nexusTheme.textSecondary.withValues(alpha: 0.50),
                     fontSize: r.fs(8),
                     fontWeight: isDone ? FontWeight.w700 : FontWeight.w500,
                   ),

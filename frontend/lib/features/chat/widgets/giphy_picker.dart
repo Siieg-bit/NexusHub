@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Giphy Picker — busca e seleciona GIFs usando a API pública do Giphy.
 /// Retorna a URL do GIF selecionado via Navigator.pop().
@@ -135,7 +137,7 @@ class _GiphyPickerBodyState extends ConsumerState<_GiphyPickerBody> {
     final r = context.r;
     return Container(
       decoration: BoxDecoration(
-        color: context.scaffoldBg,
+        color: context.nexusTheme.backgroundPrimary,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Column(
@@ -147,7 +149,7 @@ class _GiphyPickerBodyState extends ConsumerState<_GiphyPickerBody> {
               width: r.s(40),
               height: r.s(4),
               decoration: BoxDecoration(
-                color: context.textHint,
+                color: context.nexusTheme.textHint,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -166,12 +168,12 @@ class _GiphyPickerBodyState extends ConsumerState<_GiphyPickerBody> {
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(8), vertical: r.s(4)),
                   decoration: BoxDecoration(
-                    color: context.cardBg,
+                    color: context.nexusTheme.surfacePrimary,
                     borderRadius: BorderRadius.circular(r.s(8)),
                   ),
                   child: Text('Powered by GIPHY',
                       style: TextStyle(
-                          fontSize: r.fs(10), color: context.textHint)),
+                          fontSize: r.fs(10), color: context.nexusTheme.textHint)),
                 ),
               ],
             ),
@@ -187,7 +189,7 @@ class _GiphyPickerBodyState extends ConsumerState<_GiphyPickerBody> {
               },
               decoration: InputDecoration(
                 hintText: 'Buscar GIFs...',
-                prefixIcon: Icon(Icons.search_rounded, color: context.textHint),
+                prefixIcon: Icon(Icons.search_rounded, color: context.nexusTheme.textHint),
                 suffixIcon: _query.isNotEmpty
                     ? IconButton(
                         icon: Icon(Icons.clear_rounded, size: r.s(18)),
@@ -199,7 +201,7 @@ class _GiphyPickerBodyState extends ConsumerState<_GiphyPickerBody> {
                       )
                     : null,
                 filled: true,
-                fillColor: context.cardBg,
+                fillColor: context.nexusTheme.surfacePrimary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide.none,
@@ -217,7 +219,7 @@ class _GiphyPickerBodyState extends ConsumerState<_GiphyPickerBody> {
                 : _gifs.isEmpty
                     ? Center(
                         child: Text(s.noGifFound,
-                            style: TextStyle(color: context.textSecondary)),
+                            style: TextStyle(color: context.nexusTheme.textSecondary)),
                       )
                     : GridView.builder(
                         controller: widget.scrollController,
@@ -245,7 +247,7 @@ class _GiphyPickerBodyState extends ConsumerState<_GiphyPickerBody> {
                                 previewUrl,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) => Container(
-                                  color: context.cardBg,
+                                  color: context.nexusTheme.surfacePrimary,
                                   child: const Center(
                                       child: Icon(Icons.broken_image_rounded)),
                                 ),

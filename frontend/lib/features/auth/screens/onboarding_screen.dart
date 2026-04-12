@@ -7,6 +7,8 @@ import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de Onboarding — réplica fiel do Amino Apps.
 /// Fundo escuro com gradiente animado, logo centralizado, botões translúcidos.
@@ -50,13 +52,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  context.scaffoldBg,
+                  context.nexusTheme.backgroundPrimary,
                   Color.lerp(
                     const Color(0xFF0F0F1A),
                     const Color(0xFF1A001A),
                     _bgController.value * 0.3,
                   )!,
-                  context.scaffoldBg,
+                  context.nexusTheme.backgroundPrimary,
                 ],
                 stops: [0.0, 0.5 + _bgController.value * 0.2, 1.0],
               ),
@@ -106,7 +108,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                       Text(
                         s.nexusHub,
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(36),
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.5,
@@ -116,7 +118,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                       Text(
                         'Sua comunidade, seu mundo.',
                         style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(16),
                           fontWeight: FontWeight.w400,
                         ),
@@ -134,19 +136,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                     children: [
                       _FeatureRow(
                         icon: Icons.groups_rounded,
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         text: s.thousandsOfCommunities,
                       ),
                       SizedBox(height: r.s(16)),
                       _FeatureRow(
                         icon: Icons.chat_bubble_rounded,
-                        color: AppTheme.accentColor,
+                        color: context.nexusTheme.accentSecondary,
                         text: s.realTimeChat,
                       ),
                       SizedBox(height: r.s(16)),
                       _FeatureRow(
                         icon: Icons.auto_awesome_rounded,
-                        color: AppTheme.aminoMagenta,
+                        color: context.nexusTheme.accentSecondary,
                         text: s.customizeProfile,
                       ),
                     ],
@@ -204,7 +206,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                               child: TextButton(
                                 onPressed: () => context.go('/login'),
                                 style: TextButton.styleFrom(
-                                  foregroundColor: context.textPrimary,
+                                  foregroundColor: context.nexusTheme.textPrimary,
                                   textStyle: TextStyle(
                                     fontSize: r.fs(16),
                                     fontWeight: FontWeight.w600,
@@ -229,7 +231,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                     s.agreeTermsAndPrivacy,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: context.textHint,
+                      color: context.nexusTheme.textHint,
                       fontSize: r.fs(11),
                       height: 1.4,
                     ),
@@ -276,7 +278,7 @@ class _FeatureRow extends ConsumerWidget {
           child: Text(
             text,
             style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(14),
               fontWeight: FontWeight.w500,
             ),

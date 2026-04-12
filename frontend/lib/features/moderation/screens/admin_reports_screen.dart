@@ -4,6 +4,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de Relatórios do Admin — estatísticas reais de uso e moderação.
 class AdminReportsScreen extends ConsumerStatefulWidget {
@@ -184,28 +186,28 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         title: Text(
           s.reportsLabel,
           style: TextStyle(
-              color: context.textPrimary, fontWeight: FontWeight.w800),
+              color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh_rounded, color: context.textPrimary),
+            icon: Icon(Icons.refresh_rounded, color: context.nexusTheme.textPrimary),
             onPressed: _loadAll,
             tooltip: s.refresh,
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppTheme.primaryColor,
+          labelColor: context.nexusTheme.accentPrimary,
           unselectedLabelColor: Colors.grey[600],
-          indicatorColor: AppTheme.primaryColor,
+          indicatorColor: context.nexusTheme.accentPrimary,
           tabs: [
             Tab(text: 'Uso'),
             Tab(text: s.moderation),
@@ -236,7 +238,7 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
           _sectionTitle(s.usersLabel, r),
           _statsGrid([
             _StatData(s.total, _totalUsers.toString(), Icons.people_rounded,
-                AppTheme.primaryColor),
+                context.nexusTheme.accentPrimary),
             _StatData(s.todayLabel, _newUsersToday.toString(),
                 Icons.person_add_rounded, Colors.green),
             _StatData(s.lastSevenDays, _newUsersWeek.toString(),
@@ -248,7 +250,7 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
           _sectionTitle(s.content, r),
           _statsGrid([
             _StatData(s.totalPosts, _totalPosts.toString(),
-                Icons.article_rounded, AppTheme.accentColor),
+                Icons.article_rounded, context.nexusTheme.accentSecondary),
             _StatData(s.postsToday, _postsToday.toString(),
                 Icons.post_add_rounded, Colors.teal),
             _StatData(s.totalMessages, _totalMessages.toString(),
@@ -316,7 +318,7 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
             _StatData(s.coinsInCirculation, _totalCoinsCirculating.toString(),
                 Icons.monetization_on_rounded, Colors.amber),
             _StatData(s.aminoPlusSubscribers, _aminoPlusUsers.toString(),
-                Icons.star_rounded, AppTheme.primaryColor),
+                Icons.star_rounded, context.nexusTheme.accentPrimary),
             _StatData(s.totalCheckIns2, _totalCheckIns.toString(),
                 Icons.calendar_today_rounded, Colors.teal),
           ], r),
@@ -336,7 +338,7 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
                       ? (_aminoPlusUsers / _totalUsers * 100).toStringAsFixed(1)
                       : '0.0',
                   '%',
-                  AppTheme.primaryColor,
+                  context.nexusTheme.accentPrimary,
                   r,
                 ),
                 SizedBox(height: r.s(12)),
@@ -389,7 +391,7 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
                 Text(
                   reason,
                   style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontWeight: FontWeight.w600,
                       fontSize: r.fs(13)),
                   maxLines: 1,
@@ -429,7 +431,7 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
       children: [
         Expanded(
           child: Text(label,
-              style: TextStyle(color: context.textPrimary, fontSize: r.fs(14))),
+              style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14))),
         ),
         RichText(
           text: TextSpan(
@@ -458,7 +460,7 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
       child: Text(
         title,
         style: TextStyle(
-          color: context.textPrimary,
+          color: context.nexusTheme.textPrimary,
           fontSize: r.fs(16),
           fontWeight: FontWeight.w800,
         ),
@@ -501,7 +503,7 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
               Text(
                 stat.value,
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(22),
                   fontWeight: FontWeight.w800,
                 ),

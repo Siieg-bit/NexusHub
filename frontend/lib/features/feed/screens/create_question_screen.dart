@@ -12,6 +12,8 @@ import '../../../core/models/post_model.dart';
 import '../../../core/providers/post_provider.dart';
 import '../../../core/providers/draft_provider.dart';
 import 'dart:async';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // CREATE QUESTION SCREEN — Post tipo Q&A (pergunta aberta para a comunidade)
@@ -122,7 +124,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Rascunho restaurado.'),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -137,7 +139,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Adicione conteúdo antes de salvar.'),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -176,7 +178,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Rascunho salvo.'),
-          backgroundColor: AppTheme.successColor,
+          backgroundColor: context.nexusTheme.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -185,7 +187,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Erro ao salvar rascunho.'),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -243,7 +245,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -260,7 +262,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(s.questionRequired),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -304,7 +306,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.postUpdated),
-                backgroundColor: AppTheme.successColor,
+                backgroundColor: context.nexusTheme.success,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -312,7 +314,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(s.anErrorOccurredTryAgain),
-                backgroundColor: AppTheme.errorColor,
+                backgroundColor: context.nexusTheme.error,
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -385,7 +387,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.questionPublishedSuccess),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -396,7 +398,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorPublishing2),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -411,18 +413,18 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
     final accentOrange = const Color(0xFFEA580C);
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
           _isEditing ? s.editPost : 'Fazer Pergunta',
           style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(17),
               fontWeight: FontWeight.w700),
         ),
         leading: IconButton(
-          icon: Icon(Icons.close_rounded, color: context.textPrimary),
+          icon: Icon(Icons.close_rounded, color: context.nexusTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -436,22 +438,22 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                   : _visibility == 'followers'
                       ? Icons.people_rounded
                       : Icons.lock_rounded,
-              color: AppTheme.accentColor,
+              color: context.nexusTheme.accentSecondary,
               size: r.s(20),
             ),
             itemBuilder: (_) => [
               PopupMenuItem(
                   value: 'public',
                   child: Text(s.publicLabel,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
               PopupMenuItem(
                   value: 'followers',
                   child: Text(s.followers,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
               PopupMenuItem(
                   value: 'private',
                   child: Text(s.privateLabel,
-                      style: TextStyle(color: context.textPrimary))),
+                      style: TextStyle(color: context.nexusTheme.textPrimary))),
             ],
           ),
           TextButton(
@@ -461,12 +463,12 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                     width: r.s(18),
                     height: r.s(18),
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: AppTheme.primaryColor),
+                        strokeWidth: 2, color: context.nexusTheme.accentPrimary),
                   )
                 : Text(
                     _isEditing ? s.save : s.publish,
                     style: TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         fontSize: r.fs(14),
                         fontWeight: FontWeight.w700),
                   ),
@@ -497,7 +499,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
               child: Text(
                 s.askCommunity,
                 style: TextStyle(
-                    color: context.textSecondary, fontSize: r.fs(13)),
+                    color: context.nexusTheme.textSecondary, fontSize: r.fs(13)),
               ),
             ),
             SizedBox(height: r.s(24)),
@@ -510,13 +512,13 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
               minLines: 2,
               textCapitalization: TextCapitalization.sentences,
               style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(20),
                   fontWeight: FontWeight.w600),
               decoration: InputDecoration(
                 hintText: s.whatDoYouWantToKnow,
                 hintStyle: TextStyle(
-                    color: context.textSecondary,
+                    color: context.nexusTheme.textSecondary,
                     fontSize: r.fs(20),
                     fontWeight: FontWeight.w600),
                 border: InputBorder.none,
@@ -533,11 +535,11 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
               minLines: 3,
               textCapitalization: TextCapitalization.sentences,
               style:
-                  TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
+                  TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(15)),
               decoration: InputDecoration(
                 hintText: s.addContextHint,
                 hintStyle: TextStyle(
-                    color: context.textSecondary, fontSize: r.fs(15)),
+                    color: context.nexusTheme.textSecondary, fontSize: r.fs(15)),
                 border: InputBorder.none,
                 counterText: '',
               ),
@@ -554,7 +556,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
             Text(
               'Categorias',
               style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(13),
                   fontWeight: FontWeight.w600),
             ),
@@ -562,7 +564,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
             Text(
               'Adicione tags para classificar sua pergunta',
               style: TextStyle(
-                  color: context.textSecondary, fontSize: r.fs(11)),
+                  color: context.nexusTheme.textSecondary, fontSize: r.fs(11)),
             ),
             SizedBox(height: r.s(8)),
             _buildTagsSection(r),
@@ -577,7 +579,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
               subtitle: 'Destacar como urgente para a comunidade',
               value: _isUrgent,
               onChanged: (v) => setState(() => _isUrgent = v),
-              color: AppTheme.errorColor,
+              color: context.nexusTheme.error,
               r: r,
             ),
             _buildToggleRow(
@@ -586,7 +588,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
               subtitle: 'Seu nome não será exibido',
               value: _isAnonymous,
               onChanged: (v) => setState(() => _isAnonymous = v),
-              color: context.textSecondary,
+              color: context.nexusTheme.textSecondary,
               r: r,
             ),
             SizedBox(height: r.s(16)),
@@ -612,7 +614,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                       'Inclua detalhes relevantes no contexto.',
                       style: TextStyle(
                           color:
-                              context.textPrimary.withValues(alpha: 0.7),
+                              context.nexusTheme.textPrimary.withValues(alpha: 0.7),
                           fontSize: r.fs(12),
                           height: 1.4),
                     ),
@@ -678,7 +680,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
       child: Container(
         height: r.s(64),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(12)),
           border: Border.all(
               color: context.dividerClr.withValues(alpha: 0.4)),
@@ -691,12 +693,12 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.add_photo_alternate_rounded,
-                        color: context.textSecondary, size: r.s(20)),
+                        color: context.nexusTheme.textSecondary, size: r.s(20)),
                     SizedBox(width: r.s(8)),
                     Text(
                       'Adicionar imagem de referência',
                       style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(13)),
                     ),
                   ],
@@ -733,7 +735,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(10), vertical: r.s(4)),
                       decoration: BoxDecoration(
-                        color: AppTheme.accentColor
+                        color: context.nexusTheme.accentSecondary
                             .withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(r.s(12)),
                       ),
@@ -742,7 +744,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                         children: [
                           Text('#$tag',
                               style: TextStyle(
-                                  color: AppTheme.accentColor,
+                                  color: context.nexusTheme.accentSecondary,
                                   fontSize: r.fs(12),
                                   fontWeight: FontWeight.w600)),
                           SizedBox(width: r.s(4)),
@@ -750,7 +752,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                             onTap: () =>
                                 setState(() => _tags.remove(tag)),
                             child: Icon(Icons.close_rounded,
-                                color: AppTheme.accentColor,
+                                color: context.nexusTheme.accentSecondary,
                                 size: r.s(14)),
                           ),
                         ],
@@ -767,16 +769,16 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                 child: TextField(
                   controller: _tagController,
                   style: TextStyle(
-                      color: context.textPrimary, fontSize: r.fs(13)),
+                      color: context.nexusTheme.textPrimary, fontSize: r.fs(13)),
                   decoration: InputDecoration(
                     hintText: 'Ex: ajuda, dúvida, tutorial...',
                     hintStyle: TextStyle(
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                         fontSize: r.fs(13)),
                     border: InputBorder.none,
                     isDense: true,
                     prefixIcon: Icon(Icons.tag_rounded,
-                        color: context.textSecondary, size: r.s(16)),
+                        color: context.nexusTheme.textSecondary, size: r.s(16)),
                   ),
                   onSubmitted: (_) => _addTag(),
                 ),
@@ -787,13 +789,13 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(12), vertical: r.s(6)),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentColor
+                    color: context.nexusTheme.accentSecondary
                         .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(r.s(8)),
                   ),
                   child: Text('Adicionar',
                       style: TextStyle(
-                          color: AppTheme.accentColor,
+                          color: context.nexusTheme.accentSecondary,
                           fontSize: r.fs(12),
                           fontWeight: FontWeight.w600)),
                 ),
@@ -825,12 +827,12 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
               children: [
                 Text(label,
                     style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(13),
                         fontWeight: FontWeight.w600)),
                 Text(subtitle,
                     style: TextStyle(
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                         fontSize: r.fs(11))),
               ],
             ),

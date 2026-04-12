@@ -7,6 +7,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela para criação de nova comunidade.
 class CreateCommunityScreen extends ConsumerStatefulWidget {
@@ -91,7 +93,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return AppTheme.primaryColor;
+      return context.nexusTheme.accentPrimary;
     }
   }
 
@@ -100,15 +102,15 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         title: Text(
           s.createCommunityTitle,
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -122,12 +124,12 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                  colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                 ),
                 borderRadius: BorderRadius.circular(r.s(20)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -224,7 +226,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               Text(
                 s.themeColor,
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(16),
                   fontWeight: FontWeight.w800,
                 ),
@@ -293,7 +295,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               Text(
                 s.primaryLanguage,
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(16),
                   fontWeight: FontWeight.w800,
                 ),
@@ -310,10 +312,10 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                 child: DropdownButtonFormField<String>(
                   value: _selectedLanguage,
                   dropdownColor: context.surfaceColor,
-                  style: TextStyle(color: context.textPrimary),
+                  style: TextStyle(color: context.nexusTheme.textPrimary),
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.language_rounded,
-                        color: AppTheme.accentColor),
+                        color: context.nexusTheme.accentSecondary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(r.s(16)),
                       borderSide: BorderSide.none,
@@ -359,13 +361,13 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
       maxLines: maxLines,
       maxLength: maxLength,
       validator: validator,
-      style: TextStyle(color: context.textPrimary),
+      style: TextStyle(color: context.nexusTheme.textPrimary),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: Colors.grey[500]),
         hintText: hint,
         hintStyle: TextStyle(color: Colors.grey[600]),
-        prefixIcon: Icon(icon, color: AppTheme.accentColor),
+        prefixIcon: Icon(icon, color: context.nexusTheme.accentSecondary),
         alignLabelWithHint: maxLines > 1,
         filled: true,
         fillColor: context.surfaceColor,
@@ -379,15 +381,15 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(r.s(16)),
-          borderSide: const BorderSide(color: AppTheme.primaryColor),
+          borderSide: const BorderSide(color: context.nexusTheme.accentPrimary),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(r.s(16)),
-          borderSide: const BorderSide(color: AppTheme.errorColor),
+          borderSide: const BorderSide(color: context.nexusTheme.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(r.s(16)),
-          borderSide: const BorderSide(color: AppTheme.errorColor),
+          borderSide: const BorderSide(color: context.nexusTheme.error),
         ),
       ),
     );

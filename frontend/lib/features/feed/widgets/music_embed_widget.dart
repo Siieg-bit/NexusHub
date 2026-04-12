@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Widget para exibir embeds de SoundCloud e Bandcamp nos posts.
 ///
@@ -42,7 +44,7 @@ class MusicEmbedWidget extends StatelessWidget {
       case MusicPlatform.appleMusic:
         return const Color(0xFFFA243C);
       case MusicPlatform.unknown:
-        return AppTheme.primaryColor;
+        return context.nexusTheme.accentPrimary;
     }
   }
 
@@ -97,7 +99,7 @@ class MusicEmbedWidget extends StatelessWidget {
       child: Container(
         margin: EdgeInsets.symmetric(vertical: r.s(8)),
         decoration: BoxDecoration(
-          color: isDark ? context.cardBg : Colors.white,
+          color: isDark ? context.nexusTheme.surfacePrimary : Colors.white,
           borderRadius: BorderRadius.circular(r.s(14)),
           border: Border.all(
             color: _platformColor.withValues(alpha: 0.3),
@@ -222,7 +224,7 @@ class MusicEmbedWidget extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: r.fs(14),
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -233,7 +235,7 @@ class MusicEmbedWidget extends StatelessWidget {
                             artist!,
                             style: TextStyle(
                               fontSize: r.fs(12),
-                              color: context.textSecondary,
+                              color: context.nexusTheme.textSecondary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

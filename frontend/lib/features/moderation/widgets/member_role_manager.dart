@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // MemberRoleManager — Gerenciamento de Hierarquia e Títulos de Membros
@@ -118,7 +120,7 @@ class _MemberRoleManagerSheetState
           content: Text(newRole == 'member'
               ? '${widget.targetUserName} foi demitido do cargo.'
               : '${widget.targetUserName} foi promovido para $label!'),
-          backgroundColor: AppTheme.primaryColor,
+          backgroundColor: context.nexusTheme.accentPrimary,
           behavior: SnackBarBehavior.floating,
         ));
         if (mounted) Navigator.of(context).pop(true);
@@ -160,7 +162,7 @@ class _MemberRoleManagerSheetState
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Título "$title" atribuído a ${widget.targetUserName}!'),
-          backgroundColor: AppTheme.primaryColor,
+          backgroundColor: context.nexusTheme.accentPrimary,
           behavior: SnackBarBehavior.floating,
         ));
         if (mounted) Navigator.of(context).pop(true);
@@ -281,7 +283,7 @@ class _MemberRoleManagerSheetState
                   Text(
                     'Gerenciar Cargo',
                     style: TextStyle(
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                       fontSize: r.fs(18),
                       fontWeight: FontWeight.w800,
                     ),
@@ -323,7 +325,7 @@ class _MemberRoleManagerSheetState
               Padding(
                 padding: EdgeInsets.all(r.s(24)),
                 child: const CircularProgressIndicator(
-                    color: AppTheme.primaryColor),
+                    color: context.nexusTheme.accentPrimary),
               )
             else ...[
               // ── SEÇÃO: PROMOÇÃO / DEMISSÃO ──────────────────────────────
@@ -463,11 +465,11 @@ class _MemberRoleManagerSheetState
                           width: r.s(36),
                           height: r.s(36),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(Icons.label_rounded,
-                              color: AppTheme.primaryColor, size: r.s(18)),
+                              color: context.nexusTheme.accentPrimary, size: r.s(18)),
                         ),
                         SizedBox(width: r.s(14)),
                         Expanded(
@@ -479,7 +481,7 @@ class _MemberRoleManagerSheetState
                                     ? 'Editar Título: "${widget.currentTitle}"'
                                     : 'Dar Título Customizado',
                                 style: TextStyle(
-                                  color: AppTheme.primaryColor,
+                                  color: context.nexusTheme.accentPrimary,
                                   fontWeight: FontWeight.w600,
                                   fontSize: r.fs(14),
                                 ),
@@ -631,7 +633,7 @@ class _MemberRoleManagerSheetState
                             child: ElevatedButton(
                               onPressed: _saveCustomTitle,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.primaryColor,
+                                backgroundColor: context.nexusTheme.accentPrimary,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(r.s(10)),
                                 ),

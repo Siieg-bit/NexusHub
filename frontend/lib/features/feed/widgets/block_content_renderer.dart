@@ -3,6 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/image_viewer.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// BlockContentRenderer — Renderizador de blocos de conteúdo rico.
 ///
@@ -89,7 +91,7 @@ class BlockContentRenderer extends StatelessWidget {
         content,
         textAlign: alignment,
         style: TextStyle(
-          color: context.textPrimary,
+          color: context.nexusTheme.textPrimary,
           fontSize: r.fs(15),
           height: 1.65,
           fontWeight: isBold ? FontWeight.w700 : FontWeight.w400,
@@ -115,7 +117,7 @@ class BlockContentRenderer extends StatelessWidget {
       child: Text(
         content,
         style: TextStyle(
-          color: context.textPrimary,
+          color: context.nexusTheme.textPrimary,
           fontSize: fontSize,
           fontWeight: FontWeight.w800,
           height: 1.3,
@@ -155,20 +157,20 @@ class BlockContentRenderer extends StatelessWidget {
                 fit: BoxFit.cover,
                 placeholder: (_, __) => Container(
                   height: r.s(200),
-                  color: context.cardBg,
+                  color: context.nexusTheme.surfacePrimary,
                   child: const Center(
                     child: CircularProgressIndicator(
-                      color: AppTheme.accentColor,
+                      color: context.nexusTheme.accentSecondary,
                       strokeWidth: 2,
                     ),
                   ),
                 ),
                 errorWidget: (_, __, ___) => Container(
                   height: r.s(120),
-                  color: context.cardBg,
+                  color: context.nexusTheme.surfacePrimary,
                   child: Center(
                     child: Icon(Icons.broken_image_rounded,
-                        color: context.textHint, size: r.s(32)),
+                        color: context.nexusTheme.textHint, size: r.s(32)),
                   ),
                 ),
               ),
@@ -186,7 +188,7 @@ class BlockContentRenderer extends StatelessWidget {
             child: Text(
               caption,
               style: TextStyle(
-                color: context.textSecondary,
+                color: context.nexusTheme.textSecondary,
                 fontSize: r.fs(12),
                 fontStyle: FontStyle.italic,
                 height: 1.4,
@@ -202,7 +204,7 @@ class BlockContentRenderer extends StatelessWidget {
       Map<String, dynamic> block, BuildContext context) {
     final r = context.r;
     final style = block['divider_style'] as String? ?? 'dots';
-    final color = context.textHint.withValues(alpha: 0.3);
+    final color = context.nexusTheme.textHint.withValues(alpha: 0.3);
     final softPink = const Color(0xFFE8A0BF).withValues(alpha: 0.6);
     final softPurple = const Color(0xFFB983FF).withValues(alpha: 0.6);
     final softBlue = const Color(0xFF94B3FD).withValues(alpha: 0.5);
@@ -357,7 +359,7 @@ class BlockContentRenderer extends StatelessWidget {
               width: r.s(4),
               height: r.s(4),
               decoration: BoxDecoration(
-                color: context.textHint.withValues(alpha: 0.4),
+                color: context.nexusTheme.textHint.withValues(alpha: 0.4),
                 shape: BoxShape.circle,
               ),
             ),
@@ -387,11 +389,11 @@ class BlockContentRenderer extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             left: BorderSide(
-              color: AppTheme.accentColor.withValues(alpha: 0.6),
+              color: context.nexusTheme.accentSecondary.withValues(alpha: 0.6),
               width: r.s(3),
             ),
           ),
-          color: AppTheme.accentColor.withValues(alpha: 0.05),
+          color: context.nexusTheme.accentSecondary.withValues(alpha: 0.05),
           borderRadius: const BorderRadius.only(
             topRight: Radius.circular(8),
             bottomRight: Radius.circular(8),
@@ -400,7 +402,7 @@ class BlockContentRenderer extends StatelessWidget {
         child: Text(
           content,
           style: TextStyle(
-            color: context.textPrimary.withValues(alpha: 0.85),
+            color: context.nexusTheme.textPrimary.withValues(alpha: 0.85),
             fontSize: r.fs(14),
             fontStyle: FontStyle.italic,
             height: 1.5,
@@ -422,7 +424,7 @@ class BlockContentRenderer extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(10)),
           border: Border.all(
             color: context.dividerClr.withValues(alpha: 0.2),
@@ -434,11 +436,11 @@ class BlockContentRenderer extends StatelessWidget {
               width: r.s(36),
               height: r.s(36),
               decoration: BoxDecoration(
-                color: AppTheme.accentColor.withValues(alpha: 0.15),
+                color: context.nexusTheme.accentSecondary.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(r.s(8)),
               ),
               child: Icon(Icons.link_rounded,
-                  color: AppTheme.accentColor, size: r.s(18)),
+                  color: context.nexusTheme.accentSecondary, size: r.s(18)),
             ),
             SizedBox(width: r.s(10)),
             Expanded(
@@ -448,7 +450,7 @@ class BlockContentRenderer extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      color: AppTheme.accentColor,
+                      color: context.nexusTheme.accentSecondary,
                       fontSize: r.fs(13),
                       fontWeight: FontWeight.w600,
                     ),
@@ -460,7 +462,7 @@ class BlockContentRenderer extends StatelessWidget {
                     Text(
                       preview,
                       style: TextStyle(
-                        color: context.textSecondary,
+                        color: context.nexusTheme.textSecondary,
                         fontSize: r.fs(11),
                       ),
                       maxLines: 2,
@@ -526,7 +528,7 @@ class BlockContentPreview extends StatelessWidget {
           Text(
             textContent,
             style: TextStyle(
-              color: context.textSecondary,
+              color: context.nexusTheme.textSecondary,
               fontSize: r.fs(13),
               height: 1.4,
             ),
@@ -544,7 +546,7 @@ class BlockContentPreview extends StatelessWidget {
               fit: BoxFit.cover,
               placeholder: (_, __) => Container(
                 height: r.s(120),
-                color: context.cardBg,
+                color: context.nexusTheme.surfacePrimary,
               ),
               errorWidget: (_, __, ___) => const SizedBox.shrink(),
             ),

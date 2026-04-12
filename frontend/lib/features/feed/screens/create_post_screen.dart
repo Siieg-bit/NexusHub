@@ -12,6 +12,8 @@ import '../../../core/providers/post_provider.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Editor de criação e edição de posts do tipo **normal** (texto genérico).
 ///
@@ -174,7 +176,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(s.errorUploadTryAgain),
-              backgroundColor: AppTheme.errorColor),
+              backgroundColor: context.nexusTheme.error),
         );
       }
     }
@@ -203,7 +205,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(s.errorUploadTryAgain),
-              backgroundColor: AppTheme.errorColor),
+              backgroundColor: context.nexusTheme.error),
         );
       }
     }
@@ -232,7 +234,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(s.errorUploadTryAgain),
-              backgroundColor: AppTheme.errorColor),
+              backgroundColor: context.nexusTheme.error),
         );
       }
     }
@@ -310,7 +312,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(s.fillTitleOrContent),
-            backgroundColor: AppTheme.errorColor),
+            backgroundColor: context.nexusTheme.error),
       );
       return;
     }
@@ -361,13 +363,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                   content: Text(s.postUpdated),
-                  backgroundColor: AppTheme.successColor),
+                  backgroundColor: context.nexusTheme.success),
             );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                   content: Text(s.anErrorOccurredTryAgain),
-                  backgroundColor: AppTheme.errorColor),
+                  backgroundColor: context.nexusTheme.error),
             );
           }
         }
@@ -417,7 +419,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(s.postCreatedSuccess),
-              backgroundColor: AppTheme.successColor),
+              backgroundColor: context.nexusTheme.success),
         );
       }
     } catch (e) {
@@ -425,7 +427,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(s.anErrorOccurredTryAgain),
-              backgroundColor: AppTheme.errorColor),
+              backgroundColor: context.nexusTheme.error),
         );
       }
     } finally {
@@ -686,8 +688,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   EdgeInsets.symmetric(horizontal: r.s(20), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: _isSubmitting
-                    ? AppTheme.primaryColor.withValues(alpha: 0.5)
-                    : AppTheme.primaryColor,
+                    ? context.nexusTheme.accentPrimary.withValues(alpha: 0.5)
+                    : context.nexusTheme.accentPrimary,
                 borderRadius: BorderRadius.circular(r.s(8)),
               ),
               child: _isSubmitting
@@ -733,7 +735,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(s.draftSaved),
-              backgroundColor: AppTheme.primaryColor),
+              backgroundColor: context.nexusTheme.accentPrimary),
         );
       }
     } catch (e) {
@@ -918,15 +920,15 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     return Container(
       padding: EdgeInsets.all(r.s(10)),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withValues(alpha: 0.08),
+        color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(r.s(12)),
         border:
-            Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.15)),
+            Border.all(color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15)),
       ),
       child: Row(
         children: [
           Icon(Icons.music_note_rounded,
-              color: AppTheme.primaryColor, size: r.s(22)),
+              color: context.nexusTheme.accentPrimary, size: r.s(22)),
           SizedBox(width: r.s(10)),
           Expanded(
             child: Column(
@@ -983,7 +985,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(10), vertical: r.s(5)),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                        color: context.nexusTheme.accentPrimary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(r.s(16)),
                       ),
                       child: Row(
@@ -991,7 +993,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                         children: [
                           Text('#$tag',
                               style: TextStyle(
-                                  color: AppTheme.primaryColor,
+                                  color: context.nexusTheme.accentPrimary,
                                   fontSize: r.fs(12),
                                   fontWeight: FontWeight.w600)),
                           SizedBox(width: r.s(4)),
@@ -1000,7 +1002,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                 setState(() => _tags.remove(tag)),
                             child: Icon(Icons.close_rounded,
                                 size: r.s(14),
-                                color: AppTheme.primaryColor
+                                color: context.nexusTheme.accentPrimary
                                     .withValues(alpha: 0.6)),
                           ),
                         ],
@@ -1043,11 +1045,11 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               child: Container(
                 padding: EdgeInsets.all(r.s(10)),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(r.s(10)),
                 ),
                 child: Icon(Icons.add_rounded,
-                    color: AppTheme.primaryColor, size: r.s(18)),
+                    color: context.nexusTheme.accentPrimary, size: r.s(18)),
               ),
             ),
           ],
@@ -1247,7 +1249,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               min: 12,
               max: 28,
               divisions: 16,
-              activeColor: AppTheme.primaryColor,
+              activeColor: context.nexusTheme.accentPrimary,
               inactiveColor: _textColor.withValues(alpha: 0.1),
               onChanged: (v) => setState(() => _bodyFontSize = v),
             ),
@@ -1290,12 +1292,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       horizontal: r.s(12), vertical: r.s(6)),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? AppTheme.primaryColor.withValues(alpha: 0.15)
+                        ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(r.s(16)),
                     border: Border.all(
                       color: isSelected
-                          ? AppTheme.primaryColor.withValues(alpha: 0.4)
+                          ? context.nexusTheme.accentPrimary.withValues(alpha: 0.4)
                           : _textColor.withValues(alpha: 0.1),
                     ),
                   ),
@@ -1310,7 +1312,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     style: TextStyle(
                       fontSize: r.fs(11),
                       color: isSelected
-                          ? AppTheme.primaryColor
+                          ? context.nexusTheme.accentPrimary
                           : _textColor.withValues(alpha: 0.5),
                       fontWeight:
                           isSelected ? FontWeight.w700 : FontWeight.w500,
@@ -1391,12 +1393,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   horizontal: r.s(12), vertical: r.s(10)),
               decoration: BoxDecoration(
                 color: _commentsBlocked
-                    ? AppTheme.errorColor.withValues(alpha: 0.1)
+                    ? context.nexusTheme.error.withValues(alpha: 0.1)
                     : _textColor.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(r.s(10)),
                 border: Border.all(
                   color: _commentsBlocked
-                      ? AppTheme.errorColor.withValues(alpha: 0.3)
+                      ? context.nexusTheme.error.withValues(alpha: 0.3)
                       : _textColor.withValues(alpha: 0.05),
                 ),
               ),
@@ -1408,7 +1410,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                         : Icons.comment_rounded,
                     size: r.s(16),
                     color: _commentsBlocked
-                        ? AppTheme.errorColor
+                        ? context.nexusTheme.error
                         : _textColor.withValues(alpha: 0.5),
                   ),
                   SizedBox(width: r.s(8)),
@@ -1417,7 +1419,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     style: TextStyle(
                       fontSize: r.fs(13),
                       color: _commentsBlocked
-                          ? AppTheme.errorColor
+                          ? context.nexusTheme.error
                           : _textColor.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w600,
                     ),
@@ -1427,7 +1429,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     value: !_commentsBlocked,
                     onChanged: (v) =>
                         setState(() => _commentsBlocked = !v),
-                    activeColor: AppTheme.primaryColor,
+                    activeColor: context.nexusTheme.accentPrimary,
                     materialTapTargetSize:
                         MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -1446,12 +1448,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   horizontal: r.s(12), vertical: r.s(10)),
               decoration: BoxDecoration(
                 color: _isPinnedProfile
-                    ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                    ? context.nexusTheme.accentPrimary.withValues(alpha: 0.1)
                     : _textColor.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(r.s(10)),
                 border: Border.all(
                   color: _isPinnedProfile
-                      ? AppTheme.primaryColor.withValues(alpha: 0.3)
+                      ? context.nexusTheme.accentPrimary.withValues(alpha: 0.3)
                       : _textColor.withValues(alpha: 0.05),
                 ),
               ),
@@ -1463,7 +1465,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                         : Icons.push_pin_outlined,
                     size: r.s(16),
                     color: _isPinnedProfile
-                        ? AppTheme.primaryColor
+                        ? context.nexusTheme.accentPrimary
                         : _textColor.withValues(alpha: 0.5),
                   ),
                   SizedBox(width: r.s(8)),
@@ -1474,7 +1476,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     style: TextStyle(
                       fontSize: r.fs(13),
                       color: _isPinnedProfile
-                          ? AppTheme.primaryColor
+                          ? context.nexusTheme.accentPrimary
                           : _textColor.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w600,
                     ),
@@ -1484,7 +1486,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     value: _isPinnedProfile,
                     onChanged: (v) =>
                         setState(() => _isPinnedProfile = v),
-                    activeColor: AppTheme.primaryColor,
+                    activeColor: context.nexusTheme.accentPrimary,
                     materialTapTargetSize:
                         MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -1508,12 +1510,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.primaryColor.withValues(alpha: 0.15)
+              ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(r.s(20)),
           border: Border.all(
             color: isSelected
-                ? AppTheme.primaryColor.withValues(alpha: 0.4)
+                ? context.nexusTheme.accentPrimary.withValues(alpha: 0.4)
                 : _textColor.withValues(alpha: 0.15),
           ),
         ),
@@ -1523,14 +1525,14 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             Icon(icon,
                 size: r.s(13),
                 color: isSelected
-                    ? AppTheme.primaryColor
+                    ? context.nexusTheme.accentPrimary
                     : _textColor.withValues(alpha: 0.4)),
             SizedBox(width: r.s(4)),
             Text(label,
                 style: TextStyle(
                     fontSize: r.fs(12),
                     color: isSelected
-                        ? AppTheme.primaryColor
+                        ? context.nexusTheme.accentPrimary
                         : _textColor.withValues(alpha: 0.4),
                     fontWeight:
                         isSelected ? FontWeight.w700 : FontWeight.w500)),
@@ -1611,33 +1613,33 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 style: TextStyle(
                     fontSize: r.fs(18),
                     fontWeight: FontWeight.w800,
-                    color: context.textPrimary)),
+                    color: context.nexusTheme.textPrimary)),
             SizedBox(height: r.s(16)),
             TextField(
               controller: titleCtrl,
-              style: TextStyle(color: context.textPrimary),
+              style: TextStyle(color: context.nexusTheme.textPrimary),
               decoration: InputDecoration(
                 hintText: s.songNameHint,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 filled: true,
-                fillColor: context.cardBg,
+                fillColor: context.nexusTheme.surfacePrimary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(10)),
                   borderSide: BorderSide.none,
                 ),
                 prefixIcon: Icon(Icons.music_note_rounded,
-                    color: AppTheme.primaryColor, size: r.s(18)),
+                    color: context.nexusTheme.accentPrimary, size: r.s(18)),
               ),
             ),
             SizedBox(height: r.s(12)),
             TextField(
               controller: urlCtrl,
-              style: TextStyle(color: context.textPrimary),
+              style: TextStyle(color: context.nexusTheme.textPrimary),
               decoration: InputDecoration(
                 hintText: s.audioFileUrl,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 filled: true,
-                fillColor: context.cardBg,
+                fillColor: context.nexusTheme.surfacePrimary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(10)),
                   borderSide: BorderSide.none,
@@ -1669,7 +1671,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor),
+                    backgroundColor: context.nexusTheme.accentPrimary),
                 child: Text(s.confirm),
               ),
             ),

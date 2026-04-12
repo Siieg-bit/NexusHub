@@ -6,6 +6,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Rich Text Block Editor — Editor de blocos estilo Amino.
 ///
@@ -333,7 +335,7 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(s.errorUploadTryAgain),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -393,7 +395,7 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(ref.read(stringsProvider).errorUploadTryAgain),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -577,7 +579,7 @@ class _SeamlessBlock extends ConsumerWidget {
                       : r.fs(14))
               : r.fs(14),
           height: 1.6,
-          color: context.textPrimary,
+          color: context.nexusTheme.textPrimary,
           fontWeight:
               isHeading || block.bold ? FontWeight.w700 : FontWeight.w400,
           fontStyle:
@@ -602,7 +604,7 @@ class _SeamlessBlock extends ConsumerWidget {
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: TextStyle(
-              color: context.textHint.withValues(alpha: 0.4),
+              color: context.nexusTheme.textHint.withValues(alpha: 0.4),
               fontSize: baseStyle.fontSize,
               fontWeight: isHeading ? FontWeight.w700 : FontWeight.w400,
               fontStyle: isQuote ? FontStyle.italic : FontStyle.normal,
@@ -625,7 +627,7 @@ class _SeamlessBlock extends ConsumerWidget {
           decoration: BoxDecoration(
             border: Border(
               left: BorderSide(
-                color: AppTheme.accentColor.withValues(alpha: 0.4),
+                color: context.nexusTheme.accentSecondary.withValues(alpha: 0.4),
                 width: r.s(2),
               ),
             ),
@@ -640,7 +642,7 @@ class _SeamlessBlock extends ConsumerWidget {
             height: r.s(100),
             margin: EdgeInsets.symmetric(vertical: r.s(4)),
             decoration: BoxDecoration(
-              color: context.scaffoldBg,
+              color: context.nexusTheme.backgroundPrimary,
               borderRadius: BorderRadius.circular(r.s(6)),
             ),
             child: Center(
@@ -651,7 +653,7 @@ class _SeamlessBlock extends ConsumerWidget {
                     width: r.s(18),
                     height: r.s(18),
                     child: const CircularProgressIndicator(
-                      color: AppTheme.accentColor,
+                      color: context.nexusTheme.accentSecondary,
                       strokeWidth: 2,
                     ),
                   ),
@@ -659,7 +661,7 @@ class _SeamlessBlock extends ConsumerWidget {
                   Text(
                     s.sendingImage,
                     style: TextStyle(
-                        color: context.textSecondary, fontSize: r.fs(10)),
+                        color: context.nexusTheme.textSecondary, fontSize: r.fs(10)),
                   ),
                 ],
               ),
@@ -679,14 +681,14 @@ class _SeamlessBlock extends ConsumerWidget {
                   children: [
                     Icon(
                       Icons.add_photo_alternate_outlined,
-                      color: context.textHint.withValues(alpha: 0.5),
+                      color: context.nexusTheme.textHint.withValues(alpha: 0.5),
                       size: r.s(20),
                     ),
                     SizedBox(width: r.s(6)),
                     Text(
                       s.tapToAddImage,
                       style: TextStyle(
-                        color: context.textHint.withValues(alpha: 0.5),
+                        color: context.nexusTheme.textHint.withValues(alpha: 0.5),
                         fontSize: r.fs(12),
                       ),
                     ),
@@ -714,7 +716,7 @@ class _SeamlessBlock extends ConsumerWidget {
                     child: Center(
                       child: Icon(
                         Icons.broken_image_rounded,
-                        color: context.textHint,
+                        color: context.nexusTheme.textHint,
                         size: r.s(20),
                       ),
                     ),
@@ -724,14 +726,14 @@ class _SeamlessBlock extends ConsumerWidget {
               TextField(
                 controller: block.captionController,
                 style: TextStyle(
-                  color: context.textSecondary,
+                  color: context.nexusTheme.textSecondary,
                   fontSize: r.fs(11),
                   fontStyle: FontStyle.italic,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Legenda (opcional)',
                   hintStyle: TextStyle(
-                    color: context.textHint.withValues(alpha: 0.3),
+                    color: context.nexusTheme.textHint.withValues(alpha: 0.3),
                     fontSize: r.fs(11),
                   ),
                   filled: false,
@@ -761,7 +763,7 @@ class _SeamlessBlock extends ConsumerWidget {
 
   Widget _buildDividerContent(
       BuildContext context, Responsive r, String style) {
-    final color = context.textHint.withValues(alpha: 0.3);
+    final color = context.nexusTheme.textHint.withValues(alpha: 0.3);
     final softPink = const Color(0xFFE8A0BF).withValues(alpha: 0.6);
     final softPurple = const Color(0xFFB983FF).withValues(alpha: 0.6);
     final softBlue = const Color(0xFF94B3FD).withValues(alpha: 0.5);
@@ -1026,7 +1028,7 @@ class _InlineFormatBar extends StatelessWidget {
                 icon: Icons.close_rounded,
                 selected: false,
                 onTap: onRemove,
-                color: AppTheme.errorColor.withValues(alpha: 0.6),
+                color: context.nexusTheme.error.withValues(alpha: 0.6),
               ),
             ],
           ],
@@ -1162,7 +1164,7 @@ class _DividerToolbar extends StatelessWidget {
                 icon: Icons.close_rounded,
                 selected: false,
                 onTap: onRemove,
-                color: AppTheme.errorColor.withValues(alpha: 0.6),
+                color: context.nexusTheme.error.withValues(alpha: 0.6),
               ),
             ],
           ],
@@ -1206,7 +1208,7 @@ class _ImageToolbar extends StatelessWidget {
               child: Text(
                 'Trocar',
                 style: TextStyle(
-                  color: AppTheme.accentColor.withValues(alpha: 0.7),
+                  color: context.nexusTheme.accentSecondary.withValues(alpha: 0.7),
                   fontSize: r.fs(12),
                   fontWeight: FontWeight.w600,
                 ),
@@ -1219,7 +1221,7 @@ class _ImageToolbar extends StatelessWidget {
                 child: Text(
                   'Remover',
                   style: TextStyle(
-                    color: AppTheme.errorColor.withValues(alpha: 0.7),
+                    color: context.nexusTheme.error.withValues(alpha: 0.7),
                     fontSize: r.fs(12),
                     fontWeight: FontWeight.w600,
                   ),
@@ -1279,7 +1281,7 @@ class _AddBlockBar extends ConsumerWidget {
     return Container(
       padding: EdgeInsets.symmetric(vertical: r.s(6), horizontal: r.s(6)),
       decoration: BoxDecoration(
-        color: context.cardBg.withValues(alpha: 0.2),
+        color: context.nexusTheme.surfacePrimary.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(r.s(8)),
       ),
       child: Row(
@@ -1349,7 +1351,7 @@ class _AddBlockButton extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: context.textSecondary,
+              color: context.nexusTheme.textSecondary,
               fontSize: r.fs(9),
               fontWeight: FontWeight.w600,
             ),
@@ -1381,7 +1383,7 @@ class _MiniChip extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          color: context.textPrimary,
+          color: context.nexusTheme.textPrimary,
           fontSize: r.fs(14),
           fontWeight: FontWeight.w700,
         ),
@@ -1415,7 +1417,7 @@ class _MiniIconBtn extends StatelessWidget {
           icon,
           size: r.s(20),
           color: color ??
-              (selected ? AppTheme.accentColor : context.textSecondary),
+              (selected ? context.nexusTheme.accentSecondary : context.nexusTheme.textSecondary),
         ),
       ),
     );
@@ -1442,12 +1444,12 @@ class _DividerStyleChip extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(5)),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.accentColor.withValues(alpha: 0.15)
+              ? context.nexusTheme.accentSecondary.withValues(alpha: 0.15)
               : context.surfaceColor.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(r.s(12)),
           border: isSelected
               ? Border.all(
-                  color: AppTheme.accentColor.withValues(alpha: 0.4),
+                  color: context.nexusTheme.accentSecondary.withValues(alpha: 0.4),
                   width: 1,
                 )
               : null,
@@ -1455,7 +1457,7 @@ class _DividerStyleChip extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? AppTheme.accentColor : context.textPrimary,
+            color: isSelected ? context.nexusTheme.accentSecondary : context.nexusTheme.textPrimary,
             fontSize: r.fs(12),
             fontWeight: FontWeight.w700,
           ),

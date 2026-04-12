@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../config/app_theme.dart';
 import '../l10n/locale_provider.dart';
+import '../../config/nexus_theme_extension.dart';
 
 /// Error Boundary global — captura erros de widgets filhos e exibe
 /// uma tela de fallback amigável em vez de crashar o app.
@@ -163,7 +164,7 @@ class _DefaultErrorFallbackState extends ConsumerState<_DefaultErrorFallback> {
   Widget build(BuildContext context) {
     final s = ref.watch(stringsProvider);
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -174,12 +175,12 @@ class _DefaultErrorFallbackState extends ConsumerState<_DefaultErrorFallback> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppTheme.errorColor.withValues(alpha: 0.15),
+                  color: context.nexusTheme.error.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.error_outline_rounded,
-                  color: AppTheme.errorColor,
+                  color: context.nexusTheme.error,
                   size: 40,
                 ),
               ),
@@ -209,7 +210,7 @@ class _DefaultErrorFallbackState extends ConsumerState<_DefaultErrorFallback> {
                   Expanded(
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor,
+                        backgroundColor: context.nexusTheme.accentPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -274,7 +275,7 @@ class _DefaultErrorFallbackState extends ConsumerState<_DefaultErrorFallback> {
                     child: Text(
                       _fullErrorText,
                       style: const TextStyle(
-                        color: AppTheme.errorColor,
+                        color: context.nexusTheme.error,
                         fontSize: 10,
                         fontFamily: 'monospace',
                       ),

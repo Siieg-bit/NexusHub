@@ -5,6 +5,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de Contas Vinculadas — Google, Apple e outros provedores OAuth.
 class LinkedAccountsScreen extends ConsumerStatefulWidget {
@@ -77,7 +79,7 @@ class _LinkedAccountsScreenState extends ConsumerState<LinkedAccountsScreen> {
             content:
                 Text(s.linkProviderError),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
           ),
         );
       }
@@ -93,7 +95,7 @@ class _LinkedAccountsScreenState extends ConsumerState<LinkedAccountsScreen> {
          SnackBar(
           content: Text(s.cannotUnlinkLastLogin),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
         ),
       );
       return;
@@ -104,7 +106,7 @@ class _LinkedAccountsScreenState extends ConsumerState<LinkedAccountsScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         title: Text(s.unlinkAccount,
-            style: TextStyle(color: context.textPrimary)),
+            style: TextStyle(color: context.nexusTheme.textPrimary)),
         content: Text(
           s.confirmUnlinkAccount,
           style: TextStyle(color: Colors.grey[400]),
@@ -156,7 +158,7 @@ class _LinkedAccountsScreenState extends ConsumerState<LinkedAccountsScreen> {
           SnackBar(
             content: Text(s.errorUnlinking),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
           ),
         );
       }
@@ -170,15 +172,15 @@ class _LinkedAccountsScreenState extends ConsumerState<LinkedAccountsScreen> {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         title: Text(
           'Contas Vinculadas',
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(18),
             fontWeight: FontWeight.w700,
           ),
@@ -248,12 +250,12 @@ class _ProviderTile extends ConsumerWidget {
     return Container(
       padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
-        color: context.cardBg,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(12)),
       ),
       child: Row(
         children: [
-          Icon(icon, size: r.s(28), color: context.textPrimary),
+          Icon(icon, size: r.s(28), color: context.nexusTheme.textPrimary),
           SizedBox(width: r.s(12)),
           Expanded(
             child: Column(
@@ -262,7 +264,7 @@ class _ProviderTile extends ConsumerWidget {
                 Text(
                   label,
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(16),
                     fontWeight: FontWeight.w600,
                   ),
@@ -289,7 +291,7 @@ class _ProviderTile extends ConsumerWidget {
               child: Text(
                 isLinked ? 'Desvincular' : 'Vincular',
                 style: TextStyle(
-                  color: isLinked ? Colors.red : AppTheme.primaryColor,
+                  color: isLinked ? Colors.red : context.nexusTheme.accentPrimary,
                   fontSize: r.fs(14),
                 ),
               ),

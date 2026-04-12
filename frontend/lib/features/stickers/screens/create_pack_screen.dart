@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/sticker_providers.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela de criação de um novo pack de stickers.
 class CreatePackScreen extends ConsumerStatefulWidget {
@@ -69,14 +71,14 @@ class _CreatePackScreenState extends ConsumerState<CreatePackScreen> {
     final editorState = ref.watch(packEditorProvider);
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         elevation: 0,
         title: Text(
           'Novo Pack de Figurinhas',
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(17),
             fontWeight: FontWeight.w800,
           ),
@@ -93,17 +95,17 @@ class _CreatePackScreenState extends ConsumerState<CreatePackScreen> {
                 width: r.s(80),
                 height: r.s(80),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                     width: 2,
                   ),
                 ),
                 child: Icon(
                   Icons.emoji_emotions_rounded,
                   size: r.s(40),
-                  color: AppTheme.primaryColor,
+                  color: context.nexusTheme.accentPrimary,
                 ),
               ),
             ),
@@ -114,7 +116,7 @@ class _CreatePackScreenState extends ConsumerState<CreatePackScreen> {
             SizedBox(height: r.s(6)),
             TextFormField(
               controller: _nameCtrl,
-              style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+              style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
               maxLength: 50,
               decoration: _inputDecoration(context, r, 'Ex: Memes do dia a dia'),
               validator: (v) {
@@ -130,7 +132,7 @@ class _CreatePackScreenState extends ConsumerState<CreatePackScreen> {
             SizedBox(height: r.s(6)),
             TextFormField(
               controller: _descCtrl,
-              style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+              style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
               maxLines: 3,
               maxLength: 200,
               decoration: _inputDecoration(context, r, 'Descreva seu pack...'),
@@ -145,7 +147,7 @@ class _CreatePackScreenState extends ConsumerState<CreatePackScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _tagCtrl,
-                    style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+                    style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
                     decoration: _inputDecoration(context, r, 'Ex: memes, engraçado...'),
                     onFieldSubmitted: (_) => _addTag(),
                   ),
@@ -157,7 +159,7 @@ class _CreatePackScreenState extends ConsumerState<CreatePackScreen> {
                     width: r.s(40),
                     height: r.s(40),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor,
+                      color: context.nexusTheme.accentPrimary,
                       borderRadius: BorderRadius.circular(r.s(10)),
                     ),
                     child: Icon(Icons.add_rounded, color: Colors.white, size: r.s(20)),
@@ -172,9 +174,9 @@ class _CreatePackScreenState extends ConsumerState<CreatePackScreen> {
                 runSpacing: r.s(4),
                 children: _tags.map((tag) => Chip(
                   label: Text('#$tag', style: TextStyle(fontSize: r.fs(12))),
-                  backgroundColor: AppTheme.accentColor.withValues(alpha: 0.1),
-                  labelStyle: TextStyle(color: AppTheme.accentColor),
-                  deleteIconColor: AppTheme.accentColor,
+                  backgroundColor: context.nexusTheme.accentSecondary.withValues(alpha: 0.1),
+                  labelStyle: TextStyle(color: context.nexusTheme.accentSecondary),
+                  deleteIconColor: context.nexusTheme.accentSecondary,
                   onDeleted: () => setState(() => _tags.remove(tag)),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   padding: EdgeInsets.symmetric(horizontal: r.s(4)),
@@ -187,14 +189,14 @@ class _CreatePackScreenState extends ConsumerState<CreatePackScreen> {
             Container(
               padding: EdgeInsets.all(r.s(16)),
               decoration: BoxDecoration(
-                color: context.cardBg,
+                color: context.nexusTheme.surfacePrimary,
                 borderRadius: BorderRadius.circular(r.s(14)),
               ),
               child: Row(
                 children: [
                   Icon(
                     _isPublic ? Icons.public_rounded : Icons.lock_rounded,
-                    color: _isPublic ? AppTheme.primaryColor : Colors.grey[500],
+                    color: _isPublic ? context.nexusTheme.accentPrimary : Colors.grey[500],
                     size: r.s(22),
                   ),
                   SizedBox(width: r.s(12)),
@@ -205,7 +207,7 @@ class _CreatePackScreenState extends ConsumerState<CreatePackScreen> {
                         Text(
                           _isPublic ? 'Pack público' : 'Pack privado',
                           style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontSize: r.fs(14),
                             fontWeight: FontWeight.w600,
                           ),
@@ -222,7 +224,7 @@ class _CreatePackScreenState extends ConsumerState<CreatePackScreen> {
                   Switch(
                     value: _isPublic,
                     onChanged: (v) => setState(() => _isPublic = v),
-                    activeColor: AppTheme.primaryColor,
+                    activeColor: context.nexusTheme.accentPrimary,
                   ),
                 ],
               ),
@@ -233,7 +235,7 @@ class _CreatePackScreenState extends ConsumerState<CreatePackScreen> {
             ElevatedButton(
               onPressed: editorState.isLoading ? null : _create,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
+                backgroundColor: context.nexusTheme.accentPrimary,
                 foregroundColor: Colors.white,
                 minimumSize: Size(double.infinity, r.s(52)),
                 shape: RoundedRectangleBorder(
@@ -268,7 +270,7 @@ class _CreatePackScreenState extends ConsumerState<CreatePackScreen> {
       hintText: hint,
       hintStyle: TextStyle(color: Colors.grey[600], fontSize: r.fs(13)),
       filled: true,
-      fillColor: context.cardBg,
+      fillColor: context.nexusTheme.surfacePrimary,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(r.s(12)),
         borderSide: BorderSide.none,
@@ -292,7 +294,7 @@ class _SectionLabel extends StatelessWidget {
     return Text(
       label,
       style: TextStyle(
-        color: context.textSecondary,
+        color: context.nexusTheme.textSecondary,
         fontSize: r.fs(12),
         fontWeight: FontWeight.w600,
         letterSpacing: 0.5,

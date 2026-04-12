@@ -9,6 +9,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 // =============================================================================
 // TAB: Chats Públicos — Grid 2 colunas estilo Amino
@@ -142,7 +144,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
           SnackBar(
             content:
                 Text(isPinned ? 'Chat desafixado.' : 'Chat fixado no topo.'),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -152,7 +154,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorChangingPin),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -172,7 +174,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(wasDeleted ? s.chatDeletedMsg : s.leftChat),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: context.nexusTheme.accentPrimary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -182,7 +184,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorExecutingActionRetry),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -221,7 +223,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
               Text(
                 chat['title'] as String? ?? s.chat,
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontWeight: FontWeight.w700,
                   fontSize: r.fs(15),
                 ),
@@ -272,7 +274,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
         title: Text(
           isDelete ? 'Apagar Chat' : s.leaveChatTitle,
           style: TextStyle(
-              color: context.textPrimary, fontWeight: FontWeight.w700),
+              color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700),
         ),
         content: Text(
           isDelete
@@ -293,7 +295,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
             child: Text(
               isDelete ? s.deleteAction : s.logout,
               style: TextStyle(
-                  color: AppTheme.errorColor, fontWeight: FontWeight.w700),
+                  color: context.nexusTheme.error, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -309,7 +311,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
     VoidCallback onTap, {
     bool isDestructive = false,
   }) {
-    final color = isDestructive ? AppTheme.errorColor : Colors.grey[400]!;
+    final color = isDestructive ? context.nexusTheme.error : Colors.grey[400]!;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -329,7 +331,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
                 label,
                 style: TextStyle(
                   color:
-                      isDestructive ? AppTheme.errorColor : context.textPrimary,
+                      isDestructive ? context.nexusTheme.error : context.nexusTheme.textPrimary,
                   fontSize: r.fs(14),
                 ),
               ),
@@ -358,14 +360,14 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
     if (_isLoading) {
       return Center(
         child: CircularProgressIndicator(
-            color: AppTheme.primaryColor, strokeWidth: 2.5),
+            color: context.nexusTheme.accentPrimary, strokeWidth: 2.5),
       );
     }
 
     if (_chats.isEmpty) {
       return RefreshIndicator(
         onRefresh: _refresh,
-        color: AppTheme.primaryColor,
+        color: context.nexusTheme.accentPrimary,
         backgroundColor: context.surfaceColor,
         child: LayoutBuilder(
           builder: (ctx, constraints) => SingleChildScrollView(
@@ -377,12 +379,12 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.chat_bubble_outline_rounded,
-                        size: r.s(52), color: context.textHint),
+                        size: r.s(52), color: context.nexusTheme.textHint),
                     SizedBox(height: r.s(14)),
                     Text(
                       s.noPublicChatsYet,
                       style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(15),
                           fontWeight: FontWeight.w600),
                     ),
@@ -403,7 +405,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
 
     return RefreshIndicator(
       onRefresh: _refresh,
-      color: AppTheme.primaryColor,
+      color: context.nexusTheme.accentPrimary,
       backgroundColor: context.surfaceColor,
       child: GridView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -468,11 +470,11 @@ class _ChatCard extends ConsumerWidget {
           onTap: onTap,
           child: Container(
             decoration: BoxDecoration(
-              color: context.cardBg,
+              color: context.nexusTheme.surfacePrimary,
               borderRadius: BorderRadius.circular(r.s(12)),
               border: isPinned
                   ? Border.all(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.7),
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.7),
                       width: 1.5)
                   : null,
             ),
@@ -553,7 +555,7 @@ class _ChatCard extends ConsumerWidget {
                             padding: EdgeInsets.all(r.s(3)),
                             decoration: BoxDecoration(
                               color:
-                                  AppTheme.primaryColor.withValues(alpha: 0.9),
+                                  context.nexusTheme.accentPrimary.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(r.s(6)),
                             ),
                             child: Icon(Icons.push_pin_rounded,
@@ -570,7 +572,7 @@ class _ChatCard extends ConsumerWidget {
                                 horizontal: r.s(7), vertical: r.s(3)),
                             decoration: BoxDecoration(
                               color:
-                                  AppTheme.primaryColor.withValues(alpha: 0.85),
+                                  context.nexusTheme.accentPrimary.withValues(alpha: 0.85),
                               borderRadius: BorderRadius.circular(r.s(20)),
                             ),
                             child: Text(
@@ -602,7 +604,7 @@ class _ChatCard extends ConsumerWidget {
                         Text(
                           chat['title'] as String? ?? s.chat,
                           style: TextStyle(
-                            color: context.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                             fontSize: r.fs(12),
                             fontWeight: FontWeight.w700,
                             height: 1.2,
@@ -651,14 +653,14 @@ class _ChatCard extends ConsumerWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.primaryColor.withValues(alpha: 0.35),
-            AppTheme.primaryColor.withValues(alpha: 0.1),
+            context.nexusTheme.accentPrimary.withValues(alpha: 0.35),
+            context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
           ],
         ),
       ),
       child: Icon(
         Icons.chat_bubble_rounded,
-        color: AppTheme.primaryColor.withValues(alpha: 0.4),
+        color: context.nexusTheme.accentPrimary.withValues(alpha: 0.4),
         size: r.s(40),
       ),
     );

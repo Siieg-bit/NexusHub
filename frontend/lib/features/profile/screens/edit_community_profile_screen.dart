@@ -12,6 +12,8 @@ import '../../../core/widgets/rgb_color_picker.dart';
 import '../../communities/providers/community_detail_providers.dart';
 import '../widgets/rich_bio.dart';
 import '../widgets/frame_picker_sheet.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Editar Perfil da Comunidade — estilo Amino Apps.
 ///
@@ -274,7 +276,7 @@ class _EditCommunityProfileScreenState
         final s = getStrings();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s.errorUploadTryAgain),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
         ));
       }
       return null;
@@ -317,7 +319,7 @@ class _EditCommunityProfileScreenState
     if (_gallery.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Adicione uma imagem à galeria antes de usá-la como fundo.'),
-        backgroundColor: AppTheme.warningColor,
+        backgroundColor: context.nexusTheme.warning,
       ));
       return;
     }
@@ -338,7 +340,7 @@ class _EditCommunityProfileScreenState
                 Text(
                   s.backgroundFromGallery,
                   style: TextStyle(
-                    color: context.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(18),
                     fontWeight: FontWeight.w800,
                   ),
@@ -372,7 +374,7 @@ class _EditCommunityProfileScreenState
                           borderRadius: BorderRadius.circular(r.s(12)),
                           border: Border.all(
                             color: isSelected
-                                ? AppTheme.accentColor
+                                ? context.nexusTheme.accentSecondary
                                 : Colors.white.withValues(alpha: 0.08),
                             width: isSelected ? 2 : 1,
                           ),
@@ -460,7 +462,7 @@ class _EditCommunityProfileScreenState
       final s = getStrings();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(s.maxGalleryPhotos),
-        backgroundColor: AppTheme.warningColor,
+        backgroundColor: context.nexusTheme.warning,
       ));
       return;
     }
@@ -565,7 +567,7 @@ class _EditCommunityProfileScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s.communityProfileUpdated),
-          backgroundColor: AppTheme.successColor,
+          backgroundColor: context.nexusTheme.success,
           behavior: SnackBarBehavior.floating,
         ));
         Navigator.of(context).pop(true);
@@ -575,7 +577,7 @@ class _EditCommunityProfileScreenState
         final s = getStrings();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s.anErrorOccurredTryAgain),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: context.nexusTheme.error,
         ));
       }
     } finally {
@@ -598,19 +600,19 @@ class _EditCommunityProfileScreenState
     final r = context.r;
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_rounded,
-              color: context.textPrimary, size: r.s(20)),
+              color: context.nexusTheme.textPrimary, size: r.s(20)),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           s.editCommunityProfile,
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(17),
             fontWeight: FontWeight.w700,
           ),
@@ -626,8 +628,8 @@ class _EditCommunityProfileScreenState
                     horizontal: r.s(16), vertical: r.s(8)),
                 decoration: BoxDecoration(
                   color: _isSaving
-                      ? AppTheme.accentColor.withValues(alpha: 0.5)
-                      : AppTheme.accentColor,
+                      ? context.nexusTheme.accentSecondary.withValues(alpha: 0.5)
+                      : context.nexusTheme.accentSecondary,
                   borderRadius: BorderRadius.circular(r.s(20)),
                 ),
                 child: _isSaving
@@ -655,7 +657,7 @@ class _EditCommunityProfileScreenState
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                color: AppTheme.accentColor,
+                color: context.nexusTheme.accentSecondary,
                 strokeWidth: 2.5,
               ),
             )
@@ -702,7 +704,7 @@ class _EditCommunityProfileScreenState
                               children: [
                                 _SectionHeader(
                                   icon: Icons.tune_rounded,
-                                  iconColor: AppTheme.accentColor,
+                                  iconColor: context.nexusTheme.accentSecondary,
                                   title: 'Perfil',
                                   subtitle: 'Nome e apresentação',
                                 ),
@@ -716,7 +718,7 @@ class _EditCommunityProfileScreenState
                                     hintText: s.leaveEmptyGlobal,
                                     maxLength: 24,
                                     style: TextStyle(
-                                      color: context.textPrimary,
+                                      color: context.nexusTheme.textPrimary,
                                       fontSize: r.fs(16),
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -733,7 +735,7 @@ class _EditCommunityProfileScreenState
                                     hintText: s.leaveEmptyBio,
                                   ),
                                   trailing: Icon(Icons.chevron_right_rounded,
-                                      color: context.textHint, size: r.s(20)),
+                                      color: context.nexusTheme.textHint, size: r.s(20)),
                                 ),
                               ],
                             ),
@@ -762,7 +764,7 @@ class _EditCommunityProfileScreenState
                                         selected: _localBackgroundColor != null,
                                         selectedColor: _parseStoredBackgroundColor(
                                                 _localBackgroundColor) ??
-                                            AppTheme.accentColor,
+                                            context.nexusTheme.accentSecondary,
                                         onTap: _pickBackgroundColor,
                                         onClear: _localBackgroundColor != null
                                             ? () => setState(() =>
@@ -777,7 +779,7 @@ class _EditCommunityProfileScreenState
                                         label: s.backgroundFromGallery,
                                         selected: _localBackgroundUrl != null,
                                         imageUrl: _localBackgroundUrl,
-                                        selectedColor: AppTheme.accentColor,
+                                        selectedColor: context.nexusTheme.accentSecondary,
                                         onTap: _pickBackground,
                                         onClear: _localBackgroundUrl != null
                                             ? () => setState(() =>
@@ -793,7 +795,7 @@ class _EditCommunityProfileScreenState
                                   child: Container(
                                     padding: EdgeInsets.all(r.s(14)),
                                     decoration: BoxDecoration(
-                                      color: context.scaffoldBg.withValues(alpha: 0.45),
+                                      color: context.nexusTheme.backgroundPrimary.withValues(alpha: 0.45),
                                       borderRadius: BorderRadius.circular(r.s(18)),
                                       border: Border.all(
                                         color: Colors.white.withValues(alpha: 0.06),
@@ -821,7 +823,7 @@ class _EditCommunityProfileScreenState
                                           child: Text(
                                             '${_gallery.length}',
                                             style: TextStyle(
-                                              color: context.textPrimary,
+                                              color: context.nexusTheme.textPrimary,
                                               fontSize: r.fs(12),
                                               fontWeight: FontWeight.w700,
                                             ),
@@ -955,7 +957,7 @@ class _BannerAvatarSection extends ConsumerWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: context.scaffoldBg,
+                              color: context.nexusTheme.backgroundPrimary,
                               width: 4,
                             ),
                             boxShadow: [
@@ -986,10 +988,10 @@ class _BannerAvatarSection extends ConsumerWidget {
                             width: r.s(30),
                             height: r.s(30),
                             decoration: BoxDecoration(
-                              color: AppTheme.accentColor,
+                              color: context.nexusTheme.accentSecondary,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: context.scaffoldBg,
+                                color: context.nexusTheme.backgroundPrimary,
                                 width: 2,
                               ),
                             ),
@@ -1075,7 +1077,7 @@ class _AminoListTile extends StatelessWidget {
         child: Ink(
           padding: EdgeInsets.all(r.s(14)),
           decoration: BoxDecoration(
-            color: context.scaffoldBg.withValues(alpha: 0.42),
+            color: context.nexusTheme.backgroundPrimary.withValues(alpha: 0.42),
             borderRadius: borderRadius,
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.06),
@@ -1104,7 +1106,7 @@ class _AminoListTile extends StatelessWidget {
                       Text(
                         title!,
                         style: TextStyle(
-                          color: context.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(11),
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.3,
@@ -1194,7 +1196,7 @@ class _SectionHeader extends StatelessWidget {
               Text(
                 title,
                 style: TextStyle(
-                  color: context.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                   fontSize: r.fs(16),
                   fontWeight: FontWeight.w700,
                 ),
@@ -1204,7 +1206,7 @@ class _SectionHeader extends StatelessWidget {
                 Text(
                   subtitle!,
                   style: TextStyle(
-                    color: context.textSecondary,
+                    color: context.nexusTheme.textSecondary,
                     fontSize: r.fs(12),
                     height: 1.3,
                   ),
@@ -1240,7 +1242,7 @@ class _BackgroundOptionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final foreground = selected ? Colors.white : context.textPrimary;
+    final foreground = selected ? Colors.white : context.nexusTheme.textPrimary;
 
     return GestureDetector(
       onTap: onTap,
@@ -1250,7 +1252,7 @@ class _BackgroundOptionButton extends StatelessWidget {
           vertical: r.s(12),
         ),
         decoration: BoxDecoration(
-          color: selected ? selectedColor : context.scaffoldBg.withValues(alpha: 0.45),
+          color: selected ? selectedColor : context.nexusTheme.backgroundPrimary.withValues(alpha: 0.45),
           borderRadius: BorderRadius.circular(r.s(16)),
           border: Border.all(
             color: selected
@@ -1271,7 +1273,7 @@ class _BackgroundOptionButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, size: r.s(16), color: selected ? Colors.white : AppTheme.accentColor),
+            Icon(icon, size: r.s(16), color: selected ? Colors.white : context.nexusTheme.accentSecondary),
             SizedBox(width: r.s(8)),
             Expanded(
               child: Text(
@@ -1289,7 +1291,7 @@ class _BackgroundOptionButton extends StatelessWidget {
               GestureDetector(
                 onTap: onClear,
                 child: Icon(Icons.close_rounded,
-                    color: selected ? Colors.white70 : context.textHint,
+                    color: selected ? Colors.white70 : context.nexusTheme.textHint,
                     size: r.s(16)),
               ),
           ],
@@ -1341,10 +1343,10 @@ class _InlineTextField extends StatelessWidget {
       maxLength: maxLength,
       onTapOutside: (_) => FocusScope.of(context).unfocus(),
       style: style ??
-          TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
+          TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(15)),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(color: context.textHint, fontSize: r.fs(14)),
+        hintStyle: TextStyle(color: context.nexusTheme.textHint, fontSize: r.fs(14)),
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
         focusedBorder: InputBorder.none,
@@ -1369,7 +1371,7 @@ class _InlineTextField extends StatelessWidget {
             child: Text(
               '$currentLength/$maxLength',
               style: TextStyle(
-                color: context.textHint,
+                color: context.nexusTheme.textHint,
                 fontSize: r.fs(10),
                 fontWeight: FontWeight.w600,
               ),
@@ -1403,14 +1405,14 @@ class _CommunityBioField extends StatelessWidget {
               rawContent: bio,
               fontSize: r.fs(14),
               maxPreviewLines: 3,
-              fallbackTextColor: context.textPrimary,
+              fallbackTextColor: context.nexusTheme.textPrimary,
             )
           : Text(
               hintText,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: context.textHint,
+                color: context.nexusTheme.textHint,
                 fontSize: r.fs(14),
                 height: 1.45,
                 fontWeight: FontWeight.w400,
@@ -1434,16 +1436,16 @@ class _BioInfoChip extends StatelessWidget {
         vertical: r.s(4),
       ),
       decoration: BoxDecoration(
-        color: AppTheme.accentColor.withValues(alpha: 0.10),
+        color: context.nexusTheme.accentSecondary.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(r.s(999)),
         border: Border.all(
-          color: AppTheme.accentColor.withValues(alpha: 0.12),
+          color: context.nexusTheme.accentSecondary.withValues(alpha: 0.12),
         ),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: AppTheme.accentColor,
+          color: context.nexusTheme.accentSecondary,
           fontSize: r.fs(10),
           fontWeight: FontWeight.w700,
           letterSpacing: 0.2,
@@ -1669,7 +1671,7 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
         Text(
           title,
           style: TextStyle(
-            color: context.textSecondary,
+            color: context.nexusTheme.textSecondary,
             fontSize: r.fs(12),
             fontWeight: FontWeight.w700,
           ),
@@ -1735,7 +1737,7 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                           Text(
                             widget.title,
                             style: TextStyle(
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                               fontSize: r.fs(18),
                               fontWeight: FontWeight.w800,
                             ),
@@ -1744,7 +1746,7 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                           Text(
                             '${widget.markdownLabel}. Imagens e GIFs podem ser adicionados por URL.',
                             style: TextStyle(
-                              color: context.textSecondary,
+                              color: context.nexusTheme.textSecondary,
                               fontSize: r.fs(12),
                               height: 1.4,
                             ),
@@ -1840,12 +1842,12 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: context.cardBg,
+                      color: context.nexusTheme.surfacePrimary,
                       borderRadius: BorderRadius.circular(r.s(18)),
                       border: Border.all(
                         color: _showPreview
                             ? context.dividerClr
-                            : AppTheme.accentColor.withValues(alpha: 0.55),
+                            : context.nexusTheme.accentSecondary.withValues(alpha: 0.55),
                         width: 1.4,
                       ),
                     ),
@@ -1892,7 +1894,7 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                                     Text(
                                       '${value.text.length}/${widget.maxLength}',
                                       style: TextStyle(
-                                        color: context.textSecondary,
+                                        color: context.nexusTheme.textSecondary,
                                         fontSize: r.fs(12),
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -1901,7 +1903,7 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                                     Text(
                                       _showPreview ? 'Prévia' : 'Editor ativo',
                                       style: TextStyle(
-                                        color: context.textHint,
+                                        color: context.nexusTheme.textHint,
                                         fontSize: r.fs(10),
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -1921,7 +1923,7 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                                   ? 'Veja abaixo como a bio vai aparecer.'
                                   : 'O texto começa no topo e continua rolando naturalmente conforme você digita.',
                               style: TextStyle(
-                                color: context.textSecondary,
+                                color: context.nexusTheme.textSecondary,
                                 fontSize: r.fs(11),
                                 height: 1.35,
                               ),
@@ -1943,7 +1945,7 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                                         ? Text(
                                             widget.hintText,
                                             style: TextStyle(
-                                              color: context.textHint,
+                                              color: context.nexusTheme.textHint,
                                               fontSize: r.fs(14),
                                               height: 1.55,
                                             ),
@@ -1953,25 +1955,25 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                                             selectable: false,
                                             styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
                                               p: TextStyle(
-                                                color: context.textPrimary,
+                                                color: context.nexusTheme.textPrimary,
                                                 fontSize: r.fs(14),
                                                 height: 1.6,
                                               ),
                                               h2: TextStyle(
-                                                color: context.textPrimary,
+                                                color: context.nexusTheme.textPrimary,
                                                 fontSize: r.fs(18),
                                                 fontWeight: FontWeight.w700,
                                               ),
                                               blockquote: TextStyle(
-                                                color: context.textSecondary,
+                                                color: context.nexusTheme.textSecondary,
                                                 fontSize: r.fs(14),
                                                 fontStyle: FontStyle.italic,
                                               ),
                                               blockquoteDecoration: BoxDecoration(
-                                                color: AppTheme.accentColor.withValues(alpha: 0.08),
+                                                color: context.nexusTheme.accentSecondary.withValues(alpha: 0.08),
                                                 borderRadius: BorderRadius.circular(r.s(12)),
                                                 border: Border.all(
-                                                  color: AppTheme.accentColor.withValues(alpha: 0.18),
+                                                  color: context.nexusTheme.accentSecondary.withValues(alpha: 0.18),
                                                 ),
                                               ),
                                             ),
@@ -1983,7 +1985,7 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                                   behavior: HitTestBehavior.opaque,
                                   onTap: () => _focusNode.requestFocus(),
                                   child: ColoredBox(
-                                    color: context.cardBg,
+                                    color: context.nexusTheme.surfacePrimary,
                                     child: TextField(
                                       controller: _controller,
                                       focusNode: _focusNode,
@@ -2001,14 +2003,14 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                                         bottom: bottomInset + r.s(28),
                                       ),
                                       style: TextStyle(
-                                        color: context.textPrimary,
+                                        color: context.nexusTheme.textPrimary,
                                         fontSize: r.fs(15),
                                         height: 1.6,
                                       ),
                                       decoration: InputDecoration(
                                         hintText: widget.hintText,
                                         hintStyle: TextStyle(
-                                          color: context.textHint,
+                                          color: context.nexusTheme.textHint,
                                           fontSize: r.fs(14),
                                           height: 1.5,
                                         ),
@@ -2066,7 +2068,7 @@ class _FormatActionChip extends StatelessWidget {
           vertical: r.s(8),
         ),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.nexusTheme.surfacePrimary,
           borderRadius: BorderRadius.circular(r.s(999)),
           border: Border.all(
             color: context.dividerClr,
@@ -2075,12 +2077,12 @@ class _FormatActionChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: r.s(16), color: context.textPrimary),
+            Icon(icon, size: r.s(16), color: context.nexusTheme.textPrimary),
             SizedBox(width: r.s(6)),
             Text(
               label,
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(12),
                 fontWeight: FontWeight.w600,
               ),
@@ -2117,7 +2119,7 @@ class _GallerySummaryContent extends StatelessWidget {
           Text(
             'Galeria',
             style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(15),
               fontWeight: FontWeight.w700,
             ),
@@ -2126,7 +2128,7 @@ class _GallerySummaryContent extends StatelessWidget {
           Text(
             'Adicione imagens',
             style: TextStyle(
-              color: context.textSecondary,
+              color: context.nexusTheme.textSecondary,
               fontSize: r.fs(12),
               fontWeight: FontWeight.w500,
             ),
@@ -2189,7 +2191,7 @@ class _GallerySummaryContent extends StatelessWidget {
                   Text(
                     'Galeria',
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(15),
                       fontWeight: FontWeight.w700,
                     ),
@@ -2201,13 +2203,13 @@ class _GallerySummaryContent extends StatelessWidget {
                       vertical: r.s(4),
                     ),
                     decoration: BoxDecoration(
-                      color: AppTheme.accentColor.withValues(alpha: 0.12),
+                      color: context.nexusTheme.accentSecondary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(r.s(999)),
                     ),
                     child: Text(
                       '${photos.length}',
                       style: TextStyle(
-                        color: AppTheme.accentColor,
+                        color: context.nexusTheme.accentSecondary,
                         fontSize: r.fs(11),
                         fontWeight: FontWeight.w700,
                       ),
@@ -2221,7 +2223,7 @@ class _GallerySummaryContent extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: context.textSecondary,
+                  color: context.nexusTheme.textSecondary,
                   fontSize: r.fs(12),
                   fontWeight: FontWeight.w500,
                 ),
@@ -2299,19 +2301,19 @@ class _CommunityGalleryManagerScreenState
     final r = context.r;
 
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_rounded,
-              color: context.textPrimary, size: r.s(20)),
+              color: context.nexusTheme.textPrimary, size: r.s(20)),
           onPressed: () => Navigator.of(context).pop(_photos),
         ),
         title: Text(
           'Gerenciar galeria',
           style: TextStyle(
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontSize: r.fs(17),
             fontWeight: FontWeight.w700,
           ),
@@ -2325,7 +2327,7 @@ class _CommunityGalleryManagerScreenState
               child: Text(
                 'Concluir',
                 style: TextStyle(
-                  color: AppTheme.accentColor,
+                  color: context.nexusTheme.accentSecondary,
                   fontSize: r.fs(13),
                   fontWeight: FontWeight.w700,
                 ),
@@ -2348,12 +2350,12 @@ class _CommunityGalleryManagerScreenState
                             width: r.s(64),
                             height: r.s(64),
                             decoration: BoxDecoration(
-                              color: AppTheme.accentColor.withValues(alpha: 0.12),
+                              color: context.nexusTheme.accentSecondary.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(r.s(20)),
                             ),
                             child: Icon(
                               Icons.photo_library_outlined,
-                              color: AppTheme.accentColor,
+                              color: context.nexusTheme.accentSecondary,
                               size: r.s(30),
                             ),
                           ),
@@ -2362,7 +2364,7 @@ class _CommunityGalleryManagerScreenState
                             'Sua galeria está vazia',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: context.textPrimary,
+                              color: context.nexusTheme.textPrimary,
                               fontSize: r.fs(16),
                               fontWeight: FontWeight.w700,
                             ),
@@ -2372,7 +2374,7 @@ class _CommunityGalleryManagerScreenState
                             'Adicione imagens para começar.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: context.textSecondary,
+                              color: context.nexusTheme.textSecondary,
                               fontSize: r.fs(13),
                               height: 1.4,
                             ),
@@ -2423,7 +2425,7 @@ class _CommunityGalleryManagerScreenState
                                       ),
                                       decoration: BoxDecoration(
                                         color: index == 0
-                                            ? AppTheme.accentColor.withValues(alpha: 0.14)
+                                            ? context.nexusTheme.accentSecondary.withValues(alpha: 0.14)
                                             : context.dividerClr.withValues(alpha: 0.35),
                                         borderRadius: BorderRadius.circular(r.s(999)),
                                       ),
@@ -2431,8 +2433,8 @@ class _CommunityGalleryManagerScreenState
                                         index == 0 ? 'Capa' : 'Imagem ${index + 1}',
                                         style: TextStyle(
                                           color: index == 0
-                                              ? AppTheme.accentColor
-                                              : context.textSecondary,
+                                              ? context.nexusTheme.accentSecondary
+                                              : context.nexusTheme.textSecondary,
                                           fontSize: r.fs(11),
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -2442,7 +2444,7 @@ class _CommunityGalleryManagerScreenState
                                     Text(
                                       index == 0 ? 'Capa atual' : 'Arraste para reordenar',
                                       style: TextStyle(
-                                        color: context.textSecondary,
+                                        color: context.nexusTheme.textSecondary,
                                         fontSize: r.fs(12),
                                         height: 1.35,
                                       ),
@@ -2458,7 +2460,7 @@ class _CommunityGalleryManagerScreenState
                                   onPressed: () => _removePhoto(index),
                                   icon: Icon(
                                     Icons.delete_outline_rounded,
-                                    color: AppTheme.errorColor,
+                                    color: context.nexusTheme.error,
                                     size: r.s(22),
                                   ),
                                 ),
@@ -2468,7 +2470,7 @@ class _CommunityGalleryManagerScreenState
                                     padding: EdgeInsets.all(r.s(8)),
                                     child: Icon(
                                       Icons.drag_handle_rounded,
-                                      color: context.textSecondary,
+                                      color: context.nexusTheme.textSecondary,
                                       size: r.s(22),
                                     ),
                                   ),
@@ -2508,9 +2510,9 @@ class _CommunityGalleryManagerScreenState
                             : 'Adicionar imagem',
                   ),
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.accentColor,
+                    backgroundColor: context.nexusTheme.accentSecondary,
                     disabledBackgroundColor:
-                        AppTheme.accentColor.withValues(alpha: 0.45),
+                        context.nexusTheme.accentSecondary.withValues(alpha: 0.45),
                     padding: EdgeInsets.symmetric(vertical: r.s(14)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(r.s(12)),

@@ -5,6 +5,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_extension.dart';
 
 /// Tela para Leaders/Curators editarem as guidelines da comunidade.
 /// Réplica fiel do Amino Apps — editor de texto rico com preview.
@@ -105,7 +107,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
                 Text(s.guidelinesSaved),
               ],
             ),
-            backgroundColor: AppTheme.successColor,
+            backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(r.s(12))),
@@ -118,7 +120,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorSavingTryAgain),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -144,7 +146,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -152,10 +154,10 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
           s.editGuidelines2,
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: context.textPrimary,
+            color: context.nexusTheme.textPrimary,
           ),
         ),
-        iconTheme: IconThemeData(color: context.textPrimary),
+        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
         actions: [
           if (_hasChanges)
             GestureDetector(
@@ -166,12 +168,12 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
                     EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                    colors: [context.nexusTheme.accentPrimary, context.nexusTheme.accentSecondary],
                   ),
                   borderRadius: BorderRadius.circular(r.s(20)),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -199,9 +201,9 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppTheme.primaryColor,
+          labelColor: context.nexusTheme.accentPrimary,
           unselectedLabelColor: Colors.grey[500],
-          indicatorColor: AppTheme.primaryColor,
+          indicatorColor: context.nexusTheme.accentPrimary,
           dividerColor: Colors.white.withValues(alpha: 0.05),
           tabs: [
             Tab(text: s.editor),
@@ -252,14 +254,14 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
                     children: [
                       Icon(
                         section['icon'] as IconData,
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         size: r.s(14),
                       ),
                       SizedBox(width: r.s(6)),
                       Text(
                         section['title'] as String? ?? '',
                         style: TextStyle(
-                          color: context.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(12),
                           fontWeight: FontWeight.w600,
                         ),
@@ -289,7 +291,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
               expands: true,
               textAlignVertical: TextAlignVertical.top,
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(14),
                 height: 1.6,
               ),
@@ -385,7 +387,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
             child: Text(
               line.substring(3),
               style: TextStyle(
-                color: AppTheme.primaryColor,
+                color: context.nexusTheme.accentPrimary,
                 fontSize: r.fs(18),
                 fontWeight: FontWeight.w800,
               ),
@@ -400,7 +402,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
             child: Text(
               line.substring(2),
               style: TextStyle(
-                color: context.textPrimary,
+                color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(22),
                 fontWeight: FontWeight.w900,
               ),
@@ -422,7 +424,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
                   height: r.s(6),
                   margin: EdgeInsets.only(top: r.s(7), right: r.s(10)),
                   decoration: const BoxDecoration(
-                    color: AppTheme.primaryColor,
+                    color: context.nexusTheme.accentPrimary,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -430,7 +432,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
                   child: Text(
                     line.substring(2),
                     style: TextStyle(
-                      color: context.textPrimary,
+                      color: context.nexusTheme.textPrimary,
                       fontSize: r.fs(14),
                       height: 1.5,
                     ),
@@ -456,14 +458,14 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
                     height: r.s(22),
                     margin: EdgeInsets.only(right: r.s(8)),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
                     child: Text(
                       match.group(1)!,
                       style: TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: context.nexusTheme.accentPrimary,
                         fontSize: r.fs(11),
                         fontWeight: FontWeight.w800,
                       ),
@@ -473,7 +475,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
                     child: Text(
                       match.group(2)!,
                       style: TextStyle(
-                        color: context.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                         fontSize: r.fs(14),
                         height: 1.5,
                       ),
@@ -496,7 +498,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
           child: Text(
             line,
             style: TextStyle(
-              color: context.textPrimary,
+              color: context.nexusTheme.textPrimary,
               fontSize: r.fs(14),
               height: 1.5,
             ),
