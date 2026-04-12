@@ -20,6 +20,7 @@ import '../providers/profile_providers.dart';
 import '../widgets/wall_comment_sheet.dart';
 import '../widgets/rich_bio.dart';
 import '../../moderation/widgets/member_role_manager.dart';
+import '../../../core/widgets/image_viewer.dart';
 import 'bio_and_wall_screen.dart';
 
 /// Perfil dentro de uma Comunidade — Layout 1:1 com Amino Apps.
@@ -85,6 +86,49 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         });
       }
     });
+  }
+
+  List<String> _buildProfileMediaUrls({
+    String? avatarUrl,
+    String? bannerUrl,
+    List<String> gallery = const [],
+  }) {
+    final urls = <String>[];
+
+    void addUrl(String? rawUrl) {
+      final normalized = rawUrl?.trim();
+      if (normalized == null || normalized.isEmpty || urls.contains(normalized)) {
+        return;
+      }
+      urls.add(normalized);
+    }
+
+    addUrl(avatarUrl);
+    addUrl(bannerUrl);
+    for (final imageUrl in gallery) {
+      addUrl(imageUrl);
+    }
+    return urls;
+  }
+
+  void _openProfileMediaViewer(
+    BuildContext context, {
+    required List<String> mediaUrls,
+    String? initialUrl,
+    String? heroTag,
+  }) {
+    if (mediaUrls.isEmpty) return;
+    final normalizedInitialUrl = initialUrl?.trim();
+    final initialIndex = normalizedInitialUrl == null
+        ? 0
+        : mediaUrls.indexOf(normalizedInitialUrl);
+
+    showMediaViewer(
+      context,
+      mediaUrls: mediaUrls,
+      initialIndex: initialIndex >= 0 ? initialIndex : 0,
+      heroTag: heroTag,
+    );
   }
 
   Future<void> _loadProfile() async {
@@ -312,6 +356,11 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         (localBannerUrl?.trim().isNotEmpty ?? false) ? localBannerUrl!.trim() : null;
     final displayBio =
         (localBio?.trim().isNotEmpty ?? false) ? localBio!.trim() : '';
+    final profileMediaUrls = _buildProfileMediaUrls(
+      avatarUrl: displayAvatar,
+      bannerUrl: displayBanner,
+      gallery: displayGallery,
+    );
 
     // Título do cargo (role title)
     String? roleTitle;
@@ -447,36 +496,52 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                     // A galeria tem prioridade: cada imagem é exibida como capa
                     // alternando com fade a cada 20 segundos.
                     if (activeBannerUrl != null)
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 800),
-                        transitionBuilder: (child, animation) =>
-                            FadeTransition(opacity: animation, child: child),
-                        child: CachedNetworkImage(
-                          key: ValueKey(activeBannerUrl),
-                          imageUrl: activeBannerUrl,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                          color: Colors.black.withValues(alpha: 0.20),
-                          colorBlendMode: BlendMode.darken,
-                          errorWidget: (_, __, ___) => displayBanner != null
-                              ? CachedNetworkImage(
-                                  imageUrl: displayBanner,
-                                  fit: BoxFit.cover,
-                                  color: Colors.black.withValues(alpha: 0.25),
-                                  colorBlendMode: BlendMode.darken,
-                                  errorWidget: (_, __, ___) => _defaultBannerGradient(),
-                                )
-                              : _defaultBannerGradient(),
+                      GestureDetector(
+                        onTap: () => _openProfileMediaViewer(
+                          context,
+                          mediaUrls: profileMediaUrls,
+                          initialUrl: activeBannerUrl,
+                          heroTag: 'community-profile-media-${widget.communityId}-${widget.userId}',
+                        ),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 800),
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(opacity: animation, child: child),
+                          child: CachedNetworkImage(
+                            key: ValueKey(activeBannerUrl),
+                            imageUrl: activeBannerUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                            color: Colors.black.withValues(alpha: 0.20),
+                            colorBlendMode: BlendMode.darken,
+                            errorWidget: (_, __, ___) => displayBanner != null
+                                ? CachedNetworkImage(
+                                    imageUrl: displayBanner,
+                                    fit: BoxFit.cover,
+                                    color: Colors.black.withValues(alpha: 0.25),
+                                    colorBlendMode: BlendMode.darken,
+                                    errorWidget: (_, __, ___) => _defaultBannerGradient(),
+                                  )
+                                : _defaultBannerGradient(),
+                          ),
                         ),
                       )
                     else if (displayBanner != null)
-                      CachedNetworkImage(
-                        imageUrl: displayBanner,
-                        fit: BoxFit.cover,
-                        color: Colors.black.withValues(alpha: 0.25),
-                        colorBlendMode: BlendMode.darken,
-                        errorWidget: (_, __, ___) => _defaultBannerGradient(),
+                      GestureDetector(
+                        onTap: () => _openProfileMediaViewer(
+                          context,
+                          mediaUrls: profileMediaUrls,
+                          initialUrl: displayBanner,
+                          heroTag: 'community-profile-media-${widget.communityId}-${widget.userId}',
+                        ),
+                        child: CachedNetworkImage(
+                          imageUrl: displayBanner,
+                          fit: BoxFit.cover,
+                          color: Colors.black.withValues(alpha: 0.25),
+                          colorBlendMode: BlendMode.darken,
+                          errorWidget: (_, __, ___) => _defaultBannerGradient(),
+                        ),
                       )
                     else
                       _defaultBannerGradient(),
@@ -517,6 +582,14 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                             isFrameAnimated: (ref.watch(equippedItemsProvider(widget.userId)).valueOrNull ?? {})['frame_is_animated'] as bool? ?? false,
                             size: r.s(96),
                             showAminoPlus: isPremium,
+                            onTap: profileMediaUrls.isEmpty
+                                ? null
+                                : () => _openProfileMediaViewer(
+                                      context,
+                                      mediaUrls: profileMediaUrls,
+                                      initialUrl: displayAvatar,
+                                      heroTag: 'community-profile-media-${widget.communityId}-${widget.userId}',
+                                    ),
                           ),
                           SizedBox(height: r.s(10)),
 

@@ -19,6 +19,7 @@ import '../widgets/rich_bio.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/block_provider.dart';
 import '../../../core/services/deep_link_service.dart';
+import '../../../core/widgets/image_viewer.dart';
 
 // =============================================================================
 // PROFILE SCREEN — Layout fiel ao Amino Apps
@@ -239,6 +240,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           size: r.s(80),
                           showAminoPlus: isAminoPlus,
                           isFrameAnimated: frameIsAnimated,
+                          onTap: (user.iconUrl?.trim().isNotEmpty ?? false)
+                              ? () => showMediaViewer(
+                                    context,
+                                    mediaUrls: [user.iconUrl!.trim()],
+                                    initialIndex: 0,
+                                    heroTag: 'profile-avatar-${user.id}',
+                                  )
+                              : null,
                         ),
                         const Spacer(),
                         Padding(
