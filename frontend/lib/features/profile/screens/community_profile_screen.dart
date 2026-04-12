@@ -18,6 +18,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/block_provider.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/wall_comment_sheet.dart';
+import '../widgets/rich_bio.dart';
 import '../../moderation/widgets/member_role_manager.dart';
 import 'bio_and_wall_screen.dart';
 
@@ -1039,28 +1040,37 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                             ),
                           ),
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                displayBio,
-                                style: TextStyle(
-                                  color: Colors.grey[300],
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: r.s(12),
+                            vertical: r.s(10),
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.04),
+                            borderRadius: BorderRadius.circular(r.s(16)),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.08),
+                            ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: RichBioRenderer(
+                                  rawContent: displayBio,
                                   fontSize: r.fs(14),
-                                  height: 1.5,
+                                  fallbackTextColor: Colors.grey[300],
+                                  maxPreviewLines: 3,
                                 ),
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            SizedBox(width: r.s(8)),
-                            Icon(
-                              Icons.keyboard_arrow_right_rounded,
-                              color: Colors.grey[500],
-                              size: r.s(20),
-                            ),
-                          ],
+                              SizedBox(width: r.s(8)),
+                              Icon(
+                                Icons.keyboard_arrow_right_rounded,
+                                color: Colors.grey[500],
+                                size: r.s(20),
+                              ),
+                            ],
+                          ),
                         ),
                       )
                     else if (_isOwnProfile)

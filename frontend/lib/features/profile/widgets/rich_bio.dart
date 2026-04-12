@@ -82,33 +82,108 @@ class RichBioContent {
 }
 
 class RichBioCodec {
-  static RichBioContent decode(String? raw) {
+  static RichBioContent decode(String? raw, {int depth = 0}) {
     final source = raw?.trim() ?? '';
     if (source.isEmpty) {
       return const RichBioContent(markdown: '', isLegacy: true);
     }
+    if (depth > 2) {
+      return RichBioContent(markdown: source, isLegacy: true);
+    }
 
     try {
       final parsed = jsonDecode(source);
-      if (parsed is Map<String, dynamic> && parsed['kind'] == 'rich_bio_v1') {
-        final mediaJson = parsed['media'];
-        return RichBioContent(
-          markdown: (parsed['markdown'] as String?) ?? '',
-          textColorHex: _normalizeHex(parsed['textColorHex'] as String?),
-          media: mediaJson is List
-              ? mediaJson
-                  .whereType<Map>()
-                  .map((item) => RichBioMediaItem.fromJson(
-                      Map<String, dynamic>.from(item)))
-                  .where((item) => item.url.trim().isNotEmpty)
-                  .toList()
-              : const [],
-          isLegacy: false,
-        );
+
+      if (parsed is String) {
+        final nested = parsed.trim();
+        if (nested.isNotEmpty && nested != source) {
+          return decode(nested, depth: depth + 1);
+        }
+      }
+
+      if (parsed is Map) {
+        final map = Map<String, dynamic>.from(parsed);
+        final media = _extractMedia(map['media']);
+
+        if (map['kind'] == 'rich_bio_v1') {
+          return RichBioContent(
+            markdown: (map['markdown'] as String?)?.trim() ?? '',
+            textColorHex: _normalizeHex(map['textColorHex'] as String?),
+            media: media,
+            isLegacy: false,
+          );
+        }
+
+        final fallbackMarkdown = _firstMeaningfulString([
+          map['markdown'],
+          map['text'],
+          map['content'],
+          map['bio'],
+          map['value'],
+          _extractReadableText(map),
+        ]);
+
+        if ((fallbackMarkdown?.isNotEmpty ?? false) || media.isNotEmpty) {
+          return RichBioContent(
+            markdown: fallbackMarkdown ?? '',
+            textColorHex: _normalizeHex(
+              (map['textColorHex'] ?? map['text_color_hex']) as String?,
+            ),
+            media: media,
+            isLegacy: true,
+          );
+        }
       }
     } catch (_) {}
 
     return RichBioContent(markdown: source, isLegacy: true);
+  }
+
+  static List<RichBioMediaItem> _extractMedia(dynamic rawMedia) {
+    if (rawMedia is! List) return const [];
+    return rawMedia
+        .whereType<Map>()
+        .map((item) => RichBioMediaItem.fromJson(Map<String, dynamic>.from(item)))
+        .where((item) => item.url.trim().isNotEmpty)
+        .toList(growable: false);
+  }
+
+  static String? _firstMeaningfulString(List<dynamic> values) {
+    for (final value in values) {
+      final text = value is String ? value.trim() : null;
+      if (text != null && text.isNotEmpty) {
+        return text;
+      }
+    }
+    return null;
+  }
+
+  static String? _extractReadableText(dynamic value, {int depth = 0}) {
+    if (depth > 3 || value == null) return null;
+    if (value is String) {
+      final text = value.trim();
+      return text.isEmpty ? null : text;
+    }
+    if (value is List) {
+      for (final item in value) {
+        final nested = _extractReadableText(item, depth: depth + 1);
+        if (nested != null && nested.isNotEmpty) {
+          return nested;
+        }
+      }
+      return null;
+    }
+    if (value is Map) {
+      final map = Map<String, dynamic>.from(value);
+      return _firstMeaningfulString([
+        map['markdown'],
+        map['text'],
+        map['content'],
+        map['bio'],
+        map['value'],
+      ]);
+    }
+    return null;
   }
 
   static String encode(RichBioContent content) {
@@ -218,6 +293,21 @@ class RichBioRenderer extends StatelessWidget {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
+  String _toPreviewText(String markdown) {
+    return markdown
+        .replaceAll(RegExp(r'!\[[^\]]*\]\([^\)]*\)'), '')
+        .replaceAllMapped(
+          RegExp(r'\[([^\]]+)\]\([^\)]+\)'),
+          (match) => match.group(1) ?? '',
+        )
+        .replaceAll(RegExp(r'(^|\n)\s{0,3}#{1,6}\s*', multiLine: true), r'$1')
+        .replaceAll(RegExp(r'(^|\n)\s*>\s*', multiLine: true), r'$1')
+        .replaceAll(RegExp(r'(^|\n)\s*[-*+]\s+', multiLine: true), r'$1• ')
+        .replaceAll(RegExp(r'[*_`~]'), '')
+        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+        .trim();
+  }
+
   @override
   Widget build(BuildContext context) {
     final r = context.r;
@@ -241,7 +331,25 @@ class RichBioRenderer extends StatelessWidget {
       );
     }
 
-    final effectiveMedia = maxPreviewLines == null ? parsed.media : const <RichBioMediaItem>[];
+    if (maxPreviewLines != null) {
+      final previewText = _toPreviewText(text);
+      final summary = previewText.isNotEmpty
+          ? previewText
+          : (parsed.media.isNotEmpty ? '${parsed.media.length} mídia(s) adicionada(s)' : emptyPlaceholder);
+      final preview = Text(
+        summary,
+        maxLines: maxPreviewLines,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: textColor,
+          fontSize: fontSize ?? r.fs(14),
+          height: 1.45,
+        ),
+      );
+      if (padding == null) return preview;
+      return Padding(padding: padding!, child: preview);
+    }
+
     final children = <Widget>[];
 
     if (text.isNotEmpty) {
@@ -316,12 +424,12 @@ class RichBioRenderer extends StatelessWidget {
       );
     }
 
-    if (effectiveMedia.isNotEmpty) {
+    if (parsed.media.isNotEmpty) {
       if (children.isNotEmpty) {
         children.add(SizedBox(height: r.s(14)));
       }
       children.addAll(
-        effectiveMedia.map(
+        parsed.media.map(
           (item) => Padding(
             padding: EdgeInsets.only(bottom: r.s(12)),
             child: TappableImage(
@@ -340,17 +448,6 @@ class RichBioRenderer extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: children,
     );
-
-    if (maxPreviewLines != null && text.isNotEmpty) {
-      final resolvedFontSize = fontSize ?? r.fs(14);
-      final maxHeight = resolvedFontSize * 1.55 * maxPreviewLines!;
-      content = ClipRect(
-        child: SizedBox(
-          height: maxHeight,
-          child: content,
-        ),
-      );
-    }
 
     if (padding == null) return content;
     return Padding(padding: padding!, child: content);
@@ -728,59 +825,52 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
         builder: (_, value, __) {
           final mediaLabel = _media.isEmpty ? 'Sem mídia' : '${_media.length} mídia(s)';
 
+          final chips = <Widget>[
+            _StatusPill(
+              icon: Icons.auto_awesome_rounded,
+              label: 'Markdown',
+            ),
+            if (_media.isNotEmpty)
+              _StatusPill(
+                icon: Icons.collections_outlined,
+                label: '${_media.length} mídia(s)',
+              ),
+            if (_textColor != null)
+              _StatusPill(
+                icon: Icons.palette_outlined,
+                label: RichBioCodec.colorToHex(_textColor) ?? 'Cor',
+              ),
+            if (_isUploading)
+              _StatusPill(
+                icon: Icons.cloud_upload_outlined,
+                label: 'Enviando...',
+              ),
+          ];
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Center(
-                child: Container(
-                  width: r.s(40),
-                  height: r.s(4),
-                  decoration: BoxDecoration(
-                    color: context.dividerClr,
-                    borderRadius: BorderRadius.circular(r.s(999)),
-                  ),
-                ),
-              ),
-              SizedBox(height: r.s(10)),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          widget.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: context.textPrimary,
-                            fontSize: r.fs(18),
-                            fontWeight: FontWeight.w800,
-                            height: 1.15,
-                          ),
-                        ),
-                        SizedBox(height: r.s(4)),
-                        Text(
-                          'Crie livremente com texto, estrutura e mídia.',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: context.textSecondary,
-                            fontSize: r.fs(11),
-                            height: 1.35,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      widget.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(17),
+                        fontWeight: FontWeight.w800,
+                        height: 1.1,
+                      ),
                     ),
                   ),
-                  SizedBox(width: r.s(10)),
+                  SizedBox(width: r.s(8)),
                   Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: r.s(10),
-                      vertical: r.s(7),
+                      vertical: r.s(6),
                     ),
                     decoration: BoxDecoration(
                       color: AppTheme.primaryColor.withValues(alpha: 0.10),
@@ -800,7 +890,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                   ),
                 ],
               ),
-              SizedBox(height: r.s(10)),
+              SizedBox(height: r.s(8)),
               Row(
                 children: [
                   Expanded(
@@ -820,37 +910,18 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                   ),
                 ],
               ),
-              SizedBox(height: r.s(10)),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _StatusPill(
-                      icon: Icons.auto_awesome_rounded,
-                      label: widget.markdownLabel,
-                    ),
-                    SizedBox(width: r.s(8)),
-                    _StatusPill(
-                      icon: Icons.collections_outlined,
-                      label: mediaLabel,
-                    ),
-                    if (_textColor != null) ...[
-                      SizedBox(width: r.s(8)),
-                      _StatusPill(
-                        icon: Icons.palette_outlined,
-                        label: RichBioCodec.colorToHex(_textColor) ?? 'Cor',
-                      ),
-                    ],
-                    if (_isUploading) ...[
-                      SizedBox(width: r.s(8)),
-                      _StatusPill(
-                        icon: Icons.cloud_upload_outlined,
-                        label: 'Enviando...',
-                      ),
-                    ],
-                  ],
+              if (chips.isNotEmpty) ...[
+                SizedBox(height: r.s(8)),
+                SizedBox(
+                  height: r.s(32),
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: chips.length,
+                    separatorBuilder: (_, __) => SizedBox(width: r.s(8)),
+                    itemBuilder: (_, index) => chips[index],
+                  ),
                 ),
-              ),
+              ],
             ],
           );
         },
@@ -1178,7 +1249,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
 
     final actionStrip = compact
         ? SizedBox(
-            height: r.s(54),
+            height: r.s(48),
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: actions.length,
@@ -1199,6 +1270,97 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
             children: actions,
           );
 
+    final compactTemplates = SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _TemplateChip(
+            label: 'Sobre mim',
+            onTap: () => _insertTemplate('## Sobre mim\nEscreva aqui quem você é.'),
+          ),
+          SizedBox(width: r.s(8)),
+          _TemplateChip(
+            label: 'Destaques',
+            onTap: () => _insertTemplate('## Destaques\n- Item 1\n- Item 2\n- Item 3'),
+          ),
+          SizedBox(width: r.s(8)),
+          _TemplateChip(
+            label: 'Mood',
+            onTap: () => _insertTemplate('> Uma frase que define sua vibe.'),
+          ),
+          SizedBox(width: r.s(8)),
+          _TemplateChip(
+            label: 'Links',
+            onTap: () => _insertTemplate('## Links\n- [Meu link](https://)'),
+          ),
+        ],
+      ),
+    );
+
+    final compactMeta = <Widget>[
+      if (_textColor != null)
+        GestureDetector(
+          onTap: () => setState(() => _textColor = null),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
+            decoration: BoxDecoration(
+              color: (_textColor ?? AppTheme.primaryColor).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(r.s(999)),
+              border: Border.all(
+                color: (_textColor ?? AppTheme.primaryColor).withValues(alpha: 0.28),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: r.s(10),
+                  height: r.s(10),
+                  decoration: BoxDecoration(
+                    color: _textColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                SizedBox(width: r.s(6)),
+                Text(
+                  RichBioCodec.colorToHex(_textColor) ?? '',
+                  style: TextStyle(
+                    color: context.textPrimary,
+                    fontSize: r.fs(11),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(width: r.s(4)),
+                Icon(
+                  Icons.close_rounded,
+                  size: r.s(14),
+                  color: context.textSecondary,
+                ),
+              ],
+            ),
+          ),
+        ),
+      if (_media.isNotEmpty)
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColor.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(r.s(999)),
+            border: Border.all(
+              color: AppTheme.primaryColor.withValues(alpha: 0.16),
+            ),
+          ),
+          child: Text(
+            '${_media.length} mídia(s)',
+            style: TextStyle(
+              color: context.textPrimary,
+              fontSize: r.fs(11),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+    ];
+
     return Container(
       decoration: BoxDecoration(
         color: context.cardBg,
@@ -1206,73 +1368,58 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
         border: Border.all(color: context.dividerClr),
       ),
       child: SingleChildScrollView(
-        padding: EdgeInsets.all(compact ? r.s(12) : r.s(14)),
+        padding: EdgeInsets.all(compact ? r.s(10) : r.s(14)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    compact ? 'Ferramentas' : 'Dock criativo',
-                    style: TextStyle(
-                      color: context.textPrimary,
-                      fontSize: r.fs(14),
-                      fontWeight: FontWeight.w800,
+            if (compact)
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Ferramentas',
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(13),
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
-                ),
-                if (_textColor != null)
-                  GestureDetector(
-                    onTap: () => setState(() => _textColor = null),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: r.s(10),
-                        vertical: r.s(7),
-                      ),
-                      decoration: BoxDecoration(
-                        color: (_textColor ?? AppTheme.primaryColor)
-                            .withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(r.s(999)),
-                        border: Border.all(
-                          color: (_textColor ?? AppTheme.primaryColor)
-                              .withValues(alpha: 0.28),
+                  if (compactMeta.isNotEmpty)
+                    Flexible(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (var i = 0; i < compactMeta.length; i++) ...[
+                              if (i > 0) SizedBox(width: r.s(6)),
+                              compactMeta[i],
+                            ],
+                          ],
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: r.s(10),
-                            height: r.s(10),
-                            decoration: BoxDecoration(
-                              color: _textColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          SizedBox(width: r.s(6)),
-                          Text(
-                            RichBioCodec.colorToHex(_textColor) ?? '',
-                            style: TextStyle(
-                              color: context.textPrimary,
-                              fontSize: r.fs(11),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          SizedBox(width: r.s(6)),
-                          Icon(
-                            Icons.close_rounded,
-                            size: r.s(14),
-                            color: context.textSecondary,
-                          ),
-                        ],
+                    ),
+                ],
+              )
+            else ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Dock criativo',
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(14),
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
-              ],
-            ),
-            if (!compact) ...[
+                  if (_textColor != null)
+                    compactMeta.first,
+                ],
+              ),
               SizedBox(height: r.s(4)),
               Text(
                 'Ferramentas agrupadas para você focar no que está criando, sem tudo jogado na tela ao mesmo tempo.',
@@ -1283,47 +1430,24 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                 ),
               ),
             ],
-            SizedBox(height: r.s(12)),
+            SizedBox(height: compact ? r.s(8) : r.s(12)),
             paletteSelector,
-            SizedBox(height: r.s(12)),
+            SizedBox(height: compact ? r.s(8) : r.s(12)),
             actionStrip,
-            SizedBox(height: r.s(12)),
-            Text(
-              compact ? 'Blocos rápidos' : 'Blocos rápidos',
-              style: TextStyle(
-                color: context.textPrimary,
-                fontSize: r.fs(12),
-                fontWeight: FontWeight.w800,
+            SizedBox(height: compact ? r.s(8) : r.s(12)),
+            if (!compact) ...[
+              Text(
+                'Blocos rápidos',
+                style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: r.fs(12),
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-            SizedBox(height: r.s(8)),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _TemplateChip(
-                    label: 'Sobre mim',
-                    onTap: () => _insertTemplate('## Sobre mim\nEscreva aqui quem você é.'),
-                  ),
-                  SizedBox(width: r.s(8)),
-                  _TemplateChip(
-                    label: 'Destaques',
-                    onTap: () => _insertTemplate('## Destaques\n- Item 1\n- Item 2\n- Item 3'),
-                  ),
-                  SizedBox(width: r.s(8)),
-                  _TemplateChip(
-                    label: 'Mood',
-                    onTap: () => _insertTemplate('> Uma frase que define sua vibe.'),
-                  ),
-                  SizedBox(width: r.s(8)),
-                  _TemplateChip(
-                    label: 'Links',
-                    onTap: () => _insertTemplate('## Links\n- [Meu link](https://)'),
-                  ),
-                ],
-              ),
-            ),
-            if (_media.isNotEmpty) ...[
+              SizedBox(height: r.s(8)),
+            ],
+            compactTemplates,
+            if (!compact && _media.isNotEmpty) ...[
               SizedBox(height: r.s(12)),
               Text(
                 'Mídia anexada',
@@ -1335,7 +1459,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
               ),
               SizedBox(height: r.s(8)),
               SizedBox(
-                height: compact ? r.s(96) : r.s(112),
+                height: r.s(112),
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: _media.length,
@@ -1343,7 +1467,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                   itemBuilder: (_, index) {
                     final item = _media[index];
                     return Container(
-                      width: compact ? r.s(118) : r.s(132),
+                      width: r.s(132),
                       decoration: BoxDecoration(
                         color: context.surfaceColor,
                         borderRadius: BorderRadius.circular(r.s(16)),
@@ -1359,7 +1483,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                             child: TappableImage(
                               url: item.url,
                               width: double.infinity,
-                              height: compact ? r.s(56) : r.s(70),
+                              height: r.s(70),
                               fit: BoxFit.cover,
                               borderRadius: BorderRadius.zero,
                             ),
@@ -1487,14 +1611,20 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
     final r = context.r;
     return LayoutBuilder(
       builder: (context, constraints) {
-        final dockHeight = (constraints.maxHeight * 0.34)
-            .clamp(r.s(172), r.s(252))
-            .toDouble();
+        final availableHeight = constraints.maxHeight;
+        final compactViewport = availableHeight < r.s(430);
+        final spacing = compactViewport ? r.s(6) : r.s(8);
+        double dockHeight = compactViewport ? availableHeight * 0.20 : availableHeight * 0.24;
+        final minDockHeight = compactViewport ? r.s(108) : r.s(124);
+        final maxDockHeight = compactViewport ? r.s(136) : r.s(164);
+
+        if (dockHeight < minDockHeight) dockHeight = minDockHeight;
+        if (dockHeight > maxDockHeight) dockHeight = maxDockHeight;
 
         return Column(
           children: [
             _buildModeSwitch(context),
-            SizedBox(height: r.s(10)),
+            SizedBox(height: spacing),
             Expanded(
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 220),
@@ -1506,14 +1636,17 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                         key: const ValueKey('editor_mode'),
                         children: [
                           Expanded(child: _buildEditorCanvas(context)),
-                          SizedBox(height: r.s(10)),
+                          SizedBox(height: spacing),
                           AnimatedSwitcher(
                             duration: const Duration(milliseconds: 180),
                             child: keyboardVisible
                                 ? _buildKeyboardQuickBar(context)
-                                : SizedBox(
-                                    height: dockHeight,
-                                    child: _buildToolDock(context, compact: true),
+                                : ClipRRect(
+                                    borderRadius: BorderRadius.circular(r.s(20)),
+                                    child: SizedBox(
+                                      height: dockHeight,
+                                      child: _buildToolDock(context, compact: true),
+                                    ),
                                   ),
                           ),
                         ],
