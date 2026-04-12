@@ -1,44 +1,47 @@
 /**
- * Dashboard — Stark Admin Precision
- * Painel unificado com abas: Chat Bubbles | Molduras de Perfil
+ * FramesDashboard — Gerenciamento de Molduras de Perfil
+ * Mesmo padrão visual do BubbleDashboard (Stark Admin Precision)
  * Dark #111214, surface #1C1E22, accent rosa #E040FB
  * DM Sans (títulos) + DM Mono (labels técnicos)
+ *
+ * Fluxo automatizado:
+ *  1. Upload PNG da moldura (overlay transparente)
+ *  2. Preencher nome, descrição, preço e raridade
+ *  3. Preview em tempo real com avatar simulado
+ *  4. Publicar → upload para store-assets/frames/ + insert em store_items (type=avatar_frame)
+ *
+ * asset_config gerado:
+ *  { frame_url, image_url, rarity, frame_style, image_width, image_height }
  */
 import { useState, useRef, useCallback, useEffect } from "react";
 import { supabase, StoreItem } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   Upload,
-  Sparkles,
-  LogOut,
   Trash2,
   AlertCircle,
   CheckCircle2,
-  MessageCircle,
   Loader2,
   ImagePlus,
   Package,
   RefreshCw,
+  User,
   Frame,
 } from "lucide-react";
-import FramesDashboard from "./FramesDashboard";
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
-type BubbleForm = {
+type FrameForm = {
   name: string;
   description: string;
   priceCoins: number;
   rarity: "common" | "rare" | "epic" | "legendary";
+  frameStyle: "default" | "sparkle" | "fire" | "ice" | "neon" | "gold";
   isActive: boolean;
 };
-
-type ActiveTab = "bubbles" | "frames";
 
 const RARITY_COLORS: Record<string, string> = {
   common: "#9CA3AF",
@@ -47,73 +50,180 @@ const RARITY_COLORS: Record<string, string> = {
   legendary: "#FBBF24",
 };
 
-// ─── Componente de Preview de Chat ───────────────────────────────────────────
+const FRAME_STYLE_LABELS: Record<string, string> = {
+  default: "Padrão",
+  sparkle: "Sparkle ✨",
+  fire: "Fire 🔥",
+  ice: "Ice ❄️",
+  neon: "Neon 💜",
+  gold: "Gold 🏆",
+};
 
-function ChatPreview({
-  imageUrl,
+// ─── Preview de Avatar com Moldura ───────────────────────────────────────────
+
+function AvatarPreview({
+  frameUrl,
   name,
+  rarity,
 }: {
-  imageUrl: string | null;
+  frameUrl: string | null;
   name: string;
+  rarity: string;
 }) {
-  const messages = [
-    { id: 1, mine: false, text: "Oi! Que bubble incrível 👀" },
-    { id: 2, mine: true, text: name || "Novo bubble" },
-    { id: 3, mine: false, text: "Adorei! Quanto custa?" },
-    { id: 4, mine: true, text: "Tá na loja agora 🎉" },
-  ];
+  const AVATAR_SIZE = 80;
+  const FRAME_SIZE = Math.round(AVATAR_SIZE * 1.4); // 1.4× como no app Flutter
 
   return (
-    <div className="flex flex-col gap-2 p-4">
-      {messages.map((msg) => (
-        <div
-          key={msg.id}
-          className={`flex ${msg.mine ? "justify-end" : "justify-start"}`}
+    <div className="flex flex-col items-center gap-5 p-6">
+      {/* Preview principal */}
+      <div className="flex flex-col items-center gap-3">
+        <p
+          className="text-[#4B5563] text-xs uppercase tracking-widest"
+          style={{ fontFamily: "'DM Mono', monospace" }}
         >
-          {imageUrl ? (
-            /* Nine-slice simulado com border-image */
+          Preview — Avatar + Moldura
+        </p>
+
+        {/* Stack: avatar + frame overlay */}
+        <div
+          className="relative flex items-center justify-center"
+          style={{ width: FRAME_SIZE, height: FRAME_SIZE }}
+        >
+          {/* Avatar simulado */}
+          <div
+            className="rounded-full bg-gradient-to-br from-[#2A2D34] to-[#1C1E22] border-2 border-[#3A3D44] flex items-center justify-center overflow-hidden"
+            style={{ width: AVATAR_SIZE, height: AVATAR_SIZE }}
+          >
+            <User className="w-10 h-10 text-[#4B5563]" />
+          </div>
+
+          {/* Moldura overlay — PNG transparente sobreposto */}
+          {frameUrl && (
+            <img
+              src={frameUrl}
+              alt="Frame preview"
+              className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+              style={{ width: FRAME_SIZE, height: FRAME_SIZE }}
+            />
+          )}
+
+          {/* Placeholder quando não há moldura */}
+          {!frameUrl && (
             <div
-              className="relative max-w-[200px] px-4 py-2.5 text-white text-sm"
-              style={{
-                backgroundImage: `url(${imageUrl})`,
-                backgroundRepeat: "no-repeat",
-                backgroundSize: "100% 100%",
-                borderImageSource: `url(${imageUrl})`,
-                borderImageSlice: "38 fill",
-                borderImageWidth: "38px",
-                borderImageRepeat: "stretch",
-                minHeight: "44px",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "13px",
-              }}
-            >
-              {msg.text}
-            </div>
-          ) : (
-            <div
-              className={`max-w-[200px] px-3.5 py-2 rounded-2xl text-sm text-white ${
-                msg.mine ? "bg-[#E040FB]/80" : "bg-[#2A2D34]"
-              }`}
-              style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "13px" }}
-            >
-              {msg.text}
-            </div>
+              className="absolute inset-0 rounded-full border-4 border-dashed border-[#2A2D34] pointer-events-none"
+              style={{ width: FRAME_SIZE, height: FRAME_SIZE }}
+            />
           )}
         </div>
-      ))}
+
+        {/* Nome e raridade */}
+        <div className="text-center">
+          <p className="text-white text-sm font-semibold">
+            {name || "Nova Moldura"}
+          </p>
+          <span
+            className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+            style={{
+              color: RARITY_COLORS[rarity] ?? RARITY_COLORS.common,
+              backgroundColor:
+                (RARITY_COLORS[rarity] ?? RARITY_COLORS.common) + "20",
+              fontFamily: "'DM Mono', monospace",
+            }}
+          >
+            {rarity}
+          </span>
+        </div>
+      </div>
+
+      {/* Exemplos de tamanho */}
+      <div className="w-full border-t border-[#2A2D34] pt-4">
+        <p
+          className="text-[#4B5563] text-xs uppercase tracking-widest mb-3 text-center"
+          style={{ fontFamily: "'DM Mono', monospace" }}
+        >
+          Tamanhos no App
+        </p>
+        <div className="flex items-end justify-center gap-6">
+          {[
+            { label: "Chat", avatarPx: 36, scale: 1.4 },
+            { label: "Perfil", avatarPx: 80, scale: 1.4 },
+            { label: "Header", avatarPx: 56, scale: 1.4 },
+          ].map(({ label, avatarPx, scale }) => {
+            const framePx = Math.round(avatarPx * scale);
+            return (
+              <div key={label} className="flex flex-col items-center gap-1.5">
+                <div
+                  className="relative flex items-center justify-center"
+                  style={{ width: framePx, height: framePx }}
+                >
+                  <div
+                    className="rounded-full bg-gradient-to-br from-[#2A2D34] to-[#1C1E22] border border-[#3A3D44] flex items-center justify-center"
+                    style={{ width: avatarPx, height: avatarPx }}
+                  >
+                    <User
+                      style={{
+                        width: avatarPx * 0.55,
+                        height: avatarPx * 0.55,
+                        color: "#4B5563",
+                      }}
+                    />
+                  </div>
+                  {frameUrl && (
+                    <img
+                      src={frameUrl}
+                      alt=""
+                      className="absolute inset-0 object-contain pointer-events-none"
+                      style={{ width: framePx, height: framePx }}
+                    />
+                  )}
+                </div>
+                <p
+                  className="text-[#4B5563] text-[10px]"
+                  style={{ fontFamily: "'DM Mono', monospace" }}
+                >
+                  {label}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Info técnica */}
+      <div className="w-full border-t border-[#2A2D34] pt-3">
+        <p
+          className="text-[#4B5563] text-xs"
+          style={{ fontFamily: "'DM Mono', monospace" }}
+        >
+          overlay PNG transparente
+        </p>
+        <p
+          className="text-[#4B5563] text-xs mt-0.5"
+          style={{ fontFamily: "'DM Mono', monospace" }}
+        >
+          frame_size = avatar × 1.4
+        </p>
+        <p
+          className="text-[#4B5563] text-xs mt-0.5"
+          style={{ fontFamily: "'DM Mono', monospace" }}
+        >
+          bucket: store-assets/frames/
+        </p>
+      </div>
     </div>
   );
 }
 
-// ─── Painel de Bubbles ────────────────────────────────────────────────────────
+// ─── Componente principal ─────────────────────────────────────────────────────
 
-function BubblesDashboard() {
+export default function FramesDashboard() {
   // Form state
-  const [form, setForm] = useState<BubbleForm>({
+  const [form, setForm] = useState<FrameForm>({
     name: "",
     description: "",
-    priceCoins: 150,
+    priceCoins: 200,
     rarity: "common",
+    frameStyle: "default",
     isActive: true,
   });
 
@@ -130,34 +240,39 @@ function BubblesDashboard() {
   // Submission state
   const [submitting, setSubmitting] = useState(false);
 
-  // Existing bubbles
-  const [bubbles, setBubbles] = useState<StoreItem[]>([]);
-  const [loadingBubbles, setLoadingBubbles] = useState(true);
+  // Existing frames
+  const [frames, setFrames] = useState<StoreItem[]>([]);
+  const [loadingFrames, setLoadingFrames] = useState(true);
 
-  // ── Load existing bubbles ──────────────────────────────────────────────────
+  // ── Load existing frames ───────────────────────────────────────────────────
 
-  async function loadBubbles() {
-    setLoadingBubbles(true);
+  async function loadFrames() {
+    setLoadingFrames(true);
     const { data, error } = await supabase
       .from("store_items")
       .select("*")
-      .eq("type", "chat_bubble")
+      .eq("type", "avatar_frame")
       .order("created_at", { ascending: false });
 
-    if (!error && data) setBubbles(data as StoreItem[]);
-    setLoadingBubbles(false);
+    if (!error && data) setFrames(data as StoreItem[]);
+    setLoadingFrames(false);
   }
 
   useEffect(() => {
-    loadBubbles();
+    loadFrames();
   }, []);
 
   // ── Image handling ─────────────────────────────────────────────────────────
 
   function handleFile(file: File) {
     if (!file.type.startsWith("image/")) {
-      toast.error("Arquivo inválido. Envie uma imagem PNG ou WebP.");
+      toast.error("Arquivo inválido. Envie uma imagem PNG.");
       return;
+    }
+    if (file.type !== "image/png") {
+      toast.warning(
+        "Recomendamos PNG com transparência para molduras de perfil."
+      );
     }
 
     const url = URL.createObjectURL(file);
@@ -186,24 +301,24 @@ function BubblesDashboard() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!imageFile) {
-      toast.error("Selecione uma imagem para o bubble.");
+      toast.error("Selecione uma imagem PNG para a moldura.");
       return;
     }
     if (!form.name.trim()) {
-      toast.error("Defina um nome para o bubble.");
+      toast.error("Defina um nome para a moldura.");
       return;
     }
 
     setSubmitting(true);
 
     try {
-      // 1. Upload da imagem para store-assets/bubbles/
+      // 1. Upload da imagem para store-assets/frames/
       const ext = imageFile.name.split(".").pop() ?? "png";
       const slug = form.name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "_")
         .replace(/^_|_$/g, "");
-      const path = `bubbles/${slug}_${Date.now()}.${ext}`;
+      const path = `frames/${slug}_${Date.now()}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from("store-assets")
@@ -220,37 +335,26 @@ function BubblesDashboard() {
         .getPublicUrl(path);
       const publicUrl = urlData.publicUrl;
 
-      // 3. Calcular parâmetros nine-slice
-      // Para imagem 128x128: slice = 38px (padrão do NexusHub)
-      // Para imagens maiores: proporcional
-      const imgW = imageDimensions?.w ?? 128;
-      const imgH = imageDimensions?.h ?? 128;
-      const sliceRatio = 38 / 128;
-      const sliceTop = Math.round(imgH * sliceRatio);
-      const sliceLeft = Math.round(imgW * sliceRatio);
-      const sliceRight = Math.round(imgW * sliceRatio);
-      const sliceBottom = Math.round(imgH * sliceRatio);
+      const imgW = imageDimensions?.w ?? 512;
+      const imgH = imageDimensions?.h ?? 512;
 
+      // 3. Montar asset_config para avatar_frame
+      // O app Flutter lê: frame_url, image_url, rarity, frame_style, image_width, image_height
+      // O widget AvatarWithFrame renderiza o PNG como overlay 1.4× o tamanho do avatar
       const assetConfig = {
+        frame_url: publicUrl,
         image_url: publicUrl,
-        bubble_url: publicUrl,
-        bubble_style: "nine_slice",
+        rarity: form.rarity,
+        frame_style: form.frameStyle,
         image_width: imgW,
         image_height: imgH,
-        slice_top: sliceTop,
-        slice_left: sliceLeft,
-        slice_right: sliceRight,
-        slice_bottom: sliceBottom,
-        content_padding_h: 20,
-        content_padding_v: 14,
-        rarity: form.rarity,
       };
 
-      // 4. Inserir na tabela store_items
+      // 4. Inserir na tabela store_items com type = avatar_frame
       const { error: insertError } = await supabase
         .from("store_items")
         .insert({
-          type: "chat_bubble",
+          type: "avatar_frame",
           name: form.name.trim(),
           description: form.description.trim() || null,
           preview_url: publicUrl,
@@ -266,21 +370,22 @@ function BubblesDashboard() {
 
       if (insertError) throw new Error(`DB error: ${insertError.message}`);
 
-      toast.success(`"${form.name}" publicado na loja! 🎉`);
+      toast.success(`"${form.name}" publicada na loja! 🎉`);
 
       // Reset form
       setForm({
         name: "",
         description: "",
-        priceCoins: 150,
+        priceCoins: 200,
         rarity: "common",
+        frameStyle: "default",
         isActive: true,
       });
       setImageFile(null);
       setImagePreview(null);
       setImageDimensions(null);
 
-      loadBubbles();
+      loadFrames();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       toast.error(msg);
@@ -301,17 +406,19 @@ function BubblesDashboard() {
       toast.error("Erro ao atualizar status.");
       return;
     }
-    setBubbles((prev) =>
-      prev.map((b) =>
-        b.id === item.id ? { ...b, is_active: !b.is_active } : b
+    setFrames((prev) =>
+      prev.map((f) =>
+        f.id === item.id ? { ...f, is_active: !f.is_active } : f
       )
     );
-    toast.success(`"${item.name}" ${!item.is_active ? "ativado" : "desativado"}.`);
+    toast.success(
+      `"${item.name}" ${!item.is_active ? "ativada" : "desativada"}.`
+    );
   }
 
   // ── Delete ─────────────────────────────────────────────────────────────────
 
-  async function deleteBubble(item: StoreItem) {
+  async function deleteFrame(item: StoreItem) {
     if (!confirm(`Deletar "${item.name}"? Esta ação não pode ser desfeita.`))
       return;
 
@@ -324,28 +431,28 @@ function BubblesDashboard() {
       toast.error("Erro ao deletar.");
       return;
     }
-    setBubbles((prev) => prev.filter((b) => b.id !== item.id));
-    toast.success(`"${item.name}" removido da loja.`);
+    setFrames((prev) => prev.filter((f) => f.id !== item.id));
+    toast.success(`"${item.name}" removida da loja.`);
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
-      {/* ── Top: Criar novo bubble ── */}
+      {/* ── Top: Criar nova moldura ── */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-1">
           <div className="w-1 h-5 bg-[#E040FB] rounded-full" />
           <h2 className="text-lg font-bold text-white">
-            Criar novo Chat Bubble
+            Criar nova Moldura de Perfil
           </h2>
         </div>
         <p
           className="text-[#9CA3AF] text-sm ml-3"
           style={{ fontFamily: "'DM Mono', monospace" }}
         >
-          Envie uma imagem 128×128 PNG. O sistema configura o nine-slice
-          automaticamente.
+          Envie um PNG transparente. O sistema configura o overlay
+          automaticamente (frame = avatar × 1.4).
         </p>
       </div>
 
@@ -384,11 +491,22 @@ function BubblesDashboard() {
 
               {imagePreview ? (
                 <div className="flex items-center gap-4">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-16 h-16 rounded-lg object-contain bg-[#111214] border border-[#2A2D34]"
-                  />
+                  {/* Preview com fundo quadriculado para mostrar transparência */}
+                  <div
+                    className="w-16 h-16 rounded-lg border border-[#2A2D34] overflow-hidden flex items-center justify-center flex-shrink-0"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(45deg, #2A2D34 25%, transparent 25%), linear-gradient(-45deg, #2A2D34 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #2A2D34 75%), linear-gradient(-45deg, transparent 75%, #2A2D34 75%)",
+                      backgroundSize: "8px 8px",
+                      backgroundPosition: "0 0, 0 4px, 4px -4px, -4px 0px",
+                    }}
+                  >
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
                   <div className="text-left">
                     <p className="text-white font-medium text-sm">
                       {imageFile?.name}
@@ -401,10 +519,9 @@ function BubblesDashboard() {
                         ? `${imageDimensions.w}×${imageDimensions.h}px`
                         : "Calculando..."}
                       {imageDimensions &&
-                        (imageDimensions.w !== 128 ||
-                          imageDimensions.h !== 128) && (
+                        imageDimensions.w !== imageDimensions.h && (
                           <span className="text-yellow-400 ml-2">
-                            ⚠ Recomendado: 128×128
+                            ⚠ Recomendado: quadrado
                           </span>
                         )}
                     </p>
@@ -415,7 +532,7 @@ function BubblesDashboard() {
                 </div>
               ) : (
                 <div>
-                  <ImagePlus className="w-8 h-8 text-[#4B5563] mx-auto mb-2" />
+                  <Frame className="w-8 h-8 text-[#4B5563] mx-auto mb-2" />
                   <p className="text-[#9CA3AF] text-sm">
                     Arraste ou clique para enviar
                   </p>
@@ -423,7 +540,7 @@ function BubblesDashboard() {
                     className="text-[#4B5563] text-xs mt-1"
                     style={{ fontFamily: "'DM Mono', monospace" }}
                   >
-                    PNG / WebP · 128×128px recomendado
+                    PNG com transparência · quadrado recomendado
                   </p>
                 </div>
               )}
@@ -435,12 +552,12 @@ function BubblesDashboard() {
                 className="text-[#9CA3AF] text-xs uppercase tracking-widest"
                 style={{ fontFamily: "'DM Mono', monospace" }}
               >
-                Nome do Bubble *
+                Nome da Moldura *
               </Label>
               <Input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Ex: Heart Bubble, Galaxy Frame..."
+                placeholder="Ex: Golden Crown, Neon Halo..."
                 required
                 className="bg-[#1C1E22] border-[#2A2D34] text-white placeholder:text-[#4B5563] focus:border-[#E040FB] h-10"
               />
@@ -500,7 +617,7 @@ function BubblesDashboard() {
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      rarity: e.target.value as BubbleForm["rarity"],
+                      rarity: e.target.value as FrameForm["rarity"],
                     })
                   }
                   className="w-full h-10 rounded-md bg-[#1C1E22] border border-[#2A2D34] text-white px-3 text-sm focus:border-[#E040FB] focus:outline-none"
@@ -512,6 +629,40 @@ function BubblesDashboard() {
                   <option value="legendary">Legendary</option>
                 </select>
               </div>
+            </div>
+
+            {/* Estilo da moldura */}
+            <div className="space-y-1.5">
+              <Label
+                className="text-[#9CA3AF] text-xs uppercase tracking-widest"
+                style={{ fontFamily: "'DM Mono', monospace" }}
+              >
+                Estilo / Efeito
+              </Label>
+              <select
+                value={form.frameStyle}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    frameStyle: e.target.value as FrameForm["frameStyle"],
+                  })
+                }
+                className="w-full h-10 rounded-md bg-[#1C1E22] border border-[#2A2D34] text-white px-3 text-sm focus:border-[#E040FB] focus:outline-none"
+                style={{ fontFamily: "'DM Mono', monospace" }}
+              >
+                {Object.entries(FRAME_STYLE_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <p
+                className="text-[#4B5563] text-xs"
+                style={{ fontFamily: "'DM Mono', monospace" }}
+              >
+                Salvo em asset_config.frame_style — usado pelo app para efeitos
+                especiais
+              </p>
             </div>
 
             {/* Status */}
@@ -566,7 +717,7 @@ function BubblesDashboard() {
             <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl overflow-hidden sticky top-6">
               {/* Preview header */}
               <div className="px-4 py-3 border-b border-[#2A2D34] flex items-center gap-2">
-                <MessageCircle className="w-4 h-4 text-[#E040FB]" />
+                <User className="w-4 h-4 text-[#E040FB]" />
                 <span
                   className="text-[#9CA3AF] text-xs uppercase tracking-widest"
                   style={{ fontFamily: "'DM Mono', monospace" }}
@@ -575,96 +726,66 @@ function BubblesDashboard() {
                 </span>
               </div>
 
-              {/* Chat simulation */}
-              <div className="bg-[#111214] min-h-[280px]">
-                <ChatPreview
-                  imageUrl={imagePreview}
-                  name={form.name || "Novo bubble"}
+              {/* Avatar simulation */}
+              <div className="bg-[#111214]">
+                <AvatarPreview
+                  frameUrl={imagePreview}
+                  name={form.name}
+                  rarity={form.rarity}
                 />
-              </div>
-
-              {/* Nine-slice info */}
-              <div className="px-4 py-3 border-t border-[#2A2D34]">
-                <p
-                  className="text-[#4B5563] text-xs"
-                  style={{ fontFamily: "'DM Mono', monospace" }}
-                >
-                  nine-slice auto-calculado
-                </p>
-                {imageDimensions && (
-                  <div
-                    className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs"
-                    style={{ fontFamily: "'DM Mono', monospace" }}
-                  >
-                    <span className="text-[#6B7280]">
-                      size:{" "}
-                      <span className="text-[#9CA3AF]">
-                        {imageDimensions.w}×{imageDimensions.h}
-                      </span>
-                    </span>
-                    <span className="text-[#6B7280]">
-                      slice:{" "}
-                      <span className="text-[#9CA3AF]">
-                        {Math.round(imageDimensions.h * (38 / 128))}px
-                      </span>
-                    </span>
-                    <span className="text-[#6B7280]">
-                      padding_h:{" "}
-                      <span className="text-[#9CA3AF]">20px</span>
-                    </span>
-                    <span className="text-[#6B7280]">
-                      padding_v:{" "}
-                      <span className="text-[#9CA3AF]">14px</span>
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
           </div>
         </div>
       </form>
 
-      {/* ── Lista de bubbles existentes ── */}
+      {/* ── Lista de molduras existentes ── */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="w-1 h-5 bg-[#E040FB] rounded-full" />
             <h2 className="text-lg font-bold text-white">
-              Bubbles na Loja
+              Molduras na Loja
             </h2>
             <span
               className="text-[#4B5563] text-sm"
               style={{ fontFamily: "'DM Mono', monospace" }}
             >
-              ({bubbles.length})
+              ({frames.length})
             </span>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            onClick={loadBubbles}
+            onClick={loadFrames}
             className="text-[#9CA3AF] hover:text-white hover:bg-[#2A2D34] h-8 px-2"
           >
             <RefreshCw className="w-3.5 h-3.5" />
           </Button>
         </div>
 
-        {loadingBubbles ? (
+        {loadingFrames ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="w-6 h-6 text-[#E040FB] animate-spin" />
           </div>
-        ) : bubbles.length === 0 ? (
+        ) : frames.length === 0 ? (
           <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl p-10 text-center">
             <Package className="w-10 h-10 text-[#2A2D34] mx-auto mb-3" />
             <p className="text-[#4B5563] text-sm">
-              Nenhum bubble na loja ainda.
+              Nenhuma moldura na loja ainda.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {bubbles.map((item) => {
+            {frames.map((item) => {
               const cfg = item.asset_config as Record<string, unknown>;
               const rarity = (cfg?.rarity as string) ?? "common";
+              const frameStyle = (cfg?.frame_style as string) ?? "default";
+              const frameUrl =
+                (cfg?.frame_url as string) ||
+                item.preview_url ||
+                null;
+
               return (
                 <div
                   key={item.id}
@@ -674,23 +795,31 @@ function BubblesDashboard() {
                       : "border-[#2A2D34] opacity-50"
                   }`}
                 >
-                  {/* Left accent bar */}
+                  {/* Top accent bar com cor da raridade */}
                   <div
                     className="h-1 w-full"
-                    style={{ backgroundColor: RARITY_COLORS[rarity] }}
+                    style={{
+                      backgroundColor:
+                        RARITY_COLORS[rarity] ?? RARITY_COLORS.common,
+                    }}
                   />
 
                   <div className="p-4">
-                    {/* Image */}
-                    <div className="w-16 h-16 rounded-lg bg-[#111214] border border-[#2A2D34] mb-3 overflow-hidden flex items-center justify-center">
-                      {item.preview_url ? (
+                    {/* Preview com avatar simulado */}
+                    <div className="w-16 h-16 rounded-lg bg-[#111214] border border-[#2A2D34] mb-3 overflow-hidden flex items-center justify-center relative">
+                      {/* Avatar mini */}
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2A2D34] to-[#1C1E22] flex items-center justify-center">
+                        <User className="w-5 h-5 text-[#4B5563]" />
+                      </div>
+                      {/* Frame overlay */}
+                      {frameUrl ? (
                         <img
-                          src={item.preview_url}
+                          src={frameUrl}
                           alt={item.name}
-                          className="w-full h-full object-contain"
+                          className="absolute inset-0 w-full h-full object-contain pointer-events-none"
                         />
                       ) : (
-                        <ImagePlus className="w-6 h-6 text-[#4B5563]" />
+                        <ImagePlus className="w-6 h-6 text-[#4B5563] absolute" />
                       )}
                     </div>
 
@@ -702,14 +831,24 @@ function BubblesDashboard() {
                       <span
                         className="text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0"
                         style={{
-                          color: RARITY_COLORS[rarity],
-                          backgroundColor: RARITY_COLORS[rarity] + "20",
+                          color: RARITY_COLORS[rarity] ?? RARITY_COLORS.common,
+                          backgroundColor:
+                            (RARITY_COLORS[rarity] ?? RARITY_COLORS.common) +
+                            "20",
                           fontFamily: "'DM Mono', monospace",
                         }}
                       >
                         {rarity}
                       </span>
                     </div>
+
+                    {/* Style tag */}
+                    <p
+                      className="text-[#6B7280] text-[10px] mb-1"
+                      style={{ fontFamily: "'DM Mono', monospace" }}
+                    >
+                      {FRAME_STYLE_LABELS[frameStyle] ?? frameStyle}
+                    </p>
 
                     {/* Price */}
                     <p
@@ -733,18 +872,18 @@ function BubblesDashboard() {
                         {item.is_active ? (
                           <>
                             <CheckCircle2 className="w-3 h-3" />
-                            Ativo
+                            Ativa
                           </>
                         ) : (
                           <>
                             <AlertCircle className="w-3 h-3" />
-                            Inativo
+                            Inativa
                           </>
                         )}
                       </button>
 
                       <button
-                        onClick={() => deleteBubble(item)}
+                        onClick={() => deleteFrame(item)}
                         className="ml-auto p-1.5 rounded-md text-[#4B5563] hover:text-red-400 hover:bg-red-500/10 transition-colors"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -757,104 +896,6 @@ function BubblesDashboard() {
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-// ─── Dashboard principal com abas ─────────────────────────────────────────────
-
-export default function Dashboard() {
-  const { auth, signOut } = useAuth();
-  const profile =
-    auth.status === "authenticated" ? auth.profile : null;
-
-  const [activeTab, setActiveTab] = useState<ActiveTab>("bubbles");
-
-  return (
-    <div
-      className="min-h-screen bg-[#111214] text-white"
-      style={{ fontFamily: "'DM Sans', sans-serif" }}
-    >
-      {/* Background grid */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, #2A2D34 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-          opacity: 0.35,
-        }}
-      />
-
-      {/* Header */}
-      <header className="relative z-10 border-b border-[#2A2D34] bg-[#111214]/80 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-[#E040FB]/20 border border-[#E040FB]/40 flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5 text-[#E040FB]" />
-            </div>
-            <span className="font-bold text-white tracking-tight">
-              Cosmetics Studio
-            </span>
-            <Badge
-              className="text-[10px] px-1.5 py-0 h-4 bg-[#E040FB]/15 text-[#E040FB] border-[#E040FB]/30 animate-pulse"
-              style={{ fontFamily: "'DM Mono', monospace" }}
-            >
-              TEAM ONLY
-            </Badge>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {profile && (
-              <span
-                className="text-[#9CA3AF] text-sm"
-                style={{ fontFamily: "'DM Mono', monospace" }}
-              >
-                {profile.nickname}
-              </span>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={signOut}
-              className="text-[#9CA3AF] hover:text-white hover:bg-[#2A2D34] h-8 px-2"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Tab bar */}
-        <div className="max-w-7xl mx-auto px-6 flex items-center gap-1 pb-0">
-          <button
-            onClick={() => setActiveTab("bubbles")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-150 ${
-              activeTab === "bubbles"
-                ? "border-[#E040FB] text-white"
-                : "border-transparent text-[#6B7280] hover:text-[#9CA3AF]"
-            }`}
-            style={{ fontFamily: "'DM Mono', monospace" }}
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            Chat Bubbles
-          </button>
-          <button
-            onClick={() => setActiveTab("frames")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-150 ${
-              activeTab === "frames"
-                ? "border-[#E040FB] text-white"
-                : "border-transparent text-[#6B7280] hover:text-[#9CA3AF]"
-            }`}
-            style={{ fontFamily: "'DM Mono', monospace" }}
-          >
-            <Frame className="w-3.5 h-3.5" />
-            Molduras de Perfil
-          </button>
-        </div>
-      </header>
-
-      {/* Tab content */}
-      {activeTab === "bubbles" ? <BubblesDashboard /> : <FramesDashboard />}
     </div>
   );
 }
