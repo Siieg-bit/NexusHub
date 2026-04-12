@@ -109,6 +109,7 @@ class AminoBottomNavBar extends ConsumerWidget {
                   },
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       _OnlineAvatarStack(
                         avatars: onlineAvatars,
@@ -119,6 +120,8 @@ class AminoBottomNavBar extends ConsumerWidget {
                       SizedBox(height: r.s(2)),
                       Text(
                         onlineCount > 0 ? '$onlineCount' : s.online,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: currentIndex == 1
                               ? context.nexusTheme.bottomNavSelectedItem
@@ -127,6 +130,7 @@ class AminoBottomNavBar extends ConsumerWidget {
                           fontWeight: currentIndex == 1
                               ? FontWeight.w700
                               : FontWeight.w400,
+                          height: 1.1,
                         ),
                       ),
                     ],
@@ -176,6 +180,7 @@ class AminoBottomNavBar extends ConsumerWidget {
                 onTap: () => onTap(3),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Stack(
                       clipBehavior: Clip.none,
@@ -205,6 +210,8 @@ class AminoBottomNavBar extends ConsumerWidget {
                     SizedBox(height: r.s(2)),
                     Text(
                       s.chats,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: currentIndex == 3
                             ? context.nexusTheme.bottomNavSelectedItem
@@ -213,6 +220,7 @@ class AminoBottomNavBar extends ConsumerWidget {
                         fontWeight: currentIndex == 3
                             ? FontWeight.w700
                             : FontWeight.w400,
+                        height: 1.1,
                       ),
                     ),
                   ],
@@ -225,6 +233,7 @@ class AminoBottomNavBar extends ConsumerWidget {
                 onTap: () => onTap(4),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       width: r.s(26),
@@ -259,6 +268,8 @@ class AminoBottomNavBar extends ConsumerWidget {
                     SizedBox(height: r.s(2)),
                     Text(
                       'Eu',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: currentIndex == 4
                             ? context.nexusTheme.bottomNavSelectedItem
@@ -267,6 +278,7 @@ class AminoBottomNavBar extends ConsumerWidget {
                         fontWeight: currentIndex == 4
                             ? FontWeight.w700
                             : FontWeight.w400,
+                        height: 1.1,
                       ),
                     ),
                   ],
@@ -377,6 +389,7 @@ class _NavContent extends ConsumerWidget {
     final r = context.r;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
           icon,
@@ -388,12 +401,15 @@ class _NavContent extends ConsumerWidget {
         SizedBox(height: r.s(2)),
         Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: isSelected
                 ? context.nexusTheme.bottomNavSelectedItem
                 : context.nexusTheme.bottomNavUnselectedItem,
             fontSize: r.fs(10),
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+            height: 1.1,
           ),
         ),
       ],
