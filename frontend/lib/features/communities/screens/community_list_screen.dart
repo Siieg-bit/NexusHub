@@ -863,8 +863,6 @@ class _AminoCommunityCard extends ConsumerStatefulWidget {
   /// Largura do card em dp (calculada dinamicamente pelo pai).
   final double cardWidth;
 
-  static const double _cardHeight    = 175;
-  static const double _bannerHeight  = 130;
   static const double _iconSize      = 36;
   static const double _iconOverflow  = 18;
 

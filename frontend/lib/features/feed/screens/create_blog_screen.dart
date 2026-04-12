@@ -64,32 +64,6 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
 
   static const _titleFonts = ['Default', 'Serif', 'Monospace', 'Cursive'];
 
-  static const _colorPresets = [
-    Color(0xFF0D1B2A),
-    Color(0xFF1A1A2E),
-    Color(0xFF16213E),
-    Color(0xFF0F3460),
-    Color(0xFF533483),
-    Color(0xFF2C3333),
-    Color(0xFF1B1A17),
-    Color(0xFF3D0000),
-    Color(0xFF0E4C92),
-    Color(0xFF2D4059),
-  ];
-
-  static const _textColorPresets = [
-    Colors.white,
-    Color(0xFFE0E0E0),
-    Color(0xFFFFC107),
-    Color(0xFF4FC3F7),
-    Color(0xFFAED581),
-    Color(0xFFFF8A65),
-    Color(0xFFCE93D8),
-    Color(0xFFEF5350),
-    Color(0xFF80CBC4),
-    Color(0xFFFFF176),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -2144,61 +2118,4 @@ class _VisibilityChip extends StatelessWidget {
   }
 }
 
-class _ColorPaletteRow extends StatelessWidget {
-  final List<Color> colors;
-  final Color selected;
-  final ValueChanged<Color> onSelect;
 
-  const _ColorPaletteRow({
-    required this.colors,
-    required this.selected,
-    required this.onSelect,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.r;
-    return SizedBox(
-      height: r.s(32),
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: colors.length,
-        separatorBuilder: (_, __) => SizedBox(width: r.s(6)),
-        itemBuilder: (_, i) {
-          final color = colors[i];
-          final isSelected = color == selected;
-          return GestureDetector(
-            onTap: () => onSelect(color),
-            child: Container(
-              width: r.s(32),
-              height: r.s(32),
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected
-                      ? AppTheme.primaryColor
-                      : Colors.white.withValues(alpha: 0.08),
-                  width: isSelected ? 2 : 1,
-                ),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: color.withValues(alpha: 0.35),
-                          blurRadius: 6,
-                          spreadRadius: 1,
-                        ),
-                      ]
-                    : null,
-              ),
-              child: isSelected
-                  ? Icon(Icons.check_rounded,
-                      color: Colors.white, size: r.s(14))
-                  : null,
-            ),
-          );
-        },
-      ),
-    );
-  }
-}

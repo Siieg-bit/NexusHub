@@ -87,26 +87,6 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     'Playfair Display',
   ];
 
-  // Cores preset
-  static final _presetColors = [
-    Colors.white,
-    Colors.black,
-    const Color(0xFF0D1B2A),
-    const Color(0xFF1B2838),
-    const Color(0xFF1A1A2E),
-    const Color(0xFF16213E),
-    AppTheme.primaryColor,
-    AppTheme.accentColor,
-    AppTheme.fabPink,
-    AppTheme.aminoPurple,
-    AppTheme.aminoOrange,
-    AppTheme.aminoYellow,
-    AppTheme.aminoBlue,
-    AppTheme.aminoRed,
-    const Color(0xFF2D4059),
-    const Color(0xFF3C1642),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -1150,7 +1130,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                         fontSize: r.fs(12))),
                 SizedBox(height: r.s(4)),
                 Text(
-                  '#${current.red.toRadixString(16).padLeft(2, '0').toUpperCase()}${current.green.toRadixString(16).padLeft(2, '0').toUpperCase()}${current.blue.toRadixString(16).padLeft(2, '0').toUpperCase()}',
+                  '#${current.r.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${current.g.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${current.b.round().toRadixString(16).padLeft(2, '0').toUpperCase()}',
                   style: TextStyle(
                     color: current,
                     fontSize: r.fs(12),

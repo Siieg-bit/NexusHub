@@ -260,7 +260,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final localIconUrl = _membership?['local_icon_url'] as String?;
     final localBannerUrl = _membership?['local_banner_url'] as String?;
     final localBio = _membership?['local_bio'] as String?;
-    final localBackgroundUrl = _membership?['local_background_url'] as String?;
+    // ignore: unused_local_variable — reservado para futura implementação de background por comunidade
+    final _ = _membership?['local_background_url'] as String?;
     final localBackgroundColor = _membership?['local_background_color'] as String?;
     final rawGallery = _membership?['local_gallery'] as List<dynamic>?;
     final displayGallery = rawGallery?.map((e) => e.toString()).toList() ?? <String>[];
@@ -459,8 +460,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                           // Avatar centralizado
                           AvatarWithFrame(
                             avatarUrl: displayAvatar,
-                            frameUrl: (ref.watch(equippedItemsProvider(widget.userId)).valueOrNull ?? {})?['frame_url'] as String?,
-                            isFrameAnimated: (ref.watch(equippedItemsProvider(widget.userId)).valueOrNull ?? {})?['frame_is_animated'] as bool? ?? false,
+                            frameUrl: (ref.watch(equippedItemsProvider(widget.userId)).valueOrNull ?? {})['frame_url'] as String?,
+                            isFrameAnimated: (ref.watch(equippedItemsProvider(widget.userId)).valueOrNull ?? {})['frame_is_animated'] as bool? ?? false,
                             size: r.s(96),
                             showAminoPlus: isPremium,
                           ),

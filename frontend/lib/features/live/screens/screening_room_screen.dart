@@ -8,7 +8,6 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/realtime_service.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../core/l10n/locale_provider.dart';
 
 /// Sala de Projeção — sala de exibição coletiva de vídeos/streams.
 ///

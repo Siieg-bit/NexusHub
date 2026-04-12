@@ -61,29 +61,6 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
     '✨','💫','🌟','💎','🎯','🚀','🌙','☀️','🌊','🍀',
   ];
 
-  static const _bgColors = [
-    Color(0xFF1B2838),
-    Color(0xFF0D1B2A),
-    Color(0xFF2DBE60),
-    Color(0xFF00BCD4),
-    Color(0xFFE91E63),
-    Color(0xFF7C3AED),
-    Color(0xFFFF9800),
-    Color(0xFFE53935),
-    Colors.white,
-    Colors.black,
-  ];
-
-  static const _textColors = [
-    Colors.white,
-    Colors.black,
-    Color(0xFF2DBE60),
-    Color(0xFF00BCD4),
-    Color(0xFFE91E63),
-    Color(0xFFFFD54F),
-    Color(0xFFFF9800),
-  ];
-
   static const _borderColors = [
     Colors.transparent,
     Colors.white,

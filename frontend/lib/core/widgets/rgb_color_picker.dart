@@ -113,9 +113,9 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
       HSVColor.fromAHSV(1.0, _hue, _saturation, _brightness).toColor();
 
   String _colorToHex(Color c) =>
-      '${c.red.toRadixString(16).padLeft(2, '0').toUpperCase()}'
-      '${c.green.toRadixString(16).padLeft(2, '0').toUpperCase()}'
-      '${c.blue.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+      '${c.r.round().toRadixString(16).padLeft(2, '0').toUpperCase()}'
+      '${c.g.round().toRadixString(16).padLeft(2, '0').toUpperCase()}'
+      '${c.b.round().toRadixString(16).padLeft(2, '0').toUpperCase()}';
 
   // Atualiza a partir da roda HSV
   void _updateFromHSV() {
@@ -157,8 +157,8 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
 
   void _confirm() {
     // Adicionar às recentes
-    final colorValue = _currentColor.value;
-    _recentColors.removeWhere((c) => c.value == colorValue);
+    final colorValue = _currentColor.toARGB32();
+    _recentColors.removeWhere((c) => c.toARGB32() == colorValue);
     _recentColors.insert(0, _currentColor);
     if (_recentColors.length > 8) _recentColors.removeLast();
     Navigator.of(context).pop(_currentColor);
@@ -453,7 +453,7 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
           spacing: r.s(8),
           runSpacing: r.s(8),
           children: _recentColors.take(8).map((color) {
-            final isSelected = _currentColor.value == color.value;
+            final isSelected = _currentColor.toARGB32() == color.toARGB32();
             return GestureDetector(
               onTap: () => _selectSwatch(color),
               child: AnimatedContainer(

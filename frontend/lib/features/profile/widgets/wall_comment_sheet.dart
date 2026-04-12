@@ -1236,51 +1236,10 @@ class _VideoDisplayState extends State<_VideoDisplay> {
   }
 }
 
-// =============================================================================
-// BOTÃO DE AÇÃO (emoji, imagem, vídeo, sticker)
-// =============================================================================
 
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback? onTap;
-  final bool isLoading;
 
-  const _ActionButton({
-    required this.icon,
-    this.onTap,
-    this.isLoading = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.r;
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        width: r.s(28),
-        height: r.s(28),
-        child: isLoading
-            ? Padding(
-                padding: EdgeInsets.all(r.s(6)),
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppTheme.primaryColor,
-                ),
-              )
-            : Icon(
-                icon,
-                size: r.s(20),
-                color: Colors.grey[500],
-              ),
-      ),
-    );
-  }
-}
-
-// =============================================================================
-// BOTÃO UNIFICADO: emoji + figurinha + mídia (menu popup)
-// =============================================================================
-
+// _MediaMenuButton e _ActionButton removidas (unused_element)
+/*
 class _MediaMenuButton extends StatelessWidget {
   final dynamic r;
   final bool isUploadingMedia;
@@ -1420,3 +1379,4 @@ class _MediaMenuButton extends StatelessWidget {
     });
   }
 }
+*/

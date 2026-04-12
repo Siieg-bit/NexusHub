@@ -502,7 +502,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                 size: 40,
                 onColorChanged: (c) {
                   setState(() {
-                    _themeColor = '#${c.red.toRadixString(16).padLeft(2, '0').toUpperCase()}${c.green.toRadixString(16).padLeft(2, '0').toUpperCase()}${c.blue.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+                    _themeColor = '#${c.r.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${c.g.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${c.b.round().toRadixString(16).padLeft(2, '0').toUpperCase()}';
                   });
                 },
               ),
@@ -1257,7 +1257,6 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
   // ABA: CATEGORIAS
   // ─────────────────────────────────────────────────────────────────────────
   Widget _buildCategoriesTab() {
-    final r = context.r;
     return _CategoriesTabContent(
       communityId: widget.communityId,
       themeColor: _parseColor(_themeColor),

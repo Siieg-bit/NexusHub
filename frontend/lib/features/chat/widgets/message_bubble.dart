@@ -10,7 +10,6 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/services/call_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../core/widgets/cosmetic_avatar.dart';
 import '../screens/call_screen.dart';
 import '../../stickers/widgets/sticker_message_bubble.dart';
 import 'chat_bubble.dart' show ChatBubble;

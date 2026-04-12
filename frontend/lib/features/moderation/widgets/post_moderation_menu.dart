@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // Menu de Moderação de Post — Estilo Amino
@@ -340,7 +339,6 @@ class _PostModerationMenuSheetState
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final s = ref.watch(stringsProvider);
 
     return Container(
       decoration: BoxDecoration(

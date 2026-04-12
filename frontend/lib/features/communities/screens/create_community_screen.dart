@@ -26,19 +26,6 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
   String _selectedLanguage = 'pt-BR';
   bool _isLoading = false;
 
-  final _colors = [
-    '#6C5CE7',
-    '#E74C3C',
-    '#2ECC71',
-    '#F39C12',
-    '#3498DB',
-    '#9B59B6',
-    '#E84393',
-    '#00CEC9',
-    '#FD79A8',
-    '#636E72',
-  ];
-
   @override
   void dispose() {
     _nameController.dispose();
@@ -260,7 +247,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                       size: 48,
                       onColorChanged: (color) {
                         setState(() {
-                          _selectedColor = '#${color.red.toRadixString(16).padLeft(2, '0').toUpperCase()}${color.green.toRadixString(16).padLeft(2, '0').toUpperCase()}${color.blue.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+                          _selectedColor = '#${color.r.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${color.g.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${color.b.round().toRadixString(16).padLeft(2, '0').toUpperCase()}';
                         });
                       },
                     ),

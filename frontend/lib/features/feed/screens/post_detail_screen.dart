@@ -380,40 +380,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
   }
 
-  Future<void> _pickCommentVideo() async {
-    final picker = ImagePicker();
-    final file = await picker.pickVideo(
-      source: ImageSource.gallery,
-      maxDuration: const Duration(seconds: 60),
-    );
-    if (file == null) return;
-    try {
-      final bytes = await file.readAsBytes();
-      final userId = SupabaseService.currentUserId ?? 'unknown';
-      final path = 'comments/$userId/${DateTime.now().millisecondsSinceEpoch}.mp4';
-      await SupabaseService.storage.from('post_media').uploadBinary(
-        path, bytes,
-        fileOptions: const FileOptions(contentType: 'video/mp4'),
-      );
-      if (!mounted) return;
-      final url = SupabaseService.storage.from('post_media').getPublicUrl(path);
-      if (!mounted) return;
-      setState(() {
-        _pendingVideoUrl = url;
-        _pendingMediaUrl = url;
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Erro ao enviar vídeo'),
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
-      }
-    }
-  }
-
   void _toggleEmojiPicker() {
     setState(() {
       _showEmojiPicker = !_showEmojiPicker;

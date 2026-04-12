@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -300,7 +299,7 @@ class _EditCommunityProfileScreenState
       title: s.backgroundTypeLabel,
     );
     if (picked != null && mounted) {
-      final hex = '#${picked.value.toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
+      final hex = '#${picked.r.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${picked.g.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${picked.b.round().toRadixString(16).padLeft(2, '0').toUpperCase()}';
       setState(() {
         _localBackgroundColor = hex;
         _localBackgroundUrl = null; // limpa imagem ao escolher cor

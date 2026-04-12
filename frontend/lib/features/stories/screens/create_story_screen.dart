@@ -766,7 +766,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                             if (picked != null && mounted) {
                               setState(() {
                                 _bgColors.insert(0, picked);
-                                _bgHexCodes.insert(0, '#${picked.red.toRadixString(16).padLeft(2, '0').toUpperCase()}${picked.green.toRadixString(16).padLeft(2, '0').toUpperCase()}${picked.blue.toRadixString(16).padLeft(2, '0').toUpperCase()}');
+                                _bgHexCodes.insert(0, '#${picked.r.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${picked.g.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${picked.b.round().toRadixString(16).padLeft(2, '0').toUpperCase()}');
                                 _selectedBgIndex = 0;
                               });
                             }
