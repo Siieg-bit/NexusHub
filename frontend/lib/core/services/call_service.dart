@@ -1,12 +1,16 @@
 import 'dart:async';
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'supabase_service.dart';
-import 'realtime_service.dart';
+import '../../config/app_config.dart';
 import '../../core/l10n/locale_provider.dart';
+import 'realtime_service.dart';
+import 'supabase_service.dart';
 
 /// ============================================================================
 /// CallService — Gerencia chamadas de voz, vídeo e Sala de Projeção.
@@ -545,20 +549,37 @@ class CallService {
     return 'nexushub_${session.id.replaceAll('-', '').substring(0, 16)}';
   }
 
-  /// Busca token Agora via Supabase Edge Function.
+  /// Busca token Agora via Edge Function com headers explícitos e retry
+  /// após refresh da sessão. Isso evita chamadas com JWT antigo e garante que
+  /// a função receba tanto `Authorization` quanto `apikey`.
   static Future<String?> _fetchAgoraToken(String channelName) async {
-    try {
-      final res = await SupabaseService.edgeFunction(
-        'agora-token',
-        body: {
+    Future<String?> requestWithAccessToken(String accessToken) async {
+      final uri = Uri.parse('${AppConfig.supabaseUrl}/functions/v1/agora-token');
+      final response = await http.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+          'apikey': AppConfig.supabaseAnonKey,
+        },
+        body: jsonEncode({
           'channelName': channelName,
           'uid': 0,
           'role': 'publisher',
-        },
+        }),
       );
-      if (res.status == 200 && res.data != null) {
-        final data = res.data as Map<String, dynamic>;
-        final token = data['token'] as String?;
+
+      dynamic responseData;
+      if (response.body.isNotEmpty) {
+        try {
+          responseData = jsonDecode(response.body);
+        } catch (_) {
+          responseData = response.body;
+        }
+      }
+
+      if (response.statusCode == 200 && responseData is Map<String, dynamic>) {
+        final token = responseData['token'] as String?;
         if (token == null || token.isEmpty) {
           _recordFailure(
             stage: 'fetchAgoraToken.empty-token',
@@ -566,22 +587,35 @@ class CallService {
             stackTrace: StackTrace.current,
             context: {
               'channelName': channelName,
-              'responseData': data,
+              'responseData': responseData,
             },
           );
+          return null;
         }
         return token;
       }
 
-      _recordFailure(
-        stage: 'fetchAgoraToken.bad-response',
-        error: StateError('agora-token edge function failed with status ${res.status}'),
-        stackTrace: StackTrace.current,
-        context: {
-          'channelName': channelName,
-          'responseData': res.data,
-        },
+      throw StateError(
+        'agora-token edge function failed with status ${response.statusCode}: $responseData',
       );
+    }
+
+    try {
+      final session = SupabaseService.currentSession;
+      if (session == null) {
+        throw StateError('No authenticated Supabase session available');
+      }
+
+      try {
+        return await requestWithAccessToken(session.accessToken);
+      } catch (firstError, firstStackTrace) {
+        final refreshed = await SupabaseService.auth.refreshSession();
+        final refreshedSession = refreshed.session ?? SupabaseService.currentSession;
+        if (refreshedSession == null) {
+          Error.throwWithStackTrace(firstError, firstStackTrace);
+        }
+        return await requestWithAccessToken(refreshedSession.accessToken);
+      }
     } catch (e, st) {
       _recordFailure(
         stage: 'fetchAgoraToken.exception',
@@ -593,6 +627,39 @@ class CallService {
       );
     }
     return null;
+  }
+
+  static Future<void> _applySpeakerphonePreference({bool allowRetry = false}) async {
+    final engine = _engine;
+    if (engine == null) return;
+
+    Object? lastError;
+    StackTrace? lastStackTrace;
+    final totalAttempts = allowRetry ? 3 : 1;
+
+    for (var attempt = 0; attempt < totalAttempts; attempt++) {
+      if (attempt > 0) {
+        await Future.delayed(Duration(milliseconds: 250 * attempt));
+      }
+
+      try {
+        await engine.setEnableSpeakerphone(_isSpeakerOn);
+        return;
+      } catch (e, st) {
+        lastError = e;
+        lastStackTrace = st;
+      }
+    }
+
+    debugPrint(
+      '[CallService][speakerphone] Unable to apply speaker preference after $totalAttempts attempt(s): $lastError',
+    );
+    if (lastStackTrace != null) {
+      debugPrintStack(
+        label: '[CallService][speakerphone][stackTrace]',
+        stackTrace: lastStackTrace,
+      );
+    }
   }
 
   /// Entra no canal Agora com áudio/vídeo real
@@ -616,9 +683,12 @@ class CallService {
     final channelName = _channelName(session);
 
     _agoraToken = await _fetchAgoraToken(channelName);
+    if (_agoraToken == null || _agoraToken!.isEmpty) {
+      throw StateError('Unable to fetch a valid Agora token for channel $channelName');
+    }
 
     await _engine!.joinChannel(
-      token: _agoraToken ?? '',
+      token: _agoraToken!,
       channelId: channelName,
       uid: 0,
       options: ChannelMediaOptions(
@@ -630,17 +700,7 @@ class CallService {
       ),
     );
 
-    try {
-      await _engine!.setEnableSpeakerphone(_isSpeakerOn);
-    } catch (e, st) {
-      debugPrint(
-        '[CallService][joinAgora.speakerphone] Non-fatal speakerphone setup failure: $e',
-      );
-      debugPrintStack(
-        label: '[CallService][joinAgora.speakerphone][stackTrace]',
-        stackTrace: st,
-      );
-    }
+    await _applySpeakerphonePreference(allowRetry: true);
   }
 
   /// Toggle mute do microfone
@@ -664,7 +724,7 @@ class CallService {
   /// Toggle speaker/earpiece
   static Future<void> toggleSpeaker() async {
     _isSpeakerOn = !_isSpeakerOn;
-    await _engine?.setEnableSpeakerphone(_isSpeakerOn);
+    await _applySpeakerphonePreference(allowRetry: true);
   }
 
   /// Trocar câmera frontal/traseira
