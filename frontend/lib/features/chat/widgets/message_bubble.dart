@@ -267,6 +267,12 @@ class MessageBubble extends ConsumerWidget {
         ? myCosmetics?.chatBubbleImageUrl
         : senderCosmetics?.chatBubbleImageUrl;
 
+    // Parâmetros nine-slice vindos do asset_config (via UserCosmetics)
+    final activeCosmetics = isMe ? myCosmetics : senderCosmetics;
+    final bubbleSliceInsets = activeCosmetics?.chatBubbleSliceInsets;
+    final bubbleImageSize = activeCosmetics?.chatBubbleImageSize;
+    final bubbleContentPadding = activeCosmetics?.chatBubbleContentPadding;
+
     // Determina o bubbleFrameUrl para o ChatBubble.
     // Prioridade: image_url > procedural:style > null (bubble padrão)
     String? bubbleFrameUrl;
@@ -278,15 +284,6 @@ class MessageBubble extends ConsumerWidget {
       // Sem imagem mas com estilo procedural
       bubbleFrameUrl = 'procedural:$activeBubbleStyle';
     }
-
-    // DEBUG — remover após diagnóstico
-    debugPrint('[MessageBubble] authorId=$authorId myId=$myId isMe=$isMe');
-    debugPrint('[MessageBubble] senderCosmetics.imageUrl=${senderCosmetics?.chatBubbleImageUrl}');
-    if (isMe) {
-      debugPrint('[MessageBubble] myCosmetics.imageUrl=${myCosmetics?.chatBubbleImageUrl} '
-          'style=${myCosmetics?.chatBubbleStyle}');
-    }
-    debugPrint('[MessageBubble] activeBubbleImageUrl=$activeBubbleImageUrl bubbleFrameUrl=$bubbleFrameUrl');
     if (activeBubbleColor != null && activeBubbleColor.isNotEmpty) {
       try {
         final hex = activeBubbleColor.replaceAll('#', '');
@@ -405,6 +402,9 @@ class MessageBubble extends ConsumerWidget {
                             bubbleFrameUrl: bubbleFrameUrl,
                             bubbleColor: bubbleColor,
                             showTail: showAvatar,
+                            sliceInsets: bubbleSliceInsets,
+                            imageSize: bubbleImageSize,
+                            contentPadding: bubbleContentPadding,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,

@@ -25,6 +25,12 @@ class ChatBubble extends ConsumerWidget {
   final bool showTail;
   final double maxWidth;
 
+  /// Parâmetros nine-slice vindos do asset_config do store_item.
+  /// Quando não fornecidos, usam os valores padrão do [NineSliceBubble].
+  final EdgeInsets? sliceInsets;
+  final Size? imageSize;
+  final EdgeInsets? contentPadding;
+
   const ChatBubble({
     super.key,
     required this.child,
@@ -34,6 +40,9 @@ class ChatBubble extends ConsumerWidget {
     this.userRole,
     this.showTail = true,
     this.maxWidth = 280,
+    this.sliceInsets,
+    this.imageSize,
+    this.contentPadding,
   });
 
   /// Cor do bubble baseada no role do usuário — estilo Amino
@@ -130,11 +139,15 @@ class ChatBubble extends ConsumerWidget {
       );
     }
 
-    // Frame de imagem real — 9-slice scaling
+    // Frame de imagem real — 9-slice scaling com parâmetros do asset_config
     return NineSliceBubble(
       imageUrl: bubbleFrameUrl!,
       isMine: isMine,
       maxWidth: maxWidth,
+      sliceInsets: sliceInsets ?? const EdgeInsets.all(38),
+      imageSize: imageSize ?? const Size(128, 128),
+      contentPadding: contentPadding ??
+          const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       child: child,
     );
   }

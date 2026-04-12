@@ -1,8 +1,13 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/supabase_service.dart';
 
 /// Modelo de cosméticos equipados de um usuário.
+///
+/// Além das URLs e estilos, carrega os parâmetros de nine-slice
+/// diretamente do [asset_config] do banco, evitando valores hardcoded
+/// no widget e garantindo que cada bubble use suas próprias margens.
 class UserCosmetics {
   final String userId;
   final String? avatarFrameUrl;
@@ -12,6 +17,11 @@ class UserCosmetics {
   final String? chatBubbleImageUrl;
   final bool isAminoPlus;
 
+  // Parâmetros nine-slice vindos do asset_config
+  final EdgeInsets chatBubbleSliceInsets;
+  final Size chatBubbleImageSize;
+  final EdgeInsets chatBubbleContentPadding;
+
   const UserCosmetics({
     required this.userId,
     this.avatarFrameUrl,
@@ -20,6 +30,12 @@ class UserCosmetics {
     this.chatBubbleColor,
     this.chatBubbleImageUrl,
     this.isAminoPlus = false,
+    this.chatBubbleSliceInsets = const EdgeInsets.all(38),
+    this.chatBubbleImageSize = const Size(128, 128),
+    this.chatBubbleContentPadding = const EdgeInsets.symmetric(
+      horizontal: 20,
+      vertical: 14,
+    ),
   });
 
   factory UserCosmetics.empty(String userId) => UserCosmetics(userId: userId);
@@ -37,7 +53,40 @@ class UserCosmetics {
   }
 }
 
+/// Extrai os parâmetros de nine-slice do [assetConfig] de um store_item.
+///
+/// Retorna valores padrão seguros caso os campos não existam, garantindo
+/// compatibilidade retroativa com itens antigos sem esses metadados.
+({
+  EdgeInsets sliceInsets,
+  Size imageSize,
+  EdgeInsets contentPadding,
+}) _extractNineSliceParams(Map<String, dynamic> assetConfig) {
+  double sliceTop = _asDouble(assetConfig['slice_top'], fallback: 38);
+  double sliceLeft = _asDouble(assetConfig['slice_left'], fallback: 38);
+  double sliceRight = _asDouble(assetConfig['slice_right'], fallback: 38);
+  double sliceBottom = _asDouble(assetConfig['slice_bottom'], fallback: 38);
+
+  double imageWidth = _asDouble(assetConfig['image_width'], fallback: 128);
+  double imageHeight = _asDouble(assetConfig['image_height'], fallback: 128);
+
+  double paddingH = _asDouble(assetConfig['content_padding_h'], fallback: 20);
+  double paddingV = _asDouble(assetConfig['content_padding_v'], fallback: 14);
+
+  return (
+    sliceInsets: EdgeInsets.fromLTRB(sliceLeft, sliceTop, sliceRight, sliceBottom),
+    imageSize: Size(imageWidth, imageHeight),
+    contentPadding: EdgeInsets.symmetric(horizontal: paddingH, vertical: paddingV),
+  );
+}
+
 /// Provider que busca e cacheia os cosméticos equipados de um usuário.
+///
+/// A query usa o join via FK nomeada [user_purchases_item_id_fkey] para
+/// trazer os dados do store_item em uma única chamada ao banco.
+/// A RLS policy [purchases_select_equipped_public] garante que cosméticos
+/// equipados de qualquer usuário sejam visíveis (necessário para renderizar
+/// os bubbles de outros participantes no chat).
 final userCosmeticsProvider =
     FutureProvider.family<UserCosmetics, String>((ref, userId) async {
   try {
@@ -51,6 +100,7 @@ final userCosmeticsProvider =
     String? chatBubbleStyle;
     String? chatBubbleColor;
     String? chatBubbleImageUrl;
+    var sliceParams = _extractNineSliceParams({});
 
     for (final item in ((equipped as List? ?? []))) {
       final storeItem = _asMap(item['store_items']);
@@ -58,7 +108,6 @@ final userCosmeticsProvider =
 
       final type = _asString(storeItem['type']);
       final assetConfig = _asMap(storeItem['asset_config']);
-      final legacyMetadata = _asMap(storeItem['metadata']);
 
       if (type == 'avatar_frame') {
         avatarFrameUrl = _firstNonEmpty([
@@ -66,34 +115,26 @@ final userCosmeticsProvider =
           _asString(assetConfig['image_url']),
           _asString(storeItem['asset_url']),
           _asString(storeItem['preview_url']),
-          _asString(legacyMetadata['image_url']),
-          _asString(storeItem['image_url']),
         ]);
       } else if (type == 'chat_bubble') {
         chatBubbleId = _asString(storeItem['id']);
         chatBubbleStyle = _firstNonEmpty([
           _asString(assetConfig['style']),
           _asString(assetConfig['bubble_style']),
-          _asString(legacyMetadata['style']),
         ]);
         chatBubbleColor = _firstNonEmpty([
           _asString(assetConfig['color']),
           _asString(assetConfig['bubble_color']),
-          _asString(legacyMetadata['color']),
         ]);
         chatBubbleImageUrl = _firstNonEmpty([
           _asString(assetConfig['image_url']),
+          _asString(assetConfig['bubble_url']),
           _asString(assetConfig['bubble_image_url']),
           _asString(storeItem['asset_url']),
           _asString(storeItem['preview_url']),
-          _asString(legacyMetadata['image_url']),
-          _asString(storeItem['image_url']),
         ]);
-        // DEBUG — remover após diagnóstico
-        debugPrint('[CosmeticsProvider] chat_bubble encontrado userId=$userId');
-        debugPrint('[CosmeticsProvider] assetConfig=$assetConfig');
-        debugPrint('[CosmeticsProvider] chatBubbleStyle=$chatBubbleStyle');
-        debugPrint('[CosmeticsProvider] chatBubbleImageUrl=$chatBubbleImageUrl');
+        // Extrai parâmetros nine-slice do asset_config
+        sliceParams = _extractNineSliceParams(assetConfig);
       }
     }
 
@@ -111,15 +152,20 @@ final userCosmeticsProvider =
       chatBubbleColor: chatBubbleColor,
       chatBubbleImageUrl: chatBubbleImageUrl,
       isAminoPlus: isAminoPlus,
+      chatBubbleSliceInsets: sliceParams.sliceInsets,
+      chatBubbleImageSize: sliceParams.imageSize,
+      chatBubbleContentPadding: sliceParams.contentPadding,
     );
   } catch (e, st) {
-    debugPrint('[CosmeticsProvider] ERRO userId=$userId: $e');
-    debugPrint('[CosmeticsProvider] STACK: $st');
+    debugPrint('[CosmeticsProvider] ERRO userId=$userId: $e\n$st');
     return UserCosmetics.empty(userId);
   }
 });
 
 /// Provider para buscar cosméticos de múltiplos usuários de uma vez.
+///
+/// Útil para pré-carregar cosméticos de todos os participantes de um chat
+/// antes de renderizar a lista de mensagens, evitando flickering.
 final batchCosmeticsProvider =
     FutureProvider.family<Map<String, UserCosmetics>, List<String>>(
         (ref, userIds) async {
@@ -148,6 +194,7 @@ final batchCosmeticsProvider =
       String? chatBubbleStyle;
       String? chatBubbleColor;
       String? chatBubbleImageUrl;
+      var sliceParams = _extractNineSliceParams({});
 
       for (final item in items) {
         final storeItem = _asMap(item['store_items']);
@@ -155,7 +202,6 @@ final batchCosmeticsProvider =
 
         final type = _asString(storeItem['type']);
         final assetConfig = _asMap(storeItem['asset_config']);
-        final legacyMetadata = _asMap(storeItem['metadata']);
 
         if (type == 'avatar_frame') {
           avatarFrameUrl = _firstNonEmpty([
@@ -163,29 +209,25 @@ final batchCosmeticsProvider =
             _asString(assetConfig['image_url']),
             _asString(storeItem['asset_url']),
             _asString(storeItem['preview_url']),
-            _asString(legacyMetadata['image_url']),
-            _asString(storeItem['image_url']),
           ]);
         } else if (type == 'chat_bubble') {
           chatBubbleId = _asString(storeItem['id']);
           chatBubbleStyle = _firstNonEmpty([
             _asString(assetConfig['style']),
             _asString(assetConfig['bubble_style']),
-            _asString(legacyMetadata['style']),
           ]);
           chatBubbleColor = _firstNonEmpty([
             _asString(assetConfig['color']),
             _asString(assetConfig['bubble_color']),
-            _asString(legacyMetadata['color']),
           ]);
           chatBubbleImageUrl = _firstNonEmpty([
             _asString(assetConfig['image_url']),
+            _asString(assetConfig['bubble_url']),
             _asString(assetConfig['bubble_image_url']),
             _asString(storeItem['asset_url']),
             _asString(storeItem['preview_url']),
-            _asString(legacyMetadata['image_url']),
-            _asString(storeItem['image_url']),
           ]);
+          sliceParams = _extractNineSliceParams(assetConfig);
         }
       }
 
@@ -196,6 +238,9 @@ final batchCosmeticsProvider =
         chatBubbleStyle: chatBubbleStyle,
         chatBubbleColor: chatBubbleColor,
         chatBubbleImageUrl: chatBubbleImageUrl,
+        chatBubbleSliceInsets: sliceParams.sliceInsets,
+        chatBubbleImageSize: sliceParams.imageSize,
+        chatBubbleContentPadding: sliceParams.contentPadding,
       );
     }
   } catch (e) {
@@ -207,6 +252,8 @@ final batchCosmeticsProvider =
   return result;
 });
 
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
 Map<String, dynamic> _asMap(dynamic value) {
   if (value is Map<String, dynamic>) return value;
   if (value is Map) return Map<String, dynamic>.from(value);
@@ -216,6 +263,12 @@ Map<String, dynamic> _asMap(dynamic value) {
 String _asString(dynamic value) {
   if (value == null) return '';
   return value.toString().trim();
+}
+
+double _asDouble(dynamic value, {double fallback = 0}) {
+  if (value == null) return fallback;
+  if (value is num) return value.toDouble();
+  return double.tryParse(value.toString()) ?? fallback;
 }
 
 String? _firstNonEmpty(List<String> values) {
