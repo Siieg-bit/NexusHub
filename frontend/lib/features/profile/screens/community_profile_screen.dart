@@ -394,7 +394,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                           // Avatar centralizado
                           AvatarWithFrame(
                             avatarUrl: displayAvatar,
-                            frameUrl: ref.watch(equippedItemsProvider(widget.userId)).valueOrNull?['frame_url'] as String?,
+                            frameUrl: (ref.watch(equippedItemsProvider(widget.userId)).valueOrNull ?? {})?['frame_url'] as String?,
                             size: r.s(96),
                             showAminoPlus: isPremium,
                           ),

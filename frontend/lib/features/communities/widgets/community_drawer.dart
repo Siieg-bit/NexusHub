@@ -555,9 +555,10 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   /// Ao clicar, navega para o perfil do usuário na comunidade.
   Widget _buildUserAvatar(Responsive r, UserModel? user, Color themeColor) {
     final userId = user?.id ?? SupabaseService.currentUserId;
-    final frameUrl = userId != null
-        ? ref.watch(equippedItemsProvider(userId)).valueOrNull?['frame_url'] as String?
+    final equippedData = userId != null
+        ? ref.watch(equippedItemsProvider(userId)).valueOrNull
         : null;
+    final frameUrl = equippedData?['frame_url'] as String?;
     return AvatarWithFrame(
       avatarUrl: user?.iconUrl,
       frameUrl: frameUrl,
