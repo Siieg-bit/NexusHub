@@ -251,7 +251,7 @@ class _RichBioColorSyntax extends md.InlineSyntax {
 }
 
 class _RichBioColorBuilder extends MarkdownElementBuilder {
-  const _RichBioColorBuilder();
+  _RichBioColorBuilder();
 
   @override
   Widget? visitElementAfterWithContext(
@@ -410,7 +410,7 @@ class RichBioRenderer extends StatelessWidget {
           selectable: selectable,
           onTapLink: (_, href, __) => _openLink(href),
           inlineSyntaxes: [_RichBioColorSyntax()],
-          builders: const {_richBioColorTag: _RichBioColorBuilder()},
+          builders: {_richBioColorTag: _RichBioColorBuilder()},
           styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
             p: TextStyle(
               color: textColor,
