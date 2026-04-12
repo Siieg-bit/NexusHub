@@ -105,11 +105,9 @@ class _EditCommunityProfileScreenState
             ((profile['icon_url'] as String?)?.trim().isNotEmpty ?? false)) {
           profileSeed['local_icon_url'] = (profile['icon_url'] as String).trim();
         }
-        if ((localBannerUrl == null || localBannerUrl.isEmpty) &&
-            ((profile['banner_url'] as String?)?.trim().isNotEmpty ?? false)) {
-          profileSeed['local_banner_url'] =
-              (profile['banner_url'] as String).trim();
-        }
+        // Não reidratar automaticamente a capa global quando a capa local está
+        // nula. Nesse contexto, null pode significar que o usuário removeu a
+        // capa da comunidade intencionalmente.
 
         if (profileSeed.isNotEmpty) {
           await SupabaseService.table('community_members')
