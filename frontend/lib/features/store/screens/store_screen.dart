@@ -8,6 +8,7 @@ import '../../../core/utils/helpers.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../stickers/providers/sticker_providers.dart';
+import '../../chat/widgets/nine_slice_bubble.dart';
 
 /// Tela Store — Loja de itens virtuais (Avatar Frames, Chat Bubbles, Sticker Packs).
 ///
@@ -1051,56 +1052,33 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Balao com texto de exemplo
-              // Image widget com centerSlice — abordagem correta para nine-slice.
-              // DecorationImage+centerSlice lança assertion no Flutter moderno.
-              CachedNetworkImage(
-                imageUrl: imageUrl,
-                imageBuilder: (ctx, img) => Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Image(
-                        image: img,
-                        fit: BoxFit.fill,
-                        centerSlice: const Rect.fromLTRB(38, 38, 90, 90),
+              // NineSlicePreview usa Canvas.drawImageNine — sem assertion.
+              Expanded(
+                child: NineSlicePreview(
+                  imageUrl: imageUrl,
+                  sliceInsets: const EdgeInsets.all(38),
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: r.s(16),
+                        vertical: r.s(10),
                       ),
-                    ),
-                    Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: r.s(16),
-                          vertical: r.s(10),
-                        ),
-                        child: Text(
-                          'Olá! 👋',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: r.fs(13),
-                            fontWeight: FontWeight.w600,
-                            shadows: const [
-                              Shadow(
-                                color: Colors.black54,
-                                blurRadius: 4,
-                                offset: Offset(0, 1),
-                              ),
-                            ],
-                          ),
+                      child: Text(
+                        'Olá! 👋',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: r.fs(13),
+                          fontWeight: FontWeight.w600,
+                          shadows: const [
+                            Shadow(
+                              color: Colors.black54,
+                              blurRadius: 4,
+                              offset: Offset(0, 1),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
-                placeholder: (_, __) => Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppTheme.primaryColor,
-                  ),
-                ),
-                errorWidget: (_, __, ___) => Center(
-                  child: Icon(
-                    Icons.chat_bubble_rounded,
-                    color: Colors.grey[700],
-                    size: r.s(40),
                   ),
                 ),
               ),

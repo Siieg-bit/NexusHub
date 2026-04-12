@@ -25,6 +25,7 @@ import '../widgets/chat_input_bar.dart';
 import '../widgets/chat_date_separator.dart';
 import '../widgets/chat_media_sheet.dart';
 import '../widgets/chat_message_actions.dart';
+import '../widgets/nine_slice_bubble.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
 import 'chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
@@ -3370,47 +3371,34 @@ class _BubblePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imageUrl != null && imageUrl!.isNotEmpty) {
-      // Preview nine-slice usando Image widget (não DecorationImage).
-      // DecorationImage+centerSlice lança assertion no Flutter moderno.
-      // Image widget com centerSlice é a abordagem correta.
-      return CachedNetworkImage(
-        imageUrl: imageUrl!,
-        imageBuilder: (ctx, img) => Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned.fill(
-              child: Image(
-                image: img,
-                fit: BoxFit.fill,
-                centerSlice: const Rect.fromLTRB(38, 38, 90, 90),
-              ),
+      // Preview nine-slice via CustomPainter+drawImageNine.
+      // Image/DecorationImage+centerSlice lançam assertion no Flutter moderno.
+      return Stack(
+        children: [
+          Positioned.fill(
+            child: NineSlicePreview(
+              imageUrl: imageUrl!,
+              sliceInsets: const EdgeInsets.all(38),
             ),
-            Center(
-              child: Text(
-                'Olá!',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: r.fs(13),
-                  fontWeight: FontWeight.w500,
-                  shadows: const [
-                    Shadow(
-                      color: Colors.black54,
-                      blurRadius: 4,
-                      offset: Offset(0, 1),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        placeholder: (_, __) => Container(
-          decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(r.s(10)),
           ),
-        ),
-        errorWidget: (_, __, ___) => _fallbackContainer(context),
+          Center(
+            child: Text(
+              'Olá!',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: r.fs(13),
+                fontWeight: FontWeight.w500,
+                shadows: const [
+                  Shadow(
+                    color: Colors.black54,
+                    blurRadius: 4,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       );
     }
 
