@@ -260,19 +260,38 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final localIconUrl = _membership?['local_icon_url'] as String?;
     final localBannerUrl = _membership?['local_banner_url'] as String?;
     final localBio = _membership?['local_bio'] as String?;
-    // ignore: unused_local_variable — reservado para futura implementação de background por comunidade
-    final _ = _membership?['local_background_url'] as String?;
-    final localBackgroundColor = _membership?['local_background_color'] as String?;
+    final localBackgroundUrl = (_membership?['local_background_url'] as String?)?.trim();
+    final localBackgroundColor = (_membership?['local_background_color'] as String?)?.trim();
     final rawGallery = _membership?['local_gallery'] as List<dynamic>?;
     final displayGallery = rawGallery?.map((e) => e.toString()).toList() ?? <String>[];
-    // Cor de fundo dinâmica: cor sólida > imagem > default
-    Color? dynamicBgColor;
-    if (localBackgroundColor != null && localBackgroundColor.isNotEmpty) {
+
+    Color? parseProfileBackgroundColor(String? rawColor) {
+      if (rawColor == null || rawColor.trim().isEmpty) return null;
+      final normalized = rawColor.trim().toUpperCase();
       try {
-        final hex = localBackgroundColor.replaceFirst('#', '');
-        dynamicBgColor = Color(int.parse('FF$hex', radix: 16));
+        if (normalized.startsWith('#')) {
+          final hex = normalized.substring(1);
+          if (hex.length == 6) return Color(int.parse('FF$hex', radix: 16));
+          if (hex.length == 8) return Color(int.parse(hex, radix: 16));
+        }
+        if (normalized.startsWith('0X')) {
+          return Color(int.parse(normalized.substring(2), radix: 16));
+        }
+        if (normalized.length == 6) {
+          return Color(int.parse('FF$normalized', radix: 16));
+        }
+        if (normalized.length == 8) {
+          return Color(int.parse(normalized, radix: 16));
+        }
       } catch (_) {}
+      return null;
     }
+
+    final dynamicBgColor = parseProfileBackgroundColor(localBackgroundColor);
+    final profileBackgroundImage =
+        (localBackgroundUrl?.isNotEmpty ?? false) ? localBackgroundUrl : null;
+    final hasProfileBackgroundImage = profileBackgroundImage != null;
+
     // Banner ativo da galeria (rotativo)
     final activeBannerUrl = displayGallery.isNotEmpty
         ? displayGallery[_bannerIndex.clamp(0, displayGallery.length - 1)]
@@ -307,12 +326,17 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         (titles.isNotEmpty ? r.s(40) : 0) +
         (roleTitle != null ? r.s(28) : 0);
 
-    // Fundo dinâmico: cor sólida (se definida) ou imagem (via Stack) ou default
     final effectiveBgColor = dynamicBgColor ?? context.scaffoldBg;
+    final layeredBgColor = hasProfileBackgroundImage
+        ? effectiveBgColor.withValues(alpha: 0.84)
+        : effectiveBgColor;
+    final bannerFadeColor = hasProfileBackgroundImage
+        ? layeredBgColor.withValues(alpha: 0.92)
+        : effectiveBgColor;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: effectiveBgColor,
+      backgroundColor: layeredBgColor,
       floatingActionButton: _isOwnProfile
           ? AminoCommunityFab(
               onTap: () => showCommunityCreateMenu(
@@ -322,7 +346,35 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
               ),
             )
           : null,
-      body: RefreshIndicator(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (hasProfileBackgroundImage)
+            CachedNetworkImage(
+              imageUrl: profileBackgroundImage,
+              fit: BoxFit.cover,
+              color: Colors.black.withValues(alpha: 0.35),
+              colorBlendMode: BlendMode.darken,
+              errorWidget: (_, __, ___) => Container(color: effectiveBgColor),
+            )
+          else
+            Container(color: effectiveBgColor),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: hasProfileBackgroundImage
+                    ? [
+                        Colors.black.withValues(alpha: 0.08),
+                        layeredBgColor.withValues(alpha: 0.30),
+                        layeredBgColor,
+                      ]
+                    : [effectiveBgColor, effectiveBgColor],
+              ),
+            ),
+          ),
+          RefreshIndicator(
         color: AppTheme.primaryColor,
         backgroundColor: context.surfaceColor,
         onRefresh: _loadProfile,
@@ -340,7 +392,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             SliverAppBar(
               expandedHeight: expandedHeight,
               pinned: true,
-              backgroundColor: effectiveBgColor,
+              backgroundColor: layeredBgColor,
               elevation: 0,
               leading: IconButton(
                 icon: Icon(Icons.arrow_back_ios_rounded,
@@ -439,8 +491,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                           gradient: LinearGradient(
                             colors: [
                               Colors.transparent,
-                              effectiveBgColor.withValues(alpha: 0.7),
-                              effectiveBgColor,
+                              bannerFadeColor.withValues(alpha: 0.7),
+                              bannerFadeColor,
                             ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
@@ -840,7 +892,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             // ================================================================
             SliverToBoxAdapter(
               child: Container(
-                color: effectiveBgColor,
+                color: layeredBgColor,
                 padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
                 child: Row(
                   children: [
@@ -1084,8 +1136,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
               _buildSavedPostsTab(),
             ],
           ),
-      ),
-      ),
+        ),
+      ],
+    ),
     );
   }
 

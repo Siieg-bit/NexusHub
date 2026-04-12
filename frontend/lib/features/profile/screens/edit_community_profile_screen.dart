@@ -271,28 +271,141 @@ class _EditCommunityProfileScreenState
     }
   }
 
+  Color? _parseStoredBackgroundColor(String? rawColor) {
+    if (rawColor == null || rawColor.trim().isEmpty) return null;
+    final normalized = rawColor.trim().toUpperCase();
+    try {
+      if (normalized.startsWith('#')) {
+        final hex = normalized.substring(1);
+        if (hex.length == 6) return Color(int.parse('FF$hex', radix: 16));
+        if (hex.length == 8) return Color(int.parse(hex, radix: 16));
+      }
+      if (normalized.startsWith('0X')) {
+        return Color(int.parse(normalized.substring(2), radix: 16));
+      }
+      if (normalized.length == 6) {
+        return Color(int.parse('FF$normalized', radix: 16));
+      }
+      if (normalized.length == 8) {
+        return Color(int.parse(normalized, radix: 16));
+      }
+    } catch (_) {}
+    return null;
+  }
+
   Future<void> _pickBackground() async {
-    final url = await _uploadCommunityImage('background');
-    if (url != null && mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() {
-          _localBackgroundUrl = url;
-          _localBackgroundColor = null; // limpa cor ao escolher imagem
-        });
+    final s = getStrings();
+    if (_gallery.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Adicione uma imagem à galeria antes de usá-la como fundo.'),
+        backgroundColor: AppTheme.warningColor,
+      ));
+      return;
+    }
+
+    final selectedUrl = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: context.surfaceColor,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final r = sheetContext.r;
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(24)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  s.backgroundFromGallery,
+                  style: TextStyle(
+                    color: context.textPrimary,
+                    fontSize: r.fs(18),
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: r.s(6)),
+                Text(
+                  'Escolha uma imagem já adicionada à sua galeria para usar como plano de fundo do perfil.',
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: r.fs(13),
+                  ),
+                ),
+                SizedBox(height: r.s(14)),
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _gallery.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: r.s(10),
+                    crossAxisSpacing: r.s(10),
+                    childAspectRatio: 1,
+                  ),
+                  itemBuilder: (_, index) {
+                    final imageUrl = _gallery[index];
+                    final isSelected = imageUrl == _localBackgroundUrl;
+                    return GestureDetector(
+                      onTap: () => Navigator.of(sheetContext).pop(imageUrl),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(r.s(12)),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppTheme.accentColor
+                                : Colors.white.withValues(alpha: 0.08),
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            CachedNetworkImage(
+                              imageUrl: imageUrl,
+                              fit: BoxFit.cover,
+                              errorWidget: (_, __, ___) => Container(
+                                color: Colors.grey[850],
+                                child: Icon(Icons.broken_image_outlined,
+                                    color: Colors.grey[500]),
+                              ),
+                            ),
+                            if (isSelected)
+                              Container(
+                                color: Colors.black.withValues(alpha: 0.35),
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  Icons.check_circle_rounded,
+                                  color: Colors.white,
+                                  size: r.s(24),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selectedUrl != null && mounted) {
+      setState(() {
+        _localBackgroundUrl = selectedUrl;
+        _localBackgroundColor = null;
       });
     }
   }
 
   Future<void> _pickBackgroundColor() async {
     final s = getStrings();
-    // Cor inicial: parsear _localBackgroundColor se existir
-    Color initialColor = const Color(0xFF1A1A2E);
-    if (_localBackgroundColor != null) {
-      try {
-        final hex = _localBackgroundColor!.replaceFirst('#', '');
-        initialColor = Color(int.parse('FF$hex', radix: 16));
-      } catch (_) {}
-    }
+    final initialColor = _parseStoredBackgroundColor(_localBackgroundColor) ??
+        const Color(0xFF1A1A2E);
     final picked = await showRGBColorPicker(
       context,
       initialColor: initialColor,
@@ -325,8 +438,11 @@ class _EditCommunityProfileScreenState
   void _removeGalleryPhoto(int index) {
     setState(() {
       final updated = List<String>.from(_gallery);
-      updated.removeAt(index);
+      final removedUrl = updated.removeAt(index);
       _gallery = updated;
+      if (_localBackgroundUrl == removedUrl) {
+        _localBackgroundUrl = null;
+      }
     });
   }
 
@@ -612,14 +728,8 @@ class _EditCommunityProfileScreenState
                                   vertical: r.s(10), horizontal: r.s(12)),
                               decoration: BoxDecoration(
                                 color: _localBackgroundColor != null
-                                    ? (() {
-                                        try {
-                                          final hex = _localBackgroundColor!.replaceFirst('#', '');
-                                          return Color(int.parse('FF$hex', radix: 16));
-                                        } catch (_) {
-                                          return AppTheme.accentColor.withValues(alpha: 0.15);
-                                        }
-                                      })()
+                                    ? (_parseStoredBackgroundColor(_localBackgroundColor) ??
+                                        AppTheme.accentColor.withValues(alpha: 0.15))
                                     : context.surfaceColor,
                                 borderRadius: BorderRadius.circular(r.s(10)),
                                 border: Border.all(
