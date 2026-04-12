@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
@@ -183,6 +184,35 @@ class _EditCommunityProfileScreenState
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _openBioEditor() async {
+    final s = ref.read(stringsProvider);
+    final updatedBio = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _BioRichEditorSheet(
+        initialValue: _bioController.text,
+        title: s.bioInCommunityLabel,
+        hintText: s.writeBioHint,
+        saveLabel: s.saveChangesAction,
+        cancelLabel: s.cancel,
+        editorLabel: s.editor,
+        previewLabel: s.preview,
+        markdownLabel: s.supportsMarkdown,
+        maxLength: 500,
+      ),
+    );
+
+    if (!mounted || updatedBio == null) return;
+
+    setState(() {
+      _bioController.value = TextEditingValue(
+        text: updatedBio,
+        selection: TextSelection.collapsed(offset: updatedBio.length),
+      );
+    });
   }
 
   // ─── Upload helpers ──────────────────────────────────────────────────────────
@@ -676,16 +706,15 @@ class _EditCommunityProfileScreenState
                   _AminoListTile(
                     leading: Icon(Icons.edit_note_rounded,
                         color: Colors.grey[500], size: r.s(28)),
-                    content: _InlineTextField(
+                    content: _CommunityBioField(
                       controller: _bioController,
                       hintText: s.leaveEmptyBio,
-                      maxLines: 3,
-                      maxLength: 500,
-                      style: TextStyle(
-                        color: context.textPrimary,
-                        fontSize: r.fs(14),
-                      ),
+                      markdownLabel: s.markdown,
+                      previewLabel: s.preview,
+                      onTap: _openBioEditor,
                     ),
+                    trailing: Icon(Icons.chevron_right_rounded,
+                        color: context.textHint, size: r.s(22)),
                   ),
 
                   _AminoDivider(),
@@ -1189,6 +1218,559 @@ class _InlineTextField extends StatelessWidget {
         contentPadding: EdgeInsets.zero,
         counterStyle:
             TextStyle(color: context.textHint, fontSize: r.fs(10)),
+      ),
+    );
+  }
+}
+
+class _CommunityBioField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hintText;
+  final String markdownLabel;
+  final String previewLabel;
+  final VoidCallback onTap;
+
+  const _CommunityBioField({
+    required this.controller,
+    required this.hintText,
+    required this.markdownLabel,
+    required this.previewLabel,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    final bio = controller.text.trim();
+    final hasBio = bio.isNotEmpty;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(r.s(12)),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: r.s(4)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                hasBio ? bio : hintText,
+                maxLines: hasBio ? 4 : 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: hasBio ? context.textPrimary : context.textHint,
+                  fontSize: r.fs(14),
+                  height: 1.45,
+                ),
+              ),
+              SizedBox(height: r.s(8)),
+              Wrap(
+                spacing: r.s(6),
+                runSpacing: r.s(6),
+                children: [
+                  _BioInfoChip(label: markdownLabel),
+                  _BioInfoChip(label: previewLabel),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BioInfoChip extends StatelessWidget {
+  final String label;
+
+  const _BioInfoChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: r.s(8),
+        vertical: r.s(4),
+      ),
+      decoration: BoxDecoration(
+        color: AppTheme.accentColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(r.s(999)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: AppTheme.accentColor,
+          fontSize: r.fs(11),
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _BioRichEditorSheet extends StatefulWidget {
+  final String initialValue;
+  final String title;
+  final String hintText;
+  final String saveLabel;
+  final String cancelLabel;
+  final String editorLabel;
+  final String previewLabel;
+  final String markdownLabel;
+  final int maxLength;
+
+  const _BioRichEditorSheet({
+    required this.initialValue,
+    required this.title,
+    required this.hintText,
+    required this.saveLabel,
+    required this.cancelLabel,
+    required this.editorLabel,
+    required this.previewLabel,
+    required this.markdownLabel,
+    this.maxLength = 500,
+  });
+
+  @override
+  State<_BioRichEditorSheet> createState() => _BioRichEditorSheetState();
+}
+
+class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+  bool _showPreview = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+    _focusNode = FocusNode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _replaceValue(String value, {TextSelection? selection}) {
+    final safeOffset = selection?.extentOffset ?? value.length;
+    final clampedOffset = safeOffset.clamp(0, value.length) as int;
+    _controller.value = TextEditingValue(
+      text: value,
+      selection: selection != null
+          ? TextSelection(
+              baseOffset: selection.baseOffset.clamp(0, value.length) as int,
+              extentOffset: selection.extentOffset.clamp(0, value.length) as int,
+            )
+          : TextSelection.collapsed(offset: clampedOffset),
+    );
+    setState(() {});
+  }
+
+  void _wrapSelection(String prefix, String suffix) {
+    final value = _controller.value;
+    final selection = value.selection;
+    final text = value.text;
+
+    if (!selection.isValid || selection.start < 0 || selection.end < 0) {
+      final inserted = '$prefix$suffix';
+      _replaceValue(
+        '$text$inserted',
+        selection: TextSelection.collapsed(offset: text.length + prefix.length),
+      );
+      return;
+    }
+
+    final start = selection.start;
+    final end = selection.end;
+    final selected = text.substring(start, end);
+    final updated = text.replaceRange(start, end, '$prefix$selected$suffix');
+
+    _replaceValue(
+      updated,
+      selection: selected.isEmpty
+          ? TextSelection.collapsed(offset: start + prefix.length)
+          : TextSelection(
+              baseOffset: start + prefix.length,
+              extentOffset: start + prefix.length + selected.length,
+            ),
+    );
+  }
+
+  void _toggleLinePrefix(String prefix) {
+    final value = _controller.value;
+    final selection = value.selection;
+    final text = value.text;
+
+    if (!selection.isValid || selection.start < 0 || selection.end < 0) {
+      final updated = '$text${text.isNotEmpty ? '
+' : ''}$prefix';
+      _replaceValue(
+        updated,
+        selection: TextSelection.collapsed(offset: updated.length),
+      );
+      return;
+    }
+
+    final start = selection.start;
+    final end = selection.end;
+    final blockStart = text.lastIndexOf('
+', start == 0 ? 0 : start - 1) + 1;
+    final nextBreak = text.indexOf('
+', end);
+    final blockEnd = nextBreak == -1 ? text.length : nextBreak;
+    final block = text.substring(blockStart, blockEnd);
+    final lines = block.split('
+');
+    final allPrefixed = lines
+        .where((line) => line.trim().isNotEmpty)
+        .every((line) => line.startsWith(prefix));
+
+    final updatedBlock = lines
+        .map((line) {
+          if (line.trim().isEmpty) return line;
+          if (allPrefixed) {
+            return line.startsWith(prefix) ? line.substring(prefix.length) : line;
+          }
+          return line.startsWith(prefix) ? line : '$prefix$line';
+        })
+        .join('
+');
+
+    final updated = text.replaceRange(blockStart, blockEnd, updatedBlock);
+    _replaceValue(
+      updated,
+      selection: TextSelection(
+        baseOffset: blockStart,
+        extentOffset: blockStart + updatedBlock.length,
+      ),
+    );
+  }
+
+  void _insertDivider() {
+    final text = _controller.text;
+    final selection = _controller.selection;
+    final insertText = '${text.isNotEmpty ? '
+
+' : ''}---
+';
+
+    if (!selection.isValid || selection.start < 0) {
+      final updated = '$text$insertText';
+      _replaceValue(
+        updated,
+        selection: TextSelection.collapsed(offset: updated.length),
+      );
+      return;
+    }
+
+    final start = selection.start;
+    final end = selection.end;
+    final updated = text.replaceRange(start, end, insertText);
+    _replaceValue(
+      updated,
+      selection: TextSelection.collapsed(offset: start + insertText.length),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 180),
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: SafeArea(
+        top: false,
+        child: Container(
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.92),
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(24))),
+          ),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(16)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: r.s(44),
+                    height: r.s(4),
+                    decoration: BoxDecoration(
+                      color: context.dividerClr,
+                      borderRadius: BorderRadius.circular(r.s(999)),
+                    ),
+                  ),
+                ),
+                SizedBox(height: r.s(16)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        style: TextStyle(
+                          color: context.textPrimary,
+                          fontSize: r.fs(18),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(widget.cancelLabel),
+                    ),
+                    SizedBox(width: r.s(4)),
+                    FilledButton(
+                      onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+                      child: Text(widget.saveLabel),
+                    ),
+                  ],
+                ),
+                SizedBox(height: r.s(6)),
+                Text(
+                  widget.markdownLabel,
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontSize: r.fs(12),
+                  ),
+                ),
+                SizedBox(height: r.s(14)),
+                Wrap(
+                  spacing: r.s(8),
+                  runSpacing: r.s(8),
+                  children: [
+                    _FormatActionChip(
+                      icon: Icons.format_bold_rounded,
+                      label: 'Negrito',
+                      onTap: () => _wrapSelection('**', '**'),
+                    ),
+                    _FormatActionChip(
+                      icon: Icons.format_italic_rounded,
+                      label: 'Itálico',
+                      onTap: () => _wrapSelection('*', '*'),
+                    ),
+                    _FormatActionChip(
+                      icon: Icons.format_strikethrough_rounded,
+                      label: 'Tachado',
+                      onTap: () => _wrapSelection('~~', '~~'),
+                    ),
+                    _FormatActionChip(
+                      icon: Icons.title_rounded,
+                      label: 'Título',
+                      onTap: () => _toggleLinePrefix('## '),
+                    ),
+                    _FormatActionChip(
+                      icon: Icons.format_quote_rounded,
+                      label: 'Citação',
+                      onTap: () => _toggleLinePrefix('> '),
+                    ),
+                    _FormatActionChip(
+                      icon: Icons.format_list_bulleted_rounded,
+                      label: 'Lista',
+                      onTap: () => _toggleLinePrefix('- '),
+                    ),
+                    _FormatActionChip(
+                      icon: Icons.horizontal_rule_rounded,
+                      label: 'Divisor',
+                      onTap: _insertDivider,
+                    ),
+                  ],
+                ),
+                SizedBox(height: r.s(14)),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: context.cardBg,
+                      borderRadius: BorderRadius.circular(r.s(16)),
+                      border: Border.all(color: context.dividerClr),
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.all(r.s(8)),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: SegmentedButton<bool>(
+                                  segments: [
+                                    ButtonSegment<bool>(
+                                      value: false,
+                                      icon: const Icon(Icons.edit_rounded),
+                                      label: Text(widget.editorLabel),
+                                    ),
+                                    ButtonSegment<bool>(
+                                      value: true,
+                                      icon: const Icon(Icons.visibility_rounded),
+                                      label: Text(widget.previewLabel),
+                                    ),
+                                  ],
+                                  selected: {_showPreview},
+                                  onSelectionChanged: (selection) {
+                                    setState(() => _showPreview = selection.first);
+                                    if (!_showPreview) {
+                                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                                        if (mounted) _focusNode.requestFocus();
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: r.s(8)),
+                              ValueListenableBuilder<TextEditingValue>(
+                                valueListenable: _controller,
+                                builder: (_, value, __) => Text(
+                                  '${value.text.length}/${widget.maxLength}',
+                                  style: TextStyle(
+                                    color: context.textSecondary,
+                                    fontSize: r.fs(12),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Divider(height: 1),
+                        Expanded(
+                          child: ValueListenableBuilder<TextEditingValue>(
+                            valueListenable: _controller,
+                            builder: (_, value, __) {
+                              if (_showPreview) {
+                                final previewText = value.text.trim();
+                                return SingleChildScrollView(
+                                  padding: EdgeInsets.all(r.s(16)),
+                                  child: previewText.isEmpty
+                                      ? Text(
+                                          widget.hintText,
+                                          style: TextStyle(
+                                            color: context.textHint,
+                                            fontSize: r.fs(14),
+                                            height: 1.5,
+                                          ),
+                                        )
+                                      : MarkdownBody(
+                                          data: previewText,
+                                          selectable: false,
+                                          styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                                            p: TextStyle(
+                                              color: context.textPrimary,
+                                              fontSize: r.fs(14),
+                                              height: 1.55,
+                                            ),
+                                            h2: TextStyle(
+                                              color: context.textPrimary,
+                                              fontSize: r.fs(18),
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                            blockquote: TextStyle(
+                                              color: context.textSecondary,
+                                              fontSize: r.fs(14),
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                            blockquoteDecoration: BoxDecoration(
+                                              color: AppTheme.accentColor.withValues(alpha: 0.08),
+                                              borderRadius: BorderRadius.circular(r.s(12)),
+                                              border: Border.all(
+                                                color: AppTheme.accentColor.withValues(alpha: 0.18),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                );
+                              }
+
+                              return TextField(
+                                controller: _controller,
+                                focusNode: _focusNode,
+                                maxLines: null,
+                                expands: true,
+                                maxLength: widget.maxLength,
+                                style: TextStyle(
+                                  color: context.textPrimary,
+                                  fontSize: r.fs(14),
+                                  height: 1.55,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: widget.hintText,
+                                  hintStyle: TextStyle(
+                                    color: context.textHint,
+                                    fontSize: r.fs(14),
+                                  ),
+                                  contentPadding: EdgeInsets.all(r.s(16)),
+                                  border: InputBorder.none,
+                                  counterText: '',
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FormatActionChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _FormatActionChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(r.s(999)),
+      child: Ink(
+        padding: EdgeInsets.symmetric(
+          horizontal: r.s(10),
+          vertical: r.s(8),
+        ),
+        decoration: BoxDecoration(
+          color: context.cardBg,
+          borderRadius: BorderRadius.circular(r.s(999)),
+          border: Border.all(
+            color: context.dividerClr,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: r.s(16), color: context.textPrimary),
+            SizedBox(width: r.s(6)),
+            Text(
+              label,
+              style: TextStyle(
+                color: context.textPrimary,
+                fontSize: r.fs(12),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
