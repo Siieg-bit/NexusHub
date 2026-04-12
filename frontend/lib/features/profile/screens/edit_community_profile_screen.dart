@@ -974,14 +974,15 @@ class _BannerAvatarSection extends ConsumerWidget {
     return Column(
       children: [
         // ── Banner ──────────────────────────────────────────────────────
-        GestureDetector(
-          onTap: onTapBanner,
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.bottomCenter,
-            children: [
-              // Banner
-              Container(
+        Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.bottomCenter,
+          children: [
+            // Banner
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onTapBanner,
+              child: Container(
                 height: r.s(160),
                 width: double.infinity,
                 color: const Color(0xFFE8E0E0),
@@ -994,14 +995,18 @@ class _BannerAvatarSection extends ConsumerWidget {
                       )
                     : null,
               ),
+            ),
 
-              // Botão de remover banner (canto superior direito)
-              if (bannerUrl != null && onRemoveBanner != null)
-                Positioned(
-                  top: r.s(8),
-                  right: r.s(8),
-                  child: GestureDetector(
+            // Botão de remover banner (canto superior direito)
+            if (bannerUrl != null && onRemoveBanner != null)
+              Positioned(
+                top: r.s(8),
+                right: r.s(8),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
                     onTap: onRemoveBanner,
+                    customBorder: const CircleBorder(),
                     child: Container(
                       padding: EdgeInsets.all(r.s(5)),
                       decoration: BoxDecoration(
@@ -1013,6 +1018,7 @@ class _BannerAvatarSection extends ConsumerWidget {
                     ),
                   ),
                 ),
+              ),
 
               // Avatar sobreposto ao banner (metade dentro, metade fora)
               Positioned(
