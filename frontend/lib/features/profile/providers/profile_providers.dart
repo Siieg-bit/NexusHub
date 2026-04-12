@@ -221,9 +221,23 @@ final userWallProvider =
   }
 });
 
-/// Provider para itens equipados (avatar frame, bubble).
+/// Provider para itens equipados (avatar frame, bubble, sticker_packs).
+/// Lê corretamente o asset_config de cada item para extrair as URLs reais.
 final equippedItemsProvider =
-    FutureProvider.family<Map<String, String?>, String>((ref, userId) async {
+    FutureProvider.family<Map<String, dynamic>, String>((ref, userId) async {
+  String _str(dynamic v) => v?.toString().trim() ?? '';
+  String? _first(List<String> vals) {
+    for (final v in vals) {
+      if (v.isNotEmpty) return v;
+    }
+    return null;
+  }
+  Map<String, dynamic> _toMap(dynamic v) {
+    if (v is Map<String, dynamic>) return v;
+    if (v is Map) return Map<String, dynamic>.from(v);
+    return {};
+  }
+
   try {
     final response = await SupabaseService.table('user_purchases')
         .select('*, store_items(*)')
@@ -231,17 +245,59 @@ final equippedItemsProvider =
         .eq('is_equipped', true);
     final items = response as List;
     String? frameUrl;
-    String? bubbleUrl;
-    for (final item in items) {
-      final storeItem = item['store_items'] as Map<String, dynamic>?;
-      if (storeItem == null) continue;
-      final type = storeItem['type'] as String? ?? '';
-      final imageUrl = storeItem['image_url'] as String? ?? '';
-      if (type == 'avatar_frame') frameUrl = imageUrl;
-      if (type == 'chat_bubble') bubbleUrl = imageUrl;
+    String? bubbleId;
+    String? bubbleStyle;
+    String? bubbleColor;
+    String? bubbleImageUrl;
+    final List<String> equippedPackIds = [];
+
+    for (final raw in items) {
+      final item = _toMap(raw);
+      final si = _toMap(item['store_items']);
+      if (si.isEmpty) continue;
+      final type = _str(si['type']);
+      final ac = _toMap(si['asset_config']);
+
+      if (type == 'avatar_frame') {
+        frameUrl = _first([
+          _str(ac['frame_url']),
+          _str(ac['image_url']),
+          _str(si['asset_url']),
+          _str(si['preview_url']),
+        ]);
+      } else if (type == 'chat_bubble') {
+        bubbleId = _str(si['id']);
+        bubbleStyle = _first([_str(ac['style']), _str(ac['bubble_style'])]);
+        bubbleColor = _first([_str(ac['color']), _str(ac['bubble_color'])]);
+        bubbleImageUrl = _first([
+          _str(ac['image_url']),
+          _str(ac['bubble_image_url']),
+          _str(si['asset_url']),
+          _str(si['preview_url']),
+        ]);
+      } else if (type == 'sticker_pack') {
+        final packId = _first([_str(ac['pack_id']), _str(si['pack_id'])]);
+        if (packId != null && packId.isNotEmpty) {
+          equippedPackIds.add(packId);
+        }
+      }
     }
-    return {'frame_url': frameUrl, 'bubble_url': bubbleUrl};
+    return {
+      'frame_url': frameUrl,
+      'bubble_id': bubbleId,
+      'bubble_style': bubbleStyle,
+      'bubble_color': bubbleColor,
+      'bubble_image_url': bubbleImageUrl,
+      'equipped_pack_ids': equippedPackIds,
+    };
   } catch (_) {
-    return {'frame_url': null, 'bubble_url': null};
+    return {
+      'frame_url': null,
+      'bubble_id': null,
+      'bubble_style': null,
+      'bubble_color': null,
+      'bubble_image_url': null,
+      'equipped_pack_ids': <String>[],
+    };
   }
 });

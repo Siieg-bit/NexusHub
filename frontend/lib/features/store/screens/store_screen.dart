@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
+import '../../../core/providers/cosmetics_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../stickers/providers/sticker_providers.dart';
 
 /// Tela Store — Loja de itens virtuais (Avatar Frames, Chat Bubbles, Sticker Packs).
 ///
@@ -39,7 +41,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
     'Frames',
     'Bubbles',
     'Stickers',
-    'Backgrounds',
   ];
 
   final List<IconData> _tabIcons = const [
@@ -47,7 +48,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
     Icons.face_rounded,
     Icons.chat_bubble_rounded,
     Icons.emoji_emotions_rounded,
-    Icons.wallpaper_rounded,
   ];
 
   @override
@@ -133,18 +133,22 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
   }
 
   List<Map<String, dynamic>> _filterItems(int tabIndex) {
-    if (tabIndex == 0) return _items;
+    // Filtra profile_background de todas as abas
+    final visible = _items
+        .where((item) => _asString(item['type']) != 'profile_background')
+        .toList();
+
+    if (tabIndex == 0) return visible;
 
     const types = [
       '',
       'avatar_frame',
       'chat_bubble',
       'sticker_pack',
-      'profile_background',
     ];
 
     final targetType = types[tabIndex];
-    return _items.where((item) => _asString(item['type']) == targetType).toList();
+    return visible.where((item) => _asString(item['type']) == targetType).toList();
   }
 
   bool _isOwned(Map<String, dynamic> item) {
@@ -159,10 +163,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
   }
 
   bool _isEquipableType(String type) {
-    return type == 'avatar_frame' ||
-        type == 'chat_bubble' ||
-        type == 'profile_background' ||
-        type == 'chat_background';
+    return type == 'avatar_frame' || type == 'chat_bubble';
   }
 
   Future<void> _purchaseItem(Map<String, dynamic> item) async {
@@ -219,6 +220,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
       }
 
       await _loadStore();
+      // Invalida o cache de cosméticos e packs comprados para refletir a nova compra
+      final userId = SupabaseService.currentUserId;
+      if (userId != null) {
+        ref.invalidate(userCosmeticsProvider(userId));
+      }
+      ref.invalidate(purchasedStorePacksProvider);
 
       if (!mounted) return;
       _showSnack('$itemName comprado com sucesso!');
@@ -273,6 +280,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
       }).eq('id', purchaseId);
 
       await _loadStore();
+      // Invalida o cache de cosméticos para que frame/bubble apaream imediatamente
+      final userId = SupabaseService.currentUserId;
+      if (userId != null) {
+        ref.invalidate(userCosmeticsProvider(userId));
+      }
       if (!mounted) return;
 
       _showSnack(
@@ -333,7 +345,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
       'avatar_frame' => 'Moldura global para o seu perfil.',
       'chat_bubble' => 'Bolha visual para conversas do app.',
       'sticker_pack' => 'Pack integrado ao ecossistema de stickers.',
-      'profile_background' => 'Plano de fundo para personalização global.',
       _ => 'Item exclusivo da loja.',
     };
   }

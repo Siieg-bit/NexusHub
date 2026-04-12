@@ -21,6 +21,13 @@ final storePacksProvider = FutureProvider<List<StickerPackModel>>((ref) async {
   return StickerRepository.instance.getStorePacks();
 });
 
+/// Packs da loja que o usuário já comprou.
+/// Usado pelo picker do chat para exibir apenas packs desbloqueados.
+final purchasedStorePacksProvider =
+    FutureProvider<List<StickerPackModel>>((ref) async {
+  return StickerRepository.instance.getPurchasedStorePacks();
+});
+
 /// Packs públicos para descoberta (com busca opcional).
 final publicPacksProvider = FutureProvider.family<List<StickerPackModel>, String?>(
   (ref, search) async {

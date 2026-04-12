@@ -188,12 +188,14 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
         return;
       }
 
+      // Nota: filtro de join no PostgREST (.eq('store_items.type', ...)) não funciona
+      // como filtro — retorna todas as compras com store_items null para as que não batem.
+      // Por isso buscamos todas as compras e filtramos no Dart.
       final purchasedRes = await SupabaseService.table('user_purchases')
           .select(
             'item_id, store_items!user_purchases_item_id_fkey(id, type, name, asset_config, preview_url, asset_url)',
           )
-          .eq('user_id', userId)
-          .eq('store_items.type', 'sticker_pack');
+          .eq('user_id', userId);
 
       final purchased = List<Map<String, dynamic>>.from(purchasedRes as List? ?? []);
       final ownedPackItems = <Map<String, dynamic>>[];

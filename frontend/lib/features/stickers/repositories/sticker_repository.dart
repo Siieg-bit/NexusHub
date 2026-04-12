@@ -345,4 +345,46 @@ class StickerRepository {
       return [];
     }
   }
+
+  /// Retorna apenas os sticker packs que o usuário comprou na loja.
+  ///
+  /// Busca as compras do tipo 'sticker_pack' e cruza com os packs reais
+  /// para retornar os [StickerPackModel] completos com stickers.
+  Future<List<StickerPackModel>> getPurchasedStorePacks() async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return [];
+
+      // 1. Busca todas as compras do usuário (sem filtro de join que não funciona no PostgREST)
+      final purchases = await SupabaseService.table('user_purchases')
+          .select('item_id, store_items!user_purchases_item_id_fkey(id, type, asset_config)')
+          .eq('user_id', userId);
+
+      final purchaseList = List<Map<String, dynamic>>.from(purchases as List? ?? []);
+
+      // 2. Filtra apenas os de tipo sticker_pack e extrai os pack_ids
+      final packIds = <String>{};
+      for (final p in purchaseList) {
+        final storeItem = p['store_items'] as Map<String, dynamic>?;
+        if (storeItem == null) continue;
+        if ((storeItem['type'] as String?) != 'sticker_pack') continue;
+        final assetConfig = storeItem['asset_config'] as Map<String, dynamic>? ?? {};
+        final packId = assetConfig['pack_id'] as String? ?? '';
+        if (packId.isNotEmpty) packIds.add(packId);
+      }
+
+      if (packIds.isEmpty) return [];
+
+      // 3. Busca os packs completos com stickers
+      final res = await SupabaseService.table('sticker_packs')
+          .select('*, stickers(*)')
+          .inFilter('id', packIds.toList());
+
+      final list = List<Map<String, dynamic>>.from(res as List? ?? []);
+      return list.map(StickerPackModel.fromJson).toList();
+    } catch (e) {
+      debugPrint('[StickerRepository] getPurchasedStorePacks: $e');
+      return [];
+    }
+  }
 }

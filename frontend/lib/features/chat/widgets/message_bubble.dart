@@ -5,10 +5,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
+import '../../../core/providers/cosmetics_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../stickers/widgets/sticker_message_bubble.dart';
+import 'chat_bubble.dart' show ChatBubble;
 import 'voice_recorder.dart' show VoiceNotePlayer;
 
 /// ============================================================================
@@ -145,45 +148,55 @@ class MessageBubble extends ConsumerWidget {
 
     final isMediaOnly = _isMediaOnlyType(message);
     final isAudioType = message.type == 'audio' || message.type == 'voice_note';
-    final selfLabel = Localizations.localeOf(context).languageCode == 'pt'
-        ? 'Eu'
-        : 'Me';
-    final authorName = isMe ? selfLabel : (message.author?.nickname ?? 'User');
-    final authorIcon = message.author?.iconUrl;
 
-    Widget buildAuthorAvatar() {
-      return GestureDetector(
-        onTap: () {
-          if (communityId != null && communityId!.isNotEmpty) {
-            context.push('/community/$communityId/profile/${message.authorId}');
-          } else {
-            context.push('/user/${message.authorId}');
-          }
-        },
-        child: CircleAvatar(
-          radius: 16,
-          backgroundColor: context.surfaceColor,
-          backgroundImage: authorIcon != null && authorIcon.isNotEmpty
-              ? CachedNetworkImageProvider(authorIcon)
-              : null,
-          child: authorIcon == null || authorIcon.isEmpty
-              ? Text(
-                  authorName.isNotEmpty ? authorName[0].toUpperCase() : '?',
-                  style: TextStyle(
-                    fontSize: r.fs(11),
-                    color: Colors.grey[400],
-                  ),
-                )
-              : null,
-        ),
-      );
+    // ── Cosméticos do remetente (frame + bubble) ──
+    final authorId = message.authorId;
+    final senderCosmeticsAsync = authorId.isNotEmpty
+        ? ref.watch(userCosmeticsProvider(authorId))
+        : const AsyncData<UserCosmetics?>(null);
+    final senderCosmetics = senderCosmeticsAsync.valueOrNull;
+
+    // Bubble: só aplica cosméticos nas mensagens do remetente (não nas minhas)
+    // Para as minhas mensagens, aplica os cosméticos do usuário atual
+    final myId = SupabaseService.currentUserId ?? '';
+    final myCosmeticsAsync = isMe && myId.isNotEmpty
+        ? ref.watch(userCosmeticsProvider(myId))
+        : const AsyncData<UserCosmetics?>(null);
+    final myCosmetics = myCosmeticsAsync.valueOrNull;
+
+    final activeBubbleStyle = isMe
+        ? myCosmetics?.chatBubbleStyle
+        : senderCosmetics?.chatBubbleStyle;
+    final activeBubbleColor = isMe
+        ? myCosmetics?.chatBubbleColor
+        : senderCosmetics?.chatBubbleColor;
+    final activeBubbleImageUrl = isMe
+        ? myCosmetics?.chatBubbleImageUrl
+        : senderCosmetics?.chatBubbleImageUrl;
+
+    // Determina o bubbleFrameUrl para o ChatBubble
+    // Se tem image_url no bubble, usa como frame; senão usa 'procedural:style'
+    String? bubbleFrameUrl;
+    Color? bubbleColor;
+    if (activeBubbleStyle != null && activeBubbleStyle.isNotEmpty) {
+      if (activeBubbleImageUrl != null && activeBubbleImageUrl.isNotEmpty) {
+        bubbleFrameUrl = activeBubbleImageUrl;
+      } else {
+        bubbleFrameUrl = 'procedural:$activeBubbleStyle';
+      }
+    }
+    if (activeBubbleColor != null && activeBubbleColor.isNotEmpty) {
+      try {
+        final hex = activeBubbleColor.replaceAll('#', '');
+        bubbleColor = Color(int.parse('FF$hex', radix: 16));
+      } catch (_) {}
     }
 
     return Padding(
       padding: EdgeInsets.only(
         bottom: showAvatar ? 8 : 2,
-        left: isMe ? 36 : 0,
-        right: isMe ? 0 : 36,
+        left: isMe ? 60 : 0,
+        right: isMe ? 0 : 60,
       ),
       child: Column(
         crossAxisAlignment:
@@ -194,11 +207,25 @@ class MessageBubble extends ConsumerWidget {
                 isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
+              // ── Avatar do remetente com frame cosmético ──
               if (!isMe && showAvatar)
-                buildAuthorAvatar()
+                GestureDetector(
+                  onTap: () {
+                    if (communityId != null && communityId!.isNotEmpty) {
+                      context.push('/community/$communityId/profile/${message.authorId}');
+                    } else {
+                      context.push('/user/${message.authorId}');
+                    }
+                  },
+                  child: CosmeticAvatar(
+                    userId: message.authorId,
+                    avatarUrl: message.author?.iconUrl,
+                    size: r.s(32),
+                  ),
+                )
               else if (!isMe)
                 SizedBox(width: r.s(32)),
-              if (!isMe) SizedBox(width: r.s(8)),
+              SizedBox(width: r.s(8)),
               Flexible(
                 child: isMediaOnly
                     // ── Mídia sem bubble: apenas nome do autor + conteúdo + hora ──
@@ -208,15 +235,13 @@ class MessageBubble extends ConsumerWidget {
                             : CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (showAvatar)
+                          if (!isMe && showAvatar)
                             Padding(
                               padding: EdgeInsets.only(bottom: r.s(2)),
                               child: Text(
-                                authorName,
+                                message.author?.nickname ?? 'User',
                                 style: TextStyle(
-                                  color: isMe
-                                      ? Colors.white.withValues(alpha: 0.92)
-                                      : AppTheme.primaryColor,
+                                  color: AppTheme.primaryColor,
                                   fontSize: r.fs(11),
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -256,83 +281,129 @@ class MessageBubble extends ConsumerWidget {
                           ),
                         ],
                       )
-                    // ── Mensagem com bubble normal (texto, áudio, sticker, etc.) ──
-                    : Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: r.s(isAudioType ? 8 : 14),
-                            vertical: r.s(isAudioType ? 4 : 10)),
-                        decoration: BoxDecoration(
-                          color: isMe
-                              ? AppTheme.primaryColor
-                              : context.surfaceColor,
-                          borderRadius: BorderRadius.only(
-                            topLeft: const Radius.circular(16),
-                            topRight: const Radius.circular(16),
-                            bottomLeft: Radius.circular(
-                                isMe ? 16 : (showAvatar ? 4 : 16)),
-                            bottomRight: Radius.circular(
-                                isMe ? (showAvatar ? 4 : 16) : 16),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (showAvatar)
-                              Padding(
-                                padding: EdgeInsets.only(bottom: r.s(4)),
-                                child: Text(
-                                  authorName,
-                                  style: TextStyle(
-                                    color: isMe
-                                        ? Colors.white.withValues(alpha: 0.92)
-                                        : AppTheme.primaryColor,
-                                    fontSize: r.fs(11),
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            // Conteúdo baseado no tipo
-                            _buildContent(context),
-                            // Hora + indicador de editado
-                            Padding(
-                              padding: EdgeInsets.only(top: r.s(isAudioType ? 2 : 4)),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    _formatTime(message.createdAt),
-                                    style: TextStyle(
-                                      color: isMe
-                                          ? Colors.white.withValues(alpha: 0.6)
-                                          : Colors.grey[600],
-                                      fontSize: r.fs(10),
-                                    ),
-                                  ),
-                                  if (message.isEdited) ...[
-                                    SizedBox(width: r.s(4)),
-                                    Text(
-                                      'editado',
+                    // ── Mensagem com bubble cosmético (texto, áudio, etc.) ──
+                    : bubbleFrameUrl != null || bubbleColor != null
+                        // Bubble cosmético da loja
+                        ? ChatBubble(
+                            isMine: isMe,
+                            bubbleFrameUrl: bubbleFrameUrl,
+                            bubbleColor: bubbleColor,
+                            showTail: showAvatar,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (!isMe && showAvatar)
+                                  Padding(
+                                    padding: EdgeInsets.only(bottom: r.s(4)),
+                                    child: Text(
+                                      message.author?.nickname ?? 'User',
                                       style: TextStyle(
-                                        color: isMe
-                                            ? Colors.white
-                                                .withValues(alpha: 0.45)
-                                            : Colors.grey[600],
-                                        fontSize: r.fs(9),
-                                        fontStyle: FontStyle.italic,
+                                        color: Colors.white.withValues(alpha: 0.9),
+                                        fontSize: r.fs(11),
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
-                                  ],
-                                ],
+                                  ),
+                                _buildContent(context),
+                                Padding(
+                                  padding: EdgeInsets.only(top: r.s(isAudioType ? 2 : 4)),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        _formatTime(message.createdAt),
+                                        style: TextStyle(
+                                          color: Colors.white.withValues(alpha: 0.6),
+                                          fontSize: r.fs(10),
+                                        ),
+                                      ),
+                                      if (message.isEdited) ...[
+                                        SizedBox(width: r.s(4)),
+                                        Text(
+                                          'editado',
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(alpha: 0.45),
+                                            fontSize: r.fs(9),
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        // Bubble padrão (sem cosmético)
+                        : Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(isAudioType ? 8 : 14),
+                                vertical: r.s(isAudioType ? 4 : 10)),
+                            decoration: BoxDecoration(
+                              color: isMe
+                                  ? AppTheme.primaryColor
+                                  : context.surfaceColor,
+                              borderRadius: BorderRadius.only(
+                                topLeft: const Radius.circular(16),
+                                topRight: const Radius.circular(16),
+                                bottomLeft: Radius.circular(
+                                    isMe ? 16 : (showAvatar ? 4 : 16)),
+                                bottomRight: Radius.circular(
+                                    isMe ? (showAvatar ? 4 : 16) : 16),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (!isMe && showAvatar)
+                                  Padding(
+                                    padding: EdgeInsets.only(bottom: r.s(4)),
+                                    child: Text(
+                                      message.author?.nickname ?? 'User',
+                                      style: TextStyle(
+                                        color: AppTheme.primaryColor,
+                                        fontSize: r.fs(11),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                _buildContent(context),
+                                Padding(
+                                  padding: EdgeInsets.only(top: r.s(isAudioType ? 2 : 4)),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        _formatTime(message.createdAt),
+                                        style: TextStyle(
+                                          color: isMe
+                                              ? Colors.white.withValues(alpha: 0.6)
+                                              : Colors.grey[600],
+                                          fontSize: r.fs(10),
+                                        ),
+                                      ),
+                                      if (message.isEdited) ...[
+                                        SizedBox(width: r.s(4)),
+                                        Text(
+                                          'editado',
+                                          style: TextStyle(
+                                            color: isMe
+                                                ? Colors.white
+                                                    .withValues(alpha: 0.45)
+                                                : Colors.grey[600],
+                                            fontSize: r.fs(9),
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
               ),
-              if (isMe) ...[
-                SizedBox(width: r.s(8)),
-                showAvatar ? buildAuthorAvatar() : SizedBox(width: r.s(32)),
-              ],
             ],
           ),
           // ── Reações abaixo do bubble ──
