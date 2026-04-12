@@ -414,8 +414,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       .eq('user_id', counterpartUserId)
                       .maybeSingle();
 
-                  if (membership is Map) {
-                    final localMap = Map<String, dynamic>.from(membership);
+                  if (membership != null && membership is Map) {
+                    final localMap = Map<String, dynamic>.from(membership as Map);
                     final localNickname =
                         (localMap['local_nickname'] as String?)?.trim();
                     final localIconUrl =
