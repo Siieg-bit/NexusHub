@@ -333,7 +333,6 @@ class _ImageViewerScreenState extends State<_ImageViewerScreen>
           strokeWidth: 3,
         ),
       ),
-      onPageChanged: (i) => setState(() => _currentIndex = i),
     );
   }
 
