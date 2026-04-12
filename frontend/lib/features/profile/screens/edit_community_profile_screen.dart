@@ -154,7 +154,8 @@ class _EditCommunityProfileScreenState
             _bioController.text =
                 (hydratedMembership['local_bio'] as String?) ?? '';
             _localIconUrl = hydratedMembership['local_icon_url'] as String?;
-            _localBannerUrl = hydratedMembership['local_banner_url'] as String?;
+            final storedBannerUrl =
+                (hydratedMembership['local_banner_url'] as String?)?.trim();
             _localBackgroundUrl =
                 hydratedMembership['local_background_url'] as String?;
             _localBackgroundColor =
@@ -162,9 +163,17 @@ class _EditCommunityProfileScreenState
             _selectedFrameUrl = resolvedFrameUrl;
             _selectedFramePurchaseId = resolvedFramePurchaseId;
             final rawGallery = hydratedMembership['local_gallery'];
-            if (rawGallery is List) {
-              _gallery = rawGallery.map((e) => e.toString()).toList();
+            final initialGallery = rawGallery is List
+                ? rawGallery.map((e) => e.toString()).toList()
+                : <String>[];
+            if (initialGallery.isEmpty &&
+                storedBannerUrl != null &&
+                storedBannerUrl.isNotEmpty) {
+              initialGallery.add(storedBannerUrl);
             }
+            _gallery = initialGallery;
+            _localBannerUrl =
+                initialGallery.isNotEmpty ? initialGallery.first : storedBannerUrl;
           }
           _galleryLoaded = true;
           _mediaLoaded = true;
@@ -286,15 +295,6 @@ class _EditCommunityProfileScreenState
     if (url != null && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) setState(() => _localIconUrl = url);
-      });
-    }
-  }
-
-  Future<void> _pickBanner() async {
-    final url = await _uploadCommunityImage('banner');
-    if (url != null && mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() => _localBannerUrl = url);
       });
     }
   }
@@ -463,7 +463,10 @@ class _EditCommunityProfileScreenState
     }
     final url = await _uploadCommunityImage('gallery');
     if (url != null && mounted) {
-      setState(() => _gallery = [..._gallery, url]);
+      setState(() {
+        _gallery = [..._gallery, url];
+        _localBannerUrl = _gallery.isNotEmpty ? _gallery.first : null;
+      });
     }
   }
 
@@ -472,6 +475,7 @@ class _EditCommunityProfileScreenState
       final updated = List<String>.from(_gallery);
       final removedUrl = updated.removeAt(index);
       _gallery = updated;
+      _localBannerUrl = updated.isNotEmpty ? updated.first : null;
       if (_localBackgroundUrl == removedUrl) {
         _localBackgroundUrl = null;
       }
@@ -523,6 +527,10 @@ class _EditCommunityProfileScreenState
           // Se falhar novamente, aborta o save para não apagar dados
           throw Exception(s.anErrorOccurredTryAgain);
         }
+      }
+
+      if (_galleryLoaded) {
+        bannerUrlToSave = _gallery.isNotEmpty ? _gallery.first : null;
       }
 
       await SupabaseService.client.rpc('update_community_profile', params: {
@@ -651,15 +659,15 @@ class _EditCommunityProfileScreenState
                   // SEÇÃO DO TOPO: Banner + Avatar + "Editar Molduras"
                   // ══════════════════════════════════════════════════════
                   _BannerAvatarSection(
-                    bannerUrl: _localBannerUrl,
+                    bannerUrl:
+                        _gallery.isNotEmpty ? _gallery.first : _localBannerUrl,
                     avatarUrl: _localIconUrl,
                     frameUrl: _selectedFrameUrl,
                     editFramesLabel: s.editProfileFrames,
-                    onTapBanner: _pickBanner,
                     onTapAvatar: _pickAvatar,
-                    onRemoveBanner: _localBannerUrl != null
-                        ? () => setState(() => _localBannerUrl = null)
-                        : null,
+                    galleryBannerHint: _gallery.isNotEmpty
+                        ? 'A primeira imagem da galeria está sendo usada como capa.'
+                        : 'Adicione uma imagem na galeria para definir a capa da comunidade.',
                     onTapEditFrames: () async {
                       final result = await showFramePickerSheet(
                         context,
@@ -890,7 +898,7 @@ class _EditCommunityProfileScreenState
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(r.s(4)),
                               child: CachedNetworkImage(
-                                imageUrl: _gallery.last,
+                                imageUrl: _gallery.first,
                                 width: r.s(44),
                                 height: r.s(44),
                                 fit: BoxFit.cover,
@@ -982,9 +990,8 @@ class _BannerAvatarSection extends ConsumerWidget {
   final String? avatarUrl;
   final String? frameUrl;
   final String editFramesLabel;
-  final VoidCallback onTapBanner;
+  final String galleryBannerHint;
   final VoidCallback onTapAvatar;
-  final VoidCallback? onRemoveBanner;
   final VoidCallback onTapEditFrames;
 
   const _BannerAvatarSection({
@@ -992,9 +999,8 @@ class _BannerAvatarSection extends ConsumerWidget {
     required this.avatarUrl,
     this.frameUrl,
     required this.editFramesLabel,
-    required this.onTapBanner,
+    required this.galleryBannerHint,
     required this.onTapAvatar,
-    this.onRemoveBanner,
     required this.onTapEditFrames,
   });
 
@@ -1009,47 +1015,57 @@ class _BannerAvatarSection extends ConsumerWidget {
           clipBehavior: Clip.none,
           alignment: Alignment.bottomCenter,
           children: [
-            // Banner
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: onTapBanner,
-              child: Container(
-                height: r.s(160),
-                width: double.infinity,
-                color: const Color(0xFFE8E0E0),
-                child: bannerUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: bannerUrl!,
-                        fit: BoxFit.cover,
-                        color: Colors.black.withValues(alpha: 0.15),
-                        colorBlendMode: BlendMode.darken,
-                      )
-                    : null,
-              ),
-            ),
-
-            // Botão de remover banner (canto superior direito)
-            if (bannerUrl != null && onRemoveBanner != null)
-              Positioned(
-                top: r.s(8),
-                right: r.s(8),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: onRemoveBanner,
-                    customBorder: const CircleBorder(),
+            // Banner exibido como prévia da primeira imagem da galeria
+            Container(
+              height: r.s(160),
+              width: double.infinity,
+              color: const Color(0xFFE8E0E0),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (bannerUrl != null)
+                    CachedNetworkImage(
+                      imageUrl: bannerUrl!,
+                      fit: BoxFit.cover,
+                      color: Colors.black.withValues(alpha: 0.15),
+                      colorBlendMode: BlendMode.darken,
+                    ),
+                  Positioned(
+                    left: r.s(12),
+                    right: r.s(12),
+                    bottom: r.s(12),
                     child: Container(
-                      padding: EdgeInsets.all(r.s(5)),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.55),
-                        shape: BoxShape.circle,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: r.s(12),
+                        vertical: r.s(8),
                       ),
-                      child: Icon(Icons.close_rounded,
-                          color: Colors.white, size: r.s(14)),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.45),
+                        borderRadius: BorderRadius.circular(r.s(12)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.photo_library_rounded,
+                              color: Colors.white, size: r.s(14)),
+                          SizedBox(width: r.s(8)),
+                          Expanded(
+                            child: Text(
+                              galleryBannerHint,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: r.fs(11),
+                                fontWeight: FontWeight.w600,
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
+            ),
 
               // Avatar sobreposto ao banner (metade dentro, metade fora)
               Positioned(
@@ -1801,11 +1817,41 @@ class _GalleryGrid extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(r.s(6)),
-                  child: CachedNetworkImage(
-                    imageUrl: url,
-                    width: itemSize,
-                    height: itemSize,
-                    fit: BoxFit.cover,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CachedNetworkImage(
+                        imageUrl: url,
+                        width: itemSize,
+                        height: itemSize,
+                        fit: BoxFit.cover,
+                      ),
+                      if (index == 0)
+                        Positioned(
+                          left: r.s(6),
+                          right: r.s(6),
+                          bottom: r.s(6),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: r.s(6),
+                              vertical: r.s(4),
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.55),
+                              borderRadius: BorderRadius.circular(r.s(8)),
+                            ),
+                            child: Text(
+                              'Capa',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: r.fs(10),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 Positioned(
