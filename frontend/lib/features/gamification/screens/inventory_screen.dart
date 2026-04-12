@@ -5,6 +5,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/providers/cosmetics_provider.dart';
 
 /// Inventário — Itens comprados pelo usuário (Avatar Frames, Chat Bubbles, etc).
 class InventoryScreen extends ConsumerStatefulWidget {
@@ -23,7 +24,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
 
   List<String> get _tabs {
     final s = getStrings();
-    return [s.everyone, 'Avatar Frames', 'Chat Bubbles', s.stickers, 'Backgrounds'];
+    return [s.everyone, 'Avatar Frames', 'Chat Bubbles', s.stickers];
   }
 
   @override
@@ -58,13 +59,8 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
 
   List<Map<String, dynamic>> _filterItems(int tabIndex) {
     if (tabIndex == 0) return _items;
-    final types = [
-      '',
-      'avatar_frame',
-      'chat_bubble',
-      'sticker_pack',
-      'profile_background'
-    ];
+    const types = ['', 'avatar_frame', 'chat_bubble', 'sticker_pack'];
+    if (tabIndex >= types.length) return [];
     return _items
         .where((i) =>
             (i['store_items'] as Map<String, dynamic>?)?['type'] ==
@@ -75,26 +71,64 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
   Future<void> _toggleEquip(Map<String, dynamic> item) async {
     final s = getStrings();
     final r = context.r;
-    final itemId = (item['id'] as String?) ?? '';
-    final isEquipped = _equippedIds.contains(itemId);
+    final purchaseId = (item['id'] as String?) ?? '';
+    final storeItem = (item['store_items'] as Map<String, dynamic>?) ?? {};
+    final itemType = (storeItem['type'] as String?) ?? '';
+    if (purchaseId.isEmpty) return;
 
     try {
-      await SupabaseService.table('user_purchases')
-          .update({'is_equipped': !isEquipped}).eq('id', itemId);
+      // Usa o RPC equip_store_item (SECURITY DEFINER) — atômico e seguro
+      final result = await SupabaseService.client.rpc(
+        'equip_store_item',
+        params: {'p_purchase_id': purchaseId, 'p_item_type': itemType},
+      );
+      final payload = result as Map<String, dynamic>? ?? {};
+      final success = payload['success'] as bool? ?? false;
+      final equipped = payload['equipped'] as bool? ?? false;
 
+      if (!success) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(s.anErrorOccurredTryAgain,
+                  style: const TextStyle(color: Colors.white)),
+              backgroundColor: AppTheme.errorColor,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(r.s(12))),
+            ),
+          );
+        }
+        return;
+      }
+
+      // Atualiza estado local e invalida cache de cosméticos
       if (!mounted) return;
       setState(() {
-        if (isEquipped) {
-          _equippedIds.remove(itemId);
+        if (equipped) {
+          // Desequipa outros do mesmo tipo localmente
+          for (final i in _items) {
+            final si = (i['store_items'] as Map<String, dynamic>?) ?? {};
+            if ((si['type'] as String?) == itemType && (i['id'] as String?) != purchaseId) {
+              _equippedIds.remove((i['id'] as String?) ?? '');
+            }
+          }
+          _equippedIds.add(purchaseId);
         } else {
-          _equippedIds.add(itemId);
+          _equippedIds.remove(purchaseId);
         }
       });
+
+      // Invalida o cache de cosméticos para atualização imediata
+      final userId = SupabaseService.currentUserId;
+      if (userId != null) {
+        ref.invalidate(userCosmeticsProvider(userId));
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isEquipped ? 'Item desequipado' : 'Item equipado!'),
+            content: Text(equipped ? 'Item equipado!' : 'Item desequipado'),
             backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(

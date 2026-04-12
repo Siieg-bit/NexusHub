@@ -256,31 +256,26 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
     setState(() => _busyItemIds.add(itemId));
 
     try {
-      final conflictingPurchaseIds = _purchasesByItemId.values
-          .where((entry) {
-            final storeItem = _asMap(entry['store_items']);
-            return _asString(storeItem['type']) == type &&
-                _asBool(entry['is_equipped']) &&
-                _asString(entry['id']) != purchaseId;
-          })
-          .map((entry) => _asString(entry['id']))
-          .where((id) => id.isNotEmpty)
-          .toList();
+      // Usa o RPC equip_store_item (SECURITY DEFINER) para operação atômica:
+      // desequipa conflitos e equipa/desequipa o item em uma única transação.
+      final result = await SupabaseService.client.rpc(
+        'equip_store_item',
+        params: {
+          'p_purchase_id': purchaseId,
+          'p_item_type': type,
+        },
+      );
+      final resultMap = result as Map<String, dynamic>? ?? {};
+      final success = resultMap['success'] as bool? ?? false;
+      final equipped = resultMap['equipped'] as bool? ?? false;
 
-      if (conflictingPurchaseIds.isNotEmpty) {
-        await SupabaseService.table('user_purchases')
-            .update({'is_equipped': false})
-            .inFilter('id', conflictingPurchaseIds);
+      if (!success) {
+        _showSnack('Não foi possível atualizar $itemName.', isError: true);
+        return;
       }
 
-      final alreadyEquipped = _asBool(purchase?['is_equipped']);
-      await SupabaseService.table('user_purchases').update({
-        'is_equipped': !alreadyEquipped,
-        'equipped_in_community': null,
-      }).eq('id', purchaseId);
-
       await _loadStore();
-      // Invalida o cache de cosméticos para que frame/bubble apaream imediatamente
+      // Invalida o cache de cosméticos para que frame/bubble apareçam imediatamente
       final userId = SupabaseService.currentUserId;
       if (userId != null) {
         ref.invalidate(userCosmeticsProvider(userId));
@@ -288,9 +283,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
       if (!mounted) return;
 
       _showSnack(
-        alreadyEquipped
-            ? '$itemName removido dos itens ativos.'
-            : '$itemName equipado globalmente.',
+        equipped
+            ? '$itemName equipado globalmente.'
+            : '$itemName removido dos itens ativos.',
       );
     } catch (e) {
       _showSnack('Não foi possível atualizar $itemName.', isError: true);
@@ -1123,10 +1118,7 @@ bool _asBool(dynamic value) {
 }
 
 bool _isEquipableType(String type) {
-  return type == 'avatar_frame' ||
-      type == 'chat_bubble' ||
-      type == 'profile_background' ||
-      type == 'chat_background';
+  return type == 'avatar_frame' || type == 'chat_bubble';
 }
 
 bool _isSoldOut(Map<String, dynamic> item) {
@@ -1161,8 +1153,6 @@ IconData _getTypeIcon(String type) {
       return Icons.chat_bubble_rounded;
     case 'sticker_pack':
       return Icons.emoji_emotions_rounded;
-    case 'profile_background':
-      return Icons.wallpaper_rounded;
     default:
       return Icons.shopping_bag_rounded;
   }
@@ -1176,8 +1166,6 @@ String _getTypeLabel(String type) {
       return 'Bubble';
     case 'sticker_pack':
       return 'Sticker';
-    case 'profile_background':
-      return 'Fundo';
     default:
       return 'Item';
   }
