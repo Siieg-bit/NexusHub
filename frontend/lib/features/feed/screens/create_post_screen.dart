@@ -11,6 +11,7 @@ import '../../../core/providers/draft_provider.dart';
 import '../../../core/providers/post_provider.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/widgets/rgb_color_picker.dart';
 
 /// Editor de criação e edição de posts do tipo **normal** (texto genérico).
 ///
@@ -1137,45 +1138,34 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         color: _textColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(r.s(10)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(label,
-              style: TextStyle(
-                  color: _textColor.withValues(alpha: 0.6),
-                  fontSize: r.fs(12))),
-          SizedBox(height: r.s(8)),
-          Wrap(
-            spacing: r.s(6),
-            runSpacing: r.s(6),
-            children: _presetColors.map((color) {
-              // ignore: deprecated_member_use
-              final isSelected = current.value == color.value;
-              return GestureDetector(
-                onTap: () => onChanged(color),
-                child: Container(
-                  width: r.s(28),
-                  height: r.s(28),
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isSelected
-                          ? AppTheme.primaryColor
-                          : Colors.grey.withValues(alpha: 0.3),
-                      width: isSelected ? 2.5 : 1,
-                    ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: TextStyle(
+                        color: _textColor.withValues(alpha: 0.6),
+                        fontSize: r.fs(12))),
+                SizedBox(height: r.s(4)),
+                Text(
+                  '#${current.red.toRadixString(16).padLeft(2, '0').toUpperCase()}${current.green.toRadixString(16).padLeft(2, '0').toUpperCase()}${current.blue.toRadixString(16).padLeft(2, '0').toUpperCase()}',
+                  style: TextStyle(
+                    color: current,
+                    fontSize: r.fs(12),
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'monospace',
                   ),
-                  child: isSelected
-                      ? Icon(Icons.check_rounded,
-                          color: color.computeLuminance() > 0.5
-                              ? Colors.black
-                              : Colors.white,
-                          size: r.s(14))
-                      : null,
                 ),
-              );
-            }).toList(),
+              ],
+            ),
+          ),
+          ColorPickerButton(
+            color: current,
+            title: label,
+            size: 36,
+            onColorChanged: onChanged,
           ),
         ],
       ),

@@ -16,6 +16,7 @@ import '../../communities/providers/community_detail_providers.dart'
     as community_providers;
 import '../widgets/block_content_renderer.dart';
 import '../widgets/block_editor.dart';
+import '../../../core/widgets/rgb_color_picker.dart';
 
 // =============================================================================
 // CREATE BLOG SCREEN — Editor de blogs estilo Amino
@@ -1195,10 +1196,11 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                           _SettingsSection(
                             icon: Icons.format_color_text_rounded,
                             title: 'Cor do título',
-                            child: _ColorPaletteRow(
-                              colors: _textColorPresets,
-                              selected: _titleColor,
-                              onSelect: (c) {
+                            child: ColorPickerButton(
+                              color: _titleColor,
+                              title: 'Cor do título',
+                              size: 36,
+                              onColorChanged: (c) {
                                 setState(() => _titleColor = c);
                                 setModalState(() {});
                               },
@@ -1211,12 +1213,12 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                           _SettingsSection(
                             icon: Icons.palette_outlined,
                             title: 'Cor de destaque',
-                            child: _ColorPaletteRow(
-                              colors: _colorPresets,
-                              selected: _bgAccentColor,
-                              onSelect: (c) {
-                                setState(
-                                    () => _bgAccentColor = c);
+                            child: ColorPickerButton(
+                              color: _bgAccentColor,
+                              title: 'Cor de destaque',
+                              size: 36,
+                              onColorChanged: (c) {
+                                setState(() => _bgAccentColor = c);
                                 setModalState(() {});
                               },
                             ),

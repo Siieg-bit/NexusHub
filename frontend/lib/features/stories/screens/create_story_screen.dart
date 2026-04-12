@@ -8,6 +8,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
+import '../../../core/widgets/rgb_color_picker.dart';
 
 /// Create Story Screen — Criação de stories estilo Amino/Instagram.
 ///
@@ -748,8 +749,53 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount:
-                        _bgColors.length + _bgGradients.length,
+                        _bgColors.length + _bgGradients.length + 1,
                     itemBuilder: (_, i) {
+                      // Último item: botão de cor personalizada RGB
+                      if (i == _bgColors.length + _bgGradients.length) {
+                        return GestureDetector(
+                          onTap: () async {
+                            final currentColor = _selectedBgIndex < _bgColors.length
+                                ? _bgColors[_selectedBgIndex]
+                                : const Color(0xFF6C5CE7);
+                            final picked = await showRGBColorPicker(
+                              context,
+                              initialColor: currentColor,
+                              title: 'Cor de fundo',
+                            );
+                            if (picked != null && mounted) {
+                              setState(() {
+                                _bgColors.insert(0, picked);
+                                _bgHexCodes.insert(0, '#${picked.red.toRadixString(16).padLeft(2, '0').toUpperCase()}${picked.green.toRadixString(16).padLeft(2, '0').toUpperCase()}${picked.blue.toRadixString(16).padLeft(2, '0').toUpperCase()}');
+                                _selectedBgIndex = 0;
+                              });
+                            }
+                          },
+                          child: Container(
+                            width: r.s(36),
+                            height: r.s(36),
+                            margin: EdgeInsets.only(right: r.s(8)),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white38, width: 1.5),
+                              gradient: const SweepGradient(
+                                colors: [
+                                  Color(0xFFE53935), Color(0xFFE91E63),
+                                  Color(0xFF9C27B0), Color(0xFF3F51B5),
+                                  Color(0xFF2196F3), Color(0xFF4CAF50),
+                                  Color(0xFFFFEB3B), Color(0xFFFF9800),
+                                  Color(0xFFE53935),
+                                ],
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.add_rounded,
+                              color: Colors.white,
+                              size: r.s(18),
+                            ),
+                          ),
+                        );
+                      }
                       final isSelected = _selectedBgIndex == i;
                       final isGrad = i >= _bgColors.length;
                       return GestureDetector(

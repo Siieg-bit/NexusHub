@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../repositories/sticker_repository.dart';
+import '../../../core/widgets/rgb_color_picker.dart';
 
 /// Tela de criação de stickers personalizados.
 /// Permite: escolher imagem, adicionar texto, emojis, molduras e bordas.
@@ -519,34 +520,17 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
         ),
         // Cores do texto
         SizedBox(height: r.s(4)),
-        Text('Cor:', style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
-        SizedBox(height: r.s(6)),
-        SizedBox(
-          height: r.s(28),
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: _textColors.length,
-            separatorBuilder: (_, __) => SizedBox(width: r.s(6)),
-            itemBuilder: (_, i) {
-              final c = _textColors[i];
-              final isSelected = _textColor == c;
-              return GestureDetector(
-                onTap: () => setState(() => _textColor = c),
-                child: Container(
-                  width: r.s(28),
-                  height: r.s(28),
-                  decoration: BoxDecoration(
-                    color: c,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isSelected ? AppTheme.primaryColor : Colors.white.withValues(alpha: 0.2),
-                      width: isSelected ? 2.5 : 1,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+        Row(
+          children: [
+            Text('Cor do texto:', style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
+            const Spacer(),
+            ColorPickerButton(
+              color: _textColor,
+              title: 'Cor do texto',
+              size: 28,
+              onColorChanged: (c) => setState(() => _textColor = c),
+            ),
+          ],
         ),
       ],
     );
@@ -590,44 +574,20 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Cor de fundo:', style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
-        SizedBox(height: r.s(8)),
-        SizedBox(
-          height: r.s(36),
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: _bgColors.length,
-            separatorBuilder: (_, __) => SizedBox(width: r.s(8)),
-            itemBuilder: (_, i) {
-              final c = _bgColors[i];
-              final isSelected = _bgColor == c;
-              return GestureDetector(
-                onTap: () => setState(() {
-                  _bgColor = c;
-                  if (_imageBytes != null) {
-                    _imageBytes = null; // Limpar imagem ao escolher cor
-                  }
-                }),
-                child: Container(
-                  width: r.s(36),
-                  height: r.s(36),
-                  decoration: BoxDecoration(
-                    color: c,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isSelected
-                          ? AppTheme.primaryColor
-                          : Colors.white.withValues(alpha: 0.2),
-                      width: isSelected ? 2.5 : 1,
-                    ),
-                  ),
-                  child: isSelected
-                      ? Icon(Icons.check_rounded, color: Colors.white, size: r.s(16))
-                      : null,
-                ),
-              );
-            },
-          ),
+        Row(
+          children: [
+            Text('Cor de fundo:', style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
+            const Spacer(),
+            ColorPickerButton(
+              color: _bgColor,
+              title: 'Cor de fundo',
+              size: 36,
+              onColorChanged: (c) => setState(() {
+                _bgColor = c;
+                if (_imageBytes != null) _imageBytes = null;
+              }),
+            ),
+          ],
         ),
         SizedBox(height: r.s(8)),
         GestureDetector(

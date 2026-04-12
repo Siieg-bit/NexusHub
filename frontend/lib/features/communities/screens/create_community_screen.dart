@@ -6,6 +6,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/widgets/rgb_color_picker.dart';
 
 /// Tela para criação de nova comunidade.
 class CreateCommunityScreen extends ConsumerStatefulWidget {
@@ -251,42 +252,52 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                     color: Colors.white.withValues(alpha: 0.05),
                   ),
                 ),
-                child: Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: _colors.map((color) {
-                    final isSelected = color == _selectedColor;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedColor = color),
-                      child: Container(
-                        width: r.s(44),
-                        height: r.s(44),
-                        decoration: BoxDecoration(
-                          color: _parseColor(color),
-                          shape: BoxShape.circle,
-                          border: isSelected
-                              ? Border.all(color: Colors.white, width: r.s(3))
-                              : Border.all(
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                  width: 1,
-                                ),
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: _parseColor(color)
-                                        .withValues(alpha: 0.5),
-                                    blurRadius: 8,
-                                  )
-                                ]
-                              : null,
-                        ),
-                        child: isSelected
-                            ? Icon(Icons.check_rounded,
-                                color: Colors.white, size: r.s(20))
-                            : null,
+                child: Row(
+                  children: [
+                    ColorPickerButton(
+                      color: _parseColor(_selectedColor),
+                      title: s.themeColor,
+                      size: 48,
+                      onColorChanged: (color) {
+                        setState(() {
+                          _selectedColor = '#${color.red.toRadixString(16).padLeft(2, '0').toUpperCase()}${color.green.toRadixString(16).padLeft(2, '0').toUpperCase()}${color.blue.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+                        });
+                      },
+                    ),
+                    SizedBox(width: r.s(16)),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Cor selecionada',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: r.fs(12),
+                            ),
+                          ),
+                          SizedBox(height: r.s(4)),
+                          Text(
+                            _selectedColor.toUpperCase(),
+                            style: TextStyle(
+                              color: _parseColor(_selectedColor),
+                              fontSize: r.fs(15),
+                              fontWeight: FontWeight.w700,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                          SizedBox(height: r.s(4)),
+                          Text(
+                            'Toque no círculo para escolher',
+                            style: TextStyle(
+                              color: Colors.white30,
+                              fontSize: r.fs(11),
+                            ),
+                          ),
+                        ],
                       ),
-                    );
-                  }).toList(),
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: r.s(24)),

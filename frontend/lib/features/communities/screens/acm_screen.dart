@@ -6,6 +6,7 @@ import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/widgets/rgb_color_picker.dart';
 
 /// ACM — Amino Community Manager.
 /// Gerenciamento de módulos (JSONB), Join Types, customização visual,
@@ -463,7 +464,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
             style: Theme.of(context).textTheme.titleLarge),
         SizedBox(height: r.s(16)),
 
-        // Color Picker
+        // Color Picker — Seletor RGB avançado
         Container(
           padding: EdgeInsets.all(r.s(16)),
           decoration: BoxDecoration(
@@ -471,103 +472,39 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
             borderRadius: BorderRadius.circular(r.s(12)),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.color_lens_rounded,
-                      color: AppTheme.primaryColor),
-                  SizedBox(width: r.s(12)),
-                  const Text('Cor Tema',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                  const Spacer(),
-                  Container(
-                    width: r.s(32),
-                    height: r.s(32),
-                    decoration: BoxDecoration(
-                      color: currentColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white24),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: r.s(16)),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  '#F44336',
-                  '#E91E63',
-                  '#9C27B0',
-                  '#673AB7',
-                  '#3F51B5',
-                  '#2196F3',
-                  '#03A9F4',
-                  '#00BCD4',
-                  '#009688',
-                  '#4CAF50',
-                  '#8BC34A',
-                  '#CDDC39',
-                  '#FFC107',
-                  '#FF9800',
-                  '#FF5722',
-                  '#795548',
-                  '#607D8B',
-                  '#000000',
-                ].map((hex) {
-                  final c = _parseColor(hex);
-                  final isSelected =
-                      _themeColor.toLowerCase() == hex.toLowerCase();
-                  return GestureDetector(
-                    onTap: () => setState(() => _themeColor = hex),
-                    child: Container(
-                      width: r.s(36),
-                      height: r.s(36),
-                      decoration: BoxDecoration(
-                        color: c,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isSelected ? Colors.white : Colors.transparent,
-                          width: r.s(3),
-                        ),
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                    color: c.withValues(alpha: 0.5),
-                                    blurRadius: 8)
-                              ]
-                            : null,
+              const Icon(Icons.color_lens_rounded,
+                  color: AppTheme.primaryColor),
+              SizedBox(width: r.s(12)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Cor Tema',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    SizedBox(height: r.s(4)),
+                    Text(
+                      _themeColor.toUpperCase(),
+                      style: TextStyle(
+                        color: currentColor,
+                        fontSize: r.fs(12),
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'monospace',
                       ),
-                      child: isSelected
-                          ? Icon(Icons.check_rounded,
-                              color: Colors.white, size: r.s(18))
-                          : null,
                     ),
-                  );
-                }).toList(),
-              ),
-              SizedBox(height: r.s(12)),
-              TextField(
-                controller: TextEditingController(text: _themeColor),
-                onChanged: (v) {
-                  if (v.startsWith('#') && v.length == 7) {
-                    setState(() => _themeColor = v);
-                  }
-                },
-                decoration: InputDecoration(
-                  hintText: '#RRGGBB',
-                  prefixIcon: Icon(Icons.tag_rounded, size: r.s(18)),
-                  filled: true,
-                  fillColor: context.scaffoldBg,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(r.s(8)),
-                    borderSide: BorderSide.none,
-                  ),
-                  isDense: true,
+                  ],
                 ),
-                style: TextStyle(fontSize: r.fs(14)),
+              ),
+              ColorPickerButton(
+                color: currentColor,
+                title: 'Cor Tema',
+                size: 40,
+                onColorChanged: (c) {
+                  setState(() {
+                    _themeColor = '#${c.red.toRadixString(16).padLeft(2, '0').toUpperCase()}${c.green.toRadixString(16).padLeft(2, '0').toUpperCase()}${c.blue.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+                  });
+                },
               ),
             ],
           ),
