@@ -100,7 +100,7 @@ BEGIN
   IF v_existing_id IS NOT NULL THEN
     -- Atualizar contagem e título do grupo
     v_group_count := v_group_count + 1;
-    SELECT display_name INTO v_actor_name
+    SELECT COALESCE(NULLIF(nickname, ''), amino_id, 'Alguém') INTO v_actor_name
     FROM public.profiles WHERE id = p_actor_id;
 
     v_new_title := CASE p_type
@@ -158,7 +158,7 @@ DECLARE
 BEGIN
   IF TG_OP != 'INSERT' THEN RETURN NEW; END IF;
 
-  SELECT display_name INTO v_actor_name
+  SELECT COALESCE(NULLIF(nickname, ''), amino_id, 'Alguém') INTO v_actor_name
   FROM public.profiles WHERE id = NEW.user_id;
 
   IF NEW.post_id IS NOT NULL THEN
@@ -234,7 +234,7 @@ DECLARE
 BEGIN
   IF TG_OP != 'INSERT' THEN RETURN NEW; END IF;
 
-  SELECT display_name INTO v_actor_name
+  SELECT COALESCE(NULLIF(nickname, ''), amino_id, 'Alguém') INTO v_actor_name
   FROM public.profiles WHERE id = NEW.follower_id;
 
   PERFORM public.upsert_grouped_notification(
@@ -276,7 +276,7 @@ DECLARE
 BEGIN
   IF TG_OP != 'INSERT' THEN RETURN NEW; END IF;
 
-  SELECT display_name INTO v_actor_name
+  SELECT COALESCE(NULLIF(nickname, ''), amino_id, 'Alguém') INTO v_actor_name
   FROM public.profiles WHERE id = NEW.author_id;
 
   -- Notificar autor do post
@@ -377,7 +377,7 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  SELECT display_name INTO v_actor_name
+  SELECT COALESCE(NULLIF(nickname, ''), amino_id, 'Alguém') INTO v_actor_name
   FROM public.profiles WHERE id = NEW.author_id;
 
   SELECT title INTO v_thread_title
@@ -541,8 +541,8 @@ BEGIN
     n.body,
     n.image_url,
     n.actor_id,
-    p.display_name AS actor_name,
-    p.avatar_url   AS actor_avatar,
+    COALESCE(NULLIF(p.nickname, ''), p.amino_id, 'Alguém') AS actor_name,
+    p.icon_url   AS actor_avatar,
     n.community_id,
     n.post_id,
     n.wiki_id,

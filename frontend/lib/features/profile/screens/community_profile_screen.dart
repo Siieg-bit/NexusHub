@@ -1523,37 +1523,173 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
               ),
             ],
             SizedBox(height: r.s(10)),
-            Row(
-              children: [
-                Icon(Icons.favorite_rounded,
-                    size: r.s(14), color: Colors.grey[600]),
-                SizedBox(width: r.s(4)),
-                Text(
-                  '${post['likes_count'] ?? 0}',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: r.fs(12),
-                    fontWeight: FontWeight.w600,
+            GestureDetector(
+              onTap: () {},
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                children: [
+                  _buildCommunityPostAction(
+                    icon: (post['is_liked'] == true)
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    label: '${post['likes_count'] ?? 0}',
+                    activeColor: AppTheme.errorColor,
+                    isActive: post['is_liked'] == true,
+                    onTap: () => _toggleCommunityProfilePostLike(post),
                   ),
-                ),
-                SizedBox(width: r.s(14)),
-                Icon(Icons.comment_rounded,
-                    size: r.s(14), color: Colors.grey[600]),
-                SizedBox(width: r.s(4)),
-                Text(
-                  '${post['comments_count'] ?? 0}',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: r.fs(12),
-                    fontWeight: FontWeight.w600,
+                  SizedBox(width: r.s(16)),
+                  _buildCommunityPostAction(
+                    icon: Icons.comment_rounded,
+                    label: '${post['comments_count'] ?? 0}',
+                    onTap: () => context.push('/post/${post["id"]}'),
                   ),
-                ),
-              ],
+                  SizedBox(width: r.s(16)),
+                  _buildCommunityPostAction(
+                    icon: Icons.repeat_rounded,
+                    label: '${post['reposts_count'] ?? 0}',
+                    onTap: () => _repostCommunityProfilePost(post),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildCommunityPostAction({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    Color? activeColor,
+    bool isActive = false,
+  }) {
+    final r = context.r;
+    final color = isActive ? (activeColor ?? AppTheme.primaryColor) : Colors.grey[600];
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: r.s(16), color: color),
+          SizedBox(width: r.s(4)),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: r.fs(12),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _toggleCommunityProfilePostLike(Map<String, dynamic> post) async {
+    final postId = post['id'] as String?;
+    final currentUserId = SupabaseService.currentUserId;
+    if (postId == null || currentUserId == null) return;
+
+    final currentIndex = _userPosts.indexWhere((item) => item['id'] == postId);
+    if (currentIndex == -1) return;
+
+    Map<String, dynamic>? previousPost;
+
+    try {
+      final existingLike = await SupabaseService.table('likes')
+          .select('id')
+          .eq('user_id', currentUserId)
+          .eq('post_id', postId)
+          .maybeSingle();
+
+      final wasLiked = existingLike != null;
+      final currentPost = Map<String, dynamic>.from(_userPosts[currentIndex]);
+      previousPost = Map<String, dynamic>.from(currentPost);
+      final currentLikes = (currentPost['likes_count'] as num?)?.toInt() ?? 0;
+
+      setState(() {
+        _userPosts[currentIndex] = {
+          ...currentPost,
+          'is_liked': !wasLiked,
+          'likes_count': wasLiked
+              ? (currentLikes > 0 ? currentLikes - 1 : 0)
+              : currentLikes + 1,
+        };
+      });
+
+      await SupabaseService.rpc('toggle_like_with_reputation', params: {
+        'p_community_id': currentPost['community_id'] ?? widget.communityId,
+        'p_user_id': currentUserId,
+        'p_post_id': postId,
+      });
+    } catch (_) {
+      if (previousPost != null && mounted) {
+        setState(() {
+          _userPosts[currentIndex] = previousPost!;
+        });
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível atualizar a curtida deste blog.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _repostCommunityProfilePost(Map<String, dynamic> post) async {
+    final postId = post['id'] as String?;
+    final currentUserId = SupabaseService.currentUserId;
+    if (postId == null || currentUserId == null) return;
+
+    if ((post['author_id'] as String?) == currentUserId) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não é possível republicar seu próprio post.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if ((post['type'] as String?) == 'repost') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não é possível republicar um repost.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    try {
+      await SupabaseService.rpc('repost_post', params: {
+        'p_original_post_id': postId,
+        'p_community_id': post['community_id'] ?? widget.communityId,
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Blog republicado com sucesso.'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Color(0xFF4CAF50),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível republicar este blog.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Future<void> _toggleCommunityProfilePin(Map<String, dynamic> post) async {
