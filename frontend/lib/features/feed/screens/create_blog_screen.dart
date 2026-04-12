@@ -1131,8 +1131,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                                 r.s(8)),
                                         border: Border.all(
                                           color: isSelected
-                                              ? AppTheme
-                                                  .primaryColor
+                                              ? context.nexusTheme.accentPrimary
                                               : ctx.dividerClr,
                                           width: isSelected
                                               ? 1.5
@@ -1144,8 +1143,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                           font,
                                           style: TextStyle(
                                             color: isSelected
-                                                ? AppTheme
-                                                    .primaryColor
+                                                ? context.nexusTheme.accentPrimary
                                                 : ctx.textPrimary,
                                             fontSize: r.fs(12),
                                             fontWeight: isSelected

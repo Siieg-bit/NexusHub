@@ -731,8 +731,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                                       children: [
                                         CircleAvatar(
                                           radius: r.s(20),
-                                          backgroundColor: AppTheme
-                                              .primaryColor
+                                          backgroundColor: context.nexusTheme.accentPrimary
                                               .withValues(alpha: 0.2),
                                           backgroundImage: iconUrl != null
                                               ? CachedNetworkImageProvider(
@@ -744,9 +743,8 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                                                       ? nickname[0]
                                                           .toUpperCase()
                                                       : '?',
-                                                  style: const TextStyle(
-                                                      color: AppTheme
-                                                          .primaryColor,
+                                                  style: TextStyle(
+                                                      color: context.nexusTheme.accentPrimary,
                                                       fontWeight:
                                                           FontWeight.w700))
                                               : null,
