@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -79,6 +81,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
+  final Map<String, GlobalKey> _messageKeys = {};
   final List<MessageModel> _messages = [];
   bool _isLoading = true;
   bool _realtimeConnected = true;
@@ -89,6 +92,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   MessageModel? _replyingTo;
   bool _showEmojiPicker = false;
   bool _isRecordingVoice = false;
+  String? _highlightedMessageId;
+  Timer? _replyHighlightTimer;
   bool _isOpeningVoiceCall = false;
   List<Map<String, dynamic>> _pinnedMessages = [];
   String? _chatBackground;
@@ -132,6 +137,91 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     if (!mounted || _isDisposed) return;
     // Marcar chat como lido ao abrir — zera unread_count no banco
     _markChatRead();
+  }
+
+  GlobalKey _messageKeyFor(String messageId) {
+    return _messageKeys.putIfAbsent(
+      messageId,
+      () => GlobalObjectKey('chat-message-$messageId'),
+    );
+  }
+
+  MessageModel? _findMessageById(String? messageId) {
+    if (messageId == null || messageId.isEmpty) return null;
+    for (final message in _messages) {
+      if (message.id == messageId) return message;
+    }
+    return null;
+  }
+
+  void _setHighlightedMessage(String? messageId) {
+    if (!mounted || _isDisposed) return;
+    _replyHighlightTimer?.cancel();
+    setState(() => _highlightedMessageId = messageId);
+    if (messageId == null) return;
+    _replyHighlightTimer = Timer(const Duration(seconds: 2), () {
+      if (!mounted || _isDisposed || _highlightedMessageId != messageId) return;
+      setState(() => _highlightedMessageId = null);
+    });
+  }
+
+  Future<void> _jumpToMessage(String messageId) async {
+    final targetIndex = _messages.indexWhere((message) => message.id == messageId);
+    if (targetIndex == -1) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Mensagem original não encontrada nesta conversa.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    _setHighlightedMessage(messageId);
+    await Future<void>.delayed(Duration.zero);
+
+    final messageKey = _messageKeyFor(messageId);
+    final visibleContext = messageKey.currentContext;
+    if (visibleContext != null) {
+      await Scrollable.ensureVisible(
+        visibleContext,
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOutCubic,
+        alignment: 0.2,
+      );
+      return;
+    }
+
+    if (_scrollController.hasClients) {
+      final estimatedOffset = (targetIndex * context.r.s(148)).toDouble();
+      final maxOffset = _scrollController.position.maxScrollExtent;
+      await _scrollController.animateTo(
+        estimatedOffset.clamp(0.0, maxOffset),
+        duration: const Duration(milliseconds: 420),
+        curve: Curves.easeOutCubic,
+      );
+    }
+
+    await Future<void>.delayed(const Duration(milliseconds: 120));
+    if (!mounted) return;
+    final retryContext = messageKey.currentContext;
+    if (retryContext != null) {
+      await Scrollable.ensureVisible(
+        retryContext,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+        alignment: 0.2,
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Não foi possível abrir a mensagem original agora.'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   /// Marca o chat como lido via RPC, zerando o unread_count no banco.
@@ -262,6 +352,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   @override
   void dispose() {
     _isDisposed = true;
+    _replyHighlightTimer?.cancel();
     _messageController.dispose();
     _scrollController.dispose();
     RealtimeService.instance.unsubscribe('chat:${widget.threadId}');
@@ -2293,21 +2384,53 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                             final showDateSep = shouldShowDateSeparator(
                                 message.createdAt, prevDate);
 
+                            final repliedMessage =
+                                _findMessageById(message.replyToId);
+                            final messageKey = _messageKeyFor(message.id);
+                            final isReplyTargetHighlighted =
+                                _highlightedMessageId == message.id;
+
                             return RepaintBoundary(
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   if (showDateSep)
                                     ChatDateSeparator(date: message.createdAt),
-                                  GestureDetector(
-                                    onLongPress: () => _showMessageActions(message),
-                                    child: MessageBubble(
-                                      message: message,
-                                      isMe: isMe,
-                                      showAvatar: showAvatar,
-                                      onReactionTap: (emoji) =>
-                                          _addReaction(message.id, emoji),
-                                      communityId: _threadInfo?['community_id'] as String?,
+                                  AnimatedContainer(
+                                    key: messageKey,
+                                    duration: const Duration(milliseconds: 220),
+                                    curve: Curves.easeOutCubic,
+                                    margin: EdgeInsets.symmetric(vertical: r.s(2)),
+                                    padding: EdgeInsets.all(
+                                      isReplyTargetHighlighted ? r.s(4) : 0,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isReplyTargetHighlighted
+                                          ? AppTheme.primaryColor.withValues(alpha: 0.12)
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(r.s(18)),
+                                      border: isReplyTargetHighlighted
+                                          ? Border.all(
+                                              color: AppTheme.primaryColor
+                                                  .withValues(alpha: 0.35),
+                                            )
+                                          : null,
+                                    ),
+                                    child: GestureDetector(
+                                      onLongPress: () => _showMessageActions(message),
+                                      child: MessageBubble(
+                                        message: message,
+                                        isMe: isMe,
+                                        showAvatar: showAvatar,
+                                        onReactionTap: (emoji) =>
+                                            _addReaction(message.id, emoji),
+                                        communityId:
+                                            _threadInfo?['community_id'] as String?,
+                                        repliedMessage: repliedMessage,
+                                        onReplyTap: repliedMessage == null
+                                            ? null
+                                            : () => _jumpToMessage(repliedMessage.id),
+                                      ),
                                     ),
                                   ),
                                 ],

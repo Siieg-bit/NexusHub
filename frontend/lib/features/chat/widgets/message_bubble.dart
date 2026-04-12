@@ -49,6 +49,8 @@ class MessageBubble extends ConsumerWidget {
   /// Quando fornecido, ao clicar no avatar/nome do autor navega para
   /// o perfil do usuário dentro da comunidade em vez do perfil global.
   final String? communityId;
+  final MessageModel? repliedMessage;
+  final VoidCallback? onReplyTap;
 
   const MessageBubble({
     super.key,
@@ -57,7 +59,127 @@ class MessageBubble extends ConsumerWidget {
     required this.showAvatar,
     this.onReactionTap,
     this.communityId,
+    this.repliedMessage,
+    this.onReplyTap,
   });
+
+  String _truncatePreview(String value) {
+    final sanitized = value.replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (sanitized.length <= 90) return sanitized;
+    return '${sanitized.substring(0, 87)}...';
+  }
+
+  String _replyAuthorLabel(MessageModel? repliedMessage, String fallbackUserLabel) {
+    if (repliedMessage == null) return 'Mensagem original';
+    final sender = repliedMessage.sender;
+    final author = repliedMessage.author;
+    final nickname = sender?['nickname'] as String? ??
+        sender?['name'] as String? ??
+        author?['nickname'] as String? ??
+        author?['name'] as String?;
+    if (nickname != null && nickname.trim().isNotEmpty) {
+      return nickname.trim();
+    }
+    return fallbackUserLabel;
+  }
+
+  String _replyPreviewText(MessageModel? repliedMessage, String fallbackFileLabel) {
+    if (repliedMessage == null) {
+      return 'Mensagem original indisponível.';
+    }
+
+    final content = repliedMessage.content?.trim();
+    final type = repliedMessage.type;
+    final mediaType = repliedMessage.mediaType;
+
+    if (content != null && content.isNotEmpty) {
+      return _truncatePreview(content);
+    }
+    if (repliedMessage.stickerUrl != null || type == 'sticker') return 'Sticker';
+    if (type == 'image' || mediaType == 'image') return 'Imagem';
+    if (type == 'gif' || mediaType == 'gif') return 'GIF';
+    if (type == 'video' || mediaType == 'video') return 'Vídeo';
+    if (type == 'voice') return 'Áudio';
+    if (type == 'poll') return 'Enquete';
+    if (type == 'file') return fallbackFileLabel;
+    return 'Mensagem';
+  }
+
+  Widget _buildReplyReference(
+    BuildContext context,
+    Responsive r,
+    Color textColor, {
+    required String fallbackUserLabel,
+    required String fallbackFileLabel,
+  }) {
+    final accentColor = isMe
+        ? Colors.white.withValues(alpha: 0.82)
+        : AppTheme.primaryColor;
+    final subtitleColor = isMe
+        ? Colors.white.withValues(alpha: 0.72)
+        : Colors.grey[400]!;
+    final previewAuthor = _replyAuthorLabel(repliedMessage, fallbackUserLabel);
+    final previewText = _replyPreviewText(repliedMessage, fallbackFileLabel);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onReplyTap,
+        borderRadius: BorderRadius.circular(r.s(12)),
+        child: Ink(
+          padding: EdgeInsets.all(r.s(10)),
+          decoration: BoxDecoration(
+            color: textColor.withValues(alpha: isMe ? 0.12 : 0.08),
+            borderRadius: BorderRadius.circular(r.s(12)),
+            border: Border(
+              left: BorderSide(color: accentColor, width: r.s(3)),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      previewAuthor,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: accentColor,
+                        fontSize: r.fs(11),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: r.s(4)),
+                    Text(
+                      previewText,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: subtitleColor,
+                        fontSize: r.fs(12),
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (onReplyTap != null) ...[
+                SizedBox(width: r.s(8)),
+                Icon(
+                  Icons.reply_rounded,
+                  size: r.s(16),
+                  color: accentColor,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -977,31 +1099,18 @@ class MessageBubble extends ConsumerWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: EdgeInsets.all(r.s(8)),
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(
-                    color: isMe
-                        ? Colors.white.withValues(alpha: 0.5)
-                        : AppTheme.primaryColor,
-                    width: r.s(3)),
-              ),
-            ),
-            child: Text(
-              'Respondendo...',
-              style: TextStyle(
-                color: isMe
-                    ? Colors.white.withValues(alpha: 0.6)
-                    : Colors.grey[500],
-                fontSize: r.fs(11),
-                fontStyle: FontStyle.italic,
-              ),
-            ),
+          _buildReplyReference(
+            context,
+            r,
+            textColor,
+            fallbackUserLabel: s.user,
+            fallbackFileLabel: s.file,
           ),
-          SizedBox(height: r.s(4)),
-          Text(message.content ?? '',
-              style: TextStyle(color: textColor, fontSize: r.fs(14))),
+          SizedBox(height: r.s(6)),
+          Text(
+            message.content ?? '',
+            style: TextStyle(color: textColor, fontSize: r.fs(14)),
+          ),
         ],
       );
     }
