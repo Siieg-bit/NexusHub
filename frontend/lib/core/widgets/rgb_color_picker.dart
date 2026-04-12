@@ -112,10 +112,15 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
   Color get _hsvColor =>
       HSVColor.fromAHSV(1.0, _hue, _saturation, _brightness).toColor();
 
-  String _colorToHex(Color c) =>
-      '${c.r.round().toRadixString(16).padLeft(2, '0').toUpperCase()}'
-      '${c.g.round().toRadixString(16).padLeft(2, '0').toUpperCase()}'
-      '${c.b.round().toRadixString(16).padLeft(2, '0').toUpperCase()}';
+  String _colorToHex(Color c) {
+    final argb = c.toARGB32();
+    final red = (argb >> 16) & 0xFF;
+    final green = (argb >> 8) & 0xFF;
+    final blue = argb & 0xFF;
+    return '${red.toRadixString(16).padLeft(2, '0').toUpperCase()}'
+        '${green.toRadixString(16).padLeft(2, '0').toUpperCase()}'
+        '${blue.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+  }
 
   // Atualiza a partir da roda HSV
   void _updateFromHSV() {

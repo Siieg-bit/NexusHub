@@ -412,7 +412,11 @@ class _EditCommunityProfileScreenState
       title: s.backgroundTypeLabel,
     );
     if (picked != null && mounted) {
-      final hex = '#${picked.r.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${picked.g.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${picked.b.round().toRadixString(16).padLeft(2, '0').toUpperCase()}';
+      final argb = picked.toARGB32();
+      final red = (argb >> 16) & 0xFF;
+      final green = (argb >> 8) & 0xFF;
+      final blue = argb & 0xFF;
+      final hex = '#${red.toRadixString(16).padLeft(2, '0').toUpperCase()}${green.toRadixString(16).padLeft(2, '0').toUpperCase()}${blue.toRadixString(16).padLeft(2, '0').toUpperCase()}';
       setState(() {
         _localBackgroundColor = hex;
         _localBackgroundUrl = null; // limpa imagem ao escolher cor
