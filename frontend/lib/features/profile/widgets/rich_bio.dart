@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:image_picker/image_picker.dart';
@@ -243,7 +244,11 @@ class _RichBioColorSyntax extends md.InlineSyntax {
 
   @override
   bool onMatch(md.InlineParser parser, Match match) {
-    final element = md.Element.text(_richBioColorTag, match.group(2) ?? '');
+    final innerMarkdown = match.group(2) ?? '';
+    final nestedNodes = md.Document(
+      inlineSyntaxes: [_RichBioColorSyntax()],
+    ).parseInline(innerMarkdown);
+    final element = md.Element(_richBioColorTag, nestedNodes);
     element.attributes['hex'] = (match.group(1) ?? '').toUpperCase();
     parser.addNode(element);
     return true;
@@ -251,7 +256,9 @@ class _RichBioColorSyntax extends md.InlineSyntax {
 }
 
 class _RichBioColorBuilder extends MarkdownElementBuilder {
-  _RichBioColorBuilder();
+  _RichBioColorBuilder({required this.onTapLink});
+
+  final Future<void> Function(String? href) onTapLink;
 
   @override
   Widget? visitElementAfterWithContext(
@@ -263,12 +270,136 @@ class _RichBioColorBuilder extends MarkdownElementBuilder {
     final baseStyle =
         parentStyle ?? preferredStyle ?? DefaultTextStyle.of(context).style;
     final resolvedColor = RichBioCodec.parseColor(element.attributes['hex']);
+    final effectiveStyle =
+        baseStyle.copyWith(color: resolvedColor ?? baseStyle.color);
+
     return Text.rich(
       TextSpan(
-        text: element.textContent,
-        style: baseStyle.copyWith(color: resolvedColor ?? baseStyle.color),
+        style: effectiveStyle,
+        children: _buildInlineSpans(element.children ?? const [], effectiveStyle),
       ),
     );
+  }
+
+  List<InlineSpan> _buildInlineSpans(List<md.Node> nodes, TextStyle style) {
+    final spans = <InlineSpan>[];
+
+    for (final node in nodes) {
+      if (node is md.Text) {
+        spans.add(TextSpan(text: node.text, style: style));
+        continue;
+      }
+
+      if (node is! md.Element) continue;
+
+      final children = node.children ?? const <md.Node>[];
+      switch (node.tag) {
+        case 'strong':
+          final strongStyle = style.copyWith(fontWeight: FontWeight.w700);
+          spans.add(
+            TextSpan(
+              style: strongStyle,
+              children: _buildInlineSpans(children, strongStyle),
+            ),
+          );
+          break;
+        case 'em':
+          final emStyle = style.copyWith(fontStyle: FontStyle.italic);
+          spans.add(
+            TextSpan(
+              style: emStyle,
+              children: _buildInlineSpans(children, emStyle),
+            ),
+          );
+          break;
+        case 'del':
+          final delStyle = style.copyWith(
+            decoration: _mergeDecoration(
+              style.decoration,
+              TextDecoration.lineThrough,
+            ),
+          );
+          spans.add(
+            TextSpan(
+              style: delStyle,
+              children: _buildInlineSpans(children, delStyle),
+            ),
+          );
+          break;
+        case 'code':
+          final codeStyle = style.copyWith(
+            fontFamily: 'monospace',
+            backgroundColor: Colors.white.withValues(alpha: 0.08),
+          );
+          spans.add(
+            TextSpan(
+              style: codeStyle,
+              children: _buildInlineSpans(children, codeStyle),
+            ),
+          );
+          break;
+        case 'a':
+          final href = node.attributes['href'];
+          final linkStyle = style.copyWith(
+            color: style.color,
+            decoration: _mergeDecoration(
+              style.decoration,
+              TextDecoration.underline,
+            ),
+          );
+          final recognizer = TapGestureRecognizer()
+            ..onTap = () {
+              onTapLink(href);
+            };
+          spans.add(
+            TextSpan(
+              style: linkStyle,
+              recognizer: recognizer,
+              children: _buildInlineSpans(children, linkStyle),
+            ),
+          );
+          break;
+        case 'br':
+          spans.add(TextSpan(text: '\n', style: style));
+          break;
+        case _richBioColorTag:
+          final nestedColor = RichBioCodec.parseColor(node.attributes['hex']);
+          final nestedStyle =
+              style.copyWith(color: nestedColor ?? style.color);
+          spans.add(
+            TextSpan(
+              style: nestedStyle,
+              children: _buildInlineSpans(children, nestedStyle),
+            ),
+          );
+          break;
+        default:
+          if (children.isEmpty) {
+            spans.add(TextSpan(text: node.textContent, style: style));
+          } else {
+            spans.add(
+              TextSpan(
+                style: style,
+                children: _buildInlineSpans(children, style),
+              ),
+            );
+          }
+      }
+    }
+
+    if (spans.isEmpty && nodes.isEmpty) {
+      spans.add(TextSpan(text: '', style: style));
+    }
+
+    return spans;
+  }
+
+  TextDecoration? _mergeDecoration(
+    TextDecoration? current,
+    TextDecoration next,
+  ) {
+    if (current == null || current == TextDecoration.none) return next;
+    return TextDecoration.combine([current, next]);
   }
 }
 
@@ -410,7 +541,9 @@ class RichBioRenderer extends StatelessWidget {
           selectable: selectable,
           onTapLink: (_, href, __) => _openLink(href),
           inlineSyntaxes: [_RichBioColorSyntax()],
-          builders: {_richBioColorTag: _RichBioColorBuilder()},
+          builders: {
+            _richBioColorTag: _RichBioColorBuilder(onTapLink: _openLink),
+          },
           styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
             p: TextStyle(
               color: textColor,
