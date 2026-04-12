@@ -100,7 +100,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
       final futures = await Future.wait([
         // Todas as molduras ativas na loja
         SupabaseService.table('store_items')
-            .select('id, name, preview_url, asset_url, asset_config, price_coins, rarity')
+            .select('id, name, preview_url, asset_url, asset_config, price_coins')
             .eq('type', 'avatar_frame')
             .eq('is_active', true)
             .order('sort_order', ascending: true),
