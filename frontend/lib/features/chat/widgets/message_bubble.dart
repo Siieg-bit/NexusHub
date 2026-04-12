@@ -250,25 +250,10 @@ class MessageBubble extends ConsumerWidget {
                 isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              // ── Avatar do remetente com frame cosmético ──
-              if (!isMe && showAvatar)
-                GestureDetector(
-                  onTap: () {
-                    if (communityId != null && communityId!.isNotEmpty) {
-                      context.push('/community/$communityId/profile/${message.authorId}');
-                    } else {
-                      context.push('/user/${message.authorId}');
-                    }
-                  },
-                  child: CosmeticAvatar(
-                    userId: message.authorId,
-                    avatarUrl: message.author?.iconUrl,
-                    size: r.s(32),
-                  ),
-                )
-              else if (!isMe)
-                SizedBox(width: r.s(32)),
-              SizedBox(width: r.s(8)),
+              if (!isMe) ...[
+                buildAuthorAvatar(),
+                SizedBox(width: r.s(8)),
+              ],
               Flexible(
                 child: isMediaOnly
                     // ── Mídia sem bubble: apenas nome do autor + conteúdo + hora ──
@@ -278,18 +263,17 @@ class MessageBubble extends ConsumerWidget {
                             : CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (!isMe && showAvatar)
-                            Padding(
-                              padding: EdgeInsets.only(bottom: r.s(2)),
-                              child: Text(
-                                message.author?.nickname ?? 'User',
-                                style: TextStyle(
-                                  color: AppTheme.primaryColor,
-                                  fontSize: r.fs(11),
-                                  fontWeight: FontWeight.w700,
-                                ),
+                          Padding(
+                            padding: EdgeInsets.only(bottom: r.s(2)),
+                            child: Text(
+                              authorName,
+                              style: TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontSize: r.fs(11),
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
+                          ),
                           // Conteúdo de mídia (imagem/gif/vídeo)
                           ClipRRect(
                             borderRadius: BorderRadius.circular(r.s(12)),
@@ -336,18 +320,17 @@ class MessageBubble extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (!isMe && showAvatar)
-                                  Padding(
-                                    padding: EdgeInsets.only(bottom: r.s(4)),
-                                    child: Text(
-                                      message.author?.nickname ?? 'User',
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.9),
-                                        fontSize: r.fs(11),
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                Padding(
+                                  padding: EdgeInsets.only(bottom: r.s(4)),
+                                  child: Text(
+                                    authorName,
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                      fontSize: r.fs(11),
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
+                                ),
                                 _buildContent(context),
                                 Padding(
                                   padding: EdgeInsets.only(top: r.s(isAudioType ? 2 : 4)),
@@ -399,18 +382,19 @@ class MessageBubble extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (!isMe && showAvatar)
-                                  Padding(
-                                    padding: EdgeInsets.only(bottom: r.s(4)),
-                                    child: Text(
-                                      message.author?.nickname ?? 'User',
-                                      style: TextStyle(
-                                        color: AppTheme.primaryColor,
-                                        fontSize: r.fs(11),
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                Padding(
+                                  padding: EdgeInsets.only(bottom: r.s(4)),
+                                  child: Text(
+                                    authorName,
+                                    style: TextStyle(
+                                      color: isMe
+                                          ? Colors.white.withValues(alpha: 0.9)
+                                          : AppTheme.primaryColor,
+                                      fontSize: r.fs(11),
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
+                                ),
                                 _buildContent(context),
                                 Padding(
                                   padding: EdgeInsets.only(top: r.s(isAudioType ? 2 : 4)),
@@ -447,6 +431,10 @@ class MessageBubble extends ConsumerWidget {
                             ),
                           ),
               ),
+              if (isMe) ...[
+                SizedBox(width: r.s(8)),
+                buildAuthorAvatar(),
+              ],
             ],
           ),
           // ── Reações abaixo do bubble ──
