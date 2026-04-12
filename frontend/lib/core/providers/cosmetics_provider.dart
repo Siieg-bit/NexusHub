@@ -112,7 +112,9 @@ final userCosmeticsProvider =
       chatBubbleImageUrl: chatBubbleImageUrl,
       isAminoPlus: isAminoPlus,
     );
-  } catch (e) {
+  } catch (e, st) {
+    debugPrint('[CosmeticsProvider] ERRO userId=$userId: $e');
+    debugPrint('[CosmeticsProvider] STACK: $st');
     return UserCosmetics.empty(userId);
   }
 });

@@ -1082,7 +1082,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             final result = await SupabaseService.client.rpc(
               'equip_store_item',
               params: {
-                'p_purchase_id': purchaseId,
+                // null = desequipa todos (item Padrão)
+                'p_purchase_id': purchaseId.isEmpty ? null : purchaseId,
                 'p_item_type': itemType,
               },
             );
@@ -3264,17 +3265,13 @@ class _BubblePickerSheetState extends ConsumerState<_BubblePickerSheet> {
                       isBusy: false,
                       previewWidget: _DefaultBubblePreview(r: r),
                       onTap: () async {
-                        // Desequipa todos os bubbles — chama equip no atualmente equipado
-                        final equipped = _ownedBubbles.firstWhere(
-                          (b) => b['is_equipped'] as bool? ?? false,
-                          orElse: () => {},
-                        );
-                        if (equipped.isEmpty) return;
-                        setState(() => _busyPurchaseId = equipped['purchase_id']);
+                        // Desequipa todos os bubbles — passa purchaseId vazio
+                        // para que o RPC receba null e desequipe todos
+                        setState(() => _busyPurchaseId = 'default');
                         try {
                           await widget.onBubbleSelected(
-                            equipped['purchase_id'] as String,
-                            equipped['type'] as String,
+                            '', // vazio = null no RPC = desequipa todos
+                            'chat_bubble',
                           );
                           await _loadOwnedBubbles();
                         } finally {
