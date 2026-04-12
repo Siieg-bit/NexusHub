@@ -300,9 +300,18 @@ class RichBioRenderer extends StatelessWidget {
           RegExp(r'\[([^\]]+)\]\([^\)]+\)'),
           (match) => match.group(1) ?? '',
         )
-        .replaceAll(RegExp(r'(^|\n)\s{0,3}#{1,6}\s*', multiLine: true), r'$1')
-        .replaceAll(RegExp(r'(^|\n)\s*>\s*', multiLine: true), r'$1')
-        .replaceAll(RegExp(r'(^|\n)\s*[-*+]\s+', multiLine: true), r'$1• ')
+        .replaceAllMapped(
+          RegExp(r'(^|\n)\s{0,3}#{1,6}\s*', multiLine: true),
+          (match) => match.group(1) ?? '',
+        )
+        .replaceAllMapped(
+          RegExp(r'(^|\n)\s*>\s*', multiLine: true),
+          (match) => match.group(1) ?? '',
+        )
+        .replaceAllMapped(
+          RegExp(r'(^|\n)\s*[-*+]\s+', multiLine: true),
+          (match) => '${match.group(1) ?? ''}• ',
+        )
         .replaceAll(RegExp(r'[*_`~]'), '')
         .replaceAll(RegExp(r'\n{3,}'), '\n\n')
         .trim();
