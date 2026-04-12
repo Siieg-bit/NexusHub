@@ -25,6 +25,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/deep_link_service.dart';
 import '../../../core/widgets/image_viewer.dart';
+import '../../../core/widgets/comment_media_menu_button.dart';
 
 /// Provider para comentários de um post.
 final postCommentsProvider =
@@ -1356,29 +1357,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                     size: r.s(32),
                                   ),
                                   SizedBox(width: r.s(8)),
-                                  // Botão de emoji
-                                  GestureDetector(
-                                    onTap: _toggleEmojiPicker,
-                                    child: Padding(padding: EdgeInsets.only(right: r.s(4)),
-                                      child: Icon(Icons.tag_faces_rounded,
-                                        color: _showEmojiPicker ? AppTheme.primaryColor : Colors.grey[500],
-                                        size: r.s(20)),
-                                    ),
-                                  ),
-                                  // Botão de sticker
-                                  GestureDetector(
-                                    onTap: _openStickerPicker,
-                                    child: Padding(padding: EdgeInsets.only(right: r.s(4)),
-                                      child: Icon(Icons.emoji_emotions_rounded,
-                                        color: Colors.grey[500], size: r.s(20)),
-                                    ),
-                                  ),
-                                  // Botão de imagem
-                                  GestureDetector(
-                                    onTap: _pickCommentImage,
-                                    child: Padding(padding: EdgeInsets.only(right: r.s(6)),
-                                      child: Icon(Icons.image_rounded,
-                                        color: Colors.grey[500], size: r.s(20)),
+                                  // Botão unificado: emoji + figurinha + mídia
+                                  Padding(
+                                    padding: EdgeInsets.only(right: r.s(6)),
+                                    child: CommentMediaMenuButton(
+                                      isUploadingMedia: _pendingMediaUrl != null,
+                                      showEmojiPicker: _showEmojiPicker,
+                                      onToggleEmoji: _toggleEmojiPicker,
+                                      onOpenSticker: () async {
+                                        _commentFocusNode.unfocus();
+                                        await _openStickerPicker();
+                                      },
+                                      onPickMedia: _pickCommentImage,
                                     ),
                                   ),
                                   // Campo de texto

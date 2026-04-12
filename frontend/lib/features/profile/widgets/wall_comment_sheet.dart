@@ -15,6 +15,7 @@ import '../../../core/utils/media_utils.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../stickers/stickers.dart';
 import '../../../core/widgets/image_viewer.dart';
+import '../../../core/widgets/comment_media_menu_button.dart';
 
 // =============================================================================
 // PROVIDER — carregamento de comentários do mural via RPC
@@ -681,11 +682,10 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
                           },
                         ),
                       ),
-                      // Botão unificado: emoji + figurinha
+                      // Botão unificado: emoji + figurinha + mídia
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: r.s(4)),
-                        child: _MediaMenuButton(
-                          r: r,
+                        child: CommentMediaMenuButton(
                           isUploadingMedia: _isUploadingMedia,
                           showEmojiPicker: _showEmojiPicker,
                           onToggleEmoji: () {

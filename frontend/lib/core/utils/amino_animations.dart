@@ -375,11 +375,12 @@ class _CardPressWidgetState extends State<_CardPressWidget> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      // Usa onTap (não onTapUp) para que filhos com GestureDetector
+      // possam absorver o toque sem acionar a navegação do card pai.
+      // O efeito visual de press é mantido via onTapDown/onTapCancel.
       onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        widget.onTap?.call();
-      },
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTap: () => widget.onTap?.call(),
       onTapCancel: () => setState(() => _isPressed = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
