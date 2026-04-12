@@ -42,6 +42,62 @@ Map<String, dynamic> _normalizePostMap(Map<String, dynamic> map) {
   return map;
 }
 
+bool _hasAuthorAvatar(Map<String, dynamic> map) {
+  final author = map['author'];
+  if (author is Map) {
+    final iconUrl = author['icon_url']?.toString().trim() ?? '';
+    if (iconUrl.isNotEmpty) return true;
+  }
+
+  final localIconUrl = map['author_local_icon_url']?.toString().trim() ?? '';
+  return localIconUrl.isNotEmpty;
+}
+
+Future<void> _enrichAuthorData(Map<String, dynamic> map) async {
+  final authorId = map['author_id']?.toString();
+  if (authorId == null || authorId.isEmpty) return;
+
+  try {
+    if (!_hasAuthorAvatar(map)) {
+      final profile = await SupabaseService.table('profiles')
+          .select('id, nickname, icon_url')
+          .eq('id', authorId)
+          .maybeSingle();
+
+      if (profile != null) {
+        final mergedAuthor = {
+          ...(map['author'] is Map ? Map<String, dynamic>.from(map['author'] as Map) : <String, dynamic>{}),
+          ...Map<String, dynamic>.from(profile),
+        };
+        map['profiles'] = mergedAuthor;
+        map['author'] = mergedAuthor;
+      }
+    }
+  } catch (e) {
+    debugPrint('[post_provider] _enrichAuthorData profile fallback error: $e');
+  }
+
+  final communityId = map['community_id']?.toString();
+  if (communityId == null || communityId.isEmpty) return;
+
+  try {
+    final member = await SupabaseService.table('community_members')
+        .select('local_nickname, local_icon_url, local_banner_url, local_level')
+        .eq('community_id', communityId)
+        .eq('user_id', authorId)
+        .maybeSingle();
+
+    if (member != null) {
+      map['author_local_nickname'] ??= member['local_nickname'];
+      map['author_local_icon_url'] ??= member['local_icon_url'];
+      map['author_local_banner_url'] ??= member['local_banner_url'];
+      map['author_local_level'] ??= member['local_level'];
+    }
+  } catch (e) {
+    debugPrint('[post_provider] _enrichAuthorData member fallback error: $e');
+  }
+}
+
 Future<List<Map<String, dynamic>>> _injectIsLiked(
   List<Map<String, dynamic>> posts,
 ) async {
@@ -375,10 +431,13 @@ final postDetailProvider = FutureProvider.family<PostModel?, String>(
       }
 
       final map = _normalizePostMap(Map<String, dynamic>.from(res));
+      await _enrichAuthorData(map);
       debugPrint(
         '[post_provider][detail] raw_loaded postId=$postId '
         'communityId=${map['community_id']} authorId=${map['author_id']} '
-        'type=${map['type']}',
+        'type=${map['type']} hasAuthor=${map['author'] != null} '
+        'authorIcon=${(map['author'] as Map?)?['icon_url']} '
+        'authorLocalIcon=${map['author_local_icon_url']}',
       );
       await _injectIsLiked([map]);
       debugPrint(
