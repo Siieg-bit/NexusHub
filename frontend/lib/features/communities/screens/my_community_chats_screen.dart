@@ -25,6 +25,13 @@ Map<String, dynamic>? _extractProfile(dynamic rawProfile) {
   return null;
 }
 
+String? _normalizedString(dynamic value) {
+  final text = value as String?;
+  if (text == null) return null;
+  final trimmed = text.trim();
+  return trimmed.isEmpty ? null : trimmed;
+}
+
 bool _isDirectLikeCommunityThread(
   Map<String, dynamic>? thread,
   String communityId,
@@ -114,33 +121,71 @@ final communityMyChatsProvider =
       })
       .toList();
 
-  final dmThreadIds = rawChats
-      .where((e) => _isDirectLikeCommunityThread(
-            e['chat_threads'] as Map<String, dynamic>?,
-            communityId,
-          ))
-      .map((e) => e['thread_id'] as String?)
-      .whereType<String>()
-      .toList();
+  final dmThreadsById = <String, Map<String, dynamic>>{};
+  for (final row in rawChats) {
+    final thread = row['chat_threads'] as Map<String, dynamic>?;
+    final threadId = row['thread_id'] as String?;
+    if (threadId == null ||
+        !_isDirectLikeCommunityThread(thread, communityId)) {
+      continue;
+    }
+    dmThreadsById[threadId] = Map<String, dynamic>.from(thread!);
+  }
 
+  final dmThreadIds = dmThreadsById.keys.toList();
   final Map<String, Map<String, dynamic>> dmCounterparts = {};
   if (dmThreadIds.isNotEmpty) {
     try {
       final dmMembers = await SupabaseService.table('chat_members').select(
-          'thread_id, user_id, profiles!chat_members_user_id_fkey(id, nickname, icon_url)')
+          'thread_id, user_id, profiles!chat_members_user_id_fkey(id, nickname, icon_url, banner_url)')
         .inFilter('thread_id', dmThreadIds)
         .neq('user_id', userId);
 
-      for (final row in (dmMembers as List? ?? [])) {
-        final map = Map<String, dynamic>.from(row as Map);
-        final threadId = map['thread_id'] as String?;
-        final profile = _extractProfile(map['profiles']);
-        if (threadId == null ||
-            profile == null ||
-            dmCounterparts.containsKey(threadId)) {
+      final counterpartRows = (dmMembers as List? ?? [])
+          .map((row) => Map<String, dynamic>.from(row as Map))
+          .toList();
+
+      final counterpartUserIds = counterpartRows
+          .map((row) => row['user_id'] as String?)
+          .whereType<String>()
+          .toSet();
+
+      final Map<String, Map<String, dynamic>> localMemberships = {};
+      if (counterpartUserIds.isNotEmpty) {
+        final membershipRes = await SupabaseService.table('community_members')
+            .select(
+                'community_id, user_id, local_nickname, local_icon_url, local_banner_url')
+            .eq('community_id', communityId)
+            .inFilter('user_id', counterpartUserIds.toList());
+
+        for (final row in (membershipRes as List? ?? [])) {
+          final membership = Map<String, dynamic>.from(row as Map);
+          final memberUserId = _normalizedString(membership['user_id']);
+          if (memberUserId == null) continue;
+          localMemberships[memberUserId] = membership;
+        }
+      }
+
+      for (final row in counterpartRows) {
+        final threadId = row['thread_id'] as String?;
+        final counterpartUserId = _normalizedString(row['user_id']);
+        final profile = _extractProfile(row['profiles']);
+        if (threadId == null || counterpartUserId == null || profile == null) {
           continue;
         }
-        dmCounterparts[threadId] = profile;
+
+        final mergedProfile = Map<String, dynamic>.from(profile)
+          ..['user_id'] = counterpartUserId;
+        final membership = localMemberships[counterpartUserId];
+        final localNickname = _normalizedString(membership?['local_nickname']);
+        final localIconUrl = _normalizedString(membership?['local_icon_url']);
+        final localBannerUrl = _normalizedString(membership?['local_banner_url']);
+
+        if (localNickname != null) mergedProfile['nickname'] = localNickname;
+        if (localIconUrl != null) mergedProfile['icon_url'] = localIconUrl;
+        if (localBannerUrl != null) mergedProfile['banner_url'] = localBannerUrl;
+
+        dmCounterparts[threadId] = mergedProfile;
       }
     } catch (e) {
       debugPrint('[CommunityMyChats] Erro ao enriquecer DMs: $e');
@@ -186,11 +231,23 @@ final communityMemberAvatarsProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>(
         (ref, communityId) async {
   final response = await SupabaseService.table('community_members')
-      .select('user_id, profiles(id, nickname, icon_url)')
+      .select('user_id, local_nickname, local_icon_url, profiles(id, nickname, icon_url)')
       .eq('community_id', communityId)
       .order('joined_at', ascending: false)
       .limit(20);
-  return List<Map<String, dynamic>>.from(response as List? ?? []);
+
+  final rows = List<Map<String, dynamic>>.from(response as List? ?? []);
+  for (final row in rows) {
+    final profile = _extractProfile(row['profiles']);
+    if (profile == null) continue;
+    final mergedProfile = Map<String, dynamic>.from(profile);
+    final localNickname = _normalizedString(row['local_nickname']);
+    final localIconUrl = _normalizedString(row['local_icon_url']);
+    if (localNickname != null) mergedProfile['nickname'] = localNickname;
+    if (localIconUrl != null) mergedProfile['icon_url'] = localIconUrl;
+    row['profiles'] = mergedProfile;
+  }
+  return rows;
 });
 
 // =============================================================================

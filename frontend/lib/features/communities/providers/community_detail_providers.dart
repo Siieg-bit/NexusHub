@@ -223,11 +223,33 @@ final communityMembersProvider =
         (ref, communityId) async {
   final response = await SupabaseService.table('community_members')
       .select(
-          '*, profiles!community_members_user_id_fkey(id, nickname, icon_url, online_status)')
+          '*, profiles!community_members_user_id_fkey(id, nickname, icon_url, banner_url, online_status)')
       .eq('community_id', communityId)
       .order('role', ascending: false)
       .limit(50);
-  return List<Map<String, dynamic>>.from(response as List? ?? []);
+
+  final members = List<Map<String, dynamic>>.from(response as List? ?? []);
+  for (final member in members) {
+    if (member['profiles'] is! Map) continue;
+    final profile = Map<String, dynamic>.from(member['profiles'] as Map);
+    final localNickname = (member['local_nickname'] as String?)?.trim();
+    final localIconUrl = (member['local_icon_url'] as String?)?.trim();
+    final localBannerUrl = (member['local_banner_url'] as String?)?.trim();
+
+    if (localNickname != null && localNickname.isNotEmpty) {
+      profile['nickname'] = localNickname;
+    }
+    if (localIconUrl != null && localIconUrl.isNotEmpty) {
+      profile['icon_url'] = localIconUrl;
+    }
+    if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
+      profile['banner_url'] = localBannerUrl;
+    }
+
+    member['profiles'] = profile;
+  }
+
+  return members;
 });
 
 final communityChatProvider =

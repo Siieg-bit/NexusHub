@@ -40,7 +40,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
       // Buscar chats públicos com join no perfil do host
       final response = await SupabaseService.table('chat_threads')
           .select(
-              '*, host:profiles!chat_threads_host_id_fkey(id, nickname, icon_url)')
+              '*, host:profiles!chat_threads_host_id_fkey(id, nickname, icon_url, banner_url)')
           .eq('community_id', widget.communityId)
           .eq('type', 'public')
           .order('is_pinned', ascending: false)
@@ -48,9 +48,69 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
           .order('last_message_at', ascending: false)
           .limit(50);
 
+      final chats = List<Map<String, dynamic>>.from(response as List? ?? []);
+      final hostIds = chats
+          .map((chat) => (chat['host_id'] as String?)?.trim())
+          .whereType<String>()
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList();
+
+      if (hostIds.isNotEmpty) {
+        try {
+          final membershipRes = await SupabaseService.table('community_members')
+              .select(
+                  'user_id, local_nickname, local_icon_url, local_banner_url')
+              .eq('community_id', widget.communityId)
+              .inFilter('user_id', hostIds);
+
+          final localMemberships = <String, Map<String, dynamic>>{};
+          for (final row in (membershipRes as List? ?? [])) {
+            final membership = Map<String, dynamic>.from(row as Map);
+            final memberUserId = (membership['user_id'] as String?)?.trim();
+            if (memberUserId == null || memberUserId.isEmpty) continue;
+            localMemberships[memberUserId] = membership;
+          }
+
+          for (final chat in chats) {
+            final hostId = (chat['host_id'] as String?)?.trim();
+            if (hostId == null || hostId.isEmpty) continue;
+            final membership = localMemberships[hostId];
+            if (membership == null) continue;
+
+            final host = chat['host'] is Map
+                ? Map<String, dynamic>.from(chat['host'] as Map)
+                : <String, dynamic>{};
+            final localNickname =
+                (membership['local_nickname'] as String?)?.trim();
+            final localIconUrl =
+                (membership['local_icon_url'] as String?)?.trim();
+            final localBannerUrl =
+                (membership['local_banner_url'] as String?)?.trim();
+
+            if (localNickname != null && localNickname.isNotEmpty) {
+              host['nickname'] = localNickname;
+            }
+            if (localIconUrl != null && localIconUrl.isNotEmpty) {
+              host['icon_url'] = localIconUrl;
+            }
+            if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
+              host['banner_url'] = localBannerUrl;
+            }
+
+            chat['host'] = host;
+            chat['host_local_nickname'] = localNickname;
+            chat['host_local_icon_url'] = localIconUrl;
+            chat['host_local_banner_url'] = localBannerUrl;
+          }
+        } catch (e) {
+          debugPrint('[CommunityChatTab] Erro ao aplicar identidade local: $e');
+        }
+      }
+
       if (mounted) {
         setState(() {
-          _chats = List<Map<String, dynamic>>.from(response as List? ?? []);
+          _chats = chats;
           _isLoading = false;
         });
       }

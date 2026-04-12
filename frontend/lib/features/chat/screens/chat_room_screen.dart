@@ -388,19 +388,61 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         try {
           final dmMembers = await SupabaseService.table('chat_members')
               .select(
-                  'user_id, profiles!chat_members_user_id_fkey(id, nickname, icon_url)')
+                  'user_id, profiles!chat_members_user_id_fkey(id, nickname, icon_url, banner_url)')
               .eq('thread_id', widget.threadId)
               .neq('user_id', userId)
               .limit(1);
 
-          final dmMemberList = List<Map<String, dynamic>>.from(dmMembers as List? ?? []);
+          final dmMemberList =
+              List<Map<String, dynamic>>.from(dmMembers as List? ?? []);
           if (dmMemberList.isNotEmpty) {
             final counterpartMap = Map<String, dynamic>.from(dmMemberList.first);
+            final counterpartUserId = counterpartMap['user_id'] as String?;
             final profile = _extractProfile(counterpartMap['profiles']);
             if (profile != null) {
-              threadInfo['title'] = profile['nickname'] ?? threadInfo['title'];
-              threadInfo['icon_url'] = profile['icon_url'];
-              threadInfo['host_id'] = profile['id'] ?? counterpartMap['user_id'] ?? threadInfo['host_id'];
+              final mergedProfile = Map<String, dynamic>.from(profile);
+              final communityId = (threadInfo['community_id'] as String?)?.trim();
+
+              if (communityId != null &&
+                  communityId.isNotEmpty &&
+                  counterpartUserId != null) {
+                try {
+                  final membership = await SupabaseService.table('community_members')
+                      .select(
+                          'local_nickname, local_icon_url, local_banner_url')
+                      .eq('community_id', communityId)
+                      .eq('user_id', counterpartUserId)
+                      .maybeSingle();
+
+                  if (membership is Map) {
+                    final localMap = Map<String, dynamic>.from(membership);
+                    final localNickname =
+                        (localMap['local_nickname'] as String?)?.trim();
+                    final localIconUrl =
+                        (localMap['local_icon_url'] as String?)?.trim();
+                    final localBannerUrl =
+                        (localMap['local_banner_url'] as String?)?.trim();
+
+                    if (localNickname != null && localNickname.isNotEmpty) {
+                      mergedProfile['nickname'] = localNickname;
+                    }
+                    if (localIconUrl != null && localIconUrl.isNotEmpty) {
+                      mergedProfile['icon_url'] = localIconUrl;
+                    }
+                    if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
+                      mergedProfile['banner_url'] = localBannerUrl;
+                    }
+                  }
+                } catch (e) {
+                  debugPrint('[ChatRoom] Erro ao aplicar identidade local: $e');
+                }
+              }
+
+              threadInfo['title'] = mergedProfile['nickname'] ?? threadInfo['title'];
+              threadInfo['icon_url'] = mergedProfile['icon_url'];
+              threadInfo['host_id'] = mergedProfile['id'] ??
+                  counterpartUserId ??
+                  threadInfo['host_id'];
             }
           }
         } catch (e) {
