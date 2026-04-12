@@ -24,6 +24,7 @@ import 'core/services/error_handler.dart';
 import 'core/widgets/error_boundary.dart';
 import 'core/l10n/locale_provider.dart';
 import 'firebase_options.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 void main() async {
   final binding = WidgetsFlutterBinding.ensureInitialized();
@@ -109,6 +110,9 @@ void main() async {
     );
     return true;
   };
+
+  // Registrar locale pt_BR para o pacote timeago
+  timeago.setLocaleMessages('pt_BR', timeago.PtBrMessages());
 
   runApp(
     const ProviderScope(
