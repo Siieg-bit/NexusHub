@@ -32,9 +32,43 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
       .neq('status', 'left') // "Meus chats" = apenas membership ativo
       .order('joined_at', ascending: false);
 
-  final chats = (response as List? ?? [])
+  final rawChats = (response as List? ?? [])
       .where((e) => e['chat_threads'] != null)
-      .map((e) {
+      .toList();
+
+  final dmThreadIds = rawChats
+      .where((e) {
+        final thread = e['chat_threads'] as Map<String, dynamic>?;
+        return thread?['type'] == 'dm';
+      })
+      .map((e) => e['thread_id'] as String?)
+      .whereType<String>()
+      .toList();
+
+  final Map<String, Map<String, dynamic>> dmCounterparts = {};
+  if (dmThreadIds.isNotEmpty) {
+    try {
+      final dmMembers = await SupabaseService.table('chat_members')
+          .select(
+              'thread_id, user_id, profiles!chat_members_user_id_fkey(id, nickname, icon_url)')
+          .inFilter('thread_id', dmThreadIds)
+          .neq('user_id', userId);
+
+      for (final row in (dmMembers as List? ?? [])) {
+        final map = Map<String, dynamic>.from(row as Map);
+        final threadId = map['thread_id'] as String?;
+        final profile = map['profiles'] as Map<String, dynamic>?;
+        if (threadId == null || profile == null || dmCounterparts.containsKey(threadId)) {
+          continue;
+        }
+        dmCounterparts[threadId] = Map<String, dynamic>.from(profile);
+      }
+    } catch (e) {
+      debugPrint('[ChatList] Erro ao enriquecer DMs: $e');
+    }
+  }
+
+  final chats = rawChats.map((e) {
     final threadMap =
         Map<String, dynamic>.from(e['chat_threads'] as Map<String, dynamic>);
     // Injetar campos de membership no modelo do thread:
@@ -43,6 +77,16 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
     threadMap['is_pinned_by_user'] = e['is_pinned_by_user'] as bool? ?? false;
     threadMap['pinned_at'] = e['pinned_at'];
     threadMap['membership_status'] = e['status'] as String? ?? 'active';
+
+    if (threadMap['type'] == 'dm') {
+      final counterpart = dmCounterparts[threadMap['id'] as String? ?? ''];
+      if (counterpart != null) {
+        threadMap['title'] = counterpart['nickname'] ?? threadMap['title'];
+        threadMap['icon_url'] = counterpart['icon_url'] ?? threadMap['icon_url'];
+        threadMap['host_id'] = counterpart['id'] ?? threadMap['host_id'];
+      }
+    }
+
     return ChatRoomModel.fromJson(threadMap);
   }).toList();
 
@@ -1022,10 +1066,10 @@ class _AminoChatTile extends ConsumerWidget {
           children: [
             // ── Avatar com frame cosmético ──
             CosmeticAvatar(
-              userId: chatRoom.type == 'direct' ? chatRoom.hostId : null,
+              userId: chatRoom.type == 'dm' ? chatRoom.hostId : null,
               avatarUrl: chatRoom.iconUrl,
               size: r.s(48),
-              showOnline: chatRoom.type == 'direct',
+              showOnline: chatRoom.type == 'dm',
             ),
             SizedBox(width: r.s(12)),
 

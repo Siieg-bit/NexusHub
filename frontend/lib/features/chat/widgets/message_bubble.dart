@@ -145,12 +145,45 @@ class MessageBubble extends ConsumerWidget {
 
     final isMediaOnly = _isMediaOnlyType(message);
     final isAudioType = message.type == 'audio' || message.type == 'voice_note';
+    final selfLabel = Localizations.localeOf(context).languageCode == 'pt'
+        ? 'Eu'
+        : 'Me';
+    final authorName = isMe ? selfLabel : (message.author?.nickname ?? 'User');
+    final authorIcon = message.author?.iconUrl;
+
+    Widget buildAuthorAvatar() {
+      return GestureDetector(
+        onTap: () {
+          if (communityId != null && communityId!.isNotEmpty) {
+            context.push('/community/$communityId/profile/${message.authorId}');
+          } else {
+            context.push('/user/${message.authorId}');
+          }
+        },
+        child: CircleAvatar(
+          radius: 16,
+          backgroundColor: context.surfaceColor,
+          backgroundImage: authorIcon != null && authorIcon.isNotEmpty
+              ? CachedNetworkImageProvider(authorIcon)
+              : null,
+          child: authorIcon == null || authorIcon.isEmpty
+              ? Text(
+                  authorName.isNotEmpty ? authorName[0].toUpperCase() : '?',
+                  style: TextStyle(
+                    fontSize: r.fs(11),
+                    color: Colors.grey[400],
+                  ),
+                )
+              : null,
+        ),
+      );
+    }
 
     return Padding(
       padding: EdgeInsets.only(
         bottom: showAvatar ? 8 : 2,
-        left: isMe ? 60 : 0,
-        right: isMe ? 0 : 60,
+        left: isMe ? 36 : 0,
+        right: isMe ? 0 : 36,
       ),
       child: Column(
         crossAxisAlignment:
@@ -162,39 +195,10 @@ class MessageBubble extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               if (!isMe && showAvatar)
-                GestureDetector(
-                  onTap: () {
-                    if (communityId != null && communityId!.isNotEmpty) {
-                      context.push('/community/$communityId/profile/${message.authorId}');
-                    } else {
-                      context.push('/user/${message.authorId}');
-                    }
-                  },
-                  child: CircleAvatar(
-                    radius: 16,
-                    backgroundColor: context.surfaceColor,
-                    backgroundImage: () {
-                      final msgIcon = message.author?.iconUrl;
-                      return msgIcon != null && msgIcon.isNotEmpty
-                          ? CachedNetworkImageProvider(msgIcon)
-                          : null;
-                    }(),
-                    child: () {
-                      final msgIcon = message.author?.iconUrl;
-                      return msgIcon == null || msgIcon.isEmpty
-                          ? Text(
-                              (message.author?.nickname ?? '?')[0]
-                                  .toUpperCase(),
-                              style: TextStyle(
-                                  fontSize: r.fs(11), color: Colors.grey[400]),
-                            )
-                          : null;
-                    }(),
-                  ),
-                )
+                buildAuthorAvatar()
               else if (!isMe)
                 SizedBox(width: r.s(32)),
-              SizedBox(width: r.s(8)),
+              if (!isMe) SizedBox(width: r.s(8)),
               Flexible(
                 child: isMediaOnly
                     // ── Mídia sem bubble: apenas nome do autor + conteúdo + hora ──
@@ -204,13 +208,15 @@ class MessageBubble extends ConsumerWidget {
                             : CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (!isMe && showAvatar)
+                          if (showAvatar)
                             Padding(
                               padding: EdgeInsets.only(bottom: r.s(2)),
                               child: Text(
-                                message.author?.nickname ?? 'User',
+                                authorName,
                                 style: TextStyle(
-                                  color: AppTheme.primaryColor,
+                                  color: isMe
+                                      ? Colors.white.withValues(alpha: 0.92)
+                                      : AppTheme.primaryColor,
                                   fontSize: r.fs(11),
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -271,13 +277,15 @@ class MessageBubble extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (!isMe && showAvatar)
+                            if (showAvatar)
                               Padding(
                                 padding: EdgeInsets.only(bottom: r.s(4)),
                                 child: Text(
-                                  message.author?.nickname ?? 'User',
+                                  authorName,
                                   style: TextStyle(
-                                    color: AppTheme.primaryColor,
+                                    color: isMe
+                                        ? Colors.white.withValues(alpha: 0.92)
+                                        : AppTheme.primaryColor,
                                     fontSize: r.fs(11),
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -321,6 +329,10 @@ class MessageBubble extends ConsumerWidget {
                         ),
                       ),
               ),
+              if (isMe) ...[
+                SizedBox(width: r.s(8)),
+                showAvatar ? buildAuthorAvatar() : SizedBox(width: r.s(32)),
+              ],
             ],
           ),
           // ── Reações abaixo do bubble ──

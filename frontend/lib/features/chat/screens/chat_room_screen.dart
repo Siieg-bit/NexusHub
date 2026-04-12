@@ -252,8 +252,36 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .select()
           .eq('id', widget.threadId)
           .single();
+
+      final threadInfo = Map<String, dynamic>.from(res as Map);
+      final userId = SupabaseService.currentUserId;
+
+      if (threadInfo['type'] == 'dm' && userId != null) {
+        try {
+          final dmMembers = await SupabaseService.table('chat_members')
+              .select(
+                  'user_id, profiles!chat_members_user_id_fkey(id, nickname, icon_url)')
+              .eq('thread_id', widget.threadId)
+              .neq('user_id', userId)
+              .limit(1);
+
+          final dmMemberList = List<Map<String, dynamic>>.from(dmMembers as List? ?? []);
+          if (dmMemberList.isNotEmpty) {
+            final counterpartMap = Map<String, dynamic>.from(dmMemberList.first);
+            final profile = counterpartMap['profiles'] as Map<String, dynamic>?;
+            if (profile != null) {
+              threadInfo['title'] = profile['nickname'] ?? threadInfo['title'];
+              threadInfo['icon_url'] = profile['icon_url'] ?? threadInfo['icon_url'];
+              threadInfo['host_id'] = profile['id'] ?? counterpartMap['user_id'] ?? threadInfo['host_id'];
+            }
+          }
+        } catch (e) {
+          debugPrint('[ChatRoom] Erro ao enriquecer DM: $e');
+        }
+      }
+
       if (!mounted || _isDisposed) return;
-      setState(() => _threadInfo = res);
+      setState(() => _threadInfo = threadInfo);
     } catch (e) {
       debugPrint('[chat_room_screen.dart] $e');
     }
