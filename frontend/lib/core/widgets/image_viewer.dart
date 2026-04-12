@@ -6,7 +6,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
-import 'package:share_plus/share_plus.dart';
+import 'package:gal/gal.dart';
 import 'package:video_player/video_player.dart';
 import '../utils/responsive.dart';
 import '../../config/app_theme.dart';
@@ -176,20 +176,92 @@ class _MediaViewerScreenState extends State<_MediaViewerScreen>
     setState(() => _isSaving = true);
     try {
       HapticFeedback.mediumImpact();
+
+      // Verificar/solicitar permissão de acesso à galeria
+      final hasAccess = await Gal.hasAccess(toAlbum: true);
+      if (!hasAccess) {
+        final granted = await Gal.requestAccess(toAlbum: true);
+        if (!granted) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Permissão negada para acessar a galeria'),
+                backgroundColor: AppTheme.errorColor,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            );
+          }
+          return;
+        }
+      }
+
+      // Baixar a mídia
       final response = await http.get(Uri.parse(url));
       if (response.statusCode != 200) throw Exception('Download falhou');
       final bytes = response.bodyBytes;
+
+      // Salvar em arquivo temporário
       final tempDir = await getTemporaryDirectory();
       final ext = _extensionFromUrl(url);
       final fileName =
           'nexushub_${DateTime.now().millisecondsSinceEpoch}.$ext';
       final file = File('${tempDir.path}/$fileName');
       await file.writeAsBytes(bytes);
+
       if (!mounted) return;
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'Mídia do NexusHub',
-      );
+
+      // Salvar direto na galeria do dispositivo
+      final isVideo = _detectMediaType(url) == MediaType.video;
+      if (isVideo) {
+        await Gal.putVideo(file.path, album: 'NexusHub');
+      } else {
+        await Gal.putImage(file.path, album: 'NexusHub');
+      }
+
+      // Limpar arquivo temporário
+      await file.delete().catchError((_) {});
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded,
+                    color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                const Text('Salvo na galeria!'),
+              ],
+            ),
+            backgroundColor: const Color(0xFF2DBE60),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    } on GalException catch (e) {
+      if (mounted) {
+        final msg = e.type == GalExceptionType.notEnoughSpace
+            ? 'Sem espaço suficiente no dispositivo'
+            : e.type == GalExceptionType.accessDenied
+                ? 'Acesso à galeria negado'
+                : 'Erro ao salvar na galeria';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(msg),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
