@@ -286,12 +286,12 @@ class PostModel {
   bool get hasBlockContent =>
       contentBlocks != null && contentBlocks!.isNotEmpty;
 
-  /// Retorna true se o post está em destaque e ainda não expirou
-  bool get isFeaturedActive {
-    if (!isFeatured) return false;
-    if (featuredUntil == null) return true; // sem expiração
-    return featuredUntil!.isAfter(DateTime.now());
-  }
+  /// Retorna true se o post está marcado como destaque.
+  ///
+  /// A vitrine passa a ser controlada por ordem de inserção/substituição,
+  /// não mais por vencimento temporal. O campo legado `featuredUntil` é
+  /// preservado apenas por compatibilidade de dados.
+  bool get isFeaturedActive => isFeatured;
 
   /// Extrai lista de URLs de mídia dos blocos e da mediaList
   String get effectiveEditorType =>

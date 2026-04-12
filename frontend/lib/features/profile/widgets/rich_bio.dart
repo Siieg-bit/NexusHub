@@ -1405,7 +1405,12 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
   }
 
   void _changeMode(bool showPreview) {
-    setState(() => _showPreview = showPreview);
+    setState(() {
+      _showPreview = showPreview;
+      if (showPreview) {
+        _isAwaitingInlineImageTap = false;
+      }
+    });
     if (showPreview) {
       _focusNode.unfocus();
       return;
@@ -1428,7 +1433,6 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
         valueListenable: _controller,
         builder: (_, value, __) {
           final activeMedia = _sanitizeMediaForMarkdown(value.text);
-          final mediaLabel = activeMedia.isEmpty ? 'Sem mídia' : '${activeMedia.length} mídia(s)';
 
           final chips = <Widget>[
             _StatusPill(
@@ -1712,6 +1716,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
 
   Widget _buildToolDock(BuildContext context, {bool compact = false}) {
     final r = context.r;
+    final activeMedia = _sanitizeMediaForMarkdown(_controller.text);
     final actions = <Widget>[];
 
     if (_activeToolSection == 'text') {
@@ -1939,7 +1944,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
             ],
           ),
         ),
-      if (_sanitizeMediaForMarkdown(_controller.text).isNotEmpty)
+      if (activeMedia.isNotEmpty)
         Container(
           padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
           decoration: BoxDecoration(
@@ -1950,7 +1955,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
             ),
           ),
           child: Text(
-            '${_sanitizeMediaForMarkdown(_controller.text).length} mídia(s)',
+            '${activeMedia.length} mídia(s)',
             style: TextStyle(
               color: context.textPrimary,
               fontSize: r.fs(11),
@@ -2046,7 +2051,7 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
               SizedBox(height: r.s(8)),
             ],
             compactTemplates,
-            if (!compact && _sanitizeMediaForMarkdown(_controller.text).isNotEmpty) ...[
+            if (!compact && activeMedia.isNotEmpty) ...[
               SizedBox(height: r.s(12)),
               Text(
                 'Mídia anexada',
@@ -2061,10 +2066,10 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
                 height: r.s(112),
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: _sanitizeMediaForMarkdown(_controller.text).length,
+                  itemCount: activeMedia.length,
                   separatorBuilder: (_, __) => SizedBox(width: r.s(10)),
                   itemBuilder: (_, index) {
-                    final item = _sanitizeMediaForMarkdown(_controller.text)[index];
+                    final item = activeMedia[index];
                     return Container(
                       width: r.s(132),
                       decoration: BoxDecoration(

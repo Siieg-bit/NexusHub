@@ -80,19 +80,20 @@ final pinnedFeedProvider =
   return maps.map((map) => PostModel.fromJson(map)).toList();
 });
 
-/// Posts em DESTAQUE ATIVOS (is_featured=true e não expirados) — seção 2 da aba Destaque.
+/// Posts em DESTAQUE ATIVOS (is_featured=true) — seção 2 da aba Destaque.
+///
+/// O sistema agora é orientado por substituição: o item mais recente ocupa a
+/// vitrine principal, os quatro anteriores aparecem como secundários e os
+/// demais migram para o arquivo de destaques.
 final activeFeaturedFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
-  final now = DateTime.now().toUtc().toIso8601String();
-
   final response = await SupabaseService.table('posts')
       .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
       .eq('community_id', communityId)
       .eq('status', 'ok')
       .eq('is_featured', true)
-      .or('featured_until.is.null,featured_until.gt.$now')
       .order('featured_at', ascending: false)
-      .limit(12);
+      .limit(100);
 
   final maps = (response as List? ?? []).map((e) {
     final map = Map<String, dynamic>.from(e);
@@ -103,9 +104,8 @@ final activeFeaturedFeedProvider =
   await _injectCommunityAuthorIdentity(maps, communityId);
   await _injectIsLikedCommunity(maps);
 
-  // Filtro extra no cliente para garantir expiração correta
   final posts = maps.map((map) => PostModel.fromJson(map)).toList();
-  return posts.where((p) => p.isFeaturedActive).toList();
+  return posts.where((p) => p.isFeatured).toList();
 });
 
 /// Posts RECENTES (excluindo fixados) — seção 3 da aba Destaque.
@@ -116,6 +116,7 @@ final latestFeedProvider =
       .eq('community_id', communityId)
       .eq('status', 'ok')
       .eq('is_pinned', false)
+      .eq('is_featured', false)
       .order('created_at', ascending: false)
       .limit(20);
 

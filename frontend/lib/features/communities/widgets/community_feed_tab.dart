@@ -26,11 +26,13 @@ import '../../../core/l10n/locale_provider.dart';
 class CommunityFeedTab extends ConsumerWidget {
   final String communityId;
   final bool isFeatured;
+  final bool showFeaturedArchive;
 
   const CommunityFeedTab({
     super.key,
     required this.communityId,
     this.isFeatured = false,
+    this.showFeaturedArchive = false,
   });
 
   Future<void> _onRefresh(WidgetRef ref) async {
@@ -47,6 +49,12 @@ class CommunityFeedTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (isFeatured) {
+      if (showFeaturedArchive) {
+        return _FeaturedArchiveTab(
+          communityId: communityId,
+          onRefresh: _onRefresh,
+        );
+      }
       return _FeaturedTab(communityId: communityId, onRefresh: _onRefresh);
     }
     return _LatestTab(communityId: communityId, onRefresh: _onRefresh);
@@ -86,6 +94,9 @@ class _FeaturedTab extends ConsumerWidget {
     final pinnedPosts = pinnedAsync.valueOrNull ?? [];
     final featuredPosts = featuredAsync.valueOrNull ?? [];
     final latestPosts = latestAsync.valueOrNull ?? [];
+    final primaryFeatured = featuredPosts.isNotEmpty ? featuredPosts.first : null;
+    final secondaryFeatured =
+        featuredPosts.length > 1 ? featuredPosts.skip(1).take(4).toList() : <PostModel>[];
 
     final isLoading = pinnedAsync.isLoading &&
         featuredAsync.isLoading &&
@@ -121,7 +132,7 @@ class _FeaturedTab extends ConsumerWidget {
           ],
 
           // ── Seção 2: Destaques Ativos ───────────────────────────────────
-          if (featuredPosts.isNotEmpty) ...[
+          if (primaryFeatured != null) ...[
             SliverToBoxAdapter(
               child: _SectionHeader(
                 icon: Icons.star_rounded,
@@ -131,23 +142,33 @@ class _FeaturedTab extends ConsumerWidget {
             ),
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: r.s(12)),
-              sliver: SliverGrid(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: r.s(8),
-                  mainAxisSpacing: r.s(8),
-                  childAspectRatio: 0.78,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                  (ctx, i) => _FeaturedPostCard(
-                    post: featuredPosts[i],
-                    accent: accent,
-                    index: i,
-                  ),
-                  childCount: featuredPosts.length,
+              sliver: SliverToBoxAdapter(
+                child: _FeaturedHeroCard(
+                  post: primaryFeatured,
+                  accent: accent,
                 ),
               ),
             ),
+            if (secondaryFeatured.isNotEmpty)
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(r.s(12), r.s(8), r.s(12), 0),
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: r.s(8),
+                    mainAxisSpacing: r.s(8),
+                    childAspectRatio: 0.78,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (ctx, i) => _FeaturedPostCard(
+                      post: secondaryFeatured[i],
+                      accent: accent,
+                      index: i + 1,
+                    ),
+                    childCount: secondaryFeatured.length,
+                  ),
+                ),
+              ),
             SliverToBoxAdapter(child: SizedBox(height: r.s(8))),
           ],
 
@@ -208,6 +229,100 @@ class _FeaturedTab extends ConsumerWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // Aba RECENTES — feed padrão com StoryCarousel no topo
 // ─────────────────────────────────────────────────────────────────────────────
+
+class _FeaturedArchiveTab extends ConsumerWidget {
+  final String communityId;
+  final Future<void> Function(WidgetRef ref) onRefresh;
+
+  const _FeaturedArchiveTab({required this.communityId, required this.onRefresh});
+
+  Color _accentColor(WidgetRef ref) {
+    final community =
+        ref.watch(communityDetailProvider(communityId)).valueOrNull;
+    if (community == null) return AppTheme.primaryColor;
+    try {
+      return Color(int.parse(community.themeColor.replaceFirst('#', '0xFF')));
+    } catch (_) {
+      return AppTheme.primaryColor;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final r = context.r;
+    final featuredAsync = ref.watch(activeFeaturedFeedProvider(communityId));
+    final accent = _accentColor(ref);
+    final archivedPosts = (featuredAsync.valueOrNull ?? []).skip(5).toList();
+
+    if (featuredAsync.isLoading && archivedPosts.isEmpty) {
+      return Center(
+        child: CircularProgressIndicator(color: accent, strokeWidth: 2.5),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => onRefresh(ref),
+      color: accent,
+      backgroundColor: context.surfaceColor,
+      child: archivedPosts.isEmpty
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(height: r.s(56)),
+                Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: r.s(24)),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.inventory_2_outlined,
+                          size: r.s(42),
+                          color: context.textHint,
+                        ),
+                        SizedBox(height: r.s(10)),
+                        Text(
+                          'Ainda não há destaques arquivados.',
+                          style: TextStyle(
+                            color: context.textSecondary,
+                            fontSize: r.fs(13),
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: r.s(6)),
+                        Text(
+                          'Os conteúdos mais antigos aparecem aqui quando novos destaques entram na vitrine principal.',
+                          style: TextStyle(
+                            color: context.textHint,
+                            fontSize: r.fs(12),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : GridView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.all(r.s(12)),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: r.s(8),
+                mainAxisSpacing: r.s(8),
+                childAspectRatio: 0.78,
+              ),
+              itemCount: archivedPosts.length,
+              itemBuilder: (context, index) => _FeaturedPostCard(
+                post: archivedPosts[index],
+                accent: accent,
+                index: index + 5,
+              ),
+            ),
+    );
+  }
+}
 
 class _LatestTab extends ConsumerWidget {
   final String communityId;
@@ -393,6 +508,107 @@ class _PinnedPostRow extends ConsumerWidget {
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeaturedHeroCard extends StatelessWidget {
+  final PostModel post;
+  final Color accent;
+
+  const _FeaturedHeroCard({required this.post, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    final imageUrl = post.coverImageUrl ?? post.mediaUrl;
+    final hasImage = imageUrl != null && imageUrl.isNotEmpty;
+
+    return AminoAnimations.cardPress(
+      onTap: () => context.push('/post/${post.id}'),
+      child: Container(
+        height: r.s(220),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(r.s(20)),
+          border: Border.all(color: accent.withValues(alpha: 0.28)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
+          ],
+          image: hasImage
+              ? DecorationImage(
+                  image: CachedNetworkImageProvider(imageUrl),
+                  fit: BoxFit.cover,
+                )
+              : null,
+          color: context.surfaceColor,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(r.s(20)),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withValues(alpha: hasImage ? 0.08 : 0.02),
+                Colors.black.withValues(alpha: 0.82),
+              ],
+            ),
+          ),
+          padding: EdgeInsets.all(r.s(16)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: r.s(10),
+                  vertical: r.s(6),
+                ),
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(r.s(999)),
+                ),
+                child: Text(
+                  'Destaque principal',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: r.fs(11),
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                post.title?.trim().isNotEmpty == true
+                    ? post.title!.trim()
+                    : post.content,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: r.fs(18),
+                  fontWeight: FontWeight.w900,
+                  height: 1.15,
+                ),
+              ),
+              SizedBox(height: r.s(8)),
+              Text(
+                post.content,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.82),
+                  fontSize: r.fs(12),
+                  height: 1.35,
                 ),
               ),
             ],

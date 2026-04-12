@@ -13,7 +13,7 @@ import '../../../core/utils/responsive.dart';
 //
 // Opções:
 //   1. Fixar no Feed de Destaques
-//   2. Destacar Essa Publicação (com seleção de duração: 1, 2 ou 3 dias)
+//   2. Adicionar/Remover dos Destaques por ordem de entrada
 //   3. Gerenciar Categorias
 //   4. Enviar Esta Página (broadcast para membros)
 //   5. Desabilitar Este Post
@@ -108,16 +108,14 @@ class _PostModerationMenuSheetState
     }
   }
 
-  Future<void> _featurePost(int days) async {
+  Future<void> _featurePost() async {
     setState(() => _isLoading = true);
     try {
-      final featuredUntil = days > 0
-          ? DateTime.now().add(Duration(days: days)).toUtc().toIso8601String()
-          : null;
+      final featuredAt = DateTime.now().toUtc().toIso8601String();
       await SupabaseService.table('posts').update({
         'is_featured': true,
-        'featured_at': DateTime.now().toUtc().toIso8601String(),
-        'featured_until': featuredUntil,
+        'featured_at': featuredAt,
+        'featured_until': null,
         'featured_by': SupabaseService.currentUserId,
       }).eq('id', widget.postId);
 
@@ -126,15 +124,13 @@ class _PostModerationMenuSheetState
         'p_community_id': widget.communityId,
         'p_action': 'feature_post',
         'p_target_post_id': widget.postId,
-        'p_reason': 'Destacado por $days dia(s)',
-        'p_duration_hours': days * 24,
+        'p_reason': 'Adicionado à vitrine de destaques por ordem de entrada',
+        'p_duration_hours': null,
       });
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(days > 0
-            ? 'Post destacado por $days dia(s)!'
-            : 'Post destacado permanentemente!'),
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Post adicionado aos destaques!'),
         backgroundColor: AppTheme.warningColor,
         behavior: SnackBarBehavior.floating,
       ));
@@ -154,6 +150,7 @@ class _PostModerationMenuSheetState
     try {
       await SupabaseService.table('posts').update({
         'is_featured': false,
+        'featured_at': null,
         'featured_until': null,
         'featured_by': null,
       }).eq('id', widget.postId);
@@ -304,22 +301,13 @@ class _PostModerationMenuSheetState
     );
   }
 
-  /// Exibe sub-diálogo para selecionar duração do destaque
-  Future<void> _showFeatureDurationDialog() async {
-    // Se já está em destaque, oferecer remover
+  /// Alterna a presença do post na vitrine de destaques.
+  Future<void> _toggleFeaturedPost() async {
     if (widget.isFeatured) {
       await _unfeaturePost();
       return;
     }
-
-    final days = await showModalBottomSheet<int>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => _FeatureDurationSheet(),
-    );
-    if (days != null) {
-      await _featurePost(days);
-    }
+    await _featurePost();
   }
 
   /// Exibe diálogo para gerenciar categorias do post
@@ -394,11 +382,14 @@ class _PostModerationMenuSheetState
             _MenuItem(
               label: widget.isFeatured
                   ? 'Remover Destaque'
-                  : 'Destacar Essa Publicação',
+                  : 'Adicionar aos Destaques',
+              subtitle: widget.isFeatured
+                  ? 'Remove o post da vitrine atual'
+                  : 'Envia o post para a vitrine por ordem de entrada',
               icon: widget.isFeatured
                   ? Icons.star_border_rounded
                   : Icons.star_rounded,
-              onTap: _showFeatureDurationDialog,
+              onTap: _toggleFeaturedPost,
             ),
             const Divider(height: 1, thickness: 0.5),
             // 3. Gerenciar Categorias
@@ -526,107 +517,6 @@ class _MenuItem extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Sub-diálogo: Duração do Destaque
-// ─────────────────────────────────────────────────────────────────────────────
-class _FeatureDurationSheet extends StatelessWidget {
-  const _FeatureDurationSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.r;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            margin: EdgeInsets.only(top: r.s(12), bottom: r.s(4)),
-            width: r.s(40),
-            height: r.s(4),
-            decoration: BoxDecoration(
-              color: Colors.grey[600],
-              borderRadius: BorderRadius.circular(r.s(2)),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(
-                vertical: r.s(16), horizontal: r.s(20)),
-            child: Text(
-              'Por quanto tempo você gostaria de destacar este post?',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontSize: r.fs(15),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          const Divider(height: 1, thickness: 0.5),
-          _DurationOption(label: '1 Dia', days: 1),
-          const Divider(height: 1, thickness: 0.5),
-          _DurationOption(label: '2 Dias', days: 2),
-          const Divider(height: 1, thickness: 0.5),
-          _DurationOption(label: '3 Dias', days: 3),
-          const Divider(height: 1, thickness: 0.5),
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-                r.s(16), r.s(8), r.s(16), r.s(16) + MediaQuery.of(context).padding.bottom),
-            child: SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () => Navigator.of(context).pop(null),
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: r.s(14)),
-                ),
-                child: Text(
-                  'Cancelar',
-                  style: TextStyle(
-                    color: AppTheme.primaryColor,
-                    fontSize: r.fs(15),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DurationOption extends StatelessWidget {
-  final String label;
-  final int days;
-
-  const _DurationOption({required this.label, required this.days});
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.r;
-    return InkWell(
-      onTap: () => Navigator.of(context).pop(days),
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: r.s(18)),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: AppTheme.primaryColor,
-              fontSize: r.fs(16),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Histórico de Moderação do Post

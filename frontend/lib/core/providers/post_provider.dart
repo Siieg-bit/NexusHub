@@ -500,16 +500,13 @@ final pinnedPostsProvider = FutureProvider.family<List<PostModel>, String>(
 
 final activeFeaturedPostsProvider = FutureProvider.family<List<PostModel>, String>(
   (ref, communityId) async {
-    final now = DateTime.now().toUtc().toIso8601String();
-
-    final res = await SupabaseService.table('posts')
+     final res = await SupabaseService.table('posts')
         .select(_kPostSelect)
         .eq('community_id', communityId)
         .eq('is_featured', true)
         .eq('status', 'ok')
-        .or('featured_until.is.null,featured_until.gt.$now')
         .order('featured_at', ascending: false)
-        .limit(12);
+        .limit(100);
 
     final list = (res as List)
         .map((e) => _normalizePostMap(Map<String, dynamic>.from(e as Map)))
@@ -518,7 +515,7 @@ final activeFeaturedPostsProvider = FutureProvider.family<List<PostModel>, Strin
     await _injectIsLiked(list);
 
     final posts = list.map((e) => PostModel.fromJson(e)).toList();
-    return posts.where((p) => p.isFeaturedActive).toList();
+    return posts.where((p) => p.isFeatured).toList();
   },
 );
 
@@ -529,6 +526,7 @@ final latestPostsProvider = FutureProvider.family<List<PostModel>, String>(
         .eq('community_id', communityId)
         .eq('status', 'ok')
         .eq('is_pinned', false)
+        .eq('is_featured', false)
         .order('created_at', ascending: false)
         .limit(20);
 

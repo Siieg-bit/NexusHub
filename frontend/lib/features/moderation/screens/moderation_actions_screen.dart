@@ -33,7 +33,6 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
   final _reasonController = TextEditingController();
   String _selectedAction = 'warn';
   int _banDurationHours = 24;
-  int _featuredDurationDays = 1; // 1, 3, 7 ou 0 (permanente)
 
   static List<Map<String, dynamic>> _getActions(AppStrings s) => [
     {
@@ -87,17 +86,17 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
     },
     {
       'id': 'feature_post',
-      'label': 'Destacar Post',
+      'label': 'Adicionar aos Destaques',
       'icon': Icons.star_rounded,
       'color': 0xFFFFD600,
-      'description': 'Destacar o post no topo do feed da comunidade',
+      'description': 'Adicionar o post à vitrine por ordem de entrada',
     },
     {
       'id': 'unfeature_post',
-      'label': 'Remover Destaque',
+      'label': 'Remover dos Destaques',
       'icon': Icons.star_border_rounded,
       'color': 0xFF9E9E9E,
-      'description': 'Remover o destaque do post',
+      'description': 'Remover o post da vitrine de destaques',
     },
     {
       'id': 'pin_post',
@@ -246,25 +245,23 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
         case 'feature_post':
           if (widget.targetPostId != null) {
             final now = DateTime.now().toUtc();
-            final featuredUntil = _featuredDurationDays > 0
-                ? now
-                    .add(Duration(days: _featuredDurationDays))
-                    .toIso8601String()
-                : null; // null = permanente
             await SupabaseService.table('posts').update({
               'is_featured': true,
               'featured_at': now.toIso8601String(),
               'featured_by': SupabaseService.currentUserId,
-              'featured_until': featuredUntil,
+              'featured_until': null,
             }).eq('id', widget.targetPostId!);
           }
           break;
 
         case 'unfeature_post':
           if (widget.targetPostId != null) {
-            await SupabaseService.table('posts')
-                .update({'is_featured': false, 'featured_at': null}).eq(
-                    'id', widget.targetPostId!);
+            await SupabaseService.table('posts').update({
+              'is_featured': false,
+              'featured_at': null,
+              'featured_until': null,
+              'featured_by': null,
+            }).eq('id', widget.targetPostId!);
           }
           break;
 
@@ -463,50 +460,6 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
                     );
                   }),
 
-                  // Duração do destaque (para feature_post)
-                  if (_selectedAction == 'feature_post') ...[
-                    SizedBox(height: r.s(16)),
-                    Text(s.highlightDuration,
-                        style: TextStyle(
-                            color: context.textPrimary,
-                            fontWeight: FontWeight.w800,
-                            fontSize: r.fs(16))),
-                    SizedBox(height: r.s(8)),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _DurationChip(
-                          label: s.oneDay,
-                          hours: 24,
-                          selected: _featuredDurationDays * 24,
-                          onTap: () =>
-                              setState(() => _featuredDurationDays = 1),
-                        ),
-                        _DurationChip(
-                          label: s.threeDays,
-                          hours: 72,
-                          selected: _featuredDurationDays * 24,
-                          onTap: () =>
-                              setState(() => _featuredDurationDays = 3),
-                        ),
-                        _DurationChip(
-                          label: s.sevenDays,
-                          hours: 168,
-                          selected: _featuredDurationDays * 24,
-                          onTap: () =>
-                              setState(() => _featuredDurationDays = 7),
-                        ),
-                        _DurationChip(
-                          label: s.permanent,
-                          hours: 0,
-                          selected: _featuredDurationDays * 24,
-                          onTap: () =>
-                              setState(() => _featuredDurationDays = 0),
-                        ),
-                      ],
-                    ),
-                  ],
 
                   // Duração (para ban/mute)
                   if (_selectedAction == 'ban' ||
