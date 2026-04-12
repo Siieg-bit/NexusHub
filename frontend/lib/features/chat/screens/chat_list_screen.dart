@@ -1076,13 +1076,55 @@ class _AminoChatTile extends ConsumerWidget {
             : null,
         child: Row(
           children: [
-            // ── Avatar com frame cosmético ──
-            CosmeticAvatar(
-              userId: chatRoom.type == 'dm' ? chatRoom.hostId : null,
-              avatarUrl: chatRoom.iconUrl,
-              size: r.s(48),
-              showOnline: chatRoom.type == 'dm',
-            ),
+            chatRoom.type == 'dm'
+                ? CosmeticAvatar(
+                    userId: chatRoom.hostId,
+                    avatarUrl: chatRoom.iconUrl,
+                    size: r.s(48),
+                    showOnline: true,
+                  )
+                : Container(
+                    width: r.s(56),
+                    height: r.s(48),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(r.s(10)),
+                      color: context.cardBg,
+                      border: Border.all(
+                        color: context.dividerClr.withValues(alpha: 0.25),
+                        width: 1,
+                      ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: chatRoom.iconUrl != null && chatRoom.iconUrl!.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: chatRoom.iconUrl!,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              color: context.cardBg,
+                              child: Icon(
+                                Icons.forum_rounded,
+                                color: context.textSecondary,
+                                size: r.s(22),
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => Container(
+                              color: context.cardBg,
+                              child: Icon(
+                                Icons.forum_rounded,
+                                color: context.textSecondary,
+                                size: r.s(22),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            color: context.cardBg,
+                            child: Icon(
+                              Icons.forum_rounded,
+                              color: context.textSecondary,
+                              size: r.s(22),
+                            ),
+                          ),
+                  ),
             SizedBox(width: r.s(12)),
 
             // ── Info ──
