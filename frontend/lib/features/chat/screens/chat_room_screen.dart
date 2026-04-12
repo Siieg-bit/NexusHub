@@ -12,6 +12,7 @@ import '../../../core/models/message_model.dart';
 import '../../../core/services/supabase_service.dart';
 // call_service.dart removido — não utilizado após remoção das chamadas de voz/vídeo
 import '../../auth/providers/auth_provider.dart';
+import '../../../core/providers/cosmetics_provider.dart';
 import '../../../core/services/realtime_service.dart';
 // call_screen.dart removido — chamadas de voz/vídeo substituídas por projeção
 import '../widgets/giphy_picker.dart';
@@ -885,6 +886,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               Navigator.pop(ctx);
               _showBackgroundPicker();
             }),
+            _settingsTile(r, Icons.chat_bubble_rounded, 'Meu Bubble', () {
+              Navigator.pop(ctx);
+              _showBubblePicker();
+            }),
             _settingsTile(r, Icons.notifications_rounded, s.notifications, () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -964,6 +969,69 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 color: Colors.grey[600], size: r.s(18)),
           ],
         ),
+      ),
+    );
+  }
+
+  // ==========================================================================
+  // BUBBLE PICKER — Seleciona o chat bubble ativo
+  // ==========================================================================
+
+  /// Abre um bottom sheet para o usuário selecionar qual bubble equipar.
+  /// Lista todos os chat_bubbles comprados pelo usuário com preview visual.
+  /// Ao selecionar, chama o RPC equip_store_item e invalida o provider de
+  /// cosméticos para que a mudança apareça imediatamente nas mensagens.
+  void _showBubblePicker() {
+    final r = context.r;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.surfaceColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+      ),
+      builder: (ctx) => _BubblePickerSheet(
+        onBubbleSelected: (purchaseId, itemType) async {
+          try {
+            final result = await SupabaseService.client.rpc(
+              'equip_store_item',
+              params: {
+                'p_purchase_id': purchaseId,
+                'p_item_type': itemType,
+              },
+            );
+            final ok = (result as Map<String, dynamic>?)?['success'] as bool? ?? false;
+            final equipped = (result as Map<String, dynamic>?)?['equipped'] as bool? ?? false;
+            final userId = SupabaseService.currentUserId;
+            if (userId != null) {
+              ref.invalidate(userCosmeticsProvider(userId));
+            }
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(ok
+                      ? (equipped ? 'Bubble equipado!' : 'Bubble removido.')
+                      : 'Não foi possível atualizar o bubble.'),
+                  backgroundColor: ok ? AppTheme.primaryColor : AppTheme.errorColor,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(r.s(10)),
+                  ),
+                ),
+              );
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Erro ao equipar bubble.'),
+                  backgroundColor: AppTheme.errorColor,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+          }
+        },
       ),
     );
   }
@@ -1978,6 +2046,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 case 'background':
                   _showBackgroundPicker();
                   break;
+                case 'bubble':
+                  _showBubblePicker();
+                  break;
                 case 'leave':
                   _leaveChatConfirm();
                   break;
@@ -1991,6 +2062,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   r, 'settings', Icons.settings_rounded, s.settings),
               _buildPopupItem(
                   r, 'background', Icons.wallpaper_rounded, s.chatBackground),
+              _buildPopupItem(
+                  r, 'bubble', Icons.chat_bubble_rounded, 'Meu Bubble'),
               _buildPopupItem(
                   r, 'leave', Icons.exit_to_app_rounded, s.leaveChatTitle,
                   isDestructive: true),
@@ -2900,6 +2973,522 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                     ),
         ),
       ],
+    );
+  }
+}
+
+// =============================================================================
+// BUBBLE PICKER SHEET — Seleciona o chat bubble ativo dentro do chat
+// =============================================================================
+
+/// Bottom sheet que lista todos os chat_bubbles comprados pelo usuário,
+/// com preview visual e opção de equipar/desequipar.
+///
+/// Usa [ConsumerStatefulWidget] para buscar as compras diretamente do Supabase
+/// e refletir o estado de equipado em tempo real.
+class _BubblePickerSheet extends ConsumerStatefulWidget {
+  /// Callback chamado quando o usuário toca em um bubble.
+  /// Recebe o [purchaseId] e o [itemType] para passar ao RPC equip_store_item.
+  final Future<void> Function(String purchaseId, String itemType) onBubbleSelected;
+
+  const _BubblePickerSheet({required this.onBubbleSelected});
+
+  @override
+  ConsumerState<_BubblePickerSheet> createState() => _BubblePickerSheetState();
+}
+
+class _BubblePickerSheetState extends ConsumerState<_BubblePickerSheet> {
+  List<Map<String, dynamic>> _ownedBubbles = [];
+  bool _isLoading = true;
+  String? _busyPurchaseId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOwnedBubbles();
+  }
+
+  Future<void> _loadOwnedBubbles() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
+    }
+
+    try {
+      // Busca todas as compras do tipo chat_bubble com os dados do store_item
+      final purchases = await SupabaseService.table('user_purchases')
+          .select(
+            'id, item_id, is_equipped, '
+            'store_items!user_purchases_item_id_fkey('
+            '  id, name, type, preview_url, asset_url, asset_config'
+            ')',
+          )
+          .eq('user_id', userId);
+
+      final bubbles = <Map<String, dynamic>>[];
+      for (final p in (purchases as List? ?? [])) {
+        final item = p['store_items'];
+        if (item == null) continue;
+        final type = (item['type'] ?? '').toString();
+        if (type != 'chat_bubble') continue;
+        bubbles.add({
+          'purchase_id': p['id'] as String? ?? '',
+          'item_id': item['id'] as String? ?? '',
+          'name': item['name'] as String? ?? 'Bubble',
+          'type': type,
+          'is_equipped': p['is_equipped'] as bool? ?? false,
+          'preview_url': item['preview_url'] as String? ?? '',
+          'asset_url': item['asset_url'] as String? ?? '',
+          'asset_config': item['asset_config'] as Map<String, dynamic>? ?? {},
+        });
+      }
+
+      if (mounted) {
+        setState(() {
+          _ownedBubbles = bubbles;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('[BubblePicker] Erro ao carregar bubbles: $e');
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _onTap(Map<String, dynamic> bubble) async {
+    final purchaseId = bubble['purchase_id'] as String? ?? '';
+    final itemType = bubble['type'] as String? ?? 'chat_bubble';
+    if (purchaseId.isEmpty || _busyPurchaseId != null) return;
+
+    setState(() => _busyPurchaseId = purchaseId);
+    try {
+      await widget.onBubbleSelected(purchaseId, itemType);
+      // Recarrega para refletir novo estado is_equipped
+      await _loadOwnedBubbles();
+    } finally {
+      if (mounted) setState(() => _busyPurchaseId = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: r.s(16),
+        right: r.s(16),
+        top: r.s(20),
+        bottom: MediaQuery.of(context).viewInsets.bottom + r.s(24),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Handle ──
+          Center(
+            child: Container(
+              width: r.s(36),
+              height: r.s(4),
+              margin: EdgeInsets.only(bottom: r.s(16)),
+              decoration: BoxDecoration(
+                color: Colors.grey[700],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+
+          // ── Título ──
+          Row(
+            children: [
+              Icon(Icons.chat_bubble_rounded,
+                  color: AppTheme.primaryColor, size: r.s(20)),
+              SizedBox(width: r.s(8)),
+              Text(
+                'Meu Bubble',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: r.fs(16),
+                  color: context.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: r.s(4)),
+          Text(
+            'Selecione o bubble que aparecerá nas suas mensagens.',
+            style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
+          ),
+          SizedBox(height: r.s(16)),
+
+          // ── Conteúdo ──
+          if (_isLoading)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: r.s(32)),
+                child: CircularProgressIndicator(
+                  color: AppTheme.primaryColor,
+                  strokeWidth: 2,
+                ),
+              ),
+            )
+          else if (_ownedBubbles.isEmpty)
+            _EmptyBubbleState(r: r)
+          else
+            // Lista de bubbles com preview
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: r.screenHeight * 0.55,
+              ),
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: _ownedBubbles.length + 1, // +1 para o item "Padrão"
+                separatorBuilder: (_, __) => Divider(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  height: 1,
+                ),
+                itemBuilder: (ctx, i) {
+                  // Primeiro item: bubble padrão (sem cosmético)
+                  if (i == 0) {
+                    return _BubblePickerItem(
+                      r: r,
+                      name: 'Padrão',
+                      subtitle: 'Bubble padrão do app',
+                      isEquipped: _ownedBubbles.every(
+                          (b) => !(b['is_equipped'] as bool? ?? false)),
+                      isBusy: false,
+                      previewWidget: _DefaultBubblePreview(r: r),
+                      onTap: () async {
+                        // Desequipa todos os bubbles — chama equip no atualmente equipado
+                        final equipped = _ownedBubbles.firstWhere(
+                          (b) => b['is_equipped'] as bool? ?? false,
+                          orElse: () => {},
+                        );
+                        if (equipped.isEmpty) return;
+                        setState(() => _busyPurchaseId = equipped['purchase_id']);
+                        try {
+                          await widget.onBubbleSelected(
+                            equipped['purchase_id'] as String,
+                            equipped['type'] as String,
+                          );
+                          await _loadOwnedBubbles();
+                        } finally {
+                          if (mounted) setState(() => _busyPurchaseId = null);
+                        }
+                      },
+                    );
+                  }
+
+                  final bubble = _ownedBubbles[i - 1];
+                  final assetConfig =
+                      bubble['asset_config'] as Map<String, dynamic>? ?? {};
+                  final imageUrl = (assetConfig['bubble_url'] as String?)
+                      ?.trim()
+                      .isNotEmpty == true
+                      ? assetConfig['bubble_url'] as String
+                      : (assetConfig['image_url'] as String?)?.trim().isNotEmpty == true
+                          ? assetConfig['image_url'] as String
+                          : (bubble['preview_url'] as String?)?.trim().isNotEmpty == true
+                              ? bubble['preview_url'] as String
+                              : null;
+                  final bubbleColor = _parseColor(
+                      assetConfig['bubble_color'] as String? ??
+                          assetConfig['color'] as String? ?? '');
+                  final isEquipped = bubble['is_equipped'] as bool? ?? false;
+                  final purchaseId = bubble['purchase_id'] as String? ?? '';
+                  final isBusy = _busyPurchaseId == purchaseId;
+
+                  return _BubblePickerItem(
+                    r: r,
+                    name: bubble['name'] as String? ?? 'Bubble',
+                    subtitle: isEquipped ? 'Equipado' : 'Toque para equipar',
+                    isEquipped: isEquipped,
+                    isBusy: isBusy,
+                    previewWidget: _BubblePreview(
+                      r: r,
+                      imageUrl: imageUrl,
+                      bubbleColor: bubbleColor,
+                    ),
+                    onTap: () => _onTap(bubble),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Color? _parseColor(String hex) {
+    if (hex.isEmpty) return null;
+    try {
+      final clean = hex.replaceAll('#', '');
+      return Color(int.parse('FF$clean', radix: 16));
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+// ─── Item de bubble na lista ────────────────────────────────────────────────
+
+class _BubblePickerItem extends StatelessWidget {
+  final Responsive r;
+  final String name;
+  final String subtitle;
+  final bool isEquipped;
+  final bool isBusy;
+  final Widget previewWidget;
+  final VoidCallback onTap;
+
+  const _BubblePickerItem({
+    required this.r,
+    required this.name,
+    required this.subtitle,
+    required this.isEquipped,
+    required this.isBusy,
+    required this.previewWidget,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: isBusy ? null : onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: r.s(12), horizontal: r.s(4)),
+        child: Row(
+          children: [
+            // Preview do bubble
+            SizedBox(
+              width: r.s(120),
+              height: r.s(52),
+              child: previewWidget,
+            ),
+            SizedBox(width: r.s(12)),
+
+            // Nome e status
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(
+                      color: context.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: r.fs(14),
+                    ),
+                  ),
+                  SizedBox(height: r.s(2)),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: isEquipped
+                          ? AppTheme.primaryColor
+                          : Colors.grey[500],
+                      fontSize: r.fs(12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Indicador de estado
+            if (isBusy)
+              SizedBox(
+                width: r.s(20),
+                height: r.s(20),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppTheme.primaryColor,
+                ),
+              )
+            else if (isEquipped)
+              Icon(Icons.check_circle_rounded,
+                  color: AppTheme.primaryColor, size: r.s(22))
+            else
+              Icon(Icons.radio_button_unchecked_rounded,
+                  color: Colors.grey[600], size: r.s(22)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Preview do bubble padrão ────────────────────────────────────────────────
+
+class _DefaultBubblePreview extends StatelessWidget {
+  final Responsive r;
+  const _DefaultBubblePreview({required this.r});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+            horizontal: r.s(12), vertical: r.s(8)),
+        decoration: BoxDecoration(
+          color: AppTheme.primaryColor,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(14),
+            topRight: Radius.circular(14),
+            bottomRight: Radius.circular(14),
+            bottomLeft: Radius.circular(4),
+          ),
+        ),
+        child: Text(
+          'Olá!',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: r.fs(13),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Preview de bubble com imagem ou cor ─────────────────────────────────────
+
+class _BubblePreview extends StatelessWidget {
+  final Responsive r;
+  final String? imageUrl;
+  final Color? bubbleColor;
+
+  const _BubblePreview({
+    required this.r,
+    this.imageUrl,
+    this.bubbleColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (imageUrl != null && imageUrl!.isNotEmpty) {
+      // Preview com nine-slice
+      return Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: CachedNetworkImage(
+              imageUrl: imageUrl!,
+              imageBuilder: (ctx, img) => Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: img,
+                    fit: BoxFit.fill,
+                    centerSlice: const Rect.fromLTRB(38, 38, 90, 90),
+                  ),
+                ),
+              ),
+              placeholder: (_, __) => Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(r.s(10)),
+                ),
+              ),
+              errorWidget: (_, __, ___) => _fallbackContainer(context),
+            ),
+          ),
+          Center(
+            child: Text(
+              'Olá!',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: r.fs(13),
+                fontWeight: FontWeight.w500,
+                shadows: const [
+                  Shadow(
+                    color: Colors.black54,
+                    blurRadius: 4,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Preview com cor sólida
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
+      decoration: BoxDecoration(
+        color: bubbleColor ?? AppTheme.primaryColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(14),
+          topRight: Radius.circular(14),
+          bottomRight: Radius.circular(14),
+          bottomLeft: Radius.circular(4),
+        ),
+      ),
+      child: Text(
+        'Olá!',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: r.fs(13),
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _fallbackContainer(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(r.s(10)),
+        border: Border.all(
+          color: AppTheme.primaryColor.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Estado vazio (sem bubbles comprados) ────────────────────────────────────
+
+class _EmptyBubbleState extends StatelessWidget {
+  final Responsive r;
+  const _EmptyBubbleState({required this.r});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: r.s(32)),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.chat_bubble_outline_rounded,
+                color: Colors.grey[700], size: r.s(40)),
+            SizedBox(height: r.s(12)),
+            Text(
+              'Você não possui bubbles',
+              style: TextStyle(
+                color: Colors.grey[500],
+                fontSize: r.fs(14),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: r.s(4)),
+            Text(
+              'Visite a Loja para adquirir novos estilos.',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: r.fs(12),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
