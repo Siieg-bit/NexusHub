@@ -485,7 +485,30 @@ class RichBioRenderer extends StatelessWidget {
           RegExp(r'(^|\n)\s*[-*+]\s+', multiLine: true),
           (match) => '${match.group(1) ?? ''}• ',
         )
-        .replaceAll(RegExp(r'[*_`~]'), '')
+        .replaceAllMapped(
+          RegExp(r'\*\*([\s\S]+?)\*\*'),
+          (match) => match.group(1) ?? '',
+        )
+        .replaceAllMapped(
+          RegExp(r'__([\s\S]+?)__'),
+          (match) => match.group(1) ?? '',
+        )
+        .replaceAllMapped(
+          RegExp(r'\*(?!\s)([^*\n]+?)(?<!\s)\*'),
+          (match) => match.group(1) ?? '',
+        )
+        .replaceAllMapped(
+          RegExp(r'(?<!_)_([^_\n]+?)_(?!_)'),
+          (match) => match.group(1) ?? '',
+        )
+        .replaceAllMapped(
+          RegExp(r'~~([\s\S]+?)~~'),
+          (match) => match.group(1) ?? '',
+        )
+        .replaceAllMapped(
+          RegExp(r'`([^`]+?)`'),
+          (match) => match.group(1) ?? '',
+        )
         .replaceAll(RegExp(r'\n{3,}'), '\n\n')
         .trim();
   }
@@ -820,9 +843,8 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
   bool get _hasInlineTextColors =>
       _inlineTextColorPattern.hasMatch(_controller.text);
 
-  String? get _effectiveGlobalTextColorHex => _hasInlineTextColors
-      ? null
-      : RichBioCodec.colorToHex(_legacyTextColor);
+  String? get _effectiveGlobalTextColorHex =>
+      RichBioCodec.colorToHex(_legacyTextColor);
 
   void _applyTextColorToSelection(Color color) {
     final hex = RichBioCodec.colorToHex(color);
