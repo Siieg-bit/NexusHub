@@ -1812,66 +1812,70 @@ class _GalleryGrid extends StatelessWidget {
           ...photos.asMap().entries.map((entry) {
             final index = entry.key;
             final url = entry.value;
-            return Stack(
-              clipBehavior: Clip.none,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(r.s(6)),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      CachedNetworkImage(
-                        imageUrl: url,
-                        width: itemSize,
-                        height: itemSize,
-                        fit: BoxFit.cover,
-                      ),
-                      if (index == 0)
-                        Positioned(
-                          left: r.s(6),
-                          right: r.s(6),
-                          bottom: r.s(6),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: r.s(6),
-                              vertical: r.s(4),
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.55),
-                              borderRadius: BorderRadius.circular(r.s(8)),
-                            ),
-                            child: Text(
-                              'Capa',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: r.fs(10),
-                                fontWeight: FontWeight.w700,
+            return SizedBox(
+              width: itemSize,
+              height: itemSize,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(r.s(6)),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          CachedNetworkImage(
+                            imageUrl: url,
+                            fit: BoxFit.cover,
+                          ),
+                          if (index == 0)
+                            Positioned(
+                              left: r.s(6),
+                              right: r.s(6),
+                              bottom: r.s(6),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: r.s(6),
+                                  vertical: r.s(4),
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.55),
+                                  borderRadius: BorderRadius.circular(r.s(8)),
+                                ),
+                                child: Text(
+                                  'Capa',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: r.fs(10),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: -r.s(6),
-                  right: -r.s(6),
-                  child: GestureDetector(
-                    onTap: () => onRemove(index),
-                    child: Container(
-                      width: r.s(20),
-                      height: r.s(20),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
+                        ],
                       ),
-                      child: Icon(Icons.close_rounded,
-                          color: Colors.white, size: r.s(12)),
                     ),
                   ),
-                ),
-              ],
+                  Positioned(
+                    top: -r.s(6),
+                    right: -r.s(6),
+                    child: GestureDetector(
+                      onTap: () => onRemove(index),
+                      child: Container(
+                        width: r.s(20),
+                        height: r.s(20),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.close_rounded,
+                            color: Colors.white, size: r.s(12)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             );
           }),
 
