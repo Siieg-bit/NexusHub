@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show FileOptions;
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../config/app_theme.dart';
@@ -26,6 +25,9 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/deep_link_service.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/comment_media_menu_button.dart';
+import '../../auth/providers/auth_provider.dart';
+
+enum _CommentSortOrder { mostRecent, oldest, mostPopular }
 
 /// Provider para comentários de um post.
 final postCommentsProvider =
@@ -57,6 +59,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   bool _isSending = false;
   bool _viewRecorded = false;
   bool _isBookmarked = false;
+  _CommentSortOrder _commentSortOrder = _CommentSortOrder.oldest;
   // Cache do role do usuário na comunidade atual
   String? _cachedCommunityId;
   String? _cachedUserRole;
@@ -140,6 +143,49 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     setState(() => _replyingToComment = null);
   }
 
+  int _compareComments(CommentModel a, CommentModel b) {
+    switch (_commentSortOrder) {
+      case _CommentSortOrder.mostRecent:
+        return b.createdAt.compareTo(a.createdAt);
+      case _CommentSortOrder.mostPopular:
+        final popularity = b.likesCount.compareTo(a.likesCount);
+        if (popularity != 0) return popularity;
+        final replyCount = b.replies.length.compareTo(a.replies.length);
+        if (replyCount != 0) return replyCount;
+        return b.createdAt.compareTo(a.createdAt);
+      case _CommentSortOrder.oldest:
+        return a.createdAt.compareTo(b.createdAt);
+    }
+  }
+
+  CommentModel _copyCommentWithSortedReplies(CommentModel comment) {
+    final replies = comment.replies
+        .map(_copyCommentWithSortedReplies)
+        .toList()
+      ..sort(_compareComments);
+
+    return CommentModel(
+      id: comment.id,
+      authorId: comment.authorId,
+      postId: comment.postId,
+      wikiId: comment.wikiId,
+      profileWallId: comment.profileWallId,
+      parentId: comment.parentId,
+      content: comment.content,
+      mediaUrl: comment.mediaUrl,
+      stickerId: comment.stickerId,
+      stickerUrl: comment.stickerUrl,
+      stickerName: comment.stickerName,
+      packId: comment.packId,
+      likesCount: comment.likesCount,
+      status: comment.status,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+      author: comment.author,
+      replies: replies,
+    );
+  }
+
   List<CommentModel> _buildCommentTree(List<CommentModel> comments) {
     final repliesByParent = <String, List<CommentModel>>{};
     final rootComments = <CommentModel>[];
@@ -178,8 +224,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       );
     }
 
-    rootComments.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-    return rootComments.map(attachReplies).toList();
+    final threadedComments = rootComments.map(attachReplies).toList()
+      ..sort(_compareComments);
+
+    return threadedComments.map(_copyCommentWithSortedReplies).toList();
   }
 
   Future<void> _deleteComment(CommentModel comment) async {
@@ -521,6 +569,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final r = context.r;
     final postAsync = ref.watch(postDetailProvider(widget.postId));
     final commentsAsync = ref.watch(postCommentsProvider(widget.postId));
+    final currentUser = ref.watch(currentUserProvider);
 
     final post = postAsync.valueOrNull;
     return Scaffold(
@@ -1191,8 +1240,58 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 ),
                               ),
                               const Spacer(),
-                              Icon(Icons.tune_rounded,
-                                  size: r.s(20), color: Colors.grey[500]),
+                              PopupMenuButton<_CommentSortOrder>(
+                                tooltip: s.sortBy,
+                                initialValue: _commentSortOrder,
+                                onSelected: (value) {
+                                  setState(() => _commentSortOrder = value);
+                                },
+                                color: context.surfaceColor,
+                                elevation: 8,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(r.s(14)),
+                                  side: BorderSide(
+                                    color: Colors.white.withValues(alpha: 0.08),
+                                  ),
+                                ),
+                                itemBuilder: (_) => [
+                                  PopupMenuItem(
+                                    value: _CommentSortOrder.mostRecent,
+                                    child: Text(
+                                      s.mostRecent,
+                                      style: TextStyle(color: context.textPrimary),
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: _CommentSortOrder.oldest,
+                                    child: Text(
+                                      s.oldest,
+                                      style: TextStyle(color: context.textPrimary),
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: _CommentSortOrder.mostPopular,
+                                    child: Text(
+                                      s.mostPopular,
+                                      style: TextStyle(color: context.textPrimary),
+                                    ),
+                                  ),
+                                ],
+                                child: Container(
+                                  padding: EdgeInsets.all(r.s(6)),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.04),
+                                    borderRadius: BorderRadius.circular(r.s(10)),
+                                  ),
+                                  child: Icon(
+                                    Icons.tune_rounded,
+                                    size: r.s(20),
+                                    color: _commentSortOrder == _CommentSortOrder.oldest
+                                        ? Colors.grey[500]
+                                        : AppTheme.primaryColor,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -1318,8 +1417,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   CosmeticAvatar(
-                                    userId: SupabaseService.currentUserId ?? '',
-                                    avatarUrl: null,
+                                    userId: currentUser?.id ?? SupabaseService.currentUserId ?? '',
+                                    avatarUrl: currentUser?.iconUrl,
                                     size: r.s(32),
                                   ),
                                   SizedBox(width: r.s(8)),
