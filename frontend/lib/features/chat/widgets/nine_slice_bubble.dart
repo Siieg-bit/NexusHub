@@ -32,19 +32,23 @@ class NineSliceBubble extends StatelessWidget {
   final double maxWidth;
 
   /// Insets definem o tamanho das bordas fixas (em pixels da imagem).
-  /// Por padrão, assume que 30% de cada lado é borda decorativa.
+  /// Para a imagem padrão de 128×128px com artes nos cantos, use EdgeInsets.all(38).
   final EdgeInsets sliceInsets;
+
+  /// Dimensões reais da imagem PNG em pixels. Padrão: 128×128.
+  final Size imageSize;
 
   /// Padding interno para o conteúdo (texto da mensagem).
   final EdgeInsets contentPadding;
 
-  NineSliceBubble({
+  const NineSliceBubble({
     super.key,
     required this.child,
     required this.imageUrl,
     required this.isMine,
     this.maxWidth = 280,
-    this.sliceInsets = const EdgeInsets.all(24),
+    this.sliceInsets = const EdgeInsets.all(38),
+    this.imageSize = const Size(128, 128),
     this.contentPadding = const EdgeInsets.symmetric(
       horizontal: 20,
       vertical: 14,
@@ -77,6 +81,7 @@ class NineSliceBubble extends StatelessWidget {
                 child: _NineSliceImage(
                   imageUrl: imageUrl,
                   sliceInsets: sliceInsets,
+                  imageSize: imageSize,
                 ),
               ),
 
@@ -104,22 +109,39 @@ class NineSliceBubble extends StatelessWidget {
 ///
 /// Usa [CachedNetworkImage] para cache e [DecorationImage] com
 /// [centerSlice] para o efeito de 9-slice nativo do Flutter.
+///
+/// O [imageSize] deve corresponder às dimensões reais do PNG em pixels.
+/// Por padrão assume 128×128 (tamanho padrão dos bubble frames da loja).
 class _NineSliceImage extends StatelessWidget {
   final String imageUrl;
   final EdgeInsets sliceInsets;
 
+  /// Dimensões reais da imagem fonte em pixels lógicos.
+  /// IMPORTANTE: deve bater com o tamanho real do PNG para que o
+  /// centerSlice seja calculado corretamente.
+  final Size imageSize;
+
   const _NineSliceImage({
     required this.imageUrl,
     required this.sliceInsets,
+    this.imageSize = const Size(128, 128),
   });
 
   @override
   Widget build(BuildContext context) {
     final r = context.r;
+    // centerSlice define a região CENTRAL (esticável) em coordenadas
+    // de pixels da imagem original. Os cantos fora desse rect são fixos.
+    final centerSlice = Rect.fromLTRB(
+      sliceInsets.left,
+      sliceInsets.top,
+      imageSize.width - sliceInsets.right,
+      imageSize.height - sliceInsets.bottom,
+    );
     return CachedNetworkImage(
       imageUrl: imageUrl,
-      memCacheWidth: 600,
-      memCacheHeight: 400,
+      memCacheWidth: imageSize.width.toInt() * 2,
+      memCacheHeight: imageSize.height.toInt() * 2,
       imageBuilder: (context, imageProvider) {
         return Container(
           decoration: BoxDecoration(
@@ -128,13 +150,8 @@ class _NineSliceImage extends StatelessWidget {
               fit: BoxFit.fill,
               // centerSlice é o coração do 9-slice no Flutter.
               // Define o retângulo central que será esticado.
-              centerSlice: Rect.fromLTRB(
-                sliceInsets.left,
-                sliceInsets.top,
-                // Assumimos imagem de ~100px, então right = 100 - right_inset
-                100 - sliceInsets.right,
-                100 - sliceInsets.bottom,
-              ),
+              // Os 4 cantos fora desse rect são renderizados em tamanho fixo.
+              centerSlice: centerSlice,
             ),
           ),
         );
