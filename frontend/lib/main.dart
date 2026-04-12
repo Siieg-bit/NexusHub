@@ -283,8 +283,12 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
       supportedLocales: AppLocale.values.map((l) => Locale(l.code)),
       routerConfig: router,
       builder: (context, child) {
-        return ErrorBoundary(
-          child: child ?? const SizedBox.shrink(),
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: ErrorBoundary(
+            child: child ?? const SizedBox.shrink(),
+          ),
         );
       },
     );
