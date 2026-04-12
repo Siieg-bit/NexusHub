@@ -10,7 +10,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/services/supabase_service.dart';
-// call_service.dart removido — não utilizado após remoção das chamadas de voz/vídeo
+import '../../../core/services/call_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/providers/cosmetics_provider.dart';
 import '../../../core/services/realtime_service.dart';
@@ -31,6 +31,7 @@ import '../../../core/utils/media_utils.dart';
 import 'chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/deep_link_service.dart';
+import 'call_screen.dart';
 // screening_room_screen.dart — navegação via GoRouter ('/screening-room/:threadId')
 
 /// =============================================================================
@@ -596,7 +597,36 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   Future<void> _startVoiceChat() async {
-    await _sendMessage(type: 'voice_chat');
+    final hadActiveCall = await CallService.getActiveCallForThread(
+          widget.threadId,
+          allowedTypes: {CallType.voice},
+        ) !=
+        null;
+
+    final session = await CallService.openThreadCall(
+      threadId: widget.threadId,
+      type: CallType.voice,
+    );
+
+    if (!mounted) return;
+
+    if (session == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Não foi possível iniciar ou entrar na chamada.'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (!hadActiveCall) {
+      await _sendMessage(type: 'voice_chat');
+      if (!mounted) return;
+    }
+
+    await CallScreen.show(context, session);
   }
 
   Future<void> _startProjection() async {

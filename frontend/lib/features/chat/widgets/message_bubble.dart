@@ -7,9 +7,11 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/providers/cosmetics_provider.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/call_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
+import '../screens/call_screen.dart';
 import '../../stickers/widgets/sticker_message_bubble.dart';
 import 'chat_bubble.dart' show ChatBubble;
 import 'voice_recorder.dart' show VoiceNotePlayer;
@@ -115,12 +117,36 @@ class MessageBubble extends ConsumerWidget {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: r.s(8)),
         child: Center(
-          child: !isVoice && threadId.isNotEmpty
-              ? GestureDetector(
-                  onTap: () => context.push('/screening-room/$threadId'),
-                  child: container,
-                )
-              : container,
+          child: GestureDetector(
+            onTap: () async {
+              if (threadId.isEmpty) return;
+
+              if (!isVoice) {
+                context.push('/screening-room/$threadId');
+                return;
+              }
+
+              final session = await CallService.openThreadCall(
+                threadId: threadId,
+                type: CallType.voice,
+              );
+
+              if (session == null) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Nenhuma chamada ativa encontrada.'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+                return;
+              }
+
+              if (!context.mounted) return;
+              await CallScreen.show(context, session);
+            },
+            child: container,
+          ),
         ),
       );
     }

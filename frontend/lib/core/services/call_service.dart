@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -263,10 +264,10 @@ class CallService {
   /// - Membership no chat
   /// - Upsert (suporta reconexão sem duplicar)
   /// =========================================================================
-  static Future<bool> joinCall(String callSessionId) async {
+  static Future<CallSession?> joinCallSession(String callSessionId) async {
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) return false;
+      if (userId == null) return null;
 
       // Join via RPC (validação server-side)
       final rpcResult = await SupabaseService.rpc('join_call_session', params: {
@@ -276,7 +277,7 @@ class CallService {
       final result = rpcResult as Map<String, dynamic>? ?? {};
       if (result['success'] != true) {
         debugPrint('CallService.joinCall RPC error: ${result['error']}');
-        return false;
+        return null;
       }
 
       // Buscar sessão completa
@@ -290,7 +291,7 @@ class CallService {
 
       // Solicitar permissões
       final granted = await _requestPermissions(session.type);
-      if (!granted) return false;
+      if (!granted) return null;
 
       // Inicializar Agora e entrar no canal
       await _joinAgoraChannel(session);
@@ -298,11 +299,70 @@ class CallService {
       // Inscrever no Realtime via RealtimeService
       _subscribeToCall(callSessionId);
 
-      return true;
+      return session;
     } catch (e) {
       debugPrint('CallService.joinCall error: $e');
-      return false;
+      return null;
     }
+  }
+
+  static Future<bool> joinCall(String callSessionId) async {
+    return (await joinCallSession(callSessionId)) != null;
+  }
+
+  static Future<CallSession?> getActiveCallForThread(
+    String threadId, {
+    Set<CallType>? allowedTypes,
+  }) async {
+    try {
+      final res = await SupabaseService.table('call_sessions')
+          .select()
+          .eq('thread_id', threadId)
+          .eq('status', 'active')
+          .order('created_at', ascending: false)
+          .limit(10);
+
+      final rows = List<Map<String, dynamic>>.from(res as List? ?? const []);
+      for (final row in rows) {
+        final session = CallSession.fromJson(row);
+        if (allowedTypes == null || allowedTypes.contains(session.type)) {
+          return session;
+        }
+      }
+    } catch (e) {
+      debugPrint('CallService.getActiveCallForThread error: $e');
+    }
+    return null;
+  }
+
+  static Future<CallSession?> openThreadCall({
+    required String threadId,
+    required CallType type,
+  }) async {
+    final allowedTypes = {type};
+
+    final existing = await getActiveCallForThread(
+      threadId,
+      allowedTypes: allowedTypes,
+    );
+    if (existing != null) {
+      if (activeCall?.id == existing.id) return activeCall;
+      return joinCallSession(existing.id);
+    }
+
+    final created = await createCall(threadId: threadId, type: type);
+    if (created != null) return created;
+
+    final raceWinner = await getActiveCallForThread(
+      threadId,
+      allowedTypes: allowedTypes,
+    );
+    if (raceWinner != null) {
+      if (activeCall?.id == raceWinner.id) return activeCall;
+      return joinCallSession(raceWinner.id);
+    }
+
+    return null;
   }
 
   /// Gera o channelName a partir do ID da sessão.
