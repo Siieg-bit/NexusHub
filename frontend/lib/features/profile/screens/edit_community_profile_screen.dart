@@ -452,6 +452,18 @@ class _EditCommunityProfileScreenState
     }
   }
 
+  void _applyGalleryUpdate(List<String> updatedGallery) {
+    final sanitizedGallery = List<String>.from(updatedGallery);
+    final removedImages = _gallery.toSet().difference(sanitizedGallery.toSet());
+
+    _gallery = sanitizedGallery;
+    _localBannerUrl = sanitizedGallery.isNotEmpty ? sanitizedGallery.first : null;
+
+    if (_localBackgroundUrl != null && removedImages.contains(_localBackgroundUrl)) {
+      _localBackgroundUrl = null;
+    }
+  }
+
   Future<void> _addGalleryPhoto() async {
     if (_gallery.length >= _maxGalleryPhotos) {
       final s = getStrings();
@@ -464,22 +476,27 @@ class _EditCommunityProfileScreenState
     final url = await _uploadCommunityImage('gallery');
     if (url != null && mounted) {
       setState(() {
-        _gallery = [..._gallery, url];
-        _localBannerUrl = _gallery.isNotEmpty ? _gallery.first : null;
+        _applyGalleryUpdate([..._gallery, url]);
       });
     }
   }
 
-  void _removeGalleryPhoto(int index) {
-    setState(() {
-      final updated = List<String>.from(_gallery);
-      final removedUrl = updated.removeAt(index);
-      _gallery = updated;
-      _localBannerUrl = updated.isNotEmpty ? updated.first : null;
-      if (_localBackgroundUrl == removedUrl) {
-        _localBackgroundUrl = null;
-      }
-    });
+  Future<void> _openGalleryManager() async {
+    final updatedGallery = await Navigator.of(context).push<List<String>>(
+      MaterialPageRoute(
+        builder: (_) => _CommunityGalleryManagerScreen(
+          initialPhotos: _gallery,
+          maxPhotos: _maxGalleryPhotos,
+          onPickPhoto: () => _uploadCommunityImage('gallery'),
+        ),
+      ),
+    );
+
+    if (updatedGallery != null && mounted) {
+      setState(() {
+        _applyGalleryUpdate(updatedGallery);
+      });
+    }
   }
 
   // ─── Save ────────────────────────────────────────────────────────────────────
@@ -890,21 +907,14 @@ class _EditCommunityProfileScreenState
                   // LINHA: Galeria de fotos
                   // ══════════════════════════════════════════════════════
                   GestureDetector(
-                    onTap: _addGalleryPhoto,
+                    onTap: _openGalleryManager,
                     child: _AminoListTile(
                       leading: Icon(Icons.camera_alt_rounded,
                           color: const Color(0xFF2196F3), size: r.s(28)),
-                      content: _gallery.isNotEmpty
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(r.s(4)),
-                              child: CachedNetworkImage(
-                                imageUrl: _gallery.first,
-                                width: r.s(44),
-                                height: r.s(44),
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : SizedBox(height: r.s(44)),
+                      content: _GallerySummaryContent(
+                        photos: _gallery,
+                        itemSize: r.s(44),
+                      ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -923,18 +933,6 @@ class _EditCommunityProfileScreenState
                       ),
                     ),
                   ),
-
-                  // ── Grid da galeria (se houver fotos) ─────────────────
-                  if (_gallery.isNotEmpty) ...[
-                    _AminoDivider(),
-                    _GalleryGrid(
-                      photos: _gallery,
-                      onAdd: _gallery.length < _maxGalleryPhotos
-                          ? _addGalleryPhoto
-                          : null,
-                      onRemove: _removeGalleryPhoto,
-                    ),
-                  ],
 
                   _AminoDivider(),
 
@@ -1783,121 +1781,392 @@ class _FormatActionChip extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// GRID DA GALERIA
+// RESUMO + GERENCIADOR DA GALERIA
 // ═══════════════════════════════════════════════════════════════════════════════
 
-class _GalleryGrid extends StatelessWidget {
+class _GallerySummaryContent extends StatelessWidget {
   final List<String> photos;
-  final VoidCallback? onAdd;
-  final void Function(int index) onRemove;
+  final double itemSize;
 
-  const _GalleryGrid({
+  const _GallerySummaryContent({
     required this.photos,
-    required this.onAdd,
-    required this.onRemove,
+    required this.itemSize,
   });
 
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final itemSize = (MediaQuery.of(context).size.width - r.s(32) - r.s(8) * 2) / 3;
 
-    return Padding(
-      padding: EdgeInsets.all(r.s(16)),
-      child: Wrap(
-        spacing: r.s(8),
-        runSpacing: r.s(8),
+    if (photos.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Fotos existentes
-          ...photos.asMap().entries.map((entry) {
-            final index = entry.key;
-            final url = entry.value;
-            return SizedBox(
-              width: itemSize,
-              height: itemSize,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned.fill(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(r.s(6)),
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          CachedNetworkImage(
-                            imageUrl: url,
-                            fit: BoxFit.cover,
-                          ),
-                          if (index == 0)
-                            Positioned(
-                              left: r.s(6),
-                              right: r.s(6),
-                              bottom: r.s(6),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: r.s(6),
-                                  vertical: r.s(4),
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.55),
-                                  borderRadius: BorderRadius.circular(r.s(8)),
-                                ),
-                                child: Text(
-                                  'Capa',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: r.fs(10),
-                                    fontWeight: FontWeight.w700,
-                                  ),
+          Text(
+            'Gerenciar galeria',
+            style: TextStyle(
+              color: context.textPrimary,
+              fontSize: r.fs(14),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: r.s(4)),
+          Text(
+            'Adicione imagens e defina a ordem da capa.',
+            style: TextStyle(
+              color: context.textSecondary,
+              fontSize: r.fs(12),
+              height: 1.35,
+            ),
+          ),
+        ],
+      );
+    }
+
+    final previewPhotos = photos.take(2).toList();
+
+    return Row(
+      children: [
+        ...previewPhotos.asMap().entries.map((entry) {
+          final index = entry.key;
+          final photo = entry.value;
+          return Container(
+            width: itemSize,
+            height: itemSize,
+            margin: EdgeInsets.only(right: r.s(8)),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(r.s(6)),
+              child: CachedNetworkImage(
+                imageUrl: photo,
+                fit: BoxFit.cover,
+              ),
+            ),
+          );
+        }),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Gerenciar galeria',
+                style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: r.fs(14),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: r.s(4)),
+              Text(
+                'Reordene, remova ou adicione novas imagens.',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: context.textSecondary,
+                  fontSize: r.fs(12),
+                  height: 1.35,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CommunityGalleryManagerScreen extends StatefulWidget {
+  final List<String> initialPhotos;
+  final int maxPhotos;
+  final Future<String?> Function() onPickPhoto;
+
+  const _CommunityGalleryManagerScreen({
+    required this.initialPhotos,
+    required this.maxPhotos,
+    required this.onPickPhoto,
+  });
+
+  @override
+  State<_CommunityGalleryManagerScreen> createState() =>
+      _CommunityGalleryManagerScreenState();
+}
+
+class _CommunityGalleryManagerScreenState
+    extends State<_CommunityGalleryManagerScreen> {
+  late List<String> _photos;
+  bool _isUploading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _photos = List<String>.from(widget.initialPhotos);
+  }
+
+  Future<void> _addPhoto() async {
+    if (_isUploading || _photos.length >= widget.maxPhotos) return;
+
+    setState(() => _isUploading = true);
+    try {
+      final url = await widget.onPickPhoto();
+      if (url != null && mounted) {
+        setState(() {
+          _photos = [..._photos, url];
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
+  void _removePhoto(int index) {
+    setState(() {
+      final updated = List<String>.from(_photos)..removeAt(index);
+      _photos = updated;
+    });
+  }
+
+  void _reorderPhotos(int oldIndex, int newIndex) {
+    setState(() {
+      final updated = List<String>.from(_photos);
+      if (newIndex > oldIndex) newIndex -= 1;
+      final moved = updated.removeAt(oldIndex);
+      updated.insert(newIndex, moved);
+      _photos = updated;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+
+    return Scaffold(
+      backgroundColor: context.scaffoldBg,
+      appBar: AppBar(
+        backgroundColor: context.scaffoldBg,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_rounded,
+              color: context.textPrimary, size: r.s(20)),
+          onPressed: () => Navigator.of(context).pop(_photos),
+        ),
+        title: Text(
+          'Gerenciar galeria',
+          style: TextStyle(
+            color: context.textPrimary,
+            fontSize: r.fs(17),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: r.s(12)),
+            child: TextButton(
+              onPressed: () => Navigator.of(context).pop(_photos),
+              child: Text(
+                'Concluir',
+                style: TextStyle(
+                  color: AppTheme.accentColor,
+                  fontSize: r.fs(13),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            margin: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(8)),
+            padding: EdgeInsets.all(r.s(12)),
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(r.s(12)),
+              border: Border.all(color: context.dividerClr),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'A primeira imagem da lista será usada como capa da comunidade.',
+                  style: TextStyle(
+                    color: context.textPrimary,
+                    fontSize: r.fs(13),
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
+                  ),
+                ),
+                SizedBox(height: r.s(6)),
+                Text(
+                  'Arraste para reordenar, remova itens que não deseja manter e adicione novas imagens quando precisar.',
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontSize: r.fs(12),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _photos.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: r.s(24)),
+                      child: Text(
+                        'Nenhuma imagem na galeria ainda. Adicione a primeira para definir a capa da comunidade.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: r.fs(13),
+                          height: 1.45,
+                        ),
+                      ),
+                    ),
+                  )
+                : ReorderableListView.builder(
+                    padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(16)),
+                    itemCount: _photos.length,
+                    onReorder: _reorderPhotos,
+                    buildDefaultDragHandles: false,
+                    itemBuilder: (context, index) {
+                      final photo = _photos[index];
+                      return Container(
+                        key: ValueKey('$photo-$index'),
+                        margin: EdgeInsets.only(bottom: r.s(12)),
+                        decoration: BoxDecoration(
+                          color: context.surfaceColor,
+                          borderRadius: BorderRadius.circular(r.s(12)),
+                          border: Border.all(color: context.dividerClr),
+                        ),
+                        child: Row(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(r.s(12)),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(r.s(10)),
+                                child: CachedNetworkImage(
+                                  imageUrl: photo,
+                                  width: r.s(84),
+                                  height: r.s(84),
+                                  fit: BoxFit.cover,
                                 ),
                               ),
                             ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: -r.s(6),
-                    right: -r.s(6),
-                    child: GestureDetector(
-                      onTap: () => onRemove(index),
-                      child: Container(
-                        width: r.s(20),
-                        height: r.s(20),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
+                            Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: r.s(12)),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(8),
+                                        vertical: r.s(4),
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: index == 0
+                                            ? AppTheme.accentColor.withValues(alpha: 0.14)
+                                            : context.dividerClr.withValues(alpha: 0.35),
+                                        borderRadius: BorderRadius.circular(r.s(999)),
+                                      ),
+                                      child: Text(
+                                        index == 0 ? 'Capa' : 'Imagem ${index + 1}',
+                                        style: TextStyle(
+                                          color: index == 0
+                                              ? AppTheme.accentColor
+                                              : context.textSecondary,
+                                          fontSize: r.fs(11),
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: r.s(8)),
+                                    Text(
+                                      index == 0
+                                          ? 'Imagem principal exibida no topo do perfil.'
+                                          : 'Arraste para cima se quiser usar esta imagem como capa.',
+                                      style: TextStyle(
+                                        color: context.textSecondary,
+                                        fontSize: r.fs(12),
+                                        height: 1.35,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Column(
+                              children: [
+                                IconButton(
+                                  tooltip: 'Remover imagem',
+                                  onPressed: () => _removePhoto(index),
+                                  icon: Icon(
+                                    Icons.delete_outline_rounded,
+                                    color: AppTheme.errorColor,
+                                    size: r.s(22),
+                                  ),
+                                ),
+                                ReorderableDragStartListener(
+                                  index: index,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(r.s(8)),
+                                    child: Icon(
+                                      Icons.drag_handle_rounded,
+                                      color: context.textSecondary,
+                                      size: r.s(22),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(width: r.s(4)),
+                          ],
                         ),
-                        child: Icon(Icons.close_rounded,
-                            color: Colors.white, size: r.s(12)),
-                      ),
-                    ),
+                      );
+                    },
                   ),
-                ],
-              ),
-            );
-          }),
-
-          // Botão de adicionar (se não atingiu o limite)
-          if (onAdd != null)
-            GestureDetector(
-              onTap: onAdd,
-              child: Container(
-                width: itemSize,
-                height: itemSize,
-                decoration: BoxDecoration(
-                  color: context.cardBg,
-                  borderRadius: BorderRadius.circular(r.s(6)),
-                  border: Border.all(
-                    color: context.dividerClr,
-                    width: 1,
+          ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(16)),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _isUploading || _photos.length >= widget.maxPhotos
+                      ? null
+                      : _addPhoto,
+                  icon: _isUploading
+                      ? SizedBox(
+                          width: r.s(16),
+                          height: r.s(16),
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.add_photo_alternate_outlined),
+                  label: Text(
+                    _photos.length >= widget.maxPhotos
+                        ? 'Limite de ${widget.maxPhotos} imagens atingido'
+                        : 'Adicionar imagem',
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppTheme.accentColor,
+                    disabledBackgroundColor:
+                        AppTheme.accentColor.withValues(alpha: 0.45),
+                    padding: EdgeInsets.symmetric(vertical: r.s(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(r.s(12)),
+                    ),
                   ),
                 ),
-                child: Icon(Icons.add_rounded,
-                    color: context.textHint, size: r.s(28)),
               ),
             ),
+          ),
         ],
       ),
     );
