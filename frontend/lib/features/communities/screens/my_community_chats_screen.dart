@@ -890,7 +890,10 @@ class _CommunityChatTile extends ConsumerWidget {
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onTap: () => context.push('/chat/${chatRoom.id}'),
+      onTap: () => context.push('/chat/${chatRoom.id}').then((_) {
+        // Ao voltar do chat, invalidar o provider para refletir o unread_count atualizado
+        ref.invalidate(communityMyChatsProvider(communityId));
+      }),
       onLongPress: () => _showContextMenu(context, ref),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(10)),

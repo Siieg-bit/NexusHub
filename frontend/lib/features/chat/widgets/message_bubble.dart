@@ -395,6 +395,8 @@ class MessageBubble extends ConsumerWidget {
                                 fontSize: r.fs(11),
                                 fontWeight: FontWeight.w700,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           // Conteúdo de mídia (imagem/gif/vídeo)
@@ -519,6 +521,8 @@ class MessageBubble extends ConsumerWidget {
                                       fontSize: r.fs(11),
                                       fontWeight: FontWeight.w700,
                                     ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                                 _buildContent(context),
