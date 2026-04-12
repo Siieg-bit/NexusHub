@@ -1592,10 +1592,22 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   Future<void> _toggleCommunityProfilePostLike(Map<String, dynamic> post) async {
     final postId = post['id'] as String?;
     final currentUserId = SupabaseService.currentUserId;
-    if (postId == null || currentUserId == null) return;
+    if (postId == null || currentUserId == null) {
+      debugPrint(
+        '[community_profile_screen][like] aborted: missing identifiers '
+        'postId=$postId userId=$currentUserId',
+      );
+      return;
+    }
 
     final currentIndex = _userPosts.indexWhere((item) => item['id'] == postId);
-    if (currentIndex == -1) return;
+    if (currentIndex == -1) {
+      debugPrint(
+        '[community_profile_screen][like] aborted: post not found in local list '
+        'postId=$postId',
+      );
+      return;
+    }
 
     Map<String, dynamic>? previousPost;
 
@@ -1610,6 +1622,17 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       final currentPost = Map<String, dynamic>.from(_userPosts[currentIndex]);
       previousPost = Map<String, dynamic>.from(currentPost);
       final currentLikes = (currentPost['likes_count'] as num?)?.toInt() ?? 0;
+      final params = {
+        'p_community_id': currentPost['community_id'] ?? widget.communityId,
+        'p_user_id': currentUserId,
+        'p_post_id': postId,
+      };
+
+      debugPrint(
+        '[community_profile_screen][like] start postId=$postId '
+        'communityId=${params['p_community_id']} userId=$currentUserId '
+        'wasLiked=$wasLiked currentLikes=$currentLikes',
+      );
 
       setState(() {
         _userPosts[currentIndex] = {
@@ -1621,12 +1644,18 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         };
       });
 
-      await SupabaseService.rpc('toggle_like_with_reputation', params: {
-        'p_community_id': currentPost['community_id'] ?? widget.communityId,
-        'p_user_id': currentUserId,
-        'p_post_id': postId,
-      });
-    } catch (_) {
+      final result = await SupabaseService.rpc(
+        'toggle_like_with_reputation',
+        params: params,
+      );
+      debugPrint(
+        '[community_profile_screen][like] success postId=$postId result=$result',
+      );
+    } catch (e, stackTrace) {
+      debugPrint(
+        '[community_profile_screen][like] error postId=$postId error=$e',
+      );
+      debugPrint('[community_profile_screen][like] stackTrace=$stackTrace');
       if (previousPost != null && mounted) {
         setState(() {
           _userPosts[currentIndex] = previousPost!;
@@ -1645,9 +1674,23 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   Future<void> _repostCommunityProfilePost(Map<String, dynamic> post) async {
     final postId = post['id'] as String?;
     final currentUserId = SupabaseService.currentUserId;
-    if (postId == null || currentUserId == null) return;
+    if (postId == null || currentUserId == null) {
+      debugPrint(
+        '[community_profile_screen][repost] aborted: missing identifiers '
+        'postId=$postId userId=$currentUserId',
+      );
+      return;
+    }
+
+    debugPrint(
+      '[community_profile_screen][repost] start postId=$postId '
+      'communityId=${post['community_id'] ?? widget.communityId} '
+      'authorId=${post['author_id']} currentUserId=$currentUserId '
+      'type=${post['type']}',
+    );
 
     if ((post['author_id'] as String?) == currentUserId) {
+      debugPrint('[community_profile_screen][repost] aborted: own post postId=$postId');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Não é possível republicar seu próprio post.'),
@@ -1658,6 +1701,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     }
 
     if ((post['type'] as String?) == 'repost') {
+      debugPrint('[community_profile_screen][repost] aborted: post already is repost postId=$postId');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Não é possível republicar um repost.'),
@@ -1667,11 +1711,16 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       return;
     }
 
+    final params = {
+      'p_original_post_id': postId,
+      'p_community_id': post['community_id'] ?? widget.communityId,
+    };
+
     try {
-      await SupabaseService.rpc('repost_post', params: {
-        'p_original_post_id': postId,
-        'p_community_id': post['community_id'] ?? widget.communityId,
-      });
+      final result = await SupabaseService.rpc('repost_post', params: params);
+      debugPrint(
+        '[community_profile_screen][repost] success postId=$postId result=$result',
+      );
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1681,7 +1730,12 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           backgroundColor: Color(0xFF4CAF50),
         ),
       );
-    } catch (_) {
+    } catch (e, stackTrace) {
+      debugPrint(
+        '[community_profile_screen][repost] error postId=$postId '
+        'params=$params error=$e',
+      );
+      debugPrint('[community_profile_screen][repost] stackTrace=$stackTrace');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

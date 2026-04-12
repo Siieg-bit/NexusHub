@@ -362,16 +362,35 @@ final communityFeedProvider = AsyncNotifierProvider.family<
 
 final postDetailProvider = FutureProvider.family<PostModel?, String>(
   (ref, postId) async {
-    final res = await SupabaseService.table('posts')
-        .select(_kPostSelect)
-        .eq('id', postId)
-        .maybeSingle();
+    debugPrint('[post_provider][detail] loading postId=$postId');
+    try {
+      final res = await SupabaseService.table('posts')
+          .select(_kPostSelect)
+          .eq('id', postId)
+          .maybeSingle();
 
-    if (res == null) return null;
+      if (res == null) {
+        debugPrint('[post_provider][detail] not_found postId=$postId');
+        return null;
+      }
 
-    final map = _normalizePostMap(Map<String, dynamic>.from(res));
-    await _injectIsLiked([map]);
-    return PostModel.fromJson(map);
+      final map = _normalizePostMap(Map<String, dynamic>.from(res));
+      debugPrint(
+        '[post_provider][detail] raw_loaded postId=$postId '
+        'communityId=${map['community_id']} authorId=${map['author_id']} '
+        'type=${map['type']}',
+      );
+      await _injectIsLiked([map]);
+      debugPrint(
+        '[post_provider][detail] normalized postId=$postId '
+        'isLiked=${map['is_liked']} likesCount=${map['likes_count']}',
+      );
+      return PostModel.fromJson(map);
+    } catch (e, stackTrace) {
+      debugPrint('[post_provider][detail] error postId=$postId error=$e');
+      debugPrint('[post_provider][detail] stackTrace=$stackTrace');
+      rethrow;
+    }
   },
 );
 

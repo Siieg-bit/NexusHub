@@ -452,16 +452,40 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Future<void> _toggleLike() async {
+    final postData = ref.read(postDetailProvider(widget.postId)).valueOrNull;
+    final currentUserId = SupabaseService.currentUserId;
+    final params = {
+      'p_community_id': postData?.communityId,
+      'p_user_id': currentUserId,
+      'p_post_id': widget.postId,
+    };
+
+    debugPrint(
+      '[post_detail_screen][like] start postId=${widget.postId} '
+      'communityId=${postData?.communityId} userId=$currentUserId '
+      'isLiked=${postData?.isLiked} likesCount=${postData?.likesCount}',
+    );
+
     try {
-      final postData = ref.read(postDetailProvider(widget.postId)).valueOrNull;
-      await SupabaseService.rpc('toggle_like_with_reputation', params: {
-        'p_community_id': postData?.communityId,
-        'p_user_id': SupabaseService.currentUserId,
-        'p_post_id': widget.postId,
-      });
+      final result = await SupabaseService.rpc(
+        'toggle_like_with_reputation',
+        params: params,
+      );
+      debugPrint(
+        '[post_detail_screen][like] success postId=${widget.postId} '
+        'result=$result',
+      );
       ref.invalidate(postDetailProvider(widget.postId));
-    } catch (e) {
-      debugPrint('[post_detail_screen.dart] $e');
+      debugPrint(
+        '[post_detail_screen][like] invalidated postDetailProvider '
+        'postId=${widget.postId}',
+      );
+    } catch (e, stackTrace) {
+      debugPrint(
+        '[post_detail_screen][like] error postId=${widget.postId} '
+        'params=$params error=$e',
+      );
+      debugPrint('[post_detail_screen][like] stackTrace=$stackTrace');
     }
   }
 
@@ -498,9 +522,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   Future<void> _doRepost(PostModel post) async {
     final s = ref.read(stringsProvider);
     final currentUserId = SupabaseService.currentUserId;
-    if (currentUserId == null) return;
+    debugPrint(
+      '[post_detail_screen][repost] start postId=${post.id} '
+      'communityId=${post.communityId} authorId=${post.authorId} '
+      'currentUserId=$currentUserId type=${post.type}',
+    );
+    if (currentUserId == null) {
+      debugPrint('[post_detail_screen][repost] aborted: currentUserId is null');
+      return;
+    }
 
     if (post.authorId == currentUserId) {
+      debugPrint('[post_detail_screen][repost] aborted: own post postId=${post.id}');
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: const Text('Não é possível republicar seu próprio post.'),
         behavior: SnackBarBehavior.floating,
@@ -510,6 +543,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
 
     if (post.type == 'repost') {
+      debugPrint('[post_detail_screen][repost] aborted: post already is repost postId=${post.id}');
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: const Text('Não é possível republicar um repost.'),
         behavior: SnackBarBehavior.floating,
@@ -527,13 +561,25 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       builder: (ctx) => _RepostConfirmSheetDetail(post: post),
     );
 
-    if (confirm != true || !mounted) return;
+    debugPrint('[post_detail_screen][repost] confirmResult=$confirm postId=${post.id}');
+    if (confirm != true || !mounted) {
+      debugPrint(
+        '[post_detail_screen][repost] aborted after confirmation '
+        'confirm=$confirm mounted=$mounted postId=${post.id}',
+      );
+      return;
+    }
+
+    final params = {
+      'p_original_post_id': post.id,
+      'p_community_id': post.communityId,
+    };
 
     try {
-      await SupabaseService.rpc('repost_post', params: {
-        'p_original_post_id': post.id,
-        'p_community_id': post.communityId,
-      });
+      final result = await SupabaseService.rpc('repost_post', params: params);
+      debugPrint(
+        '[post_detail_screen][repost] success postId=${post.id} result=$result',
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s.repostSuccess),
@@ -541,7 +587,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           backgroundColor: const Color(0xFF4CAF50),
         ));
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint(
+        '[post_detail_screen][repost] error postId=${post.id} '
+        'params=$params error=$e',
+      );
+      debugPrint('[post_detail_screen][repost] stackTrace=$stackTrace');
       if (!mounted) return;
       final msg = e.toString();
       final isAlreadyReposted = msg.contains('já republicou');
