@@ -5,7 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show FileOptions;

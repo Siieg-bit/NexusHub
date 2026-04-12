@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/providers/cosmetics_provider.dart';
 import '../../../core/services/supabase_service.dart';

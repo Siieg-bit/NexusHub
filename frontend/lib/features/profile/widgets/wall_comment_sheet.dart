@@ -7,7 +7,6 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:video_player/video_player.dart';
-import '../../../config/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show FileOptions;
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';

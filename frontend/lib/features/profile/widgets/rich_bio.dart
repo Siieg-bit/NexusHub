@@ -10,7 +10,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../config/app_theme.dart';
 import '../../../core/services/media_upload_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/image_viewer.dart';

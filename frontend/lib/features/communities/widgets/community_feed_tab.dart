@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../config/app_theme.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/responsive.dart';

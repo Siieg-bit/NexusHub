@@ -9,7 +9,6 @@ import 'package:http/http.dart' as http;
 import 'package:gal/gal.dart';
 import 'package:video_player/video_player.dart';
 import '../utils/responsive.dart';
-import '../../config/app_theme.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 // ============================================================================

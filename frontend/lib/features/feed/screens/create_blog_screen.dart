@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../config/app_theme.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/providers/draft_provider.dart';

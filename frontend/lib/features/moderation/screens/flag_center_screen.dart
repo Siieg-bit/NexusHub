@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
@@ -187,7 +186,7 @@ class _FlagCard extends ConsumerWidget {
     required this.onReject,
   });
 
-  Color _flagTypeColor(String type) {
+  Color _flagTypeColor(BuildContext context, String type) {
     switch (type) {
       case 'bullying':
         return context.nexusTheme.error;
@@ -262,16 +261,16 @@ class _FlagCard extends ConsumerWidget {
                 padding:
                     EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
                 decoration: BoxDecoration(
-                  color: _flagTypeColor(type).withValues(alpha: 0.15),
+                  color: _flagTypeColor(context, type).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(r.s(12)),
                   border: Border.all(
-                    color: _flagTypeColor(type).withValues(alpha: 0.3),
+                    color: _flagTypeColor(context, type).withValues(alpha: 0.3),
                   ),
                 ),
                 child: Text(
                   _flagTypeLabel(type),
                   style: TextStyle(
-                    color: _flagTypeColor(type),
+                    color: _flagTypeColor(context, type),
                     fontSize: r.fs(12),
                     fontWeight: FontWeight.w700,
                   ),

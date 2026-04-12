@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../config/app_theme.dart';
 import '../../../core/providers/cosmetics_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';

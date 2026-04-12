@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';

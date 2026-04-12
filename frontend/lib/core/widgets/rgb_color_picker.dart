@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../utils/responsive.dart';
-import '../../config/app_theme.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 // ============================================================================

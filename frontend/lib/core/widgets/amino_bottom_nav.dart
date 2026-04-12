@@ -463,13 +463,14 @@ class _OnlineAvatarStack extends ConsumerWidget {
                         errorWidget: (_, __, ___) => Icon(
                           Icons.person_rounded,
                           size: r.s(10),
-                                color: context.nexusTheme.bottomNavUnselectedItem,
+                          color: context.nexusTheme.bottomNavUnselectedItem,
                         ),
+                      )
                     : Icon(
                         Icons.person_rounded,
                         size: r.s(10),
                         color: context.nexusTheme.bottomNavUnselectedItem,
-                      ),                ),
+                      ),
               ),
             ),
           );

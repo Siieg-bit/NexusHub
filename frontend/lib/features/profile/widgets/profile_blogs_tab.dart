@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../config/app_theme.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';

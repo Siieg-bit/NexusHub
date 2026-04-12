@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../../../config/app_theme.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
@@ -736,7 +735,7 @@ class _NotificationTile extends ConsumerWidget {
     }
   }
 
-  Color _getIconColor(String type) {
+  Color _getIconColor(BuildContext context, String type) {
     switch (type) {
       case 'like':
         return context.nexusTheme.error;
@@ -778,7 +777,7 @@ class _NotificationTile extends ConsumerWidget {
     final createdAt = DateTime.tryParse(data['created_at'] as String? ?? '') ??
         DateTime.now();
 
-    final iconColor = _getIconColor(type);
+    final iconColor = _getIconColor(context, type);
     final avatarUrl = actor?['icon_url'] as String?;
     final nickname = actor?['nickname'] as String? ?? '';
     final hasPrimaryAction =

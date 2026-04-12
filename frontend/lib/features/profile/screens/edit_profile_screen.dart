@@ -6,7 +6,6 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/media_upload_service.dart';
 import '../../auth/providers/auth_provider.dart';

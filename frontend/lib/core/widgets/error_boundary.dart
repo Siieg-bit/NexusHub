@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../config/app_theme.dart';
 import '../l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 

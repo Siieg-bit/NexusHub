@@ -10,7 +10,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:go_router/go_router.dart';
 
 import 'config/app_config.dart';
-import 'config/app_theme.dart';
 import 'package:amino_clone/config/nexus_theme_data.dart';
 import 'package:amino_clone/config/nexus_theme_scope.dart';
 import 'router/app_router.dart';

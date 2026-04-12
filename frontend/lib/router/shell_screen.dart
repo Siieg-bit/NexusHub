@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:badges/badges.dart' as badges;
-import '../config/app_theme.dart';
 import '../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
@@ -176,9 +175,9 @@ class _AminoNavItem extends ConsumerWidget {
           badgeCount > 99 ? '99+' : badgeCount.toString(),
           style: const TextStyle(color: Colors.white, fontSize: 9),
         ),
-        badgeStyle: const badges.BadgeStyle(
+        badgeStyle: badges.BadgeStyle(
           badgeColor: context.nexusTheme.error,
-          padding: EdgeInsets.all(4),
+          padding: const EdgeInsets.all(4),
         ),
         child: iconWidget,
       );

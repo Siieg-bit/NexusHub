@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../models/sticker_model.dart';
 import '../providers/sticker_providers.dart';

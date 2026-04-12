@@ -9,7 +9,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
-import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/call_service.dart';

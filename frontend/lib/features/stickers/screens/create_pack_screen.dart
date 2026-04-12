@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/sticker_providers.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';

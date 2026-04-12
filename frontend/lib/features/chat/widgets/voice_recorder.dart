@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
-import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
