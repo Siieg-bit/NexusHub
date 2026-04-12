@@ -148,6 +148,14 @@ class MessageBubble extends ConsumerWidget {
 
     final isMediaOnly = _isMediaOnlyType(message);
     final isAudioType = message.type == 'audio' || message.type == 'voice_note';
+    final selfLabel = Localizations.localeOf(context).languageCode == 'pt'
+        ? 'Eu'
+        : 'Me';
+    final realAuthorName = message.author?.nickname ?? 'User';
+    final authorName = isMe ? selfLabel : realAuthorName;
+    final avatarFallbackLabel =
+        realAuthorName.isNotEmpty ? realAuthorName : authorName;
+    final authorIcon = message.author?.iconUrl;
 
     // ── Cosméticos do remetente (frame + bubble) ──
     // Usa o tipo explícito AsyncValue<UserCosmetics> para evitar inferência como Object
@@ -195,6 +203,36 @@ class MessageBubble extends ConsumerWidget {
         final hex = activeBubbleColor.replaceAll('#', '');
         bubbleColor = Color(int.parse('FF$hex', radix: 16));
       } catch (_) {}
+    }
+
+    Widget buildAuthorAvatar() {
+      return GestureDetector(
+        onTap: () {
+          if (communityId != null && communityId!.isNotEmpty) {
+            context.push('/community/$communityId/profile/${message.authorId}');
+          } else {
+            context.push('/user/${message.authorId}');
+          }
+        },
+        child: CircleAvatar(
+          radius: 16,
+          backgroundColor: context.surfaceColor,
+          backgroundImage: authorIcon != null && authorIcon.isNotEmpty
+              ? CachedNetworkImageProvider(authorIcon)
+              : null,
+          child: authorIcon == null || authorIcon.isEmpty
+              ? Text(
+                  avatarFallbackLabel.isNotEmpty
+                      ? avatarFallbackLabel[0].toUpperCase()
+                      : '?',
+                  style: TextStyle(
+                    fontSize: r.fs(11),
+                    color: Colors.grey[400],
+                  ),
+                )
+              : null,
+        ),
+      );
     }
 
     return Padding(
