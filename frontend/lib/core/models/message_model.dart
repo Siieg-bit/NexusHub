@@ -17,6 +17,17 @@ import 'user_model.dart';
 /// Campos que NÃO existem na tabela (removidos):
 /// - metadata (não existe — polls são serializados no content)
 /// - is_pinned (não existe — pinned é gerenciado pelo chat_threads.pinned_message_id)
+Map<String, dynamic>? _extractUserMap(dynamic rawUser) {
+  if (rawUser is Map<String, dynamic>) return rawUser;
+  if (rawUser is Map) return Map<String, dynamic>.from(rawUser);
+  if (rawUser is List && rawUser.isNotEmpty) {
+    final first = rawUser.first;
+    if (first is Map<String, dynamic>) return first;
+    if (first is Map) return Map<String, dynamic>.from(first);
+  }
+  return null;
+}
+
 class MessageModel {
   final String id;
   final String threadId;
@@ -106,12 +117,12 @@ class MessageModel {
       // - 'profiles' quando vem de um JOIN com FK
       // - 'author' quando normalizado pelo provider
       // - 'sender' quando normalizado pelo realtime callback
-      author: json['profiles'] != null
-          ? UserModel.fromJson(json['profiles'] as Map<String, dynamic>)
-          : (json['author'] != null
-              ? UserModel.fromJson(json['author'] as Map<String, dynamic>)
-              : (json['sender'] != null
-                  ? UserModel.fromJson(json['sender'] as Map<String, dynamic>)
+      author: _extractUserMap(json['profiles']) != null
+          ? UserModel.fromJson(_extractUserMap(json['profiles'])!)
+          : (_extractUserMap(json['author']) != null
+              ? UserModel.fromJson(_extractUserMap(json['author'])!)
+              : (_extractUserMap(json['sender']) != null
+                  ? UserModel.fromJson(_extractUserMap(json['sender'])!)
                   : null)),
     );
   }

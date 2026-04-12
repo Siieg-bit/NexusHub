@@ -61,6 +61,16 @@ class ChatRoomScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
+  Map<String, dynamic>? _extractProfile(dynamic rawProfile) {
+    if (rawProfile is Map<String, dynamic>) return rawProfile;
+    if (rawProfile is Map) return Map<String, dynamic>.from(rawProfile);
+    if (rawProfile is List && rawProfile.isNotEmpty) {
+      final first = rawProfile.first;
+      if (first is Map<String, dynamic>) return first;
+      if (first is Map) return Map<String, dynamic>.from(first);
+    }
+    return null;
+  }
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   final List<MessageModel> _messages = [];
@@ -268,10 +278,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           final dmMemberList = List<Map<String, dynamic>>.from(dmMembers as List? ?? []);
           if (dmMemberList.isNotEmpty) {
             final counterpartMap = Map<String, dynamic>.from(dmMemberList.first);
-            final profile = counterpartMap['profiles'] as Map<String, dynamic>?;
+            final profile = _extractProfile(counterpartMap['profiles']);
             if (profile != null) {
               threadInfo['title'] = profile['nickname'] ?? threadInfo['title'];
-              threadInfo['icon_url'] = profile['icon_url'] ?? threadInfo['icon_url'];
+              threadInfo['icon_url'] = profile['icon_url'];
               threadInfo['host_id'] = profile['id'] ?? counterpartMap['user_id'] ?? threadInfo['host_id'];
             }
           }
@@ -2115,9 +2125,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           itemBuilder: (context, index) {
                             final message = _messages[index];
                             final isMe = message.authorId == currentUserId;
-                            final showAvatar = index == _messages.length - 1 ||
-                                _messages[index + 1].authorId !=
-                                    message.authorId;
+                            final showAvatar = !message.isSystemMessage;
 
                             // Separador de data: exibe quando a mensagem atual
                             // é de um dia diferente da próxima mais antiga.

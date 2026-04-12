@@ -22,6 +22,17 @@ import '../../../core/l10n/locale_provider.dart';
 /// NÃO mistura com "Chats públicos disponíveis" (descoberta/exploração).
 /// Ordena fixados no topo (is_pinned_by_user=true), depois por última mensagem.
 final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
+  Map<String, dynamic>? extractProfile(dynamic rawProfile) {
+    if (rawProfile is Map<String, dynamic>) return rawProfile;
+    if (rawProfile is Map) return Map<String, dynamic>.from(rawProfile);
+    if (rawProfile is List && rawProfile.isNotEmpty) {
+      final first = rawProfile.first;
+      if (first is Map<String, dynamic>) return first;
+      if (first is Map) return Map<String, dynamic>.from(first);
+    }
+    return null;
+  }
+
   final userId = SupabaseService.currentUserId;
   if (userId == null) return [];
 
@@ -57,11 +68,11 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
       for (final row in (dmMembers as List? ?? [])) {
         final map = Map<String, dynamic>.from(row as Map);
         final threadId = map['thread_id'] as String?;
-        final profile = map['profiles'] as Map<String, dynamic>?;
+        final profile = extractProfile(map['profiles']);
         if (threadId == null || profile == null || dmCounterparts.containsKey(threadId)) {
           continue;
         }
-        dmCounterparts[threadId] = Map<String, dynamic>.from(profile);
+        dmCounterparts[threadId] = profile;
       }
     } catch (e) {
       debugPrint('[ChatList] Erro ao enriquecer DMs: $e');
@@ -79,11 +90,12 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
     threadMap['membership_status'] = e['status'] as String? ?? 'active';
 
     if (threadMap['type'] == 'dm') {
-      final counterpart = dmCounterparts[threadMap['id'] as String? ?? ''];
+      final dmThreadId = e['thread_id'] as String? ?? threadMap['id'] as String? ?? '';
+      final counterpart = dmCounterparts[dmThreadId];
       if (counterpart != null) {
         threadMap['title'] = counterpart['nickname'] ?? threadMap['title'];
-        threadMap['icon_url'] = counterpart['icon_url'] ?? threadMap['icon_url'];
-        threadMap['host_id'] = counterpart['id'] ?? threadMap['host_id'];
+        threadMap['icon_url'] = counterpart['icon_url'];
+        threadMap['host_id'] = counterpart['id'] ?? counterpart['user_id'] ?? threadMap['host_id'];
       }
     }
 
