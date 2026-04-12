@@ -597,36 +597,89 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   Future<void> _startVoiceChat() async {
-    final hadActiveCall = await CallService.getActiveCallForThread(
-          widget.threadId,
-          allowedTypes: {CallType.voice},
-        ) !=
-        null;
+    try {
+      final hadActiveCall = await CallService.getActiveCallForThread(
+            widget.threadId,
+            allowedTypes: {CallType.voice},
+          ) !=
+          null;
 
-    final session = await CallService.openThreadCall(
-      threadId: widget.threadId,
-      type: CallType.voice,
-    );
-
-    if (!mounted) return;
-
-    if (session == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Não foi possível iniciar ou entrar na chamada.'),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-        ),
+      final session = await CallService.openThreadCall(
+        threadId: widget.threadId,
+        type: CallType.voice,
       );
-      return;
-    }
 
-    if (!hadActiveCall) {
-      await _sendMessage(type: 'voice_chat');
       if (!mounted) return;
-    }
 
-    await CallScreen.show(context, session);
+      if (session == null) {
+        final report = CallService.buildLastErrorReport(
+          title: 'CHAT VOICE CALL FAILURE',
+        );
+        debugPrint(report);
+
+        if (!mounted) return;
+        await showDialog<void>(
+          context: context,
+          builder: (dialogContext) {
+            return AlertDialog(
+              title: const Text('Falha ao iniciar a chamada'),
+              content: SizedBox(
+                width: 560,
+                child: SingleChildScrollView(
+                  child: SelectableText(report),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Fechar'),
+                ),
+              ],
+            );
+          },
+        );
+        return;
+      }
+
+      if (!hadActiveCall) {
+        await _sendMessage(type: 'voice_chat');
+        if (!mounted) return;
+      }
+
+      await CallScreen.show(context, session);
+    } catch (e, st) {
+      final report = [
+        '===== CHAT VOICE CALL UNCAUGHT EXCEPTION =====',
+        'threadId: ${widget.threadId}',
+        'error: $e',
+        'stackTrace:',
+        st.toString(),
+        '===== END CHAT VOICE CALL UNCAUGHT EXCEPTION =====',
+      ].join('\n');
+      debugPrint(report);
+
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text('Exceção ao abrir chamada'),
+            content: SizedBox(
+              width: 560,
+              child: SingleChildScrollView(
+                child: SelectableText(report),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Fechar'),
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   Future<void> _startProjection() async {

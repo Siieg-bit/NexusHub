@@ -122,12 +122,87 @@ class CallService {
   static bool _isMuted = false;
   static bool _isCameraOn = false;
   static bool _isSpeakerOn = true;
+  static Object? _lastError;
+  static StackTrace? _lastStackTrace;
+  static String? _lastErrorStage;
+  static Map<String, dynamic>? _lastErrorContext;
 
   static bool get isMuted => _isMuted;
   static bool get isCameraOn => _isCameraOn;
   static bool get isSpeakerOn => _isSpeakerOn;
   static RtcEngine? get engine => _engine;
   static Set<int> get remoteUsers => _remoteUsers;
+  static String? get lastErrorStage => _lastErrorStage;
+  static Object? get lastError => _lastError;
+  static StackTrace? get lastStackTrace => _lastStackTrace;
+  static Map<String, dynamic>? get lastErrorContext => _lastErrorContext == null
+      ? null
+      : Map<String, dynamic>.from(_lastErrorContext!);
+
+  static void clearLastError() {
+    _lastError = null;
+    _lastStackTrace = null;
+    _lastErrorStage = null;
+    _lastErrorContext = null;
+  }
+
+  static void _recordFailure({
+    required String stage,
+    required Object error,
+    StackTrace? stackTrace,
+    Map<String, dynamic>? context,
+  }) {
+    _lastErrorStage = stage;
+    _lastError = error;
+    _lastStackTrace = stackTrace;
+    _lastErrorContext = context == null ? null : Map<String, dynamic>.from(context);
+
+    debugPrint('[CallService][$stage] $error');
+    if (context != null && context.isNotEmpty) {
+      debugPrint('[CallService][$stage][context] $context');
+    }
+    if (stackTrace != null) {
+      debugPrintStack(
+        label: '[CallService][$stage][stackTrace]',
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  static String buildLastErrorReport({
+    String title = 'CALL ERROR REPORT',
+  }) {
+    final buffer = StringBuffer()
+      ..writeln('===== $title =====')
+      ..writeln('stage: ${_lastErrorStage ?? 'unknown'}')
+      ..writeln('error: ${_lastError ?? 'none'}');
+
+    if (_lastErrorContext != null && _lastErrorContext!.isNotEmpty) {
+      buffer.writeln('context: ${_lastErrorContext.toString()}');
+    }
+
+    if (_lastStackTrace != null) {
+      buffer
+        ..writeln('stackTrace:')
+        ..writeln(_lastStackTrace.toString());
+    } else {
+      buffer.writeln('stackTrace: <not captured>');
+    }
+
+    buffer.writeln('===== END CALL ERROR REPORT =====');
+    return buffer.toString();
+  }
+
+  static String get lastErrorSummary {
+    final stage = _lastErrorStage ?? 'unknown';
+    final error = _lastError?.toString() ?? 'unknown error';
+    return '[$stage] $error';
+  }
+
+  static Never throwLastErrorAsStateError([String fallbackMessage = 'Unknown call error']) {
+    final report = buildLastErrorReport();
+    throw StateError(report.isEmpty ? fallbackMessage : report);
+  }
 
   /// Inicializa o Agora RTC Engine (chamado uma vez)
   static Future<void> _initEngine() async {
@@ -201,14 +276,35 @@ class CallService {
     required String threadId,
     required CallType type,
   }) async {
+    clearLastError();
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) return null;
+      if (userId == null) {
+        _recordFailure(
+          stage: 'createCall.auth',
+          error: StateError('SupabaseService.currentUserId returned null'),
+          stackTrace: StackTrace.current,
+          context: {
+            'threadId': threadId,
+            'type': type.name,
+          },
+        );
+        return null;
+      }
 
       // Solicitar permissões
       final granted = await _requestPermissions(type);
       if (!granted) {
-        debugPrint('CallService: Permissões negadas');
+        _recordFailure(
+          stage: 'createCall.permissions',
+          error: StateError('Microphone/camera permission denied'),
+          stackTrace: StackTrace.current,
+          context: {
+            'threadId': threadId,
+            'type': type.name,
+            'userId': userId,
+          },
+        );
         return null;
       }
 
@@ -227,7 +323,17 @@ class CallService {
 
       final result = rpcResult as Map<String, dynamic>? ?? {};
       if (result['success'] != true) {
-        debugPrint('CallService.createCall RPC error: ${result['error']}');
+        _recordFailure(
+          stage: 'createCall.rpc',
+          error: StateError('create_call_session returned success=false: ${result['error'] ?? 'unknown rpc error'}'),
+          stackTrace: StackTrace.current,
+          context: {
+            'threadId': threadId,
+            'type': typeStr,
+            'userId': userId,
+            'rpcResult': result,
+          },
+        );
         return null;
       }
 
@@ -249,8 +355,16 @@ class CallService {
       _subscribeToCall(session.id);
 
       return session;
-    } catch (e) {
-      debugPrint('CallService.createCall error: $e');
+    } catch (e, st) {
+      _recordFailure(
+        stage: 'createCall.exception',
+        error: e,
+        stackTrace: st,
+        context: {
+          'threadId': threadId,
+          'type': type.name,
+        },
+      );
       return null;
     }
   }
@@ -265,9 +379,20 @@ class CallService {
   /// - Upsert (suporta reconexão sem duplicar)
   /// =========================================================================
   static Future<CallSession?> joinCallSession(String callSessionId) async {
+    clearLastError();
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) return null;
+      if (userId == null) {
+        _recordFailure(
+          stage: 'joinCall.auth',
+          error: StateError('SupabaseService.currentUserId returned null'),
+          stackTrace: StackTrace.current,
+          context: {
+            'callSessionId': callSessionId,
+          },
+        );
+        return null;
+      }
 
       // Join via RPC (validação server-side)
       final rpcResult = await SupabaseService.rpc('join_call_session', params: {
@@ -276,7 +401,16 @@ class CallService {
 
       final result = rpcResult as Map<String, dynamic>? ?? {};
       if (result['success'] != true) {
-        debugPrint('CallService.joinCall RPC error: ${result['error']}');
+        _recordFailure(
+          stage: 'joinCall.rpc',
+          error: StateError('join_call_session returned success=false: ${result['error'] ?? 'unknown rpc error'}'),
+          stackTrace: StackTrace.current,
+          context: {
+            'callSessionId': callSessionId,
+            'userId': userId,
+            'rpcResult': result,
+          },
+        );
         return null;
       }
 
@@ -291,7 +425,20 @@ class CallService {
 
       // Solicitar permissões
       final granted = await _requestPermissions(session.type);
-      if (!granted) return null;
+      if (!granted) {
+        _recordFailure(
+          stage: 'joinCall.permissions',
+          error: StateError('Microphone/camera permission denied'),
+          stackTrace: StackTrace.current,
+          context: {
+            'callSessionId': callSessionId,
+            'threadId': session.threadId,
+            'type': session.typeString,
+            'userId': userId,
+          },
+        );
+        return null;
+      }
 
       // Inicializar Agora e entrar no canal
       await _joinAgoraChannel(session);
@@ -300,8 +447,15 @@ class CallService {
       _subscribeToCall(callSessionId);
 
       return session;
-    } catch (e) {
-      debugPrint('CallService.joinCall error: $e');
+    } catch (e, st) {
+      _recordFailure(
+        stage: 'joinCall.exception',
+        error: e,
+        stackTrace: st,
+        context: {
+          'callSessionId': callSessionId,
+        },
+      );
       return null;
     }
   }
@@ -329,8 +483,16 @@ class CallService {
           return session;
         }
       }
-    } catch (e) {
-      debugPrint('CallService.getActiveCallForThread error: $e');
+    } catch (e, st) {
+      _recordFailure(
+        stage: 'getActiveCallForThread.exception',
+        error: e,
+        stackTrace: st,
+        context: {
+          'threadId': threadId,
+          'allowedTypes': allowedTypes?.map((type) => type.name).toList(),
+        },
+      );
     }
     return null;
   }
@@ -339,6 +501,7 @@ class CallService {
     required String threadId,
     required CallType type,
   }) async {
+    clearLastError();
     final allowedTypes = {type};
 
     final existing = await getActiveCallForThread(
@@ -362,6 +525,18 @@ class CallService {
       return joinCallSession(raceWinner.id);
     }
 
+    if (lastError == null) {
+      _recordFailure(
+        stage: 'openThreadCall.empty-result',
+        error: StateError('No active session was found or created for the requested thread'),
+        stackTrace: StackTrace.current,
+        context: {
+          'threadId': threadId,
+          'type': type.name,
+        },
+      );
+    }
+
     return null;
   }
 
@@ -383,10 +558,39 @@ class CallService {
       );
       if (res.status == 200 && res.data != null) {
         final data = res.data as Map<String, dynamic>;
-        return data['token'] as String?;
+        final token = data['token'] as String?;
+        if (token == null || token.isEmpty) {
+          _recordFailure(
+            stage: 'fetchAgoraToken.empty-token',
+            error: StateError('agora-token edge function returned an empty token'),
+            stackTrace: StackTrace.current,
+            context: {
+              'channelName': channelName,
+              'responseData': data,
+            },
+          );
+        }
+        return token;
       }
-    } catch (e) {
-      debugPrint('CallService._fetchAgoraToken error: $e');
+
+      _recordFailure(
+        stage: 'fetchAgoraToken.bad-response',
+        error: StateError('agora-token edge function failed with status ${res.status}'),
+        stackTrace: StackTrace.current,
+        context: {
+          'channelName': channelName,
+          'responseData': res.data,
+        },
+      );
+    } catch (e, st) {
+      _recordFailure(
+        stage: 'fetchAgoraToken.exception',
+        error: e,
+        stackTrace: st,
+        context: {
+          'channelName': channelName,
+        },
+      );
     }
     return null;
   }
@@ -467,21 +671,26 @@ class CallService {
   /// - Se ninguém mais está conectado, encerra automaticamente
   /// =========================================================================
   static Future<void> leaveCall() async {
-    if (activeCall == null) return;
+    final currentCall = activeCall;
+    if (currentCall == null) return;
     try {
       // Sair do canal Agora
       await _engine?.leaveChannel();
       await _engine?.stopPreview();
 
       // Leave via RPC (validação server-side)
-      final currentCall = activeCall;
-      if (currentCall != null) {
-        await SupabaseService.rpc('leave_call_session', params: {
-          'p_session_id': currentCall.id,
-        });
-      }
-    } catch (e) {
-      debugPrint('CallService.leaveCall error: $e');
+      await SupabaseService.rpc('leave_call_session', params: {
+        'p_session_id': currentCall.id,
+      });
+    } catch (e, st) {
+      _recordFailure(
+        stage: 'leaveCall.exception',
+        error: e,
+        stackTrace: st,
+        context: {
+          'callId': currentCall.id,
+        },
+      );
     }
     _cleanup();
   }
@@ -502,8 +711,15 @@ class CallService {
       await SupabaseService.rpc('end_call_session', params: {
         'p_session_id': call.id,
       });
-    } catch (e) {
-      debugPrint('[call_service] Erro: $e');
+    } catch (e, st) {
+      _recordFailure(
+        stage: 'endCall.exception',
+        error: e,
+        stackTrace: st,
+        context: {
+          'callId': call.id,
+        },
+      );
     }
     _cleanup();
   }
@@ -518,7 +734,15 @@ class CallService {
           .eq('call_session_id', call.id)
           .eq('status', 'connected');
       return List<Map<String, dynamic>>.from(res as List? ?? []);
-    } catch (_) {
+    } catch (e, st) {
+      _recordFailure(
+        stage: 'getParticipants.exception',
+        error: e,
+        stackTrace: st,
+        context: {
+          'callId': call.id,
+        },
+      );
       return [];
     }
   }

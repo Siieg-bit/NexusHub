@@ -126,24 +126,78 @@ class MessageBubble extends ConsumerWidget {
                 return;
               }
 
-              final session = await CallService.openThreadCall(
-                threadId: threadId,
-                type: CallType.voice,
-              );
-
-              if (session == null) {
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Nenhuma chamada ativa encontrada.'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
+              try {
+                final session = await CallService.openThreadCall(
+                  threadId: threadId,
+                  type: CallType.voice,
                 );
-                return;
-              }
 
-              if (!context.mounted) return;
-              await CallScreen.show(context, session);
+                if (session == null) {
+                  final report = CallService.buildLastErrorReport(
+                    title: 'MESSAGE BUBBLE VOICE CALL FAILURE',
+                  );
+                  debugPrint(report);
+
+                  if (!context.mounted) return;
+                  await showDialog<void>(
+                    context: context,
+                    builder: (dialogContext) {
+                      return AlertDialog(
+                        title: const Text('Falha ao entrar na chamada'),
+                        content: SizedBox(
+                          width: 560,
+                          child: SingleChildScrollView(
+                            child: SelectableText(report),
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            child: const Text('Fechar'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                  return;
+                }
+
+                if (!context.mounted) return;
+                await CallScreen.show(context, session);
+              } catch (e, st) {
+                final report = [
+                  '===== MESSAGE BUBBLE VOICE CALL UNCAUGHT EXCEPTION =====',
+                  'threadId: $threadId',
+                  'messageId: ${message.id}',
+                  'error: $e',
+                  'stackTrace:',
+                  st.toString(),
+                  '===== END MESSAGE BUBBLE VOICE CALL UNCAUGHT EXCEPTION =====',
+                ].join('\n');
+                debugPrint(report);
+
+                if (!context.mounted) return;
+                await showDialog<void>(
+                  context: context,
+                  builder: (dialogContext) {
+                    return AlertDialog(
+                      title: const Text('Exceção ao abrir chamada'),
+                      content: SizedBox(
+                        width: 560,
+                        child: SingleChildScrollView(
+                          child: SelectableText(report),
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(),
+                          child: const Text('Fechar'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
             },
             child: container,
           ),
