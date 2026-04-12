@@ -79,6 +79,70 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     }
     return null;
   }
+
+  Future<Map<String, dynamic>> _normalizeMessageAuthorIdentity(
+    Map<String, dynamic> rawMap,
+  ) async {
+    final map = Map<String, dynamic>.from(rawMap);
+    final baseProfile = _extractProfile(
+      map['author'] ?? map['sender'] ?? map['profiles'],
+    );
+
+    if (baseProfile != null) {
+      final normalizedProfile = Map<String, dynamic>.from(baseProfile);
+      map['profiles'] = normalizedProfile;
+      map['sender'] = normalizedProfile;
+      map['author'] = normalizedProfile;
+    }
+
+    final authorId = (map['author_id'] as String?)?.trim();
+    final communityId = (_threadInfo?['community_id'] as String?)?.trim();
+
+    if (authorId == null || authorId.isEmpty) return map;
+    if (communityId == null || communityId.isEmpty) return map;
+
+    try {
+      final membership = await SupabaseService.table('community_members')
+          .select('local_nickname, local_icon_url, local_banner_url')
+          .eq('community_id', communityId)
+          .eq('user_id', authorId)
+          .maybeSingle();
+
+      if (membership == null) return map;
+
+      final localNickname =
+          (membership['local_nickname'] as String?)?.trim();
+      final localIconUrl =
+          (membership['local_icon_url'] as String?)?.trim();
+      final localBannerUrl =
+          (membership['local_banner_url'] as String?)?.trim();
+
+      final mergedAuthor = Map<String, dynamic>.from(
+        (map['author'] ?? map['sender'] ?? map['profiles'] ?? const <String, dynamic>{})
+            as Map,
+      );
+
+      if (localNickname != null && localNickname.isNotEmpty) {
+        mergedAuthor['nickname'] = localNickname;
+      }
+      if (localIconUrl != null && localIconUrl.isNotEmpty) {
+        mergedAuthor['icon_url'] = localIconUrl;
+      }
+      if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
+        mergedAuthor['banner_url'] = localBannerUrl;
+      }
+
+      map['profiles'] = mergedAuthor;
+      map['sender'] = mergedAuthor;
+      map['author'] = mergedAuthor;
+    } catch (e) {
+      debugPrint(
+        '[chat_room_screen] _normalizeMessageAuthorIdentity member fallback error: $e',
+      );
+    }
+
+    return map;
+  }
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   final Map<String, GlobalKey> _messageKeys = {};
@@ -466,19 +530,23 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .order('created_at', ascending: false)
           .limit(100);
 
+      final normalizedMessages = await Future.wait(
+        (response as List? ?? []).map((e) async {
+          final map = Map<String, dynamic>.from(e as Map);
+          if (map['profiles'] != null) {
+            map['sender'] = map['profiles'];
+            map['author'] = map['profiles'];
+          }
+          final normalizedMap = await _normalizeMessageAuthorIdentity(map);
+          return MessageModel.fromJson(normalizedMap);
+        }).toList(),
+      );
+
       if (mounted && !_isDisposed) {
         setState(() {
-          _messages.clear();
-          _messages.addAll(
-            (response as List? ?? []).map((e) {
-              final map = Map<String, dynamic>.from(e as Map);
-              if (map['profiles'] != null) {
-                map['sender'] = map['profiles'];
-                map['author'] = map['profiles'];
-              }
-              return MessageModel.fromJson(map);
-            }).toList(),
-          );
+          _messages
+            ..clear()
+            ..addAll(normalizedMessages);
           _isLoading = false;
         });
         _scrollToBottom();
@@ -507,9 +575,19 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               '*, profiles!chat_messages_author_id_fkey(id, nickname, icon_url)')
           .eq('id', pinnedId)
           .limit(1);
+      final normalizedPinnedMessages = await Future.wait(
+        (res as List? ?? []).map((e) async {
+          final map = Map<String, dynamic>.from(e as Map);
+          if (map['profiles'] != null) {
+            map['sender'] = map['profiles'];
+            map['author'] = map['profiles'];
+          }
+          return _normalizeMessageAuthorIdentity(map);
+        }).toList(),
+      );
       if (mounted && !_isDisposed) {
         setState(() {
-          _pinnedMessages = List<Map<String, dynamic>>.from(res as List? ?? []);
+          _pinnedMessages = normalizedPinnedMessages;
         });
       }
     } catch (e) {
@@ -635,12 +713,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   if (_isDisposed || !mounted) return;
                   newMessage['sender'] = senderData;
                   newMessage['author'] = senderData;
+                  newMessage['profiles'] = senderData;
                 }
               } catch (e) {
                 debugPrint('[chat_room_screen.dart] $e');
               }
+              final normalizedMessage =
+                  await _normalizeMessageAuthorIdentity(newMessage);
               if (_isDisposed || !mounted) return;
-              final message = MessageModel.fromJson(newMessage);
+              final message = MessageModel.fromJson(normalizedMessage);
               setState(() => _messages.insert(0, message));
               _scrollToBottom();
               // Marcar como lido automaticamente (o usuário está na tela)
