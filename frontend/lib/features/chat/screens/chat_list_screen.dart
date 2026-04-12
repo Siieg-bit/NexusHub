@@ -14,6 +14,7 @@ import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/providers/dm_invite_provider.dart';
+import '../../../core/providers/chat_provider.dart' show unreadCountProvider, unreadCountByCommunityProvider;
 import '../widgets/dm_invite_card.dart';
 import '../../../core/l10n/locale_provider.dart';
 
@@ -1082,9 +1083,12 @@ class _AminoChatTile extends ConsumerWidget {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () => context.push('/chat/${chatRoom.id}').then((_) {
-        // Ao voltar do chat, invalidar o provider para refletir o unread_count atualizado
+        // Ao voltar do chat, invalidar todos os providers de unread para refletir
+        // o unread_count zerado pelo mark_chat_read chamado no chat_room_screen
         ref.invalidate(chatListProvider);
         ref.invalidate(chatCommunitiesProvider);
+        ref.invalidate(unreadCountProvider);
+        ref.invalidate(unreadCountByCommunityProvider);
       }),
       onLongPress: () => _showContextMenu(context, ref),
       child: Container(

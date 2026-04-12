@@ -121,6 +121,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     _subscribeToRealtime();
     if (!mounted || _isDisposed) return;
     _loadChatBackground();
+    if (!mounted || _isDisposed) return;
+    // Marcar chat como lido ao abrir — zera unread_count no banco
+    _markChatRead();
+  }
+
+  /// Marca o chat como lido via RPC, zerando o unread_count no banco.
+  Future<void> _markChatRead() async {
+    try {
+      await SupabaseService.rpc('mark_chat_read', params: {
+        'p_thread_id': widget.threadId,
+      });
+      debugPrint('[ChatRoom] ✅ mark_chat_read OK (thread: ${widget.threadId})');
+    } catch (e) {
+      debugPrint('[ChatRoom] ⚠️ mark_chat_read falhou: $e');
+    }
   }
 
   Future<void> _ensureMembership() async {
@@ -564,6 +579,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               final message = MessageModel.fromJson(newMessage);
               setState(() => _messages.insert(0, message));
               _scrollToBottom();
+              // Marcar como lido automaticamente (o usuário está na tela)
+              _markChatRead();
             } catch (e) {
               debugPrint('Realtime message error: $e');
             }

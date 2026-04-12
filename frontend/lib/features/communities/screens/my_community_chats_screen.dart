@@ -9,7 +9,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
-import '../../chat/screens/chat_list_screen.dart' show chatListProvider;
+import '../../chat/screens/chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
+import '../../../core/providers/chat_provider.dart' show unreadCountProvider, unreadCountByCommunityProvider;
 import '../widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
 
@@ -891,8 +892,13 @@ class _CommunityChatTile extends ConsumerWidget {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () => context.push('/chat/${chatRoom.id}').then((_) {
-        // Ao voltar do chat, invalidar o provider para refletir o unread_count atualizado
+        // Ao voltar do chat, invalidar todos os providers de unread para refletir
+        // o unread_count zerado pelo mark_chat_read chamado no chat_room_screen
         ref.invalidate(communityMyChatsProvider(communityId));
+        ref.invalidate(chatListProvider);
+        ref.invalidate(chatCommunitiesProvider);
+        ref.invalidate(unreadCountProvider);
+        ref.invalidate(unreadCountByCommunityProvider);
       }),
       onLongPress: () => _showContextMenu(context, ref),
       child: Container(
