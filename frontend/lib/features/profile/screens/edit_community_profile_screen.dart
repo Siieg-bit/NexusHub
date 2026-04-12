@@ -950,58 +950,65 @@ class _BannerAvatarSection extends ConsumerWidget {
               bottom: -r.s(50),
               child: GestureDetector(
                 onTap: onTapAvatar,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: r.s(104),
-                      height: r.s(104),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: context.scaffoldBg,
-                          width: 4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.22),
-                            blurRadius: 18,
-                            offset: Offset(0, r.s(8)),
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: avatarUrl != null
-                            ? CachedNetworkImage(
-                                imageUrl: avatarUrl!,
-                                fit: BoxFit.cover,
-                              )
-                            : Container(
-                                color: context.surfaceColor,
-                                child: Icon(Icons.person_rounded,
-                                    color: Colors.grey[500], size: r.s(56)),
+                behavior: HitTestBehavior.opaque,
+                child: SizedBox(
+                  width: r.s(124),
+                  height: r.s(124),
+                  child: Center(
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: r.s(104),
+                          height: r.s(104),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: context.scaffoldBg,
+                              width: 4,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.22),
+                                blurRadius: 18,
+                                offset: Offset(0, r.s(8)),
                               ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: r.s(2),
-                      right: r.s(2),
-                      child: Container(
-                        width: r.s(30),
-                        height: r.s(30),
-                        decoration: BoxDecoration(
-                          color: AppTheme.accentColor,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: context.scaffoldBg,
-                            width: 2,
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: avatarUrl != null
+                                ? CachedNetworkImage(
+                                    imageUrl: avatarUrl!,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(
+                                    color: context.surfaceColor,
+                                    child: Icon(Icons.person_rounded,
+                                        color: Colors.grey[500], size: r.s(56)),
+                                  ),
                           ),
                         ),
-                        child: Icon(Icons.camera_alt_rounded,
-                            color: Colors.white, size: r.s(14)),
-                      ),
+                        Positioned(
+                          bottom: r.s(2),
+                          right: r.s(2),
+                          child: Container(
+                            width: r.s(30),
+                            height: r.s(30),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentColor,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: context.scaffoldBg,
+                                width: 2,
+                              ),
+                            ),
+                            child: Icon(Icons.camera_alt_rounded,
+                                color: Colors.white, size: r.s(14)),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
