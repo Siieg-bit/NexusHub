@@ -1348,6 +1348,7 @@ class _InlineTextField extends StatelessWidget {
       controller: controller,
       maxLines: maxLines,
       maxLength: maxLength,
+      onTapOutside: (_) => FocusScope.of(context).unfocus(),
       style: style ??
           TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
       decoration: InputDecoration(
