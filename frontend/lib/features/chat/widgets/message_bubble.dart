@@ -278,6 +278,15 @@ class MessageBubble extends ConsumerWidget {
       // Sem imagem mas com estilo procedural
       bubbleFrameUrl = 'procedural:$activeBubbleStyle';
     }
+
+    // DEBUG — remover após diagnóstico
+    if (isMe) {
+      debugPrint('[MessageBubble] isMe=$isMe myId=$myId');
+      debugPrint('[MessageBubble] myCosmetics=${myCosmetics?.chatBubbleImageUrl} '
+          'style=${myCosmetics?.chatBubbleStyle}');
+      debugPrint('[MessageBubble] activeBubbleImageUrl=$activeBubbleImageUrl');
+      debugPrint('[MessageBubble] bubbleFrameUrl=$bubbleFrameUrl');
+    }
     if (activeBubbleColor != null && activeBubbleColor.isNotEmpty) {
       try {
         final hex = activeBubbleColor.replaceAll('#', '');

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/supabase_service.dart';
 
@@ -88,6 +89,11 @@ final userCosmeticsProvider =
           _asString(legacyMetadata['image_url']),
           _asString(storeItem['image_url']),
         ]);
+        // DEBUG — remover após diagnóstico
+        debugPrint('[CosmeticsProvider] chat_bubble encontrado userId=$userId');
+        debugPrint('[CosmeticsProvider] assetConfig=$assetConfig');
+        debugPrint('[CosmeticsProvider] chatBubbleStyle=$chatBubbleStyle');
+        debugPrint('[CosmeticsProvider] chatBubbleImageUrl=$chatBubbleImageUrl');
       }
     }
 
