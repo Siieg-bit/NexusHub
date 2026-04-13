@@ -9,8 +9,9 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/amino_animations.dart';
-import '../../../core/providers/post_provider.dart';
-import '../../communities/providers/community_detail_providers.dart';
+import '../../../core/providers/post_provider.dart' as post_providers;
+import '../../communities/providers/community_detail_providers.dart'
+    as community_providers;
 import '../../moderation/widgets/post_moderation_menu.dart';
 import 'block_content_renderer.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
@@ -112,12 +113,15 @@ class _PostCardState extends ConsumerState<PostCard>
     );
 
     if (changed == true) {
-      ref.invalidate(pinnedFeedProvider(_post.communityId));
-      ref.invalidate(activeFeaturedFeedProvider(_post.communityId));
-      ref.invalidate(archivedFeaturedFeedProvider(_post.communityId));
-      ref.invalidate(latestFeedProvider(_post.communityId));
-      ref.invalidate(communityFeedProvider(_post.communityId));
-      ref.invalidate(postDetailProvider(_post.id));
+      ref.invalidate(community_providers.pinnedFeedProvider(_post.communityId));
+      ref.invalidate(
+          community_providers.activeFeaturedFeedProvider(_post.communityId));
+      ref.invalidate(
+          community_providers.archivedFeaturedFeedProvider(_post.communityId));
+      ref.invalidate(community_providers.latestFeedProvider(_post.communityId));
+      ref.invalidate(
+          community_providers.communityFeedProvider(_post.communityId));
+      ref.invalidate(post_providers.postDetailProvider(_post.id));
     }
   }
 
@@ -410,9 +414,13 @@ class _PostCardState extends ConsumerState<PostCard>
   Widget _buildAuthorHeader(BuildContext context) {
     final s = ref.read(stringsProvider);
     final r = context.r;
-    final currentUser = ref.watch(currentUserProfileProvider).valueOrNull;
+    final currentUser =
+        ref.watch(post_providers.currentUserProfileProvider).valueOrNull;
     final membership = _post.communityId.isNotEmpty
-        ? ref.watch(communityMembershipProvider(_post.communityId)).valueOrNull
+        ? ref
+            .watch(
+                community_providers.communityMembershipProvider(_post.communityId))
+            .valueOrNull
         : null;
     final currentUserRole = membership?['role'] as String?;
     final canModeratePost = _post.communityId.isNotEmpty &&
