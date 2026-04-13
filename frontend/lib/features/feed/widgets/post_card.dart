@@ -9,6 +9,9 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/amino_animations.dart';
+import '../../../core/providers/post_provider.dart';
+import '../../communities/providers/community_detail_providers.dart';
+import '../../moderation/widgets/post_moderation_menu.dart';
 import 'block_content_renderer.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
@@ -74,6 +77,48 @@ class _PostCardState extends ConsumerState<PostCard>
   void dispose() {
     _likeController.dispose();
     super.dispose();
+  }
+
+  bool _isCommunityStaff({
+    required bool isTeamMember,
+    required String? userRole,
+  }) {
+    if (isTeamMember) return true;
+    switch ((userRole ?? '').toLowerCase()) {
+      case 'agent':
+      case 'leader':
+      case 'curator':
+      case 'moderator':
+      case 'admin':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  Future<void> _openModerationMenu() async {
+    if (_post.communityId.isEmpty) return;
+
+    final changed = await showPostModerationMenu(
+      context: context,
+      ref: ref,
+      communityId: _post.communityId,
+      postId: _post.id,
+      isPinned: _post.isPinned,
+      isFeatured: _post.isFeatured,
+      postTitle: (_post.title ?? '').trim().isNotEmpty
+          ? (_post.title ?? '').trim()
+          : _post.content,
+    );
+
+    if (changed == true) {
+      ref.invalidate(pinnedFeedProvider(_post.communityId));
+      ref.invalidate(activeFeaturedFeedProvider(_post.communityId));
+      ref.invalidate(archivedFeaturedFeedProvider(_post.communityId));
+      ref.invalidate(latestFeedProvider(_post.communityId));
+      ref.invalidate(communityFeedProvider(_post.communityId));
+      ref.invalidate(postDetailProvider(_post.id));
+    }
   }
 
   // ── REPOST ──
@@ -365,6 +410,16 @@ class _PostCardState extends ConsumerState<PostCard>
   Widget _buildAuthorHeader(BuildContext context) {
     final s = ref.read(stringsProvider);
     final r = context.r;
+    final currentUser = ref.watch(currentUserProfileProvider).valueOrNull;
+    final membership = _post.communityId.isNotEmpty
+        ? ref.watch(communityMembershipProvider(_post.communityId)).valueOrNull
+        : null;
+    final currentUserRole = membership?['role'] as String?;
+    final canModeratePost = _post.communityId.isNotEmpty &&
+        _isCommunityStaff(
+          isTeamMember: currentUser?.isTeamMember ?? false,
+          userRole: currentUserRole,
+        );
     final displayAuthorName =
         _post.authorLocalNickname?.trim().isNotEmpty == true
             ? _post.authorLocalNickname!.trim()
@@ -475,9 +530,9 @@ class _PostCardState extends ConsumerState<PostCard>
               ],
             ),
           ),
-          // Featured/Pinned badge
           if (_post.isFeatured)
             Container(
+              margin: EdgeInsets.only(right: canModeratePost ? r.s(4) : 0),
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(6), vertical: r.s(3)),
               decoration: BoxDecoration(
@@ -497,6 +552,17 @@ class _PostCardState extends ConsumerState<PostCard>
                           fontWeight: FontWeight.w700)),
                 ],
               ),
+            ),
+          if (canModeratePost)
+            IconButton(
+              onPressed: _openModerationMenu,
+              icon: Icon(
+                Icons.more_vert_rounded,
+                color: context.nexusTheme.textSecondary,
+                size: r.s(18),
+              ),
+              splashRadius: r.s(18),
+              tooltip: 'Menu de moderação',
             ),
         ],
       ),
