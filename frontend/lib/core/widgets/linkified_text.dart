@@ -2,13 +2,17 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Widget que renderiza texto com URLs automaticamente clicáveis.
+///
 /// Suporta links externos (abre no navegador) e links internos do app
 /// (navega via GoRouter com destaque visual de tipo).
+/// Também suporta links no formato Markdown: `[título](url)`.
 ///
-/// Também suporta links no formato Markdown: [título](url)
-class LinkifiedText extends StatelessWidget {
+/// Implementado como [StatefulWidget] para gerenciar corretamente o ciclo
+/// de vida dos [TapGestureRecognizer] e evitar memory leaks.
+class LinkifiedText extends StatefulWidget {
   final String text;
   final TextStyle? style;
   final TextStyle? linkStyle;
@@ -24,13 +28,16 @@ class LinkifiedText extends StatelessWidget {
     this.overflow,
   });
 
+  /// Regex que detecta:
+  ///   1. Links Markdown: `[texto](https://...)`
+  ///   2. URLs simples: `https://...`
   static final _urlRegex = RegExp(
     r'(?:\[([^\]]+)\]\((https?://[^\s\)]+)\))|(https?://[^\s]+)',
     caseSensitive: false,
   );
 
-  /// Padrões de links internos do app
-  static final _internalPatterns = <String, _InternalLinkInfo>{
+  /// Padrões de links internos do app com tipo, ícone e cor
+  static const _internalPatterns = <String, _InternalLinkInfo>{
     '/community/': _InternalLinkInfo('Comunidade', Icons.groups_rounded, Color(0xFF6C5CE7)),
     '/post/': _InternalLinkInfo('Post', Icons.article_rounded, Color(0xFFE91E63)),
     '/user/': _InternalLinkInfo('Perfil', Icons.person_rounded, Color(0xFF00BCD4)),
@@ -52,21 +59,75 @@ class LinkifiedText extends StatelessWidget {
     return null;
   }
 
+  /// Abre uma URL: tenta navegar internamente via GoRouter;
+  /// se falhar, abre no navegador externo.
+  static void openUrl(BuildContext context, String url) {
+    final uri = Uri.tryParse(url);
+    if (uri != null) {
+      final path = uri.path;
+      if (path.isNotEmpty && path != '/') {
+        try {
+          GoRouter.of(context).push(path);
+          return;
+        } catch (_) {
+          // GoRouter não encontrou a rota — abrir externamente
+        }
+      }
+    }
+    launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  }
+
+  @override
+  State<LinkifiedText> createState() => _LinkifiedTextState();
+}
+
+class _LinkifiedTextState extends State<LinkifiedText> {
+  final List<TapGestureRecognizer> _recognizers = [];
+
+  @override
+  void dispose() {
+    for (final r in _recognizers) {
+      r.dispose();
+    }
+    super.dispose();
+  }
+
+  /// Cria um [TapGestureRecognizer] gerenciado pelo estado,
+  /// garantindo que será descartado no [dispose].
+  TapGestureRecognizer _createRecognizer(VoidCallback onTap) {
+    final recognizer = TapGestureRecognizer()..onTap = onTap;
+    _recognizers.add(recognizer);
+    return recognizer;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final defaultStyle = style ?? TextStyle(
-      color: Theme.of(context).colorScheme.onSurface,
-      fontSize: 14,
-    );
-    final defaultLinkStyle = linkStyle ?? defaultStyle.copyWith(
-      color: const Color(0xFF64B5F6),
-      decoration: TextDecoration.underline,
-      decorationColor: const Color(0xFF64B5F6),
-    );
+    // Limpar recognizers anteriores a cada rebuild
+    for (final r in _recognizers) {
+      r.dispose();
+    }
+    _recognizers.clear();
 
-    final matches = _urlRegex.allMatches(text).toList();
+    final defaultStyle = widget.style ??
+        TextStyle(
+          color: context.nexusTheme.textPrimary,
+          fontSize: 14,
+        );
+    final defaultLinkStyle = widget.linkStyle ??
+        defaultStyle.copyWith(
+          color: context.nexusTheme.accentSecondary,
+          decoration: TextDecoration.underline,
+          decorationColor: context.nexusTheme.accentSecondary,
+        );
+
+    final matches = LinkifiedText._urlRegex.allMatches(widget.text).toList();
     if (matches.isEmpty) {
-      return Text(text, style: defaultStyle, maxLines: maxLines, overflow: overflow);
+      return Text(
+        widget.text,
+        style: defaultStyle,
+        maxLines: widget.maxLines,
+        overflow: widget.overflow,
+      );
     }
 
     final spans = <InlineSpan>[];
@@ -75,14 +136,18 @@ class LinkifiedText extends StatelessWidget {
     for (final match in matches) {
       // Texto antes do link
       if (match.start > lastEnd) {
-        spans.add(TextSpan(text: text.substring(lastEnd, match.start), style: defaultStyle));
+        spans.add(TextSpan(
+          text: widget.text.substring(lastEnd, match.start),
+          style: defaultStyle,
+        ));
       }
 
       final isMarkdownLink = match.group(1) != null;
-      final displayText = isMarkdownLink ? match.group(1)! : match.group(3)!;
+      final displayText =
+          isMarkdownLink ? match.group(1)! : match.group(3)!;
       final url = isMarkdownLink ? match.group(2)! : match.group(3)!;
 
-      final internalInfo = _getInternalInfo(url);
+      final internalInfo = LinkifiedText._getInternalInfo(url);
 
       if (internalInfo != null && !isMarkdownLink) {
         // Link interno: mostrar badge com tipo
@@ -100,8 +165,9 @@ class LinkifiedText extends StatelessWidget {
         spans.add(TextSpan(
           text: displayText,
           style: defaultLinkStyle,
-          recognizer: TapGestureRecognizer()
-            ..onTap = () => _openUrl(context, url),
+          recognizer: _createRecognizer(
+            () => LinkifiedText.openUrl(context, url),
+          ),
         ));
       }
 
@@ -109,31 +175,18 @@ class LinkifiedText extends StatelessWidget {
     }
 
     // Texto restante
-    if (lastEnd < text.length) {
-      spans.add(TextSpan(text: text.substring(lastEnd), style: defaultStyle));
+    if (lastEnd < widget.text.length) {
+      spans.add(TextSpan(
+        text: widget.text.substring(lastEnd),
+        style: defaultStyle,
+      ));
     }
 
     return Text.rich(
       TextSpan(children: spans),
-      maxLines: maxLines,
-      overflow: overflow,
+      maxLines: widget.maxLines,
+      overflow: widget.overflow,
     );
-  }
-
-  static void _openUrl(BuildContext context, String url) {
-    // Tentar navegar internamente se for link do app
-    final uri = Uri.tryParse(url);
-    if (uri != null) {
-      final path = uri.path;
-      if (path.isNotEmpty && path != '/') {
-        try {
-          context.push(path);
-          return;
-        } catch (_) {}
-      }
-    }
-    // Fallback: abrir externamente
-    launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   }
 }
 
@@ -160,7 +213,7 @@ class _InternalLinkChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => LinkifiedText._openUrl(context, url),
+      onTap: () => LinkifiedText.openUrl(context, url),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 2),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

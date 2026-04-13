@@ -528,7 +528,7 @@ class RichBioRenderer extends StatelessWidget {
     this.maxPreviewLines,
   });
 
-  Future<void> _openLink(String? href) async {
+  Future<void> _openLink(String? href, {BuildContext? ctx}) async {
     final value = href?.trim();
     if (value == null || value.isEmpty) return;
     final uri = Uri.tryParse(value);
@@ -541,20 +541,17 @@ class RichBioRenderer extends StatelessWidget {
         host.contains('nexushub') ||
         host.contains('localhost');
 
-    if (isInternal && uri.path.isNotEmpty) {
-      // Navegar internamente usando GoRouter
-      final ctx = _contextRef;
-      if (ctx != null && ctx.mounted) {
+    if (isInternal && uri.path.isNotEmpty && ctx != null && ctx.mounted) {
+      try {
         GoRouter.of(ctx).push(uri.path);
         return;
+      } catch (_) {
+        // Rota não encontrada — abrir externamente
       }
     }
 
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
-
-  // Referência ao contexto para navegação interna
-  BuildContext? _contextRef;
 
   String _toPreviewText(String markdown) {
     return markdown
@@ -643,10 +640,10 @@ class RichBioRenderer extends StatelessWidget {
     return MarkdownBody(
       data: markdown,
       selectable: selectable,
-      onTapLink: (_, href, __) => _openLink(href),
+      onTapLink: (_, href, __) => _openLink(href, ctx: context),
       inlineSyntaxes: [_RichBioColorSyntax()],
       builders: {
-        _richBioColorTag: _RichBioColorBuilder(onTapLink: _openLink),
+        _richBioColorTag: _RichBioColorBuilder(onTapLink: (href) => _openLink(href, ctx: context)),
       },
       styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
         p: TextStyle(
@@ -753,7 +750,6 @@ class RichBioRenderer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _contextRef = context;
     final r = context.r;
     final parsed = RichBioCodec.decode(rawContent);
     final text = parsed.markdown.trim();

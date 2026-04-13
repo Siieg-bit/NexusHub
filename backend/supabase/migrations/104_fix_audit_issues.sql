@@ -56,7 +56,7 @@ BEGIN
       INNER JOIN public.community_members cm ON c.id = cm.community_id
       WHERE cm.user_id = v_user_id
         AND cm.is_banned = false
-        AND c.is_deleted = false
+        AND c.status != 'deleted'::public.content_status
     )
   );
 
