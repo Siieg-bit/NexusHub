@@ -987,17 +987,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           style: TextStyle(color: context.nexusTheme.textPrimary)),
                     ]),
                   ),
-                if (isAuthor)
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Row(children: [
-                      Icon(Icons.delete_rounded,
-                          size: r.s(18), color: context.nexusTheme.error),
-                      SizedBox(width: r.s(10)),
-                      Text(s.deleteAction2,
-                          style: TextStyle(color: context.nexusTheme.error)),
-                    ]),
-                  ),
                 // Menu de Moderação — visível apenas para staff
                 if (canModeratePost)
                   PopupMenuItem(
@@ -1008,6 +997,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       SizedBox(width: r.s(10)),
                       Text('Menu de Moderação',
                           style: TextStyle(color: context.nexusTheme.textPrimary)),
+                    ]),
+                  ),
+                if (isAuthor)
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(children: [
+                      Icon(Icons.delete_rounded,
+                          size: r.s(18), color: context.nexusTheme.error),
+                      SizedBox(width: r.s(10)),
+                      Text(s.deleteAction2,
+                          style: TextStyle(color: context.nexusTheme.error)),
                     ]),
                   ),
               ];
@@ -1555,16 +1555,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                   // Botão unificado: emoji + figurinha + mídia
                                   Padding(
                                     padding: EdgeInsets.only(right: r.s(6)),
-                                    child: CommentMediaMenuButton(
-                                      isUploadingMedia: _pendingMediaUrl != null,
-                                      showEmojiPicker: _showEmojiPicker,
-                                      onToggleEmoji: _toggleEmojiPicker,
-                                      onOpenSticker: () async {
-                                        _commentFocusNode.unfocus();
-                                        await _openStickerPicker();
-                                      },
-                                      onPickMedia: _pickCommentImage,
-                                    ),
                                   ),
                                   // Campo de texto
                                   Expanded(
@@ -2426,3 +2416,16 @@ class _RepostConfirmSheetDetail extends ConsumerWidget {
     );
   }
 }
+
+                                  Padding(
+                                    padding: EdgeInsets.only(right: r.s(6)),
+                                    child: CommentMediaMenuButton(
+                                      isUploadingMedia: _pendingMediaUrl != null,
+                                      showEmojiPicker: _showEmojiPicker,
+                                      onToggleEmoji: _toggleEmojiPicker,
+                                      onOpenSticker: () async {
+                                        _commentFocusNode.unfocus();
+                                        await _openStickerPicker();
+                                      },
+                                      onPickMedia: _pickCommentImage,
+                                    ),

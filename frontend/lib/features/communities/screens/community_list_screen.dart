@@ -108,6 +108,11 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   Widget _buildCommunityList(List<CommunityModel> communities) {
     final s = getStrings();
     final r = context.r;
+    
+    // Ordenar comunidades por mais recentes primeiro
+    final sortedCommunities = List<CommunityModel>.from(communities)
+      ..sort((a, b) => (b.createdAt ?? DateTime.now()).compareTo(a.createdAt ?? DateTime.now()));
+    
     return RefreshIndicator(
       color: context.nexusTheme.accentPrimary,
       onRefresh: () async {
@@ -136,109 +141,48 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
               ),
             ),
 
-            // ── Grade horizontal de cards com drag & drop ──
-            // Objetivo: exatamente 3 itens visiveis na tela (2 cards + JoinCard).
-            // Todos com a mesma largura. O 3o card (JoinCard) fica fixo no Row,
-            // os demais ficam no ReorderableListView com scroll horizontal.
-            // Formula: cardW = (screenWidth - leftPad - 2*gap - rightPad) / 3
-            LayoutBuilder(builder: (context, constraints) {
-              final screenW = r.screenWidth;
-              const double leftPad = 14.0; // padding.left da lista
-              const double gap     = 8.0;  // espaco entre cada item
-              const double rightPad = 8.0; // padding.right do JoinCard
-              // 3 itens: cada um tem gap a direita, exceto o ultimo que tem rightPad
-              // total ocupado pelos gaps: gap*2 (entre item1-2 e item2-3) + rightPad
-              final double cardW    = (screenW - leftPad - gap * 2 - rightPad) / 3;
-              final double overflow  = r.s(_AminoCommunityCard._iconOverflow);
-              // cardH proporcional à cardW (mesma razão usada dentro do card)
-              final double cardH    = cardW * (175.0 / 120.0);
-
-              return SizedBox(
-                height: overflow + cardH,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: ReorderableListView.builder(
-                        buildDefaultDragHandles: false,
-                        scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.only(
-                            left: leftPad, right: gap, top: overflow),
-                        itemCount: (_reorderedCommunities ?? communities).length,
-                        onReorder: (oldIndex, newIndex) {
-                          HapticFeedback.mediumImpact();
-                          setState(() {
-                            if (newIndex > oldIndex) newIndex--;
-                            final list = List<CommunityModel>.from(
-                                _reorderedCommunities ?? communities);
-                            final item = list.removeAt(oldIndex);
-                            list.insert(newIndex, item);
-                            _reorderedCommunities = list;
-                          });
-                        },
-                        proxyDecorator: (child, index, animation) {
-                          return AnimatedBuilder(
-                            animation: animation,
-                            builder: (context, child) => Transform.scale(
-                              scale: 1.05,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: child,
-                              ),
-                            ),
-                            child: child,
-                          );
-                        },
-                        itemBuilder: (context, index) {
-                          final community =
-                              (_reorderedCommunities ?? communities)[index];
-                          return Padding(
-                            key: ValueKey(community.id),
-                            padding: EdgeInsets.only(right: gap),
-                            child: _AminoCommunityCard(
-                              community: community,
-                              reorderIndex: index,
-                              cardWidth: cardW,
-                              onTap: () =>
-                                  context.push('/community/${community.id}'),
-                              onLongPress: () {
-                                HapticFeedback.mediumImpact();
-                                _showCommunityPreview(context, community);
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    // JoinCard fixo com mesma largura dos cards de comunidade
-                    Padding(
-                      padding: EdgeInsets.only(right: rightPad),
-                      child: _JoinCommunityCard(
-                        cardWidth: cardW,
-                        onTap: () => _showJoinCommunitySheet(communities),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-            // ── Texto instrucional ───
+            // ── Grade de comunidades com 3 colunas (GridView) ──
+            // Mostra todas as comunidades dinamicamente
+            // JoinCard fica sempre no final
             Padding(
-              padding: EdgeInsets.only(top: r.s(16), bottom: r.s(16)),
-              child: Center(
-                child: Text(
-                  'Use o ícone de arraste no card para reordenar suas comunidades.',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.35),
-                    fontSize: r.fs(12),
-                  ),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: r.s(8),
+                  mainAxisSpacing: r.s(8),
+                  childAspectRatio: 120.0 / 175.0,
                 ),
+                itemCount: sortedCommunities.length + 1, // +1 para JoinCard
+                itemBuilder: (context, index) {
+                  // Último item é o JoinCard
+                  if (index == sortedCommunities.length) {
+                    return _JoinCommunityCard(
+                      cardWidth: null,
+                      onTap: () => _showJoinCommunitySheet(sortedCommunities),
+                    );
+                  }
+                  
+                  final community = sortedCommunities[index];
+                  return _AminoCommunityCard(
+                    community: community,
+                    reorderIndex: index,
+                    cardWidth: null,
+                    onTap: () => context.push('/community/${community.id}'),
+                    onLongPress: () {
+                      HapticFeedback.mediumImpact();
+                      _showCommunityPreview(context, community);
+                    },
+                  );
+                },
               ),
             ),
 
             // ── Botão outline "CRIE SUA COMUNIDADE" ──
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: r.s(24)),
+              padding: EdgeInsets.symmetric(horizontal: r.s(24), vertical: r.s(16)),
               child: GestureDetector(
                 onTap: () => context.push('/community/create'),
                 child: Container(
@@ -271,7 +215,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
     );
   }
 
-  void _showCommunityPreview(BuildContext context, CommunityModel community) {
+    void _showCommunityPreview(BuildContext context, CommunityModel community) {
     final s = getStrings();
     showModalBottomSheet(
       context: context,
