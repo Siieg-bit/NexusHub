@@ -26,6 +26,8 @@ import '../../../core/services/deep_link_service.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/comment_media_menu_button.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../communities/providers/community_detail_providers.dart'
+    as community_providers;
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 enum _CommentSortOrder { mostRecent, oldest, mostPopular }
@@ -116,32 +118,22 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   // communityId do post — preenchido quando o postDetailProvider carrega.
   // Usado para enriquecer os comentários com dados locais de comunidade.
   String _postCommunityId = '';
-  // Cache do role do usuário na comunidade atual
-  String? _cachedCommunityId;
-  String? _cachedUserRole;
 
-  bool _isStaffOf(String communityId) {
-    const staffRoles = ['agent', 'leader', 'curator', 'moderator'];
-    return staffRoles.contains(_cachedUserRole);
-  }
-
-  Future<void> _loadUserRole(String communityId) async {
-    if (_cachedCommunityId == communityId) return;
-    try {
-      final userId = SupabaseService.currentUserId;
-      if (userId == null) return;
-      final row = await SupabaseService.table('community_members')
-          .select('role')
-          .eq('community_id', communityId)
-          .eq('user_id', userId)
-          .maybeSingle();
-      if (mounted) {
-        setState(() {
-          _cachedCommunityId = communityId;
-          _cachedUserRole = row?['role'] as String?;
-        });
-      }
-    } catch (_) {}
+  bool _isCommunityStaff({
+    required bool isTeamMember,
+    required String? userRole,
+  }) {
+    if (isTeamMember) return true;
+    switch ((userRole ?? '').toLowerCase()) {
+      case 'agent':
+      case 'leader':
+      case 'curator':
+      case 'moderator':
+      case 'admin':
+        return true;
+      default:
+        return false;
+    }
   }
   CommentModel? _replyingToComment;
   String? _pendingStickerUrl;
@@ -676,16 +668,32 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     final postAsync = ref.watch(postDetailProvider(widget.postId));
-     final post = postAsync.valueOrNull;
+    final post = postAsync.valueOrNull;
     // Atualizar _postCommunityId quando o post carregar (sem setState para evitar rebuild).
-    if (post != null && post.communityId.isNotEmpty && _postCommunityId != post.communityId) {
+    if (post != null &&
+        post.communityId.isNotEmpty &&
+        _postCommunityId != post.communityId) {
       _postCommunityId = post.communityId;
     }
-    final commentsAsync = ref.watch(postCommentsProvider((widget.postId, _postCommunityId)));
+    final commentsAsync =
+        ref.watch(postCommentsProvider((widget.postId, _postCommunityId)));
     final currentUser = ref.watch(currentUserProvider);
+    final communityMembership = post != null && post.communityId.isNotEmpty
+        ? ref
+            .watch(community_providers.communityMembershipProvider(post.communityId))
+            .valueOrNull
+        : null;
+    final currentUserData = currentUser.valueOrNull;
+    final currentUserRole = communityMembership?['role'] as String?;
+    final canModeratePost = post != null &&
+        post.communityId.isNotEmpty &&
+        _isCommunityStaff(
+          isTeamMember: currentUserData?.isTeamMember ?? false,
+          userRole: currentUserRole,
+        );
     // Avatar reativo do usuário logado (já considera local_icon_url via authProvider)
     final currentUserAvatar = ref.watch(currentUserAvatarProvider);
     return Scaffold(
@@ -904,8 +912,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               final post =
                   ref.read(postDetailProvider(widget.postId)).valueOrNull;
               final isAuthor = post?.authorId == SupabaseService.currentUserId;
-              // Carregar role se necessário
-              if (post != null) _loadUserRole(post.communityId);
               return [
                 if (!isAuthor && post?.type != 'repost')
                   PopupMenuItem(
@@ -992,7 +998,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     ]),
                   ),
                 // Menu de Moderação — visível apenas para staff
-                if (post != null && _isStaffOf(post.communityId))
+                if (canModeratePost)
                   PopupMenuItem(
                     value: 'moderation_menu',
                     child: Row(children: [
