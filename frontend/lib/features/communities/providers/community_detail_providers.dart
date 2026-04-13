@@ -81,10 +81,6 @@ final pinnedFeedProvider =
 });
 
 /// Posts em DESTAQUE ATIVOS (is_featured=true) — seção 2 da aba Destaque.
-///
-/// O sistema agora é orientado por substituição: o item mais recente ocupa a
-/// vitrine principal, os quatro anteriores aparecem como secundários e os
-/// demais migram para o arquivo de destaques.
 final activeFeaturedFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
@@ -108,7 +104,33 @@ final activeFeaturedFeedProvider =
   return posts.where((p) => p.isFeatured).toList();
 });
 
-/// Posts RECENTES (excluindo fixados) — seção 3 da aba Destaque.
+/// Posts que já passaram pela vitrine, mas saíram da rotação ativa.
+///
+/// Mantemos o histórico separado do feed recente para que esses itens sejam
+/// exibidos apenas no carrossel abaixo dos destaques ativos.
+final archivedFeaturedFeedProvider =
+    FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
+  final response = await SupabaseService.table('posts')
+      .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+      .eq('community_id', communityId)
+      .eq('status', 'ok')
+      .eq('is_featured', false)
+      .not('featured_at', 'is', null)
+      .order('featured_at', ascending: false)
+      .limit(50);
+
+  final maps = (response as List? ?? []).map((e) {
+    final map = Map<String, dynamic>.from(e);
+    if (map['profiles'] != null) map['author'] = map['profiles'];
+    return map;
+  }).toList();
+
+  await _injectCommunityAuthorIdentity(maps, communityId);
+  await _injectIsLikedCommunity(maps);
+  return maps.map((map) => PostModel.fromJson(map)).toList();
+});
+
+/// Posts RECENTES (excluindo fixados e históricos de destaque) — seção 3 da aba Destaque.
 final latestFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
@@ -117,6 +139,7 @@ final latestFeedProvider =
       .eq('status', 'ok')
       .eq('is_pinned', false)
       .eq('is_featured', false)
+      .isFilter('featured_at', null)
       .order('created_at', ascending: false)
       .limit(20);
 

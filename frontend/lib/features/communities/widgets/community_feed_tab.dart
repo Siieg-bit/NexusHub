@@ -37,6 +37,7 @@ class CommunityFeedTab extends ConsumerWidget {
     if (isFeatured) {
       ref.invalidate(pinnedFeedProvider(communityId));
       ref.invalidate(activeFeaturedFeedProvider(communityId));
+      ref.invalidate(archivedFeaturedFeedProvider(communityId));
       ref.invalidate(latestFeedProvider(communityId));
     } else {
       ref.invalidate(latestFeedProvider(communityId));
@@ -80,20 +81,22 @@ class _FeaturedTab extends ConsumerWidget {
     final r = context.r;
     final pinnedAsync = ref.watch(pinnedFeedProvider(communityId));
     final featuredAsync = ref.watch(activeFeaturedFeedProvider(communityId));
+    final archivedFeaturedAsync =
+        ref.watch(archivedFeaturedFeedProvider(communityId));
     final latestAsync = ref.watch(latestFeedProvider(communityId));
     final accent = _accentColor(context, ref);
 
     final pinnedPosts = pinnedAsync.valueOrNull ?? [];
     final featuredPosts = featuredAsync.valueOrNull ?? [];
+    final archivedFeaturedPosts = archivedFeaturedAsync.valueOrNull ?? [];
     final latestPosts = latestAsync.valueOrNull ?? [];
     final primaryFeatured = featuredPosts.isNotEmpty ? featuredPosts.first : null;
     final secondaryFeatured =
         featuredPosts.length > 1 ? featuredPosts.skip(1).take(4).toList() : <PostModel>[];
-    final rotatedFeaturedPosts =
-        featuredPosts.length > 5 ? featuredPosts.skip(5).toList() : <PostModel>[];
 
     final isLoading = pinnedAsync.isLoading &&
         featuredAsync.isLoading &&
+        archivedFeaturedAsync.isLoading &&
         latestAsync.isLoading;
 
     if (isLoading) {
@@ -163,10 +166,10 @@ class _FeaturedTab extends ConsumerWidget {
                   ),
                 ),
               ),
-            if (rotatedFeaturedPosts.isNotEmpty)
+            if (archivedFeaturedPosts.isNotEmpty)
               SliverToBoxAdapter(
                 child: _RotatedFeaturedCarousel(
-                  posts: rotatedFeaturedPosts,
+                  posts: archivedFeaturedPosts,
                   accent: accent,
                 ),
               ),
