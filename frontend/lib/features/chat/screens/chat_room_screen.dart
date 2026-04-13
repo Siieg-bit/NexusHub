@@ -2545,6 +2545,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                         message: message,
                                         isMe: isMe,
                                         showAvatar: showAvatar,
+                                        showAuthorName:
+                                            (_threadInfo?['type'] as String? ?? 'group') != 'dm',
                                         onReactionTap: (emoji) =>
                                             _addReaction(message.id, emoji),
                                         communityId:

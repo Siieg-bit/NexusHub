@@ -45,6 +45,7 @@ class MessageBubble extends ConsumerWidget {
   final bool isMe;
   final bool showAvatar;
   final void Function(String emoji)? onReactionTap;
+  final bool showAuthorName;
   /// ID da comunidade à qual este chat pertence.
   /// Quando fornecido, ao clicar no avatar/nome do autor navega para
   /// o perfil do usuário dentro da comunidade em vez do perfil global.
@@ -58,6 +59,7 @@ class MessageBubble extends ConsumerWidget {
     required this.isMe,
     required this.showAvatar,
     this.onReactionTap,
+    this.showAuthorName = true,
     this.communityId,
     this.repliedMessage,
     this.onReplyTap,
@@ -386,6 +388,7 @@ class MessageBubble extends ConsumerWidget {
         : 'Me';
     final realAuthorName = message.author?.nickname ?? 'User';
     final authorName = isMe ? selfLabel : realAuthorName;
+    final shouldShowAuthorName = showAuthorName && authorName.trim().isNotEmpty;
     final avatarFallbackLabel =
         realAuthorName.isNotEmpty ? realAuthorName : authorName;
     final authorIcon = message.author?.iconUrl;
@@ -487,7 +490,7 @@ class MessageBubble extends ConsumerWidget {
           Row(
             mainAxisAlignment:
                 isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (!isMe) ...[
                 buildAuthorAvatar(),
@@ -502,19 +505,20 @@ class MessageBubble extends ConsumerWidget {
                             : CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Padding(
-                            padding: EdgeInsets.only(bottom: r.s(2)),
-                            child: Text(
-                              authorName,
-                              style: TextStyle(
-                                color: context.nexusTheme.accentPrimary,
-                                fontSize: r.fs(11),
-                                fontWeight: FontWeight.w700,
+                          if (shouldShowAuthorName)
+                            Padding(
+                              padding: EdgeInsets.only(bottom: r.s(2)),
+                              child: Text(
+                                authorName,
+                                style: TextStyle(
+                                  color: context.nexusTheme.accentPrimary,
+                                  fontSize: r.fs(11),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
                           // Conteúdo de mídia (imagem/gif/vídeo)
                           ClipRRect(
                             borderRadius: BorderRadius.circular(r.s(12)),
@@ -564,17 +568,18 @@ class MessageBubble extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Padding(
-                                  padding: EdgeInsets.only(bottom: r.s(4)),
-                                  child: Text(
-                                    authorName,
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.9),
-                                      fontSize: r.fs(11),
-                                      fontWeight: FontWeight.w700,
+                                if (shouldShowAuthorName)
+                                  Padding(
+                                    padding: EdgeInsets.only(bottom: r.s(4)),
+                                    child: Text(
+                                      authorName,
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.9),
+                                        fontSize: r.fs(11),
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
-                                ),
                                 _buildContent(context),
                                 Padding(
                                   padding: EdgeInsets.only(top: r.s(isAudioType ? 2 : 4)),
@@ -626,21 +631,22 @@ class MessageBubble extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Padding(
-                                  padding: EdgeInsets.only(bottom: r.s(4)),
-                                  child: Text(
-                                    authorName,
-                                    style: TextStyle(
-                                      color: isMe
-                                          ? Colors.white.withValues(alpha: 0.9)
-                                          : context.nexusTheme.accentPrimary,
-                                      fontSize: r.fs(11),
-                                      fontWeight: FontWeight.w700,
+                                if (shouldShowAuthorName)
+                                  Padding(
+                                    padding: EdgeInsets.only(bottom: r.s(4)),
+                                    child: Text(
+                                      authorName,
+                                      style: TextStyle(
+                                        color: isMe
+                                            ? Colors.white.withValues(alpha: 0.9)
+                                            : context.nexusTheme.accentPrimary,
+                                        fontSize: r.fs(11),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
                                 _buildContent(context),
                                 Padding(
                                   padding: EdgeInsets.only(top: r.s(isAudioType ? 2 : 4)),
