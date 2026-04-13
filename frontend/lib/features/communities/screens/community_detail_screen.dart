@@ -46,8 +46,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   int _bottomIndex = 0; // 0=Home, 1=Online, 2=Create, 3=Chats, 4=Me
   bool _isDisposed = false;
 
-  static const String _featuredArchiveTabLabel = 'Arquivo';
-
   List<String> _activeTabs = [];
   Map<String, dynamic>? _lastLayout;
 
@@ -58,7 +56,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     _activeTabs = [
       s.guidelines,
       s.featured,
-      _featuredArchiveTabLabel,
       s.latest,
       s.chats,
     ];
@@ -92,7 +89,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     if (visible['guidelines'] != false) tabs.add(s.guidelines);
     if (visible['featured_posts'] != false) {
       tabs.add(s.featured);
-      tabs.add(_featuredArchiveTabLabel);
     }
     if (visible['latest_feed'] != false) tabs.add(s.latest);
     if (visible['public_chats'] != false) tabs.add(s.chats);
@@ -768,12 +764,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   } else if (tab == s.featured) {
                     return CommunityFeedTab(
                         communityId: widget.communityId, isFeatured: true);
-                  } else if (tab == _featuredArchiveTabLabel) {
-                    return CommunityFeedTab(
-                      communityId: widget.communityId,
-                      isFeatured: true,
-                      showFeaturedArchive: true,
-                    );
                   } else if (tab == s.latest) {
                     return CommunityFeedTab(
                         communityId: widget.communityId, isFeatured: false);

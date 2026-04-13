@@ -26,13 +26,11 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 class CommunityFeedTab extends ConsumerWidget {
   final String communityId;
   final bool isFeatured;
-  final bool showFeaturedArchive;
 
   const CommunityFeedTab({
     super.key,
     required this.communityId,
     this.isFeatured = false,
-    this.showFeaturedArchive = false,
   });
 
   Future<void> _onRefresh(WidgetRef ref) async {
@@ -49,12 +47,6 @@ class CommunityFeedTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (isFeatured) {
-      if (showFeaturedArchive) {
-        return _FeaturedArchiveTab(
-          communityId: communityId,
-          onRefresh: _onRefresh,
-        );
-      }
       return _FeaturedTab(communityId: communityId, onRefresh: _onRefresh);
     }
     return _LatestTab(communityId: communityId, onRefresh: _onRefresh);
@@ -97,6 +89,8 @@ class _FeaturedTab extends ConsumerWidget {
     final primaryFeatured = featuredPosts.isNotEmpty ? featuredPosts.first : null;
     final secondaryFeatured =
         featuredPosts.length > 1 ? featuredPosts.skip(1).take(4).toList() : <PostModel>[];
+    final rotatedFeaturedPosts =
+        featuredPosts.length > 5 ? featuredPosts.skip(5).toList() : <PostModel>[];
 
     final isLoading = pinnedAsync.isLoading &&
         featuredAsync.isLoading &&
@@ -169,6 +163,13 @@ class _FeaturedTab extends ConsumerWidget {
                   ),
                 ),
               ),
+            if (rotatedFeaturedPosts.isNotEmpty)
+              SliverToBoxAdapter(
+                child: _RotatedFeaturedCarousel(
+                  posts: rotatedFeaturedPosts,
+                  accent: accent,
+                ),
+              ),
             SliverToBoxAdapter(child: SizedBox(height: r.s(8))),
           ],
 
@@ -226,103 +227,79 @@ class _FeaturedTab extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Aba RECENTES — feed padrão com StoryCarousel no topo
-// ─────────────────────────────────────────────────────────────────────────────
+class _RotatedFeaturedCarousel extends ConsumerWidget {
+  final List<PostModel> posts;
+  final Color accent;
 
-class _FeaturedArchiveTab extends ConsumerWidget {
-  final String communityId;
-  final Future<void> Function(WidgetRef ref) onRefresh;
-
-  const _FeaturedArchiveTab({required this.communityId, required this.onRefresh});
-
-  Color _accentColor(BuildContext context, WidgetRef ref) {
-    final community =
-        ref.watch(communityDetailProvider(communityId)).valueOrNull;
-    if (community == null) return context.nexusTheme.accentPrimary;
-    try {
-      return Color(int.parse(community.themeColor.replaceFirst('#', '0xFF')));
-    } catch (_) {
-      return context.nexusTheme.accentPrimary;
-    }
-  }
+  const _RotatedFeaturedCarousel({
+    required this.posts,
+    required this.accent,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
-    final featuredAsync = ref.watch(activeFeaturedFeedProvider(communityId));
-    final accent = _accentColor(context, ref);
-    final archivedPosts = (featuredAsync.valueOrNull ?? []).skip(5).toList();
 
-    if (featuredAsync.isLoading && archivedPosts.isEmpty) {
-      return Center(
-        child: CircularProgressIndicator(color: accent, strokeWidth: 2.5),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: () => onRefresh(ref),
-      color: accent,
-      backgroundColor: context.surfaceColor,
-      child: archivedPosts.isEmpty
-          ? ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              children: [
-                SizedBox(height: r.s(56)),
-                Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: r.s(24)),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.inventory_2_outlined,
-                          size: r.s(42),
-                          color: context.nexusTheme.textHint,
-                        ),
-                        SizedBox(height: r.s(10)),
-                        Text(
-                          'Ainda não há destaques arquivados.',
-                          style: TextStyle(
-                            color: context.nexusTheme.textSecondary,
-                            fontSize: r.fs(13),
-                            fontWeight: FontWeight.w600,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: r.s(6)),
-                        Text(
-                          'Os conteúdos mais antigos aparecem aqui quando novos destaques entram na vitrine principal.',
-                          style: TextStyle(
-                            color: context.nexusTheme.textHint,
-                            fontSize: r.fs(12),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : GridView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.all(r.s(12)),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: r.s(8),
-                mainAxisSpacing: r.s(8),
-                childAspectRatio: 0.78,
+    return Padding(
+      padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), 0, r.s(4)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.history_toggle_off_rounded,
+                size: r.s(16),
+                color: accent,
               ),
-              itemCount: archivedPosts.length,
-              itemBuilder: (context, index) => _FeaturedPostCard(
-                post: archivedPosts[index],
-                accent: accent,
-                index: index + 5,
+              SizedBox(width: r.s(6)),
+              Text(
+                'Saíram de rotação',
+                style: TextStyle(
+                  color: context.nexusTheme.textPrimary,
+                  fontSize: r.fs(14),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: r.s(6)),
+          Text(
+            'Os destaques mais antigos continuam acessíveis aqui sem ocupar uma aba separada.',
+            style: TextStyle(
+              color: context.nexusTheme.textHint,
+              fontSize: r.fs(11),
+              height: 1.35,
+            ),
+          ),
+          SizedBox(height: r.s(10)),
+          SizedBox(
+            height: r.s(226),
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.only(right: r.s(16)),
+              itemCount: posts.length,
+              separatorBuilder: (_, __) => SizedBox(width: r.s(10)),
+              itemBuilder: (context, index) => SizedBox(
+                width: r.s(190),
+                child: _FeaturedPostCard(
+                  post: posts[index],
+                  accent: accent,
+                  index: index + 5,
+                ),
               ),
             ),
+          ),
+        ],
+      ),
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Aba RECENTES — feed padrão com StoryCarousel no topo
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _LatestTab extends ConsumerWidget {
   final String communityId;
