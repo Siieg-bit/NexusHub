@@ -105,7 +105,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     final r = context.r;
     try {
       final result =
-          await SupabaseService.rpc('repair_streak', params: {'p_cost': 50});
+          await SupabaseService.rpc('repair_streak', params: {});
       if (result != null) {
         final data = result as Map<String, dynamic>;
         if (data['success'] == true) {
