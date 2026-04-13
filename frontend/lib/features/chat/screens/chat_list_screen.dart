@@ -14,6 +14,7 @@ import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../../../core/providers/chat_provider.dart' show unreadCountProvider, unreadCountByCommunityProvider;
+import '../../../core/providers/presence_provider.dart';
 import '../widgets/dm_invite_card.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
@@ -1125,6 +1126,11 @@ class _AminoChatTile extends ConsumerWidget {
             chatRoom.communityId == null &&
             (chatRoom.membersCount <= 2 ||
                 chatRoom.title.trim().toLowerCase() == 'chat'));
+    final counterpartUserId = chatRoom.hostId;
+    final showOnlineIndicator = isDirectLikeChat &&
+        counterpartUserId != null &&
+        counterpartUserId.isNotEmpty &&
+        ref.watch(isUserOnlineGlobalProvider(counterpartUserId));
 
     // GestureDetector com HitTestBehavior.translucent:
     // - translucent permite que o ListView receba o scroll normalmente
@@ -1162,7 +1168,7 @@ class _AminoChatTile extends ConsumerWidget {
                     userId: chatRoom.hostId,
                     avatarUrl: chatRoom.iconUrl,
                     size: r.s(48),
-                    showOnline: true,
+                    showOnline: showOnlineIndicator,
                   )
                 : Container(
                     width: r.s(56),
