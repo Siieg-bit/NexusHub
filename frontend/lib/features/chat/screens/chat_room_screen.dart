@@ -158,6 +158,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   bool _isRecordingVoice = false;
   String? _highlightedMessageId;
   Timer? _replyHighlightTimer;
+  bool _showScrollToBottomButton = false;
+  int _unseenMessagesCount = 0;
+  static const double _scrollToBottomThreshold = 160;
+  static const double _scrollButtonBottomSpacing = 16;
+  static const double _scrollButtonHorizontalSpacing = 16;
+  static const double _scrollButtonVisibilityOffset = 240;
   bool _isOpeningVoiceCall = false;
   List<Map<String, dynamic>> _pinnedMessages = [];
   String? _chatBackground;
@@ -177,6 +183,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_handleScrollPositionChange);
     _initChat();
   }
 
@@ -418,6 +425,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     _isDisposed = true;
     _replyHighlightTimer?.cancel();
     _messageController.dispose();
+    _scrollController.removeListener(_handleScrollPositionChange);
     _scrollController.dispose();
     RealtimeService.instance.unsubscribe('chat:${widget.threadId}');
     RealtimeService.instance.connectionStatus
@@ -722,10 +730,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   await _normalizeMessageAuthorIdentity(newMessage);
               if (_isDisposed || !mounted) return;
               final message = MessageModel.fromJson(normalizedMessage);
-              setState(() => _messages.insert(0, message));
-              _scrollToBottom();
-              // Marcar como lido automaticamente (o usuário está na tela)
-              _markChatRead();
+              final shouldAutoScroll =
+                  _isNearBottom() || message.authorId == SupabaseService.currentUserId;
+              setState(() {
+                _messages.insert(0, message);
+                if (!shouldAutoScroll) {
+                  _showScrollToBottomButton = true;
+                  _unseenMessagesCount += 1;
+                }
+              });
+              if (shouldAutoScroll) {
+                _scrollToBottom();
+                // Marcar como lido automaticamente apenas quando o usuário está no final.
+                _markChatRead();
+              }
             } catch (e) {
               debugPrint('Realtime message error: $e');
             }
@@ -739,12 +757,43 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         .addListener(_onRealtimeStatusChanged);
   }
 
-  void _scrollToBottom() {
+  bool _isNearBottom() {
+    if (!_scrollController.hasClients) return true;
+    return _scrollController.offset <= _scrollToBottomThreshold;
+  }
+
+  void _handleScrollPositionChange() {
+    if (!mounted || _isDisposed || !_scrollController.hasClients) return;
+
+    final shouldShowButton =
+        _scrollController.offset > _scrollButtonVisibilityOffset;
+
+    if (shouldShowButton != _showScrollToBottomButton) {
+      setState(() => _showScrollToBottomButton = shouldShowButton);
+    }
+
+    if (!shouldShowButton && _unseenMessagesCount != 0) {
+      setState(() => _unseenMessagesCount = 0);
+      _markChatRead();
+    }
+  }
+
+  void _scrollToBottom({bool clearUnreadIndicator = true}) {
+    if (clearUnreadIndicator && mounted && !_isDisposed) {
+      setState(() {
+        _showScrollToBottomButton = false;
+        _unseenMessagesCount = 0;
+      });
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+      if (!mounted || _isDisposed) return;
       if (_scrollController.hasClients) {
-        _scrollController.animateTo(0,
-            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
       }
     });
   }
@@ -2447,115 +2496,207 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
             // ── Message list ──
             Expanded(
-              child: _isLoading
-                  ? Center(
-                      child: CircularProgressIndicator(
-                          color: context.nexusTheme.accentPrimary, strokeWidth: 2))
-                  : _messages.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: r.s(72),
-                                height: r.s(72),
-                                decoration: BoxDecoration(
-                                  color: context.surfaceColor,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(Icons.chat_bubble_outline_rounded,
-                                    size: r.s(32), color: Colors.grey[700]),
-                              ),
-                              SizedBox(height: r.s(16)),
-                              Text(s.noMessagesYet,
-                                  style: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: r.fs(15),
-                                      fontWeight: FontWeight.w600)),
-                              SizedBox(height: r.s(6)),
-                              Text(s.startConversation2,
-                                  style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: r.fs(12))),
-                            ],
-                          ),
-                        )
-                      : ListView.builder(
-                          controller: _scrollController,
-                          reverse: true,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: r.s(12), vertical: r.s(8)),
-                          itemCount: _messages.length,
-                          itemBuilder: (context, index) {
-                            final message = _messages[index];
-                            final isMe = message.authorId == currentUserId;
-                            final showAvatar = !message.isSystemMessage;
-
-                            // Separador de data: exibe quando a mensagem atual
-                            // é de um dia diferente da próxima mais antiga.
-                            // Como a lista é reverse: true, index+1 é mais antigo.
-                            final DateTime? prevDate = index < _messages.length - 1
-                                ? _messages[index + 1].createdAt
-                                : null;
-                            final showDateSep = shouldShowDateSeparator(
-                                message.createdAt, prevDate);
-
-                            final repliedMessage =
-                                _findMessageById(message.replyToId);
-                            final messageKey = _messageKeyFor(message.id);
-                            final isReplyTargetHighlighted =
-                                _highlightedMessageId == message.id;
-
-                            return RepaintBoundary(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (showDateSep)
-                                    ChatDateSeparator(date: message.createdAt),
-                                  AnimatedContainer(
-                                    key: messageKey,
-                                    duration: const Duration(milliseconds: 220),
-                                    curve: Curves.easeOutCubic,
-                                    margin: EdgeInsets.symmetric(vertical: r.s(2)),
-                                    padding: EdgeInsets.all(
-                                      isReplyTargetHighlighted ? r.s(4) : 0,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isReplyTargetHighlighted
-                                          ? context.nexusTheme.accentPrimary.withValues(alpha: 0.12)
-                                          : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(r.s(18)),
-                                      border: isReplyTargetHighlighted
-                                          ? Border.all(
-                                              color: context.nexusTheme.accentPrimary
-                                                  .withValues(alpha: 0.35),
-                                            )
-                                          : null,
-                                    ),
-                                    child: GestureDetector(
-                                      onLongPress: () => _showMessageActions(message),
-                                      child: MessageBubble(
-                                        message: message,
-                                        isMe: isMe,
-                                        showAvatar: showAvatar,
-                                        showAuthorName:
-                                            (_threadInfo?['type'] as String? ?? 'group') != 'dm',
-                                        onReactionTap: (emoji) =>
-                                            _addReaction(message.id, emoji),
-                                        communityId:
-                                            _threadInfo?['community_id'] as String?,
-                                        repliedMessage: repliedMessage,
-                                        onReplyTap: repliedMessage == null
-                                            ? null
-                                            : () => _jumpToMessage(repliedMessage.id),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: _isLoading
+                        ? Center(
+                            child: CircularProgressIndicator(
+                                color: context.nexusTheme.accentPrimary,
+                                strokeWidth: 2))
+                        : _messages.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      width: r.s(72),
+                                      height: r.s(72),
+                                      decoration: BoxDecoration(
+                                        color: context.surfaceColor,
+                                        shape: BoxShape.circle,
                                       ),
+                                      child: Icon(Icons.chat_bubble_outline_rounded,
+                                          size: r.s(32), color: Colors.grey[700]),
                                     ),
+                                    SizedBox(height: r.s(16)),
+                                    Text(s.noMessagesYet,
+                                        style: TextStyle(
+                                            color: Colors.grey[400],
+                                            fontSize: r.fs(15),
+                                            fontWeight: FontWeight.w600)),
+                                    SizedBox(height: r.s(6)),
+                                    Text(s.startConversation2,
+                                        style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: r.fs(12))),
+                                  ],
+                                ),
+                              )
+                            : ListView.builder(
+                                controller: _scrollController,
+                                reverse: true,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(12), vertical: r.s(8)),
+                                itemCount: _messages.length,
+                                itemBuilder: (context, index) {
+                                  final message = _messages[index];
+                                  final isMe = message.authorId == currentUserId;
+                                  final showAvatar = !message.isSystemMessage;
+
+                                  // Separador de data: exibe quando a mensagem atual
+                                  // é de um dia diferente da próxima mais antiga.
+                                  // Como a lista é reverse: true, index+1 é mais antigo.
+                                  final DateTime? prevDate = index < _messages.length - 1
+                                      ? _messages[index + 1].createdAt
+                                      : null;
+                                  final showDateSep = shouldShowDateSeparator(
+                                      message.createdAt, prevDate);
+
+                                  final repliedMessage =
+                                      _findMessageById(message.replyToId);
+                                  final messageKey = _messageKeyFor(message.id);
+                                  final isReplyTargetHighlighted =
+                                      _highlightedMessageId == message.id;
+
+                                  return RepaintBoundary(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (showDateSep)
+                                          ChatDateSeparator(date: message.createdAt),
+                                        AnimatedContainer(
+                                          key: messageKey,
+                                          duration:
+                                              const Duration(milliseconds: 220),
+                                          curve: Curves.easeOutCubic,
+                                          margin: EdgeInsets.symmetric(
+                                              vertical: r.s(2)),
+                                          padding: EdgeInsets.all(
+                                            isReplyTargetHighlighted ? r.s(4) : 0,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: isReplyTargetHighlighted
+                                                ? context.nexusTheme.accentPrimary
+                                                    .withValues(alpha: 0.12)
+                                                : Colors.transparent,
+                                            borderRadius:
+                                                BorderRadius.circular(r.s(18)),
+                                            border: isReplyTargetHighlighted
+                                                ? Border.all(
+                                                    color: context.nexusTheme
+                                                        .accentPrimary
+                                                        .withValues(alpha: 0.35),
+                                                  )
+                                                : null,
+                                          ),
+                                          child: GestureDetector(
+                                            onLongPress: () =>
+                                                _showMessageActions(message),
+                                            child: MessageBubble(
+                                              message: message,
+                                              isMe: isMe,
+                                              showAvatar: showAvatar,
+                                              showAuthorName:
+                                                  (_threadInfo?['type'] as String? ??
+                                                          'group') !=
+                                                      'dm',
+                                              onReactionTap: (emoji) =>
+                                                  _addReaction(message.id, emoji),
+                                              communityId: _threadInfo?['community_id']
+                                                  as String?,
+                                              repliedMessage: repliedMessage,
+                                              onReplyTap: repliedMessage == null
+                                                  ? null
+                                                  : () => _jumpToMessage(
+                                                      repliedMessage.id),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                  ),
+                  if (_showScrollToBottomButton)
+                    Positioned(
+                      right: r.s(_scrollButtonHorizontalSpacing),
+                      bottom: r.s(_scrollButtonBottomSpacing),
+                      child: SafeArea(
+                        top: false,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              _scrollToBottom();
+                              _markChatRead();
+                            },
+                            borderRadius: BorderRadius.circular(r.s(28)),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              curve: Curves.easeOutCubic,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: r.s(_unseenMessagesCount > 0 ? 12 : 10),
+                                vertical: r.s(10),
+                              ),
+                              decoration: BoxDecoration(
+                                color: context.nexusTheme.cardColor
+                                    .withValues(alpha: 0.95),
+                                borderRadius: BorderRadius.circular(r.s(28)),
+                                border: Border.all(
+                                  color: context.nexusTheme.accentPrimary
+                                      .withValues(alpha: 0.22),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.22),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 8),
                                   ),
                                 ],
                               ),
-                            );
-                          },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    color: context.nexusTheme.accentPrimary,
+                                    size: r.s(22),
+                                  ),
+                                  if (_unseenMessagesCount > 0) ...[
+                                    SizedBox(width: r.s(6)),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(8),
+                                        vertical: r.s(3),
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: context.nexusTheme.accentPrimary,
+                                        borderRadius:
+                                            BorderRadius.circular(r.s(999)),
+                                      ),
+                                      child: Text(
+                                        _unseenMessagesCount > 99
+                                            ? '99+'
+                                            : _unseenMessagesCount.toString(),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: r.fs(11),
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
+                      ),
+                    ),
+                ],
+              ),
             ),
 
             // ── Reply preview ──
