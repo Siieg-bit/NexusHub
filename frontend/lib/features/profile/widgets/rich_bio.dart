@@ -16,6 +16,7 @@ import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import '../../chat/widgets/giphy_picker.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:go_router/go_router.dart';
 
 class RichBioMediaItem {
   final String id;
@@ -532,8 +533,28 @@ class RichBioRenderer extends StatelessWidget {
     if (value == null || value.isEmpty) return;
     final uri = Uri.tryParse(value);
     if (uri == null) return;
+
+    // Verificar se é link interno do app
+    final host = uri.host.toLowerCase();
+    final isInternal = host.isEmpty ||
+        host.contains('aminexus') ||
+        host.contains('nexushub') ||
+        host.contains('localhost');
+
+    if (isInternal && uri.path.isNotEmpty) {
+      // Navegar internamente usando GoRouter
+      final ctx = _contextRef;
+      if (ctx != null && ctx.mounted) {
+        GoRouter.of(ctx).push(uri.path);
+        return;
+      }
+    }
+
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
+
+  // Referência ao contexto para navegação interna
+  BuildContext? _contextRef;
 
   String _toPreviewText(String markdown) {
     return markdown
@@ -732,6 +753,7 @@ class RichBioRenderer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    _contextRef = context;
     final r = context.r;
     final parsed = RichBioCodec.decode(rawContent);
     final text = parsed.markdown.trim();

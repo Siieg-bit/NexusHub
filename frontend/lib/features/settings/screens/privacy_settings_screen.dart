@@ -185,421 +185,424 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
-          : ListView(
-              padding: EdgeInsets.all(r.s(16)),
-              children: [
-                // ============================================================
-                // PERFIL
-                // ============================================================
-                _SectionHeader(title: s.profile),
-                _SettingToggle(
-                  icon: Icons.public_rounded,
-                  title: s.publicProfile,
-                  subtitle: 'Qualquer pessoa pode ver seu perfil',
-                  value: _profilePublic,
-                  onChanged: (v) => setState(() => _profilePublic = v),
-                ),
-                _SettingToggle(
-                  icon: Icons.circle,
-                  title: 'Status Online',
-                  subtitle: s.showWhenOnline,
-                  value: _showOnlineStatus,
-                  onChanged: (v) => setState(() => _showOnlineStatus = v),
-                ),
-                _SettingToggle(
-                  icon: Icons.article_rounded,
-                  title: 'Posts Recentes',
-                  subtitle: 'Mostrar posts recentes no perfil',
-                  value: _showRecentPosts,
-                  onChanged: (v) => setState(() => _showRecentPosts = v),
-                ),
-                _SettingToggle(
-                  icon: Icons.dashboard_rounded,
-                  title: 'Mural (Wall)',
-                  subtitle: 'Permitir mensagens no seu mural',
-                  value: _showWall,
-                  onChanged: (v) => setState(() => _showWall = v),
-                ),
-
-                SizedBox(height: r.s(24)),
-
-                // ============================================================
-                // MODO FANTASMA
-                // ============================================================
-                const _SectionHeader(title: 'Modo Fantasma'),
-                _SettingToggle(
-                  icon: Icons.visibility_off_rounded,
-                  title: 'Modo Fantasma',
-                  subtitle: s.appearOfflineDesc,
-                  value: _isGhostMode,
-                  onChanged: (v) => setState(() => _isGhostMode = v),
-                ),
-                _SettingToggle(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  title: 'Desabilitar novos chats',
-                  subtitle: s.preventNewUsersConversations,
-                  value: _disableIncomingChats,
-                  onChanged: (v) => setState(() => _disableIncomingChats = v),
-                ),
-                _SettingToggle(
-                  icon: Icons.comments_disabled_rounded,
-                  title: s.disableProfileComments,
-                  subtitle: s.noOneCanCommentWall,
-                  value: _disableProfileComments,
-                  onChanged: (v) => setState(() => _disableProfileComments = v),
-                ),
-
-                SizedBox(height: r.s(24)),
-
-                // ============================================================
-                // COMUNICAÇÃO
-                // ============================================================
-                _SectionHeader(title: s.communication),
-                _SettingToggle(
-                  icon: Icons.chat_rounded,
-                  title: s.directMessages,
-                  subtitle: s.allowOthersToSendDms,
-                  value: _allowDMs,
-                  onChanged: (v) => setState(() => _allowDMs = v),
-                ),
-                _SettingToggle(
-                  icon: Icons.group_add_rounded,
-                  title: s.chatInvitations,
-                  subtitle: s.allowGroupChatInvitations,
-                  value: _allowChatInvites,
-                  onChanged: (v) => setState(() => _allowChatInvites = v),
-                ),
-                _SettingToggle(
-                  icon: Icons.alternate_email_rounded,
-                  title: s.mentions,
-                  subtitle: s.allowMentions,
-                  value: _allowMentions,
-                  onChanged: (v) => setState(() => _allowMentions = v),
-                ),
-
-                SizedBox(height: r.s(24)),
-
-                // ============================================================
-                // VISIBILIDADE
-                // ============================================================
-                _SectionHeader(title: s.visibility),
-                _SettingToggle(
-                  icon: Icons.groups_rounded,
-                  title: s.communitiesList,
-                  subtitle: s.showParticipatedCommunities,
-                  value: _showCommunitiesList,
-                  onChanged: (v) => setState(() => _showCommunitiesList = v),
-                ),
-                _SettingToggle(
-                  icon: Icons.people_rounded,
-                  title: s.followersList,
-                  subtitle: s.showFollowersFollowing,
-                  value: _showFollowersList,
-                  onChanged: (v) => setState(() => _showFollowersList = v),
-                ),
-                _SettingToggle(
-                  icon: Icons.search_rounded,
-                  title: s.searchByName,
-                  subtitle: s.allowFindByName,
-                  value: _allowSearchByName,
-                  onChanged: (v) => setState(() => _allowSearchByName = v),
-                ),
-
-                SizedBox(height: r.s(24)),
-
-                // ============================================================
-                // SEGUIDORES
-                // ============================================================
-                _SectionHeader(title: s.followers),
-                Container(
-                  padding: EdgeInsets.all(r.s(16)),
-                  decoration: BoxDecoration(
-                    color: context.surfaceColor,
-                    borderRadius: BorderRadius.circular(r.s(16)),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.05),
+      body: SafeArea(
+        bottom: true,
+        child: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
+            : ListView(
+                padding: EdgeInsets.all(r.s(16)),
+                children: [
+                  // ============================================================
+                  // PERFIL
+                  // ============================================================
+                  _SectionHeader(title: s.profile),
+                  _SettingToggle(
+                    icon: Icons.public_rounded,
+                    title: s.publicProfile,
+                    subtitle: 'Qualquer pessoa pode ver seu perfil',
+                    value: _profilePublic,
+                    onChanged: (v) => setState(() => _profilePublic = v),
+                  ),
+                  _SettingToggle(
+                    icon: Icons.circle,
+                    title: 'Status Online',
+                    subtitle: s.showWhenOnline,
+                    value: _showOnlineStatus,
+                    onChanged: (v) => setState(() => _showOnlineStatus = v),
+                  ),
+                  _SettingToggle(
+                    icon: Icons.article_rounded,
+                    title: 'Posts Recentes',
+                    subtitle: 'Mostrar posts recentes no perfil',
+                    value: _showRecentPosts,
+                    onChanged: (v) => setState(() => _showRecentPosts = v),
+                  ),
+                  _SettingToggle(
+                    icon: Icons.dashboard_rounded,
+                    title: 'Mural (Wall)',
+                    subtitle: 'Permitir mensagens no seu mural',
+                    value: _showWall,
+                    onChanged: (v) => setState(() => _showWall = v),
+                  ),
+  
+                  SizedBox(height: r.s(24)),
+  
+                  // ============================================================
+                  // MODO FANTASMA
+                  // ============================================================
+                  const _SectionHeader(title: 'Modo Fantasma'),
+                  _SettingToggle(
+                    icon: Icons.visibility_off_rounded,
+                    title: 'Modo Fantasma',
+                    subtitle: s.appearOfflineDesc,
+                    value: _isGhostMode,
+                    onChanged: (v) => setState(() => _isGhostMode = v),
+                  ),
+                  _SettingToggle(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    title: 'Desabilitar novos chats',
+                    subtitle: s.preventNewUsersConversations,
+                    value: _disableIncomingChats,
+                    onChanged: (v) => setState(() => _disableIncomingChats = v),
+                  ),
+                  _SettingToggle(
+                    icon: Icons.comments_disabled_rounded,
+                    title: s.disableProfileComments,
+                    subtitle: s.noOneCanCommentWall,
+                    value: _disableProfileComments,
+                    onChanged: (v) => setState(() => _disableProfileComments = v),
+                  ),
+  
+                  SizedBox(height: r.s(24)),
+  
+                  // ============================================================
+                  // COMUNICAÇÃO
+                  // ============================================================
+                  _SectionHeader(title: s.communication),
+                  _SettingToggle(
+                    icon: Icons.chat_rounded,
+                    title: s.directMessages,
+                    subtitle: s.allowOthersToSendDms,
+                    value: _allowDMs,
+                    onChanged: (v) => setState(() => _allowDMs = v),
+                  ),
+                  _SettingToggle(
+                    icon: Icons.group_add_rounded,
+                    title: s.chatInvitations,
+                    subtitle: s.allowGroupChatInvitations,
+                    value: _allowChatInvites,
+                    onChanged: (v) => setState(() => _allowChatInvites = v),
+                  ),
+                  _SettingToggle(
+                    icon: Icons.alternate_email_rounded,
+                    title: s.mentions,
+                    subtitle: s.allowMentions,
+                    value: _allowMentions,
+                    onChanged: (v) => setState(() => _allowMentions = v),
+                  ),
+  
+                  SizedBox(height: r.s(24)),
+  
+                  // ============================================================
+                  // VISIBILIDADE
+                  // ============================================================
+                  _SectionHeader(title: s.visibility),
+                  _SettingToggle(
+                    icon: Icons.groups_rounded,
+                    title: s.communitiesList,
+                    subtitle: s.showParticipatedCommunities,
+                    value: _showCommunitiesList,
+                    onChanged: (v) => setState(() => _showCommunitiesList = v),
+                  ),
+                  _SettingToggle(
+                    icon: Icons.people_rounded,
+                    title: s.followersList,
+                    subtitle: s.showFollowersFollowing,
+                    value: _showFollowersList,
+                    onChanged: (v) => setState(() => _showFollowersList = v),
+                  ),
+                  _SettingToggle(
+                    icon: Icons.search_rounded,
+                    title: s.searchByName,
+                    subtitle: s.allowFindByName,
+                    value: _allowSearchByName,
+                    onChanged: (v) => setState(() => _allowSearchByName = v),
+                  ),
+  
+                  SizedBox(height: r.s(24)),
+  
+                  // ============================================================
+                  // SEGUIDORES
+                  // ============================================================
+                  _SectionHeader(title: s.followers),
+                  Container(
+                    padding: EdgeInsets.all(r.s(16)),
+                    decoration: BoxDecoration(
+                      color: context.surfaceColor,
+                      borderRadius: BorderRadius.circular(r.s(16)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.05),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.whoCanFollow,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: r.fs(14),
+                            color: context.nexusTheme.textPrimary,
+                          ),
+                        ),
+                        SizedBox(height: r.s(12)),
+                        _RadioOption(
+                          label: s.everyone,
+                          value: 'everyone',
+                          groupValue: _whoCanFollow,
+                          onChanged: (v) => setState(() => _whoCanFollow = v!),
+                        ),
+                        _RadioOption(
+                          label: s.onlyFollowBack,
+                          value: 'mutual',
+                          groupValue: _whoCanFollow,
+                          onChanged: (v) => setState(() => _whoCanFollow = v!),
+                        ),
+                        _RadioOption(
+                          label: s.nobody,
+                          value: 'nobody',
+                          groupValue: _whoCanFollow,
+                          onChanged: (v) => setState(() => _whoCanFollow = v!),
+                        ),
+                      ],
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        s.whoCanFollow,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: r.fs(14),
-                          color: context.nexusTheme.textPrimary,
-                        ),
+  
+                  SizedBox(height: r.s(24)),
+  
+                  // ============================================================
+                  // DADOS
+                  // ============================================================
+                  _SectionHeader(title: s.data),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: context.surfaceColor,
+                      borderRadius: BorderRadius.circular(r.s(16)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.05),
                       ),
-                      SizedBox(height: r.s(12)),
-                      _RadioOption(
-                        label: s.everyone,
-                        value: 'everyone',
-                        groupValue: _whoCanFollow,
-                        onChanged: (v) => setState(() => _whoCanFollow = v!),
-                      ),
-                      _RadioOption(
-                        label: s.onlyFollowBack,
-                        value: 'mutual',
-                        groupValue: _whoCanFollow,
-                        onChanged: (v) => setState(() => _whoCanFollow = v!),
-                      ),
-                      _RadioOption(
-                        label: s.nobody,
-                        value: 'nobody',
-                        groupValue: _whoCanFollow,
-                        onChanged: (v) => setState(() => _whoCanFollow = v!),
-                      ),
-                    ],
-                  ),
-                ),
-
-                SizedBox(height: r.s(24)),
-
-                // ============================================================
-                // DADOS
-                // ============================================================
-                _SectionHeader(title: s.data),
-                Container(
-                  decoration: BoxDecoration(
-                    color: context.surfaceColor,
-                    borderRadius: BorderRadius.circular(r.s(16)),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.05),
                     ),
-                  ),
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: Icon(Icons.download_rounded,
-                            color: context.nexusTheme.accentPrimary),
-                        title: Text(
-                          s.exportMyData,
-                          style: TextStyle(
-                            color: context.nexusTheme.textPrimary,
-                            fontWeight: FontWeight.w700,
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: Icon(Icons.download_rounded,
+                              color: context.nexusTheme.accentPrimary),
+                          title: Text(
+                            s.exportMyData,
+                            style: TextStyle(
+                              color: context.nexusTheme.textPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ),
-                        subtitle: Text(
-                          s.downloadDataCopy,
-                          style: TextStyle(
-                            fontSize: r.fs(12),
-                            color: Colors.grey[500],
+                          subtitle: Text(
+                            s.downloadDataCopy,
+                            style: TextStyle(
+                              fontSize: r.fs(12),
+                              color: Colors.grey[500],
+                            ),
                           ),
+                          trailing: Icon(Icons.chevron_right_rounded,
+                              color: Colors.grey[600]),
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                               SnackBar(
+                                  content: Text(s.exportInProgress)),
+                            );
+                          },
                         ),
-                        trailing: Icon(Icons.chevron_right_rounded,
-                            color: Colors.grey[600]),
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                             SnackBar(
-                                content: Text(s.exportInProgress)),
-                          );
-                        },
-                      ),
-                      Divider(
-                          height: 1,
-                          color: Colors.white.withValues(alpha: 0.05)),
-                      ListTile(
-                        leading:
-                            Icon(Icons.block_rounded, color: Colors.grey[500]),
-                        title: Text(
-                          s.blockedUsers2,
-                          style: TextStyle(
-                            color: context.nexusTheme.textPrimary,
-                            fontWeight: FontWeight.w700,
+                        Divider(
+                            height: 1,
+                            color: Colors.white.withValues(alpha: 0.05)),
+                        ListTile(
+                          leading:
+                              Icon(Icons.block_rounded, color: Colors.grey[500]),
+                          title: Text(
+                            s.blockedUsers2,
+                            style: TextStyle(
+                              color: context.nexusTheme.textPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
+                          trailing: Icon(Icons.chevron_right_rounded,
+                              color: Colors.grey[600]),
+                          onTap: () {
+                            context.push('/settings/blocked-users');
+                          },
                         ),
-                        trailing: Icon(Icons.chevron_right_rounded,
-                            color: Colors.grey[600]),
-                        onTap: () {
-                          context.push('/settings/blocked-users');
-                        },
-                      ),
-                      Divider(
-                          height: 1,
-                          color: Colors.white.withValues(alpha: 0.05)),
-                      ListTile(
-                        leading: Icon(Icons.delete_forever_rounded,
-                            color: context.nexusTheme.error),
-                        title:  Text(
-                          s.deleteAccount2,
-                          style: TextStyle(
-                            color: context.nexusTheme.error,
-                            fontWeight: FontWeight.w700,
+                        Divider(
+                            height: 1,
+                            color: Colors.white.withValues(alpha: 0.05)),
+                        ListTile(
+                          leading: Icon(Icons.delete_forever_rounded,
+                              color: context.nexusTheme.error),
+                          title:  Text(
+                            s.deleteAccount2,
+                            style: TextStyle(
+                              color: context.nexusTheme.error,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ),
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              backgroundColor: context.surfaceColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(r.s(16)),
-                                side: BorderSide(
-                                  color: Colors.white.withValues(alpha: 0.05),
-                                ),
-                              ),
-                              title: Text(
-                                s.deleteAccount2,
-                                style: TextStyle(
-                                  color: context.nexusTheme.textPrimary,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              content: Text(
-                                s.confirmDeletion,
-                                style: TextStyle(color: Colors.grey[500]),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  child: Text(
-                                    s.cancel,
-                                    style: TextStyle(color: Colors.grey[500]),
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                backgroundColor: context.surfaceColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(r.s(16)),
+                                  side: BorderSide(
+                                    color: Colors.white.withValues(alpha: 0.05),
                                   ),
                                 ),
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.pop(ctx);
-                                    // Deletar conta
-                                    showDialog(
-                                      context: context,
-                                      builder: (ctx2) {
-                                        final confirmCtrl =
-                                            TextEditingController();
-                                        return AlertDialog(
-                                          backgroundColor: context.surfaceColor,
-                                          title: Text(
-                                              'Confirmar Exclus\u00e3o',
-                                              style: TextStyle(
-                                                  color: context.nexusTheme.error)),
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                  s.typeDeleteToConfirm,
-                                                  style: TextStyle(
-                                                      color: Colors.grey[400])),
-                                              SizedBox(height: r.s(12)),
-                                              TextField(
-                                                controller: confirmCtrl,
+                                title: Text(
+                                  s.deleteAccount2,
+                                  style: TextStyle(
+                                    color: context.nexusTheme.textPrimary,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                content: Text(
+                                  s.confirmDeletion,
+                                  style: TextStyle(color: Colors.grey[500]),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: Text(
+                                      s.cancel,
+                                      style: TextStyle(color: Colors.grey[500]),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.pop(ctx);
+                                      // Deletar conta
+                                      showDialog(
+                                        context: context,
+                                        builder: (ctx2) {
+                                          final confirmCtrl =
+                                              TextEditingController();
+                                          return AlertDialog(
+                                            backgroundColor: context.surfaceColor,
+                                            title: Text(
+                                                'Confirmar Exclus\u00e3o',
                                                 style: TextStyle(
-                                                    color: context.nexusTheme.textPrimary),
-                                                decoration: InputDecoration(
-                                                  hintText: s.deleteButton,
-                                                  hintStyle: TextStyle(
-                                                      color: Colors.grey[600]),
-                                                  filled: true,
-                                                  fillColor: context.nexusTheme.backgroundPrimary,
-                                                  border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            r.s(12)),
-                                                    borderSide: BorderSide.none,
+                                                    color: context.nexusTheme.error)),
+                                            content: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                    s.typeDeleteToConfirm,
+                                                    style: TextStyle(
+                                                        color: Colors.grey[400])),
+                                                SizedBox(height: r.s(12)),
+                                                TextField(
+                                                  controller: confirmCtrl,
+                                                  style: TextStyle(
+                                                      color: context.nexusTheme.textPrimary),
+                                                  decoration: InputDecoration(
+                                                    hintText: s.deleteButton,
+                                                    hintStyle: TextStyle(
+                                                        color: Colors.grey[600]),
+                                                    filled: true,
+                                                    fillColor: context.nexusTheme.backgroundPrimary,
+                                                    border: OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              r.s(12)),
+                                                      borderSide: BorderSide.none,
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(ctx2),
-                                              child: Text(s.cancel),
+                                              ],
                                             ),
-                                            ElevatedButton(
-                                              onPressed: () async {
-                                                if (confirmCtrl.text.trim() !=
-                                                    s.deleteButton) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                     SnackBar(
-                                                      content: Text(
-                                                          s.typeDeleteToConfirmAlt),
-                                                      behavior: SnackBarBehavior
-                                                          .floating,
-                                                    ),
-                                                  );
-                                                  return;
-                                                }
-                                                try {
-                                                  await SupabaseService.client
-                                                      .rpc(
-                                                          'delete_user_account');
-                                                  await SupabaseService
-                                                      .client.auth
-                                                      .signOut();
-                                                  if (context.mounted)
-                                                    context.go('/login');
-                                                } catch (e) {
-                                                  if (ctx2.mounted)
-                                                    Navigator.pop(ctx2);
-                                                  if (context.mounted) {
-                                                    ScaffoldMessenger.of(
-                                                            context)
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () =>
+                                                    Navigator.pop(ctx2),
+                                                child: Text(s.cancel),
+                                              ),
+                                              ElevatedButton(
+                                                onPressed: () async {
+                                                  if (confirmCtrl.text.trim() !=
+                                                      s.deleteButton) {
+                                                    ScaffoldMessenger.of(context)
                                                         .showSnackBar(
-                                                      SnackBar(
+                                                       SnackBar(
                                                         content: Text(
-                                                            s.anErrorOccurredTryAgain),
-                                                        behavior:
-                                                            SnackBarBehavior
-                                                                .floating,
+                                                            s.typeDeleteToConfirmAlt),
+                                                        behavior: SnackBarBehavior
+                                                            .floating,
                                                       ),
                                                     );
+                                                    return;
                                                   }
-                                                }
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                    context.nexusTheme.error,
+                                                  try {
+                                                    await SupabaseService.client
+                                                        .rpc(
+                                                            'delete_user_account');
+                                                    await SupabaseService
+                                                        .client.auth
+                                                        .signOut();
+                                                    if (context.mounted)
+                                                      context.go('/login');
+                                                  } catch (e) {
+                                                    if (ctx2.mounted)
+                                                      Navigator.pop(ctx2);
+                                                    if (context.mounted) {
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                        SnackBar(
+                                                          content: Text(
+                                                              s.anErrorOccurredTryAgain),
+                                                          behavior:
+                                                              SnackBarBehavior
+                                                                  .floating,
+                                                        ),
+                                                      );
+                                                    }
+                                                  }
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      context.nexusTheme.error,
+                                                ),
+                                                child:  Text(
+                                                    s.permanentDelete),
                                               ),
-                                              child:  Text(
-                                                  s.permanentDelete),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(16), vertical: r.s(8)),
-                                    decoration: BoxDecoration(
-                                      color: context.nexusTheme.error,
-                                      borderRadius:
-                                          BorderRadius.circular(r.s(12)),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: context.nexusTheme.error
-                                              .withValues(alpha: 0.3),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: r.s(16), vertical: r.s(8)),
+                                      decoration: BoxDecoration(
+                                        color: context.nexusTheme.error,
+                                        borderRadius:
+                                            BorderRadius.circular(r.s(12)),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: context.nexusTheme.error
+                                                .withValues(alpha: 0.3),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child:  Text(
+                                        s.delete,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w700,
                                         ),
-                                      ],
-                                    ),
-                                    child:  Text(
-                                      s.delete,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(height: r.s(32)),
-              ],
-            ),
+                  SizedBox(height: r.s(32)),
+                ],
+              )
+      ),
     );
   }
 }

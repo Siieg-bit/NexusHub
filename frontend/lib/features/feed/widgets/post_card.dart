@@ -20,6 +20,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/linkified_text.dart';
 
 /// Card de post no feed — estilo Amino Apps (web-preview).
 /// Suporta todos os 9 tipos de post com renderização interativa.
@@ -55,6 +56,10 @@ class _PostCardState extends ConsumerState<PostCard>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
+    // Carregar tentativa anterior de quiz se aplicável
+    if (_post.type == 'quiz') {
+      _loadQuizAttempt();
+    }
   }
 
   @override
@@ -440,15 +445,20 @@ class _PostCardState extends ConsumerState<PostCard>
               else
                 Padding(
                   padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
-                  child: Text(
-                    _post.content,
+                  child: LinkifiedText(
+                    text: _post.content,
                     style: TextStyle(
                       color: Colors.grey[400],
                       fontSize: r.fs(12),
                       height: 1.5,
                     ),
+                    linkStyle: TextStyle(
+                      color: context.nexusTheme.accentSecondary,
+                      fontSize: r.fs(12),
+                      height: 1.5,
+                      decoration: TextDecoration.underline,
+                    ),
                     maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
             ],

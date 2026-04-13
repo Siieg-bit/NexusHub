@@ -621,110 +621,113 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
           SizedBox(width: r.s(4)),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(r.s(16)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Contador de imagens
-            Row(
-              children: [
-                Icon(Icons.photo_library_rounded,
-                    color: context.nexusTheme.accentPrimary, size: r.s(20)),
-                SizedBox(width: r.s(8)),
-                Text(
-                  '${_images.length}/$_maxImages imagens',
-                  style: TextStyle(
-                    color: context.nexusTheme.textSecondary,
-                    fontSize: r.fs(13),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Spacer(),
-                if (_images.length > 1)
+      body: SafeArea(
+        bottom: true,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(r.s(16)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Contador de imagens
+              Row(
+                children: [
+                  Icon(Icons.photo_library_rounded,
+                      color: context.nexusTheme.accentPrimary, size: r.s(20)),
+                  SizedBox(width: r.s(8)),
                   Text(
-                    'Segure para reordenar',
+                    '${_images.length}/$_maxImages imagens',
                     style: TextStyle(
-                      color: context.nexusTheme.textSecondary.withValues(alpha: 0.6),
-                      fontSize: r.fs(11),
-                      fontStyle: FontStyle.italic,
+                      color: context.nexusTheme.textSecondary,
+                      fontSize: r.fs(13),
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-              ],
-            ),
-            SizedBox(height: r.s(12)),
-
-            // Galeria de imagens com reordenação
-            _buildImageGrid(r),
-            SizedBox(height: r.s(20)),
-
-            // Título (opcional)
-            TextField(
-              controller: _titleController,
-              maxLength: 120,
-              textCapitalization: TextCapitalization.sentences,
-              style: TextStyle(
-                  color: context.nexusTheme.textPrimary,
-                  fontSize: r.fs(18),
-                  fontWeight: FontWeight.w600),
-              decoration: InputDecoration(
-                hintText: s.titleOptionalHint,
-                hintStyle:
-                    TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(18)),
-                border: InputBorder.none,
-                counterText: '',
+                  const Spacer(),
+                  if (_images.length > 1)
+                    Text(
+                      'Segure para reordenar',
+                      style: TextStyle(
+                        color: context.nexusTheme.textSecondary.withValues(alpha: 0.6),
+                        fontSize: r.fs(11),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                ],
               ),
-            ),
-            Divider(color: context.dividerClr),
-            SizedBox(height: r.s(8)),
-
-            // Legenda geral
-            TextField(
-              controller: _captionController,
-              maxLength: 500,
-              maxLines: 5,
-              minLines: 2,
-              textCapitalization: TextCapitalization.sentences,
-              style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(15)),
-              decoration: InputDecoration(
-                hintText: s.writeCaptionHint,
-                hintStyle:
-                    TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(15)),
-                border: InputBorder.none,
-                counterText: '',
+              SizedBox(height: r.s(12)),
+  
+              // Galeria de imagens com reordenação
+              _buildImageGrid(r),
+              SizedBox(height: r.s(20)),
+  
+              // Título (opcional)
+              TextField(
+                controller: _titleController,
+                maxLength: 120,
+                textCapitalization: TextCapitalization.sentences,
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(18),
+                    fontWeight: FontWeight.w600),
+                decoration: InputDecoration(
+                  hintText: s.titleOptionalHint,
+                  hintStyle:
+                      TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(18)),
+                  border: InputBorder.none,
+                  counterText: '',
+                ),
               ),
-            ),
-            SizedBox(height: r.s(16)),
-
-            // Tags
-            _buildTagsSection(r),
-            SizedBox(height: r.s(16)),
-
-            // Toggles NSFW / Spoiler
-            Divider(color: context.dividerClr),
-            SizedBox(height: r.s(8)),
-            _buildToggleRow(
-              icon: Icons.warning_amber_rounded,
-              label: 'Conteúdo NSFW',
-              subtitle: 'Marcar como conteúdo adulto',
-              value: _isNsfw,
-              onChanged: (v) => setState(() => _isNsfw = v),
-              color: context.nexusTheme.error,
-              r: r,
-            ),
-            _buildToggleRow(
-              icon: Icons.visibility_off_rounded,
-              label: 'Spoiler',
-              subtitle: 'Esconder imagens até o usuário tocar',
-              value: _isSpoiler,
-              onChanged: (v) => setState(() => _isSpoiler = v),
-              color: context.nexusTheme.accentSecondary,
-              r: r,
-            ),
-
-            SizedBox(height: r.s(80)),
-          ],
-        ),
+              Divider(color: context.dividerClr),
+              SizedBox(height: r.s(8)),
+  
+              // Legenda geral
+              TextField(
+                controller: _captionController,
+                maxLength: 500,
+                maxLines: 5,
+                minLines: 2,
+                textCapitalization: TextCapitalization.sentences,
+                style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(15)),
+                decoration: InputDecoration(
+                  hintText: s.writeCaptionHint,
+                  hintStyle:
+                      TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(15)),
+                  border: InputBorder.none,
+                  counterText: '',
+                ),
+              ),
+              SizedBox(height: r.s(16)),
+  
+              // Tags
+              _buildTagsSection(r),
+              SizedBox(height: r.s(16)),
+  
+              // Toggles NSFW / Spoiler
+              Divider(color: context.dividerClr),
+              SizedBox(height: r.s(8)),
+              _buildToggleRow(
+                icon: Icons.warning_amber_rounded,
+                label: 'Conteúdo NSFW',
+                subtitle: 'Marcar como conteúdo adulto',
+                value: _isNsfw,
+                onChanged: (v) => setState(() => _isNsfw = v),
+                color: context.nexusTheme.error,
+                r: r,
+              ),
+              _buildToggleRow(
+                icon: Icons.visibility_off_rounded,
+                label: 'Spoiler',
+                subtitle: 'Esconder imagens até o usuário tocar',
+                value: _isSpoiler,
+                onChanged: (v) => setState(() => _isSpoiler = v),
+                color: context.nexusTheme.accentSecondary,
+                r: r,
+              ),
+  
+              SizedBox(height: r.s(80)),
+            ],
+          ),
+        )
       ),
     );
   }

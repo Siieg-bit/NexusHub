@@ -295,21 +295,24 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           tabs: _tabs.map((t) => Tab(text: t)).toList(),
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildModulesTab(),
-                _buildAccessTab(),
-                _buildVisualTab(),
-                _buildBannersTab(),
-                _buildContentTab(),
-                _buildHomeLayoutTab(),
-                _buildCategoriesTab(),
-                _buildStatsTab(),
-              ],
-            ),
+      body: SafeArea(
+        bottom: true,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildModulesTab(),
+                  _buildAccessTab(),
+                  _buildVisualTab(),
+                  _buildBannersTab(),
+                  _buildContentTab(),
+                  _buildHomeLayoutTab(),
+                  _buildCategoriesTab(),
+                  _buildStatsTab(),
+                ],
+              )
+      ),
     );
   }
 

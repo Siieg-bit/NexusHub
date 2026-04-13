@@ -9,20 +9,23 @@ import '../../../core/utils/media_utils.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Widget para criação rápida de figurinhas (stickers)
-/// Permite upload, edição rápida e salvamento
+/// Dois modos de operação:
+///   1. Com threadId: envia a figurinha diretamente no chat
+///   2. Sem threadId: salva a figurinha no pack pessoal do usuário
 
 class QuickStickerCreator extends ConsumerStatefulWidget {
-  final String threadId; // ID do chat thread
+  final String? threadId; // Opcional: se fornecido, envia direto no chat
   final VoidCallback? onStickerCreated;
 
   const QuickStickerCreator({
     super.key,
-    required this.threadId,
+    this.threadId,
     this.onStickerCreated,
   });
 
   @override
-  ConsumerState<QuickStickerCreator> createState() => _QuickStickerCreatorState();
+  ConsumerState<QuickStickerCreator> createState() =>
+      _QuickStickerCreatorState();
 }
 
 class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
@@ -30,6 +33,15 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
   String _stickerName = '';
   bool _isUploading = false;
   bool _isSending = false;
+  final _nameController = TextEditingController();
+
+  bool get _isChatMode => widget.threadId != null;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickStickerImage() async {
     final s = ref.read(stringsProvider);
@@ -42,19 +54,23 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final rawBytes = await image.readAsBytes();
-      final bytes = await MediaUtils.compressImage(rawBytes, maxWidth: 512, maxHeight: 512);
-      final path = 'stickers/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
-      
+      final bytes =
+          await MediaUtils.compressImage(rawBytes, maxWidth: 512, maxHeight: 512);
+      final path =
+          'stickers/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+
       await SupabaseService.storage
           .from('post-media')
           .uploadBinary(path, bytes);
-      
+
       final url = SupabaseService.storage.from('post-media').getPublicUrl(path);
-      
+
       if (mounted) {
+        final name = image.name.replaceAll(RegExp(r'\.[^.]+$'), '');
         setState(() {
           _stickerUrl = url;
-          _stickerName = image.name.replaceAll(RegExp(r'\.[^.]+$'), '');
+          _stickerName = name;
+          _nameController.text = name;
         });
       }
     } catch (e) {
@@ -74,13 +90,13 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
     }
   }
 
-  Future<void> _sendSticker() async {
+  Future<void> _sendOrSaveSticker() async {
     final s = ref.read(stringsProvider);
-    
+
     if (_stickerUrl == null || _stickerUrl!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Selecione uma figurinha'),
+          content: const Text('Selecione uma figurinha'),
           backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
@@ -91,30 +107,64 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
     setState(() => _isSending = true);
 
     try {
-      // Enviar como mensagem de sticker
-      await SupabaseService.table('chat_messages').insert({
-        'thread_id': widget.threadId,
-        'sender_id': SupabaseService.currentUserId,
-        'type': 'sticker',
-        'sticker_url': _stickerUrl,
-        'content': _stickerName,
-      });
+      if (_isChatMode) {
+        // Modo chat: enviar como mensagem de sticker
+        await SupabaseService.table('chat_messages').insert({
+          'thread_id': widget.threadId,
+          'sender_id': SupabaseService.currentUserId,
+          'type': 'sticker',
+          'sticker_url': _stickerUrl,
+          'content': _stickerName.isNotEmpty ? _stickerName : 'Figurinha',
+        });
+      } else {
+        // Modo pack pessoal: salvar no pack pessoal do usuário
+        final userId = SupabaseService.currentUserId;
+        if (userId == null) throw Exception('Usuário não autenticado');
+
+        // Buscar ou criar pack pessoal
+        final existingPacks = await SupabaseService.table('sticker_packs')
+            .select('id')
+            .eq('creator_id', userId)
+            .eq('name', 'Minhas Figurinhas')
+            .limit(1);
+
+        String packId;
+        if (existingPacks is List && existingPacks.isNotEmpty) {
+          packId = existingPacks[0]['id'] as String;
+        } else {
+          // Criar pack pessoal
+          final newPack =
+              await SupabaseService.table('sticker_packs').insert({
+            'name': 'Minhas Figurinhas',
+            'creator_id': userId,
+            'is_public': false,
+          }).select('id').single();
+          packId = newPack['id'] as String;
+        }
+
+        // Adicionar sticker ao pack
+        await SupabaseService.table('stickers').insert({
+          'pack_id': packId,
+          'name': _stickerName.isNotEmpty ? _stickerName : 'Figurinha',
+          'image_url': _stickerUrl,
+        });
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.successfullySent),
+            content: Text(_isChatMode ? s.successfullySent : 'Figurinha salva!'),
             backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
-        
-        // Limpar e fechar
+
         setState(() {
           _stickerUrl = null;
           _stickerName = '';
+          _nameController.clear();
         });
-        
+
         widget.onStickerCreated?.call();
         Navigator.of(context).pop();
       }
@@ -138,7 +188,6 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final s = ref.read(stringsProvider);
 
     return Dialog(
       backgroundColor: context.surfaceColor,
@@ -157,6 +206,18 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
                 color: context.nexusTheme.textPrimary,
                 fontSize: r.fs(18),
                 fontWeight: FontWeight.w700,
+              ),
+            ),
+
+            // Subtítulo com modo
+            SizedBox(height: r.s(4)),
+            Text(
+              _isChatMode
+                  ? 'Enviar direto no chat'
+                  : 'Salvar no seu pack pessoal',
+              style: TextStyle(
+                color: context.nexusTheme.textSecondary,
+                fontSize: r.fs(12),
               ),
             ),
 
@@ -184,7 +245,8 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
                   borderRadius: BorderRadius.circular(r.s(12)),
                   color: context.nexusTheme.backgroundPrimary,
                   border: Border.all(
-                    color: context.nexusTheme.accentSecondary.withValues(alpha: 0.3),
+                    color: context.nexusTheme.accentSecondary
+                        .withValues(alpha: 0.3),
                     width: 2,
                   ),
                 ),
@@ -192,7 +254,8 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
                   child: Icon(
                     Icons.image_rounded,
                     size: r.s(48),
-                    color: context.nexusTheme.textPrimary.withValues(alpha: 0.3),
+                    color: context.nexusTheme.textPrimary
+                        .withValues(alpha: 0.3),
                   ),
                 ),
               ),
@@ -210,11 +273,14 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
                         height: r.s(18),
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(Colors.white),
+                          valueColor:
+                              const AlwaysStoppedAnimation(Colors.white),
                         ),
                       )
-                    : Icon(Icons.image_rounded),
-                label: Text(_stickerUrl == null ? 'Escolher Imagem' : 'Mudar Imagem'),
+                    : const Icon(Icons.image_rounded),
+                label: Text(_stickerUrl == null
+                    ? 'Escolher Imagem'
+                    : 'Mudar Imagem'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: context.nexusTheme.accentPrimary,
                   padding: EdgeInsets.symmetric(vertical: r.s(12)),
@@ -227,7 +293,7 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
             // Campo de nome
             if (_stickerUrl != null)
               TextField(
-                controller: TextEditingController(text: _stickerName),
+                controller: _nameController,
                 onChanged: (val) => _stickerName = val,
                 style: TextStyle(
                   color: context.nexusTheme.textPrimary,
@@ -236,7 +302,8 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
                 decoration: InputDecoration(
                   labelText: 'Nome da Figurinha',
                   labelStyle: TextStyle(
-                    color: context.nexusTheme.textPrimary.withValues(alpha: 0.6),
+                    color: context.nexusTheme.textPrimary
+                        .withValues(alpha: 0.6),
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(r.s(8)),
@@ -244,7 +311,8 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(r.s(8)),
                     borderSide: BorderSide(
-                      color: context.nexusTheme.accentSecondary.withValues(alpha: 0.3),
+                      color: context.nexusTheme.accentSecondary
+                          .withValues(alpha: 0.3),
                     ),
                   ),
                   contentPadding: EdgeInsets.symmetric(
@@ -273,10 +341,14 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
                 SizedBox(width: r.s(12)),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: (_stickerUrl == null || _isSending) ? null : _sendSticker,
+                    onPressed: (_stickerUrl == null || _isSending)
+                        ? null
+                        : _sendOrSaveSticker,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: context.nexusTheme.accentPrimary,
-                      disabledBackgroundColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.5),
+                      disabledBackgroundColor: context.nexusTheme
+                          .accentPrimary
+                          .withValues(alpha: 0.5),
                     ),
                     child: _isSending
                         ? SizedBox(
@@ -284,12 +356,13 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
                             width: r.s(18),
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(Colors.white),
+                              valueColor: const AlwaysStoppedAnimation(
+                                  Colors.white),
                             ),
                           )
                         : Text(
-                            'Enviar',
-                            style: TextStyle(color: Colors.white),
+                            _isChatMode ? 'Enviar' : 'Salvar',
+                            style: const TextStyle(color: Colors.white),
                           ),
                   ),
                 ),

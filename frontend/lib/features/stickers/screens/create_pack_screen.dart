@@ -82,183 +82,186 @@ class _CreatePackScreenState extends ConsumerState<CreatePackScreen> {
           ),
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: EdgeInsets.all(r.s(16)),
-          children: [
-            // Ícone decorativo
-            Center(
-              child: Container(
-                width: r.s(80),
-                height: r.s(80),
-                decoration: BoxDecoration(
-                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                ),
-                child: Icon(
-                  Icons.emoji_emotions_rounded,
-                  size: r.s(40),
-                  color: context.nexusTheme.accentPrimary,
-                ),
-              ),
-            ),
-            SizedBox(height: r.s(24)),
-
-            // Nome do pack
-            _SectionLabel(label: 'Nome do pack *'),
-            SizedBox(height: r.s(6)),
-            TextFormField(
-              controller: _nameCtrl,
-              style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
-              maxLength: 50,
-              decoration: _inputDecoration(context, r, 'Ex: Memes do dia a dia'),
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Nome é obrigatório';
-                if (v.trim().length < 2) return 'Nome muito curto';
-                return null;
-              },
-            ),
-            SizedBox(height: r.s(16)),
-
-            // Descrição
-            _SectionLabel(label: 'Descrição'),
-            SizedBox(height: r.s(6)),
-            TextFormField(
-              controller: _descCtrl,
-              style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
-              maxLines: 3,
-              maxLength: 200,
-              decoration: _inputDecoration(context, r, 'Descreva seu pack...'),
-            ),
-            SizedBox(height: r.s(16)),
-
-            // Tags
-            _SectionLabel(label: 'Tags (até 10)'),
-            SizedBox(height: r.s(6)),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _tagCtrl,
-                    style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
-                    decoration: _inputDecoration(context, r, 'Ex: memes, engraçado...'),
-                    onFieldSubmitted: (_) => _addTag(),
-                  ),
-                ),
-                SizedBox(width: r.s(8)),
-                GestureDetector(
-                  onTap: _addTag,
-                  child: Container(
-                    width: r.s(40),
-                    height: r.s(40),
-                    decoration: BoxDecoration(
-                      color: context.nexusTheme.accentPrimary,
-                      borderRadius: BorderRadius.circular(r.s(10)),
+      body: SafeArea(
+        bottom: true,
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: EdgeInsets.all(r.s(16)),
+            children: [
+              // Ícone decorativo
+              Center(
+                child: Container(
+                  width: r.s(80),
+                  height: r.s(80),
+                  decoration: BoxDecoration(
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
+                      width: 2,
                     ),
-                    child: Icon(Icons.add_rounded, color: Colors.white, size: r.s(20)),
+                  ),
+                  child: Icon(
+                    Icons.emoji_emotions_rounded,
+                    size: r.s(40),
+                    color: context.nexusTheme.accentPrimary,
                   ),
                 ),
-              ],
-            ),
-            if (_tags.isNotEmpty) ...[
-              SizedBox(height: r.s(8)),
-              Wrap(
-                spacing: r.s(6),
-                runSpacing: r.s(4),
-                children: _tags.map((tag) => Chip(
-                  label: Text('#$tag', style: TextStyle(fontSize: r.fs(12))),
-                  backgroundColor: context.nexusTheme.accentSecondary.withValues(alpha: 0.1),
-                  labelStyle: TextStyle(color: context.nexusTheme.accentSecondary),
-                  deleteIconColor: context.nexusTheme.accentSecondary,
-                  onDeleted: () => setState(() => _tags.remove(tag)),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  padding: EdgeInsets.symmetric(horizontal: r.s(4)),
-                )).toList(),
               ),
-            ],
-            SizedBox(height: r.s(20)),
-
-            // Visibilidade
-            Container(
-              padding: EdgeInsets.all(r.s(16)),
-              decoration: BoxDecoration(
-                color: context.nexusTheme.surfacePrimary,
-                borderRadius: BorderRadius.circular(r.s(14)),
+              SizedBox(height: r.s(24)),
+  
+              // Nome do pack
+              _SectionLabel(label: 'Nome do pack *'),
+              SizedBox(height: r.s(6)),
+              TextFormField(
+                controller: _nameCtrl,
+                style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
+                maxLength: 50,
+                decoration: _inputDecoration(context, r, 'Ex: Memes do dia a dia'),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Nome é obrigatório';
+                  if (v.trim().length < 2) return 'Nome muito curto';
+                  return null;
+                },
               ),
-              child: Row(
+              SizedBox(height: r.s(16)),
+  
+              // Descrição
+              _SectionLabel(label: 'Descrição'),
+              SizedBox(height: r.s(6)),
+              TextFormField(
+                controller: _descCtrl,
+                style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
+                maxLines: 3,
+                maxLength: 200,
+                decoration: _inputDecoration(context, r, 'Descreva seu pack...'),
+              ),
+              SizedBox(height: r.s(16)),
+  
+              // Tags
+              _SectionLabel(label: 'Tags (até 10)'),
+              SizedBox(height: r.s(6)),
+              Row(
                 children: [
-                  Icon(
-                    _isPublic ? Icons.public_rounded : Icons.lock_rounded,
-                    color: _isPublic ? context.nexusTheme.accentPrimary : Colors.grey[500],
-                    size: r.s(22),
-                  ),
-                  SizedBox(width: r.s(12)),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _isPublic ? 'Pack público' : 'Pack privado',
-                          style: TextStyle(
-                            color: context.nexusTheme.textPrimary,
-                            fontSize: r.fs(14),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          _isPublic
-                              ? 'Outros usuários podem ver e salvar seu pack'
-                              : 'Apenas você pode ver este pack',
-                          style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
-                        ),
-                      ],
+                    child: TextFormField(
+                      controller: _tagCtrl,
+                      style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
+                      decoration: _inputDecoration(context, r, 'Ex: memes, engraçado...'),
+                      onFieldSubmitted: (_) => _addTag(),
                     ),
                   ),
-                  Switch(
-                    value: _isPublic,
-                    onChanged: (v) => setState(() => _isPublic = v),
-                    activeColor: context.nexusTheme.accentPrimary,
+                  SizedBox(width: r.s(8)),
+                  GestureDetector(
+                    onTap: _addTag,
+                    child: Container(
+                      width: r.s(40),
+                      height: r.s(40),
+                      decoration: BoxDecoration(
+                        color: context.nexusTheme.accentPrimary,
+                        borderRadius: BorderRadius.circular(r.s(10)),
+                      ),
+                      child: Icon(Icons.add_rounded, color: Colors.white, size: r.s(20)),
+                    ),
                   ),
                 ],
               ),
-            ),
-            SizedBox(height: r.s(32)),
-
-            // Botão criar
-            ElevatedButton(
-              onPressed: editorState.isLoading ? null : _create,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.nexusTheme.accentPrimary,
-                foregroundColor: Colors.white,
-                minimumSize: Size(double.infinity, r.s(52)),
-                shape: RoundedRectangleBorder(
+              if (_tags.isNotEmpty) ...[
+                SizedBox(height: r.s(8)),
+                Wrap(
+                  spacing: r.s(6),
+                  runSpacing: r.s(4),
+                  children: _tags.map((tag) => Chip(
+                    label: Text('#$tag', style: TextStyle(fontSize: r.fs(12))),
+                    backgroundColor: context.nexusTheme.accentSecondary.withValues(alpha: 0.1),
+                    labelStyle: TextStyle(color: context.nexusTheme.accentSecondary),
+                    deleteIconColor: context.nexusTheme.accentSecondary,
+                    onDeleted: () => setState(() => _tags.remove(tag)),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    padding: EdgeInsets.symmetric(horizontal: r.s(4)),
+                  )).toList(),
+                ),
+              ],
+              SizedBox(height: r.s(20)),
+  
+              // Visibilidade
+              Container(
+                padding: EdgeInsets.all(r.s(16)),
+                decoration: BoxDecoration(
+                  color: context.nexusTheme.surfacePrimary,
                   borderRadius: BorderRadius.circular(r.s(14)),
                 ),
-                elevation: 0,
-              ),
-              child: editorState.isLoading
-                  ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                  : Text(
-                      'Criar Pack',
-                      style: TextStyle(
-                        fontSize: r.fs(16),
-                        fontWeight: FontWeight.w800,
+                child: Row(
+                  children: [
+                    Icon(
+                      _isPublic ? Icons.public_rounded : Icons.lock_rounded,
+                      color: _isPublic ? context.nexusTheme.accentPrimary : Colors.grey[500],
+                      size: r.s(22),
+                    ),
+                    SizedBox(width: r.s(12)),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _isPublic ? 'Pack público' : 'Pack privado',
+                            style: TextStyle(
+                              color: context.nexusTheme.textPrimary,
+                              fontSize: r.fs(14),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            _isPublic
+                                ? 'Outros usuários podem ver e salvar seu pack'
+                                : 'Apenas você pode ver este pack',
+                            style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
+                          ),
+                        ],
                       ),
                     ),
-            ),
-            SizedBox(height: r.s(8)),
-            Text(
-              'Após criar o pack, você poderá adicionar suas figurinhas.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[600], fontSize: r.fs(12)),
-            ),
-          ],
-        ),
+                    Switch(
+                      value: _isPublic,
+                      onChanged: (v) => setState(() => _isPublic = v),
+                      activeColor: context.nexusTheme.accentPrimary,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: r.s(32)),
+  
+              // Botão criar
+              ElevatedButton(
+                onPressed: editorState.isLoading ? null : _create,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.nexusTheme.accentPrimary,
+                  foregroundColor: Colors.white,
+                  minimumSize: Size(double.infinity, r.s(52)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(r.s(14)),
+                  ),
+                  elevation: 0,
+                ),
+                child: editorState.isLoading
+                    ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                    : Text(
+                        'Criar Pack',
+                        style: TextStyle(
+                          fontSize: r.fs(16),
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+              ),
+              SizedBox(height: r.s(8)),
+              Text(
+                'Após criar o pack, você poderá adicionar suas figurinhas.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey[600], fontSize: r.fs(12)),
+              ),
+            ],
+          ),
+        )
       ),
     );
   }

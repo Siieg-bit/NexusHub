@@ -329,86 +329,89 @@ class _CommunityGeneralLinksScreenState
             ),
         ],
       ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(color: context.nexusTheme.accentSecondary))
-          : Column(
-              children: [
-                // Cabeçalho informativo
-                Container(
-                  width: double.infinity,
-                  margin: EdgeInsets.all(r.s(16)),
-                  padding: EdgeInsets.all(r.s(14)),
-                  decoration: BoxDecoration(
-                    color: context.nexusTheme.accentSecondary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(r.s(12)),
-                    border: Border.all(
-                      color: context.nexusTheme.accentSecondary.withValues(alpha: 0.3),
+      body: SafeArea(
+        bottom: true,
+        child: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(color: context.nexusTheme.accentSecondary))
+            : Column(
+                children: [
+                  // Cabeçalho informativo
+                  Container(
+                    width: double.infinity,
+                    margin: EdgeInsets.all(r.s(16)),
+                    padding: EdgeInsets.all(r.s(14)),
+                    decoration: BoxDecoration(
+                      color: context.nexusTheme.accentSecondary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(r.s(12)),
+                      border: Border.all(
+                        color: context.nexusTheme.accentSecondary.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline_rounded,
+                            color: context.nexusTheme.accentSecondary, size: r.s(18)),
+                        SizedBox(width: r.s(10)),
+                        Expanded(
+                          child: Text(
+                            s.linksInGeneralSection,
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: r.fs(12),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline_rounded,
-                          color: context.nexusTheme.accentSecondary, size: r.s(18)),
-                      SizedBox(width: r.s(10)),
-                      Expanded(
-                        child: Text(
-                          s.linksInGeneralSection,
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: r.fs(12),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Lista reordenável
-                Expanded(
-                  child: _links.isEmpty
-                      ? _buildEmptyState(r)
-                      : ReorderableListView.builder(
-                          padding: EdgeInsets.only(
-                            left: r.s(16),
-                            right: r.s(16),
-                            bottom: r.s(100),
-                          ),
-                          itemCount: _links.length,
-                          onReorder: _reorderLinks,
-                          itemBuilder: (context, index) {
-                            final link = _links[index];
-                            final isActive = link['is_active'] as bool? ?? true;
-                            return _LinkTile(
-                              key: ValueKey(link['id']),
-                              link: link,
-                              isActive: isActive,
-                              onEdit: () => _addOrEditLink(existing: link),
-                              onDelete: () => _deleteLink(link),
-                              onToggle: () async {
-                                setState(() {
-                                  _links[index]['is_active'] = !isActive;
-                                });
-                                try {
-                                  await SupabaseService.table(
-                                          'community_general_links')
-                                      .update({'is_active': !isActive}).eq(
-                                          'id', link['id'] as String? ?? '');
-                                } catch (e) {
-                                  if (!mounted) return;
+  
+                  // Lista reordenável
+                  Expanded(
+                    child: _links.isEmpty
+                        ? _buildEmptyState(r)
+                        : ReorderableListView.builder(
+                            padding: EdgeInsets.only(
+                              left: r.s(16),
+                              right: r.s(16),
+                              bottom: r.s(100),
+                            ),
+                            itemCount: _links.length,
+                            onReorder: _reorderLinks,
+                            itemBuilder: (context, index) {
+                              final link = _links[index];
+                              final isActive = link['is_active'] as bool? ?? true;
+                              return _LinkTile(
+                                key: ValueKey(link['id']),
+                                link: link,
+                                isActive: isActive,
+                                onEdit: () => _addOrEditLink(existing: link),
+                                onDelete: () => _deleteLink(link),
+                                onToggle: () async {
                                   setState(() {
-                                    _links[index]['is_active'] = isActive;
+                                    _links[index]['is_active'] = !isActive;
                                   });
-                                  _showError(
-                                      'Erro ao atualizar. Tente novamente.');
-                                }
-                              },
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
+                                  try {
+                                    await SupabaseService.table(
+                                            'community_general_links')
+                                        .update({'is_active': !isActive}).eq(
+                                            'id', link['id'] as String? ?? '');
+                                  } catch (e) {
+                                    if (!mounted) return;
+                                    setState(() {
+                                      _links[index]['is_active'] = isActive;
+                                    });
+                                    _showError(
+                                        'Erro ao atualizar. Tente novamente.');
+                                  }
+                                },
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              )
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isSaving ? null : () => _addOrEditLink(),
         backgroundColor: context.nexusTheme.accentSecondary,

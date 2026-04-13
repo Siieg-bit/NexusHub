@@ -506,199 +506,455 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 fontWeight: FontWeight.w800, color: context.nexusTheme.textPrimary)),
         iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
       ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
-          : ListView(
-              padding: EdgeInsets.all(r.s(16)),
-              children: [
-                // ============================================================
-                // PERFIL CARD
-                // ============================================================
-                GestureDetector(
-                  onTap: () {
-                    if (_profile != null) {
-                      context.push('/user/${_profile!["id"]}');
-                    }
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(r.s(16)),
-                    decoration: BoxDecoration(
-                      color: context.surfaceColor,
-                      borderRadius: BorderRadius.circular(r.s(16)),
-                      border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.05)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: context.nexusTheme.accentPrimary
-                                    .withValues(alpha: 0.2),
-                                blurRadius: 8,
-                              ),
-                            ],
-                          ),
-                          child: CircleAvatar(
-                            radius: 28,
-                            backgroundColor:
-                                context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
-                            backgroundImage: _profile?['icon_url'] != null
-                                ? CachedNetworkImageProvider(
-                                    _profile!['icon_url'] as String? ?? '')
-                                : null,
-                            child: _profile?['icon_url'] == null
-                                ? Icon(Icons.person_rounded,
-                                    color: context.nexusTheme.accentPrimary, size: r.s(28))
-                                : null,
-                          ),
-                        ),
-                        SizedBox(width: r.s(14)),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _profile?['nickname'] as String? ?? s.user,
-                                style: TextStyle(
-                                    color: context.nexusTheme.textPrimary,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: r.fs(16)),
-                              ),
-                              Text(
-                                'Nível ${_profile?["level"] ?? 1}',
-                                style: TextStyle(
-                                    color: Colors.grey[500],
-                                    fontSize: r.fs(12),
-                                    fontWeight: FontWeight.w700),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Icon(Icons.chevron_right_rounded,
-                            color: Colors.grey[600]),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: r.s(24)),
-
-                // ============================================================
-                // CONTA
-                // ============================================================
-                _SectionLabel(title: s.account),
-                _SettingsGroup(items: [
-                  _SettingsItem(
-                    icon: Icons.person_rounded,
-                    title: 'Editar Perfil',
-                    onTap: () => context.push('/edit-profile'),
-                  ),
-                  _SettingsItem(
-                    icon: Icons.email_rounded,
-                    title: s.emailAndPassword,
-                    subtitle:
-                        SupabaseService.client.auth.currentUser?.email ?? '',
-                    onTap: () => _showChangeEmailDialog(context, s, r),
-                  ),
-                  _SettingsItem(
-                    icon: Icons.link_rounded,
-                    title: 'Contas Vinculadas',
-                    subtitle: s.googleApple,
-                    onTap: () => context.push('/settings/linked-accounts'),
-                  ),
-                ]),
-                SizedBox(height: r.s(20)),
-
-                // ============================================================
-                // PREFERÊNCIAS
-                // ============================================================
-                _SectionLabel(title: s.preferences),
-                _SettingsGroup(items: [
-                  _SettingsItem(
-                    icon: Icons.notifications_rounded,
-                    title: s.notifications,
-                    onTap: () => context.push('/settings/notifications'),
-                  ),
-                  _SettingsItem(
-                    icon: Icons.lock_rounded,
-                    title: s.privacy,
-                    onTap: () => context.push('/settings/privacy'),
-                  ),
-                  const _ThemeSelectorItem(
-                    currentMode: ThemeMode.system,
-                    onSelect: _noopThemeSelect,
-                  ),
-                  _SettingsItem(
-                    icon: Icons.language_rounded,
-                    title: s.language,
-                    subtitle: ref.watch(localeProvider).label,
+      body: SafeArea(
+        bottom: true,
+        child: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
+            : ListView(
+                padding: EdgeInsets.all(r.s(16)),
+                children: [
+                  // ============================================================
+                  // PERFIL CARD
+                  // ============================================================
+                  GestureDetector(
                     onTap: () {
-                      final currentLocale = ref.read(localeProvider);
-                      showModalBottomSheet(
-                        context: context,
-                        backgroundColor: context.surfaceColor,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.vertical(top: Radius.circular(20)),
-                        ),
-                        builder: (ctx) => Padding(
-                          padding: EdgeInsets.all(r.s(24)),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(s.language,
+                      if (_profile != null) {
+                        context.push('/user/${_profile!["id"]}');
+                      }
+                    },
+                    child: Container(
+                      padding: EdgeInsets.all(r.s(16)),
+                      decoration: BoxDecoration(
+                        color: context.surfaceColor,
+                        borderRadius: BorderRadius.circular(r.s(16)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.05)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: context.nexusTheme.accentPrimary
+                                      .withValues(alpha: 0.2),
+                                  blurRadius: 8,
+                                ),
+                              ],
+                            ),
+                            child: CircleAvatar(
+                              radius: 28,
+                              backgroundColor:
+                                  context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
+                              backgroundImage: _profile?['icon_url'] != null
+                                  ? CachedNetworkImageProvider(
+                                      _profile!['icon_url'] as String? ?? '')
+                                  : null,
+                              child: _profile?['icon_url'] == null
+                                  ? Icon(Icons.person_rounded,
+                                      color: context.nexusTheme.accentPrimary, size: r.s(28))
+                                  : null,
+                            ),
+                          ),
+                          SizedBox(width: r.s(14)),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _profile?['nickname'] as String? ?? s.user,
                                   style: TextStyle(
                                       color: context.nexusTheme.textPrimary,
-                                      fontSize: r.fs(18),
-                                      fontWeight: FontWeight.w800)),
-                              SizedBox(height: r.s(16)),
-                              ...AppLocale.values.map((locale) => ListTile(
-                                    leading: Text(locale.flag,
-                                        style: TextStyle(fontSize: r.fs(24))),
-                                    title: Text(locale.label,
-                                        style: TextStyle(
-                                            color: context.nexusTheme.textPrimary)),
-                                    trailing: currentLocale == locale
-                                        ? Icon(Icons.check_circle_rounded,
-                                            color: context.nexusTheme.accentPrimary)
-                                        : null,
-                                    onTap: () {
-                                      ref
-                                          .read(localeProvider.notifier)
-                                          .setLocale(locale);
-                                      Navigator.pop(ctx);
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                              s.languageChanged),
-                                          behavior: SnackBarBehavior.floating,
-                                        ),
-                                      );
-                                    },
-                                  )),
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: r.fs(16)),
+                                ),
+                                Text(
+                                  'Nível ${_profile?["level"] ?? 1}',
+                                  style: TextStyle(
+                                      color: Colors.grey[500],
+                                      fontSize: r.fs(12),
+                                      fontWeight: FontWeight.w700),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.chevron_right_rounded,
+                              color: Colors.grey[600]),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: r.s(24)),
+  
+                  // ============================================================
+                  // CONTA
+                  // ============================================================
+                  _SectionLabel(title: s.account),
+                  _SettingsGroup(items: [
+                    _SettingsItem(
+                      icon: Icons.person_rounded,
+                      title: 'Editar Perfil',
+                      onTap: () => context.push('/edit-profile'),
+                    ),
+                    _SettingsItem(
+                      icon: Icons.email_rounded,
+                      title: s.emailAndPassword,
+                      subtitle:
+                          SupabaseService.client.auth.currentUser?.email ?? '',
+                      onTap: () => _showChangeEmailDialog(context, s, r),
+                    ),
+                    _SettingsItem(
+                      icon: Icons.link_rounded,
+                      title: 'Contas Vinculadas',
+                      subtitle: s.googleApple,
+                      onTap: () => context.push('/settings/linked-accounts'),
+                    ),
+                  ]),
+                  SizedBox(height: r.s(20)),
+  
+                  // ============================================================
+                  // PREFERÊNCIAS
+                  // ============================================================
+                  _SectionLabel(title: s.preferences),
+                  _SettingsGroup(items: [
+                    _SettingsItem(
+                      icon: Icons.notifications_rounded,
+                      title: s.notifications,
+                      onTap: () => context.push('/settings/notifications'),
+                    ),
+                    _SettingsItem(
+                      icon: Icons.lock_rounded,
+                      title: s.privacy,
+                      onTap: () => context.push('/settings/privacy'),
+                    ),
+                    const _ThemeSelectorItem(
+                      currentMode: ThemeMode.system,
+                      onSelect: _noopThemeSelect,
+                    ),
+                    _SettingsItem(
+                      icon: Icons.language_rounded,
+                      title: s.language,
+                      subtitle: ref.watch(localeProvider).label,
+                      onTap: () {
+                        final currentLocale = ref.read(localeProvider);
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: context.surfaceColor,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.vertical(top: Radius.circular(20)),
+                          ),
+                          builder: (ctx) => Padding(
+                            padding: EdgeInsets.all(r.s(24)),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(s.language,
+                                    style: TextStyle(
+                                        color: context.nexusTheme.textPrimary,
+                                        fontSize: r.fs(18),
+                                        fontWeight: FontWeight.w800)),
+                                SizedBox(height: r.s(16)),
+                                ...AppLocale.values.map((locale) => ListTile(
+                                      leading: Text(locale.flag,
+                                          style: TextStyle(fontSize: r.fs(24))),
+                                      title: Text(locale.label,
+                                          style: TextStyle(
+                                              color: context.nexusTheme.textPrimary)),
+                                      trailing: currentLocale == locale
+                                          ? Icon(Icons.check_circle_rounded,
+                                              color: context.nexusTheme.accentPrimary)
+                                          : null,
+                                      onTap: () {
+                                        ref
+                                            .read(localeProvider.notifier)
+                                            .setLocale(locale);
+                                        Navigator.pop(ctx);
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                                s.languageChanged),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      },
+                                    )),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    _SettingsItem(
+                      icon: Icons.cleaning_services_rounded,
+                      title: s.clearCache2,
+                      subtitle: s.freeUpStorage,
+                      onTap: () async {
+                        final size = CacheService.getFormattedCacheSize();
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            backgroundColor: context.surfaceColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(r.s(16)),
+                              side: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.05)),
+                            ),
+                            title: Row(
+                              children: [
+                                Icon(Icons.cleaning_services_rounded,
+                                    color: context.nexusTheme.accentSecondary),
+                                SizedBox(width: r.s(8)),
+                                Text(s.clearCache2,
+                                    style: TextStyle(
+                                        color: context.nexusTheme.textPrimary,
+                                        fontWeight: FontWeight.w800)),
+                              ],
+                            ),
+                            content: Text('Tamanho atual do cache: $size\n\n${s.clearTempDataDesc}\nSeus dados na nuvem não serão afetados.',
+                              style: TextStyle(color: Colors.grey[500]),
+                            ),
+                            actions: [
+                              GestureDetector(
+                                onTap: () => Navigator.pop(ctx, false),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(16), vertical: r.s(8)),
+                                  child: Text(s.cancel,
+                                      style: TextStyle(
+                                          color: Colors.grey[500],
+                                          fontWeight: FontWeight.w700)),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => Navigator.pop(ctx, true),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(16), vertical: r.s(8)),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        context.nexusTheme.accentPrimary,
+                                        context.nexusTheme.accentSecondary
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(r.s(12)),
+                                  ),
+                                  child: Text(s.clear,
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800)),
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  _SettingsItem(
-                    icon: Icons.cleaning_services_rounded,
-                    title: s.clearCache2,
-                    subtitle: s.freeUpStorage,
+                        );
+                        if (confirm == true && mounted) {
+                          await CacheService.clearAll();
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(s.cacheCleared2),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                    ),
+                  ]),
+                  SizedBox(height: r.s(20)),
+  
+                  // ============================================================
+                  // GAMIFICAÇÃO
+                  // ============================================================
+                  _SectionLabel(title: s.gamification),
+                  _SettingsGroup(items: [
+                    _SettingsItem(
+                      icon: Icons.account_balance_wallet_rounded,
+                      title: s.wallet,
+                      onTap: () => context.push('/wallet'),
+                    ),
+                    _SettingsItem(
+                      icon: Icons.emoji_events_rounded,
+                      title: s.achievements,
+                      onTap: () => context.push('/achievements'),
+                    ),
+                    _SettingsItem(
+                      icon: Icons.inventory_2_rounded,
+                      title: s.inventory,
+                      onTap: () => context.push('/inventory'),
+                    ),
+                  ]),
+                  SizedBox(height: r.s(20)),
+  
+                  // ============================================================
+                  // SEGURANÇA
+                  // ============================================================
+                  _SectionLabel(title: s.security),
+                  _SettingsGroup(items: [
+                    _SettingsItem(
+                      icon: Icons.block_rounded,
+                      title: s.blockedUsers2,
+                      onTap: () => context.push('/settings/blocked-users'),
+                    ),
+                    _SettingsItem(
+                      icon: Icons.security_rounded,
+                      title: s.appPermissions2,
+                      subtitle: s.cameraPermissionsDesc,
+                      onTap: () => context.push('/settings/permissions'),
+                    ),
+                    _SettingsItem(
+                      icon: Icons.devices_rounded,
+                      title: s.connectedDevices,
+                      onTap: () => context.push('/settings/devices'),
+                    ),
+                  ]),
+                  SizedBox(height: r.s(20)),
+  
+                  // ============================================================
+                  // SUPORTE
+                  // ============================================================
+                  const _SectionLabel(title: 'Suporte'),
+                  _SettingsGroup(items: [
+                    _SettingsItem(
+                      icon: Icons.help_rounded,
+                      title: s.helpCenter,
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            backgroundColor: context.surfaceColor,
+                            title: Text(s.helpCenter,
+                                style: TextStyle(color: context.nexusTheme.textPrimary)),
+                            content: Text(
+                              'Para suporte, entre em contato:\n\n\u2022 Email: suporte@nexushub.app\n\u2022 Discord: discord.gg/nexushub\n\u2022 FAQ: nexushub.app/faq',
+                              style: TextStyle(color: context.nexusTheme.textSecondary),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: Text(s.close),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    _SettingsItem(
+                      icon: Icons.bug_report_rounded,
+                      title: s.reportBug,
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) {
+                            final bugCtrl = TextEditingController();
+                            return AlertDialog(
+                              backgroundColor: context.surfaceColor,
+                              title: Text(s.reportBug,
+                                  style: TextStyle(color: context.nexusTheme.textPrimary)),
+                              content: TextField(
+                                controller: bugCtrl,
+                                maxLines: 5,
+                                style: TextStyle(color: context.nexusTheme.textPrimary),
+                                decoration: InputDecoration(
+                                  hintText: s.describeBugHint,
+                                  hintStyle: TextStyle(color: Colors.grey[600]),
+                                  filled: true,
+                                  fillColor: context.nexusTheme.backgroundPrimary,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(r.s(12)),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: Text(s.cancel),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pop(ctx);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'Bug reportado! Obrigado pelo feedback.'),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: context.nexusTheme.accentPrimary,
+                                  ),
+                                  child: Text(s.send),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    _SettingsItem(
+                      icon: Icons.privacy_tip_rounded,
+                      title: s.privacyPolicyTitle,
+                      onTap: () => context.push('/settings/privacy-policy'),
+                    ),
+                    _SettingsItem(
+                      icon: Icons.gavel_rounded,
+                      title: s.termsOfUse,
+                      onTap: () => context.push('/settings/terms-of-use'),
+                    ),
+                    _SettingsItem(
+                      icon: Icons.info_rounded,
+                      title: 'Sobre o NexusHub',
+                      subtitle: 'v1.0.0',
+                      onTap: () {
+                        showAboutDialog(
+                          context: context,
+                          applicationName: s.nexusHub,
+                          applicationVersion: '1.0.0',
+                          applicationLegalese:
+                              '© 2025 NexusHub. Todos os direitos reservados.',
+                        );
+                      },
+                    ),
+                  ]),
+                  SizedBox(height: r.s(20)),
+  
+                  // ============================================================
+                  // DADOS
+                  // ============================================================
+                  _SectionLabel(title: s.data),
+                  _SettingsGroup(items: [
+                    _SettingsItem(
+                      icon: Icons.download_rounded,
+                      title: s.exportMyData,
+                      onTap: () => _exportData(),
+                    ),
+                    _SettingsItem(
+                      icon: Icons.delete_forever_rounded,
+                      title: s.deleteAccount2,
+                      onTap: () => _deleteAccount(),
+                    ),
+                  ]),
+                  SizedBox(height: r.s(20)),
+  
+                  // ============================================================
+                  // LOGOUT
+                  // ============================================================
+                  GestureDetector(
                     onTap: () async {
-                      final size = CacheService.getFormattedCacheSize();
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
@@ -708,20 +964,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             side: BorderSide(
                                 color: Colors.white.withValues(alpha: 0.05)),
                           ),
-                          title: Row(
-                            children: [
-                              Icon(Icons.cleaning_services_rounded,
-                                  color: context.nexusTheme.accentSecondary),
-                              SizedBox(width: r.s(8)),
-                              Text(s.clearCache2,
-                                  style: TextStyle(
-                                      color: context.nexusTheme.textPrimary,
-                                      fontWeight: FontWeight.w800)),
-                            ],
-                          ),
-                          content: Text('Tamanho atual do cache: $size\n\n${s.clearTempDataDesc}\nSeus dados na nuvem não serão afetados.',
-                            style: TextStyle(color: Colors.grey[500]),
-                          ),
+                          title: Text(s.logout,
+                              style: TextStyle(
+                                  color: context.nexusTheme.textPrimary,
+                                  fontWeight: FontWeight.w800)),
+                          content: Text(
+                              'Tem certeza que deseja sair da sua conta?',
+                              style: TextStyle(color: Colors.grey[500])),
                           actions: [
                             GestureDetector(
                               onTap: () => Navigator.pop(ctx, false),
@@ -740,15 +989,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 padding: EdgeInsets.symmetric(
                                     horizontal: r.s(16), vertical: r.s(8)),
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      context.nexusTheme.accentPrimary,
-                                      context.nexusTheme.accentSecondary
-                                    ],
-                                  ),
+                                  color: context.nexusTheme.error,
                                   borderRadius: BorderRadius.circular(r.s(12)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: context.nexusTheme.error
+                                          .withValues(alpha: 0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
-                                child: Text(s.clear,
+                                child: Text(s.logout,
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w800)),
@@ -757,286 +1009,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ],
                         ),
                       );
+  
                       if (confirm == true && mounted) {
-                        await CacheService.clearAll();
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(s.cacheCleared2),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        }
+                        await SupabaseService.client.auth.signOut();
+                        if (mounted) context.go('/login');
                       }
                     },
-                  ),
-                ]),
-                SizedBox(height: r.s(20)),
-
-                // ============================================================
-                // GAMIFICAÇÃO
-                // ============================================================
-                _SectionLabel(title: s.gamification),
-                _SettingsGroup(items: [
-                  _SettingsItem(
-                    icon: Icons.account_balance_wallet_rounded,
-                    title: s.wallet,
-                    onTap: () => context.push('/wallet'),
-                  ),
-                  _SettingsItem(
-                    icon: Icons.emoji_events_rounded,
-                    title: s.achievements,
-                    onTap: () => context.push('/achievements'),
-                  ),
-                  _SettingsItem(
-                    icon: Icons.inventory_2_rounded,
-                    title: s.inventory,
-                    onTap: () => context.push('/inventory'),
-                  ),
-                ]),
-                SizedBox(height: r.s(20)),
-
-                // ============================================================
-                // SEGURANÇA
-                // ============================================================
-                _SectionLabel(title: s.security),
-                _SettingsGroup(items: [
-                  _SettingsItem(
-                    icon: Icons.block_rounded,
-                    title: s.blockedUsers2,
-                    onTap: () => context.push('/settings/blocked-users'),
-                  ),
-                  _SettingsItem(
-                    icon: Icons.security_rounded,
-                    title: s.appPermissions2,
-                    subtitle: s.cameraPermissionsDesc,
-                    onTap: () => context.push('/settings/permissions'),
-                  ),
-                  _SettingsItem(
-                    icon: Icons.devices_rounded,
-                    title: s.connectedDevices,
-                    onTap: () => context.push('/settings/devices'),
-                  ),
-                ]),
-                SizedBox(height: r.s(20)),
-
-                // ============================================================
-                // SUPORTE
-                // ============================================================
-                const _SectionLabel(title: 'Suporte'),
-                _SettingsGroup(items: [
-                  _SettingsItem(
-                    icon: Icons.help_rounded,
-                    title: s.helpCenter,
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          backgroundColor: context.surfaceColor,
-                          title: Text(s.helpCenter,
-                              style: TextStyle(color: context.nexusTheme.textPrimary)),
-                          content: Text(
-                            'Para suporte, entre em contato:\n\n\u2022 Email: suporte@nexushub.app\n\u2022 Discord: discord.gg/nexushub\n\u2022 FAQ: nexushub.app/faq',
-                            style: TextStyle(color: context.nexusTheme.textSecondary),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx),
-                              child: Text(s.close),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  _SettingsItem(
-                    icon: Icons.bug_report_rounded,
-                    title: s.reportBug,
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (ctx) {
-                          final bugCtrl = TextEditingController();
-                          return AlertDialog(
-                            backgroundColor: context.surfaceColor,
-                            title: Text(s.reportBug,
-                                style: TextStyle(color: context.nexusTheme.textPrimary)),
-                            content: TextField(
-                              controller: bugCtrl,
-                              maxLines: 5,
-                              style: TextStyle(color: context.nexusTheme.textPrimary),
-                              decoration: InputDecoration(
-                                hintText: s.describeBugHint,
-                                hintStyle: TextStyle(color: Colors.grey[600]),
-                                filled: true,
-                                fillColor: context.nexusTheme.backgroundPrimary,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(r.s(12)),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx),
-                                child: Text(s.cancel),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(ctx);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          'Bug reportado! Obrigado pelo feedback.'),
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: context.nexusTheme.accentPrimary,
-                                ),
-                                child: Text(s.send),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  _SettingsItem(
-                    icon: Icons.privacy_tip_rounded,
-                    title: s.privacyPolicyTitle,
-                    onTap: () => context.push('/settings/privacy-policy'),
-                  ),
-                  _SettingsItem(
-                    icon: Icons.gavel_rounded,
-                    title: s.termsOfUse,
-                    onTap: () => context.push('/settings/terms-of-use'),
-                  ),
-                  _SettingsItem(
-                    icon: Icons.info_rounded,
-                    title: 'Sobre o NexusHub',
-                    subtitle: 'v1.0.0',
-                    onTap: () {
-                      showAboutDialog(
-                        context: context,
-                        applicationName: s.nexusHub,
-                        applicationVersion: '1.0.0',
-                        applicationLegalese:
-                            '© 2025 NexusHub. Todos os direitos reservados.',
-                      );
-                    },
-                  ),
-                ]),
-                SizedBox(height: r.s(20)),
-
-                // ============================================================
-                // DADOS
-                // ============================================================
-                _SectionLabel(title: s.data),
-                _SettingsGroup(items: [
-                  _SettingsItem(
-                    icon: Icons.download_rounded,
-                    title: s.exportMyData,
-                    onTap: () => _exportData(),
-                  ),
-                  _SettingsItem(
-                    icon: Icons.delete_forever_rounded,
-                    title: s.deleteAccount2,
-                    onTap: () => _deleteAccount(),
-                  ),
-                ]),
-                SizedBox(height: r.s(20)),
-
-                // ============================================================
-                // LOGOUT
-                // ============================================================
-                GestureDetector(
-                  onTap: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        backgroundColor: context.surfaceColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(r.s(16)),
-                          side: BorderSide(
-                              color: Colors.white.withValues(alpha: 0.05)),
-                        ),
-                        title: Text(s.logout,
-                            style: TextStyle(
-                                color: context.nexusTheme.textPrimary,
-                                fontWeight: FontWeight.w800)),
-                        content: Text(
-                            'Tem certeza que deseja sair da sua conta?',
-                            style: TextStyle(color: Colors.grey[500])),
-                        actions: [
-                          GestureDetector(
-                            onTap: () => Navigator.pop(ctx, false),
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: r.s(16), vertical: r.s(8)),
-                              child: Text(s.cancel,
-                                  style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontWeight: FontWeight.w700)),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () => Navigator.pop(ctx, true),
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: r.s(16), vertical: r.s(8)),
-                              decoration: BoxDecoration(
-                                color: context.nexusTheme.error,
-                                borderRadius: BorderRadius.circular(r.s(12)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: context.nexusTheme.error
-                                        .withValues(alpha: 0.3),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Text(s.logout,
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w800)),
-                            ),
-                          ),
+                    child: Container(
+                      width: double.infinity,
+                      height: r.s(48),
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(r.s(12)),
+                        border: Border.all(color: context.nexusTheme.error),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.logout_rounded, color: context.nexusTheme.error),
+                          SizedBox(width: r.s(8)),
+                          Text(s.logOutAction,
+                              style: TextStyle(
+                                  color: context.nexusTheme.error,
+                                  fontWeight: FontWeight.w800)),
                         ],
                       ),
-                    );
-
-                    if (confirm == true && mounted) {
-                      await SupabaseService.client.auth.signOut();
-                      if (mounted) context.go('/login');
-                    }
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    height: r.s(48),
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(r.s(12)),
-                      border: Border.all(color: context.nexusTheme.error),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.logout_rounded, color: context.nexusTheme.error),
-                        SizedBox(width: r.s(8)),
-                        Text(s.logOutAction,
-                            style: TextStyle(
-                                color: context.nexusTheme.error,
-                                fontWeight: FontWeight.w800)),
-                      ],
                     ),
                   ),
-                ),
-                SizedBox(height: r.s(32)),
-              ],
-            ),
+                  SizedBox(height: r.s(32)),
+                ],
+              )
+      ),
     );
   }
 }

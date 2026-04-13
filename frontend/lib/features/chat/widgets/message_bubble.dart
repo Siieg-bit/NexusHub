@@ -15,6 +15,10 @@ import 'chat_bubble.dart' show ChatBubble;
 import 'voice_recorder.dart' show VoiceNotePlayer;
 import '../../../core/widgets/image_viewer.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../core/widgets/linkified_text.dart';
+import 'form_message_bubble.dart';
+import '../../../core/widgets/simple_link_preview.dart';
 
 /// ============================================================================
 /// MESSAGE BUBBLE (suporta todos os 19+ tipos) — Estilo Amino
@@ -1018,45 +1022,46 @@ class MessageBubble extends ConsumerWidget {
       return container;
     }
 
-    // Link (share_url)
+    // Link (share_url) — clicável com preview
     if (type == 'share_url' || message.sharedUrl != null) {
       final url = message.sharedUrl ?? message.content ?? '';
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: EdgeInsets.all(r.s(10)),
-            decoration: BoxDecoration(
-              color: textColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(r.s(8)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.link_rounded, color: textColor, size: r.s(16)),
-                SizedBox(width: r.s(8)),
-                Flexible(
-                  child: Text(
-                    url,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: r.fs(13),
-                      decoration: TextDecoration.underline,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
+          GestureDetector(
+            onTap: () async {
+              final uri = Uri.tryParse(url);
+              if (uri != null) {
+                // Verificar se é link interno do app
+                final host = uri.host;
+                if (host.isEmpty || host.contains('aminexus') || host.contains('nexushub')) {
+                  final path = uri.path;
+                  if (path.isNotEmpty && context.mounted) {
+                    context.push(path);
+                    return;
+                  }
+                }
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              }
+            },
+            child: SimpleLinkPreview(url: url),
           ),
           if (message.content != null &&
               message.content != url &&
               message.content!.isNotEmpty)
             Padding(
               padding: EdgeInsets.only(top: r.s(4)),
-              child: Text(message.content!,
-                  style: TextStyle(color: textColor, fontSize: r.fs(14))),
+              child: LinkifiedText(
+                text: message.content!,
+                style: TextStyle(color: textColor, fontSize: r.fs(14)),
+                linkStyle: TextStyle(
+                  color: context.nexusTheme.accentSecondary,
+                  fontSize: r.fs(14),
+                  decoration: TextDecoration.underline,
+                ),
+              ),
             ),
         ],
       );
@@ -1064,21 +1069,26 @@ class MessageBubble extends ConsumerWidget {
 
     // Form (tipo 'form' com extra_data contendo form_id)
     if (type == 'form' && message.extraData != null) {
-      try {
-        final formId = message.extraData?['form_id'] as String?;
-        if (formId != null) {
-          // Buscar dados do formulário
-          final formData = await SupabaseService.rpc(
-            'get_chat_form_responses',
-            params: {'p_form_id': formId},
-          );
-          
-          // Retornar widget de formulário
-          // Nota: Este é um placeholder, a implementação real precisa ser async
-          return const SizedBox.shrink();
-        }
-      } catch (e) {
-        // Ignorar erro
+      final formId = message.extraData?['form_id'] as String?;
+      final formTitle = message.extraData?['form_title'] as String? ?? 'Formulário';
+      final formDesc = message.extraData?['form_description'] as String?;
+      final fieldsRaw = message.extraData?['fields'];
+      final allowMultiple = message.extraData?['allow_multiple'] as bool? ?? false;
+
+      List<Map<String, dynamic>> fields = [];
+      if (fieldsRaw is List) {
+        fields = fieldsRaw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+
+      if (formId != null && fields.isNotEmpty) {
+        return FormMessageBubble(
+          formId: formId,
+          formTitle: formTitle,
+          formDescription: formDesc,
+          fields: fields,
+          isMe: isMe,
+          allowMultipleResponses: allowMultiple,
+        );
       }
     }
 
@@ -1241,10 +1251,15 @@ class MessageBubble extends ConsumerWidget {
       );
     }
 
-    // Default: texto simples
-    return Text(
-      message.content ?? '',
+    // Default: texto simples com links clicáveis
+    return LinkifiedText(
+      text: message.content ?? '',
       style: TextStyle(color: textColor, fontSize: r.fs(14)),
+      linkStyle: TextStyle(
+        color: context.nexusTheme.accentSecondary,
+        fontSize: r.fs(14),
+        decoration: TextDecoration.underline,
+      ),
     );
   }
 

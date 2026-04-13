@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'dart:io';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Tela para criação de nova comunidade.
 class CreateCommunityScreen extends ConsumerStatefulWidget {
@@ -25,6 +28,43 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
   String _selectedColor = '#6C5CE7';
   String _selectedLanguage = 'pt-BR';
   bool _isLoading = false;
+
+  // Upload de capa
+  File? _coverImageFile;
+  String? _coverImageUrl;
+  bool _isUploadingCover = false;
+
+  Future<void> _pickCoverImage() async {
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1200,
+        maxHeight: 400,
+        imageQuality: 85,
+      );
+      if (picked == null || !mounted) return;
+      setState(() {
+        _coverImageFile = File(picked.path);
+        _isUploadingCover = true;
+      });
+      final bytes = await _coverImageFile!.readAsBytes();
+      final fileName =
+          'community_covers/${DateTime.now().millisecondsSinceEpoch}_cover.jpg';
+      await SupabaseService.client.storage
+          .from('post-media')
+          .uploadBinary(fileName, bytes,
+              fileOptions: const FileOptions(contentType: 'image/jpeg'));
+      final url = SupabaseService.client.storage
+          .from('post-media')
+          .getPublicUrl(fileName);
+      if (mounted) setState(() => _coverImageUrl = url);
+    } catch (e) {
+      debugPrint('[create_community] cover upload error: $e');
+    } finally {
+      if (mounted) setState(() => _isUploadingCover = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -51,6 +91,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
           'p_join_type': 'open',
           'p_theme_color': _selectedColor,
           'p_primary_language': _selectedLanguage,
+          'p_cover_image_url': _coverImageUrl,
         },
       );
 
@@ -153,193 +194,233 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(r.s(20)),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Preview do banner com cor selecionada
-              Container(
-                height: r.s(120),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      _parseColor(_selectedColor),
-                      _parseColor(_selectedColor).withValues(alpha: 0.5),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(r.s(16)),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.05),
-                  ),
-                ),
-                child: Center(
-                  child: Icon(Icons.camera_alt_rounded,
-                      size: r.s(40), color: Colors.white54),
-                ),
-              ),
-              SizedBox(height: r.s(24)),
-
-              // Nome
-              _buildTextField(
-                controller: _nameController,
-                label: s.communityNameRequired2,
-                hint: 'Ex: Anime Brasil, K-Pop Universe...',
-                icon: Icons.groups_rounded,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return s.nameRequired;
-                  }
-                  if (value.trim().length < 3) return s.min3Chars;
-                  return null;
-                },
-              ),
-              SizedBox(height: r.s(16)),
-
-              // Tagline
-              _buildTextField(
-                controller: _taglineController,
-                label: s.taglineLabel,
-                hint: 'Uma frase curta sobre a comunidade',
-                icon: Icons.short_text_rounded,
-                maxLength: 100,
-              ),
-              SizedBox(height: r.s(16)),
-
-              // Descrição
-              _buildTextField(
-                controller: _descriptionController,
-                label: s.communityDescription,
-                hint: 'Descreva sua comunidade em detalhes...',
-                icon: Icons.description_rounded,
-                maxLines: 4,
-                maxLength: 1000,
-              ),
-              SizedBox(height: r.s(24)),
-
-              // Cor do tema
-              Text(
-                s.themeColor,
-                style: TextStyle(
-                  color: context.nexusTheme.textPrimary,
-                  fontSize: r.fs(16),
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              SizedBox(height: r.s(12)),
-              Container(
-                padding: EdgeInsets.all(r.s(16)),
-                decoration: BoxDecoration(
-                  color: context.surfaceColor,
-                  borderRadius: BorderRadius.circular(r.s(16)),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.05),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    ColorPickerButton(
-                      color: _parseColor(_selectedColor),
-                      title: s.themeColor,
-                      size: 48,
-                      onColorChanged: (color) {
-                        setState(() {
-                          _selectedColor = '#${color.r.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${color.g.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${color.b.round().toRadixString(16).padLeft(2, '0').toUpperCase()}';
-                        });
-                      },
-                    ),
-                    SizedBox(width: r.s(16)),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Cor selecionada',
-                            style: TextStyle(
-                              color: Colors.white54,
-                              fontSize: r.fs(12),
-                            ),
-                          ),
-                          SizedBox(height: r.s(4)),
-                          Text(
-                            _selectedColor.toUpperCase(),
-                            style: TextStyle(
-                              color: _parseColor(_selectedColor),
-                              fontSize: r.fs(15),
-                              fontWeight: FontWeight.w700,
-                              fontFamily: 'monospace',
-                            ),
-                          ),
-                          SizedBox(height: r.s(4)),
-                          Text(
-                            'Toque no círculo para escolher',
-                            style: TextStyle(
-                              color: Colors.white30,
-                              fontSize: r.fs(11),
-                            ),
-                          ),
-                        ],
+      body: SafeArea(
+        bottom: true,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(r.s(20)),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Preview do banner com capa ou cor selecionada
+                GestureDetector(
+                  onTap: _isUploadingCover ? null : _pickCoverImage,
+                  child: Container(
+                    height: r.s(120),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: _coverImageUrl == null && _coverImageFile == null
+                          ? LinearGradient(
+                              colors: [
+                                _parseColor(_selectedColor),
+                                _parseColor(_selectedColor).withValues(alpha: 0.5),
+                              ],
+                            )
+                          : null,
+                      image: _coverImageFile != null
+                          ? DecorationImage(
+                              image: FileImage(_coverImageFile!),
+                              fit: BoxFit.cover,
+                            )
+                          : _coverImageUrl != null
+                              ? DecorationImage(
+                                  image: NetworkImage(_coverImageUrl!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                      borderRadius: BorderRadius.circular(r.s(16)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.05),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              SizedBox(height: r.s(24)),
-
-              // Idioma
-              Text(
-                s.primaryLanguage,
-                style: TextStyle(
-                  color: context.nexusTheme.textPrimary,
-                  fontSize: r.fs(16),
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              SizedBox(height: r.s(12)),
-              Container(
-                decoration: BoxDecoration(
-                  color: context.surfaceColor,
-                  borderRadius: BorderRadius.circular(r.s(16)),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.05),
+                    child: _isUploadingCover
+                        ? Center(
+                            child: CircularProgressIndicator(
+                              color: context.nexusTheme.accentSecondary,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.camera_alt_rounded,
+                                    size: r.s(32), color: Colors.white70),
+                                SizedBox(height: r.s(4)),
+                                Text(
+                                  _coverImageUrl != null ? 'Trocar capa' : 'Adicionar capa',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: r.fs(12),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                   ),
                 ),
-                child: DropdownButtonFormField<String>(
-                  value: _selectedLanguage,
-                  dropdownColor: context.surfaceColor,
-                  style: TextStyle(color: context.nexusTheme.textPrimary),
-                  decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.language_rounded,
-                        color: context.nexusTheme.accentSecondary),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(r.s(16)),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                        horizontal: r.s(16), vertical: r.s(16)),
-                  ),
-                  items:  [
-                    DropdownMenuItem(
-                        value: 'pt-BR', child: Text(s.portugueseBrazil)),
-                    DropdownMenuItem(value: 'en', child: Text('English')),
-                    DropdownMenuItem(value: 'es', child: Text(s.spanishLang)),
-                    DropdownMenuItem(value: 'ja', child: Text('日本語')),
-                    DropdownMenuItem(value: 'ko', child: Text('한국어')),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => _selectedLanguage = value);
+                SizedBox(height: r.s(24)),
+  
+                // Nome
+                _buildTextField(
+                  controller: _nameController,
+                  label: s.communityNameRequired2,
+                  hint: 'Ex: Anime Brasil, K-Pop Universe...',
+                  icon: Icons.groups_rounded,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return s.nameRequired;
                     }
+                    if (value.trim().length < 3) return s.min3Chars;
+                    return null;
                   },
                 ),
-              ),
-              SizedBox(height: r.s(40)),
-            ],
+                SizedBox(height: r.s(16)),
+  
+                // Tagline
+                _buildTextField(
+                  controller: _taglineController,
+                  label: s.taglineLabel,
+                  hint: 'Uma frase curta sobre a comunidade',
+                  icon: Icons.short_text_rounded,
+                  maxLength: 100,
+                ),
+                SizedBox(height: r.s(16)),
+  
+                // Descrição
+                _buildTextField(
+                  controller: _descriptionController,
+                  label: s.communityDescription,
+                  hint: 'Descreva sua comunidade em detalhes...',
+                  icon: Icons.description_rounded,
+                  maxLines: 4,
+                  maxLength: 1000,
+                ),
+                SizedBox(height: r.s(24)),
+  
+                // Cor do tema
+                Text(
+                  s.themeColor,
+                  style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(16),
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: r.s(12)),
+                Container(
+                  padding: EdgeInsets.all(r.s(16)),
+                  decoration: BoxDecoration(
+                    color: context.surfaceColor,
+                    borderRadius: BorderRadius.circular(r.s(16)),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.05),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      ColorPickerButton(
+                        color: _parseColor(_selectedColor),
+                        title: s.themeColor,
+                        size: 48,
+                        onColorChanged: (color) {
+                          setState(() {
+                            _selectedColor = '#${color.r.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${color.g.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${color.b.round().toRadixString(16).padLeft(2, '0').toUpperCase()}';
+                          });
+                        },
+                      ),
+                      SizedBox(width: r.s(16)),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Cor selecionada',
+                              style: TextStyle(
+                                color: Colors.white54,
+                                fontSize: r.fs(12),
+                              ),
+                            ),
+                            SizedBox(height: r.s(4)),
+                            Text(
+                              _selectedColor.toUpperCase(),
+                              style: TextStyle(
+                                color: _parseColor(_selectedColor),
+                                fontSize: r.fs(15),
+                                fontWeight: FontWeight.w700,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                            SizedBox(height: r.s(4)),
+                            Text(
+                              'Toque no círculo para escolher',
+                              style: TextStyle(
+                                color: Colors.white30,
+                                fontSize: r.fs(11),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: r.s(24)),
+  
+                // Idioma
+                Text(
+                  s.primaryLanguage,
+                  style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(16),
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: r.s(12)),
+                Container(
+                  decoration: BoxDecoration(
+                    color: context.surfaceColor,
+                    borderRadius: BorderRadius.circular(r.s(16)),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.05),
+                    ),
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedLanguage,
+                    dropdownColor: context.surfaceColor,
+                    style: TextStyle(color: context.nexusTheme.textPrimary),
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(Icons.language_rounded,
+                          color: context.nexusTheme.accentSecondary),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(r.s(16)),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: r.s(16), vertical: r.s(16)),
+                    ),
+                    items:  [
+                      DropdownMenuItem(
+                          value: 'pt-BR', child: Text(s.portugueseBrazil)),
+                      DropdownMenuItem(value: 'en', child: Text('English')),
+                      DropdownMenuItem(value: 'es', child: Text(s.spanishLang)),
+                      DropdownMenuItem(value: 'ja', child: Text('日本語')),
+                      DropdownMenuItem(value: 'ko', child: Text('한국어')),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() => _selectedLanguage = value);
+                      }
+                    },
+                  ),
+                ),
+                SizedBox(height: r.s(40)),
+              ],
+            ),
           ),
-        ),
+        )
       ),
     );
   }

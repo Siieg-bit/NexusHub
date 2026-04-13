@@ -337,256 +337,259 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
                 fontWeight: FontWeight.w800, color: context.nexusTheme.textPrimary)),
         iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
       ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
-          : SingleChildScrollView(
-              padding: EdgeInsets.all(r.s(16)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Target user info
-                  if (_targetUser != null)
-                    Container(
-                      padding: EdgeInsets.all(r.s(16)),
-                      decoration: BoxDecoration(
-                        color: context.surfaceColor,
-                        borderRadius: BorderRadius.circular(r.s(16)),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.05)),
-                      ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundColor: context.nexusTheme.backgroundPrimary,
-                            backgroundImage: _targetUser?['icon_url'] != null
-                                ? CachedNetworkImageProvider(
-                                    _targetUser?['icon_url'] as String? ?? '')
-                                : null,
-                            child: _targetUser?['icon_url'] == null
-                                ? Icon(Icons.person_rounded,
-                                    color: context.nexusTheme.textPrimary)
-                                : null,
-                          ),
-                          SizedBox(width: r.s(12)),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _targetUser?['nickname'] as String? ??
-                                    s.user,
-                                style: TextStyle(
-                                    color: context.nexusTheme.textPrimary,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: r.fs(16)),
-                              ),
-                              Text(
-                                s.levelLabel,
-                                style: TextStyle(
-                                    color: Colors.grey[500],
-                                    fontSize: r.fs(12)),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  SizedBox(height: r.s(20)),
-
-                  // Seleção de ação
-                  Text(s.actionType,
-                      style: TextStyle(
-                          color: context.nexusTheme.textPrimary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: r.fs(16))),
-                  SizedBox(height: r.s(12)),
-                  ..._getActions(s).map((action) {
-                    final id = (action['id'] as String?) ?? '';
-                    final isSelected = _selectedAction == id;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedAction = id),
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: r.s(8)),
-                        padding: EdgeInsets.all(r.s(14)),
+      body: SafeArea(
+        bottom: true,
+        child: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
+            : SingleChildScrollView(
+                padding: EdgeInsets.all(r.s(16)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Target user info
+                    if (_targetUser != null)
+                      Container(
+                        padding: EdgeInsets.all(r.s(16)),
                         decoration: BoxDecoration(
-                          color: isSelected
-                              ? Color(action['color'] as int? ?? 0)
-                                  .withValues(alpha: 0.1)
-                              : context.surfaceColor,
+                          color: context.surfaceColor,
                           borderRadius: BorderRadius.circular(r.s(16)),
                           border: Border.all(
-                            color: isSelected
-                                ? Color(action['color'] as int? ?? 0)
-                                    .withValues(alpha: 0.5)
-                                : Colors.white.withValues(alpha: 0.05),
-                          ),
+                              color: Colors.white.withValues(alpha: 0.05)),
                         ),
                         child: Row(
                           children: [
-                            Icon(action['icon'] as IconData,
-                                color: Color(action['color'] as int? ?? 0),
-                                size: r.s(22)),
-                            SizedBox(width: r.s(12)),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    action['label'] as String? ?? '',
-                                    style: TextStyle(
-                                        color: isSelected
-                                            ? Color(
-                                                action['color'] as int? ?? 0)
-                                            : context.nexusTheme.textPrimary,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: r.fs(14)),
-                                  ),
-                                  Text(
-                                    action['description'] as String? ?? '',
-                                    style: TextStyle(
-                                        color: Colors.grey[500],
-                                        fontSize: r.fs(11)),
-                                  ),
-                                ],
-                              ),
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: context.nexusTheme.backgroundPrimary,
+                              backgroundImage: _targetUser?['icon_url'] != null
+                                  ? CachedNetworkImageProvider(
+                                      _targetUser?['icon_url'] as String? ?? '')
+                                  : null,
+                              child: _targetUser?['icon_url'] == null
+                                  ? Icon(Icons.person_rounded,
+                                      color: context.nexusTheme.textPrimary)
+                                  : null,
                             ),
-                            if (isSelected)
-                              Icon(Icons.check_circle_rounded,
-                                  color: Color(action['color'] as int? ?? 0)),
+                            SizedBox(width: r.s(12)),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _targetUser?['nickname'] as String? ??
+                                      s.user,
+                                  style: TextStyle(
+                                      color: context.nexusTheme.textPrimary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: r.fs(16)),
+                                ),
+                                Text(
+                                  s.levelLabel,
+                                  style: TextStyle(
+                                      color: Colors.grey[500],
+                                      fontSize: r.fs(12)),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
-                    );
-                  }),
-
-
-                  // Duração (para ban/mute)
-                  if (_selectedAction == 'ban' ||
-                      _selectedAction == 'mute') ...[
+                    SizedBox(height: r.s(20)),
+  
+                    // Seleção de ação
+                    Text(s.actionType,
+                        style: TextStyle(
+                            color: context.nexusTheme.textPrimary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: r.fs(16))),
+                    SizedBox(height: r.s(12)),
+                    ..._getActions(s).map((action) {
+                      final id = (action['id'] as String?) ?? '';
+                      final isSelected = _selectedAction == id;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedAction = id),
+                        child: Container(
+                          margin: EdgeInsets.only(bottom: r.s(8)),
+                          padding: EdgeInsets.all(r.s(14)),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Color(action['color'] as int? ?? 0)
+                                    .withValues(alpha: 0.1)
+                                : context.surfaceColor,
+                            borderRadius: BorderRadius.circular(r.s(16)),
+                            border: Border.all(
+                              color: isSelected
+                                  ? Color(action['color'] as int? ?? 0)
+                                      .withValues(alpha: 0.5)
+                                  : Colors.white.withValues(alpha: 0.05),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(action['icon'] as IconData,
+                                  color: Color(action['color'] as int? ?? 0),
+                                  size: r.s(22)),
+                              SizedBox(width: r.s(12)),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      action['label'] as String? ?? '',
+                                      style: TextStyle(
+                                          color: isSelected
+                                              ? Color(
+                                                  action['color'] as int? ?? 0)
+                                              : context.nexusTheme.textPrimary,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: r.fs(14)),
+                                    ),
+                                    Text(
+                                      action['description'] as String? ?? '',
+                                      style: TextStyle(
+                                          color: Colors.grey[500],
+                                          fontSize: r.fs(11)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (isSelected)
+                                Icon(Icons.check_circle_rounded,
+                                    color: Color(action['color'] as int? ?? 0)),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+  
+  
+                    // Duração (para ban/mute)
+                    if (_selectedAction == 'ban' ||
+                        _selectedAction == 'mute') ...[
+                      SizedBox(height: r.s(16)),
+                      Text(s.duration,
+                          style: TextStyle(
+                              color: context.nexusTheme.textPrimary,
+                              fontWeight: FontWeight.w800,
+                              fontSize: r.fs(16))),
+                      SizedBox(height: r.s(8)),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _DurationChip(
+                            label: s.oneHour,
+                            hours: 1,
+                            selected: _banDurationHours,
+                            onTap: () => setState(() => _banDurationHours = 1),
+                          ),
+                          _DurationChip(
+                            label: s.sixHours,
+                            hours: 6,
+                            selected: _banDurationHours,
+                            onTap: () => setState(() => _banDurationHours = 6),
+                          ),
+                          _DurationChip(
+                            label: s.twentyFourHours,
+                            hours: 24,
+                            selected: _banDurationHours,
+                            onTap: () => setState(() => _banDurationHours = 24),
+                          ),
+                          _DurationChip(
+                            label: s.sevenDays,
+                            hours: 168,
+                            selected: _banDurationHours,
+                            onTap: () => setState(() => _banDurationHours = 168),
+                          ),
+                          _DurationChip(
+                            label: s.thirtyDays,
+                            hours: 720,
+                            selected: _banDurationHours,
+                            onTap: () => setState(() => _banDurationHours = 720),
+                          ),
+                          _DurationChip(
+                            label: s.permanent,
+                            hours: 87600,
+                            selected: _banDurationHours,
+                            onTap: () =>
+                                setState(() => _banDurationHours = 87600),
+                          ),
+                        ],
+                      ),
+                    ],
+  
+                    // Motivo
                     SizedBox(height: r.s(16)),
-                    Text(s.duration,
+                    Text(s.reason,
                         style: TextStyle(
                             color: context.nexusTheme.textPrimary,
                             fontWeight: FontWeight.w800,
                             fontSize: r.fs(16))),
                     SizedBox(height: r.s(8)),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _DurationChip(
-                          label: s.oneHour,
-                          hours: 1,
-                          selected: _banDurationHours,
-                          onTap: () => setState(() => _banDurationHours = 1),
+                    TextField(
+                      controller: _reasonController,
+                      maxLines: 3,
+                      style: TextStyle(color: context.nexusTheme.textPrimary),
+                      decoration: InputDecoration(
+                        hintText: s.describeActionReason,
+                        hintStyle: TextStyle(color: Colors.grey[600]),
+                        filled: true,
+                        fillColor: context.surfaceColor,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(r.s(16)),
+                          borderSide: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.05)),
                         ),
-                        _DurationChip(
-                          label: s.sixHours,
-                          hours: 6,
-                          selected: _banDurationHours,
-                          onTap: () => setState(() => _banDurationHours = 6),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(r.s(16)),
+                          borderSide: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.05)),
                         ),
-                        _DurationChip(
-                          label: s.twentyFourHours,
-                          hours: 24,
-                          selected: _banDurationHours,
-                          onTap: () => setState(() => _banDurationHours = 24),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(r.s(16)),
+                          borderSide:
+                              BorderSide(color: context.nexusTheme.accentPrimary),
                         ),
-                        _DurationChip(
-                          label: s.sevenDays,
-                          hours: 168,
-                          selected: _banDurationHours,
-                          onTap: () => setState(() => _banDurationHours = 168),
+                      ),
+                    ),
+                    SizedBox(height: r.s(24)),
+  
+                    // Botão executar
+                    GestureDetector(
+                      onTap: _executeAction,
+                      child: Container(
+                        width: double.infinity,
+                        height: r.s(52),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [context.nexusTheme.error, Color(0xFFD32F2F)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(r.s(16)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: context.nexusTheme.error.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        _DurationChip(
-                          label: s.thirtyDays,
-                          hours: 720,
-                          selected: _banDurationHours,
-                          onTap: () => setState(() => _banDurationHours = 720),
+                        alignment: Alignment.center,
+                        child: Text(
+                          s.executeAction2,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: r.fs(16),
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                        _DurationChip(
-                          label: s.permanent,
-                          hours: 87600,
-                          selected: _banDurationHours,
-                          onTap: () =>
-                              setState(() => _banDurationHours = 87600),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
-
-                  // Motivo
-                  SizedBox(height: r.s(16)),
-                  Text(s.reason,
-                      style: TextStyle(
-                          color: context.nexusTheme.textPrimary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: r.fs(16))),
-                  SizedBox(height: r.s(8)),
-                  TextField(
-                    controller: _reasonController,
-                    maxLines: 3,
-                    style: TextStyle(color: context.nexusTheme.textPrimary),
-                    decoration: InputDecoration(
-                      hintText: s.describeActionReason,
-                      hintStyle: TextStyle(color: Colors.grey[600]),
-                      filled: true,
-                      fillColor: context.surfaceColor,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(r.s(16)),
-                        borderSide: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.05)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(r.s(16)),
-                        borderSide: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.05)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(r.s(16)),
-                        borderSide:
-                            BorderSide(color: context.nexusTheme.accentPrimary),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: r.s(24)),
-
-                  // Botão executar
-                  GestureDetector(
-                    onTap: _executeAction,
-                    child: Container(
-                      width: double.infinity,
-                      height: r.s(52),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [context.nexusTheme.error, Color(0xFFD32F2F)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(r.s(16)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: context.nexusTheme.error.withValues(alpha: 0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        s.executeAction2,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: r.fs(16),
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                ),
+              )
+      ),
     );
   }
 }

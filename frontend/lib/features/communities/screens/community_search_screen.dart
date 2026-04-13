@@ -331,21 +331,24 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
           ],
         ),
       ),
-      body: Stack(
-        children: [
-          TabBarView(
-            controller: _tabController,
-            children: [
-              _buildPostsTab(r),
-              _buildMembersTab(r),
-              _buildWikiTab(r),
-            ],
-          ),
-          // Overlay de sugestões
-          if (_showSuggestions &&
-              (_suggestions.isNotEmpty || _recentSearches.isNotEmpty))
-            _buildSuggestionsOverlay(r),
-        ],
+      body: SafeArea(
+        bottom: true,
+        child: Stack(
+          children: [
+            TabBarView(
+              controller: _tabController,
+              children: [
+                _buildPostsTab(r),
+                _buildMembersTab(r),
+                _buildWikiTab(r),
+              ],
+            ),
+            // Overlay de sugestões
+            if (_showSuggestions &&
+                (_suggestions.isNotEmpty || _recentSearches.isNotEmpty))
+              _buildSuggestionsOverlay(r),
+          ],
+        )
       ),
     );
   }

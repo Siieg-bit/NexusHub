@@ -239,47 +239,50 @@ class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScree
           ],
         ),
       ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
-          : _pendingEntries.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.check_circle_outline_rounded,
-                          size: r.s(64),
-                          color: context.nexusTheme.success.withValues(alpha: 0.5)),
-                      SizedBox(height: r.s(16)),
-                      Text(s.noPendingWiki,
-                          style: TextStyle(
-                              color: context.nexusTheme.textSecondary,
-                              fontSize: r.fs(16),
-                              fontWeight: FontWeight.w600)),
-                      SizedBox(height: r.s(8)),
-                      Text(s.allSubmissionsReviewed,
-                          style: TextStyle(
-                              color: context.nexusTheme.textHint, fontSize: r.fs(14))),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadPending,
-                  color: context.nexusTheme.accentPrimary,
-                  child: ListView.builder(
-                    padding: EdgeInsets.all(r.s(16)),
-                    itemCount: _pendingEntries.length,
-                    itemBuilder: (context, index) {
-                      final entry = _pendingEntries[index];
-                      return _PendingWikiCard(
-                        entry: entry,
-                        onApprove: () => _reviewEntry(entry['id'], 'approve'),
-                        onReject: () => _reviewEntry(entry['id'], 'reject'),
-                        onTap: () => context.push('/wiki/${entry["id"]}'),
-                      );
-                    },
-                  ),
-                ),
+      body: SafeArea(
+        bottom: true,
+        child: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
+            : _pendingEntries.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle_outline_rounded,
+                            size: r.s(64),
+                            color: context.nexusTheme.success.withValues(alpha: 0.5)),
+                        SizedBox(height: r.s(16)),
+                        Text(s.noPendingWiki,
+                            style: TextStyle(
+                                color: context.nexusTheme.textSecondary,
+                                fontSize: r.fs(16),
+                                fontWeight: FontWeight.w600)),
+                        SizedBox(height: r.s(8)),
+                        Text(s.allSubmissionsReviewed,
+                            style: TextStyle(
+                                color: context.nexusTheme.textHint, fontSize: r.fs(14))),
+                      ],
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: _loadPending,
+                    color: context.nexusTheme.accentPrimary,
+                    child: ListView.builder(
+                      padding: EdgeInsets.all(r.s(16)),
+                      itemCount: _pendingEntries.length,
+                      itemBuilder: (context, index) {
+                        final entry = _pendingEntries[index];
+                        return _PendingWikiCard(
+                          entry: entry,
+                          onApprove: () => _reviewEntry(entry['id'], 'approve'),
+                          onReject: () => _reviewEntry(entry['id'], 'reject'),
+                          onTap: () => context.push('/wiki/${entry["id"]}'),
+                        );
+                      },
+                    ),
+                  )
+      ),
     );
   }
 }

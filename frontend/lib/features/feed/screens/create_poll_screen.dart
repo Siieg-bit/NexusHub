@@ -537,267 +537,270 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
           SizedBox(width: r.s(4)),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(r.s(16)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Ícone decorativo
-            Center(
-              child: Container(
-                width: r.s(64),
-                height: r.s(64),
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
+      body: SafeArea(
+        bottom: true,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(r.s(16)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Ícone decorativo
+              Center(
+                child: Container(
+                  width: r.s(64),
+                  height: r.s(64),
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.bar_chart_rounded,
+                      color: accent, size: r.s(32)),
                 ),
-                child: Icon(Icons.bar_chart_rounded,
-                    color: accent, size: r.s(32)),
               ),
-            ),
-            SizedBox(height: r.s(20)),
-
-            // Imagem de capa (opcional)
-            _buildCoverSection(r, accent),
-            SizedBox(height: r.s(16)),
-
-            // Pergunta
-            Text(
-              s.question,
-              style: TextStyle(
-                  color: context.nexusTheme.textPrimary,
-                  fontSize: r.fs(13),
-                  fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: r.s(8)),
-            _buildField(
-              controller: _titleController,
-              hint: s.pollExampleHint,
-              maxLength: 200,
-              maxLines: 3,
-              r: r,
-              accent: accent,
-            ),
-            SizedBox(height: r.s(16)),
-
-            // Descrição
-            Text(
-              s.descriptionOptional2,
-              style: TextStyle(
-                  color: context.nexusTheme.textPrimary,
-                  fontSize: r.fs(13),
-                  fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: r.s(8)),
-            _buildField(
-              controller: _descriptionController,
-              hint: 'Contexto adicional...',
-              maxLength: 500,
-              maxLines: 3,
-              r: r,
-              accent: accent,
-            ),
-            SizedBox(height: r.s(24)),
-
-            // Opções com reordenação
-            Row(
-              children: [
-                Text(
-                  s.optionsLabel,
-                  style: TextStyle(
-                      color: context.nexusTheme.textPrimary,
-                      fontSize: r.fs(13),
-                      fontWeight: FontWeight.w600),
-                ),
-                const Spacer(),
-                Text(
-                  '${_options.length}/10',
-                  style: TextStyle(
-                      color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
-                ),
-                if (_options.length > 2) ...[
-                  SizedBox(width: r.s(8)),
+              SizedBox(height: r.s(20)),
+  
+              // Imagem de capa (opcional)
+              _buildCoverSection(r, accent),
+              SizedBox(height: r.s(16)),
+  
+              // Pergunta
+              Text(
+                s.question,
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(13),
+                    fontWeight: FontWeight.w600),
+              ),
+              SizedBox(height: r.s(8)),
+              _buildField(
+                controller: _titleController,
+                hint: s.pollExampleHint,
+                maxLength: 200,
+                maxLines: 3,
+                r: r,
+                accent: accent,
+              ),
+              SizedBox(height: r.s(16)),
+  
+              // Descrição
+              Text(
+                s.descriptionOptional2,
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(13),
+                    fontWeight: FontWeight.w600),
+              ),
+              SizedBox(height: r.s(8)),
+              _buildField(
+                controller: _descriptionController,
+                hint: 'Contexto adicional...',
+                maxLength: 500,
+                maxLines: 3,
+                r: r,
+                accent: accent,
+              ),
+              SizedBox(height: r.s(24)),
+  
+              // Opções com reordenação
+              Row(
+                children: [
                   Text(
-                    'Segure para reordenar',
+                    s.optionsLabel,
                     style: TextStyle(
-                      color: context.nexusTheme.textSecondary.withValues(alpha: 0.6),
-                      fontSize: r.fs(10),
-                      fontStyle: FontStyle.italic,
-                    ),
+                        color: context.nexusTheme.textPrimary,
+                        fontSize: r.fs(13),
+                        fontWeight: FontWeight.w600),
                   ),
-                ],
-              ],
-            ),
-            SizedBox(height: r.s(8)),
-
-            ReorderableListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              buildDefaultDragHandles: false,
-              onReorder: _reorderOptions,
-              itemCount: _options.length,
-              itemBuilder: (ctx, i) {
-                return ReorderableDragStartListener(
-                  key: ValueKey('option_$i'),
-                  index: i,
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: r.s(8)),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: r.s(28),
-                          height: r.s(28),
-                          decoration: BoxDecoration(
-                            color: accent.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${i + 1}',
-                              style: TextStyle(
-                                  color: accent,
-                                  fontSize: r.fs(12),
-                                  fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: r.s(8)),
-                        Expanded(
-                          child: TextField(
-                            controller: _options[i],
-                            maxLength: 100,
-                            textCapitalization: TextCapitalization.sentences,
-                            style: TextStyle(
-                                color: context.nexusTheme.textPrimary,
-                                fontSize: r.fs(14)),
-                            decoration: InputDecoration(
-                              hintText: s.optionNumber(i + 1),
-                              hintStyle: TextStyle(
-                                  color: context.nexusTheme.textSecondary,
-                                  fontSize: r.fs(14)),
-                              filled: true,
-                              fillColor: context.nexusTheme.surfacePrimary,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(r.s(10)),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(r.s(10)),
-                                borderSide:
-                                    BorderSide(color: accent, width: 1.5),
-                              ),
-                              counterText: '',
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: r.s(12), vertical: r.s(10)),
-                            ),
-                          ),
-                        ),
-                        if (_options.length > 2) ...[
-                          SizedBox(width: r.s(4)),
-                          GestureDetector(
-                            onTap: () => _removeOption(i),
-                            child: Icon(Icons.remove_circle_outline_rounded,
-                                color: context.nexusTheme.error, size: r.s(20)),
-                          ),
-                        ],
-                        SizedBox(width: r.s(4)),
-                        Icon(Icons.drag_handle_rounded,
-                            color: context.nexusTheme.textSecondary, size: r.s(18)),
-                      ],
-                    ),
+                  const Spacer(),
+                  Text(
+                    '${_options.length}/10',
+                    style: TextStyle(
+                        color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
                   ),
-                );
-              },
-            ),
-
-            if (_options.length < 10)
-              TextButton.icon(
-                onPressed: _addOption,
-                icon: Icon(Icons.add_rounded,
-                    color: context.nexusTheme.accentPrimary, size: r.s(18)),
-                label: Text(
-                  s.addOption,
-                  style: TextStyle(
-                      color: context.nexusTheme.accentPrimary, fontSize: r.fs(14)),
-                ),
-              ),
-
-            SizedBox(height: r.s(16)),
-            Divider(color: context.dividerClr),
-            SizedBox(height: r.s(12)),
-
-            // Duração
-            Text(
-              'Duração da enquete',
-              style: TextStyle(
-                  color: context.nexusTheme.textPrimary,
-                  fontSize: r.fs(13),
-                  fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: r.s(8)),
-            Wrap(
-              spacing: r.s(8),
-              runSpacing: r.s(6),
-              children: _durations.entries.map((e) {
-                final selected = _duration == e.key;
-                return GestureDetector(
-                  onTap: () => setState(() => _duration = e.key),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: r.s(14), vertical: r.s(8)),
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? accent.withValues(alpha: 0.2)
-                          : context.nexusTheme.surfacePrimary,
-                      borderRadius: BorderRadius.circular(r.s(20)),
-                      border: Border.all(
-                        color: selected
-                            ? accent
-                            : context.dividerClr.withValues(alpha: 0.4),
-                        width: selected ? 1.5 : 1,
-                      ),
-                    ),
-                    child: Text(
-                      e.value,
+                  if (_options.length > 2) ...[
+                    SizedBox(width: r.s(8)),
+                    Text(
+                      'Segure para reordenar',
                       style: TextStyle(
-                        color: selected ? accent : context.nexusTheme.textSecondary,
-                        fontSize: r.fs(12),
-                        fontWeight:
-                            selected ? FontWeight.w700 : FontWeight.w500,
+                        color: context.nexusTheme.textSecondary.withValues(alpha: 0.6),
+                        fontSize: r.fs(10),
+                        fontStyle: FontStyle.italic,
                       ),
                     ),
+                  ],
+                ],
+              ),
+              SizedBox(height: r.s(8)),
+  
+              ReorderableListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                buildDefaultDragHandles: false,
+                onReorder: _reorderOptions,
+                itemCount: _options.length,
+                itemBuilder: (ctx, i) {
+                  return ReorderableDragStartListener(
+                    key: ValueKey('option_$i'),
+                    index: i,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: r.s(8)),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: r.s(28),
+                            height: r.s(28),
+                            decoration: BoxDecoration(
+                              color: accent.withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${i + 1}',
+                                style: TextStyle(
+                                    color: accent,
+                                    fontSize: r.fs(12),
+                                    fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: r.s(8)),
+                          Expanded(
+                            child: TextField(
+                              controller: _options[i],
+                              maxLength: 100,
+                              textCapitalization: TextCapitalization.sentences,
+                              style: TextStyle(
+                                  color: context.nexusTheme.textPrimary,
+                                  fontSize: r.fs(14)),
+                              decoration: InputDecoration(
+                                hintText: s.optionNumber(i + 1),
+                                hintStyle: TextStyle(
+                                    color: context.nexusTheme.textSecondary,
+                                    fontSize: r.fs(14)),
+                                filled: true,
+                                fillColor: context.nexusTheme.surfacePrimary,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(r.s(10)),
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(r.s(10)),
+                                  borderSide:
+                                      BorderSide(color: accent, width: 1.5),
+                                ),
+                                counterText: '',
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: r.s(12), vertical: r.s(10)),
+                              ),
+                            ),
+                          ),
+                          if (_options.length > 2) ...[
+                            SizedBox(width: r.s(4)),
+                            GestureDetector(
+                              onTap: () => _removeOption(i),
+                              child: Icon(Icons.remove_circle_outline_rounded,
+                                  color: context.nexusTheme.error, size: r.s(20)),
+                            ),
+                          ],
+                          SizedBox(width: r.s(4)),
+                          Icon(Icons.drag_handle_rounded,
+                              color: context.nexusTheme.textSecondary, size: r.s(18)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+  
+              if (_options.length < 10)
+                TextButton.icon(
+                  onPressed: _addOption,
+                  icon: Icon(Icons.add_rounded,
+                      color: context.nexusTheme.accentPrimary, size: r.s(18)),
+                  label: Text(
+                    s.addOption,
+                    style: TextStyle(
+                        color: context.nexusTheme.accentPrimary, fontSize: r.fs(14)),
                   ),
-                );
-              }).toList(),
-            ),
-
-            SizedBox(height: r.s(16)),
-            Divider(color: context.dividerClr),
-            SizedBox(height: r.s(8)),
-
-            // Toggles
-            _buildToggleRow(
-              icon: Icons.check_box_rounded,
-              label: 'Múltipla escolha',
-              subtitle: 'Permitir selecionar mais de uma opção',
-              value: _allowMultipleChoice,
-              onChanged: (v) => setState(() => _allowMultipleChoice = v),
-              color: accent,
-              r: r,
-            ),
-            _buildToggleRow(
-              icon: Icons.visibility_off_rounded,
-              label: 'Votos anônimos',
-              subtitle: 'Não mostrar quem votou em cada opção',
-              value: _anonymousVotes,
-              onChanged: (v) => setState(() => _anonymousVotes = v),
-              color: context.nexusTheme.textSecondary,
-              r: r,
-            ),
-
-            SizedBox(height: r.s(80)),
-          ],
-        ),
+                ),
+  
+              SizedBox(height: r.s(16)),
+              Divider(color: context.dividerClr),
+              SizedBox(height: r.s(12)),
+  
+              // Duração
+              Text(
+                'Duração da enquete',
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(13),
+                    fontWeight: FontWeight.w600),
+              ),
+              SizedBox(height: r.s(8)),
+              Wrap(
+                spacing: r.s(8),
+                runSpacing: r.s(6),
+                children: _durations.entries.map((e) {
+                  final selected = _duration == e.key;
+                  return GestureDetector(
+                    onTap: () => setState(() => _duration = e.key),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(14), vertical: r.s(8)),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? accent.withValues(alpha: 0.2)
+                            : context.nexusTheme.surfacePrimary,
+                        borderRadius: BorderRadius.circular(r.s(20)),
+                        border: Border.all(
+                          color: selected
+                              ? accent
+                              : context.dividerClr.withValues(alpha: 0.4),
+                          width: selected ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Text(
+                        e.value,
+                        style: TextStyle(
+                          color: selected ? accent : context.nexusTheme.textSecondary,
+                          fontSize: r.fs(12),
+                          fontWeight:
+                              selected ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+  
+              SizedBox(height: r.s(16)),
+              Divider(color: context.dividerClr),
+              SizedBox(height: r.s(8)),
+  
+              // Toggles
+              _buildToggleRow(
+                icon: Icons.check_box_rounded,
+                label: 'Múltipla escolha',
+                subtitle: 'Permitir selecionar mais de uma opção',
+                value: _allowMultipleChoice,
+                onChanged: (v) => setState(() => _allowMultipleChoice = v),
+                color: accent,
+                r: r,
+              ),
+              _buildToggleRow(
+                icon: Icons.visibility_off_rounded,
+                label: 'Votos anônimos',
+                subtitle: 'Não mostrar quem votou em cada opção',
+                value: _anonymousVotes,
+                onChanged: (v) => setState(() => _anonymousVotes = v),
+                color: context.nexusTheme.textSecondary,
+                r: r,
+              ),
+  
+              SizedBox(height: r.s(80)),
+            ],
+          ),
+        )
       ),
     );
   }

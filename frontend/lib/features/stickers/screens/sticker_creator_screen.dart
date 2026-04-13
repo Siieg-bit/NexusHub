@@ -213,59 +213,62 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Canvas de preview
-          Expanded(
-            flex: 5,
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.all(r.s(16)),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: RepaintBoundary(
-                    key: _repaintKey,
-                    child: _buildCanvas(r),
+      body: SafeArea(
+        bottom: true,
+        child: Column(
+          children: [
+            // Canvas de preview
+            Expanded(
+              flex: 5,
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(r.s(16)),
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: RepaintBoundary(
+                      key: _repaintKey,
+                      child: _buildCanvas(r),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-
-          // Nome da figurinha
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-            child: TextField(
-              controller: _nameCtrl,
-              style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
-              decoration: InputDecoration(
-                hintText: 'Nome da figurinha...',
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                filled: true,
-                fillColor: context.nexusTheme.surfacePrimary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(r.s(10)),
-                  borderSide: BorderSide.none,
+  
+            // Nome da figurinha
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+              child: TextField(
+                controller: _nameCtrl,
+                style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
+                decoration: InputDecoration(
+                  hintText: 'Nome da figurinha...',
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  filled: true,
+                  fillColor: context.nexusTheme.surfacePrimary,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(r.s(10)),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: r.s(16),
+                    vertical: r.s(10),
+                  ),
+                  prefixIcon: Icon(Icons.label_rounded, color: Colors.grey[600], size: r.s(18)),
                 ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: r.s(16),
-                  vertical: r.s(10),
-                ),
-                prefixIcon: Icon(Icons.label_rounded, color: Colors.grey[600], size: r.s(18)),
               ),
             ),
-          ),
-
-          SizedBox(height: r.s(12)),
-
-          // Barra de ferramentas
-          _buildToolbar(r),
-
-          // Painel de opções da ferramenta ativa
-          _buildToolPanel(r),
-
-          SizedBox(height: r.s(8)),
-        ],
+  
+            SizedBox(height: r.s(12)),
+  
+            // Barra de ferramentas
+            _buildToolbar(r),
+  
+            // Painel de opções da ferramenta ativa
+            _buildToolPanel(r),
+  
+            SizedBox(height: r.s(8)),
+          ],
+        )
       ),
     );
   }

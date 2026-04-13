@@ -150,353 +150,356 @@ class _StickerPackScreenState extends ConsumerState<StickerPackScreen> {
 
     return Scaffold(
       backgroundColor: context.nexusTheme.backgroundPrimary,
-      body: packAsync.when(
-        loading: () => Center(
-          child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary, strokeWidth: 2),
-        ),
-        error: (e, _) => Center(
-          child: Text('Erro ao carregar pack', style: TextStyle(color: Colors.grey[500])),
-        ),
-        data: (pack) {
-          if (pack == null) {
-            return const Center(child: Text('Pack não encontrado'));
-          }
-
-          final isSaved = pickerState.isPackSaved(pack.id) || pack.isSaved;
-
-          return CustomScrollView(
-            slivers: [
-              // App Bar com cover
-              SliverAppBar(
-                expandedHeight: r.s(200),
-                pinned: true,
-                backgroundColor: context.surfaceColor,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: pack.coverUrl != null && pack.coverUrl!.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: pack.coverUrl!,
-                          fit: BoxFit.cover,
-                          color: Colors.black.withValues(alpha: 0.4),
-                          colorBlendMode: BlendMode.darken,
-                        )
-                      : Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
-                                context.nexusTheme.accentSecondary.withValues(alpha: 0.2),
-                              ],
-                            ),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              Icons.emoji_emotions_rounded,
-                              size: r.s(64),
-                              color: Colors.white.withValues(alpha: 0.3),
-                            ),
-                          ),
-                        ),
-                ),
-                actions: [
-                  if (widget.isOwner)
-                    PopupMenuButton<String>(
-                      icon: Icon(Icons.more_vert_rounded, color: Colors.white),
-                      color: context.surfaceColor,
-                      onSelected: (val) {
-                        if (val == 'delete') _deletePack();
-                        if (val == 'edit') _openEditPack(pack);
-                        if (val == 'toggle_public') _togglePublic(pack);
-                      },
-                      itemBuilder: (_) => [
-                        PopupMenuItem(
-                          value: 'edit',
-                          child: Row(children: [
-                            Icon(Icons.edit_rounded, size: r.s(16), color: context.nexusTheme.textPrimary),
-                            SizedBox(width: r.s(8)),
-                            Text('Editar pack', style: TextStyle(color: context.nexusTheme.textPrimary)),
-                          ]),
-                        ),
-                        PopupMenuItem(
-                          value: 'toggle_public',
-                          child: Row(children: [
-                            Icon(
-                              pack.isPublic ? Icons.lock_rounded : Icons.public_rounded,
-                              size: r.s(16),
-                              color: context.nexusTheme.textPrimary,
-                            ),
-                            SizedBox(width: r.s(8)),
-                            Text(
-                              pack.isPublic ? 'Tornar privado' : 'Tornar público',
-                              style: TextStyle(color: context.nexusTheme.textPrimary),
-                            ),
-                          ]),
-                        ),
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Row(children: [
-                            Icon(Icons.delete_rounded, size: r.s(16), color: Colors.red),
-                            SizedBox(width: r.s(8)),
-                            const Text('Deletar pack', style: TextStyle(color: Colors.red)),
-                          ]),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-
-              // Info do pack
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.all(r.s(16)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  pack.name,
-                                  style: TextStyle(
-                                    color: context.nexusTheme.textPrimary,
-                                    fontSize: r.fs(20),
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                if (pack.description.isNotEmpty) ...[
-                                  SizedBox(height: r.s(4)),
-                                  Text(
-                                    pack.description,
-                                    style: TextStyle(color: Colors.grey[400], fontSize: r.fs(13)),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                          // Botão salvar (para não-donos)
-                          if (!widget.isOwner)
-                            GestureDetector(
-                              onTap: _isSaving ? null : () => _toggleSavePack(pack),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: r.s(16),
-                                  vertical: r.s(8),
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isSaved
-                                      ? Colors.grey[800]
-                                      : context.nexusTheme.accentPrimary,
-                                  borderRadius: BorderRadius.circular(r.s(20)),
-                                ),
-                                child: _isSaving
-                                    ? SizedBox(
-                                        width: r.s(16),
-                                        height: r.s(16),
-                                        child: const CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            isSaved
-                                                ? Icons.bookmark_rounded
-                                                : Icons.bookmark_border_rounded,
-                                            size: r.s(16),
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(width: r.s(4)),
-                                          Text(
-                                            isSaved ? 'Salvo' : 'Salvar',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: r.fs(13),
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      SizedBox(height: r.s(12)),
-                      // Stats
-                      Row(
-                        children: [
-                          _StatChip(
-                            icon: Icons.collections_rounded,
-                            label: '${pack.stickerCount} figurinhas',
-                          ),
-                          SizedBox(width: r.s(8)),
-                          _StatChip(
-                            icon: Icons.bookmark_rounded,
-                            label: '${pack.savesCount} salvos',
-                          ),
-                          if (!pack.isPublic) ...[
-                            SizedBox(width: r.s(8)),
-                            _StatChip(
-                              icon: Icons.lock_rounded,
-                              label: 'Privado',
-                              color: Colors.orange,
-                            ),
-                          ],
-                        ],
-                      ),
-                      // Autor
-                      if (pack.authorName.isNotEmpty && !widget.isOwner) ...[
-                        SizedBox(height: r.s(12)),
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: r.s(12),
-                              backgroundColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
-                              backgroundImage: pack.creatorIcon != null
-                                  ? CachedNetworkImageProvider(pack.creatorIcon!)
-                                  : null,
-                              child: pack.creatorIcon == null
-                                  ? Text(
-                                      pack.authorName.isNotEmpty
-                                          ? pack.authorName[0].toUpperCase()
-                                          : '?',
-                                      style: TextStyle(
-                                        color: context.nexusTheme.accentPrimary,
-                                        fontSize: r.fs(10),
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    )
-                                  : null,
-                            ),
-                            SizedBox(width: r.s(8)),
-                            Text(
-                              'por ${pack.authorName}',
-                              style: TextStyle(color: Colors.grey[400], fontSize: r.fs(12)),
-                            ),
-                          ],
-                        ),
-                      ],
-                      // Tags
-                      if (pack.tags.isNotEmpty) ...[
-                        SizedBox(height: r.s(12)),
-                        Wrap(
-                          spacing: r.s(6),
-                          runSpacing: r.s(4),
-                          children: pack.tags.map((tag) => Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: r.s(8),
-                              vertical: r.s(3),
-                            ),
+      body: SafeArea(
+        bottom: true,
+        child: packAsync.when(
+          loading: () => Center(
+            child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary, strokeWidth: 2),
+          ),
+          error: (e, _) => Center(
+            child: Text('Erro ao carregar pack', style: TextStyle(color: Colors.grey[500])),
+          ),
+          data: (pack) {
+            if (pack == null) {
+              return const Center(child: Text('Pack não encontrado'));
+            }
+  
+            final isSaved = pickerState.isPackSaved(pack.id) || pack.isSaved;
+  
+            return CustomScrollView(
+              slivers: [
+                // App Bar com cover
+                SliverAppBar(
+                  expandedHeight: r.s(200),
+                  pinned: true,
+                  backgroundColor: context.surfaceColor,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: pack.coverUrl != null && pack.coverUrl!.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: pack.coverUrl!,
+                            fit: BoxFit.cover,
+                            color: Colors.black.withValues(alpha: 0.4),
+                            colorBlendMode: BlendMode.darken,
+                          )
+                        : Container(
                             decoration: BoxDecoration(
-                              color: context.nexusTheme.accentSecondary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(r.s(8)),
-                            ),
-                            child: Text(
-                              '#$tag',
-                              style: TextStyle(
-                                color: context.nexusTheme.accentSecondary,
-                                fontSize: r.fs(11),
-                                fontWeight: FontWeight.w500,
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
+                                  context.nexusTheme.accentSecondary.withValues(alpha: 0.2),
+                                ],
                               ),
                             ),
-                          )).toList(),
-                        ),
-                      ],
-                      SizedBox(height: r.s(16)),
-                      Divider(color: Colors.white.withValues(alpha: 0.05)),
-                    ],
+                            child: Center(
+                              child: Icon(
+                                Icons.emoji_emotions_rounded,
+                                size: r.s(64),
+                                color: Colors.white.withValues(alpha: 0.3),
+                              ),
+                            ),
+                          ),
                   ),
-                ),
-              ),
-
-              // Grid de stickers
-              _isLoadingStickers
-                  ? SliverToBoxAdapter(
-                      child: Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(32),
-                          child: CircularProgressIndicator(
-                            color: context.nexusTheme.accentPrimary,
-                            strokeWidth: 2,
+                  actions: [
+                    if (widget.isOwner)
+                      PopupMenuButton<String>(
+                        icon: Icon(Icons.more_vert_rounded, color: Colors.white),
+                        color: context.surfaceColor,
+                        onSelected: (val) {
+                          if (val == 'delete') _deletePack();
+                          if (val == 'edit') _openEditPack(pack);
+                          if (val == 'toggle_public') _togglePublic(pack);
+                        },
+                        itemBuilder: (_) => [
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Row(children: [
+                              Icon(Icons.edit_rounded, size: r.s(16), color: context.nexusTheme.textPrimary),
+                              SizedBox(width: r.s(8)),
+                              Text('Editar pack', style: TextStyle(color: context.nexusTheme.textPrimary)),
+                            ]),
                           ),
-                        ),
+                          PopupMenuItem(
+                            value: 'toggle_public',
+                            child: Row(children: [
+                              Icon(
+                                pack.isPublic ? Icons.lock_rounded : Icons.public_rounded,
+                                size: r.s(16),
+                                color: context.nexusTheme.textPrimary,
+                              ),
+                              SizedBox(width: r.s(8)),
+                              Text(
+                                pack.isPublic ? 'Tornar privado' : 'Tornar público',
+                                style: TextStyle(color: context.nexusTheme.textPrimary),
+                              ),
+                            ]),
+                          ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Row(children: [
+                              Icon(Icons.delete_rounded, size: r.s(16), color: Colors.red),
+                              SizedBox(width: r.s(8)),
+                              const Text('Deletar pack', style: TextStyle(color: Colors.red)),
+                            ]),
+                          ),
+                        ],
                       ),
-                    )
-                  : _stickers.isEmpty
-                      ? SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.all(r.s(32)),
-                            child: Column(
-                              children: [
-                                Icon(Icons.emoji_emotions_outlined,
-                                    size: r.s(48), color: Colors.grey[700]),
-                                SizedBox(height: r.s(12)),
-                                Text(
-                                  widget.isOwner
-                                      ? 'Nenhuma figurinha ainda.\nAdicione a primeira!'
-                                      : 'Nenhuma figurinha neste pack.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(color: Colors.grey[500], fontSize: r.fs(13)),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : SliverPadding(
-                          padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-                          sliver: SliverGrid(
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 4,
-                              crossAxisSpacing: r.s(8),
-                              mainAxisSpacing: r.s(8),
-                            ),
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                                final sticker = _stickers[index];
-                                return _StickerGridItem(
-                                  sticker: sticker,
-                                  isOwner: widget.isOwner,
-                                  onDelete: widget.isOwner
-                                      ? () => _deleteSticker(sticker)
-                                      : null,
-                                );
-                              },
-                              childCount: _stickers.length,
-                            ),
-                          ),
-                        ),
-
-              // Botão de adicionar sticker (apenas para donos)
-              if (widget.isOwner)
+                  ],
+                ),
+  
+                // Info do pack
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.all(r.s(16)),
-                    child: ElevatedButton.icon(
-                      onPressed: () => _openStickerCreator(pack),
-                      icon: const Icon(Icons.add_rounded),
-                      label: const Text('Adicionar Figurinha'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.nexusTheme.accentPrimary,
-                        foregroundColor: Colors.white,
-                        minimumSize: Size(double.infinity, r.s(48)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(r.s(12)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    pack.name,
+                                    style: TextStyle(
+                                      color: context.nexusTheme.textPrimary,
+                                      fontSize: r.fs(20),
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  if (pack.description.isNotEmpty) ...[
+                                    SizedBox(height: r.s(4)),
+                                    Text(
+                                      pack.description,
+                                      style: TextStyle(color: Colors.grey[400], fontSize: r.fs(13)),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            // Botão salvar (para não-donos)
+                            if (!widget.isOwner)
+                              GestureDetector(
+                                onTap: _isSaving ? null : () => _toggleSavePack(pack),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(16),
+                                    vertical: r.s(8),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSaved
+                                        ? Colors.grey[800]
+                                        : context.nexusTheme.accentPrimary,
+                                    borderRadius: BorderRadius.circular(r.s(20)),
+                                  ),
+                                  child: _isSaving
+                                      ? SizedBox(
+                                          width: r.s(16),
+                                          height: r.s(16),
+                                          child: const CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              isSaved
+                                                  ? Icons.bookmark_rounded
+                                                  : Icons.bookmark_border_rounded,
+                                              size: r.s(16),
+                                              color: Colors.white,
+                                            ),
+                                            SizedBox(width: r.s(4)),
+                                            Text(
+                                              isSaved ? 'Salvo' : 'Salvar',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: r.fs(13),
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        SizedBox(height: r.s(12)),
+                        // Stats
+                        Row(
+                          children: [
+                            _StatChip(
+                              icon: Icons.collections_rounded,
+                              label: '${pack.stickerCount} figurinhas',
+                            ),
+                            SizedBox(width: r.s(8)),
+                            _StatChip(
+                              icon: Icons.bookmark_rounded,
+                              label: '${pack.savesCount} salvos',
+                            ),
+                            if (!pack.isPublic) ...[
+                              SizedBox(width: r.s(8)),
+                              _StatChip(
+                                icon: Icons.lock_rounded,
+                                label: 'Privado',
+                                color: Colors.orange,
+                              ),
+                            ],
+                          ],
+                        ),
+                        // Autor
+                        if (pack.authorName.isNotEmpty && !widget.isOwner) ...[
+                          SizedBox(height: r.s(12)),
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: r.s(12),
+                                backgroundColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
+                                backgroundImage: pack.creatorIcon != null
+                                    ? CachedNetworkImageProvider(pack.creatorIcon!)
+                                    : null,
+                                child: pack.creatorIcon == null
+                                    ? Text(
+                                        pack.authorName.isNotEmpty
+                                            ? pack.authorName[0].toUpperCase()
+                                            : '?',
+                                        style: TextStyle(
+                                          color: context.nexusTheme.accentPrimary,
+                                          fontSize: r.fs(10),
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                              SizedBox(width: r.s(8)),
+                              Text(
+                                'por ${pack.authorName}',
+                                style: TextStyle(color: Colors.grey[400], fontSize: r.fs(12)),
+                              ),
+                            ],
+                          ),
+                        ],
+                        // Tags
+                        if (pack.tags.isNotEmpty) ...[
+                          SizedBox(height: r.s(12)),
+                          Wrap(
+                            spacing: r.s(6),
+                            runSpacing: r.s(4),
+                            children: pack.tags.map((tag) => Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: r.s(8),
+                                vertical: r.s(3),
+                              ),
+                              decoration: BoxDecoration(
+                                color: context.nexusTheme.accentSecondary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(r.s(8)),
+                              ),
+                              child: Text(
+                                '#$tag',
+                                style: TextStyle(
+                                  color: context.nexusTheme.accentSecondary,
+                                  fontSize: r.fs(11),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            )).toList(),
+                          ),
+                        ],
+                        SizedBox(height: r.s(16)),
+                        Divider(color: Colors.white.withValues(alpha: 0.05)),
+                      ],
+                    ),
+                  ),
+                ),
+  
+                // Grid de stickers
+                _isLoadingStickers
+                    ? SliverToBoxAdapter(
+                        child: Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32),
+                            child: CircularProgressIndicator(
+                              color: context.nexusTheme.accentPrimary,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        ),
+                      )
+                    : _stickers.isEmpty
+                        ? SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.all(r.s(32)),
+                              child: Column(
+                                children: [
+                                  Icon(Icons.emoji_emotions_outlined,
+                                      size: r.s(48), color: Colors.grey[700]),
+                                  SizedBox(height: r.s(12)),
+                                  Text(
+                                    widget.isOwner
+                                        ? 'Nenhuma figurinha ainda.\nAdicione a primeira!'
+                                        : 'Nenhuma figurinha neste pack.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(color: Colors.grey[500], fontSize: r.fs(13)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : SliverPadding(
+                            padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+                            sliver: SliverGrid(
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 4,
+                                crossAxisSpacing: r.s(8),
+                                mainAxisSpacing: r.s(8),
+                              ),
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  final sticker = _stickers[index];
+                                  return _StickerGridItem(
+                                    sticker: sticker,
+                                    isOwner: widget.isOwner,
+                                    onDelete: widget.isOwner
+                                        ? () => _deleteSticker(sticker)
+                                        : null,
+                                  );
+                                },
+                                childCount: _stickers.length,
+                              ),
+                            ),
+                          ),
+  
+                // Botão de adicionar sticker (apenas para donos)
+                if (widget.isOwner)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(r.s(16)),
+                      child: ElevatedButton.icon(
+                        onPressed: () => _openStickerCreator(pack),
+                        icon: const Icon(Icons.add_rounded),
+                        label: const Text('Adicionar Figurinha'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.nexusTheme.accentPrimary,
+                          foregroundColor: Colors.white,
+                          minimumSize: Size(double.infinity, r.s(48)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(r.s(12)),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-
-              SliverToBoxAdapter(child: SizedBox(height: r.s(32))),
-            ],
-          );
-        },
+  
+                SliverToBoxAdapter(child: SizedBox(height: r.s(32))),
+              ],
+            );
+          },
+        )
       ),
     );
   }

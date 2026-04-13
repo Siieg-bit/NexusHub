@@ -724,258 +724,261 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
           SizedBox(width: r.s(4)),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(r.s(16)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Ícone decorativo
-            Center(
-              child: Container(
-                width: r.s(64),
-                height: r.s(64),
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.menu_book_rounded,
-                    color: accent, size: r.s(32)),
-              ),
-            ),
-            SizedBox(height: r.s(8)),
-            Center(
-              child: Text(
-                s.wikiDescription,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
-              ),
-            ),
-            SizedBox(height: r.s(20)),
-
-            // Imagem de capa
-            _buildCoverSection(r, accent),
-            SizedBox(height: r.s(20)),
-
-            // Título
-            _buildLabel('Título do artigo', r),
-            SizedBox(height: r.s(8)),
-            _buildTextField(
-              controller: _titleController,
-              hint: 'Ex: História da Comunidade',
-              maxLength: 200,
-              r: r,
-              accent: accent,
-            ),
-            SizedBox(height: r.s(16)),
-
-            // Subtítulo
-            _buildLabel('Subtítulo (opcional)', r),
-            SizedBox(height: r.s(8)),
-            _buildTextField(
-              controller: _subtitleController,
-              hint: 'Resumo breve do artigo...',
-              maxLength: 300,
-              maxLines: 2,
-              r: r,
-              accent: accent,
-            ),
-
-            SizedBox(height: r.s(16)),
-            Divider(color: context.dividerClr),
-            SizedBox(height: r.s(12)),
-
-            // Tags
-            _buildLabel('Categorias', r),
-            SizedBox(height: r.s(4)),
-            _buildTagsSection(r),
-
-            SizedBox(height: r.s(16)),
-            Divider(color: context.dividerClr),
-            SizedBox(height: r.s(12)),
-
-            // Sumário automático
-            if (_sections.any(
-                (sec) => sec.titleController.text.trim().isNotEmpty)) ...[
-              Container(
-                padding: EdgeInsets.all(r.s(12)),
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(r.s(12)),
-                  border: Border.all(
-                      color: accent.withValues(alpha: 0.15)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.list_rounded,
-                            color: accent, size: r.s(16)),
-                        SizedBox(width: r.s(6)),
-                        Text(
-                          'Sumário',
-                          style: TextStyle(
-                              color: accent,
-                              fontSize: r.fs(13),
-                              fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: r.s(8)),
-                    ...List.generate(_sections.length, (i) {
-                      final title =
-                          _sections[i].titleController.text.trim();
-                      if (title.isEmpty) return const SizedBox.shrink();
-                      return Padding(
-                        padding: EdgeInsets.only(
-                            left: r.s(8), bottom: r.s(4)),
-                        child: Text(
-                          '${i + 1}. $title',
-                          style: TextStyle(
-                              color: context.nexusTheme.textPrimary,
-                              fontSize: r.fs(12)),
-                        ),
-                      );
-                    }),
-                  ],
+      body: SafeArea(
+        bottom: true,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(r.s(16)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Ícone decorativo
+              Center(
+                child: Container(
+                  width: r.s(64),
+                  height: r.s(64),
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.menu_book_rounded,
+                      color: accent, size: r.s(32)),
                 ),
               ),
-              SizedBox(height: r.s(16)),
-            ],
-
-            // Seções
-            Row(
-              children: [
-                Text(
-                  'Seções',
-                  style: TextStyle(
-                      color: context.nexusTheme.textPrimary,
-                      fontSize: r.fs(15),
-                      fontWeight: FontWeight.w700),
-                ),
-                const Spacer(),
-                Text(
-                  '${_sections.length}/20',
+              SizedBox(height: r.s(8)),
+              Center(
+                child: Text(
+                  s.wikiDescription,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                       color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
                 ),
-              ],
-            ),
-            SizedBox(height: r.s(12)),
-            ...List.generate(_sections.length, (i) {
-              return _buildSectionCard(i, _sections[i], r, accent);
-            }),
-            if (_sections.length < 20)
-              Padding(
-                padding: EdgeInsets.only(top: r.s(8)),
-                child: TextButton.icon(
-                  onPressed: _addSection,
-                  icon: Icon(Icons.add_rounded,
-                      color: accent, size: r.s(18)),
-                  label: Text(
-                    'Adicionar seção',
-                    style: TextStyle(
-                        color: accent, fontSize: r.fs(14)),
-                  ),
-                ),
               ),
-
-            SizedBox(height: r.s(16)),
-            Divider(color: context.dividerClr),
-            SizedBox(height: r.s(12)),
-
-            // Referências
-            _buildLabel('Referências e fontes', r),
-            SizedBox(height: r.s(4)),
-            Text(
-              'Adicione links ou citações de fontes',
-              style: TextStyle(
-                  color: context.nexusTheme.textSecondary, fontSize: r.fs(11)),
-            ),
-            SizedBox(height: r.s(8)),
-            if (_references.isNotEmpty) ...[
-              ...List.generate(_references.length, (i) {
-                return Padding(
-                  padding: EdgeInsets.only(bottom: r.s(4)),
-                  child: Row(
+              SizedBox(height: r.s(20)),
+  
+              // Imagem de capa
+              _buildCoverSection(r, accent),
+              SizedBox(height: r.s(20)),
+  
+              // Título
+              _buildLabel('Título do artigo', r),
+              SizedBox(height: r.s(8)),
+              _buildTextField(
+                controller: _titleController,
+                hint: 'Ex: História da Comunidade',
+                maxLength: 200,
+                r: r,
+                accent: accent,
+              ),
+              SizedBox(height: r.s(16)),
+  
+              // Subtítulo
+              _buildLabel('Subtítulo (opcional)', r),
+              SizedBox(height: r.s(8)),
+              _buildTextField(
+                controller: _subtitleController,
+                hint: 'Resumo breve do artigo...',
+                maxLength: 300,
+                maxLines: 2,
+                r: r,
+                accent: accent,
+              ),
+  
+              SizedBox(height: r.s(16)),
+              Divider(color: context.dividerClr),
+              SizedBox(height: r.s(12)),
+  
+              // Tags
+              _buildLabel('Categorias', r),
+              SizedBox(height: r.s(4)),
+              _buildTagsSection(r),
+  
+              SizedBox(height: r.s(16)),
+              Divider(color: context.dividerClr),
+              SizedBox(height: r.s(12)),
+  
+              // Sumário automático
+              if (_sections.any(
+                  (sec) => sec.titleController.text.trim().isNotEmpty)) ...[
+                Container(
+                  padding: EdgeInsets.all(r.s(12)),
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(r.s(12)),
+                    border: Border.all(
+                        color: accent.withValues(alpha: 0.15)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '[${i + 1}]',
-                        style: TextStyle(
-                            color: accent,
-                            fontSize: r.fs(11),
-                            fontWeight: FontWeight.w700),
+                      Row(
+                        children: [
+                          Icon(Icons.list_rounded,
+                              color: accent, size: r.s(16)),
+                          SizedBox(width: r.s(6)),
+                          Text(
+                            'Sumário',
+                            style: TextStyle(
+                                color: accent,
+                                fontSize: r.fs(13),
+                                fontWeight: FontWeight.w700),
+                          ),
+                        ],
                       ),
-                      SizedBox(width: r.s(6)),
-                      Expanded(
-                        child: Text(
-                          _references[i],
-                          style: TextStyle(
-                              color: context.nexusTheme.textPrimary,
-                              fontSize: r.fs(12)),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => setState(
-                            () => _references.removeAt(i)),
-                        child: Icon(Icons.close_rounded,
-                            color: context.nexusTheme.error,
-                            size: r.s(14)),
-                      ),
+                      SizedBox(height: r.s(8)),
+                      ...List.generate(_sections.length, (i) {
+                        final title =
+                            _sections[i].titleController.text.trim();
+                        if (title.isEmpty) return const SizedBox.shrink();
+                        return Padding(
+                          padding: EdgeInsets.only(
+                              left: r.s(8), bottom: r.s(4)),
+                          child: Text(
+                            '${i + 1}. $title',
+                            style: TextStyle(
+                                color: context.nexusTheme.textPrimary,
+                                fontSize: r.fs(12)),
+                          ),
+                        );
+                      }),
                     ],
                   ),
-                );
-              }),
-              SizedBox(height: r.s(8)),
-            ],
-            if (_references.length < 10)
+                ),
+                SizedBox(height: r.s(16)),
+              ],
+  
+              // Seções
               Row(
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _referenceController,
-                      style: TextStyle(
-                          color: context.nexusTheme.textPrimary,
-                          fontSize: r.fs(12)),
-                      decoration: InputDecoration(
-                        hintText: 'URL ou citação...',
-                        hintStyle: TextStyle(
-                            color: context.nexusTheme.textSecondary,
-                            fontSize: r.fs(12)),
-                        border: InputBorder.none,
-                        isDense: true,
-                        prefixIcon: Icon(Icons.link_rounded,
-                            color: context.nexusTheme.textSecondary,
-                            size: r.s(16)),
-                      ),
-                      onSubmitted: (_) => _addReference(),
-                    ),
+                  Text(
+                    'Seções',
+                    style: TextStyle(
+                        color: context.nexusTheme.textPrimary,
+                        fontSize: r.fs(15),
+                        fontWeight: FontWeight.w700),
                   ),
-                  GestureDetector(
-                    onTap: _addReference,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: r.s(12), vertical: r.s(6)),
-                      decoration: BoxDecoration(
-                        color: accent.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(r.s(8)),
-                      ),
-                      child: Text('Adicionar',
-                          style: TextStyle(
-                              color: accent,
-                              fontSize: r.fs(12),
-                              fontWeight: FontWeight.w600)),
-                    ),
+                  const Spacer(),
+                  Text(
+                    '${_sections.length}/20',
+                    style: TextStyle(
+                        color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
                   ),
                 ],
               ),
-
-            SizedBox(height: r.s(80)),
-          ],
-        ),
+              SizedBox(height: r.s(12)),
+              ...List.generate(_sections.length, (i) {
+                return _buildSectionCard(i, _sections[i], r, accent);
+              }),
+              if (_sections.length < 20)
+                Padding(
+                  padding: EdgeInsets.only(top: r.s(8)),
+                  child: TextButton.icon(
+                    onPressed: _addSection,
+                    icon: Icon(Icons.add_rounded,
+                        color: accent, size: r.s(18)),
+                    label: Text(
+                      'Adicionar seção',
+                      style: TextStyle(
+                          color: accent, fontSize: r.fs(14)),
+                    ),
+                  ),
+                ),
+  
+              SizedBox(height: r.s(16)),
+              Divider(color: context.dividerClr),
+              SizedBox(height: r.s(12)),
+  
+              // Referências
+              _buildLabel('Referências e fontes', r),
+              SizedBox(height: r.s(4)),
+              Text(
+                'Adicione links ou citações de fontes',
+                style: TextStyle(
+                    color: context.nexusTheme.textSecondary, fontSize: r.fs(11)),
+              ),
+              SizedBox(height: r.s(8)),
+              if (_references.isNotEmpty) ...[
+                ...List.generate(_references.length, (i) {
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: r.s(4)),
+                    child: Row(
+                      children: [
+                        Text(
+                          '[${i + 1}]',
+                          style: TextStyle(
+                              color: accent,
+                              fontSize: r.fs(11),
+                              fontWeight: FontWeight.w700),
+                        ),
+                        SizedBox(width: r.s(6)),
+                        Expanded(
+                          child: Text(
+                            _references[i],
+                            style: TextStyle(
+                                color: context.nexusTheme.textPrimary,
+                                fontSize: r.fs(12)),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => setState(
+                              () => _references.removeAt(i)),
+                          child: Icon(Icons.close_rounded,
+                              color: context.nexusTheme.error,
+                              size: r.s(14)),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                SizedBox(height: r.s(8)),
+              ],
+              if (_references.length < 10)
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _referenceController,
+                        style: TextStyle(
+                            color: context.nexusTheme.textPrimary,
+                            fontSize: r.fs(12)),
+                        decoration: InputDecoration(
+                          hintText: 'URL ou citação...',
+                          hintStyle: TextStyle(
+                              color: context.nexusTheme.textSecondary,
+                              fontSize: r.fs(12)),
+                          border: InputBorder.none,
+                          isDense: true,
+                          prefixIcon: Icon(Icons.link_rounded,
+                              color: context.nexusTheme.textSecondary,
+                              size: r.s(16)),
+                        ),
+                        onSubmitted: (_) => _addReference(),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: _addReference,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: r.s(12), vertical: r.s(6)),
+                        decoration: BoxDecoration(
+                          color: accent.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(r.s(8)),
+                        ),
+                        child: Text('Adicionar',
+                            style: TextStyle(
+                                color: accent,
+                                fontSize: r.fs(12),
+                                fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                  ],
+                ),
+  
+              SizedBox(height: r.s(80)),
+            ],
+          ),
+        )
       ),
     );
   }

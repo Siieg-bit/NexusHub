@@ -474,155 +474,158 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
           SizedBox(width: r.s(4)),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(r.s(16)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Ícone decorativo
-            Center(
-              child: Container(
-                width: r.s(64),
-                height: r.s(64),
-                decoration: BoxDecoration(
-                  color: accentOrange.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
+      body: SafeArea(
+        bottom: true,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(r.s(16)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Ícone decorativo
+              Center(
+                child: Container(
+                  width: r.s(64),
+                  height: r.s(64),
+                  decoration: BoxDecoration(
+                    color: accentOrange.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.help_rounded,
+                      color: accentOrange, size: r.s(32)),
                 ),
-                child: Icon(Icons.help_rounded,
-                    color: accentOrange, size: r.s(32)),
               ),
-            ),
-            SizedBox(height: r.s(8)),
-            Center(
-              child: Text(
-                s.askCommunity,
+              SizedBox(height: r.s(8)),
+              Center(
+                child: Text(
+                  s.askCommunity,
+                  style: TextStyle(
+                      color: context.nexusTheme.textSecondary, fontSize: r.fs(13)),
+                ),
+              ),
+              SizedBox(height: r.s(24)),
+  
+              // Pergunta
+              TextField(
+                controller: _questionController,
+                maxLength: 300,
+                maxLines: 4,
+                minLines: 2,
+                textCapitalization: TextCapitalization.sentences,
                 style: TextStyle(
-                    color: context.nexusTheme.textSecondary, fontSize: r.fs(13)),
-              ),
-            ),
-            SizedBox(height: r.s(24)),
-
-            // Pergunta
-            TextField(
-              controller: _questionController,
-              maxLength: 300,
-              maxLines: 4,
-              minLines: 2,
-              textCapitalization: TextCapitalization.sentences,
-              style: TextStyle(
-                  color: context.nexusTheme.textPrimary,
-                  fontSize: r.fs(20),
-                  fontWeight: FontWeight.w600),
-              decoration: InputDecoration(
-                hintText: s.whatDoYouWantToKnow,
-                hintStyle: TextStyle(
-                    color: context.nexusTheme.textSecondary,
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(20),
                     fontWeight: FontWeight.w600),
-                border: InputBorder.none,
-                counterText: '',
+                decoration: InputDecoration(
+                  hintText: s.whatDoYouWantToKnow,
+                  hintStyle: TextStyle(
+                      color: context.nexusTheme.textSecondary,
+                      fontSize: r.fs(20),
+                      fontWeight: FontWeight.w600),
+                  border: InputBorder.none,
+                  counterText: '',
+                ),
               ),
-            ),
-            Divider(color: context.dividerClr, height: r.s(24)),
-
-            // Contexto adicional
-            TextField(
-              controller: _contextController,
-              maxLength: 1000,
-              maxLines: 8,
-              minLines: 3,
-              textCapitalization: TextCapitalization.sentences,
-              style:
-                  TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(15)),
-              decoration: InputDecoration(
-                hintText: s.addContextHint,
-                hintStyle: TextStyle(
-                    color: context.nexusTheme.textSecondary, fontSize: r.fs(15)),
-                border: InputBorder.none,
-                counterText: '',
+              Divider(color: context.dividerClr, height: r.s(24)),
+  
+              // Contexto adicional
+              TextField(
+                controller: _contextController,
+                maxLength: 1000,
+                maxLines: 8,
+                minLines: 3,
+                textCapitalization: TextCapitalization.sentences,
+                style:
+                    TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(15)),
+                decoration: InputDecoration(
+                  hintText: s.addContextHint,
+                  hintStyle: TextStyle(
+                      color: context.nexusTheme.textSecondary, fontSize: r.fs(15)),
+                  border: InputBorder.none,
+                  counterText: '',
+                ),
               ),
-            ),
-            SizedBox(height: r.s(16)),
-
-            // Imagem de referência
-            _buildReferenceImageSection(r, accentOrange),
-            SizedBox(height: r.s(16)),
-
-            // Tags de categoria
-            Divider(color: context.dividerClr),
-            SizedBox(height: r.s(12)),
-            Text(
-              'Categorias',
-              style: TextStyle(
-                  color: context.nexusTheme.textPrimary,
-                  fontSize: r.fs(13),
-                  fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: r.s(4)),
-            Text(
-              'Adicione tags para classificar sua pergunta',
-              style: TextStyle(
-                  color: context.nexusTheme.textSecondary, fontSize: r.fs(11)),
-            ),
-            SizedBox(height: r.s(8)),
-            _buildTagsSection(r),
-            SizedBox(height: r.s(16)),
-
-            // Toggles
-            Divider(color: context.dividerClr),
-            SizedBox(height: r.s(8)),
-            _buildToggleRow(
-              icon: Icons.priority_high_rounded,
-              label: 'Pergunta urgente',
-              subtitle: 'Destacar como urgente para a comunidade',
-              value: _isUrgent,
-              onChanged: (v) => setState(() => _isUrgent = v),
-              color: context.nexusTheme.error,
-              r: r,
-            ),
-            _buildToggleRow(
-              icon: Icons.person_off_rounded,
-              label: 'Perguntar anonimamente',
-              subtitle: 'Seu nome não será exibido',
-              value: _isAnonymous,
-              onChanged: (v) => setState(() => _isAnonymous = v),
-              color: context.nexusTheme.textSecondary,
-              r: r,
-            ),
-            SizedBox(height: r.s(16)),
-
-            // Dica
-            Container(
-              padding: EdgeInsets.all(r.s(12)),
-              decoration: BoxDecoration(
-                color: accentOrange.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(r.s(12)),
-                border: Border.all(
-                    color: accentOrange.withValues(alpha: 0.2)),
+              SizedBox(height: r.s(16)),
+  
+              // Imagem de referência
+              _buildReferenceImageSection(r, accentOrange),
+              SizedBox(height: r.s(16)),
+  
+              // Tags de categoria
+              Divider(color: context.dividerClr),
+              SizedBox(height: r.s(12)),
+              Text(
+                'Categorias',
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(13),
+                    fontWeight: FontWeight.w600),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.lightbulb_outline_rounded,
-                      color: accentOrange, size: r.s(16)),
-                  SizedBox(width: r.s(8)),
-                  Expanded(
-                    child: Text(
-                      'Perguntas claras e específicas recebem mais respostas. '
-                      'Inclua detalhes relevantes no contexto.',
-                      style: TextStyle(
-                          color:
-                              context.nexusTheme.textPrimary.withValues(alpha: 0.7),
-                          fontSize: r.fs(12),
-                          height: 1.4),
+              SizedBox(height: r.s(4)),
+              Text(
+                'Adicione tags para classificar sua pergunta',
+                style: TextStyle(
+                    color: context.nexusTheme.textSecondary, fontSize: r.fs(11)),
+              ),
+              SizedBox(height: r.s(8)),
+              _buildTagsSection(r),
+              SizedBox(height: r.s(16)),
+  
+              // Toggles
+              Divider(color: context.dividerClr),
+              SizedBox(height: r.s(8)),
+              _buildToggleRow(
+                icon: Icons.priority_high_rounded,
+                label: 'Pergunta urgente',
+                subtitle: 'Destacar como urgente para a comunidade',
+                value: _isUrgent,
+                onChanged: (v) => setState(() => _isUrgent = v),
+                color: context.nexusTheme.error,
+                r: r,
+              ),
+              _buildToggleRow(
+                icon: Icons.person_off_rounded,
+                label: 'Perguntar anonimamente',
+                subtitle: 'Seu nome não será exibido',
+                value: _isAnonymous,
+                onChanged: (v) => setState(() => _isAnonymous = v),
+                color: context.nexusTheme.textSecondary,
+                r: r,
+              ),
+              SizedBox(height: r.s(16)),
+  
+              // Dica
+              Container(
+                padding: EdgeInsets.all(r.s(12)),
+                decoration: BoxDecoration(
+                  color: accentOrange.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(r.s(12)),
+                  border: Border.all(
+                      color: accentOrange.withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.lightbulb_outline_rounded,
+                        color: accentOrange, size: r.s(16)),
+                    SizedBox(width: r.s(8)),
+                    Expanded(
+                      child: Text(
+                        'Perguntas claras e específicas recebem mais respostas. '
+                        'Inclua detalhes relevantes no contexto.',
+                        style: TextStyle(
+                            color:
+                                context.nexusTheme.textPrimary.withValues(alpha: 0.7),
+                            fontSize: r.fs(12),
+                            height: 1.4),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            SizedBox(height: r.s(80)),
-          ],
-        ),
+              SizedBox(height: r.s(80)),
+            ],
+          ),
+        )
       ),
     );
   }

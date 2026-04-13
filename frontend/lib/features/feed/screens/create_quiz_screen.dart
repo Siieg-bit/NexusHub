@@ -697,154 +697,157 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
           SizedBox(width: r.s(4)),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(r.s(16)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Ícone decorativo
-            Center(
-              child: Container(
-                width: r.s(64),
-                height: r.s(64),
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.checklist_rounded,
-                    color: accent, size: r.s(32)),
-              ),
-            ),
-            SizedBox(height: r.s(16)),
-
-            // Capa do quiz
-            _buildCoverSection(r, accent),
-            SizedBox(height: r.s(20)),
-
-            // Título
-            _buildLabel(s.quizTitle, r),
-            SizedBox(height: r.s(8)),
-            _buildTextField(
-                controller: _titleController,
-                hint: s.quizExampleHint,
-                maxLength: 120,
-                r: r,
-                accent: accent),
-            SizedBox(height: r.s(16)),
-            _buildLabel(s.descriptionOptional2, r),
-            SizedBox(height: r.s(8)),
-            _buildTextField(
-                controller: _descriptionController,
-                hint: 'Contexto do quiz...',
-                maxLength: 300,
-                maxLines: 3,
-                r: r,
-                accent: accent),
-
-            SizedBox(height: r.s(16)),
-            Divider(color: context.dividerClr),
-            SizedBox(height: r.s(12)),
-
-            // Dificuldade
-            _buildLabel('Dificuldade', r),
-            SizedBox(height: r.s(8)),
-            Row(
-              children: [
-                _buildDifficultyChip('easy', 'Fácil', Colors.green, r),
-                SizedBox(width: r.s(8)),
-                _buildDifficultyChip(
-                    'medium', 'Médio', Colors.orange, r),
-                SizedBox(width: r.s(8)),
-                _buildDifficultyChip(
-                    'hard', 'Difícil', Colors.red, r),
-              ],
-            ),
-
-            SizedBox(height: r.s(16)),
-
-            // Tags
-            _buildLabel('Tags', r),
-            SizedBox(height: r.s(4)),
-            _buildTagsSection(r),
-
-            SizedBox(height: r.s(8)),
-
-            // Toggle embaralhar
-            Row(
-              children: [
-                Icon(Icons.shuffle_rounded,
-                    color: context.nexusTheme.textSecondary, size: r.s(20)),
-                SizedBox(width: r.s(12)),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Embaralhar perguntas',
-                          style: TextStyle(
-                              color: context.nexusTheme.textPrimary,
-                              fontSize: r.fs(13),
-                              fontWeight: FontWeight.w600)),
-                      Text('Ordem aleatória para cada participante',
-                          style: TextStyle(
-                              color: context.nexusTheme.textSecondary,
-                              fontSize: r.fs(11))),
-                    ],
+      body: SafeArea(
+        bottom: true,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(r.s(16)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Ícone decorativo
+              Center(
+                child: Container(
+                  width: r.s(64),
+                  height: r.s(64),
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
                   ),
+                  child: Icon(Icons.checklist_rounded,
+                      color: accent, size: r.s(32)),
                 ),
-                Switch(
-                  value: _shuffleQuestions,
-                  onChanged: (v) =>
-                      setState(() => _shuffleQuestions = v),
-                  activeColor: accent,
-                ),
-              ],
-            ),
-
-            SizedBox(height: r.s(16)),
-            Divider(color: context.dividerClr),
-            SizedBox(height: r.s(12)),
-
-            // Perguntas
-            Row(
-              children: [
-                Text(
-                  'Perguntas',
-                  style: TextStyle(
-                      color: context.nexusTheme.textPrimary,
-                      fontSize: r.fs(15),
-                      fontWeight: FontWeight.w700),
-                ),
-                const Spacer(),
-                Text(
-                  '${_questions.length}/20',
-                  style: TextStyle(
-                      color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
-                ),
-              ],
-            ),
-            SizedBox(height: r.s(12)),
-            ...List.generate(_questions.length, (qi) {
-              final q = _questions[qi];
-              return _buildQuestionCard(qi, q, r, accent);
-            }),
-            if (_questions.length < 20)
-              Padding(
-                padding: EdgeInsets.only(top: r.s(8)),
-                child: TextButton.icon(
-                  onPressed: _addQuestion,
-                  icon: Icon(Icons.add_rounded,
-                      color: context.nexusTheme.accentPrimary, size: r.s(18)),
-                  label: Text(
-                    s.addQuestion,
+              ),
+              SizedBox(height: r.s(16)),
+  
+              // Capa do quiz
+              _buildCoverSection(r, accent),
+              SizedBox(height: r.s(20)),
+  
+              // Título
+              _buildLabel(s.quizTitle, r),
+              SizedBox(height: r.s(8)),
+              _buildTextField(
+                  controller: _titleController,
+                  hint: s.quizExampleHint,
+                  maxLength: 120,
+                  r: r,
+                  accent: accent),
+              SizedBox(height: r.s(16)),
+              _buildLabel(s.descriptionOptional2, r),
+              SizedBox(height: r.s(8)),
+              _buildTextField(
+                  controller: _descriptionController,
+                  hint: 'Contexto do quiz...',
+                  maxLength: 300,
+                  maxLines: 3,
+                  r: r,
+                  accent: accent),
+  
+              SizedBox(height: r.s(16)),
+              Divider(color: context.dividerClr),
+              SizedBox(height: r.s(12)),
+  
+              // Dificuldade
+              _buildLabel('Dificuldade', r),
+              SizedBox(height: r.s(8)),
+              Row(
+                children: [
+                  _buildDifficultyChip('easy', 'Fácil', Colors.green, r),
+                  SizedBox(width: r.s(8)),
+                  _buildDifficultyChip(
+                      'medium', 'Médio', Colors.orange, r),
+                  SizedBox(width: r.s(8)),
+                  _buildDifficultyChip(
+                      'hard', 'Difícil', Colors.red, r),
+                ],
+              ),
+  
+              SizedBox(height: r.s(16)),
+  
+              // Tags
+              _buildLabel('Tags', r),
+              SizedBox(height: r.s(4)),
+              _buildTagsSection(r),
+  
+              SizedBox(height: r.s(8)),
+  
+              // Toggle embaralhar
+              Row(
+                children: [
+                  Icon(Icons.shuffle_rounded,
+                      color: context.nexusTheme.textSecondary, size: r.s(20)),
+                  SizedBox(width: r.s(12)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Embaralhar perguntas',
+                            style: TextStyle(
+                                color: context.nexusTheme.textPrimary,
+                                fontSize: r.fs(13),
+                                fontWeight: FontWeight.w600)),
+                        Text('Ordem aleatória para cada participante',
+                            style: TextStyle(
+                                color: context.nexusTheme.textSecondary,
+                                fontSize: r.fs(11))),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: _shuffleQuestions,
+                    onChanged: (v) =>
+                        setState(() => _shuffleQuestions = v),
+                    activeColor: accent,
+                  ),
+                ],
+              ),
+  
+              SizedBox(height: r.s(16)),
+              Divider(color: context.dividerClr),
+              SizedBox(height: r.s(12)),
+  
+              // Perguntas
+              Row(
+                children: [
+                  Text(
+                    'Perguntas',
                     style: TextStyle(
-                        color: context.nexusTheme.accentPrimary,
-                        fontSize: r.fs(14)),
+                        color: context.nexusTheme.textPrimary,
+                        fontSize: r.fs(15),
+                        fontWeight: FontWeight.w700),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${_questions.length}/20',
+                    style: TextStyle(
+                        color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
+                  ),
+                ],
+              ),
+              SizedBox(height: r.s(12)),
+              ...List.generate(_questions.length, (qi) {
+                final q = _questions[qi];
+                return _buildQuestionCard(qi, q, r, accent);
+              }),
+              if (_questions.length < 20)
+                Padding(
+                  padding: EdgeInsets.only(top: r.s(8)),
+                  child: TextButton.icon(
+                    onPressed: _addQuestion,
+                    icon: Icon(Icons.add_rounded,
+                        color: context.nexusTheme.accentPrimary, size: r.s(18)),
+                    label: Text(
+                      s.addQuestion,
+                      style: TextStyle(
+                          color: context.nexusTheme.accentPrimary,
+                          fontSize: r.fs(14)),
+                    ),
                   ),
                 ),
-              ),
-            SizedBox(height: r.s(80)),
-          ],
-        ),
+              SizedBox(height: r.s(80)),
+            ],
+          ),
+        )
       ),
     );
   }

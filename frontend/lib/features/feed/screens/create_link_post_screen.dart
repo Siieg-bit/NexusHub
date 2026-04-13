@@ -553,164 +553,167 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
           SizedBox(width: r.s(4)),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(r.s(16)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Card de URL com validação visual
-            Container(
-              padding: EdgeInsets.all(r.s(16)),
-              decoration: BoxDecoration(
-                color: context.nexusTheme.surfacePrimary,
-                borderRadius: BorderRadius.circular(r.s(16)),
-                border: Border.all(
-                    color: _urlValid
-                        ? context.nexusTheme.success.withValues(alpha: 0.4)
-                        : context.dividerClr.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(r.s(8)),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2563EB)
-                              .withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(r.s(8)),
+      body: SafeArea(
+        bottom: true,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(r.s(16)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Card de URL com validação visual
+              Container(
+                padding: EdgeInsets.all(r.s(16)),
+                decoration: BoxDecoration(
+                  color: context.nexusTheme.surfacePrimary,
+                  borderRadius: BorderRadius.circular(r.s(16)),
+                  border: Border.all(
+                      color: _urlValid
+                          ? context.nexusTheme.success.withValues(alpha: 0.4)
+                          : context.dividerClr.withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(r.s(8)),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2563EB)
+                                .withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(r.s(8)),
+                          ),
+                          child: Icon(Icons.link_rounded,
+                              color: const Color(0xFF2563EB), size: r.s(20)),
                         ),
-                        child: Icon(Icons.link_rounded,
-                            color: const Color(0xFF2563EB), size: r.s(20)),
-                      ),
-                      SizedBox(width: r.s(10)),
-                      Text(
-                        'URL do Link',
-                        style: TextStyle(
-                            color: context.nexusTheme.textPrimary,
-                            fontSize: r.fs(14),
-                            fontWeight: FontWeight.w600),
-                      ),
-                      const Spacer(),
-                      if (_urlValid)
-                        Icon(Icons.check_circle_rounded,
-                            color: context.nexusTheme.success, size: r.s(18)),
-                    ],
-                  ),
-                  SizedBox(height: r.s(12)),
-                  TextField(
-                    controller: _urlController,
-                    keyboardType: TextInputType.url,
-                    autocorrect: false,
-                    style: TextStyle(
-                        color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
-                    decoration: InputDecoration(
-                      hintText: 'https://...',
-                      hintStyle: TextStyle(
-                          color: context.nexusTheme.textSecondary,
-                          fontSize: r.fs(14)),
-                      filled: true,
-                      fillColor: context.nexusTheme.backgroundPrimary,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(r.s(10)),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(r.s(10)),
-                        borderSide: BorderSide(
-                            color: _urlValid
-                                ? context.nexusTheme.success
-                                : const Color(0xFF2563EB),
-                            width: 1.5),
-                      ),
-                      prefixIcon: Icon(Icons.language_rounded,
-                          color: context.nexusTheme.textSecondary, size: r.s(18)),
+                        SizedBox(width: r.s(10)),
+                        Text(
+                          'URL do Link',
+                          style: TextStyle(
+                              color: context.nexusTheme.textPrimary,
+                              fontSize: r.fs(14),
+                              fontWeight: FontWeight.w600),
+                        ),
+                        const Spacer(),
+                        if (_urlValid)
+                          Icon(Icons.check_circle_rounded,
+                              color: context.nexusTheme.success, size: r.s(18)),
+                      ],
                     ),
-                  ),
-                ],
+                    SizedBox(height: r.s(12)),
+                    TextField(
+                      controller: _urlController,
+                      keyboardType: TextInputType.url,
+                      autocorrect: false,
+                      style: TextStyle(
+                          color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
+                      decoration: InputDecoration(
+                        hintText: 'https://...',
+                        hintStyle: TextStyle(
+                            color: context.nexusTheme.textSecondary,
+                            fontSize: r.fs(14)),
+                        filled: true,
+                        fillColor: context.nexusTheme.backgroundPrimary,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(r.s(10)),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(r.s(10)),
+                          borderSide: BorderSide(
+                              color: _urlValid
+                                  ? context.nexusTheme.success
+                                  : const Color(0xFF2563EB),
+                              width: 1.5),
+                        ),
+                        prefixIcon: Icon(Icons.language_rounded,
+                            color: context.nexusTheme.textSecondary, size: r.s(18)),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-
-            // Preview do link
-            if (_urlValid) ...[
-              SizedBox(height: r.s(12)),
-              _buildLinkPreview(r),
-            ],
-
-            SizedBox(height: r.s(16)),
-
-            // Título
-            TextField(
-              controller: _titleController,
-              maxLength: 120,
-              textCapitalization: TextCapitalization.sentences,
-              style: TextStyle(
-                  color: context.nexusTheme.textPrimary,
-                  fontSize: r.fs(20),
-                  fontWeight: FontWeight.w700),
-              decoration: InputDecoration(
-                hintText: s.postTitleHint,
-                hintStyle: TextStyle(
-                    color: context.nexusTheme.textSecondary,
+  
+              // Preview do link
+              if (_urlValid) ...[
+                SizedBox(height: r.s(12)),
+                _buildLinkPreview(r),
+              ],
+  
+              SizedBox(height: r.s(16)),
+  
+              // Título
+              TextField(
+                controller: _titleController,
+                maxLength: 120,
+                textCapitalization: TextCapitalization.sentences,
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(20),
                     fontWeight: FontWeight.w700),
-                border: InputBorder.none,
-                counterText: '',
+                decoration: InputDecoration(
+                  hintText: s.postTitleHint,
+                  hintStyle: TextStyle(
+                      color: context.nexusTheme.textSecondary,
+                      fontSize: r.fs(20),
+                      fontWeight: FontWeight.w700),
+                  border: InputBorder.none,
+                  counterText: '',
+                ),
               ),
-            ),
-            Divider(color: context.dividerClr),
-            SizedBox(height: r.s(8)),
-
-            // Descrição
-            TextField(
-              controller: _descriptionController,
-              maxLength: 500,
-              maxLines: 5,
-              minLines: 2,
-              textCapitalization: TextCapitalization.sentences,
-              style:
-                  TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(15)),
-              decoration: InputDecoration(
-                hintText: s.describeLinkHint,
-                hintStyle: TextStyle(
-                    color: context.nexusTheme.textSecondary, fontSize: r.fs(15)),
-                border: InputBorder.none,
-                counterText: '',
+              Divider(color: context.dividerClr),
+              SizedBox(height: r.s(8)),
+  
+              // Descrição
+              TextField(
+                controller: _descriptionController,
+                maxLength: 500,
+                maxLines: 5,
+                minLines: 2,
+                textCapitalization: TextCapitalization.sentences,
+                style:
+                    TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(15)),
+                decoration: InputDecoration(
+                  hintText: s.describeLinkHint,
+                  hintStyle: TextStyle(
+                      color: context.nexusTheme.textSecondary, fontSize: r.fs(15)),
+                  border: InputBorder.none,
+                  counterText: '',
+                ),
               ),
-            ),
-            SizedBox(height: r.s(16)),
-
-            // Thumbnail customizada
-            Divider(color: context.dividerClr),
-            SizedBox(height: r.s(12)),
-            Text(
-              'Thumbnail (opcional)',
-              style: TextStyle(
-                  color: context.nexusTheme.textPrimary,
-                  fontSize: r.fs(13),
-                  fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: r.s(8)),
-            _buildThumbnailSection(r),
-            SizedBox(height: r.s(16)),
-
-            // Tags
-            Divider(color: context.dividerClr),
-            SizedBox(height: r.s(12)),
-            Text(
-              'Tags',
-              style: TextStyle(
-                  color: context.nexusTheme.textPrimary,
-                  fontSize: r.fs(13),
-                  fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: r.s(8)),
-            _buildTagsSection(r),
-
-            SizedBox(height: r.s(80)),
-          ],
-        ),
+              SizedBox(height: r.s(16)),
+  
+              // Thumbnail customizada
+              Divider(color: context.dividerClr),
+              SizedBox(height: r.s(12)),
+              Text(
+                'Thumbnail (opcional)',
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(13),
+                    fontWeight: FontWeight.w600),
+              ),
+              SizedBox(height: r.s(8)),
+              _buildThumbnailSection(r),
+              SizedBox(height: r.s(16)),
+  
+              // Tags
+              Divider(color: context.dividerClr),
+              SizedBox(height: r.s(12)),
+              Text(
+                'Tags',
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(13),
+                    fontWeight: FontWeight.w600),
+              ),
+              SizedBox(height: r.s(8)),
+              _buildTagsSection(r),
+  
+              SizedBox(height: r.s(80)),
+            ],
+          ),
+        )
       ),
     );
   }

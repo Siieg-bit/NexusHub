@@ -143,102 +143,105 @@ class _WikiListScreenState extends ConsumerState<WikiListScreen> {
         ],
         iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
       ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(
+      body: SafeArea(
+        bottom: true,
+        child: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: context.nexusTheme.accentPrimary,
+                ),
+              )
+            : RefreshIndicator(
                 color: context.nexusTheme.accentPrimary,
-              ),
-            )
-          : RefreshIndicator(
-              color: context.nexusTheme.accentPrimary,
-              onRefresh: () async {
-                await _loadEntries();
-                if (!mounted) return;
-              },
-              child: Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.all(r.s(16)),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (_) => setState(() {}),
-                      style: TextStyle(color: context.nexusTheme.textPrimary),
-                      decoration: InputDecoration(
-                        hintText: s.searchCatalog,
-                        hintStyle: TextStyle(color: context.nexusTheme.textSecondary),
-                        prefixIcon: Icon(Icons.search_rounded,
-                            size: r.s(20), color: context.nexusTheme.textSecondary),
-                        filled: true,
-                        fillColor: context.surfaceColor,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(r.s(16)),
-                          borderSide: BorderSide.none,
+                onRefresh: () async {
+                  await _loadEntries();
+                  if (!mounted) return;
+                },
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(r.s(16)),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (_) => setState(() {}),
+                        style: TextStyle(color: context.nexusTheme.textPrimary),
+                        decoration: InputDecoration(
+                          hintText: s.searchCatalog,
+                          hintStyle: TextStyle(color: context.nexusTheme.textSecondary),
+                          prefixIcon: Icon(Icons.search_rounded,
+                              size: r.s(20), color: context.nexusTheme.textSecondary),
+                          filled: true,
+                          fillColor: context.surfaceColor,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(r.s(16)),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: r.s(16), vertical: r.s(10)),
                         ),
-                        contentPadding: EdgeInsets.symmetric(
-                            horizontal: r.s(16), vertical: r.s(10)),
                       ),
                     ),
-                  ),
-                  if (_categoryList.isNotEmpty)
-                    SizedBox(
-                      height: r.s(40),
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-                        children: [
-                          _CategoryChip(
-                            label: s.everyone,
-                            isSelected: _selectedCategoryId == null,
-                            onTap: () =>
-                                setState(() => _selectedCategoryId = null),
-                          ),
-                          ..._categoryList.map((cat) => _CategoryChip(
-                                label: cat['name'] as String? ?? '',
-                                isSelected: _selectedCategoryId == cat['id'],
-                                onTap: () => setState(() =>
-                                    _selectedCategoryId = cat['id'] as String?),
-                              )),
-                        ],
-                      ),
-                    ),
-                  SizedBox(height: r.s(8)),
-                  Expanded(
-                    child: _filteredEntries.isEmpty
-                        ? ListView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            children: [
-                              SizedBox(height: r.s(100)),
-                              Center(
-                                child: Text(s.noEntriesFound,
-                                    style: TextStyle(
-                                        color: context.nexusTheme.textSecondary)),
-                              ),
-                            ],
-                          )
-                        : GridView.builder(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            padding: EdgeInsets.all(r.s(16)),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 12,
-                              crossAxisSpacing: 12,
-                              childAspectRatio: 0.85,
+                    if (_categoryList.isNotEmpty)
+                      SizedBox(
+                        height: r.s(40),
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+                          children: [
+                            _CategoryChip(
+                              label: s.everyone,
+                              isSelected: _selectedCategoryId == null,
+                              onTap: () =>
+                                  setState(() => _selectedCategoryId = null),
                             ),
-                            itemCount: _filteredEntries.length,
-                            itemBuilder: (context, index) {
-                              final entry = _filteredEntries[index];
-                              return _WikiEntryCard(
-                                entry: entry,
-                                onTap: () =>
-                                    context.push('/wiki/${entry["id"]}'),
-                              );
-                            },
-                          ),
-                  ),
-                ],
-              ),
-            ),
+                            ..._categoryList.map((cat) => _CategoryChip(
+                                  label: cat['name'] as String? ?? '',
+                                  isSelected: _selectedCategoryId == cat['id'],
+                                  onTap: () => setState(() =>
+                                      _selectedCategoryId = cat['id'] as String?),
+                                )),
+                          ],
+                        ),
+                      ),
+                    SizedBox(height: r.s(8)),
+                    Expanded(
+                      child: _filteredEntries.isEmpty
+                          ? ListView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              children: [
+                                SizedBox(height: r.s(100)),
+                                Center(
+                                  child: Text(s.noEntriesFound,
+                                      style: TextStyle(
+                                          color: context.nexusTheme.textSecondary)),
+                                ),
+                              ],
+                            )
+                          : GridView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: EdgeInsets.all(r.s(16)),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 12,
+                                childAspectRatio: 0.85,
+                              ),
+                              itemCount: _filteredEntries.length,
+                              itemBuilder: (context, index) {
+                                final entry = _filteredEntries[index];
+                                return _WikiEntryCard(
+                                  entry: entry,
+                                  onTap: () =>
+                                      context.push('/wiki/${entry["id"]}'),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              )
+      ),
     );
   }
 }

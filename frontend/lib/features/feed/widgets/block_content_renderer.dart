@@ -3,6 +3,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/image_viewer.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/widgets/linkified_text.dart';
 
 /// BlockContentRenderer — Renderizador de blocos de conteúdo rico.
 ///
@@ -85,8 +88,8 @@ class BlockContentRenderer extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      child: Text(
-        content,
+      child: LinkifiedText(
+        text: content,
         textAlign: alignment,
         style: TextStyle(
           color: context.nexusTheme.textPrimary,
@@ -94,6 +97,12 @@ class BlockContentRenderer extends StatelessWidget {
           height: 1.65,
           fontWeight: isBold ? FontWeight.w700 : FontWeight.w400,
           fontStyle: isItalic ? FontStyle.italic : FontStyle.normal,
+        ),
+        linkStyle: TextStyle(
+          color: context.nexusTheme.accentSecondary,
+          fontSize: r.fs(15),
+          height: 1.65,
+          decoration: TextDecoration.underline,
         ),
       ),
     );
@@ -419,58 +428,80 @@ class BlockContentRenderer extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      child: Container(
-        padding: EdgeInsets.all(r.s(12)),
-        decoration: BoxDecoration(
-          color: context.nexusTheme.surfacePrimary,
-          borderRadius: BorderRadius.circular(r.s(10)),
-          border: Border.all(
-            color: context.dividerClr.withValues(alpha: 0.2),
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: r.s(36),
-              height: r.s(36),
-              decoration: BoxDecoration(
-                color: context.nexusTheme.accentSecondary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(r.s(8)),
-              ),
-              child: Icon(Icons.link_rounded,
-                  color: context.nexusTheme.accentSecondary, size: r.s(18)),
+      child: GestureDetector(
+        onTap: () async {
+          if (url.isEmpty) return;
+          final uri = Uri.tryParse(url);
+          if (uri != null) {
+            // Link interno do app
+            final host = uri.host;
+            if (host.isEmpty || host.contains('aminexus') || host.contains('nexushub')) {
+              final path = uri.path;
+              if (path.isNotEmpty && context.mounted) {
+                GoRouter.of(context).push(path);
+                return;
+              }
+            }
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            }
+          }
+        },
+        child: Container(
+          padding: EdgeInsets.all(r.s(12)),
+          decoration: BoxDecoration(
+            color: context.nexusTheme.surfacePrimary,
+            borderRadius: BorderRadius.circular(r.s(10)),
+            border: Border.all(
+              color: context.dividerClr.withValues(alpha: 0.2),
             ),
-            SizedBox(width: r.s(10)),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: context.nexusTheme.accentSecondary,
-                      fontSize: r.fs(13),
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (preview != null) ...[
-                    const SizedBox(height: 2),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: r.s(36),
+                height: r.s(36),
+                decoration: BoxDecoration(
+                  color: context.nexusTheme.accentSecondary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(r.s(8)),
+                ),
+                child: Icon(Icons.link_rounded,
+                    color: context.nexusTheme.accentSecondary, size: r.s(18)),
+              ),
+              SizedBox(width: r.s(10)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      preview,
+                      title,
                       style: TextStyle(
-                        color: context.nexusTheme.textSecondary,
-                        fontSize: r.fs(11),
+                        color: context.nexusTheme.accentSecondary,
+                        fontSize: r.fs(13),
+                        fontWeight: FontWeight.w600,
                       ),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    if (preview != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        preview,
+                        style: TextStyle(
+                          color: context.nexusTheme.textSecondary,
+                          fontSize: r.fs(11),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-          ],
+              Icon(Icons.open_in_new_rounded,
+                  color: context.nexusTheme.textSecondary, size: r.s(16)),
+            ],
+          ),
         ),
       ),
     );

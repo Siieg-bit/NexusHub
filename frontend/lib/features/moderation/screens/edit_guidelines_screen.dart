@@ -209,12 +209,15 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildEditorTab(),
-          _buildPreviewTab(),
-        ],
+      body: SafeArea(
+        bottom: true,
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            _buildEditorTab(),
+            _buildPreviewTab(),
+          ],
+        )
       ),
     );
   }

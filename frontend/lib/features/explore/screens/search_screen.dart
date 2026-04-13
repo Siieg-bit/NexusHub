@@ -145,19 +145,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           ],
         ),
       ),
-      body: _isSearching
-          ? Center(
-              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
-          : _query.isEmpty
-              ? _buildEmptyState()
-              : TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildCommunityResults(),
-                    _buildUserResults(),
-                    _buildPostResults(),
-                  ],
-                ),
+      body: SafeArea(
+        bottom: true,
+        child: _isSearching
+            ? Center(
+                child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
+            : _query.isEmpty
+                ? _buildEmptyState()
+                : TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildCommunityResults(),
+                      _buildUserResults(),
+                      _buildPostResults(),
+                    ],
+                  )
+      ),
     );
   }
 

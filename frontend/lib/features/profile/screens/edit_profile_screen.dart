@@ -416,159 +416,162 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(r.s(20)),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Avatar — FIX Bug #5: GestureDetector com upload
-              Center(
-                child: GestureDetector(
-                  onTap: _isUploadingAvatar ? null : _pickAndUploadAvatar,
-                  child: Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color:
-                                  context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
-                              blurRadius: 12,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: CircleAvatar(
-                          radius: 50,
-                          backgroundColor: context.surfaceColor,
-                          backgroundImage:
-                              _avatarUrl != null && _avatarUrl!.isNotEmpty
-                                  ? CachedNetworkImageProvider(_avatarUrl!)
-                                  : null,
-                          child: _avatarUrl == null || _avatarUrl!.isEmpty
-                              ? Text(
-                                  (user?.nickname ?? '?')[0].toUpperCase(),
-                                  style: TextStyle(
-                                    fontSize: r.fs(36),
-                                    fontWeight: FontWeight.w800,
-                                    color: context.nexusTheme.accentPrimary,
-                                  ),
-                                )
-                              : null,
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          padding: EdgeInsets.all(r.s(8)),
+      body: SafeArea(
+        bottom: true,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(r.s(20)),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Avatar — FIX Bug #5: GestureDetector com upload
+                Center(
+                  child: GestureDetector(
+                    onTap: _isUploadingAvatar ? null : _pickAndUploadAvatar,
+                    child: Stack(
+                      children: [
+                        Container(
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                context.nexusTheme.accentPrimary,
-                                context.nexusTheme.accentSecondary
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
                             shape: BoxShape.circle,
-                            border: Border.all(
-                              color: context.nexusTheme.backgroundPrimary,
-                              width: r.s(3),
-                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
+                                blurRadius: 12,
+                                spreadRadius: 2,
+                              ),
+                            ],
                           ),
-                          child: _isUploadingAvatar
-                              ? SizedBox(
-                                  width: r.s(18),
-                                  height: r.s(18),
-                                  child: const CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
-                                  ),
-                                )
-                              : Icon(
-                                  Icons.camera_alt_rounded,
-                                  color: Colors.white,
-                                  size: r.s(18),
-                                ),
+                          child: CircleAvatar(
+                            radius: 50,
+                            backgroundColor: context.surfaceColor,
+                            backgroundImage:
+                                _avatarUrl != null && _avatarUrl!.isNotEmpty
+                                    ? CachedNetworkImageProvider(_avatarUrl!)
+                                    : null,
+                            child: _avatarUrl == null || _avatarUrl!.isEmpty
+                                ? Text(
+                                    (user?.nickname ?? '?')[0].toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: r.fs(36),
+                                      fontWeight: FontWeight.w800,
+                                      color: context.nexusTheme.accentPrimary,
+                                    ),
+                                  )
+                                : null,
+                          ),
                         ),
-                      ),
-                    ],
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: EdgeInsets.all(r.s(8)),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  context.nexusTheme.accentPrimary,
+                                  context.nexusTheme.accentSecondary
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: context.nexusTheme.backgroundPrimary,
+                                width: r.s(3),
+                              ),
+                            ),
+                            child: _isUploadingAvatar
+                                ? SizedBox(
+                                    width: r.s(18),
+                                    height: r.s(18),
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.camera_alt_rounded,
+                                    color: Colors.white,
+                                    size: r.s(18),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: r.s(32)),
-
-              // Nickname
-              _buildTextField(
-                controller: _nicknameController,
-                label: s.nicknameHint,
-                icon: Icons.person_outlined,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return s.requiredField;
-                  }
-                  if (value.trim().length < 3) return s.min3Chars;
-                  return null;
-                },
-              ),
-              SizedBox(height: r.s(16)),
-
-              // @username global
-              _buildTextField(
-                controller: _aminoIdController,
-                label: '@username',
-                icon: Icons.alternate_email_rounded,
-                hintText: 'Único no app inteiro • exibido só no perfil global',
-                validator: (value) => _validateAminoIdValue(value, s),
-                maxLength: 30,
-                onChanged: _onAminoIdChanged,
-                suffixIcon: _isCheckingAminoId
-                    ? Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: SizedBox(
-                          width: r.s(18),
-                          height: r.s(18),
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(context.nexusTheme.accentPrimary),
-                          ),
-                        ),
-                      )
-                    : _isAminoIdAvailable == null
-                        ? null
-                        : Icon(
-                            _isAminoIdAvailable!
-                                ? Icons.check_circle_rounded
-                                : Icons.error_outline_rounded,
-                            color: _isAminoIdAvailable!
-                                ? context.nexusTheme.accentPrimary
-                                : context.nexusTheme.error,
-                          ),
-              ),
-              SizedBox(height: r.s(6)),
-              Text(
-                _aminoIdAvailabilityMessage ??
-                    'Esse @username é o identificador único da sua conta em todo o app. Ele não aparece dentro das comunidades.',
-                style: TextStyle(
-                  color: (_isAminoIdAvailable == false)
-                      ? context.nexusTheme.error
-                      : (_isAminoIdAvailable == true
-                          ? context.nexusTheme.accentPrimary
-                          : Colors.grey[500]),
-                  fontSize: r.fs(12),
+                SizedBox(height: r.s(32)),
+  
+                // Nickname
+                _buildTextField(
+                  controller: _nicknameController,
+                  label: s.nicknameHint,
+                  icon: Icons.person_outlined,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return s.requiredField;
+                    }
+                    if (value.trim().length < 3) return s.min3Chars;
+                    return null;
+                  },
                 ),
-              ),
-              SizedBox(height: r.s(16)),
-              // Rich Bio Editor
-              _buildRichBioEditor(r),
-            ],
+                SizedBox(height: r.s(16)),
+  
+                // @username global
+                _buildTextField(
+                  controller: _aminoIdController,
+                  label: '@username',
+                  icon: Icons.alternate_email_rounded,
+                  hintText: 'Único no app inteiro • exibido só no perfil global',
+                  validator: (value) => _validateAminoIdValue(value, s),
+                  maxLength: 30,
+                  onChanged: _onAminoIdChanged,
+                  suffixIcon: _isCheckingAminoId
+                      ? Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: SizedBox(
+                            width: r.s(18),
+                            height: r.s(18),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(context.nexusTheme.accentPrimary),
+                            ),
+                          ),
+                        )
+                      : _isAminoIdAvailable == null
+                          ? null
+                          : Icon(
+                              _isAminoIdAvailable!
+                                  ? Icons.check_circle_rounded
+                                  : Icons.error_outline_rounded,
+                              color: _isAminoIdAvailable!
+                                  ? context.nexusTheme.accentPrimary
+                                  : context.nexusTheme.error,
+                            ),
+                ),
+                SizedBox(height: r.s(6)),
+                Text(
+                  _aminoIdAvailabilityMessage ??
+                      'Esse @username é o identificador único da sua conta em todo o app. Ele não aparece dentro das comunidades.',
+                  style: TextStyle(
+                    color: (_isAminoIdAvailable == false)
+                        ? context.nexusTheme.error
+                        : (_isAminoIdAvailable == true
+                            ? context.nexusTheme.accentPrimary
+                            : Colors.grey[500]),
+                    fontSize: r.fs(12),
+                  ),
+                ),
+                SizedBox(height: r.s(16)),
+                // Rich Bio Editor
+                _buildRichBioEditor(r),
+              ],
+            ),
           ),
-        ),
+        )
       ),
     );
   }

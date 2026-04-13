@@ -224,21 +224,24 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         label: const Text('Sala de Projeção',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
       ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
-          : RefreshIndicator(
-              onRefresh: _loadActiveSessions,
-              color: context.nexusTheme.accentSecondary,
-              child: _activeSessions.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      padding: EdgeInsets.all(r.s(12)),
-                      itemCount: _activeSessions.length,
-                      itemBuilder: (ctx, i) =>
-                          _buildSessionCard(_activeSessions[i]),
-                    ),
-            ),
+      body: SafeArea(
+        bottom: true,
+        child: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
+            : RefreshIndicator(
+                onRefresh: _loadActiveSessions,
+                color: context.nexusTheme.accentSecondary,
+                child: _activeSessions.isEmpty
+                    ? _buildEmptyState()
+                    : ListView.builder(
+                        padding: EdgeInsets.all(r.s(12)),
+                        itemCount: _activeSessions.length,
+                        itemBuilder: (ctx, i) =>
+                            _buildSessionCard(_activeSessions[i]),
+                      ),
+              )
+      ),
     );
   }
 

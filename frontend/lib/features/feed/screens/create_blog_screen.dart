@@ -1372,162 +1372,165 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
 
     return Scaffold(
       backgroundColor: context.nexusTheme.backgroundPrimary,
-      body: _restoringDraft
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+      body: SafeArea(
+        bottom: true,
+        child: _restoringDraft
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: r.s(20),
+                      height: r.s(20),
+                      child: CircularProgressIndicator(
+                        color: context.nexusTheme.accentSecondary,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                    SizedBox(height: r.s(8)),
+                    Text(
+                      'Carregando...',
+                      style: TextStyle(
+                        color: context.nexusTheme.textSecondary,
+                        fontSize: r.fs(12),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : Column(
                 children: [
-                  SizedBox(
-                    width: r.s(20),
-                    height: r.s(20),
-                    child: CircularProgressIndicator(
-                      color: context.nexusTheme.accentSecondary,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                  SizedBox(height: r.s(8)),
-                  Text(
-                    'Carregando...',
-                    style: TextStyle(
-                      color: context.nexusTheme.textSecondary,
-                      fontSize: r.fs(12),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : Column(
-              children: [
-                // ── Header Amino ──
-                _buildAminoHeader(r, communityAsync),
-
-                // ── Área de edição ──
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return GestureDetector(
-                        behavior: HitTestBehavior.translucent,
-                        onTap: () {
-                          _blockEditorKey.currentState?.focusLastTextBlock();
-                        },
-                        child: SingleChildScrollView(
-                          controller: _scrollController,
-                          padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minHeight: constraints.maxHeight,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                          SizedBox(height: r.s(12)),
-
-                          // ── Título (direto, sem card) ──
-                          TextField(
-                            controller: _titleController,
-                            focusNode: null,
-                            maxLength: 120,
-                            textCapitalization:
-                                TextCapitalization.sentences,
-                            onChanged: (_) => setState(() {}),
-                            style: TextStyle(
-                              color: context.nexusTheme.textPrimary,
-                              fontSize: r.fs(18),
-                              fontWeight: FontWeight.w700,
-                              height: 1.3,
-                              fontFamily:
-                                  _fontFamilyFromName(_titleFont),
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Título',
-                              hintStyle: TextStyle(
-                                color: context.nexusTheme.textHint
-                                    .withValues(alpha: 0.5),
+                  // ── Header Amino ──
+                  _buildAminoHeader(r, communityAsync),
+  
+                  // ── Área de edição ──
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: () {
+                            _blockEditorKey.currentState?.focusLastTextBlock();
+                          },
+                          child: SingleChildScrollView(
+                            controller: _scrollController,
+                            padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: constraints.maxHeight,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                            SizedBox(height: r.s(12)),
+  
+                            // ── Título (direto, sem card) ──
+                            TextField(
+                              controller: _titleController,
+                              focusNode: null,
+                              maxLength: 120,
+                              textCapitalization:
+                                  TextCapitalization.sentences,
+                              onChanged: (_) => setState(() {}),
+                              style: TextStyle(
+                                color: context.nexusTheme.textPrimary,
                                 fontSize: r.fs(18),
                                 fontWeight: FontWeight.w700,
+                                height: 1.3,
+                                fontFamily:
+                                    _fontFamilyFromName(_titleFont),
                               ),
-                              filled: false,
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              counterText: '',
-                              contentPadding: EdgeInsets.zero,
-                              isDense: true,
-                            ),
-                          ),
-
-                          // Linha separadora fina
-                          Container(
-                            margin: EdgeInsets.symmetric(vertical: r.s(8)),
-                            height: 0.5,
-                            color: context.dividerClr.withValues(alpha: 0.25),
-                          ),
-
-                          // ── Block Editor (sem barra de adicionar) ──
-                          BlockEditor(
-                            key: _blockEditorKey,
-                            initialBlocks: _blocks,
-                            communityId: widget.communityId,
-                            showAddBar: false,
-                            placeholder:
-                                'Compartilhe seus pensamentos e ideias, escreva resenhas, publique imagens e GIFs, e muito mais.',
-                            onChanged: (blocks) =>
-                                setState(() => _blocks = blocks),
-                          ),
-
-                          // ── Stats discretos ──
-                          if (_wordCount > 0) ...[
-                            SizedBox(height: r.s(12)),
-                            Row(
-                              children: [
-                                Text(
-                                  '$_wordCount palavras',
-                                  style: TextStyle(
-                                    color: context.nexusTheme.textSecondary
-                                        .withValues(alpha: 0.5),
-                                    fontSize: r.fs(10),
-                                  ),
+                              decoration: InputDecoration(
+                                hintText: 'Título',
+                                hintStyle: TextStyle(
+                                  color: context.nexusTheme.textHint
+                                      .withValues(alpha: 0.5),
+                                  fontSize: r.fs(18),
+                                  fontWeight: FontWeight.w700,
                                 ),
-                                if (_readingTime.isNotEmpty) ...[
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(4)),
-                                    child: Text(
-                                      '·',
-                                      style: TextStyle(
-                                        color: context.nexusTheme.textSecondary
-                                            .withValues(alpha: 0.3),
-                                        fontSize: r.fs(10),
-                                      ),
-                                    ),
-                                  ),
+                                filled: false,
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                counterText: '',
+                                contentPadding: EdgeInsets.zero,
+                                isDense: true,
+                              ),
+                            ),
+  
+                            // Linha separadora fina
+                            Container(
+                              margin: EdgeInsets.symmetric(vertical: r.s(8)),
+                              height: 0.5,
+                              color: context.dividerClr.withValues(alpha: 0.25),
+                            ),
+  
+                            // ── Block Editor (sem barra de adicionar) ──
+                            BlockEditor(
+                              key: _blockEditorKey,
+                              initialBlocks: _blocks,
+                              communityId: widget.communityId,
+                              showAddBar: false,
+                              placeholder:
+                                  'Compartilhe seus pensamentos e ideias, escreva resenhas, publique imagens e GIFs, e muito mais.',
+                              onChanged: (blocks) =>
+                                  setState(() => _blocks = blocks),
+                            ),
+  
+                            // ── Stats discretos ──
+                            if (_wordCount > 0) ...[
+                              SizedBox(height: r.s(12)),
+                              Row(
+                                children: [
                                   Text(
-                                    _readingTime,
+                                    '$_wordCount palavras',
                                     style: TextStyle(
                                       color: context.nexusTheme.textSecondary
                                           .withValues(alpha: 0.5),
                                       fontSize: r.fs(10),
                                     ),
                                   ),
+                                  if (_readingTime.isNotEmpty) ...[
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: r.s(4)),
+                                      child: Text(
+                                        '·',
+                                        style: TextStyle(
+                                          color: context.nexusTheme.textSecondary
+                                              .withValues(alpha: 0.3),
+                                          fontSize: r.fs(10),
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      _readingTime,
+                                      style: TextStyle(
+                                        color: context.nexusTheme.textSecondary
+                                            .withValues(alpha: 0.5),
+                                        fontSize: r.fs(10),
+                                      ),
+                                    ),
+                                  ],
                                 ],
+                              ),
+                            ],
+  
+                                SizedBox(height: r.s(80)),
                               ],
                             ),
-                          ],
-
-                              SizedBox(height: r.s(80)),
-                            ],
                           ),
                         ),
-                      ),
-                    );
-                    },
+                      );
+                      },
+                    ),
                   ),
-                ),
-
-                // ── Barra fixa inferior ──
-                _buildBottomToolbar(r, s),
-              ],
-            ),
+  
+                  // ── Barra fixa inferior ──
+                  _buildBottomToolbar(r, s),
+                ],
+              )
+      ),
     );
   }
 

@@ -8,6 +8,7 @@ import '../screens/sticker_gallery_screen.dart';
 import '../screens/sticker_explore_screen.dart';
 import '../screens/create_pack_screen.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'quick_sticker_creator.dart';
 
 /// Callback quando um sticker é selecionado.
 typedef OnStickerSelected = void Function(StickerModel sticker);
@@ -153,6 +154,23 @@ class _StickerPickerV2State extends ConsumerState<StickerPickerV2>
                     onPressed: () => setState(() => _isSearching = true),
                     padding: EdgeInsets.zero,
                     constraints: BoxConstraints(minWidth: r.s(32), minHeight: r.s(32)),
+                  ),
+                  // Botão criação rápida de figurinha
+                  IconButton(
+                    icon: Icon(Icons.add_photo_alternate_rounded,
+                        color: context.nexusTheme.accentSecondary, size: r.s(20)),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => const QuickStickerCreator(),
+                      );
+                    },
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(minWidth: r.s(32), minHeight: r.s(32)),
+                    tooltip: 'Criar figurinha rápida',
                   ),
                   // Botão explorar
                   IconButton(

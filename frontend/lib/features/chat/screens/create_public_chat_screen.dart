@@ -353,521 +353,524 @@ class _CreatePublicChatScreenState
           ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: EdgeInsets.all(r.s(16)),
-          children: [
-            // ── Foto de Capa ──────────────────────────────────────────────
-            _buildSectionHeader(s.coverPhoto),
-            GestureDetector(
-              onTap: _isUploadingCover ? null : _pickCoverImage,
-              child: Container(
-                height: r.s(160),
-                decoration: BoxDecoration(
-                  color: context.nexusTheme.surfacePrimary,
-                  borderRadius: BorderRadius.circular(r.s(14)),
-                  border: Border.all(
-                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
-                    width: 1.5,
+      body: SafeArea(
+        bottom: true,
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: EdgeInsets.all(r.s(16)),
+            children: [
+              // ── Foto de Capa ──────────────────────────────────────────────
+              _buildSectionHeader(s.coverPhoto),
+              GestureDetector(
+                onTap: _isUploadingCover ? null : _pickCoverImage,
+                child: Container(
+                  height: r.s(160),
+                  decoration: BoxDecoration(
+                    color: context.nexusTheme.surfacePrimary,
+                    borderRadius: BorderRadius.circular(r.s(14)),
+                    border: Border.all(
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
+                      width: 1.5,
+                    ),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: _isUploadingCover
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircularProgressIndicator(
+                                  color: context.nexusTheme.accentPrimary),
+                              SizedBox(height: r.s(8)),
+                              Text('Enviando...',
+                                  style: TextStyle(
+                                      color: context.nexusTheme.textPrimary
+                                          .withValues(alpha: 0.6),
+                                      fontSize: r.fs(12))),
+                            ],
+                          ),
+                        )
+                      : _coverImageUrl != null
+                          ? Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                CachedNetworkImage(
+                                  imageUrl: _coverImageUrl!,
+                                  fit: BoxFit.cover,
+                                ),
+                                Positioned(
+                                  bottom: r.s(8),
+                                  right: r.s(8),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(10), vertical: r.s(5)),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(alpha: 0.6),
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(20)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.edit_rounded,
+                                            color: Colors.white, size: r.s(12)),
+                                        SizedBox(width: r.s(4)),
+                                        Text(s.tapToChangeCover,
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: r.fs(11))),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : _coverImageFile != null
+                              ? Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    Image.file(_coverImageFile!,
+                                        fit: BoxFit.cover),
+                                    Positioned(
+                                      bottom: r.s(8),
+                                      right: r.s(8),
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: r.s(10),
+                                            vertical: r.s(5)),
+                                        decoration: BoxDecoration(
+                                          color:
+                                              Colors.black.withValues(alpha: 0.6),
+                                          borderRadius:
+                                              BorderRadius.circular(r.s(20)),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Colors.white,
+                                                constraints: BoxConstraints(
+                                                    maxWidth: r.s(12),
+                                                    maxHeight: r.s(12))),
+                                            SizedBox(width: r.s(6)),
+                                            Text('Enviando...',
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: r.fs(11))),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.add_photo_alternate_rounded,
+                                      color: context.nexusTheme.accentPrimary
+                                          .withValues(alpha: 0.5),
+                                      size: r.s(40),
+                                    ),
+                                    SizedBox(height: r.s(8)),
+                                    Text(
+                                      s.coverPhotoHint,
+                                      style: TextStyle(
+                                        color: context.nexusTheme.textPrimary
+                                            .withValues(alpha: 0.5),
+                                        fontSize: r.fs(13),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                ),
+              ),
+              SizedBox(height: r.s(20)),
+  
+              // ── Ícone + Nome ──────────────────────────────────────────────
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Ícone
+                  Column(
+                    children: [
+                      GestureDetector(
+                        onTap: _isUploadingIcon ? null : _pickIconImage,
+                        child: Container(
+                          width: r.s(72),
+                          height: r.s(72),
+                          decoration: BoxDecoration(
+                            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(r.s(18)),
+                            border: Border.all(
+                              color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
+                              width: 1.5,
+                            ),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: _isUploadingIcon
+                              ? Center(
+                                  child: CircularProgressIndicator(
+                                      color: context.nexusTheme.accentPrimary,
+                                      strokeWidth: 2),
+                                )
+                              : _iconImageUrl != null
+                                  ? CachedNetworkImage(
+                                      imageUrl: _iconImageUrl!,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : _iconImageFile != null
+                                      ? Image.file(_iconImageFile!,
+                                          fit: BoxFit.cover)
+                                      : Icon(
+                                          Icons.camera_alt_rounded,
+                                          color: context.nexusTheme.accentPrimary
+                                              .withValues(alpha: 0.6),
+                                          size: r.s(28),
+                                        ),
+                        ),
+                      ),
+                      SizedBox(height: r.s(4)),
+                      Text(
+                        s.chatIcon,
+                        style: TextStyle(
+                          color: context.nexusTheme.textPrimary.withValues(alpha: 0.5),
+                          fontSize: r.fs(10),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(width: r.s(14)),
+                  // Nome do chat
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.chatName2,
+                          style: TextStyle(
+                            color: context.nexusTheme.textPrimary,
+                            fontSize: r.fs(13),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: r.s(6)),
+                        TextFormField(
+                          controller: _titleController,
+                          maxLength: 50,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: InputDecoration(
+                            hintText: s.exampleChatName,
+                            counterText: '',
+                            filled: true,
+                            fillColor: context.nexusTheme.surfacePrimary,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(r.s(12)),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(r.s(12)),
+                              borderSide: BorderSide(
+                                  color: context.nexusTheme.accentPrimary, width: 1.5),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return s.chatNameIsRequired;
+                            }
+                            if (value.trim().length < 3) {
+                              return s.nameMinLength2;
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: r.s(16)),
+  
+              // ── Descrição ─────────────────────────────────────────────────
+              Text(
+                s.descriptionOptional2,
+                style: TextStyle(
+                  color: context.nexusTheme.textPrimary,
+                  fontSize: r.fs(13),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: r.s(8)),
+              TextFormField(
+                controller: _descriptionController,
+                maxLength: 300,
+                maxLines: 3,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(
+                  hintText: s.describeChatPurpose,
+                  counterText: '',
+                  filled: true,
+                  fillColor: context.nexusTheme.surfacePrimary,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(r.s(12)),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(r.s(12)),
+                    borderSide:
+                        BorderSide(color: context.nexusTheme.accentPrimary, width: 1.5),
                   ),
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: _isUploadingCover
-                    ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CircularProgressIndicator(
-                                color: context.nexusTheme.accentPrimary),
-                            SizedBox(height: r.s(8)),
-                            Text('Enviando...',
-                                style: TextStyle(
-                                    color: context.nexusTheme.textPrimary
-                                        .withValues(alpha: 0.6),
-                                    fontSize: r.fs(12))),
-                          ],
+              ),
+              SizedBox(height: r.s(20)),
+  
+              // ── Categoria ─────────────────────────────────────────────────
+              _buildSectionHeader(s.selectCategory),
+              SizedBox(
+                height: r.s(36),
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _categories.length,
+                  separatorBuilder: (_, __) => SizedBox(width: r.s(8)),
+                  itemBuilder: (context, index) {
+                    final cat = _categories[index];
+                    final isSelected = _category == cat;
+                    return GestureDetector(
+                      onTap: () => setState(() => _category = cat),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: r.s(14), vertical: r.s(6)),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? context.nexusTheme.accentPrimary
+                              : context.nexusTheme.surfacePrimary,
+                          borderRadius: BorderRadius.circular(r.s(20)),
+                          border: Border.all(
+                            color: isSelected
+                                ? context.nexusTheme.accentPrimary
+                                : context.nexusTheme.textPrimary.withValues(alpha: 0.15),
+                          ),
                         ),
-                      )
-                    : _coverImageUrl != null
-                        ? Stack(
-                            fit: StackFit.expand,
+                        child: Text(
+                          cat[0].toUpperCase() + cat.substring(1),
+                          style: TextStyle(
+                            color: isSelected
+                                ? Colors.white
+                                : context.nexusTheme.textPrimary.withValues(alpha: 0.7),
+                            fontSize: r.fs(12),
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: r.s(20)),
+  
+              // ── Modo Lento ────────────────────────────────────────────────
+              _buildSectionHeader(s.chatSettings2),
+              Container(
+                padding: EdgeInsets.all(r.s(14)),
+                decoration: BoxDecoration(
+                  color: context.nexusTheme.surfacePrimary,
+                  borderRadius: BorderRadius.circular(r.s(12)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: r.s(36),
+                          height: r.s(36),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(r.s(10)),
+                          ),
+                          child: Icon(Icons.timer_rounded,
+                              color: Colors.orange, size: r.s(18)),
+                        ),
+                        SizedBox(width: r.s(12)),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              CachedNetworkImage(
-                                imageUrl: _coverImageUrl!,
-                                fit: BoxFit.cover,
+                              Text(
+                                s.slowMode,
+                                style: TextStyle(
+                                  color: context.nexusTheme.textPrimary,
+                                  fontSize: r.fs(14),
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                              Positioned(
-                                bottom: r.s(8),
-                                right: r.s(8),
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: r.s(10), vertical: r.s(5)),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.6),
-                                    borderRadius:
-                                        BorderRadius.circular(r.s(20)),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.edit_rounded,
-                                          color: Colors.white, size: r.s(12)),
-                                      SizedBox(width: r.s(4)),
-                                      Text(s.tapToChangeCover,
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: r.fs(11))),
-                                    ],
-                                  ),
+                              Text(
+                                s.slowModeDesc,
+                                style: TextStyle(
+                                  color:
+                                      context.nexusTheme.textPrimary.withValues(alpha: 0.55),
+                                  fontSize: r.fs(11),
                                 ),
                               ),
                             ],
-                          )
-                        : _coverImageFile != null
-                            ? Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  Image.file(_coverImageFile!,
-                                      fit: BoxFit.cover),
-                                  Positioned(
-                                    bottom: r.s(8),
-                                    right: r.s(8),
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: r.s(10),
-                                          vertical: r.s(5)),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            Colors.black.withValues(alpha: 0.6),
-                                        borderRadius:
-                                            BorderRadius.circular(r.s(20)),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white,
-                                              constraints: BoxConstraints(
-                                                  maxWidth: r.s(12),
-                                                  maxHeight: r.s(12))),
-                                          SizedBox(width: r.s(6)),
-                                          Text('Enviando...',
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: r.fs(11))),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.add_photo_alternate_rounded,
-                                    color: context.nexusTheme.accentPrimary
-                                        .withValues(alpha: 0.5),
-                                    size: r.s(40),
-                                  ),
-                                  SizedBox(height: r.s(8)),
-                                  Text(
-                                    s.coverPhotoHint,
-                                    style: TextStyle(
-                                      color: context.nexusTheme.textPrimary
-                                          .withValues(alpha: 0.5),
-                                      fontSize: r.fs(13),
-                                    ),
-                                  ),
-                                ],
-                              ),
-              ),
-            ),
-            SizedBox(height: r.s(20)),
-
-            // ── Ícone + Nome ──────────────────────────────────────────────
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Ícone
-                Column(
-                  children: [
-                    GestureDetector(
-                      onTap: _isUploadingIcon ? null : _pickIconImage,
-                      child: Container(
-                        width: r.s(72),
-                        height: r.s(72),
-                        decoration: BoxDecoration(
-                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(r.s(18)),
-                          border: Border.all(
-                            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
-                            width: 1.5,
                           ),
                         ),
-                        clipBehavior: Clip.antiAlias,
-                        child: _isUploadingIcon
-                            ? Center(
-                                child: CircularProgressIndicator(
-                                    color: context.nexusTheme.accentPrimary,
-                                    strokeWidth: 2),
-                              )
-                            : _iconImageUrl != null
-                                ? CachedNetworkImage(
-                                    imageUrl: _iconImageUrl!,
-                                    fit: BoxFit.cover,
-                                  )
-                                : _iconImageFile != null
-                                    ? Image.file(_iconImageFile!,
-                                        fit: BoxFit.cover)
-                                    : Icon(
-                                        Icons.camera_alt_rounded,
-                                        color: context.nexusTheme.accentPrimary
-                                            .withValues(alpha: 0.6),
-                                        size: r.s(28),
-                                      ),
-                      ),
+                      ],
                     ),
-                    SizedBox(height: r.s(4)),
-                    Text(
-                      s.chatIcon,
-                      style: TextStyle(
-                        color: context.nexusTheme.textPrimary.withValues(alpha: 0.5),
-                        fontSize: r.fs(10),
+                    SizedBox(height: r.s(12)),
+                    Wrap(
+                      spacing: r.s(8),
+                      runSpacing: r.s(6),
+                      children: _slowModeOptions.map((opt) {
+                        final val = opt['value'] as int;
+                        final label = opt['label'] as String;
+                        final isSelected = _slowModeInterval == val;
+                        return GestureDetector(
+                          onTap: () => setState(() => _slowModeInterval = val),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(12), vertical: r.s(6)),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Colors.orange
+                                  : Colors.orange.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(r.s(20)),
+                              border: Border.all(
+                                color: isSelected
+                                    ? Colors.orange
+                                    : Colors.orange.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Text(
+                              label,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.orange,
+                                fontSize: r.fs(12),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: r.s(8)),
+  
+              // ── Permissões ────────────────────────────────────────────────
+              _buildSettingTile(
+                icon: Icons.campaign_rounded,
+                title: s.announcementOnlyMode,
+                subtitle: s.announcementOnlyModeDesc,
+                value: _isAnnouncementOnly,
+                onChanged: (v) => setState(() => _isAnnouncementOnly = v),
+                iconColor: Colors.deepPurple,
+              ),
+              SizedBox(height: r.s(12)),
+  
+              // ── Funcionalidades ───────────────────────────────────────────
+              _buildSectionHeader(s.chatPermissions),
+              _buildSettingTile(
+                icon: Icons.mic_rounded,
+                title: s.voiceChatEnabled,
+                subtitle: s.voiceChatEnabledDesc,
+                value: _isVoiceEnabled,
+                onChanged: (v) => setState(() => _isVoiceEnabled = v),
+                iconColor: Colors.green,
+              ),
+              _buildSettingTile(
+                icon: Icons.videocam_rounded,
+                title: s.videoChatEnabled,
+                subtitle: s.videoChatEnabledDesc,
+                value: _isVideoEnabled,
+                onChanged: (v) => setState(() => _isVideoEnabled = v),
+                iconColor: Colors.blue,
+              ),
+              _buildSettingTile(
+                icon: Icons.movie_rounded,
+                title: s.projectionRoomEnabled,
+                subtitle: s.projectionRoomEnabledDesc,
+                value: _isScreenRoomEnabled,
+                onChanged: (v) => setState(() => _isScreenRoomEnabled = v),
+                iconColor: Colors.red,
+              ),
+              SizedBox(height: r.s(20)),
+  
+              // ── Info ──────────────────────────────────────────────────────
+              Container(
+                padding: EdgeInsets.all(r.s(12)),
+                decoration: BoxDecoration(
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(r.s(12)),
+                  border: Border.all(
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline_rounded,
+                        color: context.nexusTheme.accentPrimary, size: r.s(16)),
+                    SizedBox(width: r.s(8)),
+                    Expanded(
+                      child: Text(
+                        '${s.publicChatsVisible}\n${s.anyMemberCanParticipate}',
+                        style: TextStyle(
+                          color: context.nexusTheme.textPrimary.withValues(alpha: 0.7),
+                          fontSize: r.fs(12),
+                          height: 1.4,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(width: r.s(14)),
-                // Nome do chat
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        s.chatName2,
-                        style: TextStyle(
-                          color: context.nexusTheme.textPrimary,
-                          fontSize: r.fs(13),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: r.s(6)),
-                      TextFormField(
-                        controller: _titleController,
-                        maxLength: 50,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: InputDecoration(
-                          hintText: s.exampleChatName,
-                          counterText: '',
-                          filled: true,
-                          fillColor: context.nexusTheme.surfacePrimary,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(r.s(12)),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(r.s(12)),
-                            borderSide: BorderSide(
-                                color: context.nexusTheme.accentPrimary, width: 1.5),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return s.chatNameIsRequired;
-                          }
-                          if (value.trim().length < 3) {
-                            return s.nameMinLength2;
-                          }
-                          return null;
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: r.s(16)),
-
-            // ── Descrição ─────────────────────────────────────────────────
-            Text(
-              s.descriptionOptional2,
-              style: TextStyle(
-                color: context.nexusTheme.textPrimary,
-                fontSize: r.fs(13),
-                fontWeight: FontWeight.w600,
               ),
-            ),
-            SizedBox(height: r.s(8)),
-            TextFormField(
-              controller: _descriptionController,
-              maxLength: 300,
-              maxLines: 3,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                hintText: s.describeChatPurpose,
-                counterText: '',
-                filled: true,
-                fillColor: context.nexusTheme.surfacePrimary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(r.s(12)),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(r.s(12)),
-                  borderSide:
-                      BorderSide(color: context.nexusTheme.accentPrimary, width: 1.5),
-                ),
-              ),
-            ),
-            SizedBox(height: r.s(20)),
-
-            // ── Categoria ─────────────────────────────────────────────────
-            _buildSectionHeader(s.selectCategory),
-            SizedBox(
-              height: r.s(36),
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: _categories.length,
-                separatorBuilder: (_, __) => SizedBox(width: r.s(8)),
-                itemBuilder: (context, index) {
-                  final cat = _categories[index];
-                  final isSelected = _category == cat;
-                  return GestureDetector(
-                    onTap: () => setState(() => _category = cat),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: EdgeInsets.symmetric(
-                          horizontal: r.s(14), vertical: r.s(6)),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? context.nexusTheme.accentPrimary
-                            : context.nexusTheme.surfacePrimary,
-                        borderRadius: BorderRadius.circular(r.s(20)),
-                        border: Border.all(
-                          color: isSelected
-                              ? context.nexusTheme.accentPrimary
-                              : context.nexusTheme.textPrimary.withValues(alpha: 0.15),
-                        ),
-                      ),
-                      child: Text(
-                        cat[0].toUpperCase() + cat.substring(1),
-                        style: TextStyle(
-                          color: isSelected
-                              ? Colors.white
-                              : context.nexusTheme.textPrimary.withValues(alpha: 0.7),
-                          fontSize: r.fs(12),
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: r.s(20)),
-
-            // ── Modo Lento ────────────────────────────────────────────────
-            _buildSectionHeader(s.chatSettings2),
-            Container(
-              padding: EdgeInsets.all(r.s(14)),
-              decoration: BoxDecoration(
-                color: context.nexusTheme.surfacePrimary,
-                borderRadius: BorderRadius.circular(r.s(12)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: r.s(36),
-                        height: r.s(36),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(r.s(10)),
-                        ),
-                        child: Icon(Icons.timer_rounded,
-                            color: Colors.orange, size: r.s(18)),
-                      ),
-                      SizedBox(width: r.s(12)),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              s.slowMode,
-                              style: TextStyle(
-                                color: context.nexusTheme.textPrimary,
-                                fontSize: r.fs(14),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              s.slowModeDesc,
-                              style: TextStyle(
-                                color:
-                                    context.nexusTheme.textPrimary.withValues(alpha: 0.55),
-                                fontSize: r.fs(11),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: r.s(12)),
-                  Wrap(
-                    spacing: r.s(8),
-                    runSpacing: r.s(6),
-                    children: _slowModeOptions.map((opt) {
-                      final val = opt['value'] as int;
-                      final label = opt['label'] as String;
-                      final isSelected = _slowModeInterval == val;
-                      return GestureDetector(
-                        onTap: () => setState(() => _slowModeInterval = val),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: EdgeInsets.symmetric(
-                              horizontal: r.s(12), vertical: r.s(6)),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Colors.orange
-                                : Colors.orange.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(r.s(20)),
-                            border: Border.all(
-                              color: isSelected
-                                  ? Colors.orange
-                                  : Colors.orange.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Text(
-                            label,
-                            style: TextStyle(
-                              color: isSelected
-                                  ? Colors.white
-                                  : Colors.orange,
-                              fontSize: r.fs(12),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: r.s(8)),
-
-            // ── Permissões ────────────────────────────────────────────────
-            _buildSettingTile(
-              icon: Icons.campaign_rounded,
-              title: s.announcementOnlyMode,
-              subtitle: s.announcementOnlyModeDesc,
-              value: _isAnnouncementOnly,
-              onChanged: (v) => setState(() => _isAnnouncementOnly = v),
-              iconColor: Colors.deepPurple,
-            ),
-            SizedBox(height: r.s(12)),
-
-            // ── Funcionalidades ───────────────────────────────────────────
-            _buildSectionHeader(s.chatPermissions),
-            _buildSettingTile(
-              icon: Icons.mic_rounded,
-              title: s.voiceChatEnabled,
-              subtitle: s.voiceChatEnabledDesc,
-              value: _isVoiceEnabled,
-              onChanged: (v) => setState(() => _isVoiceEnabled = v),
-              iconColor: Colors.green,
-            ),
-            _buildSettingTile(
-              icon: Icons.videocam_rounded,
-              title: s.videoChatEnabled,
-              subtitle: s.videoChatEnabledDesc,
-              value: _isVideoEnabled,
-              onChanged: (v) => setState(() => _isVideoEnabled = v),
-              iconColor: Colors.blue,
-            ),
-            _buildSettingTile(
-              icon: Icons.movie_rounded,
-              title: s.projectionRoomEnabled,
-              subtitle: s.projectionRoomEnabledDesc,
-              value: _isScreenRoomEnabled,
-              onChanged: (v) => setState(() => _isScreenRoomEnabled = v),
-              iconColor: Colors.red,
-            ),
-            SizedBox(height: r.s(20)),
-
-            // ── Info ──────────────────────────────────────────────────────
-            Container(
-              padding: EdgeInsets.all(r.s(12)),
-              decoration: BoxDecoration(
-                color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(r.s(12)),
-                border: Border.all(
-                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
-                ),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.info_outline_rounded,
-                      color: context.nexusTheme.accentPrimary, size: r.s(16)),
-                  SizedBox(width: r.s(8)),
-                  Expanded(
-                    child: Text(
-                      '${s.publicChatsVisible}\n${s.anyMemberCanParticipate}',
-                      style: TextStyle(
-                        color: context.nexusTheme.textPrimary.withValues(alpha: 0.7),
-                        fontSize: r.fs(12),
-                        height: 1.4,
-                      ),
+              SizedBox(height: r.s(32)),
+  
+              // ── Botão criar ───────────────────────────────────────────────
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isCreating ? null : _createChat,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.nexusTheme.accentPrimary,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: r.s(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(r.s(12)),
                     ),
                   ),
-                ],
-              ),
-            ),
-            SizedBox(height: r.s(32)),
-
-            // ── Botão criar ───────────────────────────────────────────────
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isCreating ? null : _createChat,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: context.nexusTheme.accentPrimary,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: r.s(14)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(r.s(12)),
-                  ),
+                  child: _isCreating
+                      ? SizedBox(
+                          width: r.s(20),
+                          height: r.s(20),
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          s.createPublicChat,
+                          style: TextStyle(
+                            fontSize: r.fs(15),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
-                child: _isCreating
-                    ? SizedBox(
-                        width: r.s(20),
-                        height: r.s(20),
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text(
-                        s.createPublicChat,
-                        style: TextStyle(
-                          fontSize: r.fs(15),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
               ),
-            ),
-            SizedBox(height: r.s(20)),
-          ],
-        ),
+              SizedBox(height: r.s(20)),
+            ],
+          ),
+        )
       ),
     );
   }

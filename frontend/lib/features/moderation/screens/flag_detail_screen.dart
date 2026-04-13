@@ -211,8 +211,11 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
           backgroundColor: context.nexusTheme.backgroundPrimary,
           title: const Text('Detalhes da Denúncia'),
         ),
-        body: const Center(child: CircularProgressIndicator()),
-      );
+        body: SafeArea(
+          bottom: true,
+          child: const Center(child: CircularProgressIndicator()),
+        );
+        ),
     }
 
     if (_error != null || _detail == null) {

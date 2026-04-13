@@ -43,48 +43,51 @@ class _StickerExploreScreenState extends ConsumerState<StickerExploreScreen> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          // Barra de busca
-          Padding(
-            padding: EdgeInsets.all(r.s(16)),
-            child: TextField(
-              controller: _searchCtrl,
-              style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
-              decoration: InputDecoration(
-                hintText: 'Buscar packs de figurinhas...',
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                filled: true,
-                fillColor: context.nexusTheme.surfacePrimary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(r.s(12)),
-                  borderSide: BorderSide.none,
+      body: SafeArea(
+        bottom: true,
+        child: Column(
+          children: [
+            // Barra de busca
+            Padding(
+              padding: EdgeInsets.all(r.s(16)),
+              child: TextField(
+                controller: _searchCtrl,
+                style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
+                decoration: InputDecoration(
+                  hintText: 'Buscar packs de figurinhas...',
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  filled: true,
+                  fillColor: context.nexusTheme.surfacePrimary,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(r.s(12)),
+                    borderSide: BorderSide.none,
+                  ),
+                  prefixIcon: Icon(Icons.search_rounded, color: Colors.grey[600], size: r.s(20)),
+                  suffixIcon: _searchQuery != null
+                      ? IconButton(
+                          icon: Icon(Icons.clear_rounded, color: Colors.grey[600], size: r.s(18)),
+                          onPressed: () {
+                            _searchCtrl.clear();
+                            setState(() => _searchQuery = null);
+                          },
+                        )
+                      : null,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: r.s(16),
+                    vertical: r.s(12),
+                  ),
                 ),
-                prefixIcon: Icon(Icons.search_rounded, color: Colors.grey[600], size: r.s(20)),
-                suffixIcon: _searchQuery != null
-                    ? IconButton(
-                        icon: Icon(Icons.clear_rounded, color: Colors.grey[600], size: r.s(18)),
-                        onPressed: () {
-                          _searchCtrl.clear();
-                          setState(() => _searchQuery = null);
-                        },
-                      )
-                    : null,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: r.s(16),
-                  vertical: r.s(12),
-                ),
+                onSubmitted: (v) => setState(() => _searchQuery = v.trim().isEmpty ? null : v.trim()),
+                textInputAction: TextInputAction.search,
               ),
-              onSubmitted: (v) => setState(() => _searchQuery = v.trim().isEmpty ? null : v.trim()),
-              textInputAction: TextInputAction.search,
             ),
-          ),
-
-          // Lista de packs
-          Expanded(
-            child: _PublicPacksList(searchQuery: _searchQuery),
-          ),
-        ],
+  
+            // Lista de packs
+            Expanded(
+              child: _PublicPacksList(searchQuery: _searchQuery),
+            ),
+          ],
+        )
       ),
     );
   }

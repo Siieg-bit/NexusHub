@@ -100,17 +100,20 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
           ],
         ),
       ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildOverviewTab(),
-                _buildActionsTab(),
-                _buildToolsTab(),
-              ],
-            ),
+      body: SafeArea(
+        bottom: true,
+        child: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
+            : TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildOverviewTab(),
+                  _buildActionsTab(),
+                  _buildToolsTab(),
+                ],
+              )
+      ),
     );
   }
 

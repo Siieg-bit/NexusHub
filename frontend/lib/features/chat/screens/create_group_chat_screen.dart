@@ -261,20 +261,23 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
             ),
         ],
       ),
-      body: Column(
-        children: [
-          // Step indicator
-          _buildStepIndicator(),
-
-          // Content
-          Expanded(
-            child: _currentStep == 0
-                ? _buildCommunityStep()
-                : _currentStep == 1
-                    ? _buildInfoStep()
-                    : _buildMembersStep(),
-          ),
-        ],
+      body: SafeArea(
+        bottom: true,
+        child: Column(
+          children: [
+            // Step indicator
+            _buildStepIndicator(),
+  
+            // Content
+            Expanded(
+              child: _currentStep == 0
+                  ? _buildCommunityStep()
+                  : _currentStep == 1
+                      ? _buildInfoStep()
+                      : _buildMembersStep(),
+            ),
+          ],
+        )
       ),
     );
   }

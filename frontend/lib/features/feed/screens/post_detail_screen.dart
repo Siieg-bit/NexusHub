@@ -18,6 +18,7 @@ import '../../moderation/widgets/report_dialog.dart';
 import '../../moderation/widgets/post_moderation_menu.dart';
 import '../../stickers/stickers.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/widgets/linkified_text.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
@@ -2204,12 +2205,18 @@ class _CommentTileState extends ConsumerState<_CommentTile> {
                     SizedBox(height: r.s(4)),
                     // Texto do comentário (ocultar se for apenas marcador de sticker/imagem)
                     if (comment.content != '[sticker]' && comment.content != '[image]' && !comment.isSticker)
-                      Text(
-                        comment.content,
+                      LinkifiedText(
+                        text: comment.content,
                         style: TextStyle(
                           fontSize: r.fs(14),
                           height: 1.4,
                           color: context.nexusTheme.textPrimary,
+                        ),
+                        linkStyle: TextStyle(
+                          fontSize: r.fs(14),
+                          height: 1.4,
+                          color: context.nexusTheme.accentSecondary,
+                          decoration: TextDecoration.underline,
                         ),
                       ),
                     // Sticker com suporte a favoritar/salvar pack
