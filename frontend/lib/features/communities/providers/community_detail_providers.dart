@@ -106,17 +106,20 @@ final activeFeaturedFeedProvider =
 
 /// Posts que já passaram pela vitrine, mas saíram da rotação ativa.
 ///
-/// Mantemos o histórico separado do feed recente para que esses itens sejam
-/// exibidos apenas no carrossel abaixo dos destaques ativos.
+/// O cleanup do backend desmarca `is_featured` e zera `featured_at`/`featured_until`
+/// quando o destaque expira, mas preserva `featured_by`. Por isso, o histórico que
+/// alimenta o carrossel precisa usar `featured_by IS NOT NULL` em vez de depender
+/// de `featured_at`, que já não existe mais após a rotação.
 final archivedFeaturedFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
       .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
       .eq('community_id', communityId)
       .eq('status', 'ok')
+      .eq('is_pinned', false)
       .eq('is_featured', false)
-      .not('featured_at', 'is', null)
-      .order('featured_at', ascending: false)
+      .not('featured_by', 'is', null)
+      .order('updated_at', ascending: false)
       .limit(50);
 
   final maps = (response as List? ?? []).map((e) {
@@ -139,7 +142,7 @@ final latestFeedProvider =
       .eq('status', 'ok')
       .eq('is_pinned', false)
       .eq('is_featured', false)
-      .isFilter('featured_at', null)
+      .isFilter('featured_by', null)
       .order('created_at', ascending: false)
       .limit(20);
 
