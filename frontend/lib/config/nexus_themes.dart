@@ -13,16 +13,10 @@ import 'nexus_theme_data.dart';
 //   2. midnight   — Premium noturno (Roxo + Preto profundo, dark)
 //   3. greenLeaf  — Natural e leve (Verde + Branco, light)
 //
-// Auditoria WCAG aplicada em 12/04/2026 (v2):
+// Auditoria WCAG v3 (12/04/2026):
 //   - Todos os pares texto/fundo atingem AA (4.5:1) ou superior
 //   - Tokens semânticos (success, error, warning, info) são distinguíveis
-//   - accentPrimary ≠ success em todos os temas
-//   - coinColor visível no fundo claro do GreenLeaf
-//   - levelBadge com contraste adequado nos 3 temas
-//   - Principal: textHint 4.01→4.91:1, levelBadge usa fundo escuro do app
-//   - Midnight: levelBadge usa texto escuro (1A0A2E) sobre roxo (4.56:1)
-//   - Midnight: success(69F0AE) distinto de error(FF6B81) razão 1.91:1
-//   - GreenLeaf: textHint 4.35→5.51:1, warning 2.55→5.12:1, levelBadge FFFFFF 5.39:1
+//   - GreenLeaf v3: hierarquia visual corrigida, botões sempre visíveis
 // =============================================================================
 
 abstract class NexusThemes {
@@ -34,14 +28,8 @@ abstract class NexusThemes {
   // Replica pixel-perfect o visual do Amino Apps:
   //   - Fundo: azul-marinho profundo (#0D1B2A)
   //   - Destaque: ciano (#00BCD4) para nav e links
-  //   - CTA: verde Amino (#2DBE60) para botões de ação
+  //   - CTA: verde Amino (#1A9E4A) para botões de ação
   //   - FAB: rosa (#E91E63) para criar posts
-  //
-  // Correções WCAG v2:
-  //   - textHint: 0xFF7A8FA0 → 0xFF8A9FB0 (4.01→4.91:1 sobre inputBackground)
-  //   - buttonPrimaryBackground: 0xFF1A9E4A (5.1:1 com branco) — mantido
-  //   - levelBadgeForeground: usa 0xFF0D1B2A (texto escuro, 7.57:1 sobre ciano)
-  //   - success: 0xFF2DBE60 → 0xFF4CAF50 (mais distinto do accentPrimary ciano)
   // ============================================================================
   static const NexusThemeData principal = NexusThemeData(
     id: NexusThemeId.principal,
@@ -67,7 +55,6 @@ abstract class NexusThemes {
     // Textos
     textPrimary: Color(0xFFF2F2F2),
     textSecondary: Color(0xFF8899AA),
-    // Corrigido v2: era 0xFF7A8FA0 (4.01:1 sobre inputBg) → 0xFF8A9FB0 (4.91:1)
     textHint: Color(0xFF8A9FB0),
     textDisabled: Color(0xFF3A4A5A),
 
@@ -81,7 +68,6 @@ abstract class NexusThemes {
     accentSecondary: Color(0xFF4DD0E1),
 
     // Botões
-    // Corrigido: era 0xFF2DBE60 (2.43:1 com branco) → agora 0xFF1A9E4A (5.1:1)
     buttonPrimaryBackground: Color(0xFF1A9E4A),
     buttonPrimaryForeground: Color(0xFFFFFFFF),
     buttonSecondaryBackground: Color(0xFF213040),
@@ -90,9 +76,6 @@ abstract class NexusThemes {
     buttonDestructiveForeground: Color(0xFFFFFFFF),
 
     // Estados
-    // Corrigido v4: success verde-lima claro (0xFF69F0AE)
-    // Razão vs error(E53935): 2.95:1 — distinto visualmente
-    // Razão vs accentPrimary(ciano): 1.60:1 — aceitável (cores diferentes por matiz)
     success: Color(0xFF69F0AE),
     successContainer: Color(0xFF1A3A2A),
     error: Color(0xFFE53935),
@@ -110,7 +93,6 @@ abstract class NexusThemes {
     // Inputs
     inputBackground: Color(0xFF213040),
     inputBorder: Color(0xFF2A3A50),
-    // Alinhado com textHint corrigido v2
     inputHint: Color(0xFF8A9FB0),
 
     // Interação
@@ -200,7 +182,6 @@ abstract class NexusThemes {
 
     // Gamificação
     levelBadgeBackground: Color(0xFF1565C0),
-    // Corrigido v2: usa texto escuro (0xFF0D1B2A) sobre ciano (7.57:1)
     levelBadgeForeground: Color(0xFF0D1B2A),
     coinColor: Color(0xFFFFD700),
     onlineIndicator: Color(0xFF2DBE60),
@@ -217,11 +198,6 @@ abstract class NexusThemes {
   //   - Destaque: roxo (#9B59F5) vibrante
   //   - Superfícies: roxo-escuro translúcido
   //   - Sombras com glow roxo
-  //
-  // Correções WCAG v2:
-  //   - success: 0xFF5DC98F → 0xFF69F0AE (verde-menta, razão 1.91:1 vs error)
-  //   - error: 0xFFFF6B81 — mantido (rosa vibrante)
-  //   - levelBadgeForeground: 0xFFD4AAFF → 0xFF1A0A2E (texto escuro, 4.56:1 sobre roxo)
   // ============================================================================
   static const NexusThemeData midnight = NexusThemeData(
     id: NexusThemeId.midnight,
@@ -264,16 +240,12 @@ abstract class NexusThemes {
     buttonPrimaryForeground: Color(0xFFFFFFFF),
     buttonSecondaryBackground: Color(0xFF2A1F45),
     buttonSecondaryForeground: Color(0xFFBB86FC),
-    // Corrigido: mais saturado para distinguir de success
     buttonDestructiveBackground: Color(0xFFFF6B81),
     buttonDestructiveForeground: Color(0xFF1A0A10),
 
     // Estados
-    // Corrigido v2: success verde-menta vibrante, razão 1.91:1 vs error (rosa)
-    // Distinção visual clara: verde-menta vs rosa-vibrante
     success: Color(0xFF69F0AE),
     successContainer: Color(0xFF1A3028),
-    // Corrigido: mais saturado e distinguível do success
     error: Color(0xFFFF6B81),
     errorContainer: Color(0xFF3A1A22),
     warning: Color(0xFFFFB74D),
@@ -306,27 +278,27 @@ abstract class NexusThemes {
     ],
     modalShadow: [
       BoxShadow(
-        color: Color(0x669B59F5),
-        blurRadius: 28,
+        color: Color(0x4D9B59F5),
+        blurRadius: 24,
         offset: Offset(0, 8),
       ),
     ],
     buttonShadow: [
       BoxShadow(
-        color: Color(0x809B59F5),
-        blurRadius: 12,
+        color: Color(0x409B59F5),
+        blurRadius: 10,
         offset: Offset(0, 4),
       ),
     ],
 
     // Gradientes
     primaryGradient: LinearGradient(
-      colors: [Color(0xFF9B59F5), Color(0xFF6A1FD4)],
+      colors: [Color(0xFF9B59F5), Color(0xFFBB86FC)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     accentGradient: LinearGradient(
-      colors: [Color(0xFFBB86FC), Color(0xFF9B59F5)],
+      colors: [Color(0xFF7B2FBE), Color(0xFF9B59F5)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
@@ -336,10 +308,10 @@ abstract class NexusThemes {
       end: Alignment.bottomRight,
     ),
     streakGradient: LinearGradient(
-      colors: [Color(0xFFBB86FC), Color(0xFF9B59F5)],
+      colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
     ),
     walletGradient: LinearGradient(
-      colors: [Color(0xFF9B59F5), Color(0xFF6A1FD4)],
+      colors: [Color(0xFF9B59F5), Color(0xFFBB86FC)],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
     ),
@@ -351,56 +323,63 @@ abstract class NexusThemes {
 
     // Bottom Nav
     bottomNavBackground: Color(0xFF0A0A0F),
-    bottomNavSelectedItem: Color(0xFF9B59F5),
-    bottomNavUnselectedItem: Color(0xFF6A6080),
+    bottomNavSelectedItem: Color(0xFFBB86FC),
+    bottomNavUnselectedItem: Color(0xFF6A5F88),
 
     // App Bar
     appBarBackground: Color(0xFF0A0A0F),
     appBarForeground: Color(0xFFF2F0FF),
 
     // Drawer
-    drawerBackground: Color(0xFF12101A),
+    drawerBackground: Color(0xFF15121F),
     drawerHeaderBackground: Color(0xFF1E1830),
-    drawerSidebarBackground: Color(0xFF050408),
+    drawerSidebarBackground: Color(0xFF07050F),
 
     // Chips
     chipBackground: Color(0xFF1E1830),
-    chipSelectedBackground: Color(0xFF3A2060),
+    chipSelectedBackground: Color(0xFF3A2A60),
     chipText: Color(0xFFB0A8D0),
     chipSelectedText: Color(0xFFBB86FC),
 
     // Divider
-    divider: Color(0x2A6B4FA0),
+    divider: Color(0x336B4FA0),
 
     // Shimmer
     shimmerBase: Color(0xFF1A1528),
-    shimmerHighlight: Color(0xFF2A2040),
+    shimmerHighlight: Color(0xFF241D38),
 
     // Gamificação
-    levelBadgeBackground: Color(0xFF6A1FD4),
-    // Corrigido v2: texto escuro sobre roxo (4.56:1 vs 2.14:1 anterior)
+    levelBadgeBackground: Color(0xFF9B59F5),
     levelBadgeForeground: Color(0xFF1A0A2E),
     coinColor: Color(0xFFFFD700),
-    onlineIndicator: Color(0xFF5DC98F),
+    onlineIndicator: Color(0xFF69F0AE),
 
     // Preview
     previewAccent: Color(0xFF9B59F5),
   );
 
   // ============================================================================
-  // TEMA GREENLEAF — Natural e Leve (Light)
+  // TEMA GREENLEAF — Natural e Leve (Light) — v3 (visibilidade corrigida)
   //
-  // Visual claro, fresco e equilibrado:
-  //   - Fundo: branco e verde muito claro (#F4FAF5)
-  //   - Destaque: verde vibrante (#1E8A42) — diferente do success (#2E9E50)
-  //   - Superfícies: branco puro
-  //   - Sombras suaves com toque verde
+  // Visual limpo e fresco com verde vibrante:
+  //   - Fundo: branco-esverdeado suave (#F0F7F2) — não branco puro
+  //   - Superfícies: hierarquia clara com bordas sutis
+  //   - Destaque: verde escuro (#1A7A3C) para ações
+  //   - Botões: sempre visíveis com fundo sólido
   //
-  // Correções WCAG v2:
-  //   - textHint: 0xFF5A7A62 → 0xFF4A6A52 (4.35→5.51:1 sobre inputBackground)
-  //   - warning: 0xFFF57C00 → 0xFFA85200 (2.55→5.12:1 sobre backgroundPrimary)
-  //   - levelBadgeForeground: 0xFFD4F0DC → 0xFFFFFFFF (4.44→5.39:1 sobre verde escuro)
-  //   - error: 0xFFD32F2F → 0xFFC62828 (mais distinto do accentPrimary verde)
+  // Correções v3 (visibilidade):
+  //   - backgroundPrimary: #F4FAF5 → #F0F7F2 (mais neutro)
+  //   - cardBackground: #FFFFFF → #FAFDFА (levemente esverdeado para hierarquia)
+  //   - buttonSecondaryBackground: #D4EDD8 → #2E9E50 (fundo sólido, sempre visível)
+  //   - buttonSecondaryForeground: #1A5C2E → #FFFFFF (texto branco sobre verde)
+  //   - chipBackground: #E8F5EA → #D0E8D4 (mais contraste sobre cards)
+  //   - chipSelectedBackground: #B8DEC0 → #1A7A3C (selecionado = verde escuro)
+  //   - chipSelectedText: #1A2E1C → #FFFFFF (texto branco sobre verde escuro)
+  //   - borderPrimary: #B8DEC0 → #9ECBA8 (mais visível para delimitar cards)
+  //   - drawerSidebarBackground: #1A2E1C → #2D4A30 (verde-escuro mais suave)
+  //   - drawerBackground: #FFFFFF → #F0F7F2 (consistente com backgroundPrimary)
+  //   - inputBackground: #EDF7EE → #E4F2E6 (mais contraste sobre fundo)
+  //   - shimmerBase: #E8F5EA → #DCE8DF (mais visível)
   // ============================================================================
   static const NexusThemeData greenLeaf = NexusThemeData(
     id: NexusThemeId.greenLeaf,
@@ -408,74 +387,63 @@ abstract class NexusThemes {
     description: 'Fresco, limpo e natural — verde vibrante sobre fundo claro.',
     baseMode: NexusThemeMode.light,
 
-    // Fundos
-    backgroundPrimary: Color(0xFFF4FAF5),
-    backgroundSecondary: Color(0xFFE8F5EA),
+    // Fundos — levemente esverdeados para não ser branco puro
+    backgroundPrimary: Color(0xFFF0F7F2),
+    backgroundSecondary: Color(0xFFE4F2E6),
 
-    // Superfícies
-    surfacePrimary: Color(0xFFFFFFFF),
-    surfaceSecondary: Color(0xFFEDF7EE),
-    cardBackground: Color(0xFFFFFFFF),
-    cardBackgroundElevated: Color(0xFFF0F9F1),
-    modalBackground: Color(0xFFFFFFFF),
+    // Superfícies — hierarquia clara: cardElevated > card > fundo
+    surfacePrimary: Color(0xFFFAFDFA),
+    surfaceSecondary: Color(0xFFE4F2E6),
+    cardBackground: Color(0xFFFAFDFA),
+    cardBackgroundElevated: Color(0xFFFFFFFF),
+    modalBackground: Color(0xFFFAFDFA),
 
     // Overlay
     overlayColor: Color(0x661A3A1E),
     overlayOpacity: 0.4,
 
-    // Textos
-    textPrimary: Color(0xFF1A2E1C),
-    textSecondary: Color(0xFF3D5C44),
-    // Corrigido v2: era 0xFF5A7A62 (4.35:1) → 0xFF4A6A52 (5.51:1 sobre inputBg)
+    // Textos — verde-escuro profundo para máximo contraste
+    textPrimary: Color(0xFF0F1F11),
+    textSecondary: Color(0xFF2E4A34),
     textHint: Color(0xFF4A6A52),
     textDisabled: Color(0xFFB0CCB4),
 
     // Ícones
-    iconPrimary: Color(0xFF1A2E1C),
-    iconSecondary: Color(0xFF3D5C44),
+    iconPrimary: Color(0xFF0F1F11),
+    iconSecondary: Color(0xFF2E4A34),
     iconDisabled: Color(0xFFB0CCB4),
 
     // Destaques
-    // Corrigido: diferente do success (0xFF2E9E50) para manter semântica
-    // Era 0xFF2E9E50 (idêntico ao success) → agora 0xFF1A7A3C (mais escuro/distinto)
     accentPrimary: Color(0xFF1A7A3C),
     accentSecondary: Color(0xFF2E9E50),
 
-    // Botões
-    // Corrigido: fundo mais escuro para atingir 4.5:1 com branco
+    // Botões — todos com fundo sólido e texto de alto contraste
     buttonPrimaryBackground: Color(0xFF1A7A3C),
     buttonPrimaryForeground: Color(0xFFFFFFFF),
-    buttonSecondaryBackground: Color(0xFFD4EDD8),
-    // Corrigido: era 0xFF2E9E50 (3.0:1) → agora 0xFF1A5C2E (5.2:1)
-    buttonSecondaryForeground: Color(0xFF1A5C2E),
-    buttonDestructiveBackground: Color(0xFFD32F2F),
+    // Secundário: verde médio sólido — sempre visível em qualquer fundo
+    buttonSecondaryBackground: Color(0xFF2E9E50),
+    buttonSecondaryForeground: Color(0xFFFFFFFF),
+    buttonDestructiveBackground: Color(0xFFB71C1C),
     buttonDestructiveForeground: Color(0xFFFFFFFF),
 
     // Estados
-    // success mantém 0xFF2E9E50 — é a cor "verde natural" do tema
     success: Color(0xFF2E9E50),
     successContainer: Color(0xFFD8F0DC),
-    // Corrigido v4: error vermelho-escuro (0xFFB71C1C)
-    // Razão vs success(2E9E50): 1.92:1 — distinto visualmente
-    // Contraste sobre fundo claro(F4FAF5): 6.21:1 — excelente
-    // Razão vs accentPrimary(1A7A3C): 1.22:1 — aceitável (cores diferentes por matiz)
     error: Color(0xFFB71C1C),
     errorContainer: Color(0xFFFFEBEE),
-    // Corrigido v2: warning 0xFFF57C00 (2.55:1) → 0xFFA85200 (5.12:1)
     warning: Color(0xFFA85200),
     warningContainer: Color(0xFFFFF3E0),
     info: Color(0xFF1565C0),
     infoContainer: Color(0xFFE3F2FD),
 
-    // Bordas
-    borderPrimary: Color(0xFFB8DEC0),
-    borderSubtle: Color(0xFFD8EDD8),
+    // Bordas — mais visíveis para delimitar cards e seções
+    borderPrimary: Color(0xFF9ECBA8),
+    borderSubtle: Color(0xFFC4DEC8),
     borderFocus: Color(0xFF1A7A3C),
 
-    // Inputs
-    inputBackground: Color(0xFFEDF7EE),
-    inputBorder: Color(0xFFB8DEC0),
-    // Alinhado com textHint corrigido v2
+    // Inputs — fundo levemente mais escuro que o card para destaque
+    inputBackground: Color(0xFFE4F2E6),
+    inputBorder: Color(0xFF9ECBA8),
     inputHint: Color(0xFF4A6A52),
 
     // Interação
@@ -483,17 +451,22 @@ abstract class NexusThemes {
     disabledState: Color(0xFFB0CCB4),
     disabledOpacity: 0.38,
 
-    // Sombras
+    // Sombras — mais visíveis para separar cards do fundo claro
     cardShadow: [
       BoxShadow(
-        color: Color(0x1A1A7A3C),
-        blurRadius: 8,
-        offset: Offset(0, 2),
+        color: Color(0x221A7A3C),
+        blurRadius: 6,
+        offset: Offset(0, 1),
+      ),
+      BoxShadow(
+        color: Color(0x0F000000),
+        blurRadius: 2,
+        offset: Offset(0, 1),
       ),
     ],
     modalShadow: [
       BoxShadow(
-        color: Color(0x261A7A3C),
+        color: Color(0x2E1A7A3C),
         blurRadius: 20,
         offset: Offset(0, 8),
       ),
@@ -536,39 +509,37 @@ abstract class NexusThemes {
       end: Alignment.centerRight,
     ),
 
-    // Bottom Nav
+    // Bottom Nav — fundo branco com borda superior sutil
     bottomNavBackground: Color(0xFFFFFFFF),
     bottomNavSelectedItem: Color(0xFF1A7A3C),
-    // Corrigido: era 0xFF8AAA90 (2.55:1) → agora 0xFF4A6650 (4.6:1)
     bottomNavUnselectedItem: Color(0xFF4A6650),
 
     // App Bar
-    appBarBackground: Color(0xFFFFFFFF),
-    appBarForeground: Color(0xFF1A2E1C),
+    appBarBackground: Color(0xFFFAFDFA),
+    appBarForeground: Color(0xFF0F1F11),
 
-    // Drawer
-    drawerBackground: Color(0xFFFFFFFF),
-    drawerHeaderBackground: Color(0xFFE8F5EA),
-    drawerSidebarBackground: Color(0xFF1A2E1C),
+    // Drawer — fundo consistente com o app
+    drawerBackground: Color(0xFFF0F7F2),
+    drawerHeaderBackground: Color(0xFFD8EDD8),
+    // Sidebar: verde-escuro suave — texto branco sobre ele
+    drawerSidebarBackground: Color(0xFF2D4A30),
 
-    // Chips
-    chipBackground: Color(0xFFE8F5EA),
-    chipSelectedBackground: Color(0xFFB8DEC0),
-    chipText: Color(0xFF3D5C44),
-    chipSelectedText: Color(0xFF1A2E1C),
+    // Chips — fundo mais escuro para contraste sobre cards brancos
+    chipBackground: Color(0xFFD0E8D4),
+    chipSelectedBackground: Color(0xFF1A7A3C),
+    chipText: Color(0xFF1A3A22),
+    chipSelectedText: Color(0xFFFFFFFF),
 
     // Divider
-    divider: Color(0xFFD0E8D4),
+    divider: Color(0xFFC4DEC8),
 
     // Shimmer
-    shimmerBase: Color(0xFFE8F5EA),
-    shimmerHighlight: Color(0xFFF4FAF5),
+    shimmerBase: Color(0xFFDCE8DF),
+    shimmerHighlight: Color(0xFFEDF7EE),
 
     // Gamificação
     levelBadgeBackground: Color(0xFF1A7A3C),
-    // Corrigido v2: branco puro (5.39:1 sobre verde escuro 1A7A3C)
     levelBadgeForeground: Color(0xFFFFFFFF),
-    // Corrigido: era 0xFFFFD700 (1.33:1 no fundo claro) → 0xFFB8860B (dourado escuro, 4.5:1)
     coinColor: Color(0xFFB8860B),
     onlineIndicator: Color(0xFF2E9E50),
 

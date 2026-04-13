@@ -310,7 +310,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
                     ),
                     SizedBox(width: r.s(3)),
                     Text(
-                      coins.toString(),
+                      _formatCoins(coins),
                       style: TextStyle(
                         color: context.nexusTheme.buttonPrimaryForeground,
                         fontSize: r.fs(11),
@@ -342,6 +342,23 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
         ),
       ),
     );
+  }
+
+  /// Formata o saldo de coins com separador de milhar por ponto (ex: 96.806).
+  static String _formatCoins(int coins) {
+    if (coins >= 1000000) {
+      return '${(coins / 1000000).toStringAsFixed(1)}M';
+    }
+    if (coins >= 1000) {
+      final str = coins.toString();
+      final buffer = StringBuffer();
+      for (int i = 0; i < str.length; i++) {
+        if (i > 0 && (str.length - i) % 3 == 0) buffer.write('.');
+        buffer.write(str[i]);
+      }
+      return buffer.toString();
+    }
+    return coins.toString();
   }
 
   /// Sino de notificações — branco, badge vermelho com número ou dot.

@@ -141,61 +141,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     onPressed: () => context.pop(),
                   ),
                   title: isOwnProfile
-                      ? GestureDetector(
+                      ? _ProfileCoinsPill(
+                          coins: user.coins,
                           onTap: () => context.push('/wallet'),
-                          child: Container(
-                            height: r.s(28),
-                            padding: EdgeInsets.symmetric(horizontal: r.s(10)),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
-                              ),
-                              borderRadius: BorderRadius.circular(r.s(14)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: r.s(16),
-                                  height: r.s(16),
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: LinearGradient(
-                                      colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Text('A',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: r.fs(9),
-                                            fontWeight: FontWeight.w900,
-                                            height: 1.0)),
-                                  ),
-                                ),
-                                SizedBox(width: r.s(4)),
-                                Text(
-                                  _formatCoins(user.coins),
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: r.fs(12),
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                SizedBox(width: r.s(4)),
-                                Container(
-                                  width: r.s(16),
-                                  height: r.s(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.3),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(Icons.add,
-                                      color: Colors.white, size: r.s(11)),
-                                ),
-                              ],
-                            ),
-                          ),
+                          onAddTap: () => context.push('/coin-shop'),
                         )
                       : const SizedBox.shrink(),
                   centerTitle: true,
@@ -867,4 +816,119 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(covariant _TabBarDelegate oldDelegate) =>
       tabBar != oldDelegate.tabBar;
+}
+
+// =============================================================================
+// COINS PILL — Unificado com o sistema do AminoTopBar
+// Usa tokens do NexusTheme e formato pontuado (ex: 96.806)
+// =============================================================================
+class _ProfileCoinsPill extends ConsumerWidget {
+  final int coins;
+  final VoidCallback? onTap;
+  final VoidCallback? onAddTap;
+
+  const _ProfileCoinsPill({
+    required this.coins,
+    this.onTap,
+    this.onAddTap,
+  });
+
+  static String _formatCoins(int coins) {
+    if (coins >= 1000000) {
+      return '${(coins / 1000000).toStringAsFixed(1)}M';
+    }
+    if (coins >= 1000) {
+      final str = coins.toString();
+      final buffer = StringBuffer();
+      for (int i = 0; i < str.length; i++) {
+        if (i > 0 && (str.length - i) % 3 == 0) buffer.write('.');
+        buffer.write(str[i]);
+      }
+      return buffer.toString();
+    }
+    return coins.toString();
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final r = context.r;
+    final theme = context.nexusTheme;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(r.s(13)),
+      child: SizedBox(
+        height: r.s(26),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ── Metade esquerda: fundo walletGradient + moeda + valor ──
+            GestureDetector(
+              onTap: onTap,
+              child: Container(
+                height: r.s(26),
+                padding: EdgeInsets.symmetric(horizontal: r.s(8)),
+                color: theme.walletGradient.colors.first,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: r.s(15),
+                      height: r.s(15),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: theme.coinColor,
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.overlayColor.withValues(alpha: 0.2),
+                            blurRadius: 1,
+                            offset: const Offset(0, 0.5),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          '\$',
+                          style: TextStyle(
+                            color: theme.buttonPrimaryForeground,
+                            fontSize: r.fs(8),
+                            fontWeight: FontWeight.w900,
+                            height: 1.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: r.s(4)),
+                    Text(
+                      _formatCoins(coins),
+                      style: TextStyle(
+                        color: theme.buttonPrimaryForeground,
+                        fontSize: r.fs(12),
+                        fontWeight: FontWeight.w700,
+                        height: 1.0,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // ── Metade direita: accentPrimary + "+" ──
+            GestureDetector(
+              onTap: onAddTap,
+              child: Container(
+                height: r.s(26),
+                width: r.s(26),
+                color: theme.accentPrimary,
+                child: Center(
+                  child: Icon(
+                    Icons.add_rounded,
+                    color: theme.buttonPrimaryForeground,
+                    size: r.s(16),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
