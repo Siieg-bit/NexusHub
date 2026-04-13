@@ -41,7 +41,7 @@ class CommunityFeedTab extends ConsumerWidget {
       ref.invalidate(activeFeaturedFeedProvider(communityId));
       ref.invalidate(latestFeedProvider(communityId));
     } else {
-      ref.invalidate(communityFeedProvider(communityId));
+      ref.invalidate(latestFeedProvider(communityId));
     }
     await Future.delayed(const Duration(milliseconds: 500));
   }
@@ -334,7 +334,7 @@ class _LatestTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
-    final feedAsync = ref.watch(communityFeedProvider(communityId));
+    final feedAsync = ref.watch(latestFeedProvider(communityId));
 
     return feedAsync.when(
       loading: () => Center(
