@@ -12,6 +12,7 @@ import '../../../core/utils/amino_animations.dart';
 import '../../../core/providers/post_provider.dart' as post_providers;
 import '../../communities/providers/community_detail_providers.dart'
     as community_providers;
+import '../../auth/providers/auth_provider.dart' as auth_providers;
 import '../../moderation/widgets/post_moderation_menu.dart';
 import 'block_content_renderer.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
@@ -414,8 +415,7 @@ class _PostCardState extends ConsumerState<PostCard>
   Widget _buildAuthorHeader(BuildContext context) {
     final s = ref.read(stringsProvider);
     final r = context.r;
-    final currentUser =
-        ref.watch(post_providers.currentUserProfileProvider).valueOrNull;
+    final currentUser = ref.watch(auth_providers.currentUserProvider);
     final membership = _post.communityId.isNotEmpty
         ? ref
             .watch(
