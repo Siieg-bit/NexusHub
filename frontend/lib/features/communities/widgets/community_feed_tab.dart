@@ -128,8 +128,8 @@ class _FeaturedTab extends ConsumerWidget {
             SliverToBoxAdapter(child: SizedBox(height: r.s(8))),
           ],
 
-          // ── Seção 2: Destaques Ativos ───────────────────────────────────
-          if (primaryFeatured != null) ...[
+          // ── Seção 2: Destaques e histórico de rotação ───────────────────
+          if (primaryFeatured != null || archivedFeaturedPosts.isNotEmpty) ...[
             SliverToBoxAdapter(
               child: _SectionHeader(
                 icon: Icons.star_rounded,
@@ -137,15 +137,16 @@ class _FeaturedTab extends ConsumerWidget {
                 accent: accent,
               ),
             ),
-            SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: r.s(12)),
-              sliver: SliverToBoxAdapter(
-                child: _FeaturedHeroCard(
-                  post: primaryFeatured,
-                  accent: accent,
+            if (primaryFeatured != null)
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: r.s(12)),
+                sliver: SliverToBoxAdapter(
+                  child: _FeaturedHeroCard(
+                    post: primaryFeatured,
+                    accent: accent,
+                  ),
                 ),
               ),
-            ),
             if (secondaryFeatured.isNotEmpty)
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(r.s(12), r.s(8), r.s(12), 0),
