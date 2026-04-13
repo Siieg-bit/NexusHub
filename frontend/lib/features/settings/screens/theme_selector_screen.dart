@@ -88,25 +88,52 @@ class ThemeSelectorScreen extends ConsumerWidget {
             ),
           ),
 
-          // Lista de temas
+          // Lista de temas (built-in + remotos criados no bubble-admin)
           Expanded(
-            child: ListView.separated(
-              padding: EdgeInsets.symmetric(
-                  horizontal: r.s(16), vertical: r.s(4)),
-              itemCount: NexusThemes.all.length,
-              separatorBuilder: (_, __) => SizedBox(height: r.s(12)),
-              itemBuilder: (context, index) {
-                final t = NexusThemes.all[index];
-                final isSelected = t.id == theme.id;
-                return _ThemeCard(
-                  theme: t,
-                  isSelected: isSelected,
-                  currentTheme: theme,
-                  onTap: () {
-                    ref.read(nexusThemeProvider.notifier).setTheme(t);
-                  },
-                );
-              },
+            child: ref.watch(allThemesProvider).when(
+              loading: () => Center(
+                child: CircularProgressIndicator(
+                  color: theme.accentPrimary,
+                  strokeWidth: 2,
+                ),
+              ),
+              error: (_, __) => ListView.separated(
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(16), vertical: r.s(4)),
+                itemCount: NexusThemes.all.length,
+                separatorBuilder: (_, __) => SizedBox(height: r.s(12)),
+                itemBuilder: (context, index) {
+                  final t = NexusThemes.all[index];
+                  final isSelected = t.id == theme.id &&
+                      t.remoteSlug == theme.remoteSlug;
+                  return _ThemeCard(
+                    theme: t,
+                    isSelected: isSelected,
+                    currentTheme: theme,
+                    onTap: () =>
+                        ref.read(nexusThemeProvider.notifier).setTheme(t),
+                  );
+                },
+              ),
+              data: (allThemes) => ListView.separated(
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(16), vertical: r.s(4)),
+                itemCount: allThemes.length,
+                separatorBuilder: (_, __) => SizedBox(height: r.s(12)),
+                itemBuilder: (context, index) {
+                  final t = allThemes[index];
+                  final isSelected = t.id == NexusThemeId.remote
+                      ? t.remoteSlug == theme.remoteSlug
+                      : t.id == theme.id;
+                  return _ThemeCard(
+                    theme: t,
+                    isSelected: isSelected,
+                    currentTheme: theme,
+                    onTap: () =>
+                        ref.read(nexusThemeProvider.notifier).setTheme(t),
+                  );
+                },
+              ),
             ),
           ),
 
@@ -121,7 +148,7 @@ class ThemeSelectorScreen extends ConsumerWidget {
                     size: r.s(13), color: theme.textHint),
                 SizedBox(width: r.s(6)),
                 Text(
-                  'Mais temas em breve',
+                  'Temas criados no admin aparecem aqui automaticamente',
                   style: TextStyle(
                     color: theme.textHint,
                     fontSize: r.fs(12),
@@ -329,6 +356,8 @@ class _ThemeCard extends StatelessWidget {
         return Icons.nights_stay_rounded;
       case NexusThemeId.greenLeaf:
         return Icons.eco_rounded;
+      case NexusThemeId.remote:
+        return Icons.palette_rounded;
     }
   }
 }

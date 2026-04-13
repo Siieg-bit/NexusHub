@@ -25,8 +25,10 @@ import {
   Package,
   RefreshCw,
   Frame,
+  Palette,
 } from "lucide-react";
 import FramesDashboard from "./FramesDashboard";
+import ThemesDashboard from "./ThemesDashboard";
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -38,7 +40,7 @@ type BubbleForm = {
   isActive: boolean;
 };
 
-type ActiveTab = "bubbles" | "frames";
+type ActiveTab = "bubbles" | "frames" | "themes";
 
 const RARITY_COLORS: Record<string, string> = {
   common: "#9CA3AF",
@@ -850,11 +852,25 @@ export default function Dashboard() {
             <Frame className="w-3.5 h-3.5" />
             Molduras de Perfil
           </button>
+          <button
+            onClick={() => setActiveTab("themes")}
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-150 ${
+              activeTab === "themes"
+                ? "border-[#E040FB] text-white"
+                : "border-transparent text-[#6B7280] hover:text-[#9CA3AF]"
+            }`}
+            style={{ fontFamily: "'DM Mono', monospace" }}
+          >
+            <Palette className="w-3.5 h-3.5" />
+            Temas
+          </button>
         </div>
       </header>
 
       {/* Tab content */}
-      {activeTab === "bubbles" ? <BubblesDashboard /> : <FramesDashboard />}
+      {activeTab === "bubbles" && <BubblesDashboard />}
+      {activeTab === "frames" && <FramesDashboard />}
+      {activeTab === "themes" && <ThemesDashboard />}
     </div>
   );
 }

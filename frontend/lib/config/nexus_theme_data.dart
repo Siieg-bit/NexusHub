@@ -20,6 +20,9 @@ enum NexusThemeId {
   principal,
   midnight,
   greenLeaf,
+  /// Tema criado dinamicamente pelo admin via bubble-admin.
+  /// Identificado pelo campo [NexusThemeData.remoteSlug].
+  remote,
 }
 
 /// Modo base do tema (claro ou escuro).
@@ -37,6 +40,10 @@ class NexusThemeData {
 
   /// Identificador único do tema.
   final NexusThemeId id;
+
+  /// Slug único do tema remoto (ex: "ocean_blue").
+  /// Não nulo apenas quando [id] == [NexusThemeId.remote].
+  final String? remoteSlug;
 
   /// Nome legível do tema (ex: "Principal", "Midnight").
   final String name;
@@ -303,6 +310,7 @@ class NexusThemeData {
 
   const NexusThemeData({
     required this.id,
+    this.remoteSlug,
     required this.name,
     this.description,
     required this.baseMode,
@@ -399,8 +407,202 @@ class NexusThemeData {
     required this.previewAccent,
   });
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
+   // ── Factory: tema remoto do Supabase ─────────────────────────────────────
 
+  /// Cria um [NexusThemeData] a partir do JSONB armazenado na tabela
+  /// `app_themes` do Supabase. Usa o tema Principal como fallback para
+  /// qualquer token ausente.
+  factory NexusThemeData.fromRemoteJson(Map<String, dynamic> row) {
+    final colors    = (row['colors']    as Map<String, dynamic>?) ?? {};
+    final gradients = (row['gradients'] as Map<String, dynamic>?) ?? {};
+    final shadows   = (row['shadows']   as Map<String, dynamic>?) ?? {};
+    final opacities = (row['opacities'] as Map<String, dynamic>?) ?? {};
+
+    Color c(String key, Color fallback) {
+      final v = colors[key];
+      if (v == null) return fallback;
+      try {
+        final hex = v.toString().replaceAll('#', '');
+        final val = int.parse(hex.length == 6 ? 'FF$hex' : hex, radix: 16);
+        return Color(val);
+      } catch (_) {
+        return fallback;
+      }
+    }
+
+    LinearGradient grad(String key, LinearGradient fallback) {
+      final g = gradients[key];
+      if (g == null) return fallback;
+      try {
+        final colorList = (g['colors'] as List).map<Color>((hex) {
+          final h = hex.toString().replaceAll('#', '');
+          final val = int.parse(h.length == 6 ? 'FF$h' : h, radix: 16);
+          return Color(val);
+        }).toList();
+        final alignMap = {
+          'topLeft': Alignment.topLeft, 'topCenter': Alignment.topCenter,
+          'topRight': Alignment.topRight, 'centerLeft': Alignment.centerLeft,
+          'center': Alignment.center, 'centerRight': Alignment.centerRight,
+          'bottomLeft': Alignment.bottomLeft, 'bottomCenter': Alignment.bottomCenter,
+          'bottomRight': Alignment.bottomRight,
+        };
+        return LinearGradient(
+          colors: colorList,
+          begin: alignMap[g['begin']] ?? Alignment.topLeft,
+          end: alignMap[g['end']] ?? Alignment.bottomRight,
+        );
+      } catch (_) {
+        return fallback;
+      }
+    }
+
+    List<BoxShadow> shadow(String key, List<BoxShadow> fallback) {
+      final list = shadows[key];
+      if (list == null) return fallback;
+      try {
+        return (list as List).map<BoxShadow>((s) {
+          final hex = s['color'].toString().replaceAll('#', '');
+          final val = int.parse(hex.length == 6 ? 'FF$hex' : hex, radix: 16);
+          return BoxShadow(
+            color: Color(val),
+            blurRadius: (s['blurRadius'] as num).toDouble(),
+            offset: Offset(
+              (s['offsetX'] as num).toDouble(),
+              (s['offsetY'] as num).toDouble(),
+            ),
+          );
+        }).toList();
+      } catch (_) {
+        return fallback;
+      }
+    }
+
+    double op(String key, double fallback) {
+      final v = opacities[key];
+      if (v == null) return fallback;
+      return (v as num).toDouble();
+    }
+
+    // Alias para o tema Principal como fallback
+    // (importado via NexusThemes.principal — evita dependência circular
+    //  usando valores hardcoded do Principal)
+    const bg1 = Color(0xFF0D1B2A);
+    const bg2 = Color(0xFF0A1628);
+    const sf1 = Color(0xFF1B2838);
+    const sf2 = Color(0xFF213040);
+    const acc = Color(0xFF00BCD4);
+    const acc2 = Color(0xFF4DD0E1);
+    const btn = Color(0xFF1A9E4A);
+    const txt = Color(0xFFF2F2F2);
+    const txt2 = Color(0xFF8899AA);
+    const brd = Color(0xFF2A3A50);
+    const brdS = Color(0xFF1E2E40);
+
+    final baseMode = row['base_mode'] == 'light'
+        ? NexusThemeMode.light
+        : NexusThemeMode.dark;
+
+    return NexusThemeData(
+      id: NexusThemeId.remote,
+      remoteSlug: row['slug'] as String? ?? 'remote',
+      name: row['name'] as String? ?? 'Tema Remoto',
+      description: row['description'] as String?,
+      baseMode: baseMode,
+      // Fundos
+      backgroundPrimary:        c('backgroundPrimary',        bg1),
+      backgroundSecondary:      c('backgroundSecondary',      bg2),
+      // Superfícies
+      surfacePrimary:           c('surfacePrimary',           sf1),
+      surfaceSecondary:         c('surfaceSecondary',         sf2),
+      cardBackground:           c('cardBackground',           sf2),
+      cardBackgroundElevated:   c('cardBackgroundElevated',   const Color(0xFF2A3A4E)),
+      modalBackground:          c('modalBackground',          sf1),
+      // Overlay
+      overlayColor:             c('overlayColor',             const Color(0xCC000000)),
+      overlayOpacity:           op('overlayOpacity',          0.8),
+      // Textos
+      textPrimary:              c('textPrimary',              txt),
+      textSecondary:            c('textSecondary',            txt2),
+      textHint:                 c('textHint',                 const Color(0xFF8A9FB0)),
+      textDisabled:             c('textDisabled',             const Color(0xFF3A4A5A)),
+      // Ícones
+      iconPrimary:              c('iconPrimary',              txt),
+      iconSecondary:            c('iconSecondary',            txt2),
+      iconDisabled:             c('iconDisabled',             const Color(0xFF3A4A5A)),
+      // Destaques
+      accentPrimary:            c('accentPrimary',            acc),
+      accentSecondary:          c('accentSecondary',          acc2),
+      // Botões
+      buttonPrimaryBackground:  c('buttonPrimaryBackground',  btn),
+      buttonPrimaryForeground:  c('buttonPrimaryForeground',  const Color(0xFFFFFFFF)),
+      buttonSecondaryBackground:c('buttonSecondaryBackground',sf2),
+      buttonSecondaryForeground:c('buttonSecondaryForeground',acc),
+      buttonDestructiveBackground:c('buttonDestructiveBackground',const Color(0xFFE53935)),
+      buttonDestructiveForeground:c('buttonDestructiveForeground',const Color(0xFFFFFFFF)),
+      // Estados
+      success:                  c('success',                  const Color(0xFF69F0AE)),
+      successContainer:         c('successContainer',         const Color(0xFF1A3A2A)),
+      error:                    c('error',                    const Color(0xFFE53935)),
+      errorContainer:           c('errorContainer',           const Color(0xFF3A1A1A)),
+      warning:                  c('warning',                  const Color(0xFFFF9800)),
+      warningContainer:         c('warningContainer',         const Color(0xFF3A2A10)),
+      info:                     c('info',                     const Color(0xFF2979FF)),
+      infoContainer:            c('infoContainer',            const Color(0xFF1A2A3A)),
+      // Bordas
+      borderPrimary:            c('borderPrimary',            brd),
+      borderSubtle:             c('borderSubtle',             brdS),
+      borderFocus:              c('borderFocus',              acc),
+      // Inputs
+      inputBackground:          c('inputBackground',          sf2),
+      inputBorder:              c('inputBorder',              brd),
+      inputHint:                c('inputHint',                const Color(0xFF8A9FB0)),
+      // Interação
+      selectedState:            c('selectedState',            acc),
+      disabledState:            c('disabledState',            brd),
+      disabledOpacity:          op('disabledOpacity',         0.38),
+      // Sombras
+      cardShadow:   shadow('cardShadow',   [const BoxShadow(color: Color(0x33000000), blurRadius: 8, offset: Offset(0, 2))]),
+      modalShadow:  shadow('modalShadow',  [const BoxShadow(color: Color(0x66000000), blurRadius: 24, offset: Offset(0, 8))]),
+      buttonShadow: shadow('buttonShadow', [const BoxShadow(color: Color(0x4000BCD4), blurRadius: 12, offset: Offset(0, 4))]),
+      // Gradientes
+      primaryGradient:   grad('primaryGradient',   const LinearGradient(colors: [Color(0xFF00BCD4), Color(0xFF0090CC)])),
+      accentGradient:    grad('accentGradient',    const LinearGradient(colors: [Color(0xFF00BCD4), Color(0xFF00B8E0)])),
+      fabGradient:       grad('fabGradient',       const LinearGradient(colors: [Color(0xFF00BCD4), Color(0xFF0090CC)])),
+      streakGradient:    grad('streakGradient',    const LinearGradient(colors: [Color(0xFFFF6D00), Color(0xFFFFAB40)])),
+      walletGradient:    grad('walletGradient',    const LinearGradient(colors: [Color(0xFF00BCD4), Color(0xFF0090CC)])),
+      aminoPlusGradient: grad('aminoPlusGradient', const LinearGradient(colors: [Color(0xFF00BCD4), Color(0xFF0090CC)])),
+      // Bottom Nav
+      bottomNavBackground:     c('bottomNavBackground',     sf1),
+      bottomNavSelectedItem:   c('bottomNavSelectedItem',   acc),
+      bottomNavUnselectedItem: c('bottomNavUnselectedItem', txt2),
+      // App Bar
+      appBarBackground:  c('appBarBackground',  sf1),
+      appBarForeground:  c('appBarForeground',  txt),
+      // Drawer
+      drawerBackground:       c('drawerBackground',       sf1),
+      drawerHeaderBackground: c('drawerHeaderBackground', sf2),
+      drawerSidebarBackground:c('drawerSidebarBackground',const Color(0xFF0A1628)),
+      // Chips
+      chipBackground:         c('chipBackground',         sf2),
+      chipSelectedBackground: c('chipSelectedBackground', acc),
+      chipText:               c('chipText',               txt2),
+      chipSelectedText:       c('chipSelectedText',       const Color(0xFFFFFFFF)),
+      // Divider
+      divider: c('divider', brdS),
+      // Shimmer
+      shimmerBase:      c('shimmerBase',      sf2),
+      shimmerHighlight: c('shimmerHighlight', const Color(0xFF2A3A4E)),
+      // Gamificação
+      levelBadgeBackground: c('levelBadgeBackground', acc),
+      levelBadgeForeground: c('levelBadgeForeground', const Color(0xFFFFFFFF)),
+      coinColor:            c('coinColor',            const Color(0xFFFFD700)),
+      onlineIndicator:      c('onlineIndicator',      const Color(0xFF69F0AE)),
+      // Preview
+      previewAccent: c('previewAccent', acc),
+    );
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
   /// Retorna o Brightness do Material equivalente ao baseMode.
   Brightness get brightness =>
       baseMode == NexusThemeMode.dark ? Brightness.dark : Brightness.light;
