@@ -686,7 +686,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             .watch(community_providers.communityMembershipProvider(post.communityId))
             .valueOrNull
         : null;
-    final currentUserData = currentUser.valueOrNull;
+    final currentUserData = currentUser;
     final currentUserRole = communityMembership?['role'] as String?;
     final canModeratePost = post != null &&
         post.communityId.isNotEmpty &&

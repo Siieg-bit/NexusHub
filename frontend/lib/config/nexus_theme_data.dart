@@ -76,6 +76,9 @@ class NexusThemeData {
   /// Fundo de cards elevados (hover, pressed).
   final Color cardBackgroundElevated;
 
+  /// Alias para cardBackground (compatibilidade com código existente).
+  Color get cardColor => cardBackground;
+
   /// Fundo de modais e dialogs.
   final Color modalBackground;
 
