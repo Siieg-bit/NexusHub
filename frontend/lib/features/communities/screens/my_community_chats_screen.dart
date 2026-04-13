@@ -666,7 +666,7 @@ class _MyCommunityChatsScreenState
               return GestureDetector(
                 onTap: () {
                   if (userId != null) {
-                    context.push('/user/$userId');
+                    context.push('/community/${widget.communityId}/profile/$userId');
                   }
                 },
                 child: Container(

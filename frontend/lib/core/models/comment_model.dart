@@ -23,6 +23,12 @@ class CommentModel {
   final UserModel? author;
   final List<CommentModel> replies;
 
+  /// Nickname do autor dentro da comunidade (sobrepõe author.nickname quando preenchido).
+  final String? localNickname;
+
+  /// Avatar URL do autor dentro da comunidade (sobrepõe author.iconUrl quando preenchido).
+  final String? localIconUrl;
+
   const CommentModel({
     required this.id,
     required this.authorId,
@@ -42,6 +48,8 @@ class CommentModel {
     required this.updatedAt,
     this.author,
     this.replies = const [],
+    this.localNickname,
+    this.localIconUrl,
   });
 
   factory CommentModel.fromJson(Map<String, dynamic> json) {
@@ -69,6 +77,8 @@ class CommentModel {
           : (json['profiles'] != null
               ? UserModel.fromJson(json['profiles'] as Map<String, dynamic>)
               : null),
+      localNickname: json['local_nickname'] as String?,
+      localIconUrl: json['local_icon_url'] as String?,
     );
   }
 
@@ -86,6 +96,22 @@ class CommentModel {
       if (stickerName != null) 'sticker_name': stickerName,
       if (packId != null) 'pack_id': packId,
     };
+  }
+
+  /// Retorna o nickname efetivo: local (comunidade) tem prioridade sobre global.
+  String effectiveNickname(String fallback) {
+    final local = localNickname?.trim();
+    if (local != null && local.isNotEmpty) return local;
+    final global = author?.nickname?.trim();
+    if (global != null && global.isNotEmpty) return global;
+    return fallback;
+  }
+
+  /// Retorna o avatar URL efetivo: local (comunidade) tem prioridade sobre global.
+  String? get effectiveIconUrl {
+    final local = localIconUrl?.trim();
+    if (local != null && local.isNotEmpty) return local;
+    return author?.iconUrl;
   }
 
   bool get isSticker =>

@@ -162,6 +162,50 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
       final postRes = await postQuery.limit(30);
       _posts = List<Map<String, dynamic>>.from(postRes as List? ?? []);
 
+      // Enriquecer posts com dados do perfil local de comunidade
+      if (_posts.isNotEmpty) {
+        try {
+          final authorIds = _posts
+              .map((p) => p['author_id'] as String?)
+              .whereType<String>()
+              .where((id) => id.isNotEmpty)
+              .toSet()
+              .toList();
+          if (authorIds.isNotEmpty) {
+            final memberships = await SupabaseService.table('community_members')
+                .select('user_id, local_nickname, local_icon_url')
+                .eq('community_id', widget.communityId)
+                .inFilter('user_id', authorIds);
+            final memberMap = <String, Map<String, dynamic>>{
+              for (final row in (memberships as List? ?? []))
+                (row['user_id'] as String):
+                    Map<String, dynamic>.from(row as Map),
+            };
+            for (final post in _posts) {
+              final authorId = post['author_id'] as String?;
+              if (authorId == null) continue;
+              final membership = memberMap[authorId];
+              if (membership == null) continue;
+              final localNickname =
+                  (membership['local_nickname'] as String?)?.trim();
+              final localIconUrl =
+                  (membership['local_icon_url'] as String?)?.trim();
+              final profiles = post['profiles'] as Map<String, dynamic>?;
+              if (profiles != null) {
+                final updated = Map<String, dynamic>.from(profiles);
+                if (localNickname != null && localNickname.isNotEmpty) {
+                  updated['nickname'] = localNickname;
+                }
+                if (localIconUrl != null && localIconUrl.isNotEmpty) {
+                  updated['icon_url'] = localIconUrl;
+                }
+                post['profiles'] = updated;
+              }
+            }
+          }
+        } catch (_) {}
+      }
+
       // Buscar membros
       final memberRes = await SupabaseService.table('community_members')
           .select(

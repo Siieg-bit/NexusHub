@@ -427,7 +427,41 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
           .select('*, profiles(*), wiki_categories(id, name)')
           .eq('id', widget.wikiId)
           .single();
-      _entry = res;
+      // Enriquecer o author com dados do perfil local de comunidade
+      final entry = Map<String, dynamic>.from(res as Map);
+      final communityId = entry['community_id'] as String?;
+      final authorId = entry['author_id'] as String?;
+      if (communityId != null &&
+          communityId.isNotEmpty &&
+          authorId != null &&
+          authorId.isNotEmpty) {
+        try {
+          final membership =
+              await SupabaseService.table('community_members')
+                  .select('local_nickname, local_icon_url')
+                  .eq('community_id', communityId)
+                  .eq('user_id', authorId)
+                  .maybeSingle();
+          if (membership != null) {
+            final localNickname =
+                (membership['local_nickname'] as String?)?.trim();
+            final localIconUrl =
+                (membership['local_icon_url'] as String?)?.trim();
+            final profiles = entry['profiles'] as Map<String, dynamic>?;
+            if (profiles != null) {
+              final updated = Map<String, dynamic>.from(profiles);
+              if (localNickname != null && localNickname.isNotEmpty) {
+                updated['nickname'] = localNickname;
+              }
+              if (localIconUrl != null && localIconUrl.isNotEmpty) {
+                updated['icon_url'] = localIconUrl;
+              }
+              entry['profiles'] = updated;
+            }
+          }
+        } catch (_) {}
+      }
+      _entry = entry;
       _avgRating = (res['average_rating'] as num?)?.toDouble() ?? 0;
       _totalRatings = res['total_ratings'] as int? ?? 0;
 

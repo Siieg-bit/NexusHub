@@ -679,36 +679,47 @@ class _FeaturedPostCard extends ConsumerWidget {
                       SizedBox(height: r.s(6)),
 
                       // Autor + stats
-                      Row(
-                        children: [
-                          // Avatar do autor
-                          if (post.author?.iconUrl != null)
-                            ClipOval(
-                              child: CachedNetworkImage(
-                                imageUrl: post.author!.iconUrl!,
-                                width: r.s(16),
-                                height: r.s(16),
-                                fit: BoxFit.cover,
-                                errorWidget: (_, __, ___) =>
-                                    _DefaultAvatar(size: r.s(16)),
+                      // Usa perfil local de comunidade com fallback para global
+                      Builder(builder: (context) {
+                        final featuredAvatarUrl =
+                            post.authorLocalIconUrl?.trim().isNotEmpty == true
+                                ? post.authorLocalIconUrl!.trim()
+                                : post.author?.iconUrl;
+                        final featuredNickname =
+                            post.authorLocalNickname?.trim().isNotEmpty == true
+                                ? post.authorLocalNickname!.trim()
+                                : (post.author?.nickname ?? s.user);
+                        return Row(
+                          children: [
+                            // Avatar do autor
+                            if (featuredAvatarUrl != null)
+                              ClipOval(
+                                child: CachedNetworkImage(
+                                  imageUrl: featuredAvatarUrl,
+                                  width: r.s(16),
+                                  height: r.s(16),
+                                  fit: BoxFit.cover,
+                                  errorWidget: (_, __, ___) =>
+                                      _DefaultAvatar(size: r.s(16)),
+                                ),
+                              )
+                            else
+                              _DefaultAvatar(size: r.s(16)),
+                            SizedBox(width: r.s(4)),
+                            Expanded(
+                              child: Text(
+                                featuredNickname,
+                                style: TextStyle(
+                                  color: context.nexusTheme.textSecondary,
+                                  fontSize: r.fs(10),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            )
-                          else
-                            _DefaultAvatar(size: r.s(16)),
-                          SizedBox(width: r.s(4)),
-                          Expanded(
-                            child: Text(
-                              post.author?.nickname ?? s.user,
-                              style: TextStyle(
-                                color: context.nexusTheme.textSecondary,
-                                fontSize: r.fs(10),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        );
+                      }),
 
                       SizedBox(height: r.s(4)),
 

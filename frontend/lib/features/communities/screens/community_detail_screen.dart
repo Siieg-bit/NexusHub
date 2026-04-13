@@ -284,7 +284,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
           maxSlide: screenWidth * 0.92,
           drawer: CommunityDrawer(
             community: community,
-            currentUser: ref.watch(currentUserProfileProvider).valueOrNull,
+            currentUser: ref.watch(currentUserProvider),
             userRole: userRole,
             membership: membership,
           ),

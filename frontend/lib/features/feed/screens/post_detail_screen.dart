@@ -31,8 +31,13 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 enum _CommentSortOrder { mostRecent, oldest, mostPopular }
 
 /// Provider para comentários de um post.
+/// Recebe um Record (postId, communityId) para poder enriquecer os comentários
+/// com os dados do perfil local de comunidade (local_nickname, local_icon_url).
 final postCommentsProvider =
-    FutureProvider.family<List<CommentModel>, String>((ref, postId) async {
+    FutureProvider.family<List<CommentModel>, (String, String)>(
+        (ref, args) async {
+  final (postId, communityId) = args;
+
   final response = await SupabaseService.table('comments')
       .select(
         '*, profiles!comments_author_id_fkey(id, nickname, icon_url, amino_id)',
@@ -41,9 +46,54 @@ final postCommentsProvider =
       .eq('status', 'ok')
       .order('created_at', ascending: true);
 
-  return (response as List? ?? [])
-      .map((e) => CommentModel.fromJson(e as Map<String, dynamic>))
-      .toList();
+  final maps = List<Map<String, dynamic>>.from(
+    (response as List? ?? []).map((e) => Map<String, dynamic>.from(e as Map)),
+  );
+
+  // Enriquecer com dados do perfil local de comunidade quando disponível.
+  if (communityId.isNotEmpty && maps.isNotEmpty) {
+    try {
+      final authorIds = maps
+          .map((m) => m['author_id'] as String?)
+          .whereType<String>()
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList();
+
+      if (authorIds.isNotEmpty) {
+        final memberships = await SupabaseService.table('community_members')
+            .select('user_id, local_nickname, local_icon_url')
+            .eq('community_id', communityId)
+            .inFilter('user_id', authorIds);
+
+        final memberMap = <String, Map<String, dynamic>>{
+          for (final row in (memberships as List? ?? []))
+            (row['user_id'] as String): Map<String, dynamic>.from(row as Map),
+        };
+
+        for (final map in maps) {
+          final authorId = map['author_id'] as String?;
+          if (authorId == null) continue;
+          final membership = memberMap[authorId];
+          if (membership == null) continue;
+          final localNickname =
+              (membership['local_nickname'] as String?)?.trim();
+          final localIconUrl =
+              (membership['local_icon_url'] as String?)?.trim();
+          if (localNickname != null && localNickname.isNotEmpty) {
+            map['local_nickname'] = localNickname;
+          }
+          if (localIconUrl != null && localIconUrl.isNotEmpty) {
+            map['local_icon_url'] = localIconUrl;
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('[postCommentsProvider] enrich error: $e');
+    }
+  }
+
+  return maps.map((e) => CommentModel.fromJson(e)).toList();
 });
 
 /// Tela de detalhes de um post com comentários — layout Amino.
@@ -63,6 +113,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   bool _viewRecorded = false;
   bool _isBookmarked = false;
   _CommentSortOrder _commentSortOrder = _CommentSortOrder.oldest;
+  // communityId do post — preenchido quando o postDetailProvider carrega.
+  // Usado para enriquecer os comentários com dados locais de comunidade.
+  String _postCommunityId = '';
   // Cache do role do usuário na comunidade atual
   String? _cachedCommunityId;
   String? _cachedUserRole;
@@ -186,6 +239,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       updatedAt: comment.updatedAt,
       author: comment.author,
       replies: replies,
+      localNickname: comment.localNickname,
+      localIconUrl: comment.localIconUrl,
     );
   }
 
@@ -224,6 +279,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         updatedAt: comment.updatedAt,
         author: comment.author,
         replies: replies.map(attachReplies).toList(),
+        localNickname: comment.localNickname,
+        localIconUrl: comment.localIconUrl,
       );
     }
 
@@ -280,7 +337,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         _commentController.clear();
         _clearReplyTarget();
       }
-      ref.invalidate(postCommentsProvider(widget.postId));
+      ref.invalidate(postCommentsProvider((widget.postId, _postCommunityId)));
       ref.invalidate(postDetailProvider(widget.postId));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -385,7 +442,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         _pendingVideoUrl = null;
         _showEmojiPicker = false;
       });
-      ref.invalidate(postCommentsProvider(widget.postId));
+      ref.invalidate(postCommentsProvider((widget.postId, _postCommunityId)));
       ref.invalidate(postDetailProvider(widget.postId));
     } catch (e) {
       debugPrint('[NexusHub] Erro ao comentar: $e');
@@ -622,10 +679,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final postAsync = ref.watch(postDetailProvider(widget.postId));
-    final commentsAsync = ref.watch(postCommentsProvider(widget.postId));
+     final post = postAsync.valueOrNull;
+    // Atualizar _postCommunityId quando o post carregar (sem setState para evitar rebuild).
+    if (post != null && post.communityId.isNotEmpty && _postCommunityId != post.communityId) {
+      _postCommunityId = post.communityId;
+    }
+    final commentsAsync = ref.watch(postCommentsProvider((widget.postId, _postCommunityId)));
     final currentUser = ref.watch(currentUserProvider);
-
-    final post = postAsync.valueOrNull;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: context.nexusTheme.backgroundPrimary,
@@ -974,7 +1034,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   color: context.nexusTheme.accentPrimary,
                   onRefresh: () async {
                     ref.invalidate(postDetailProvider);
-                    ref.invalidate(postCommentsProvider);
+                    ref.invalidate(postCommentsProvider((widget.postId, _postCommunityId)));
                     await Future.delayed(const Duration(milliseconds: 300));
                     if (!mounted) return;
                   },
@@ -2072,7 +2132,7 @@ class _CommentTileState extends ConsumerState<_CommentTile> {
             children: [
               CosmeticAvatar(
                 userId: comment.authorId,
-                avatarUrl: comment.author?.iconUrl,
+                avatarUrl: comment.effectiveIconUrl,
                 size: r.s(widget.depth > 0 ? 30 : 36),
                 onTap: () => context.push(
                   widget.communityId?.isNotEmpty == true
@@ -2095,7 +2155,7 @@ class _CommentTileState extends ConsumerState<_CommentTile> {
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Text(
-                                comment.author?.nickname ?? s.user,
+                                comment.effectiveNickname(s.user),
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: r.fs(14),
