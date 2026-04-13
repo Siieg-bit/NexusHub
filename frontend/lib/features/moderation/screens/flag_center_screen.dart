@@ -311,7 +311,7 @@ class _FlagCard extends ConsumerWidget {
             children: [
               CosmeticAvatar(
                 userId: reporter?['id'] as String?,
-                avatarUrl: reporter?['avatar_url'] as String?,
+                avatarUrl: reporter?['icon_url'] as String?,
                 size: r.s(32),
               ),
               SizedBox(width: r.s(12)),

@@ -84,7 +84,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
     if (_folderId == null) return;
     try {
       final res = await SupabaseService.table('shared_files')
-          .select('*, profiles!uploader_id(username, avatar_url)')
+          .select('*, profiles!uploader_id(nickname, icon_url)')
           .eq('folder_id', _folderId!)
           .eq('status', 'ok')
           .order('created_at', ascending: false);
@@ -593,7 +593,7 @@ class _ImageTile extends ConsumerWidget {
     final r = context.r;
     final url = file['file_url'] as String? ?? '';
     final uploaderName =
-        (file['profiles'] as Map?)?['username'] as String? ?? s.anonymous;
+        (file['profiles'] as Map?)?['nickname'] as String? ?? s.anonymous;
 
     return GestureDetector(
       onTap: () => _showFullImage(context, url),
@@ -745,7 +745,7 @@ class _FileTile extends ConsumerWidget {
     final mimeType = file['file_type'] as String?;
     final size = file['file_size'] as int?;
     final uploaderName =
-        (file['profiles'] as Map?)?['username'] as String? ?? s.anonymous;
+        (file['profiles'] as Map?)?['nickname'] as String? ?? s.anonymous;
     final createdAt = file['created_at'] as String?;
     final color = _colorForType(mimeType);
 

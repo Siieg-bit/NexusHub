@@ -51,15 +51,15 @@ async function resolveShortCode(
   if (prefix === "u") {
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, bio, icon_url")
+      .select("id, nickname, amino_id, bio, icon_url")
       .or(`amino_id.eq.${code},id.eq.${code}`)
       .maybeSingle();
     if (!data) return null;
     return {
       type: "user",
       targetId: data.id,
-      title: `${data.username} — NexusHub`,
-      description: data.bio ?? `Perfil de ${data.username} no NexusHub`,
+      title: `${data.nickname || data.amino_id || 'Usuário'} — NexusHub`,
+      description: data.bio ?? `Perfil de ${data.nickname || data.amino_id || 'usuário'} no NexusHub`,
       imageUrl: data.icon_url ?? DEFAULT_OG_IMAGE,
       deepLink: `${APP_SCHEME}://u/${code}`,
     };
@@ -96,14 +96,14 @@ async function resolveShortCode(
   if (type === "post" || type === "blog") {
     const { data } = await supabase
       .from("posts")
-      .select("id, title, content, cover_image_url, profiles(username, icon_url)")
+      .select("id, title, content, cover_image_url, profiles(nickname, icon_url)")
       .eq("id", targetId)
       .maybeSingle();
     if (!data) return null;
-    const author = (data.profiles as { username?: string; icon_url?: string } | null);
+    const author = (data.profiles as { nickname?: string; icon_url?: string } | null);
     const desc = data.content
       ? (data.content as string).replace(/<[^>]+>/g, "").slice(0, 160)
-      : `Post de ${author?.username ?? "usuário"} no NexusHub`;
+      : `Post de ${author?.nickname ?? "usuário"} no NexusHub`;
     return {
       type,
       targetId,

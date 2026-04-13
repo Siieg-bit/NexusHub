@@ -163,11 +163,11 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
       // Carregar perfil do usuário atual para exibir no chat interno
       try {
         final profile = await SupabaseService.table('profiles')
-            .select('username, avatar_url')
+            .select('nickname, icon_url')
             .eq('id', userId)
             .single();
-        _myUsername = profile['username'] as String?;
-        _myAvatarUrl = profile['avatar_url'] as String?;
+        _myUsername = profile['nickname'] as String?;
+        _myAvatarUrl = profile['icon_url'] as String?;
       } catch (_) {}
 
       await _loadParticipants();
@@ -189,7 +189,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
     if (_sessionId == null) return;
     try {
       final res = await SupabaseService.table('call_participants')
-          .select('*, profiles!user_id(username, avatar_url)')
+          .select('*, profiles!user_id(nickname, icon_url)')
           .eq('call_session_id', _sessionId!)
           .eq('status', 'connected');
       if (!mounted) return;
@@ -1475,8 +1475,8 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
               itemBuilder: (ctx, i) {
                 final p = _participants[i];
                 final profile = p['profiles'] as Map<String, dynamic>?;
-                final username = profile?['username'] as String? ?? '?';
-                final avatarUrl = profile?['avatar_url'] as String?;
+                final username = profile?['nickname'] as String? ?? '?';
+                final avatarUrl = profile?['icon_url'] as String?;
                 return Padding(
                   padding: EdgeInsets.only(right: r.s(8)),
                   child: Column(

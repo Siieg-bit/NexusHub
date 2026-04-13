@@ -33,7 +33,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     try {
       final query = SupabaseService.table('call_sessions')
           .select(
-              '*, call_participants(count), profiles!call_sessions_creator_id_fkey(username, avatar_url)')
+              '*, call_participants(count), profiles!call_sessions_creator_id_fkey(nickname, icon_url)')
           .eq('status', 'active')
           .order('created_at', ascending: false);
 
@@ -292,8 +292,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final type = session['type'] as String? ?? 'voice';
     final color = _typeColor(type);
     final creatorProfile = session['profiles'] as Map<String, dynamic>?;
-    final creatorName = creatorProfile?['username'] as String? ?? s.anonymous;
-    final creatorAvatar = creatorProfile?['avatar_url'] as String?;
+    final creatorName = creatorProfile?['nickname'] as String? ?? s.anonymous;
+    final creatorAvatar = creatorProfile?['icon_url'] as String?;
     final participantCount =
         (session['call_participants'] as List?)?.first?['count'] as int? ?? 0;
     final createdAt = session['created_at'] as String?;
