@@ -350,12 +350,16 @@ class _CapsuleNavItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
+    // Altura explícita = altura do container (62) - margem vertical (6+6) = 50px
+    // Isso evita que o AnimatedContainer tente expandir além do espaço disponível.
+    final itemHeight = r.s(62) - r.s(12);
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
+          height: itemHeight,
           margin: EdgeInsets.symmetric(horizontal: r.s(3), vertical: r.s(6)),
           decoration: BoxDecoration(
             color: isSelected
@@ -363,7 +367,7 @@ class _CapsuleNavItem extends ConsumerWidget {
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(r.s(20)),
           ),
-          child: child,
+          child: ClipRect(child: child),
         ),
       ),
     );
