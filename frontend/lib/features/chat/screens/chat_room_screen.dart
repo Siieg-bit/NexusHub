@@ -1857,10 +1857,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     pollOptions: options,
                   );
                 });
-                questionCtrl.dispose();
-                for (final c in optionCtrls) {
-                  c.dispose();
-                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.nexusTheme.accentPrimary,
@@ -1908,7 +1904,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               Navigator.pop(ctx);
               // Bug fix: Future.microtask para evitar dirty widget in wrong build scope
               Future.microtask(() => _sendMessage(type: 'link', sharedUrl: url));
-              linkCtrl.dispose();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: context.nexusTheme.accentPrimary,
@@ -1921,7 +1916,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           ),
         ],
       ),
-    );
+    ).then((_) => linkCtrl.dispose());
   }
 
   Widget _dialogInput(TextEditingController controller, String hint,
@@ -1988,7 +1983,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              editController.dispose();
             },
             child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
           ),
@@ -2024,7 +2018,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   }
                 }
               }
-              editController.dispose();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: context.nexusTheme.accentPrimary,
@@ -2037,7 +2030,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           ),
         ],
       ),
-    );
+    ).then((_) => editController.dispose());
   }
 
   // ==========================================================================
