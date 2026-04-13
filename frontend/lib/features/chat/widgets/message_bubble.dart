@@ -506,17 +506,20 @@ class MessageBubble extends ConsumerWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (shouldShowAuthorName)
-                            Padding(
-                              padding: EdgeInsets.only(bottom: r.s(2)),
-                              child: Text(
-                                authorName,
-                                style: TextStyle(
-                                  color: context.nexusTheme.accentPrimary,
-                                  fontSize: r.fs(11),
-                                  fontWeight: FontWeight.w700,
+                            Transform.translate(
+                              offset: Offset(isMe ? 0 : -r.s(6), 0),
+                              child: Padding(
+                                padding: EdgeInsets.only(bottom: r.s(2)),
+                                child: Text(
+                                  authorName,
+                                  style: TextStyle(
+                                    color: context.nexusTheme.accentPrimary,
+                                    fontSize: r.fs(11),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           // Conteúdo de mídia (imagem/gif/vídeo)
@@ -569,14 +572,17 @@ class MessageBubble extends ConsumerWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 if (shouldShowAuthorName)
-                                  Padding(
-                                    padding: EdgeInsets.only(bottom: r.s(4)),
-                                    child: Text(
-                                      authorName,
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.9),
-                                        fontSize: r.fs(11),
-                                        fontWeight: FontWeight.w700,
+                                  Transform.translate(
+                                    offset: Offset(isMe ? 0 : -r.s(6), 0),
+                                    child: Padding(
+                                      padding: EdgeInsets.only(bottom: r.s(4)),
+                                      child: Text(
+                                        authorName,
+                                        style: TextStyle(
+                                          color: Colors.white.withValues(alpha: 0.9),
+                                          fontSize: r.fs(11),
+                                          fontWeight: FontWeight.w700,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -632,19 +638,22 @@ class MessageBubble extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 if (shouldShowAuthorName)
-                                  Padding(
-                                    padding: EdgeInsets.only(bottom: r.s(4)),
-                                    child: Text(
-                                      authorName,
-                                      style: TextStyle(
-                                        color: isMe
-                                            ? Colors.white.withValues(alpha: 0.9)
-                                            : context.nexusTheme.accentPrimary,
-                                        fontSize: r.fs(11),
-                                        fontWeight: FontWeight.w700,
+                                  Transform.translate(
+                                    offset: Offset(isMe ? 0 : -r.s(6), 0),
+                                    child: Padding(
+                                      padding: EdgeInsets.only(bottom: r.s(4)),
+                                      child: Text(
+                                        authorName,
+                                        style: TextStyle(
+                                          color: isMe
+                                              ? Colors.white.withValues(alpha: 0.9)
+                                              : context.nexusTheme.accentPrimary,
+                                          fontSize: r.fs(11),
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 _buildContent(context),
