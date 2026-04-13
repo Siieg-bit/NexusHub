@@ -248,7 +248,12 @@ class _PostCardState extends ConsumerState<PostCard>
 
   Future<void> _answerQuiz(int optionIndex) async {
     if (_quizAnswered) return;
-    if (optionIndex >= _post.quizData?['questions']?[0]?['options']?.length ?? 0) return;
+    final questions = (_post.quizData?['questions'] as List<dynamic>?) ?? const [];
+    final firstQuestion =
+        questions.isNotEmpty ? questions.first as Map<String, dynamic>? : null;
+    final questionOptions =
+        (firstQuestion?['options'] as List<dynamic>?) ?? const [];
+    if (optionIndex >= questionOptions.length) return;
 
     final s = ref.read(stringsProvider);
     
@@ -312,7 +317,7 @@ class _PostCardState extends ConsumerState<PostCard>
               final error = result['error'] as String?;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(error ?? s.errorTryAgain),
+                  content: Text(error ?? s.anErrorOccurredTryAgain),
                   backgroundColor: context.nexusTheme.error,
                   behavior: SnackBarBehavior.floating,
                 ),
@@ -325,7 +330,7 @@ class _PostCardState extends ConsumerState<PostCard>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(s.errorTryAgain),
+              content: Text(s.anErrorOccurredTryAgain),
               backgroundColor: context.nexusTheme.error,
               behavior: SnackBarBehavior.floating,
             ),

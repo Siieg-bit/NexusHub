@@ -104,7 +104,7 @@ class SimpleLinkPreview extends StatelessWidget {
   }
 
   Widget _buildInternalLinkCard(
-      BuildContext context, ResponsiveHelper r, _InternalLinkInfo info) {
+      BuildContext context, Responsive r, _InternalLinkInfo info) {
     final displayTitle = customTitle ?? info.label;
 
     return GestureDetector(
@@ -171,7 +171,7 @@ class SimpleLinkPreview extends StatelessWidget {
     );
   }
 
-  Widget _buildExternalLinkCard(BuildContext context, ResponsiveHelper r) {
+  Widget _buildExternalLinkCard(BuildContext context, Responsive r) {
     final domain = _extractDomain(url);
     final displayTitle = customTitle ?? domain;
 

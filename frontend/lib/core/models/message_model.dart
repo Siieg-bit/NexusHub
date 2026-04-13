@@ -46,6 +46,7 @@ class MessageModel {
   final String? sharedUserId;
   final String? sharedUrl;
   final Map<String, dynamic>? sharedLinkSummary;
+  final Map<String, dynamic>? extraData;
   final int? tipAmount;
   final Map<String, dynamic> reactions;
   final bool isDeleted;
@@ -73,6 +74,7 @@ class MessageModel {
     this.sharedUserId,
     this.sharedUrl,
     this.sharedLinkSummary,
+    this.extraData,
     this.tipAmount,
     this.reactions = const {},
     this.isDeleted = false,
@@ -101,7 +103,14 @@ class MessageModel {
       replyToId: json['reply_to_id'] as String?,
       sharedUserId: json['shared_user_id'] as String?,
       sharedUrl: json['shared_url'] as String?,
-      sharedLinkSummary: json['shared_link_summary'] as Map<String, dynamic>?,
+      sharedLinkSummary: json['shared_link_summary'] is Map
+          ? Map<String, dynamic>.from(json['shared_link_summary'] as Map)
+          : null,
+      extraData: json['extra_data'] is Map
+          ? Map<String, dynamic>.from(json['extra_data'] as Map)
+          : (json['extraData'] is Map
+              ? Map<String, dynamic>.from(json['extraData'] as Map)
+              : null),
       tipAmount: json['tip_amount'] as int?,
       reactions: json['reactions'] as Map<String, dynamic>? ?? {},
       isDeleted: json['is_deleted'] as bool? ?? false,
@@ -149,6 +158,7 @@ class MessageModel {
     if (sharedUrl != null) map['shared_url'] = sharedUrl;
     if (sharedLinkSummary != null)
       map['shared_link_summary'] = sharedLinkSummary;
+    if (extraData != null) map['extra_data'] = extraData;
     if (tipAmount != null) map['tip_amount'] = tipAmount;
     return map;
   }
@@ -194,6 +204,7 @@ class MessageModel {
     String? stickerName,
     String? packId,
     String? sharedUrl,
+    Map<String, dynamic>? extraData,
   }) {
     return MessageModel(
       id: id,
@@ -213,6 +224,7 @@ class MessageModel {
       sharedUserId: sharedUserId,
       sharedUrl: sharedUrl ?? this.sharedUrl,
       sharedLinkSummary: sharedLinkSummary,
+      extraData: extraData ?? this.extraData,
       tipAmount: tipAmount,
       reactions: reactions,
       isDeleted: isDeleted ?? this.isDeleted,

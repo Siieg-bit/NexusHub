@@ -214,8 +214,8 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
         body: SafeArea(
           bottom: true,
           child: const Center(child: CircularProgressIndicator()),
-        );
         ),
+      );
     }
 
     if (_error != null || _detail == null) {

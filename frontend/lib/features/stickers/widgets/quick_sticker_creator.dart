@@ -54,8 +54,11 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final rawBytes = await image.readAsBytes();
-      final bytes =
-          await MediaUtils.compressImage(rawBytes, maxWidth: 512, maxHeight: 512);
+      final bytes = await MediaUtils.compressImage(
+        rawBytes,
+        minWidth: 512,
+        minHeight: 512,
+      );
       final path =
           'stickers/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
 
@@ -153,7 +156,7 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isChatMode ? s.successfullySent : 'Figurinha salva!'),
+            content: Text(_isChatMode ? 'Enviado com sucesso!' : 'Figurinha salva!'),
             backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
@@ -172,7 +175,7 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.errorTryAgain),
+            content: Text(s.anErrorOccurredTryAgain),
             backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),

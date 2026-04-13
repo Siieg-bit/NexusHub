@@ -18,6 +18,7 @@ class LinkifiedText extends StatefulWidget {
   final TextStyle? linkStyle;
   final int? maxLines;
   final TextOverflow? overflow;
+  final TextAlign? textAlign;
 
   const LinkifiedText({
     super.key,
@@ -26,6 +27,7 @@ class LinkifiedText extends StatefulWidget {
     this.linkStyle,
     this.maxLines,
     this.overflow,
+    this.textAlign,
   });
 
   /// Regex que detecta:
@@ -127,6 +129,7 @@ class _LinkifiedTextState extends State<LinkifiedText> {
         style: defaultStyle,
         maxLines: widget.maxLines,
         overflow: widget.overflow,
+        textAlign: widget.textAlign,
       );
     }
 
@@ -186,6 +189,7 @@ class _LinkifiedTextState extends State<LinkifiedText> {
       TextSpan(children: spans),
       maxLines: widget.maxLines,
       overflow: widget.overflow,
+      textAlign: widget.textAlign,
     );
   }
 }

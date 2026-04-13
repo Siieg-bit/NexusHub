@@ -27,7 +27,7 @@ import '../../../core/services/deep_link_service.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import 'package:amino_clone/features/auth/providers/auth_provider.dart';
 import 'package:amino_clone/config/nexus_theme_data.dart';
-import 'package:amino_clone/config/nexus_theme_provider.dart';
+import 'package:amino_clone/core/providers/nexus_theme_provider.dart';
 
 // =============================================================================
 // MAIN SCREEN — Estilo Amino Apps
@@ -260,8 +260,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         // Prioridade de tema: cor da comunidade só sobrescreve se o usuário
         // estiver usando o tema padrão (principal). Se ele selecionou outro
         // tema, esse tema deve ser priorizado.
-        final currentThemeId = ref.watch(nexusThemeProvider);
-        final isDefaultTheme = currentThemeId == NexusThemeId.principal;
+        final currentTheme = ref.watch(nexusThemeProvider);
+        final isDefaultTheme = currentTheme.id == NexusThemeId.principal;
         final themeColor = isDefaultTheme
             ? _parseColor(community.themeColor)
             : context.nexusTheme.accentPrimary;

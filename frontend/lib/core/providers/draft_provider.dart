@@ -1,6 +1,9 @@
 // Arquivo com melhorias para draft_provider.dart
 // Adicionar suporte a múltiplos rascunhos nomeados e RPCs melhoradas
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/post_draft_model.dart';
 import '../models/post_editor_model.dart';
 import '../services/supabase_service.dart';

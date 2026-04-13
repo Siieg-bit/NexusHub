@@ -131,7 +131,7 @@ class _FormMessageBubbleState extends ConsumerState<FormMessageBubble> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(s.successfullySent),
+              content: const Text('Enviado com sucesso!'),
               backgroundColor: context.nexusTheme.success,
               behavior: SnackBarBehavior.floating,
             ),
@@ -144,7 +144,7 @@ class _FormMessageBubbleState extends ConsumerState<FormMessageBubble> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.errorTryAgain),
+            content: Text(s.anErrorOccurredTryAgain),
             backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
