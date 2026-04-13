@@ -43,8 +43,10 @@ serve(async (req) => {
     // ── Notificação criada → enviar push ──
     if (table === "notifications" && type === "INSERT") {
       const userId = record.user_id as string;
-      const content = record.content as string;
-      const notifType = record.notification_type as string;
+      // A tabela notifications usa 'type' (não 'notification_type') e 'body' (não 'content')
+      const notifType = (record.type as string) || "system";
+      const notifBody = (record.body as string) || "";
+      const notifTitle = (record.title as string) || "NexusHub";
 
       try {
         // Chamar a Edge Function de push notification
@@ -58,8 +60,13 @@ serve(async (req) => {
           body: JSON.stringify({
             user_id: userId,
             notification_type: notifType,
-            content: content,
-            title: record.title || "NexusHub",
+            content: notifBody,
+            title: notifTitle,
+            data: {
+              community_id: record.community_id || null,
+              post_id: record.post_id || null,
+              action_url: record.action_url || null,
+            },
           }),
         });
         results.push("push_notification_sent");

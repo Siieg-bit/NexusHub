@@ -1552,10 +1552,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                     size: r.s(32),
                                   ),
                                   SizedBox(width: r.s(8)),
-                                  // Botão unificado: emoji + figurinha + mídia
-                                  Padding(
-                                    padding: EdgeInsets.only(right: r.s(6)),
-                                  ),
                                   // Campo de texto
                                   Expanded(
                                     child: Container(
@@ -1586,7 +1582,21 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                       ),
                                     ),
                                   ),
-                                  SizedBox(width: r.s(8)),
+                                  SizedBox(width: r.s(4)),
+                                  // Botão unificado: emoji + figurinha + mídia (lado direito, antes do enviar)
+                                  Padding(
+                                    padding: EdgeInsets.only(right: r.s(4)),
+                                    child: CommentMediaMenuButton(
+                                      isUploadingMedia: _pendingMediaUrl != null,
+                                      showEmojiPicker: _showEmojiPicker,
+                                      onToggleEmoji: _toggleEmojiPicker,
+                                      onOpenSticker: () async {
+                                        _commentFocusNode.unfocus();
+                                        await _openStickerPicker();
+                                      },
+                                      onPickMedia: _pickCommentImage,
+                                    ),
+                                  ),
                                   // Botão enviar
                                   Material(
                                     color: Colors.transparent,
@@ -2416,16 +2426,3 @@ class _RepostConfirmSheetDetail extends ConsumerWidget {
     );
   }
 }
-
-                                  Padding(
-                                    padding: EdgeInsets.only(right: r.s(6)),
-                                    child: CommentMediaMenuButton(
-                                      isUploadingMedia: _pendingMediaUrl != null,
-                                      showEmojiPicker: _showEmojiPicker,
-                                      onToggleEmoji: _toggleEmojiPicker,
-                                      onOpenSticker: () async {
-                                        _commentFocusNode.unfocus();
-                                        await _openStickerPicker();
-                                      },
-                                      onPickMedia: _pickCommentImage,
-                                    ),

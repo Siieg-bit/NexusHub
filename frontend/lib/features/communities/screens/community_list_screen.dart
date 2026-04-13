@@ -215,7 +215,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
     );
   }
 
-    void _showCommunityPreview(BuildContext context, CommunityModel community) {
+  void _showCommunityPreview(BuildContext context, CommunityModel community) {
     final s = getStrings();
     showModalBottomSheet(
       context: context,
@@ -809,7 +809,8 @@ class _AminoCommunityCard extends ConsumerStatefulWidget {
   final VoidCallback onLongPress;
   final int reorderIndex;
   /// Largura do card em dp (calculada dinamicamente pelo pai).
-  final double cardWidth;
+  /// Se null, o widget se expande para preencher o espaço disponível (GridView).
+  final double? cardWidth;
 
   static const double _iconSize      = 36;
   static const double _iconOverflow  = 18;
@@ -817,7 +818,7 @@ class _AminoCommunityCard extends ConsumerStatefulWidget {
   const _AminoCommunityCard({
     required this.community,
     required this.reorderIndex,
-    required this.cardWidth,
+    this.cardWidth,
     required this.onTap,
     required this.onLongPress,
   });
@@ -910,21 +911,15 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
     final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
 
     // Dimensões do card
-    // cardWidth vem do pai (calculado dinamicamente por LayoutBuilder).
-    // cardHeight e bannerHeight são proporcionais à cardWidth para manter
-    // a proporção original do design (120 x 175, banner 130).
-    final double scaledWidth   = widget.cardWidth;
-    // Razão de aspecto original: height/width = 175/120 ≈ 1.458
-    final double scaledCardH   = scaledWidth * (175.0 / 120.0);
-    // Razão do banner: bannerHeight/cardHeight = 130/175 ≈ 0.743
-    final double scaledBannerH = scaledCardH * (130.0 / 175.0);
+    // Se cardWidth é fornecido, usa diretamente. Caso contrário (GridView),
+    // usa LayoutBuilder para obter a largura disponível.
     final double scaledIconSz  = r.s(_AminoCommunityCard._iconSize);     // 36 (fixo)
     final String? cardBannerUrl = widget.community.bannerForContext('card');
 
-    return GestureDetector(
-      onTap: widget.onTap,
-      onLongPress: widget.onLongPress,
-      child: SizedBox(
+    Widget buildCard(double scaledWidth) {
+      final double scaledCardH   = scaledWidth * (175.0 / 120.0);
+      final double scaledBannerH = scaledCardH * (130.0 / 175.0);
+      return SizedBox(
         width: scaledWidth,
         height: scaledCardH,
         child: Stack(
@@ -1221,7 +1216,19 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
             ),
           ],
         ),
-      ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
+      child: widget.cardWidth != null
+          ? buildCard(widget.cardWidth!)
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                return buildCard(constraints.maxWidth);
+              },
+            ),
     );
   }
 }
@@ -1233,59 +1240,62 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
 // ============================================================================
 class _JoinCommunityCard extends ConsumerWidget {
   final VoidCallback onTap;
-  /// Largura do card em dp (passada pelo pai).
-  final double cardWidth;
-  const _JoinCommunityCard({required this.onTap, required this.cardWidth});
+  /// Largura do card em dp (passada pelo pai). Se null, expande para preencher.
+  final double? cardWidth;
+  const _JoinCommunityCard({required this.onTap, this.cardWidth});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
-    final double overflow = r.s(_AminoCommunityCard._iconOverflow); // 18 (fixo)
-    // cardH proporcional à cardWidth (mesma razão do _AminoCommunityCard)
-    final double cardH    = cardWidth * (175.0 / 120.0);
 
-    // O JoinCard fica fora do ReorderableListView (sem padding.top).
-    // Para alinhar com os cards de comunidade, usamos Padding.top = overflow.
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        width: cardWidth,
-        height: overflow + cardH,
-        child: Padding(
-          padding: EdgeInsets.only(top: overflow),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(r.s(10)),
-              color: context.nexusTheme.surfaceSecondary.withValues(alpha: 0.5),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.06),
-                width: 0.5,
-              ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.add,
-                  color: Colors.white.withValues(alpha: 0.55),
-                  size: r.s(28),
-                ),
-                SizedBox(height: r.s(10)),
-                Text(
-                  'Entrar em uma\ncomunidade',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.55),
-                    fontSize: r.fs(12),
-                    fontWeight: FontWeight.w500,
-                    height: 1.3,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+    Widget buildJoinCard(double w) {
+      final double cardH = w * (175.0 / 120.0);
+      return SizedBox(
+        width: w,
+        height: cardH,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(r.s(10)),
+            color: context.nexusTheme.surfaceSecondary.withValues(alpha: 0.5),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.06),
+              width: 0.5,
             ),
           ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.add,
+                color: Colors.white.withValues(alpha: 0.55),
+                size: r.s(28),
+              ),
+              SizedBox(height: r.s(10)),
+              Text(
+                'Entrar em uma\ncomunidade',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.55),
+                  fontSize: r.fs(12),
+                  fontWeight: FontWeight.w500,
+                  height: 1.3,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
-      ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: onTap,
+      child: cardWidth != null
+          ? buildJoinCard(cardWidth!)
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                return buildJoinCard(constraints.maxWidth);
+              },
+            ),
     );
   }
 }
