@@ -234,7 +234,7 @@ class PostDraftsNotifier extends AsyncNotifier<List<PostDraftModel>> {
           if (index >= 0) {
             final updated = [...current];
             updated[index] = updated[index].copyWith(
-              draftName: draftName,
+
               title: title,
               subtitle: subtitle,
               content: content,
@@ -313,7 +313,7 @@ class PostDraftsNotifier extends AsyncNotifier<List<PostDraftModel>> {
       if (index >= 0) {
         final updated = [...current];
         updated[index] = updated[index].copyWith(
-          draftName: draftName,
+
           title: title,
           subtitle: subtitle,
           content: content,
