@@ -428,14 +428,13 @@ class _PostCardState extends ConsumerState<PostCard>
           isTeamMember: currentUser?.isTeamMember ?? false,
           userRole: currentUserRole,
         );
-    final displayAuthorName =
-        _post.authorLocalNickname?.trim().isNotEmpty == true
-            ? _post.authorLocalNickname!.trim()
-            : (_post.author?.nickname ?? s.user);
-    final displayAuthorAvatar =
-        _post.authorLocalIconUrl?.trim().isNotEmpty == true
-            ? _post.authorLocalIconUrl!.trim()
-            : _post.author?.iconUrl;
+    // local_nickname e local_icon_url sempre preenchidos desde o join (migration 093)
+    final displayAuthorName = _post.authorLocalNickname?.trim().isNotEmpty == true
+        ? _post.authorLocalNickname!.trim()
+        : s.user;
+    final displayAuthorAvatar = _post.authorLocalIconUrl?.trim().isNotEmpty == true
+        ? _post.authorLocalIconUrl!.trim()
+        : null;
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(12), r.s(10), r.s(12), r.s(8)),
       child: Row(

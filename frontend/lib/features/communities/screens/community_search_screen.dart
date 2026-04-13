@@ -186,6 +186,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
               if (authorId == null) continue;
               final membership = memberMap[authorId];
               if (membership == null) continue;
+              // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
               final localNickname =
                   (membership['local_nickname'] as String?)?.trim();
               final localIconUrl =
@@ -193,12 +194,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
               final profiles = post['profiles'] as Map<String, dynamic>?;
               if (profiles != null) {
                 final updated = Map<String, dynamic>.from(profiles);
-                if (localNickname != null && localNickname.isNotEmpty) {
-                  updated['nickname'] = localNickname;
-                }
-                if (localIconUrl != null && localIconUrl.isNotEmpty) {
-                  updated['icon_url'] = localIconUrl;
-                }
+                if (localNickname != null) updated['nickname'] = localNickname;
+                if (localIconUrl != null) updated['icon_url'] = localIconUrl;
                 post['profiles'] = updated;
               }
             }
@@ -234,14 +231,11 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
           .map((e) {
             final row = e as Map<String, dynamic>;
             final profile = Map<String, dynamic>.from(row['profiles'] as Map);
+            // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
             final localNickname = (row['local_nickname'] as String?)?.trim();
             final localIconUrl = (row['local_icon_url'] as String?)?.trim();
-            if (localNickname != null && localNickname.isNotEmpty) {
-              profile['nickname'] = localNickname;
-            }
-            if (localIconUrl != null && localIconUrl.isNotEmpty) {
-              profile['icon_url'] = localIconUrl;
-            }
+            if (localNickname != null) profile['nickname'] = localNickname;
+            if (localIconUrl != null) profile['icon_url'] = localIconUrl;
             return profile;
           })
           .toList();
@@ -282,16 +276,13 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
               final profile = wiki['profiles'] as Map<String, dynamic>?;
               if (profile == null) continue;
               final merged = Map<String, dynamic>.from(profile);
+              // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
               final localNickname =
                   (membership['local_nickname'] as String?)?.trim();
               final localIconUrl =
                   (membership['local_icon_url'] as String?)?.trim();
-              if (localNickname != null && localNickname.isNotEmpty) {
-                merged['nickname'] = localNickname;
-              }
-              if (localIconUrl != null && localIconUrl.isNotEmpty) {
-                merged['icon_url'] = localIconUrl;
-              }
+              if (localNickname != null) merged['nickname'] = localNickname;
+              if (localIconUrl != null) merged['icon_url'] = localIconUrl;
               wiki['profiles'] = merged;
             }
           }

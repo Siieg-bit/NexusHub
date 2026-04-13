@@ -27,14 +27,11 @@ final allCommunityMembersProvider =
   for (final member in members) {
     if (member['profiles'] is! Map) continue;
     final profile = Map<String, dynamic>.from(member['profiles'] as Map);
+    // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
     final localNickname = (member['local_nickname'] as String?)?.trim();
     final localIconUrl = (member['local_icon_url'] as String?)?.trim();
-    if (localNickname != null && localNickname.isNotEmpty) {
-      profile['nickname'] = localNickname;
-    }
-    if (localIconUrl != null && localIconUrl.isNotEmpty) {
-      profile['icon_url'] = localIconUrl;
-    }
+    if (localNickname != null) profile['nickname'] = localNickname;
+    if (localIconUrl != null) profile['icon_url'] = localIconUrl;
     member['profiles'] = profile;
   }
   return members;

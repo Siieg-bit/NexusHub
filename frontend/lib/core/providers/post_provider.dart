@@ -90,31 +90,22 @@ Future<void> _enrichAuthorData(Map<String, dynamic> map) async {
         .maybeSingle();
 
     if (member != null) {
+      // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
       final localNickname = member['local_nickname']?.toString().trim();
       final localIconUrl = member['local_icon_url']?.toString().trim();
       final localBannerUrl = member['local_banner_url']?.toString().trim();
 
-      map['author_local_nickname'] =
-          localNickname?.isNotEmpty == true ? localNickname : map['author_local_nickname'];
-      map['author_local_icon_url'] =
-          localIconUrl?.isNotEmpty == true ? localIconUrl : map['author_local_icon_url'];
-      map['author_local_banner_url'] =
-          localBannerUrl?.isNotEmpty == true ? localBannerUrl : map['author_local_banner_url'];
+      map['author_local_nickname'] = localNickname;
+      map['author_local_icon_url'] = localIconUrl;
+      map['author_local_banner_url'] = localBannerUrl;
       map['author_local_level'] ??= member['local_level'];
 
       final currentAuthor = Map<String, dynamic>.from(
         (map['author'] ?? map['profiles'] ?? const <String, dynamic>{}) as Map,
       );
-
-      if (localNickname?.isNotEmpty == true) {
-        currentAuthor['nickname'] = localNickname;
-      }
-      if (localIconUrl?.isNotEmpty == true) {
-        currentAuthor['icon_url'] = localIconUrl;
-      }
-      if (localBannerUrl?.isNotEmpty == true) {
-        currentAuthor['banner_url'] = localBannerUrl;
-      }
+      currentAuthor['nickname'] = localNickname;
+      currentAuthor['icon_url'] = localIconUrl;
+      if (localBannerUrl != null) currentAuthor['banner_url'] = localBannerUrl;
 
       map['author'] = currentAuthor;
       map['profiles'] = currentAuthor;

@@ -98,20 +98,20 @@ class CommentModel {
     };
   }
 
-  /// Retorna o nickname efetivo: local (comunidade) tem prioridade sobre global.
+  /// Retorna o nickname local da comunidade.
+  /// Sempre preenchido desde o join (migration 093).
   String effectiveNickname(String fallback) {
     final local = localNickname?.trim();
     if (local != null && local.isNotEmpty) return local;
-    final global = author?.nickname?.trim();
-    if (global != null && global.isNotEmpty) return global;
     return fallback;
   }
 
-  /// Retorna o avatar URL efetivo: local (comunidade) tem prioridade sobre global.
+  /// Retorna o avatar URL local da comunidade.
+  /// Sempre preenchido desde o join (migration 093).
   String? get effectiveIconUrl {
     final local = localIconUrl?.trim();
     if (local != null && local.isNotEmpty) return local;
-    return author?.iconUrl;
+    return null;
   }
 
   bool get isSticker =>

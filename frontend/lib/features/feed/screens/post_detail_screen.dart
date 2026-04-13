@@ -1079,11 +1079,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             children: [
                               CosmeticAvatar(
                                 userId: post.authorId,
-                                avatarUrl:
-                                    post.authorLocalIconUrl?.trim().isNotEmpty ==
-                                            true
-                                        ? post.authorLocalIconUrl!.trim()
-                                        : post.author?.iconUrl,
+                                // local_icon_url sempre preenchido desde o join (migration 093)
+                                avatarUrl: post.authorLocalIconUrl?.trim().isNotEmpty == true
+                                    ? post.authorLocalIconUrl!.trim()
+                                    : null,
                                 size: r.s(40),
                                 onTap: () => context.push(
                                   '/community/${post.communityId}/profile/${post.authorId}',
@@ -1098,12 +1097,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                       children: [
                                         Flexible(
                                           child: Text(
-                                            post.authorLocalNickname
-                                                        ?.trim()
-                                                        .isNotEmpty ==
-                                                    true
+                                            // local_nickname sempre preenchido desde o join (migration 093)
+                                            post.authorLocalNickname?.trim().isNotEmpty == true
                                                 ? post.authorLocalNickname!.trim()
-                                                : (post.author?.nickname ?? s.user),
+                                                : s.user,
                                             style: TextStyle(
                                               fontWeight: FontWeight.w700,
                                               color: context.nexusTheme.textPrimary,

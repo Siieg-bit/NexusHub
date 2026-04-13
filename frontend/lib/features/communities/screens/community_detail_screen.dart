@@ -175,18 +175,17 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
       // Capturar welcomeMessage ANTES de invalidar o provider
       final communityState = ref.read(communityDetailProvider(widget.communityId));
       final welcomeMsg = communityState.valueOrNull?.welcomeMessage;
-      final profile = await SupabaseService.table('profiles')
-          .select('nickname, bio, icon_url, banner_url')
-          .eq('id', userId)
-          .single();
+      // Usa currentUserProvider (já em memória) como ponto de partida do perfil local.
+      // Após o join, o usuário edita livremente o perfil da comunidade sem sincronização.
+      final currentUser = ref.read(currentUserProvider);
       await SupabaseService.table('community_members').insert({
         'community_id': widget.communityId,
         'user_id': userId,
         'role': 'member',
-        'local_nickname': profile['nickname'],
-        'local_bio': profile['bio'],
-        'local_icon_url': profile['icon_url'],
-        'local_banner_url': profile['banner_url'],
+        'local_nickname': currentUser?.nickname,
+        'local_bio': currentUser?.bio,
+        'local_icon_url': currentUser?.iconUrl,
+        'local_banner_url': currentUser?.bannerUrl,
       });
       ref.invalidate(communityMembershipProvider(widget.communityId));
       ref.invalidate(communityDetailProvider(widget.communityId));

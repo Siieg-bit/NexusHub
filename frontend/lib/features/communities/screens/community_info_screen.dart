@@ -10,6 +10,7 @@ import '../../../core/utils/responsive.dart';
 import '../providers/community_shared_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../auth/providers/auth_provider.dart';
 
 /// ============================================================================
 /// CommunityInfoScreen — Tela de detalhes/informações da comunidade.
@@ -102,18 +103,17 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
-      final profile = await SupabaseService.table('profiles')
-          .select('nickname, bio, icon_url, banner_url')
-          .eq('id', userId)
-          .single();
+      // Usa currentUserProvider (já em memória) como ponto de partida do perfil local.
+      // Após o join, o usuário edita livremente o perfil da comunidade sem sincronização.
+      final currentUser = ref.read(currentUserProvider);
       await SupabaseService.table('community_members').insert({
         'community_id': widget.communityId,
         'user_id': userId,
         'role': 'member',
-        'local_nickname': profile['nickname'],
-        'local_bio': profile['bio'],
-        'local_icon_url': profile['icon_url'],
-        'local_banner_url': profile['banner_url'],
+        'local_nickname': currentUser?.nickname,
+        'local_bio': currentUser?.bio,
+        'local_icon_url': currentUser?.iconUrl,
+        'local_banner_url': currentUser?.bannerUrl,
       });
       if (mounted) {
         setState(() {

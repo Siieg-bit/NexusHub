@@ -287,14 +287,11 @@ final favoriteMembersProvider =
         final profile = row['profiles'] as Map<String, dynamic>?;
         if (profile == null) continue;
         final merged = Map<String, dynamic>.from(profile);
+        // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
         final localNickname = (membership['local_nickname'] as String?)?.trim();
         final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
-        if (localNickname != null && localNickname.isNotEmpty) {
-          merged['nickname'] = localNickname;
-        }
-        if (localIconUrl != null && localIconUrl.isNotEmpty) {
-          merged['icon_url'] = localIconUrl;
-        }
+        if (localNickname != null) merged['nickname'] = localNickname;
+        if (localIconUrl != null) merged['icon_url'] = localIconUrl;
         row['profiles'] = merged;
       }
     }

@@ -427,11 +427,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             SizedBox(height: r.s(12)),
             _buildUserAvatar(r, user, themeColor),
             SizedBox(height: r.s(6)),
-            // Nome do usuário — usa local_nickname (comunidade) com fallback para global
+            // local_nickname sempre preenchido desde o join (migration 093)
             Text(
               (widget.membership?['local_nickname'] as String?)?.trim().isNotEmpty == true
                   ? (widget.membership!['local_nickname'] as String).trim()
-                  : (user?.nickname ?? s.drawerVisitor),
+                  : s.drawerVisitor,
               style: TextStyle(
                 color: const Color(0xFFFFFFFF),
                 fontSize: r.fs(20),
@@ -524,11 +524,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     final frameUrl = equippedData?['frame_url'] as String?;
     final frameIsAnimated =
         equippedData?['frame_is_animated'] as bool? ?? false;
-    // Usa local_icon_url (comunidade) com fallback para avatar global reativo
+    // local_icon_url sempre preenchido desde o join (migration 093)
     final localIconUrl = (widget.membership?['local_icon_url'] as String?)?.trim();
     final effectiveAvatarUrl = (localIconUrl != null && localIconUrl.isNotEmpty)
         ? localIconUrl
-        : (ref.watch(currentUserAvatarProvider) ?? user?.iconUrl);
+        : null;
     return AvatarWithFrame(
       avatarUrl: effectiveAvatarUrl,
       frameUrl: frameUrl,

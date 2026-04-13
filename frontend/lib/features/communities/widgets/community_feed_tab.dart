@@ -694,16 +694,16 @@ class _FeaturedPostCard extends ConsumerWidget {
                       SizedBox(height: r.s(6)),
 
                       // Autor + stats
-                      // Usa perfil local de comunidade com fallback para global
+                      // local_nickname e local_icon_url sempre preenchidos desde o join (migration 093)
                       Builder(builder: (context) {
                         final featuredAvatarUrl =
                             post.authorLocalIconUrl?.trim().isNotEmpty == true
                                 ? post.authorLocalIconUrl!.trim()
-                                : post.author?.iconUrl;
+                                : null;
                         final featuredNickname =
                             post.authorLocalNickname?.trim().isNotEmpty == true
                                 ? post.authorLocalNickname!.trim()
-                                : (post.author?.nickname ?? s.user);
+                                : s.user;
                         return Row(
                           children: [
                             // Avatar do autor

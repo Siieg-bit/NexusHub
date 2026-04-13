@@ -196,19 +196,14 @@ Future<void> _injectCommunityAuthorIdentity(
       final currentAuthor = Map<String, dynamic>.from(
         (post['author'] ?? post['profiles'] ?? const <String, dynamic>{}) as Map,
       );
+      // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
       final localNickname = (membership['local_nickname'] as String?)?.trim();
       final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
       final localBannerUrl = (membership['local_banner_url'] as String?)?.trim();
 
-      if (localNickname != null && localNickname.isNotEmpty) {
-        currentAuthor['nickname'] = localNickname;
-      }
-      if (localIconUrl != null && localIconUrl.isNotEmpty) {
-        currentAuthor['icon_url'] = localIconUrl;
-      }
-      if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
-        currentAuthor['banner_url'] = localBannerUrl;
-      }
+      if (localNickname != null) currentAuthor['nickname'] = localNickname;
+      if (localIconUrl != null) currentAuthor['icon_url'] = localIconUrl;
+      if (localBannerUrl != null) currentAuthor['banner_url'] = localBannerUrl;
 
       post['author'] = currentAuthor;
       post['profiles'] = currentAuthor;
@@ -259,19 +254,14 @@ final communityMembersProvider =
   for (final member in members) {
     if (member['profiles'] is! Map) continue;
     final profile = Map<String, dynamic>.from(member['profiles'] as Map);
+    // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
     final localNickname = (member['local_nickname'] as String?)?.trim();
     final localIconUrl = (member['local_icon_url'] as String?)?.trim();
     final localBannerUrl = (member['local_banner_url'] as String?)?.trim();
 
-    if (localNickname != null && localNickname.isNotEmpty) {
-      profile['nickname'] = localNickname;
-    }
-    if (localIconUrl != null && localIconUrl.isNotEmpty) {
-      profile['icon_url'] = localIconUrl;
-    }
-    if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
-      profile['banner_url'] = localBannerUrl;
-    }
+    if (localNickname != null) profile['nickname'] = localNickname;
+    if (localIconUrl != null) profile['icon_url'] = localIconUrl;
+    if (localBannerUrl != null) profile['banner_url'] = localBannerUrl;
 
     member['profiles'] = profile;
   }
