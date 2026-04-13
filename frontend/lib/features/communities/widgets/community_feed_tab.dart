@@ -77,7 +77,7 @@ class _FeaturedTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     final pinnedAsync = ref.watch(pinnedFeedProvider(communityId));
     final featuredAsync = ref.watch(activeFeaturedFeedProvider(communityId));
@@ -90,9 +90,22 @@ class _FeaturedTab extends ConsumerWidget {
     final featuredPosts = featuredAsync.valueOrNull ?? [];
     final archivedFeaturedPosts = archivedFeaturedAsync.valueOrNull ?? [];
     final latestPosts = latestAsync.valueOrNull ?? [];
-    final primaryFeatured = featuredPosts.isNotEmpty ? featuredPosts.first : null;
-    final secondaryFeatured =
-        featuredPosts.length > 1 ? featuredPosts.skip(1).take(4).toList() : <PostModel>[];
+    final primaryFeatured =
+        featuredPosts.isNotEmpty ? featuredPosts.first : null;
+    final secondaryFeatured = featuredPosts.length > 1
+        ? featuredPosts.skip(1).take(4).toList()
+        : <PostModel>[];
+    final rotatedFeaturedPosts = <PostModel>[
+      ...featuredPosts.skip(5),
+      ...archivedFeaturedPosts,
+    ];
+    final dedupedRotatedFeaturedPosts = <PostModel>[];
+    final seenRotatedPostIds = <String>{};
+    for (final post in rotatedFeaturedPosts) {
+      if (seenRotatedPostIds.add(post.id)) {
+        dedupedRotatedFeaturedPosts.add(post);
+      }
+    }
 
     final isLoading = pinnedAsync.isLoading &&
         featuredAsync.isLoading &&
@@ -129,7 +142,8 @@ class _FeaturedTab extends ConsumerWidget {
           ],
 
           // ── Seção 2: Destaques e histórico de rotação ───────────────────
-          if (primaryFeatured != null || archivedFeaturedPosts.isNotEmpty) ...[
+          if (primaryFeatured != null ||
+              dedupedRotatedFeaturedPosts.isNotEmpty) ...[
             SliverToBoxAdapter(
               child: _SectionHeader(
                 icon: Icons.star_rounded,
@@ -167,10 +181,10 @@ class _FeaturedTab extends ConsumerWidget {
                   ),
                 ),
               ),
-            if (archivedFeaturedPosts.isNotEmpty)
+            if (dedupedRotatedFeaturedPosts.isNotEmpty)
               SliverToBoxAdapter(
                 child: _RotatedFeaturedCarousel(
-                  posts: archivedFeaturedPosts,
+                  posts: dedupedRotatedFeaturedPosts,
                   accent: accent,
                 ),
               ),
