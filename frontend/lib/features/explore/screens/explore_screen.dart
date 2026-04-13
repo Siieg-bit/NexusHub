@@ -11,6 +11,7 @@ import '../../../core/widgets/amino_particles_bg.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/notification_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Provider para busca de comunidades.
@@ -55,7 +56,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   bool _isLoading = true;
 
   // Dados do usuário para a top bar
-  String? _avatarUrl;
+  // _avatarUrl removido: agora usa currentUserAvatarProvider (atualização em tempo real)
   int _coins = 0;
 
   @override
@@ -69,13 +70,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       final userId = SupabaseService.currentUserId;
 
       if (userId != null) {
-        // Carregar perfil do usuário
+        // Carregar coins (avatar vem do currentUserAvatarProvider em tempo real)
         try {
           final profile = await SupabaseService.table('profiles')
-              .select('icon_url, coins')
+              .select('coins')
               .eq('id', userId)
               .single();
-          _avatarUrl = profile['icon_url'] as String?;
           _coins = profile['coins'] as int? ?? 0;
         } catch (e) {
           debugPrint('[explore_screen] Erro: $e');
@@ -358,7 +358,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           children: [
             // ── Top Bar Amino ──
             AminoTopBar(
-              avatarUrl: _avatarUrl,
+              avatarUrl: ref.watch(currentUserAvatarProvider),
               coins: _coins,
               notificationCount: ref.watch(unreadNotificationCountProvider),
               onSearchTap: () => context.push('/search'),

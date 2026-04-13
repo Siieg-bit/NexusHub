@@ -13,6 +13,7 @@ import '../../../core/utils/responsive.dart';
 import '../providers/community_shared_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/level_up_dialog.dart';
+import '../../auth/providers/auth_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 class CommunityListScreen extends ConsumerStatefulWidget {
@@ -26,7 +27,7 @@ class CommunityListScreen extends ConsumerStatefulWidget {
 }
 
 class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
-  String? _avatarUrl;
+  // _avatarUrl removido: agora usa currentUserAvatarProvider (atualização em tempo real)
   int _coins = 0;
   List<CommunityModel>? _reorderedCommunities;
 
@@ -40,13 +41,13 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
+      // Carregar apenas coins (avatar vem do currentUserAvatarProvider em tempo real)
       final profile = await SupabaseService.table('profiles')
-          .select('icon_url, coins')
+          .select('coins')
           .eq('id', userId)
           .single();
       if (mounted) {
         setState(() {
-          _avatarUrl = profile['icon_url'] as String?;
           _coins = profile['coins'] as int? ?? 0;
         });
       }
@@ -67,7 +68,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
         child: Column(
           children: [
             AminoTopBar(
-              avatarUrl: _avatarUrl,
+              avatarUrl: ref.watch(currentUserAvatarProvider),
               coins: _coins,
               notificationCount: ref.watch(unreadNotificationCountProvider),
               onSearchTap: () => context.push('/search'),

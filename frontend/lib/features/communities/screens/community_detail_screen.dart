@@ -25,6 +25,7 @@ import '../widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/deep_link_service.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/features/auth/providers/auth_provider.dart';
 
 // =============================================================================
 // MAIN SCREEN — Estilo Amino Apps
@@ -330,10 +331,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                 .valueOrNull?[widget.communityId] ??
                             0) >
                         0,
-                    avatarUrl: ref.watch(
-                      currentUserProfileProvider
-                          .select((a) => a.valueOrNull?.iconUrl),
-                    ),
+                    avatarUrl: ref.watch(currentUserAvatarProvider),
                     onMenuTap: () =>
                         AminoDrawerController.of(context)?.toggle(),
                     onOnlineTap: () => _showOnlineMembersSheet(

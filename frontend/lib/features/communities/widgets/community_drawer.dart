@@ -17,6 +17,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/level_up_dialog.dart';
 import '../../../core/providers/chat_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/features/auth/providers/auth_provider.dart';
 
 // =============================================================================
 // COMMUNITY DRAWER — Réplica fiel do painel lateral do Amino Apps
@@ -522,7 +523,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     final frameIsAnimated =
         equippedData?['frame_is_animated'] as bool? ?? false;
     return AvatarWithFrame(
-      avatarUrl: user?.iconUrl,
+      avatarUrl: ref.watch(currentUserAvatarProvider) ?? user?.iconUrl,
       frameUrl: frameUrl,
       size: r.s(72),
       showAminoPlus: user?.isPremium ?? false,

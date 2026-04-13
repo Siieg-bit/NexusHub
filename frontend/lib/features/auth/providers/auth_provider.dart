@@ -301,3 +301,17 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
 final currentUserProvider = Provider<UserModel?>((ref) {
   return ref.watch(authProvider).user;
 });
+
+/// Fonte única de verdade para o avatar URL do usuário logado.
+/// Todos os widgets que exibem a foto do usuário logado devem usar este provider
+/// via ref.watch(currentUserAvatarProvider) para receber atualizações em tempo real.
+/// Quando o usuário troca a foto e o authProvider é atualizado via updateUserProfile(),
+/// todos os widgets que observam este provider são reconstruídos automaticamente.
+final currentUserAvatarProvider = Provider<String?>((ref) {
+  return ref.watch(authProvider).user?.iconUrl;
+});
+
+/// Provider do nickname do usuário logado (atalho).
+final currentUserNicknameProvider = Provider<String?>((ref) {
+  return ref.watch(authProvider).user?.nickname;
+});

@@ -267,14 +267,32 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     }
   }
 
-  /// FIX Bug #5: Upload de avatar via MediaUploadService
+  /// Upload de avatar: faz upload, salva no banco e atualiza o authProvider imediatamente.
+  /// Garante propagação em tempo real para todos os widgets via currentUserAvatarProvider.
   Future<void> _pickAndUploadAvatar() async {
     final s = getStrings();
     setState(() => _isUploadingAvatar = true);
     try {
       final url = await MediaUploadService.uploadAvatar();
       if (url != null && mounted) {
+        // 1. Atualizar estado local da tela
         setState(() => _avatarUrl = url);
+        // 2. Salvar imediatamente no banco (sem esperar o botão Salvar)
+        final userId = SupabaseService.currentUserId;
+        if (userId != null) {
+          await SupabaseService.table('profiles')
+              .update({'icon_url': url})
+              .eq('id', userId);
+        }
+        // 3. Atualizar o authProvider → currentUserAvatarProvider propaga em tempo real
+        final currentUser = ref.read(currentUserProvider);
+        if (currentUser != null && mounted) {
+          ref.read(authProvider.notifier).updateUserProfile(
+            currentUser.copyWith(iconUrl: url),
+          );
+          // Marcar como já salvo para que _saveProfile não inclua icon_url novamente
+          _originalAvatarUrl = url;
+        }
       }
     } catch (e) {
       if (mounted) {
