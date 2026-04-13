@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/presence_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../../chat/widgets/chat_bubble.dart'; // AvatarWithFrame + AminoPlusBadge
@@ -58,6 +59,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   bool _isInitialLoading = true;
   bool _savedPostsLoaded = false;
   bool _viewerIsTeamMember = false;
+  bool _isUpdatingManualPresence = false;
   int _followersCount = 0;
   int _followingCount = 0;
   String _communityName = '';
@@ -275,6 +277,34 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     }
   }
 
+  Future<void> _toggleManualPresence() async {
+    if (!_isOwnProfile || _user == null || _isUpdatingManualPresence) return;
+
+    final s = ref.read(stringsProvider);
+    final nextOffline = !_user!.isGhostMode;
+
+    setState(() => _isUpdatingManualPresence = true);
+    try {
+      await PresenceService.instance.setManualOfflineMode(nextOffline);
+      await _loadProfile();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            nextOffline ? 'Status alterado para offline' : 'Status alterado para online',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.anErrorOccurredTryAgain)),
+      );
+    } finally {
+      if (mounted) setState(() => _isUpdatingManualPresence = false);
+    }
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -348,6 +378,12 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final coins = _user?.coins ?? 0;
     final canViewCoins = _isOwnProfile || _viewerIsTeamMember;
     final isOnline = _user?.isOnline ?? false;
+    final isManualOffline = _user?.isGhostMode ?? false;
+    final presenceLabel = isOnline
+        ? s.online
+        : ((_user?.lastActiveBucketMinutes ?? 0) > 0
+            ? 'há ${_user!.lastActiveBucketMinutes} minutos'
+            : s.offline);
     final isPremium = _user?.isPremium ?? false;
     final displayName =
         (localNickname?.trim().isNotEmpty ?? false) ? localNickname!.trim() : (_user?.nickname ?? s.user);
@@ -467,7 +503,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                     ),
                     SizedBox(width: r.s(5)),
                     Text(
-                      isOnline ? s.online : s.offline,
+                      presenceLabel,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: r.fs(13),
@@ -725,38 +761,96 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
 
                           // Botão Editar (próprio) / Friends + Chat (outro)
                           if (_isOwnProfile)
-                            GestureDetector(
-                              onTap: () => context.push(
-                                  '/community/${widget.communityId}/profile/edit')
-                                  .then((_) => _loadProfile()),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: r.s(28), vertical: r.s(9)),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(r.s(6)),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.35),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.edit_rounded,
-                                        size: r.s(14), color: Colors.white),
-                                    SizedBox(width: r.s(6)),
-                                    Text(
-                                      s.edit,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: r.fs(14),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                GestureDetector(
+                                  onTap: () => context.push(
+                                      '/community/${widget.communityId}/profile/edit')
+                                      .then((_) => _loadProfile()),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(28), vertical: r.s(9)),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(r.s(6)),
+                                      border: Border.all(
+                                        color: Colors.white.withValues(alpha: 0.35),
+                                        width: 1.5,
                                       ),
                                     ),
-                                  ],
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.edit_rounded,
+                                            size: r.s(14), color: Colors.white),
+                                        SizedBox(width: r.s(6)),
+                                        Text(
+                                          s.edit,
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: r.fs(14),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                SizedBox(width: r.s(10)),
+                                GestureDetector(
+                                  onTap: _isUpdatingManualPresence
+                                      ? null
+                                      : _toggleManualPresence,
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(18), vertical: r.s(9)),
+                                    decoration: BoxDecoration(
+                                      color: isManualOffline
+                                          ? Colors.grey.withValues(alpha: 0.20)
+                                          : const Color(0xFF4CAF50).withValues(alpha: 0.18),
+                                      borderRadius: BorderRadius.circular(r.s(6)),
+                                      border: Border.all(
+                                        color: isManualOffline
+                                            ? Colors.grey.shade400
+                                            : const Color(0xFF4CAF50),
+                                        width: 1.4,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (_isUpdatingManualPresence)
+                                          SizedBox(
+                                            width: r.s(14),
+                                            height: r.s(14),
+                                            child: const CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        else
+                                          Icon(
+                                            isManualOffline
+                                                ? Icons.visibility_off_rounded
+                                                : Icons.circle,
+                                            size: r.s(14),
+                                            color: Colors.white,
+                                          ),
+                                        SizedBox(width: r.s(6)),
+                                        Text(
+                                          isManualOffline ? 'Aparecer online' : 'Ficar offline',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: r.fs(13),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             )
                           else
                             Row(

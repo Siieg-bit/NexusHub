@@ -14,7 +14,6 @@ import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../../../core/providers/chat_provider.dart' show unreadCountProvider, unreadCountByCommunityProvider;
-import '../../../core/providers/presence_provider.dart';
 import '../widgets/dm_invite_card.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -85,7 +84,7 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
     try {
       final dmMembers = await SupabaseService.table('chat_members')
           .select(
-              'thread_id, user_id, profiles!chat_members_user_id_fkey(id, nickname, icon_url, banner_url)')
+              'thread_id, user_id, profiles!chat_members_user_id_fkey(id, nickname, icon_url, banner_url, online_status, is_ghost_mode, last_seen_at)')
           .inFilter('thread_id', dmThreadIds)
           .neq('user_id', userId);
 
@@ -167,6 +166,12 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
         threadMap['icon_url'] = counterpart['icon_url'];
         threadMap['host_id'] =
             counterpart['id'] ?? counterpart['user_id'] ?? threadMap['host_id'];
+        threadMap['counterpart_online_status'] =
+            counterpart['online_status'] ?? threadMap['counterpart_online_status'];
+        threadMap['counterpart_is_ghost_mode'] = counterpart['is_ghost_mode'] ??
+            threadMap['counterpart_is_ghost_mode'];
+        threadMap['counterpart_last_seen_at'] = counterpart['last_seen_at'] ??
+            threadMap['counterpart_last_seen_at'];
       }
     }
 
@@ -1131,7 +1136,7 @@ class _AminoChatTile extends ConsumerWidget {
     final showOnlineIndicator = isDirectLikeChat &&
         counterpartUserId != null &&
         counterpartUserId.isNotEmpty &&
-        ref.watch(isUserOnlineGlobalProvider(counterpartUserId));
+        chatRoom.isCounterpartOnline;
 
     // GestureDetector com HitTestBehavior.translucent:
     // - translucent permite que o ListView receba o scroll normalmente

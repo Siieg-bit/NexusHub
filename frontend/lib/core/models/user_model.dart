@@ -46,6 +46,7 @@ class UserModel {
 
   // Metadata
   final int onlineStatus; // 1=Online, 2=Offline (era String)
+  final bool isGhostMode; // override manual para aparecer offline
   final DateTime? lastSeenAt;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -85,6 +86,7 @@ class UserModel {
     this.brokenStreaks = 0,
     this.hasCompletedOnboarding = false,
     this.onlineStatus = 2,
+    this.isGhostMode = false,
     this.lastSeenAt,
     required this.createdAt,
     required this.updatedAt,
@@ -92,8 +94,36 @@ class UserModel {
     this.isFollowedBy,
   });
 
-  /// Indica se o usuário está online (online_status == 1).
-  bool get isOnline => onlineStatus == 1;
+  static const Duration _presenceWindow = Duration(minutes: 15);
+
+  DateTime? get lastSeenLocal => lastSeenAt?.toLocal();
+
+  /// Indica se o usuário deve ser considerado online no modelo gradual.
+  bool get isOnline {
+    if (isGhostMode) return false;
+    final seenAt = lastSeenAt;
+    if (seenAt == null) return onlineStatus == 1;
+    final elapsed = DateTime.now().toUtc().difference(seenAt.toUtc());
+    return elapsed <= _presenceWindow;
+  }
+
+  /// Retorna quantos minutos arredondados em blocos de 15 min se passaram.
+  int get lastActiveBucketMinutes {
+    final seenAt = lastSeenAt;
+    if (seenAt == null) return 0;
+    final elapsedMinutes =
+        DateTime.now().toUtc().difference(seenAt.toUtc()).inMinutes;
+    if (elapsedMinutes <= 0) return 0;
+    return ((elapsedMinutes + 14) ~/ 15) * 15;
+  }
+
+  /// Texto gradual de última atividade para UI simples.
+  String get gradualPresenceLabel {
+    if (isOnline) return 'online';
+    final bucket = lastActiveBucketMinutes;
+    if (bucket <= 0) return 'offline';
+    return 'há $bucket minutos';
+  }
 
   /// Indica se o usuário é membro da equipe (admin ou moderador global).
   bool get isTeamMember => isTeamAdmin || isTeamModerator;
@@ -136,6 +166,7 @@ class UserModel {
       hasCompletedOnboarding:
           json['has_completed_onboarding'] as bool? ?? false,
       onlineStatus: (json['online_status'] as num?)?.toInt() ?? 2,
+      isGhostMode: json['is_ghost_mode'] as bool? ?? false,
       lastSeenAt: json['last_seen_at'] != null
           ? DateTime.tryParse(json['last_seen_at'] as String)
           : null,
@@ -161,6 +192,7 @@ class UserModel {
       'reputation': reputation,
       'coins': coins,
       'online_status': onlineStatus,
+      'is_ghost_mode': isGhostMode,
       'is_premium': isPremium,
     };
   }
@@ -175,6 +207,8 @@ class UserModel {
     int? reputation,
     int? coins,
     int? onlineStatus,
+    bool? isGhostMode,
+    DateTime? lastSeenAt,
     bool? hasCompletedOnboarding,
   }) {
     return UserModel(
@@ -196,6 +230,7 @@ class UserModel {
       businessCoins: businessCoins,
       isPremium: isPremium,
       premiumExpiresAt: premiumExpiresAt,
+      isGhostMode: isGhostMode ?? this.isGhostMode,
       blogsCount: blogsCount,
       postsCount: postsCount,
       commentsCount: commentsCount,
@@ -209,7 +244,7 @@ class UserModel {
       hasCompletedOnboarding:
           hasCompletedOnboarding ?? this.hasCompletedOnboarding,
       onlineStatus: onlineStatus ?? this.onlineStatus,
-      lastSeenAt: lastSeenAt,
+      lastSeenAt: lastSeenAt ?? this.lastSeenAt,
       createdAt: createdAt,
       updatedAt: updatedAt,
       isFollowing: isFollowing,

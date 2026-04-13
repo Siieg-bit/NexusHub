@@ -1,263 +1,166 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_service.dart';
 
-/// Serviço de presença online em tempo real usando Supabase Realtime Presence.
+/// Serviço de presença baseado em janelas de 15 minutos.
 ///
-/// Cada comunidade tem um canal de presença separado (`presence:community:{id}`).
-/// Quando o usuário entra em uma comunidade, ele faz `track()` no canal.
-/// Quando sai, faz `untrack()`. O Supabase gerencia automaticamente a
-/// desconexão (se o app crashar ou perder conexão, o leave é disparado).
+/// Em vez de usar presença em tempo real por canal, o app apenas mantém
+/// `profiles.last_seen_at` atualizado a cada 15 minutos e deriva o estado
+/// online/offline a partir desse timestamp.
 ///
-/// Também mantém um canal global (`presence:global`) para presença geral.
+/// Se `profiles.is_ghost_mode = true`, o usuário sempre aparece offline para os
+/// demais, independentemente da atividade recente.
 class PresenceService {
   PresenceService._();
   static final PresenceService _instance = PresenceService._();
   static PresenceService get instance => _instance;
 
+  static const Duration heartbeatInterval = Duration(minutes: 15);
+  static const Duration onlineWindow = Duration(minutes: 15);
+
   final _supabase = Supabase.instance.client;
 
-  /// Canais de presença ativos por communityId (ou 'global').
-  final Map<String, RealtimeChannel> _channels = {};
-
-  /// Controllers de stream para notificar mudanças de presença.
-  /// Chave: communityId (ou 'global'), Valor: StreamController com Set de userIds online.
-  final Map<String, StreamController<Set<String>>> _controllers = {};
-
-  /// Cache local do estado de presença por canal.
-  final Map<String, Set<String>> _presenceState = {};
-
-  /// Timer para atualizar online_status no banco periodicamente.
   Timer? _heartbeatTimer;
-
-  /// UserId do usuário atual.
   String? _currentUserId;
+  DateTime? _lastHeartbeatAt;
 
-  // ── Inicialização ──
-
-  /// Inicializa o serviço de presença para o usuário atual.
-  /// Deve ser chamado após o login.
   Future<void> initialize() async {
     _currentUserId = SupabaseService.currentUserId;
     if (_currentUserId == null) return;
 
-    // Iniciar presença global
-    await joinChannel('global');
-
-    // Heartbeat: atualizar last_seen_at a cada 2 minutos
     _heartbeatTimer?.cancel();
+    await refreshPresenceNow(forceOnline: true);
     _heartbeatTimer = Timer.periodic(
-      const Duration(minutes: 2),
-      (_) => _updateHeartbeat(),
+      heartbeatInterval,
+      (_) => refreshPresenceNow(),
     );
-
-    // Atualizar status online no banco
-    await _setOnlineStatus(1);
   }
 
-  /// Encerra o serviço de presença.
-  /// Deve ser chamado no logout.
   Future<void> dispose() async {
     _heartbeatTimer?.cancel();
     _heartbeatTimer = null;
 
-    // Sair de todos os canais
-    final channelKeys = List<String>.from(_channels.keys);
-    for (final key in channelKeys) {
-      await leaveChannel(key);
-    }
-
-    // Atualizar status offline no banco
-    await _setOnlineStatus(2);
-
+    final uid = _currentUserId;
     _currentUserId = null;
-  }
-
-  // ── Canais de Presença ──
-
-  /// Entra em um canal de presença (comunidade ou global).
-  Future<void> joinChannel(String channelId) async {
-    final userId = _currentUserId;
-    if (userId == null) return;
-    if (_channels.containsKey(channelId)) return; // Já está no canal
-
-    final channelName = channelId == 'global'
-        ? 'presence:global'
-        : 'presence:community:$channelId';
-
-    final channel = _supabase.channel(
-      channelName,
-      opts: RealtimeChannelConfig(key: userId),
-    );
-
-    // Criar controller de stream se não existir
-    _controllers[channelId] ??= StreamController<Set<String>>.broadcast();
-    _presenceState[channelId] = {};
-
-    // Escutar eventos de presença
-    channel.onPresenceSync((_) {
-      _handleSync(channelId, channel);
-    }).onPresenceJoin((payload) {
-      _handleJoin(channelId, payload);
-    }).onPresenceLeave((payload) {
-      _handleLeave(channelId, payload);
-    });
-
-    // Subscrever e fazer track
-    channel.subscribe((status, error) async {
-      if (status == RealtimeSubscribeStatus.subscribed) {
-        try {
-          await channel.track({
-            'user_id': userId,
-            'online_at': DateTime.now().toUtc().toIso8601String(),
-          });
-        } catch (e) {
-          debugPrint('[PresenceService] Erro ao fazer track: $e');
-        }
-      }
-    });
-
-    _channels[channelId] = channel;
-  }
-
-  /// Sai de um canal de presença.
-  Future<void> leaveChannel(String channelId) async {
-    final channel = _channels.remove(channelId);
-    if (channel != null) {
-      try {
-        await channel.untrack();
-        await _supabase.removeChannel(channel);
-      } catch (e) {
-        debugPrint('[PresenceService] Erro ao sair do canal: $e');
-      }
-    }
-    _presenceState.remove(channelId);
-    // Não fechar o controller — pode ter listeners ativos
-  }
-
-  // ── Handlers de Eventos ──
-
-  void _handleSync(String channelId, RealtimeChannel channel) {
-    try {
-      final state = channel.presenceState();
-      final onlineUserIds = <String>{};
-
-      for (final entry in state) {
-        for (final presence in entry.presences) {
-          final userId = presence.payload['user_id'] as String?;
-          if (userId != null) {
-            onlineUserIds.add(userId);
-          }
-        }
-      }
-
-      _presenceState[channelId] = onlineUserIds;
-      _controllers[channelId]?.add(Set.unmodifiable(onlineUserIds));
-    } catch (e) {
-      debugPrint('[PresenceService] Erro no sync: $e');
-    }
-  }
-
-  void _handleJoin(String channelId, dynamic payload) {
-    try {
-      if (payload is Map) {
-        final newPresences = payload['newPresences'] as List?;
-        if (newPresences != null) {
-          for (final p in newPresences) {
-            final userId = (p as Map?)?['user_id'] as String?;
-            if (userId != null) {
-              _presenceState[channelId]?.add(userId);
-            }
-          }
-        }
-      }
-      final current = _presenceState[channelId];
-      if (current != null) {
-        _controllers[channelId]?.add(Set.unmodifiable(current));
-      }
-    } catch (e) {
-      debugPrint('[PresenceService] Erro no join: $e');
-    }
-  }
-
-  void _handleLeave(String channelId, dynamic payload) {
-    try {
-      if (payload is Map) {
-        final leftPresences = payload['leftPresences'] as List?;
-        if (leftPresences != null) {
-          for (final p in leftPresences) {
-            final userId = (p as Map?)?['user_id'] as String?;
-            if (userId != null) {
-              _presenceState[channelId]?.remove(userId);
-            }
-          }
-        }
-      }
-      final current = _presenceState[channelId];
-      if (current != null) {
-        _controllers[channelId]?.add(Set.unmodifiable(current));
-      }
-    } catch (e) {
-      debugPrint('[PresenceService] Erro no leave: $e');
-    }
-  }
-
-  // ── Getters ──
-
-  /// Stream de userIds online em um canal específico.
-  Stream<Set<String>> onlineUsersStream(String channelId) {
-    _controllers[channelId] ??= StreamController<Set<String>>.broadcast();
-    return _controllers[channelId]!.stream;
-  }
-
-  /// Snapshot atual dos userIds online em um canal.
-  Set<String> getOnlineUsers(String channelId) {
-    return _presenceState[channelId] ?? {};
-  }
-
-  /// Contagem de membros online em um canal.
-  int getOnlineCount(String channelId) {
-    return _presenceState[channelId]?.length ?? 0;
-  }
-
-  /// Verifica se um usuário específico está online (em qualquer canal).
-  bool isUserOnline(String userId) {
-    for (final state in _presenceState.values) {
-      if (state.contains(userId)) return true;
-    }
-    return false;
-  }
-
-  /// Verifica se um usuário está online em um canal específico.
-  bool isUserOnlineInChannel(String channelId, String userId) {
-    return _presenceState[channelId]?.contains(userId) ?? false;
-  }
-
-  // ── Helpers Privados ──
-
-  Future<void> _updateHeartbeat() async {
-    final uid = _currentUserId;
     if (uid == null) return;
+
     try {
       await SupabaseService.table('profiles').update({
+        'online_status': 2,
         'last_seen_at': DateTime.now().toUtc().toIso8601String(),
       }).eq('id', uid);
     } catch (e) {
-      debugPrint('[PresenceService] Erro no heartbeat: $e');
+      debugPrint('[PresenceService] Erro ao finalizar presença: $e');
     }
   }
 
-  Future<void> _setOnlineStatus(int status) async {
+  Future<void> refreshPresenceNow({bool forceOnline = false}) async {
     final uid = _currentUserId;
     if (uid == null) return;
+
     try {
-      await SupabaseService.table('profiles').update({
-        'online_status': status,
-        'last_seen_at': DateTime.now().toUtc().toIso8601String(),
-      }).eq('id', uid);
+      final profile = await SupabaseService.table('profiles')
+          .select('is_ghost_mode')
+          .eq('id', uid)
+          .maybeSingle();
+
+      final isGhostMode = profile?['is_ghost_mode'] as bool? ?? false;
+      final nowUtc = DateTime.now().toUtc();
+      final payload = <String, dynamic>{
+        'last_seen_at': nowUtc.toIso8601String(),
+        'online_status': (forceOnline || !isGhostMode) ? 1 : 2,
+      };
+
+      await SupabaseService.table('profiles').update(payload).eq('id', uid);
+      _lastHeartbeatAt = nowUtc;
     } catch (e) {
-      debugPrint('[PresenceService] Erro ao setar online_status: $e');
+      debugPrint('[PresenceService] Erro ao atualizar presença: $e');
     }
   }
+
+  Future<void> setManualOfflineMode(bool isOffline) async {
+    final uid = _currentUserId;
+    if (uid == null) return;
+
+    final nowUtc = DateTime.now().toUtc();
+    try {
+      await SupabaseService.table('profiles').update({
+        'is_ghost_mode': isOffline,
+        'online_status': isOffline ? 2 : 1,
+        'last_seen_at': nowUtc.toIso8601String(),
+      }).eq('id', uid);
+      _lastHeartbeatAt = nowUtc;
+    } catch (e) {
+      debugPrint('[PresenceService] Erro ao alternar modo offline manual: $e');
+      rethrow;
+    }
+  }
+
+  bool isConsideredOnline({
+    required int onlineStatus,
+    required bool isGhostMode,
+    required DateTime? lastSeenAt,
+    DateTime? now,
+  }) {
+    if (isGhostMode) return false;
+    if (onlineStatus == 1 && lastSeenAt == null) return true;
+    if (lastSeenAt == null) return false;
+
+    final reference = now?.toUtc() ?? DateTime.now().toUtc();
+    return reference.difference(lastSeenAt.toUtc()) <= onlineWindow;
+  }
+
+  int bucketLastSeenMinutes(DateTime? lastSeenAt, {DateTime? now}) {
+    if (lastSeenAt == null) return 0;
+    final reference = now?.toUtc() ?? DateTime.now().toUtc();
+    final minutes = reference.difference(lastSeenAt.toUtc()).inMinutes;
+    if (minutes <= 0) return 0;
+    return ((minutes + 14) ~/ 15) * 15;
+  }
+
+  String formatGradualLastSeen(
+    DateTime? lastSeenAt, {
+    required bool isGhostMode,
+    int onlineStatus = 2,
+    DateTime? now,
+  }) {
+    if (isConsideredOnline(
+      onlineStatus: onlineStatus,
+      isGhostMode: isGhostMode,
+      lastSeenAt: lastSeenAt,
+      now: now,
+    )) {
+      return 'online';
+    }
+
+    final bucket = bucketLastSeenMinutes(lastSeenAt, now: now);
+    if (bucket <= 0) return 'offline';
+    return 'há $bucket minutos';
+  }
+
+  DateTime? get lastHeartbeatAt => _lastHeartbeatAt;
+
+  @Deprecated('Presença em tempo real foi removida em favor de janelas de 15 minutos.')
+  Stream<Set<String>> onlineUsersStream(String channelId) =>
+      const Stream<Set<String>>.empty();
+
+  @Deprecated('Presença em tempo real foi removida em favor de janelas de 15 minutos.')
+  Future<void> joinChannel(String channelId) async {}
+
+  @Deprecated('Presença em tempo real foi removida em favor de janelas de 15 minutos.')
+  Future<void> leaveChannel(String channelId) async {}
+
+  @Deprecated('Presença em tempo real foi removida em favor de janelas de 15 minutos.')
+  Set<String> getOnlineUsers(String channelId) => const {};
+
+  @Deprecated('Presença em tempo real foi removida em favor de janelas de 15 minutos.')
+  int getOnlineCount(String channelId) => 0;
+
+  @Deprecated('Presença em tempo real foi removida em favor de janelas de 15 minutos.')
+  bool isUserOnline(String userId) => false;
+
+  @Deprecated('Presença em tempo real foi removida em favor de janelas de 15 minutos.')
+  bool isUserOnlineInChannel(String channelId, String userId) => false;
 }

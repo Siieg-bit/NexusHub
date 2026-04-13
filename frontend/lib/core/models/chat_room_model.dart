@@ -1,5 +1,5 @@
-/// Modelo de thread de chat (sala/grupo/DM).
 import '../l10n/locale_provider.dart';
+
 /// Baseado no schema v5 — tabela chat_threads (ChatThread.smali).
 ///
 /// SEPARAÇÃO CONCEITUAL (Etapa 1):
@@ -53,6 +53,13 @@ class ChatRoomModel {
   /// esses fluxos — apenas registra o campo para uso futuro.
   final String membershipStatus;
 
+  /// Presença persistida da contraparte em DMs.
+  /// Esses campos vêm do perfil do outro usuário e substituem a dependência de
+  /// presença em tempo real para a lista de chats.
+  final int counterpartOnlineStatus;
+  final bool counterpartIsGhostMode;
+  final DateTime? counterpartLastSeenAt;
+
   ChatRoomModel({
     required this.id,
     this.communityId,
@@ -80,7 +87,36 @@ class ChatRoomModel {
     this.unreadCount = 0,
     this.isPinnedByUser = false,
     this.membershipStatus = 'none',
+    this.counterpartOnlineStatus = 2,
+    this.counterpartIsGhostMode = false,
+    this.counterpartLastSeenAt,
   });
+
+  static const Duration _presenceWindow = Duration(minutes: 15);
+
+  bool get isCounterpartOnline {
+    if (counterpartIsGhostMode) return false;
+    final seenAt = counterpartLastSeenAt;
+    if (seenAt == null) return counterpartOnlineStatus == 1;
+    final elapsed = DateTime.now().toUtc().difference(seenAt.toUtc());
+    return elapsed <= _presenceWindow;
+  }
+
+  int get counterpartLastActiveBucketMinutes {
+    final seenAt = counterpartLastSeenAt;
+    if (seenAt == null) return 0;
+    final elapsedMinutes =
+        DateTime.now().toUtc().difference(seenAt.toUtc()).inMinutes;
+    if (elapsedMinutes <= 0) return 0;
+    return ((elapsedMinutes + 14) ~/ 15) * 15;
+  }
+
+  String get counterpartPresenceLabel {
+    if (isCounterpartOnline) return 'online';
+    final bucket = counterpartLastActiveBucketMinutes;
+    if (bucket <= 0) return 'offline';
+    return 'há $bucket minutos';
+  }
 
   factory ChatRoomModel.fromJson(Map<String, dynamic> json) {
     final s = getStrings();
@@ -115,6 +151,11 @@ class ChatRoomModel {
       unreadCount: json['unread_count'] as int? ?? 0,
       isPinnedByUser: json['is_pinned_by_user'] as bool? ?? false,
       membershipStatus: json['membership_status'] as String? ?? 'none',
+      counterpartOnlineStatus: (json['counterpart_online_status'] as num?)?.toInt() ?? 2,
+      counterpartIsGhostMode: json['counterpart_is_ghost_mode'] as bool? ?? false,
+      counterpartLastSeenAt: json['counterpart_last_seen_at'] != null
+          ? DateTime.tryParse(json['counterpart_last_seen_at'] as String)
+          : null,
     );
   }
 
