@@ -1229,7 +1229,8 @@ class MessageBubble extends ConsumerWidget {
   }
 
   String _formatTime(DateTime dateTime) {
-    return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    final localDateTime = dateTime.toLocal();
+    return '${localDateTime.hour.toString().padLeft(2, '0')}:${localDateTime.minute.toString().padLeft(2, '0')}';
   }
 }
 

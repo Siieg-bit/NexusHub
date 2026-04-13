@@ -1267,10 +1267,15 @@ class _AminoChatTile extends ConsumerWidget {
               children: [
                 Text(
                   chatRoom.lastMessageAt != null
-                      ? timeago.format(chatRoom.lastMessageAt!, locale: 'pt_BR')
+                      ? timeago.format(
+                          chatRoom.lastMessageAt!.toLocal(),
+                          locale: 'pt_BR',
+                        )
                       : '',
                   style: TextStyle(
-                    color: hasUnread ? context.nexusTheme.accentSecondary : context.nexusTheme.textHint,
+                    color: hasUnread
+                        ? context.nexusTheme.accentSecondary
+                        : context.nexusTheme.textHint,
                     fontSize: r.fs(10),
                     fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
                   ),

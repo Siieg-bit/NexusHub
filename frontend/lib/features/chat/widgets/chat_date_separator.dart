@@ -19,19 +19,20 @@ class ChatDateSeparator extends StatelessWidget {
   ];
 
   String _formatDate(DateTime date) {
+    final localDate = date.toLocal();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
-    final msgDay = DateTime(date.year, date.month, date.day);
+    final msgDay = DateTime(localDate.year, localDate.month, localDate.day);
 
     if (msgDay == today) return 'Hoje';
     if (msgDay == yesterday) return 'Ontem';
 
-    final month = _months[date.month - 1];
-    if (date.year == now.year) {
-      return '${date.day} de $month';
+    final month = _months[localDate.month - 1];
+    if (localDate.year == now.year) {
+      return '${localDate.day} de $month';
     }
-    return '${date.day} de $month de ${date.year}';
+    return '${localDate.day} de $month de ${localDate.year}';
   }
 
   @override
@@ -88,7 +89,11 @@ class ChatDateSeparator extends StatelessWidget {
 /// Usado no itemBuilder para decidir se exibe o separador.
 bool shouldShowDateSeparator(DateTime current, DateTime? previous) {
   if (previous == null) return true;
-  return current.year != previous.year ||
-      current.month != previous.month ||
-      current.day != previous.day;
+
+  final currentLocal = current.toLocal();
+  final previousLocal = previous.toLocal();
+
+  return currentLocal.year != previousLocal.year ||
+      currentLocal.month != previousLocal.month ||
+      currentLocal.day != previousLocal.day;
 }
