@@ -78,14 +78,14 @@ CREATE POLICY "app_themes_write_team"
     EXISTS (
       SELECT 1 FROM public.profiles
       WHERE id = auth.uid()
-        AND (is_team_admin = TRUE OR is_team_member = TRUE)
+        AND (is_team_admin = TRUE OR is_team_moderator = TRUE)
     )
   )
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.profiles
       WHERE id = auth.uid()
-        AND (is_team_admin = TRUE OR is_team_member = TRUE)
+        AND (is_team_admin = TRUE OR is_team_moderator = TRUE)
     )
   );
 
