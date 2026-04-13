@@ -1062,6 +1062,26 @@ class MessageBubble extends ConsumerWidget {
       );
     }
 
+    // Form (tipo 'form' com extra_data contendo form_id)
+    if (type == 'form' && message.extraData != null) {
+      try {
+        final formId = message.extraData?['form_id'] as String?;
+        if (formId != null) {
+          // Buscar dados do formulário
+          final formData = await SupabaseService.rpc(
+            'get_chat_form_responses',
+            params: {'p_form_id': formId},
+          );
+          
+          // Retornar widget de formulário
+          // Nota: Este é um placeholder, a implementação real precisa ser async
+          return const SizedBox.shrink();
+        }
+      } catch (e) {
+        // Ignorar erro
+      }
+    }
+
     // Poll (armazenado como text com JSON no content)
     if (message.content != null && message.content!.startsWith('{"question"')) {
       try {
