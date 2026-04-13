@@ -206,20 +206,47 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
         } catch (_) {}
       }
 
-      // Buscar membros
-      final memberRes = await SupabaseService.table('community_members')
+      // Buscar membros — busca por nickname global E local_nickname
+      // Duas queries para cobrir ambos os casos, depois unir e deduplicar
+      final memberRes1 = await SupabaseService.table('community_members')
           .select(
               '*, profiles!community_members_user_id_fkey(id, nickname, icon_url, level, reputation)')
           .eq('community_id', widget.communityId)
           .eq('is_banned', false)
           .ilike('profiles.nickname', pattern)
           .limit(20);
+      final memberRes2 = await SupabaseService.table('community_members')
+          .select(
+              '*, profiles!community_members_user_id_fkey(id, nickname, icon_url, level, reputation)')
+          .eq('community_id', widget.communityId)
+          .eq('is_banned', false)
+          .ilike('local_nickname', pattern)
+          .limit(20);
+      // Unir e deduplicar por user_id
+      final memberMap = <String, Map<String, dynamic>>{};
+      for (final e in [...(memberRes1 as List? ?? []), ...(memberRes2 as List? ?? [])]) {
+        final uid = (e as Map<String, dynamic>)['user_id'] as String?;
+        if (uid != null) memberMap[uid] = e;
+      }
+      final memberRes = memberMap.values.toList();
       _members = (memberRes as List? ?? [])
           .where((e) => e['profiles'] != null)
-          .map((e) => e['profiles'] as Map<String, dynamic>)
+          .map((e) {
+            final row = e as Map<String, dynamic>;
+            final profile = Map<String, dynamic>.from(row['profiles'] as Map);
+            final localNickname = (row['local_nickname'] as String?)?.trim();
+            final localIconUrl = (row['local_icon_url'] as String?)?.trim();
+            if (localNickname != null && localNickname.isNotEmpty) {
+              profile['nickname'] = localNickname;
+            }
+            if (localIconUrl != null && localIconUrl.isNotEmpty) {
+              profile['icon_url'] = localIconUrl;
+            }
+            return profile;
+          })
           .toList();
 
-      // Buscar wiki
+      // Buscar wiki — enriquecer autor com dados locais
       final wikiRes = await SupabaseService.table('wiki_entries')
           .select(
               'id, title, content, author_id, created_at, profiles!wiki_entries_author_id_fkey(nickname, icon_url)')
@@ -228,7 +255,49 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
           .ilike('title', pattern)
           .order('created_at', ascending: false)
           .limit(20);
-      _wikis = List<Map<String, dynamic>>.from(wikiRes as List? ?? []);
+      final wikiList = List<Map<String, dynamic>>.from(wikiRes as List? ?? []);
+      // Enriquecer autores de wiki com dados locais
+      if (wikiList.isNotEmpty) {
+        try {
+          final wikiAuthorIds = wikiList
+              .map((w) => w['author_id'] as String?)
+              .whereType<String>()
+              .toSet()
+              .toList();
+          if (wikiAuthorIds.isNotEmpty) {
+            final wikiMemberships =
+                await SupabaseService.table('community_members')
+                    .select('user_id, local_nickname, local_icon_url')
+                    .eq('community_id', widget.communityId)
+                    .inFilter('user_id', wikiAuthorIds);
+            final wikiLocalMap = <String, Map<String, dynamic>>{
+              for (final m in (wikiMemberships as List? ?? []))
+                (m['user_id'] as String): Map<String, dynamic>.from(m as Map),
+            };
+            for (final wiki in wikiList) {
+              final authorId = wiki['author_id'] as String?;
+              if (authorId == null) continue;
+              final membership = wikiLocalMap[authorId];
+              if (membership == null) continue;
+              final profile = wiki['profiles'] as Map<String, dynamic>?;
+              if (profile == null) continue;
+              final merged = Map<String, dynamic>.from(profile);
+              final localNickname =
+                  (membership['local_nickname'] as String?)?.trim();
+              final localIconUrl =
+                  (membership['local_icon_url'] as String?)?.trim();
+              if (localNickname != null && localNickname.isNotEmpty) {
+                merged['nickname'] = localNickname;
+              }
+              if (localIconUrl != null && localIconUrl.isNotEmpty) {
+                merged['icon_url'] = localIconUrl;
+              }
+              wiki['profiles'] = merged;
+            }
+          }
+        } catch (_) {}
+      }
+      _wikis = wikiList;
 
       if (mounted) setState(() => _isSearching = false);
     } catch (e) {

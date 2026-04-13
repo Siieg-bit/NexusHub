@@ -264,7 +264,44 @@ final favoriteMembersProvider =
           'following_id, profiles!follows_following_id_fkey(id, nickname, icon_url)')
       .eq('follower_id', userId)
       .limit(30);
-  return List<Map<String, dynamic>>.from(follows as List? ?? []);
+  final rows = List<Map<String, dynamic>>.from(follows as List? ?? []);
+  if (rows.isEmpty) return rows;
+  // Enriquecer com dados locais de comunidade
+  try {
+    final followingIds =
+        rows.map((r) => r['following_id'] as String?).whereType<String>().toList();
+    if (followingIds.isNotEmpty) {
+      final memberships = await SupabaseService.table('community_members')
+          .select('user_id, local_nickname, local_icon_url')
+          .eq('community_id', communityId)
+          .inFilter('user_id', followingIds);
+      final localMap = <String, Map<String, dynamic>>{
+        for (final m in (memberships as List? ?? []))
+          (m['user_id'] as String): Map<String, dynamic>.from(m as Map),
+      };
+      for (final row in rows) {
+        final fid = row['following_id'] as String?;
+        if (fid == null) continue;
+        final membership = localMap[fid];
+        if (membership == null) continue;
+        final profile = row['profiles'] as Map<String, dynamic>?;
+        if (profile == null) continue;
+        final merged = Map<String, dynamic>.from(profile);
+        final localNickname = (membership['local_nickname'] as String?)?.trim();
+        final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
+        if (localNickname != null && localNickname.isNotEmpty) {
+          merged['nickname'] = localNickname;
+        }
+        if (localIconUrl != null && localIconUrl.isNotEmpty) {
+          merged['icon_url'] = localIconUrl;
+        }
+        row['profiles'] = merged;
+      }
+    }
+  } catch (e) {
+    debugPrint('[favoriteMembersProvider] enrich error: $e');
+  }
+  return rows;
 });
 
 // =============================================================================

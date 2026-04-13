@@ -22,7 +22,22 @@ final allCommunityMembersProvider =
           '*, profiles!community_members_user_id_fkey(id, nickname, icon_url, online_status)')
       .eq('community_id', communityId)
       .order('joined_at', ascending: false);
-  return List<Map<String, dynamic>>.from(response as List? ?? []);
+  final members = List<Map<String, dynamic>>.from(response as List? ?? []);
+  // Enriquecer profiles com dados locais de comunidade
+  for (final member in members) {
+    if (member['profiles'] is! Map) continue;
+    final profile = Map<String, dynamic>.from(member['profiles'] as Map);
+    final localNickname = (member['local_nickname'] as String?)?.trim();
+    final localIconUrl = (member['local_icon_url'] as String?)?.trim();
+    if (localNickname != null && localNickname.isNotEmpty) {
+      profile['nickname'] = localNickname;
+    }
+    if (localIconUrl != null && localIconUrl.isNotEmpty) {
+      profile['icon_url'] = localIconUrl;
+    }
+    member['profiles'] = profile;
+  }
+  return members;
 });
 
 // =============================================================================

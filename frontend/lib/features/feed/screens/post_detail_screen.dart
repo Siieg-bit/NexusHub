@@ -686,6 +686,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
     final commentsAsync = ref.watch(postCommentsProvider((widget.postId, _postCommunityId)));
     final currentUser = ref.watch(currentUserProvider);
+    // Avatar reativo do usuário logado (já considera local_icon_url via authProvider)
+    final currentUserAvatar = ref.watch(currentUserAvatarProvider);
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: context.nexusTheme.backgroundPrimary,
@@ -1542,7 +1544,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 children: [
                                   CosmeticAvatar(
                                     userId: currentUser?.id ?? SupabaseService.currentUserId ?? '',
-                                    avatarUrl: currentUser?.iconUrl,
+                                    avatarUrl: currentUserAvatar ?? currentUser?.iconUrl,
                                     size: r.s(32),
                                   ),
                                   SizedBox(width: r.s(8)),

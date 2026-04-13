@@ -42,6 +42,45 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
 
       final stories = List<Map<String, dynamic>>.from(res as List? ?? []);
 
+      // Enriquecer profiles dos autores com dados locais de comunidade
+      try {
+        final authorIds = stories
+            .map((s) => s['author_id'] as String?)
+            .whereType<String>()
+            .toSet()
+            .toList();
+        if (authorIds.isNotEmpty) {
+          final memberships = await SupabaseService.table('community_members')
+              .select('user_id, local_nickname, local_icon_url')
+              .eq('community_id', widget.communityId)
+              .inFilter('user_id', authorIds);
+          final localMap = <String, Map<String, dynamic>>{
+            for (final m in (memberships as List? ?? []))
+              (m['user_id'] as String): Map<String, dynamic>.from(m as Map),
+          };
+          for (final story in stories) {
+            final authorId = story['author_id'] as String?;
+            if (authorId == null) continue;
+            final membership = localMap[authorId];
+            if (membership == null) continue;
+            final profile = story['profiles'] as Map<String, dynamic>?;
+            if (profile == null) continue;
+            final merged = Map<String, dynamic>.from(profile);
+            final localNickname = (membership['local_nickname'] as String?)?.trim();
+            final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
+            if (localNickname != null && localNickname.isNotEmpty) {
+              merged['nickname'] = localNickname;
+            }
+            if (localIconUrl != null && localIconUrl.isNotEmpty) {
+              merged['icon_url'] = localIconUrl;
+            }
+            story['profiles'] = merged;
+          }
+        }
+      } catch (e) {
+        debugPrint('[story_carousel] enrich error: $e');
+      }
+
       // Agrupar por autor
       final Map<String, Map<String, dynamic>> grouped = {};
       for (final story in stories) {
