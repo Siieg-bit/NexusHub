@@ -48,7 +48,7 @@ class _WikiListScreenState extends ConsumerState<WikiListScreen> {
       final res = await SupabaseService.table('wiki_entries')
           .select('*, profiles(*), wiki_categories(id, name)')
           .eq('community_id', widget.communityId)
-          .eq('status', 'approved')
+          .eq('status', 'ok')
           .order('created_at', ascending: false);
       if (!mounted) return;
       _entries = List<Map<String, dynamic>>.from(res as List? ?? []);

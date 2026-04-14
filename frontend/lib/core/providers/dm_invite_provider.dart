@@ -37,12 +37,18 @@ final pendingDmInvitesProvider =
 class DmInviteService {
   /// Enviar convite de DM para um usuário.
   /// Retorna o thread_id criado ou existente.
+  ///
+  /// [communityId] quando fornecido, garante que o DM criado/encontrado
+  /// pertence ao escopo daquela comunidade, evitando redirecionar para
+  /// chats de outras comunidades.
   Future<String?> sendInvite(String targetUserId,
-      {String? initialMessage}) async {
+      {String? initialMessage, String? communityId}) async {
     try {
       final result = await SupabaseService.rpc('send_dm_invite', params: {
         'p_target_user_id': targetUserId,
         if (initialMessage != null) 'p_initial_message': initialMessage,
+        if (communityId != null && communityId.isNotEmpty)
+          'p_community_id': communityId,
       });
       return result as String?;
     } catch (e) {

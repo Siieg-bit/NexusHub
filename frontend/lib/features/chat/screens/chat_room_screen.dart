@@ -34,6 +34,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
 import 'chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/deep_link_service.dart';
 import 'call_screen.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
@@ -1831,99 +1832,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   void _showInlinePollCreator() {
     final s = getStrings();
-    final r = context.r;
-    final questionCtrl = TextEditingController();
-    final optionCtrls = [TextEditingController(), TextEditingController()];
-
-    showDialog(
+    showDialog<_PollCreatorResult>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          backgroundColor: context.surfaceColor,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(r.s(16))),
-          title: Text(s.createPoll,
-              style: TextStyle(
-                  color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _dialogInput(questionCtrl, s.question),
-                SizedBox(height: r.s(8)),
-                ...List.generate(
-                    optionCtrls.length,
-                    (i) => Padding(
-                          padding: EdgeInsets.only(bottom: r.s(4)),
-                          child:
-                              _dialogInput(optionCtrls[i], 'Option ${i + 1}'),
-                        )),
-                GestureDetector(
-                  onTap: () => setDialogState(
-                      () => optionCtrls.add(TextEditingController())),
-                  child: Padding(
-                    padding: EdgeInsets.only(top: r.s(8)),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.add_rounded,
-                            size: r.s(16), color: context.nexusTheme.accentPrimary),
-                        SizedBox(width: r.s(4)),
-                        Text(s.addOptionLabel,
-                            style: TextStyle(
-                                color: context.nexusTheme.accentPrimary,
-                                fontSize: r.fs(13),
-                                fontWeight: FontWeight.w600)),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(s.cancel,
-                    style: TextStyle(color: Colors.grey[500]))),
-            ElevatedButton(
-              onPressed: () {
-                final question = questionCtrl.text;
-                final options = optionCtrls
-                    .map((c) => c.text)
-                    .where((t) => t.isNotEmpty)
-                    .toList();
-                Navigator.pop(ctx);
-                // Bug fix: usar Future.microtask para garantir que _sendMessage
-                // só seja chamado após o dialog ser completamente desmontado.
-                // Chamar _sendMessage diretamente após Navigator.pop causava
-                // 'Tried to build dirty widget in the wrong build scope'
-                // porque setState era disparado durante o frame de fechamento.
-                Future.microtask(() {
-                  _sendMessage(
-                    type: 'poll',
-                    pollQuestion: question,
-                    pollOptions: options,
-                  );
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.nexusTheme.accentPrimary,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(r.s(10))),
-              ),
-              child: Text(s.send,
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.w700)),
-            ),
-          ],
-        ),
-      ),
-    ).then((_) {
-      questionCtrl.dispose();
-      for (final c in optionCtrls) {
-        c.dispose();
-      }
+      builder: (ctx) => _PollCreatorDialog(strings: s),
+    ).then((result) {
+      if (result == null) return;
+      // Usar microtask para garantir que o dialog esteja completamente
+      // desmontado antes de chamar _sendMessage e evitar rebuilds sujos.
+      Future.microtask(() {
+        _sendMessage(
+          type: 'poll',
+          pollQuestion: result.question,
+          pollOptions: result.options,
+        );
+      });
     });
   }
 
@@ -3312,7 +3234,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 }
 
 // =============================================================================
-// CHAT MEMBERS SHEET — Mostra membros do chat (Bug #6 fix)
+// CHAT MEMBERS SHEET — Mostra membros com gestão de co-admin
 // =============================================================================
 class _ChatMembersSheet extends ConsumerStatefulWidget {
   final String threadId;
@@ -3330,21 +3252,47 @@ class _ChatMembersSheet extends ConsumerStatefulWidget {
 class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
   List<Map<String, dynamic>> _members = [];
   bool _isLoading = true;
+  String? _currentUserId;
+  String? _callerRole; // 'host' | 'co_host' | 'member'
+  List<String> _coHostIds = [];
+  String? _busyUserId; // evita double-tap em ações
 
   @override
   void initState() {
     super.initState();
+    _currentUserId = SupabaseService.currentUserId;
     _loadMembers();
   }
 
   Future<void> _loadMembers() async {
     try {
+      // Buscar info do thread para saber co_hosts e host
+      final threadRes = await SupabaseService.table('chat_threads')
+          .select('host_id, co_hosts')
+          .eq('id', widget.threadId)
+          .maybeSingle();
+
+      if (threadRes != null) {
+        final hostId = threadRes['host_id'] as String?;
+        final rawCoHosts = threadRes['co_hosts'] as List?;
+        _coHostIds = rawCoHosts?.map((e) => e.toString()).toList() ?? [];
+
+        if (_currentUserId == hostId) {
+          _callerRole = 'host';
+        } else if (_coHostIds.contains(_currentUserId)) {
+          _callerRole = 'co_host';
+        } else {
+          _callerRole = 'member';
+        }
+      }
+
       final response = await SupabaseService.table('chat_members')
           .select(
               '*, profiles!chat_members_user_id_fkey(id, nickname, icon_url)')
           .eq('thread_id', widget.threadId)
           .order('joined_at', ascending: true)
           .limit(100);
+
       if (mounted) {
         setState(() {
           _members = List<Map<String, dynamic>>.from(response as List? ?? []);
@@ -3357,9 +3305,209 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
     }
   }
 
+  /// Torna um membro co-admin (co_host) ou remove o status
+  Future<void> _toggleCoHost(String userId, String nickname) async {
+    if (_busyUserId != null) return;
+    setState(() => _busyUserId = userId);
+    final isCurrentlyCoHost = _coHostIds.contains(userId);
+    try {
+      List<String> updated;
+      if (isCurrentlyCoHost) {
+        updated = _coHostIds.where((id) => id != userId).toList();
+      } else {
+        updated = [..._coHostIds, userId];
+      }
+
+      await SupabaseService.table('chat_threads').update({
+        'co_hosts': updated,
+      }).eq('id', widget.threadId);
+
+      if (mounted) {
+        setState(() => _coHostIds = updated);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isCurrentlyCoHost
+                ? '$nickname removido de co-admin'
+                : '$nickname é agora co-admin'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: isCurrentlyCoHost ? Colors.grey[700] : Colors.green[700],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro ao alterar co-admin. Tente novamente.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busyUserId = null);
+    }
+  }
+
+  /// Remove um membro do chat
+  Future<void> _kickMember(String userId, String nickname) async {
+    if (_busyUserId != null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.surfaceColor,
+        title: Text('Remover $nickname?',
+            style: TextStyle(color: context.nexusTheme.textPrimary)),
+        content: Text(
+          'O usuário será removido do chat e precisará ser convidado novamente.',
+          style: TextStyle(color: context.nexusTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: context.nexusTheme.error),
+            child: const Text('Remover', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _busyUserId = userId);
+    try {
+      await SupabaseService.table('chat_members')
+          .delete()
+          .eq('thread_id', widget.threadId)
+          .eq('user_id', userId);
+
+      if (mounted) {
+        setState(() {
+          _members.removeWhere((m) {
+            final profile = m['profiles'] as Map?;
+            return (profile?['id'] as String?) == userId;
+          });
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$nickname foi removido do chat.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao remover membro.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busyUserId = null);
+    }
+  }
+
+  void _showMemberActions(
+      BuildContext context, String userId, String nickname, String? role) {
+    if (_callerRole != 'host') return;
+    if (userId == _currentUserId) return;
+
+    final r = context.r;
+    final isCoHost = _coHostIds.contains(userId);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: context.surfaceColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(16))),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: r.s(36),
+              height: r.s(4),
+              margin: EdgeInsets.only(top: r.s(10), bottom: r.s(4)),
+              decoration: BoxDecoration(
+                  color: Colors.grey[700],
+                  borderRadius: BorderRadius.circular(2)),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(16), vertical: r.s(10)),
+              child: Text(
+                nickname,
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: r.fs(15)),
+              ),
+            ),
+            const Divider(height: 1),
+            // Tornar / Remover co-admin
+            ListTile(
+              leading: Icon(
+                isCoHost
+                    ? Icons.shield_outlined
+                    : Icons.shield_rounded,
+                color: isCoHost ? Colors.grey : Colors.amber[600],
+              ),
+              title: Text(
+                isCoHost ? 'Remover co-admin' : 'Tornar co-admin',
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(14)),
+              ),
+              subtitle: Text(
+                isCoHost
+                    ? 'Revoga permissões de moderação no chat'
+                    : 'Dá permissões de moderação neste chat',
+                style: TextStyle(
+                    color: context.nexusTheme.textSecondary,
+                    fontSize: r.fs(12)),
+              ),
+              onTap: () {
+                Navigator.pop(ctx);
+                _toggleCoHost(userId, nickname);
+              },
+            ),
+            const Divider(height: 1),
+            // Remover do chat
+            ListTile(
+              leading: Icon(Icons.person_remove_rounded,
+                  color: context.nexusTheme.error),
+              title: Text('Remover do chat',
+                  style: TextStyle(
+                      color: context.nexusTheme.error,
+                      fontSize: r.fs(14))),
+              onTap: () {
+                Navigator.pop(ctx);
+                _kickMember(userId, nickname);
+              },
+            ),
+            SizedBox(height: r.s(8)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _roleColor(String? role) {
+    switch (role) {
+      case 'host':
+        return Colors.amber;
+      case 'co_host':
+        return Colors.lightBlue;
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Column(
       children: [
@@ -3383,8 +3531,8 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                       color: context.nexusTheme.textPrimary)),
               const Spacer(),
               Text('${_members.length}',
-                  style:
-                      TextStyle(color: Colors.grey[500], fontSize: r.fs(13))),
+                  style: TextStyle(
+                      color: Colors.grey[500], fontSize: r.fs(13))),
             ],
           ),
         ),
@@ -3392,7 +3540,8 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
           child: _isLoading
               ? Center(
                   child: CircularProgressIndicator(
-                      color: context.nexusTheme.accentPrimary, strokeWidth: 2))
+                      color: context.nexusTheme.accentPrimary,
+                      strokeWidth: 2))
               : _members.isEmpty
                   ? Center(
                       child: Text(s.noMemberFound,
@@ -3407,65 +3556,132 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                         final member = _members[index];
                         final profile =
                             member['profiles'] as Map<String, dynamic>? ?? {};
+                        final userId = profile['id'] as String? ?? '';
                         final nickname =
                             profile['nickname'] as String? ?? s.user;
                         final iconUrl = profile['icon_url'] as String?;
-                        final role = member['role'] as String?;
+                        final isBusy = _busyUserId == userId;
 
-                        return Container(
-                          padding: EdgeInsets.symmetric(vertical: r.s(8)),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                  color: Colors.white.withValues(alpha: 0.05)),
+                        // Determinar role no chat para exibição
+                        final isHost = userId ==
+                            (_members
+                                .map((m) =>
+                                    (m['profiles'] as Map?)?['id'] as String?)
+                                .firstWhere((id) => id != null,
+                                    orElse: () => null));
+                        final isCoHost = _coHostIds.contains(userId);
+                        final chatRole = isHost
+                            ? 'host'
+                            : isCoHost
+                                ? 'co_host'
+                                : null;
+
+                        final canManage =
+                            _callerRole == 'host' && userId != _currentUserId;
+
+                        return InkWell(
+                          onLongPress: canManage
+                              ? () => _showMemberActions(
+                                  context, userId, nickname, chatRole)
+                              : null,
+                          borderRadius: BorderRadius.circular(r.s(8)),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: r.s(10)),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                    color: Colors.white
+                                        .withValues(alpha: 0.05)),
+                              ),
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                radius: r.s(18),
-                                backgroundColor: context.nexusTheme.accentPrimary
-                                    .withValues(alpha: 0.2),
-                                backgroundImage: iconUrl != null
-                                    ? CachedNetworkImageProvider(iconUrl)
-                                    : null,
-                                child: iconUrl == null
-                                    ? Text(
-                                        nickname.isNotEmpty
-                                            ? nickname[0].toUpperCase()
-                                            : '?',
-                                        style: TextStyle(
-                                            color: context.nexusTheme.accentPrimary,
-                                            fontWeight: FontWeight.w700))
-                                    : null,
-                              ),
-                              SizedBox(width: r.s(12)),
-                              Expanded(
-                                child: Text(nickname,
-                                    style: TextStyle(
-                                        color: context.nexusTheme.textPrimary,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: r.fs(14))),
-                              ),
-                              if (role != null && role != 'member')
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: r.s(8), vertical: r.s(3)),
-                                  decoration: BoxDecoration(
-                                    color: context.nexusTheme.accentPrimary
-                                        .withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(r.s(8)),
-                                  ),
-                                  child: Text(
-                                    role.toUpperCase(),
-                                    style: TextStyle(
-                                      color: context.nexusTheme.accentPrimary,
-                                      fontSize: r.fs(9),
-                                      fontWeight: FontWeight.w700,
+                            child: Row(
+                              children: [
+                                Stack(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: r.s(18),
+                                      backgroundColor: context
+                                          .nexusTheme.accentPrimary
+                                          .withValues(alpha: 0.2),
+                                      backgroundImage: iconUrl != null
+                                          ? CachedNetworkImageProvider(
+                                              iconUrl)
+                                          : null,
+                                      child: iconUrl == null
+                                          ? Text(
+                                              nickname.isNotEmpty
+                                                  ? nickname[0].toUpperCase()
+                                                  : '?',
+                                              style: TextStyle(
+                                                  color: context.nexusTheme
+                                                      .accentPrimary,
+                                                  fontWeight:
+                                                      FontWeight.w700))
+                                          : null,
                                     ),
+                                    if (chatRole != null)
+                                      Positioned(
+                                        right: 0,
+                                        bottom: 0,
+                                        child: Container(
+                                          width: r.s(14),
+                                          height: r.s(14),
+                                          decoration: BoxDecoration(
+                                            color: _roleColor(chatRole),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                                color: context.surfaceColor,
+                                                width: 1.5),
+                                          ),
+                                          child: Icon(
+                                            chatRole == 'host'
+                                                ? Icons.star_rounded
+                                                : Icons.shield_rounded,
+                                            size: r.s(8),
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                SizedBox(width: r.s(12)),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(nickname,
+                                          style: TextStyle(
+                                              color:
+                                                  context.nexusTheme.textPrimary,
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: r.fs(14))),
+                                      if (chatRole != null)
+                                        Text(
+                                          chatRole == 'host' ? 'Host' : 'Co-admin',
+                                          style: TextStyle(
+                                            color: _roleColor(chatRole),
+                                            fontSize: r.fs(11),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
-                            ],
+                                if (isBusy)
+                                  SizedBox(
+                                    width: r.s(18),
+                                    height: r.s(18),
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color:
+                                            context.nexusTheme.accentPrimary),
+                                  )
+                                else if (canManage)
+                                  Icon(Icons.more_vert_rounded,
+                                      color: Colors.grey[600], size: r.s(18)),
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -3979,6 +4195,224 @@ class _EmptyBubbleState extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// =============================================================================
+// _PollCreatorResult — Dados retornados pelo dialog de criação de enquete
+// =============================================================================
+class _PollCreatorResult {
+  final String question;
+  final List<String> options;
+  const _PollCreatorResult({required this.question, required this.options});
+}
+
+// =============================================================================
+// _PollCreatorDialog — Dialog de criação de enquete como StatefulWidget próprio.
+//
+// Usar StatefulBuilder com lista mutável (add) dentro de showDialog causava
+// "_elements.contains(element): is not true" porque o reconciliador de elementos
+// do Flutter perdia o rastreio dos TextFields sem chaves estáveis durante
+// rebuilds disparados por setDialogState.
+//
+// A solução correta é isolar o estado em um StatefulWidget dedicado, onde a
+// lista de controllers é gerenciada com setState normal e os widgets são
+// identificados por ValueKey(index) estável.
+// =============================================================================
+class _PollCreatorDialog extends StatefulWidget {
+  final AppStrings strings;
+  const _PollCreatorDialog({required this.strings});
+
+  @override
+  State<_PollCreatorDialog> createState() => _PollCreatorDialogState();
+}
+
+class _PollCreatorDialogState extends State<_PollCreatorDialog> {
+  final TextEditingController _questionCtrl = TextEditingController();
+  final List<TextEditingController> _optionCtrls = [
+    TextEditingController(),
+    TextEditingController(),
+  ];
+
+  @override
+  void dispose() {
+    _questionCtrl.dispose();
+    for (final c in _optionCtrls) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  void _addOption() {
+    if (_optionCtrls.length >= 10) return;
+    setState(() => _optionCtrls.add(TextEditingController()));
+  }
+
+  void _removeOption(int index) {
+    if (_optionCtrls.length <= 2) return;
+    final ctrl = _optionCtrls.removeAt(index);
+    ctrl.dispose();
+    setState(() {});
+  }
+
+  void _submit() {
+    final question = _questionCtrl.text.trim();
+    final options = _optionCtrls
+        .map((c) => c.text.trim())
+        .where((t) => t.isNotEmpty)
+        .toList();
+    if (question.isEmpty || options.length < 2) return;
+    Navigator.of(context).pop(_PollCreatorResult(
+      question: question,
+      options: options,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.strings;
+    final r = context.r;
+    final accent = context.nexusTheme.accentPrimary;
+    return AlertDialog(
+      backgroundColor: context.surfaceColor,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(r.s(16))),
+      title: Text(
+        s.createPoll,
+        style: TextStyle(
+            color: context.nexusTheme.textPrimary,
+            fontWeight: FontWeight.w700),
+      ),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Pergunta
+              TextField(
+                controller: _questionCtrl,
+                maxLength: 200,
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(14)),
+                decoration: InputDecoration(
+                  hintText: s.question,
+                  hintStyle: TextStyle(
+                      color: context.nexusTheme.textSecondary,
+                      fontSize: r.fs(14)),
+                  filled: true,
+                  fillColor: context.nexusTheme.surfacePrimary,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(r.s(10)),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(r.s(10)),
+                    borderSide: BorderSide(color: accent, width: 1.5),
+                  ),
+                  counterText: '',
+                  contentPadding: EdgeInsets.symmetric(
+                      horizontal: r.s(12), vertical: r.s(10)),
+                ),
+              ),
+              SizedBox(height: r.s(12)),
+              // Opções — cada uma com ValueKey estável baseado no índice
+              // para que o Flutter possa reconciliar a árvore corretamente
+              // mesmo quando novas opções são adicionadas.
+              ...List.generate(_optionCtrls.length, (i) {
+                return Padding(
+                  key: ValueKey(i),
+                  padding: EdgeInsets.only(bottom: r.s(6)),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _optionCtrls[i],
+                          maxLength: 100,
+                          style: TextStyle(
+                              color: context.nexusTheme.textPrimary,
+                              fontSize: r.fs(13)),
+                          decoration: InputDecoration(
+                            hintText: 'Opção ${i + 1}',
+                            hintStyle: TextStyle(
+                                color: context.nexusTheme.textSecondary,
+                                fontSize: r.fs(13)),
+                            filled: true,
+                            fillColor: context.nexusTheme.surfacePrimary,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(r.s(8)),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(r.s(8)),
+                              borderSide:
+                                  BorderSide(color: accent, width: 1.5),
+                            ),
+                            counterText: '',
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: r.s(10), vertical: r.s(8)),
+                          ),
+                        ),
+                      ),
+                      if (_optionCtrls.length > 2) ...[
+                        SizedBox(width: r.s(4)),
+                        GestureDetector(
+                          onTap: () => _removeOption(i),
+                          child: Icon(Icons.remove_circle_outline_rounded,
+                              color: context.nexusTheme.error, size: r.s(20)),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              }),
+              if (_optionCtrls.length < 10)
+                GestureDetector(
+                  onTap: _addOption,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: r.s(4)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add_rounded,
+                            size: r.s(16), color: accent),
+                        SizedBox(width: r.s(4)),
+                        Text(
+                          s.addOptionLabel,
+                          style: TextStyle(
+                              color: accent,
+                              fontSize: r.fs(13),
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(s.cancel,
+              style: TextStyle(color: Colors.grey[500])),
+        ),
+        ElevatedButton(
+          onPressed: _submit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: accent,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(10))),
+          ),
+          child: Text(s.send,
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.w700)),
+        ),
+      ],
     );
   }
 }

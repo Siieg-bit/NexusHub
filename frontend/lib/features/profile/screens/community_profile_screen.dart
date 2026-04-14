@@ -62,6 +62,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   bool _isUpdatingManualPresence = false;
   int _followersCount = 0;
   int _followingCount = 0;
+  bool _isFollowing = false; // estado real do botão Seguir/Seguindo
+  bool _isTogglingFollow = false; // evita double-tap
   String _communityName = '';
   String? _communityBannerUrl;
 
@@ -256,6 +258,17 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           .select()
           .eq('following_id', widget.userId);
       _followersCount = (followersRes as List?)?.length ?? 0;
+
+      // Verificar se o usuário logado já segue este perfil
+      final currentUserId = SupabaseService.currentUserId;
+      if (!_isOwnProfile && currentUserId != null) {
+        final followCheckRes = await SupabaseService.table('follows')
+            .select('id')
+            .eq('follower_id', currentUserId)
+            .eq('following_id', widget.userId)
+            .limit(1);
+        _isFollowing = ((followCheckRes as List?)?.length ?? 0) > 0;
+      }
 
       final followingRes = await SupabaseService.table('follows')
           .select()
@@ -856,28 +869,56 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                // Botão Seguir/Amigos
+                                // Botão Seguir/Seguindo
                                 GestureDetector(
-                                  onTap: () => _toggleFollow(context),
-                                  child: Container(
+                                  onTap: _isTogglingFollow
+                                      ? null
+                                      : () => _toggleFollow(context),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
                                     padding: EdgeInsets.symmetric(
                                         horizontal: r.s(16), vertical: r.s(8)),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFFF9800),
+                                      color: _isFollowing
+                                          ? Colors.transparent
+                                          : const Color(0xFFFF9800),
                                       borderRadius:
                                           BorderRadius.circular(r.s(20)),
+                                      border: _isFollowing
+                                          ? Border.all(
+                                              color: const Color(0xFFFF9800),
+                                              width: 1.5)
+                                          : null,
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text('😊',
+                                        if (_isTogglingFollow)
+                                          SizedBox(
+                                            width: r.s(14),
+                                            height: r.s(14),
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: _isFollowing
+                                                  ? const Color(0xFFFF9800)
+                                                  : Colors.white,
+                                            ),
+                                          )
+                                        else
+                                          Text(
+                                            _isFollowing ? '✓' : '😊',
                                             style:
-                                                TextStyle(fontSize: r.fs(14))),
+                                                TextStyle(fontSize: r.fs(14)),
+                                          ),
                                         SizedBox(width: r.s(6)),
                                         Text(
-                                          s.follow,
+                                          _isFollowing
+                                              ? 'Seguindo'
+                                              : 'Seguir',
                                           style: TextStyle(
-                                            color: Colors.white,
+                                            color: _isFollowing
+                                                ? const Color(0xFFFF9800)
+                                                : Colors.white,
                                             fontWeight: FontWeight.w700,
                                             fontSize: r.fs(13),
                                           ),
@@ -2141,11 +2182,23 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   // ============================================================================
 
   Future<void> _toggleFollow(BuildContext context) async {
+    if (_isTogglingFollow) return;
     final s = getStrings();
+    final currentUserId = SupabaseService.currentUserId;
+    if (currentUserId == null) return;
+
+    // Atualização otimista — muda visualmente antes da resposta do servidor
+    setState(() {
+      _isTogglingFollow = true;
+      _isFollowing = !_isFollowing;
+      if (_isFollowing) {
+        _followersCount++;
+      } else {
+        _followersCount = (_followersCount - 1).clamp(0, 999999);
+      }
+    });
+
     try {
-      final currentUserId = SupabaseService.currentUserId;
-      if (currentUserId == null) return;
-      // RPC atômica: toggle follow + reputação + contadores
       final result = await SupabaseService.rpc(
         'toggle_follow_with_reputation',
         params: {
@@ -2154,28 +2207,55 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           'p_following_id': widget.userId,
         },
       );
+      // Reconciliar com o estado real retornado pelo servidor
       final isNowFollowing =
-          result is Map ? (result['following'] == true) : true;
+          result is Map ? (result['following'] == true) : _isFollowing;
       if (mounted) {
+        setState(() {
+          _isFollowing = isNowFollowing;
+          // Recarregar contagem real do servidor
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(isNowFollowing ? s.followingNow : s.unfollowed)),
+            content: Text(isNowFollowing ? s.followingNow : s.unfollowed),
+            behavior: SnackBarBehavior.floating,
+          ),
         );
+        // Recarregar contagem real
+        final followersRes = await SupabaseService.table('follows')
+            .select()
+            .eq('following_id', widget.userId);
+        if (mounted) {
+          setState(() {
+            _followersCount = (followersRes as List?)?.length ?? 0;
+          });
+        }
       }
-      _loadProfile();
     } catch (e) {
+      // Reverter atualização otimista em caso de erro
       if (mounted) {
+        setState(() {
+          _isFollowing = !_isFollowing;
+          if (_isFollowing) {
+            _followersCount++;
+          } else {
+            _followersCount = (_followersCount - 1).clamp(0, 999999);
+          }
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
+    } finally {
+      if (mounted) setState(() => _isTogglingFollow = false);
     }
   }
 
   Future<void> _openDm(BuildContext context) async {
     final s = getStrings();
     try {
-      final threadId = await DmInviteService().sendInvite(widget.userId);
+      final threadId = await DmInviteService()
+          .sendInvite(widget.userId, communityId: widget.communityId);
       if (threadId == null || threadId.isEmpty) {
         throw Exception('thread_id_not_returned');
       }
@@ -2343,6 +2423,10 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                     targetUserName: targetName,
                     currentRole: targetRole,
                     currentTitle: currentTitle,
+                    callerRole: _myMembership?['role'] as String? ??
+                        (_isOwnProfile
+                            ? (_membership?['role'] as String? ?? 'member')
+                            : 'member'),
                   );
                   if (changed == true && mounted) {
                     _loadProfile();

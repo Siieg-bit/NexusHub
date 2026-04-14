@@ -60,8 +60,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   String? _musicUrl;
   String? _musicTitle;
 
-  // Tags
+  // Tags — mapa tag → cor hex (ex: {'flutter': '#00BCD4'})
   final List<String> _tags = [];
+  final Map<String, String> _tagColors = {}; // tag → cor hex
+  String _pendingTagColor = '#6C5CE7'; // cor selecionada antes de confirmar
 
   // ── Personalização avançada ──
   Color _textColor = Colors.white;
@@ -242,14 +244,252 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // TAGS
   // ════════════════════════════════════════════════════════════════════════════
 
-  void _addTag() {
-    final tag = _tagsController.text.trim().toLowerCase().replaceAll(' ', '-');
-    if (tag.isNotEmpty && !_tags.contains(tag) && _tags.length < 10) {
-      setState(() {
-        _tags.add(tag);
-        _tagsController.clear();
-      });
+  Future<void> _addTag() async {
+    final raw = _tagsController.text.trim();
+    final tag = raw.toLowerCase().replaceAll(' ', '-');
+    if (tag.isEmpty || _tags.contains(tag) || _tags.length >= 10) {
+      if (tag.isEmpty) return;
+      // Mostrar dialog de cor mesmo se digitou diretamente
     }
+
+    // Perguntar cor da tag via dialog
+    final result = await _showTagColorDialog(tag.isEmpty ? null : tag);
+    if (result == null) return;
+
+    setState(() {
+      if (!_tags.contains(result.tag)) {
+        _tags.add(result.tag);
+      }
+      _tagColors[result.tag] = result.color;
+      _tagsController.clear();
+    });
+  }
+
+  Future<_TagResult?> _showTagColorDialog(String? prefilledTag) async {
+    final r = context.r;
+    final tagCtrl = TextEditingController(text: prefilledTag ?? '');
+    String selectedColor = _pendingTagColor;
+
+    final result = await showDialog<_TagResult>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          backgroundColor: ctx.surfaceColor,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(r.s(16))),
+          title: Text(
+            'Nova Tag',
+            style: TextStyle(
+                color: ctx.nexusTheme.textPrimary, fontWeight: FontWeight.w700),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: tagCtrl,
+                autofocus: prefilledTag == null,
+                maxLength: 30,
+                style: TextStyle(
+                    color: ctx.nexusTheme.textPrimary, fontSize: r.fs(14)),
+                decoration: InputDecoration(
+                  hintText: 'nome-da-tag',
+                  hintStyle: TextStyle(
+                      color: ctx.nexusTheme.textSecondary, fontSize: r.fs(14)),
+                  prefixText: '#',
+                  prefixStyle: TextStyle(
+                      color: ctx.nexusTheme.accentPrimary,
+                      fontWeight: FontWeight.w700),
+                  filled: true,
+                  fillColor: ctx.nexusTheme.surfacePrimary,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(r.s(10)),
+                    borderSide: BorderSide.none,
+                  ),
+                  counterText: '',
+                ),
+                onChanged: (v) => setS(() {}),
+              ),
+              SizedBox(height: r.s(14)),
+              Text(
+                'Cor da tag',
+                style: TextStyle(
+                    color: ctx.nexusTheme.textSecondary, fontSize: r.fs(12)),
+              ),
+              SizedBox(height: r.s(8)),
+              // Paleta rápida
+              Wrap(
+                spacing: r.s(8),
+                runSpacing: r.s(6),
+                children: [
+                  '#6C5CE7', '#00BCD4', '#4CAF50', '#FF9800',
+                  '#E91E63', '#FF5722', '#2196F3', '#FFD600',
+                ].map((hex) {
+                  Color c;
+                  try {
+                    c = Color(int.parse(hex.replaceFirst('#', '0xFF')));
+                  } catch (_) {
+                    c = Colors.white;
+                  }
+                  final isSel = selectedColor == hex;
+                  return GestureDetector(
+                    onTap: () => setS(() => selectedColor = hex),
+                    child: Container(
+                      width: r.s(28),
+                      height: r.s(28),
+                      decoration: BoxDecoration(
+                        color: c,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSel ? Colors.white : Colors.transparent,
+                          width: 2,
+                        ),
+                        boxShadow: isSel
+                            ? [BoxShadow(color: c.withValues(alpha: 0.6), blurRadius: 6)]
+                            : null,
+                      ),
+                      child: isSel
+                          ? Icon(Icons.check_rounded,
+                              size: r.s(14),
+                              color: c.computeLuminance() > 0.5
+                                  ? Colors.black
+                                  : Colors.white)
+                          : null,
+                    ),
+                  );
+                }).toList(),
+              ),
+              SizedBox(height: r.s(8)),
+              // Botão cor customizada
+              GestureDetector(
+                onTap: () async {
+                  Color initial;
+                  try {
+                    initial = Color(
+                        int.parse(selectedColor.replaceFirst('#', '0xFF')));
+                  } catch (_) {
+                    initial = const Color(0xFF6C5CE7);
+                  }
+                  final picked =
+                      await showRGBColorPicker(ctx, initialColor: initial);
+                  if (picked != null) {
+                    final hex =
+                        '#${picked.value.toRadixString(16).substring(2).toUpperCase()}';
+                    setS(() => selectedColor = hex);
+                  }
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(10), vertical: r.s(6)),
+                  decoration: BoxDecoration(
+                    color: ctx.nexusTheme.surfacePrimary,
+                    borderRadius: BorderRadius.circular(r.s(8)),
+                    border: Border.all(color: ctx.dividerClr),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: r.s(14),
+                        height: r.s(14),
+                        decoration: BoxDecoration(
+                          color: () {
+                            try {
+                              return Color(int.parse(
+                                  selectedColor.replaceFirst('#', '0xFF')));
+                            } catch (_) {
+                              return Colors.white;
+                            }
+                          }(),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      SizedBox(width: r.s(6)),
+                      Icon(Icons.colorize_rounded,
+                          size: r.s(14),
+                          color: ctx.nexusTheme.textSecondary),
+                      SizedBox(width: r.s(4)),
+                      Text(
+                        'Cor personalizada',
+                        style: TextStyle(
+                            color: ctx.nexusTheme.textSecondary,
+                            fontSize: r.fs(11)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: r.s(12)),
+              // Preview da tag
+              if (tagCtrl.text.trim().isNotEmpty)
+                Center(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(10), vertical: r.s(5)),
+                    decoration: BoxDecoration(
+                      color: () {
+                        try {
+                          return Color(int.parse(
+                                  selectedColor.replaceFirst('#', '0xFF')))
+                              .withValues(alpha: 0.15);
+                        } catch (_) {
+                          return ctx.nexusTheme.accentPrimary
+                              .withValues(alpha: 0.15);
+                        }
+                      }(),
+                      borderRadius: BorderRadius.circular(r.s(16)),
+                    ),
+                    child: Text(
+                      '#${tagCtrl.text.trim().toLowerCase().replaceAll(' ', '-')}',
+                      style: TextStyle(
+                        color: () {
+                          try {
+                            return Color(int.parse(
+                                selectedColor.replaceFirst('#', '0xFF')));
+                          } catch (_) {
+                            return ctx.nexusTheme.accentPrimary;
+                          }
+                        }(),
+                        fontSize: r.fs(12),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child:
+                  Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final tag = tagCtrl.text
+                    .trim()
+                    .toLowerCase()
+                    .replaceAll(' ', '-');
+                if (tag.isEmpty) return;
+                Navigator.pop(
+                    ctx, _TagResult(tag: tag, color: selectedColor));
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ctx.nexusTheme.accentPrimary,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(r.s(10))),
+              ),
+              child: const Text('Adicionar',
+                  style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    tagCtrl.dispose();
+    if (result != null) setState(() => _pendingTagColor = result.color);
+    return result;
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -979,33 +1219,65 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             spacing: r.s(6),
             runSpacing: r.s(6),
             children: _tags
-                .map((tag) => Container(
+                .map((tag) {
+                  final colorHex = _tagColors[tag];
+                  Color tagColor;
+                  try {
+                    tagColor = colorHex != null
+                        ? Color(int.parse(
+                            colorHex.replaceFirst('#', '0xFF')))
+                        : context.nexusTheme.accentPrimary;
+                  } catch (_) {
+                    tagColor = context.nexusTheme.accentPrimary;
+                  }
+                  return GestureDetector(
+                    onLongPress: () async {
+                      // Long-press para editar a cor da tag existente
+                      final result = await _showTagColorDialog(tag);
+                      if (result != null && mounted) {
+                        setState(() {
+                          final idx = _tags.indexOf(tag);
+                          if (idx >= 0) {
+                            _tags[idx] = result.tag;
+                            _tagColors.remove(tag);
+                            _tagColors[result.tag] = result.color;
+                          }
+                        });
+                      }
+                    },
+                    child: Container(
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(10), vertical: r.s(5)),
                       decoration: BoxDecoration(
-                        color: context.nexusTheme.accentPrimary.withValues(alpha: 0.12),
+                        color: tagColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(r.s(16)),
+                        border: Border.all(
+                            color: tagColor.withValues(alpha: 0.3),
+                            width: 1),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text('#$tag',
                               style: TextStyle(
-                                  color: context.nexusTheme.accentPrimary,
+                                  color: tagColor,
                                   fontSize: r.fs(12),
                                   fontWeight: FontWeight.w600)),
                           SizedBox(width: r.s(4)),
                           GestureDetector(
-                            onTap: () =>
-                                setState(() => _tags.remove(tag)),
+                            onTap: () => setState(() {
+                              _tags.remove(tag);
+                              _tagColors.remove(tag);
+                            }),
                             child: Icon(Icons.close_rounded,
                                 size: r.s(14),
-                                color: context.nexusTheme.accentPrimary
-                                    .withValues(alpha: 0.6)),
+                                color: tagColor.withValues(alpha: 0.6)),
                           ),
                         ],
                       ),
-                    ))
+                    ),
+                  );
+                })
                 .toList(),
           ),
         SizedBox(height: r.s(6)),
@@ -1033,13 +1305,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                         size: r.s(16),
                         color: _textColor.withValues(alpha: 0.3)),
                   ),
-                  onSubmitted: (_) => _addTag(),
+                  onSubmitted: (_) async => _addTag(),
                 ),
               ),
             ),
             SizedBox(width: r.s(8)),
             GestureDetector(
-              onTap: _addTag,
+              onTap: () async => _addTag(),
               child: Container(
                 padding: EdgeInsets.all(r.s(10)),
                 decoration: BoxDecoration(
@@ -1707,4 +1979,11 @@ class _ToolbarBtn extends ConsumerWidget {
       ),
     );
   }
+}
+
+// Dados de retorno do dialog de criação de tag
+class _TagResult {
+  final String tag;
+  final String color;
+  const _TagResult({required this.tag, required this.color});
 }

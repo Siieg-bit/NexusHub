@@ -297,13 +297,26 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
         // Quando o nexusThemeProvider notifica uma mudança, o MaterialApp
         // reconstrói o builder com o novo nexusTheme, e o NexusThemeScope
         // atualiza todos os widgets dependentes automaticamente.
+        //
+        // Fix SafeArea/edgeToEdge: com SystemUiMode.edgeToEdge ativo no Android,
+        // a navigation bar do sistema sobrepõe o conteúdo. Garantimos que o
+        // MediaQuery propaga os padding corretos para que SafeArea funcione.
+        final mediaQuery = MediaQuery.of(context);
         return NexusThemeScope(
           theme: nexusTheme,
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-            child: ErrorBoundary(
-              child: child ?? const SizedBox.shrink(),
+          child: MediaQuery(
+            data: mediaQuery.copyWith(
+              padding: mediaQuery.padding,
+              viewPadding: mediaQuery.viewPadding,
+              viewInsets: mediaQuery.viewInsets,
+              systemGestureInsets: mediaQuery.systemGestureInsets,
+            ),
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              child: ErrorBoundary(
+                child: child ?? const SizedBox.shrink(),
+              ),
             ),
           ),
         );

@@ -1213,7 +1213,8 @@ class _MemberBottomSheet extends ConsumerWidget {
   Future<void> _openDm(
       BuildContext context, String communityId, String targetId) async {
     try {
-      final threadId = await DmInviteService().sendInvite(targetId);
+      final threadId = await DmInviteService()
+          .sendInvite(targetId, communityId: communityId);
       if (threadId == null || threadId.isEmpty) {
         throw Exception('thread_id_not_returned');
       }
