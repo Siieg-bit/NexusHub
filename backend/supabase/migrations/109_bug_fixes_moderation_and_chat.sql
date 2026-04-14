@@ -460,17 +460,22 @@ GRANT EXECUTE ON FUNCTION public.ban_community_member(UUID, UUID, TEXT, TEXT) TO
 
 -- ── 6. RLS para is_hidden: membros não veem perfis ocultos ─────────────────
 
--- Policy de leitura de community_members: ocultar perfis com is_hidden=true
--- exceto para staff (agent/leader/curator/moderator) e o próprio usuário
+-- IMPORTANTE: políticas de SELECT em PostgreSQL/Supabase são permissivas e são
+-- combinadas com OR. Portanto, manter a antiga policy "cm_select_members" com
+-- USING (TRUE) neutralizaria completamente qualquer regra de ocultação.
+-- Removemos a policy ampla e instalamos uma policy única que preserva acesso
+-- ao próprio registro, expõe apenas perfis não ocultos para membros comuns e
+-- mantém visibilidade total para staff da comunidade.
+DROP POLICY IF EXISTS "cm_select_members" ON public.community_members;
 DROP POLICY IF EXISTS "hide_hidden_profiles" ON public.community_members;
-CREATE POLICY "hide_hidden_profiles"
+CREATE POLICY "cm_select_members_visible"
   ON public.community_members
   FOR SELECT
   USING (
     -- O próprio usuário sempre vê seu registro
     user_id = auth.uid()
     OR
-    -- is_hidden=false: visível para todos
+    -- Perfis visíveis normalmente seguem acessíveis
     is_hidden = false
     OR
     -- Staff da comunidade vê todos (incluindo ocultos)
