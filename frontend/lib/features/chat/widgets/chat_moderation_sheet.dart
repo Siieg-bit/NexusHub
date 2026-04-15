@@ -889,7 +889,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
               if (newTitle.isEmpty) return;
               Navigator.pop(ctx);
               try {
-                await SupabaseService.client.rpc('update_chat_title', params: {
+                await SupabaseService.client.rpc('rename_chat_thread', params: {
                   'p_thread_id': widget.threadId,
                   'p_title': newTitle,
                 });
