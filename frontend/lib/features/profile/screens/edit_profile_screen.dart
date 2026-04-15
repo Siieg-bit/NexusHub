@@ -198,6 +198,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     final s = getStrings();
     if ((_formKey.currentState?.validate() != true)) return;
 
+    if (_isUploadingAvatar) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Aguarde o upload do avatar terminar antes de salvar.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
       final userId = SupabaseService.currentUserId;
@@ -395,8 +407,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
         ),
         actions: [
           TextButton(
-            onPressed: _isLoading ? null : _saveProfile,
-            child: _isLoading
+            onPressed: (_isLoading || _isUploadingAvatar) ? null : _saveProfile,
+            child: (_isLoading || _isUploadingAvatar)
                 ? SizedBox(
                     width: r.s(20),
                     height: r.s(20),
@@ -406,7 +418,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                           AlwaysStoppedAnimation<Color>(context.nexusTheme.accentPrimary),
                     ),
                   )
-                :  Text(
+                : Text(
                     s.save,
                     style: TextStyle(
                       color: context.nexusTheme.accentPrimary,
@@ -428,7 +440,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                 // Avatar — FIX Bug #5: GestureDetector com upload
                 Center(
                   child: GestureDetector(
-                    onTap: _isUploadingAvatar ? null : _pickAndUploadAvatar,
+                    onTap: (_isUploadingAvatar || _isLoading)
+                        ? null
+                        : _pickAndUploadAvatar,
                     child: Stack(
                       children: [
                         Container(
