@@ -675,27 +675,35 @@ class _PostCardState extends ConsumerState<PostCard>
           isTeamMember: currentUser?.isTeamMember ?? false,
           userRole: currentUserRole,
         );
+    // Perguntas anônimas não devem expor identidade nem permitir navegação ao perfil.
+    final isAnonymousQuestion =
+        (_post.type == 'qa' || _post.editorType == 'qa' || _post.variant == 'qa') &&
+        _post.editorMetadata.extra['is_anonymous'] == true;
+
     // local_nickname e local_icon_url sempre preenchidos desde o join (migration 093)
-    final displayAuthorName = _post.authorLocalNickname?.trim().isNotEmpty == true
-        ? _post.authorLocalNickname!.trim()
-        : s.user;
-    final displayAuthorAvatar = _post.authorLocalIconUrl?.trim().isNotEmpty == true
-        ? _post.authorLocalIconUrl!.trim()
-        : null;
+    final displayAuthorName = isAnonymousQuestion
+        ? s.anonymousLabel
+        : _post.authorLocalNickname?.trim().isNotEmpty == true
+            ? _post.authorLocalNickname!.trim()
+            : s.user;
+    final displayAuthorAvatar = isAnonymousQuestion
+        ? null
+        : _post.authorLocalIconUrl?.trim().isNotEmpty == true
+            ? _post.authorLocalIconUrl!.trim()
+            : null;
+    final authorProfileRoute = _post.communityId.isNotEmpty
+        ? '/community/${_post.communityId}/profile/${_post.authorId}'
+        : '/user/${_post.authorId}';
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(12), r.s(10), r.s(12), r.s(8)),
       child: Row(
         children: [
           // Avatar (36px, rounded-full)
           CosmeticAvatar(
-            userId: _post.authorId,
+            userId: isAnonymousQuestion ? null : _post.authorId,
             avatarUrl: displayAuthorAvatar,
             size: r.s(36),
-            onTap: () => context.push(
-              _post.communityId.isNotEmpty
-                  ? '/community/${_post.communityId}/profile/${_post.authorId}'
-                  : '/user/${_post.authorId}',
-            ),
+            onTap: isAnonymousQuestion ? null : () => context.push(authorProfileRoute),
           ),
           SizedBox(width: r.s(10)),
           Expanded(
@@ -718,7 +726,8 @@ class _PostCardState extends ConsumerState<PostCard>
                       ),
                     ),
                     // Role badges (Leader, Curator)
-                    if (_post.author != null &&
+                    if (!isAnonymousQuestion &&
+                        _post.author != null &&
                         (_post.authorLocalLevel ?? 0) > 10) ...[
                       SizedBox(width: r.s(6)),
                       // Role badge baseado no nível LOCAL da comunidade
@@ -730,7 +739,9 @@ class _PostCardState extends ConsumerState<PostCard>
                 Row(
                   children: [
                     // Level badge (gradient pill)
-                    if (_post.author != null && (_post.authorLocalLevel ?? 0) > 0)
+                    if (!isAnonymousQuestion &&
+                        _post.author != null &&
+                        (_post.authorLocalLevel ?? 0) > 0)
                       Container(
                         padding: EdgeInsets.symmetric(
                             horizontal: r.s(6), vertical: 2),
