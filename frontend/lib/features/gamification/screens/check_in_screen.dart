@@ -109,32 +109,39 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (result != null) {
         final data = result as Map<String, dynamic>;
         if (data['success'] == true) {
+          final restoredDays = data['days_repaired'] as int? ?? 1;
           if (!mounted) return;
           setState(() {
-            _consecutiveDays = data['restored_streak'] as int? ?? 1;
+            _consecutiveDays += restoredDays;
           });
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                    ref.read(stringsProvider).streakRestoredMsg(_consecutiveDays)),
-                backgroundColor: context.nexusTheme.accentPrimary,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(r.s(10))),
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                ref.read(stringsProvider).streakRestoredMsg(_consecutiveDays),
               ),
-            );
-          }
+              backgroundColor: context.nexusTheme.accentPrimary,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(10)),
+              ),
+            ),
+          );
         } else {
+          final errorCode = data['error'] as String?;
+          final fallbackMessage = errorCode == 'insufficient_coins'
+              ? ref.read(stringsProvider).insufficientCoins
+              : errorCode == 'no_broken_streak'
+                  ? ref.read(stringsProvider).alreadyCheckedInToday
+                  : ref.read(stringsProvider).anErrorOccurredTryAgain;
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content:
-                    Text(data['message'] as String? ?? ref.read(stringsProvider).insufficientCoins),
+                content: Text(fallbackMessage),
                 backgroundColor: context.nexusTheme.error,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(r.s(10))),
+                  borderRadius: BorderRadius.circular(r.s(10)),
+                ),
               ),
             );
           }
@@ -170,26 +177,34 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           setState(() {
             _checkedIn = true;
             _consecutiveDays = data['streak'] as int? ?? 0;
-            _xpEarned = data['xp_earned'] as int? ?? 0;
+            _xpEarned = (data['xp_earned'] as int?) ??
+                (data['reputation_earned'] as int?) ??
+                0;
             _coinsEarned = data['coins_earned'] as int? ?? 0;
           });
           _pulseController.stop();
           _celebrateController.forward();
         } else {
+          final errorCode = data['error'] as String?;
+          final alreadyCheckedIn = errorCode == 'already_checked_in';
           if (!mounted) return;
-          setState(() => _checkedIn = true);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                    data['message'] as String? ?? s.alreadyCheckedInToday),
-                backgroundColor: context.nexusTheme.warning,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(r.s(10))),
+          setState(() => _checkedIn = alreadyCheckedIn);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                alreadyCheckedIn
+                    ? s.alreadyCheckedInToday
+                    : s.anErrorOccurredTryAgain,
               ),
-            );
-          }
+              backgroundColor: alreadyCheckedIn
+                  ? context.nexusTheme.warning
+                  : context.nexusTheme.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(10)),
+              ),
+            ),
+          );
         }
       }
     } catch (e) {

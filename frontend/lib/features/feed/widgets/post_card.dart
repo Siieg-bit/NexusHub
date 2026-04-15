@@ -161,9 +161,10 @@ class _PostCardState extends ConsumerState<PostCard>
       return;
     }
 
-    // Modal de confirmação
-    final confirm = await showModalBottomSheet<bool>(
+    // Modal de confirmação com comentário opcional
+    final repostComment = await showModalBottomSheet<String?>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: context.surfaceColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -171,13 +172,14 @@ class _PostCardState extends ConsumerState<PostCard>
       builder: (ctx) => _RepostConfirmSheet(post: _post),
     );
 
-    if (confirm != true || !mounted) return;
+    if (repostComment == null || !mounted) return;
 
     try {
       final communityId = _post.communityId.isNotEmpty ? _post.communityId : null;
       await SupabaseService.rpc('repost_post', params: {
         'p_original_post_id': _post.id,
         'p_community_id': communityId,
+        'p_content': repostComment,
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1115,10 +1117,30 @@ class _PostCardState extends ConsumerState<PostCard>
     final originalPost = _post.originalPost;
     final originalAuthor = _post.originalAuthor ?? originalPost?.author;
     final reposterName = _post.author?.nickname ?? s.user;
+    final repostComment = _post.content.trim();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (repostComment.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
+            child: LinkifiedText(
+              text: repostComment,
+              style: TextStyle(
+                color: context.nexusTheme.textPrimary,
+                fontSize: r.fs(13),
+                height: 1.45,
+              ),
+              linkStyle: TextStyle(
+                color: context.nexusTheme.accentSecondary,
+                fontSize: r.fs(13),
+                height: 1.45,
+                decoration: TextDecoration.underline,
+              ),
+              maxLines: 4,
+            ),
+          ),
         // ── "X repostou" banner ──
         Padding(
           padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(6)),
@@ -1510,18 +1532,42 @@ class _RepostIconBox extends ConsumerWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // Modal de confirmação de repost
 // ─────────────────────────────────────────────────────────────────────────────
-class _RepostConfirmSheet extends ConsumerWidget {
+class _RepostConfirmSheet extends ConsumerStatefulWidget {
   final PostModel post;
   const _RepostConfirmSheet({required this.post});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_RepostConfirmSheet> createState() => _RepostConfirmSheetState();
+}
+
+class _RepostConfirmSheetState extends ConsumerState<_RepostConfirmSheet> {
+  late final TextEditingController _commentController;
+
+  @override
+  void initState() {
+    super.initState();
+    _commentController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final r = context.r;
     final s = ref.watch(stringsProvider);
     const repostColor = Color(0xFF607D8B);
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(r.s(20), r.s(20), r.s(20), r.s(32)),
+      padding: EdgeInsets.fromLTRB(
+        r.s(20),
+        r.s(20),
+        r.s(20),
+        r.s(32) + MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1589,11 +1635,11 @@ class _RepostConfirmSheet extends ConsumerWidget {
             child: Row(
               children: [
                 // Avatar do autor
-                if (post.author?.iconUrl != null)
+                if (widget.post.author?.iconUrl != null)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(r.s(16)),
                     child: CachedNetworkImage(
-                      imageUrl: post.author!.iconUrl!,
+                      imageUrl: widget.post.author!.iconUrl!,
                       width: r.s(32),
                       height: r.s(32),
                       fit: BoxFit.cover,
@@ -1612,16 +1658,16 @@ class _RepostConfirmSheet extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '@${post.author?.nickname ?? s.user}',
+                        '@${widget.post.author?.nickname ?? s.user}',
                         style: TextStyle(
                           color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(11),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      if (post.title != null && post.title!.isNotEmpty)
+                      if (widget.post.title != null && widget.post.title!.isNotEmpty)
                         Text(
-                          post.title!,
+                          widget.post.title!,
                           style: TextStyle(
                             color: context.nexusTheme.textPrimary,
                             fontSize: r.fs(12),
@@ -1634,6 +1680,33 @@ class _RepostConfirmSheet extends ConsumerWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+          SizedBox(height: r.s(16)),
+          TextField(
+            controller: _commentController,
+            maxLines: 4,
+            minLines: 1,
+            style: TextStyle(
+              color: context.nexusTheme.textPrimary,
+              fontSize: r.fs(13),
+            ),
+            decoration: InputDecoration(
+              hintText: s.saySomethingHint,
+              filled: true,
+              fillColor: context.surfaceColor,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(r.s(12)),
+                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(r.s(12)),
+                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(r.s(12)),
+                borderSide: BorderSide(color: repostColor.withValues(alpha: 0.45)),
+              ),
             ),
           ),
           SizedBox(height: r.s(24)),
@@ -1649,7 +1722,7 @@ class _RepostConfirmSheet extends ConsumerWidget {
                     ),
                     padding: EdgeInsets.symmetric(vertical: r.s(14)),
                   ),
-                  onPressed: () => Navigator.pop(context, false),
+                  onPressed: () => Navigator.pop(context, null),
                   child: Text(
                     s.cancel,
                     style: TextStyle(
@@ -1674,7 +1747,7 @@ class _RepostConfirmSheet extends ConsumerWidget {
                     s.repostAction,
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
-                  onPressed: () => Navigator.pop(context, true),
+                  onPressed: () => Navigator.pop(context, _commentController.text.trim()),
                 ),
               ),
             ],

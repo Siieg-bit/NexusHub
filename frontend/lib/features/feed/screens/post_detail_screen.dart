@@ -605,8 +605,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       return;
     }
 
-    final confirm = await showModalBottomSheet<bool>(
+    final repostComment = await showModalBottomSheet<String?>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: context.surfaceColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -614,11 +615,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       builder: (ctx) => _RepostConfirmSheetDetail(post: post),
     );
 
-    debugPrint('[post_detail_screen][repost] confirmResult=$confirm postId=${post.id}');
-    if (confirm != true || !mounted) {
+    debugPrint(
+      '[post_detail_screen][repost] commentLength=${repostComment?.length ?? -1} postId=${post.id}',
+    );
+    if (repostComment == null || !mounted) {
       debugPrint(
         '[post_detail_screen][repost] aborted after confirmation '
-        'confirm=$confirm mounted=$mounted postId=${post.id}',
+        'commentLength=${repostComment?.length ?? -1} mounted=$mounted postId=${post.id}',
       );
       return;
     }
@@ -626,6 +629,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final params = {
       'p_original_post_id': post.id,
       'p_community_id': post.communityId,
+      'p_content': repostComment,
     };
 
     try {
@@ -2403,23 +2407,97 @@ class _CommentTileState extends ConsumerState<_CommentTile> {
   }
 }
 
-class _RepostConfirmSheetDetail extends ConsumerWidget {
+class _RepostConfirmSheetDetail extends ConsumerStatefulWidget {
   final dynamic post;
   const _RepostConfirmSheetDetail({required this.post});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_RepostConfirmSheetDetail> createState() =>
+      _RepostConfirmSheetDetailState();
+}
+
+class _RepostConfirmSheetDetailState
+    extends ConsumerState<_RepostConfirmSheetDetail> {
+  late final TextEditingController _commentController;
+
+  @override
+  void initState() {
+    super.initState();
+    _commentController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final s = ref.watch(stringsProvider);
-    return Container(
-      padding: const EdgeInsets.all(24),
+    final r = context.r;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        r.s(24),
+        r.s(24),
+        r.s(24),
+        r.s(24) + MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(s.repost, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(s.confirm),
+          Text(
+            s.repost,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: r.fs(18),
+              color: context.nexusTheme.textPrimary,
+            ),
+          ),
+          SizedBox(height: r.s(12)),
+          TextField(
+            controller: _commentController,
+            maxLines: 4,
+            minLines: 1,
+            style: TextStyle(
+              color: context.nexusTheme.textPrimary,
+              fontSize: r.fs(14),
+            ),
+            decoration: InputDecoration(
+              hintText: s.saySomethingHint,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(r.s(12)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(r.s(12)),
+                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(r.s(12)),
+                borderSide: BorderSide(
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.45),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: r.s(16)),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, null),
+                  child: Text(s.cancel),
+                ),
+              ),
+              SizedBox(width: r.s(12)),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, _commentController.text.trim()),
+                  child: Text(s.confirm),
+                ),
+              ),
+            ],
           ),
         ],
       ),
