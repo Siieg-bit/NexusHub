@@ -1464,8 +1464,14 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                 // Slot "+" para criar nova entrada wiki (índice 0 se próprio)
                 if (_isOwnProfile && index == 0) {
                   return GestureDetector(
-                    onTap: () => context
-                        .push('/community/${widget.communityId}/wiki/create'),
+                    onTap: () async {
+                      final created = await context.push<bool>(
+                        '/community/${widget.communityId}/wiki/create',
+                      );
+                      if (created == true && mounted) {
+                        await _loadProfile();
+                      }
+                    },
                     child: Container(
                       width: r.s(90),
                       margin: EdgeInsets.symmetric(horizontal: r.s(4)),

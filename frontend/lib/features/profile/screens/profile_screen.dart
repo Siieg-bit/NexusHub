@@ -38,6 +38,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _wallController = TextEditingController();
+  bool? _followOverride;
+  bool _isTogglingFollow = false;
 
   @override
   void initState() {
@@ -114,6 +116,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         final frameIsAnimated =
             equippedAsync.valueOrNull?['frame_is_animated'] as bool? ?? false;
         final isAminoPlus = user.isPremium || IAPService.isAminoPlus;
+        final displayedIsFollowing = _followOverride ?? (user.isFollowing == true);
 
         return Scaffold(
           resizeToAvoidBottomInset: true,
@@ -242,31 +245,44 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                   ),
                                 )
                               : GestureDetector(
-                                  onTap: () => _toggleFollow(ref, user),
+                                  onTap: _isTogglingFollow
+                                      ? null
+                                      : () => _toggleFollow(ref, user),
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
                                         horizontal: r.s(20), vertical: r.s(8)),
                                     decoration: BoxDecoration(
-                                      color: user.isFollowing == true
+                                      color: displayedIsFollowing
                                           ? Colors.transparent
                                           : context.nexusTheme.accentSecondary,
                                       borderRadius:
                                           BorderRadius.circular(r.s(8)),
-                                      border: user.isFollowing == true
+                                      border: displayedIsFollowing
                                           ? Border.all(
                                               color: context.nexusTheme.accentSecondary)
                                           : null,
                                     ),
-                                    child: Text(
-                                      user.isFollowing == true
-                                          ? s.following
-                                          : s.follow,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: r.fs(13),
-                                      ),
-                                    ),
+                                    child: _isTogglingFollow
+                                        ? SizedBox(
+                                            width: r.s(16),
+                                            height: r.s(16),
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: displayedIsFollowing
+                                                  ? context.nexusTheme.accentSecondary
+                                                  : Colors.white,
+                                            ),
+                                          )
+                                        : Text(
+                                            displayedIsFollowing
+                                                ? s.following
+                                                : s.follow,
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: r.fs(13),
+                                            ),
+                                          ),
                                   ),
                                 ),
                         ),
@@ -612,9 +628,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   Future<void> _toggleFollow(WidgetRef ref, UserModel user) async {
+    if (_isTogglingFollow) return;
+
+    final previous = _followOverride ?? (user.isFollowing == true);
+
+    setState(() {
+      _isTogglingFollow = true;
+      _followOverride = !previous;
+    });
+
     try {
-      // RPC atômica: toggle follow + reputação + contadores
-      await SupabaseService.rpc(
+      final result = await SupabaseService.rpc(
         'toggle_follow_with_reputation',
         params: {
           'p_community_id': '00000000-0000-0000-0000-000000000000',
@@ -622,9 +646,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           'p_following_id': widget.userId,
         },
       );
+
+      final resolved = result is Map
+          ? (result['following'] == true)
+          : (_followOverride ?? !previous);
+
+      if (!mounted) return;
+      setState(() {
+        _followOverride = resolved;
+        _isTogglingFollow = false;
+      });
       ref.invalidate(userProfileProvider(widget.userId));
     } catch (e) {
-      // Silenciar
+      if (!mounted) return;
+      setState(() {
+        _followOverride = previous;
+        _isTogglingFollow = false;
+      });
     }
   }
 

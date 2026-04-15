@@ -114,8 +114,14 @@ class _WikiListScreenState extends ConsumerState<WikiListScreen> {
           ),
           SizedBox(width: r.s(4)),
           GestureDetector(
-            onTap: () =>
-                context.push('/community/${widget.communityId}/wiki/create'),
+            onTap: () async {
+              final created = await context.push<bool>(
+                '/community/${widget.communityId}/wiki/create',
+              );
+              if (created == true && mounted) {
+                await _loadEntries();
+              }
+            },
             child: Container(
               margin:
                   EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),

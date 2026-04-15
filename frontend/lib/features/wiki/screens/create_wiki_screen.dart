@@ -547,91 +547,60 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
         if (sec.imageUrl != null) mediaUrls.add(sec.imageUrl!);
       }
 
-      // Usar RPC específica para wiki com validações
-      try {
-        final result = await SupabaseService.rpc('create_wiki_entry', params: {
-          'p_community_id': widget.communityId,
-          'p_title': title,
-          'p_content': contentBuffer.toString().trim(),
-          'p_cover_image_url': _coverImageUrl,
-          'p_media_list': mediaUrls
-              .map((url) => {'url': url, 'type': 'image'})
-              .toList(),
-          'p_tags': _tags,
-          'p_visibility': _visibility,
-          'p_wiki_data': {
-            'sections': sectionsJson,
-            'subtitle': _subtitleController.text.trim(),
-            'references': _references,
-          },
-          'p_editor_metadata': editorMetadata,
-        });
-
-        if (result is! Map<String, dynamic> || result['success'] != true) {
-          throw Exception(result is Map ? result['message'] ?? s.errorPublishing2 : s.errorPublishing2);
-        }
-      } catch (e) {
-        // Fallback: tentar com create_post_with_reputation
-        try {
-          await SupabaseService.rpc('create_post_with_reputation', params: {
-            'p_community_id': widget.communityId,
-            'p_title': title,
-            'p_content': contentBuffer.toString().trim(),
-            'p_type': 'wiki',
-            'p_visibility': _visibility,
-            'p_media_list': mediaUrls
+      // Salvar diretamente em wiki_entries, que é a fonte usada pelas telas de Wiki.
+      final result = await SupabaseService.table('wiki_entries')
+          .insert({
+            'community_id': widget.communityId,
+            'author_id': userId,
+            'title': title,
+            'content': contentBuffer.toString().trim(),
+            'cover_image_url': _coverImageUrl,
+            'media_list': mediaUrls
                 .map((url) => {'url': url, 'type': 'image'})
                 .toList(),
-            'p_tags': _tags,
-            'p_cover_image_url': _coverImageUrl,
-            'p_editor_type': 'wiki',
-            'p_editor_metadata': editorMetadata,
-            'p_wiki_data': {
-              'sections': sectionsJson,
-              'subtitle': _subtitleController.text.trim(),
-              'references': _references,
-            },
-          });
-        } catch (fallbackError) {
-          // Último fallback: insert direto
-          final result = await SupabaseService.table('posts')
-              .insert({
-                'community_id': widget.communityId,
-                'author_id': userId,
-                'type': 'wiki',
-                'title': title,
-                'content': contentBuffer.toString().trim(),
-                'media_list': mediaUrls
-                    .map((url) => {'url': url, 'type': 'image'})
-                    .toList(),
-                'cover_image_url': _coverImageUrl,
-                'visibility': _visibility,
-                'comments_blocked': false,
-                'editor_type': 'wiki',
-                'editor_metadata': editorMetadata,
-                'wiki_data': {
-                  'sections': sectionsJson,
-                  'subtitle': _subtitleController.text.trim(),
-                  'references': _references,
+            'tags': _tags,
+            'status': 'ok',
+            'custom_fields': [
+              if (_subtitleController.text.trim().isNotEmpty)
+                {
+                  'label': 'subtitle',
+                  'value': _subtitleController.text.trim(),
                 },
-              })
-              .select()
-              .single();
+              if (_references.isNotEmpty)
+                {
+                  'label': 'references',
+                  'value': _references,
+                },
+              if (sectionsJson.isNotEmpty)
+                {
+                  'label': 'sections',
+                  'value': sectionsJson,
+                },
+              {
+                'label': 'visibility',
+                'value': _visibility,
+              },
+              {
+                'label': 'editor_metadata',
+                'value': editorMetadata,
+              },
+            ],
+          })
+          .select()
+          .single();
 
-          try {
-            await SupabaseService.rpc('add_reputation', params: {
-              'p_user_id': userId,
-              'p_community_id': widget.communityId,
-              'p_action_type': 'post_create',
-              'p_raw_amount': 25,
-              'p_reference_id': result['id'],
-            });
-          } catch (_) {}
-        }
-      }
+      try {
+        await SupabaseService.rpc('add_reputation', params: {
+          'p_user_id': userId,
+          'p_community_id': widget.communityId,
+          'p_action_type': 'post_create',
+          'p_raw_amount': 25,
+          'p_reference_id': result['id'],
+        });
+      } catch (_) {}
 
       if (mounted) {
-        context.pop();
+        context.pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.wikiPublishedSuccess),
