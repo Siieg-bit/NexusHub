@@ -116,7 +116,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
     try {
       await SupabaseService.client.rpc('toggle_announcement_only', params: {
         'p_thread_id': widget.threadId,
-        'p_enabled': value,
+        'p_value': value,
       });
       setState(() => _isAnnouncementOnly = value);
       widget.onAnnouncementOnlyChanged(value);
@@ -343,7 +343,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
     try {
       await SupabaseService.client.rpc('promote_chat_cohost', params: {
         'p_thread_id': widget.threadId,
-        'p_target_user_id': targetId,
+        'p_user_id': targetId,
       });
       await _loadMembers();
       if (mounted) {
@@ -362,7 +362,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
     try {
       await SupabaseService.client.rpc('demote_chat_cohost', params: {
         'p_thread_id': widget.threadId,
-        'p_target_user_id': targetId,
+        'p_user_id': targetId,
       });
       await _loadMembers();
     } catch (e) {
@@ -374,7 +374,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
     try {
       await SupabaseService.client.rpc('remove_chat_member', params: {
         'p_thread_id': widget.threadId,
-        'p_target_user_id': targetId,
+        'p_user_id': targetId,
       });
       await _loadMembers();
       if (mounted) {
@@ -503,7 +503,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
     try {
       await SupabaseService.client.rpc('ban_chat_member', params: {
         'p_thread_id': widget.threadId,
-        'p_target_user_id': targetId,
+        'p_user_id': targetId,
         if (reason != null) 'p_reason': reason,
         if (durationHours != null) 'p_duration_hours': durationHours,
       });
@@ -526,7 +526,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
     try {
       await SupabaseService.client.rpc('unban_chat_member', params: {
         'p_thread_id': widget.threadId,
-        'p_target_user_id': targetId,
+        'p_user_id': targetId,
       });
       await _loadMembers();
       if (mounted) {
