@@ -67,10 +67,12 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
             if (profile == null) continue;
             final merged = Map<String, dynamic>.from(profile);
             // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
-            final localNickname = (membership['local_nickname'] as String?)?.trim();
-            final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
-            if (localNickname != null) merged['nickname'] = localNickname;
-            if (localIconUrl != null) merged['icon_url'] = localIconUrl;
+            final localNickname =
+                (membership['local_nickname'] as String?)?.trim();
+            final localIconUrl =
+                (membership['local_icon_url'] as String?)?.trim();
+            merged['nickname'] = localNickname;
+            merged['icon_url'] = localIconUrl;
             story['profiles'] = merged;
           }
         }
@@ -177,7 +179,8 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
                     shape: BoxShape.circle,
                     color: context.nexusTheme.surfacePrimary,
                     border: Border.all(
-                      color: context.nexusTheme.accentSecondary.withValues(alpha: 0.3),
+                      color: context.nexusTheme.accentSecondary
+                          .withValues(alpha: 0.3),
                       width: 2,
                     ),
                   ),
@@ -250,7 +253,8 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: context.nexusTheme.backgroundPrimary, width: 2),
+                  border: Border.all(
+                      color: context.nexusTheme.backgroundPrimary, width: 2),
                 ),
                 child: CircleAvatar(
                   radius: 26,
@@ -275,7 +279,9 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
               child: Text(
                 username,
                 style: TextStyle(
-                  color: hasUnviewed ? context.nexusTheme.textPrimary : Colors.grey[600],
+                  color: hasUnviewed
+                      ? context.nexusTheme.textPrimary
+                      : Colors.grey[600],
                   fontSize: r.fs(10),
                   fontWeight: hasUnviewed ? FontWeight.w700 : FontWeight.w500,
                 ),

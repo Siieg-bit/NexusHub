@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
 import '../models/community_model.dart';
-import '../../features/auth/providers/auth_provider.dart';
 
 /// ============================================================================
 /// CommunityProvider — State Management com AsyncNotifier para comunidades.
@@ -48,20 +47,10 @@ class MyCommunitiesNotifier extends AsyncNotifier<List<CommunityModel>> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return false;
 
-      // Usa currentUserProvider (já em memória) para copiar o perfil global
-      // como ponto de partida do perfil local da comunidade.
-      // Após o join, o usuário pode editar livremente o perfil local
-      // sem nenhuma sincronização com o global.
-      final currentUser = ref.read(currentUserProvider);
-
       await SupabaseService.table('community_members').insert({
         'community_id': communityId,
         'user_id': userId,
         'role': 'member',
-        'local_nickname': currentUser?.nickname,
-        'local_bio': currentUser?.bio,
-        'local_icon_url': currentUser?.iconUrl,
-        'local_banner_url': currentUser?.bannerUrl,
       });
 
       await refresh();

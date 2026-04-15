@@ -8,8 +8,10 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
-import '../../chat/screens/chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
-import '../../../core/providers/chat_provider.dart' show unreadCountProvider, unreadCountByCommunityProvider;
+import '../../chat/screens/chat_list_screen.dart'
+    show chatListProvider, chatCommunitiesProvider;
+import '../../../core/providers/chat_provider.dart'
+    show unreadCountProvider, unreadCountByCommunityProvider;
 import '../widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
@@ -113,13 +115,12 @@ final communityMyChatsProvider =
       .where((e) => e['chat_threads'] != null)
       .map((e) => Map<String, dynamic>.from(e as Map))
       .where((e) {
-        final thread = e['chat_threads'] as Map<String, dynamic>?;
-        if (thread == null) return false;
-        final threadCommunityId = thread['community_id'] as String?;
-        return threadCommunityId == communityId ||
-            _isDirectLikeCommunityThread(thread, communityId);
-      })
-      .toList();
+    final thread = e['chat_threads'] as Map<String, dynamic>?;
+    if (thread == null) return false;
+    final threadCommunityId = thread['community_id'] as String?;
+    return threadCommunityId == communityId ||
+        _isDirectLikeCommunityThread(thread, communityId);
+  }).toList();
 
   final dmThreadsById = <String, Map<String, dynamic>>{};
   for (final row in rawChats) {
@@ -136,10 +137,11 @@ final communityMyChatsProvider =
   final Map<String, Map<String, dynamic>> dmCounterparts = {};
   if (dmThreadIds.isNotEmpty) {
     try {
-      final dmMembers = await SupabaseService.table('chat_members').select(
-          'thread_id, user_id, profiles!chat_members_user_id_fkey(id, nickname, icon_url, banner_url)')
-        .inFilter('thread_id', dmThreadIds)
-        .neq('user_id', userId);
+      final dmMembers = await SupabaseService.table('chat_members')
+          .select(
+              'thread_id, user_id, profiles!chat_members_user_id_fkey(id, nickname, icon_url, banner_url)')
+          .inFilter('thread_id', dmThreadIds)
+          .neq('user_id', userId);
 
       final counterpartRows = (dmMembers as List? ?? [])
           .map((row) => Map<String, dynamic>.from(row as Map))
@@ -179,11 +181,14 @@ final communityMyChatsProvider =
         final membership = localMemberships[counterpartUserId];
         final localNickname = _normalizedString(membership?['local_nickname']);
         final localIconUrl = _normalizedString(membership?['local_icon_url']);
-        final localBannerUrl = _normalizedString(membership?['local_banner_url']);
+        final localBannerUrl =
+            _normalizedString(membership?['local_banner_url']);
 
-        if (localNickname != null) mergedProfile['nickname'] = localNickname;
-        if (localIconUrl != null) mergedProfile['icon_url'] = localIconUrl;
-        if (localBannerUrl != null) mergedProfile['banner_url'] = localBannerUrl;
+        if (membership != null) {
+          mergedProfile['nickname'] = localNickname;
+          mergedProfile['icon_url'] = localIconUrl;
+          mergedProfile['banner_url'] = localBannerUrl;
+        }
 
         dmCounterparts[threadId] = mergedProfile;
       }
@@ -231,7 +236,8 @@ final communityMemberAvatarsProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>(
         (ref, communityId) async {
   final response = await SupabaseService.table('community_members')
-      .select('user_id, local_nickname, local_icon_url, profiles(id, nickname, icon_url)')
+      .select(
+          'user_id, local_nickname, local_icon_url, profiles(id, nickname, icon_url)')
       .eq('community_id', communityId)
       .order('joined_at', ascending: false)
       .limit(20);
@@ -243,8 +249,8 @@ final communityMemberAvatarsProvider =
     final mergedProfile = Map<String, dynamic>.from(profile);
     final localNickname = _normalizedString(row['local_nickname']);
     final localIconUrl = _normalizedString(row['local_icon_url']);
-    if (localNickname != null) mergedProfile['nickname'] = localNickname;
-    if (localIconUrl != null) mergedProfile['icon_url'] = localIconUrl;
+    mergedProfile['nickname'] = localNickname;
+    mergedProfile['icon_url'] = localIconUrl;
     row['profiles'] = mergedProfile;
   }
   return rows;
@@ -268,8 +274,10 @@ final favoriteMembersProvider =
   if (rows.isEmpty) return rows;
   // Enriquecer com dados locais de comunidade
   try {
-    final followingIds =
-        rows.map((r) => r['following_id'] as String?).whereType<String>().toList();
+    final followingIds = rows
+        .map((r) => r['following_id'] as String?)
+        .whereType<String>()
+        .toList();
     if (followingIds.isNotEmpty) {
       final memberships = await SupabaseService.table('community_members')
           .select('user_id, local_nickname, local_icon_url')
@@ -290,8 +298,8 @@ final favoriteMembersProvider =
         // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
         final localNickname = (membership['local_nickname'] as String?)?.trim();
         final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
-        if (localNickname != null) merged['nickname'] = localNickname;
-        if (localIconUrl != null) merged['icon_url'] = localIconUrl;
+        merged['nickname'] = localNickname;
+        merged['icon_url'] = localIconUrl;
         row['profiles'] = merged;
       }
     }
@@ -517,17 +525,19 @@ class _MyCommunityChatsScreenState
       ),
       child: Row(
         children: [
-          Icon(Icons.search_rounded, color: context.nexusTheme.textHint, size: r.s(18)),
+          Icon(Icons.search_rounded,
+              color: context.nexusTheme.textHint, size: r.s(18)),
           SizedBox(width: r.s(8)),
           Expanded(
             child: TextField(
               controller: _searchController,
               onChanged: (v) => setState(() => _searchQuery = v),
-              style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(13)),
+              style: TextStyle(
+                  color: context.nexusTheme.textPrimary, fontSize: r.fs(13)),
               decoration: InputDecoration(
                 hintText: s.searchMyChats,
-                hintStyle:
-                    TextStyle(color: context.nexusTheme.textHint, fontSize: r.fs(13)),
+                hintStyle: TextStyle(
+                    color: context.nexusTheme.textHint, fontSize: r.fs(13)),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
@@ -614,8 +624,11 @@ class _MyCommunityChatsScreenState
                         height: r.s(30),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: context.nexusTheme.surfacePrimary, width: 2),
-                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.4),
+                          border: Border.all(
+                              color: context.nexusTheme.surfacePrimary,
+                              width: 2),
+                          color: context.nexusTheme.accentPrimary
+                              .withValues(alpha: 0.4),
                           image: url != null
                               ? DecorationImage(
                                   image: CachedNetworkImageProvider(url),
@@ -639,7 +652,8 @@ class _MyCommunityChatsScreenState
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.grey[700],
-                        border: Border.all(color: context.nexusTheme.surfacePrimary, width: 2),
+                        border: Border.all(
+                            color: context.nexusTheme.surfacePrimary, width: 2),
                       ),
                       child: Icon(Icons.more_horiz_rounded,
                           color: Colors.white, size: r.s(14)),
@@ -700,7 +714,8 @@ class _MyCommunityChatsScreenState
               return GestureDetector(
                 onTap: () {
                   if (userId != null) {
-                    context.push('/community/${widget.communityId}/profile/$userId');
+                    context.push(
+                        '/community/${widget.communityId}/profile/$userId');
                   }
                 },
                 child: Container(
@@ -713,7 +728,8 @@ class _MyCommunityChatsScreenState
                         height: r.s(52),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
+                          color: context.nexusTheme.accentPrimary
+                              .withValues(alpha: 0.3),
                           image: iconUrl != null
                               ? DecorationImage(
                                   image: CachedNetworkImageProvider(iconUrl),
@@ -771,8 +787,8 @@ class _MyCommunityChatsScreenState
               _searchQuery.isEmpty
                   ? s.noChatsJoinedYet
                   : 'Nenhum chat encontrado para "$_searchQuery".',
-              style:
-                  TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(13)),
+              style: TextStyle(
+                  color: context.nexusTheme.textSecondary, fontSize: r.fs(13)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -869,13 +885,15 @@ class _CommunityChatTile extends ConsumerWidget {
             ListTile(
               leading: Icon(
                 isPinned ? Icons.push_pin_outlined : Icons.push_pin_rounded,
-                color: isPinned ? context.nexusTheme.accentSecondary : context.nexusTheme.textSecondary,
+                color: isPinned
+                    ? context.nexusTheme.accentSecondary
+                    : context.nexusTheme.textSecondary,
                 size: r.s(22),
               ),
               title: Text(
                 isPinned ? s.unpinFromTop : s.pinToTop,
-                style:
-                    TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
               ),
               onTap: () async {
                 Navigator.of(ctx).pop();
@@ -904,8 +922,8 @@ class _CommunityChatTile extends ConsumerWidget {
                 _usesDmDeleteFlow(chatRoom, communityId)
                     ? s.deleteConversation
                     : s.leaveChat,
-                style:
-                    TextStyle(color: context.nexusTheme.error, fontSize: r.fs(14)),
+                style: TextStyle(
+                    color: context.nexusTheme.error, fontSize: r.fs(14)),
               ),
               onTap: () async {
                 Navigator.of(ctx).pop();
@@ -928,7 +946,8 @@ class _CommunityChatTile extends ConsumerWidget {
                           ? s.conversationRemovedFromList
                           : 'Você poderá entrar novamente depois.',
                       style: TextStyle(
-                          color: context.nexusTheme.textSecondary, fontSize: r.fs(13)),
+                          color: context.nexusTheme.textSecondary,
+                          fontSize: r.fs(13)),
                     ),
                     actions: [
                       TextButton(
@@ -974,7 +993,7 @@ class _CommunityChatTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     final hasUnread = chatRoom.unreadCount > 0;
     final isPinned = chatRoom.isPinnedByUser;
@@ -998,7 +1017,8 @@ class _CommunityChatTile extends ConsumerWidget {
             ? BoxDecoration(
                 border: Border(
                   left: BorderSide(
-                    color: context.nexusTheme.accentSecondary.withValues(alpha: 0.6),
+                    color: context.nexusTheme.accentSecondary
+                        .withValues(alpha: 0.6),
                     width: 3,
                   ),
                 ),
@@ -1048,10 +1068,13 @@ class _CommunityChatTile extends ConsumerWidget {
                     child: Container(
                       width: r.s(72),
                       height: r.s(72),
-                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
-                      child: (chatRoom.coverImageUrl ?? chatRoom.iconUrl) != null
+                      color: context.nexusTheme.accentPrimary
+                          .withValues(alpha: 0.3),
+                      child: (chatRoom.coverImageUrl ?? chatRoom.iconUrl) !=
+                              null
                           ? CachedNetworkImage(
-                              imageUrl: (chatRoom.coverImageUrl ?? chatRoom.iconUrl)!,
+                              imageUrl:
+                                  (chatRoom.coverImageUrl ?? chatRoom.iconUrl)!,
                               fit: BoxFit.cover,
                               placeholder: (_, __) => Container(
                                 color: context.nexusTheme.accentPrimary
@@ -1077,8 +1100,9 @@ class _CommunityChatTile extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: context.nexusTheme.error,
                         shape: BoxShape.circle,
-                        border:
-                            Border.all(color: context.nexusTheme.backgroundPrimary, width: 1.5),
+                        border: Border.all(
+                            color: context.nexusTheme.backgroundPrimary,
+                            width: 1.5),
                       ),
                     ),
                   ),
@@ -1105,7 +1129,8 @@ class _CommunityChatTile extends ConsumerWidget {
                     children: [
                       if (isPinned) ...[
                         Icon(Icons.push_pin_rounded,
-                            size: r.s(11), color: context.nexusTheme.accentSecondary),
+                            size: r.s(11),
+                            color: context.nexusTheme.accentSecondary),
                         SizedBox(width: r.s(3)),
                       ],
                       Expanded(
@@ -1128,8 +1153,9 @@ class _CommunityChatTile extends ConsumerWidget {
                   Text(
                     chatRoom.lastMessagePreview ?? s.noMessages,
                     style: TextStyle(
-                      color:
-                          hasUnread ? context.nexusTheme.textSecondary : context.nexusTheme.textHint,
+                      color: hasUnread
+                          ? context.nexusTheme.textSecondary
+                          : context.nexusTheme.textHint,
                       fontSize: r.fs(12),
                       fontWeight: hasUnread ? FontWeight.w500 : FontWeight.w400,
                     ),
@@ -1148,7 +1174,9 @@ class _CommunityChatTile extends ConsumerWidget {
                       ? timeago.format(chatRoom.lastMessageAt!, locale: 'pt_BR')
                       : '',
                   style: TextStyle(
-                    color: hasUnread ? context.nexusTheme.accentSecondary : context.nexusTheme.textHint,
+                    color: hasUnread
+                        ? context.nexusTheme.accentSecondary
+                        : context.nexusTheme.textHint,
                     fontSize: r.fs(10),
                     fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
                   ),

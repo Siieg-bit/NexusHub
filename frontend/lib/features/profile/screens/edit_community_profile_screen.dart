@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/community_profile_service.dart';
 import 'package:image_cropper/image_cropper.dart';
 import '../../../core/services/media_upload_service.dart';
 import '../../../core/utils/responsive.dart';
@@ -67,6 +68,9 @@ class _EditCommunityProfileScreenState
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
 
+      await CommunityProfileService.ensureMyCommunityProfile(
+          widget.communityId);
+
       final membership = await SupabaseService.table('community_members')
           .select(
               'local_nickname, local_bio, local_icon_url, local_banner_url, '
@@ -75,49 +79,9 @@ class _EditCommunityProfileScreenState
           .eq('user_id', userId)
           .maybeSingle();
 
-      Map<String, dynamic>? hydratedMembership = membership != null
+      final Map<String, dynamic>? hydratedMembership = membership != null
           ? Map<String, dynamic>.from(membership as Map)
           : null;
-
-      if (hydratedMembership != null) {
-        final profileSeed = <String, dynamic>{};
-        final profile = await SupabaseService.table('profiles')
-            .select('nickname, bio, icon_url, banner_url')
-            .eq('id', userId)
-            .single();
-
-        final localNickname =
-            (hydratedMembership['local_nickname'] as String?)?.trim();
-        final localBio = (hydratedMembership['local_bio'] as String?)?.trim();
-        final localIconUrl =
-            (hydratedMembership['local_icon_url'] as String?)?.trim();
-        final localBannerUrl =
-            (hydratedMembership['local_banner_url'] as String?)?.trim();
-
-        if ((localNickname == null || localNickname.isEmpty) &&
-            ((profile['nickname'] as String?)?.trim().isNotEmpty ?? false)) {
-          profileSeed['local_nickname'] = (profile['nickname'] as String).trim();
-        }
-        if ((localBio == null || localBio.isEmpty) &&
-            ((profile['bio'] as String?)?.trim().isNotEmpty ?? false)) {
-          profileSeed['local_bio'] = (profile['bio'] as String).trim();
-        }
-        if ((localIconUrl == null || localIconUrl.isEmpty) &&
-            ((profile['icon_url'] as String?)?.trim().isNotEmpty ?? false)) {
-          profileSeed['local_icon_url'] = (profile['icon_url'] as String).trim();
-        }
-        // Não reidratar automaticamente a capa global quando a capa local está
-        // nula. Nesse contexto, null pode significar que o usuário removeu a
-        // capa da comunidade intencionalmente.
-
-        if (profileSeed.isNotEmpty) {
-          await SupabaseService.table('community_members')
-              .update(profileSeed)
-              .eq('community_id', widget.communityId)
-              .eq('user_id', userId);
-          hydratedMembership.addAll(profileSeed);
-        }
-      }
 
       // Carregar moldura ativa fora do setState (operação async)
       String? resolvedFrameUrl;
@@ -128,15 +92,18 @@ class _EditCommunityProfileScreenState
         if (activeFramePurchaseId != null) {
           try {
             final fp = await SupabaseService.table('user_purchases')
-                .select('id, store_items!user_purchases_item_id_fkey(preview_url, asset_url, asset_config)')
+                .select(
+                    'id, store_items!user_purchases_item_id_fkey(preview_url, asset_url, asset_config)')
                 .eq('id', activeFramePurchaseId)
                 .maybeSingle();
             if (fp != null) {
               final si = fp['store_items'] as Map<String, dynamic>?;
               if (si != null) {
                 String? fUrl = si['preview_url'] as String?;
-                if (fUrl == null || fUrl.isEmpty) fUrl = si['asset_url'] as String?;
-                if ((fUrl == null || fUrl.isEmpty) && si['asset_config'] is Map) {
+                if (fUrl == null || fUrl.isEmpty)
+                  fUrl = si['asset_url'] as String?;
+                if ((fUrl == null || fUrl.isEmpty) &&
+                    si['asset_config'] is Map) {
                   fUrl = (si['asset_config'] as Map)['frame_url'] as String?;
                 }
                 resolvedFrameUrl = fUrl;
@@ -173,8 +140,9 @@ class _EditCommunityProfileScreenState
               initialGallery.add(storedBannerUrl);
             }
             _gallery = initialGallery;
-            _localBannerUrl =
-                initialGallery.isNotEmpty ? initialGallery.first : storedBannerUrl;
+            _localBannerUrl = initialGallery.isNotEmpty
+                ? initialGallery.first
+                : storedBannerUrl;
           }
           _galleryLoaded = true;
           _mediaLoaded = true;
@@ -187,10 +155,12 @@ class _EditCommunityProfileScreenState
       // que o RPC trata como "sem mudança" via COALESCE.
       // Nota: o RPC 068 usa atribuição direta para esses campos,
       // então precisamos usar COALESCE no _save quando não carregou.
-      if (mounted) setState(() {
-        _galleryLoaded = true; // mesmo em erro, permite salvar sem apagar galeria
-        _isLoading = false;
-      });
+      if (mounted)
+        setState(() {
+          _galleryLoaded =
+              true; // mesmo em erro, permite salvar sem apagar galeria
+          _isLoading = false;
+        });
     }
   }
 
@@ -240,8 +210,7 @@ class _EditCommunityProfileScreenState
       // Path: userId/communityId/timestamp.jpg
       // O primeiro segmento é sempre o userId, satisfazendo a política RLS
       // de todos os buckets (foldername[1] = auth.uid()).
-      final customPath =
-          '$userId/${widget.communityId}/'
+      final customPath = '$userId/${widget.communityId}/'
           '${DateTime.now().millisecondsSinceEpoch}.jpg';
 
       // Abre o picker
@@ -255,12 +224,13 @@ class _EditCommunityProfileScreenState
       // Crop circular apenas para avatar
       final fileToUpload = (crop && folder == 'avatar')
           ? await MediaUploadService.cropImage(
-              file,
-              aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-              useCircleCrop: true,
-              maxWidth: 512,
-              maxHeight: 512,
-            ) ?? file
+                file,
+                aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+                useCircleCrop: true,
+                maxWidth: 512,
+                maxHeight: 512,
+              ) ??
+              file
           : file;
 
       final result = await MediaUploadService.uploadFile(
@@ -316,7 +286,8 @@ class _EditCommunityProfileScreenState
     final s = getStrings();
     if (_gallery.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Adicione uma imagem à galeria antes de usá-la como fundo.'),
+        content:
+            Text('Adicione uma imagem à galeria antes de usá-la como fundo.'),
         backgroundColor: context.nexusTheme.warning,
       ));
       return;
@@ -435,7 +406,8 @@ class _EditCommunityProfileScreenState
       final red = (argb >> 16) & 0xFF;
       final green = (argb >> 8) & 0xFF;
       final blue = argb & 0xFF;
-      final hex = '#${red.toRadixString(16).padLeft(2, '0').toUpperCase()}${green.toRadixString(16).padLeft(2, '0').toUpperCase()}${blue.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+      final hex =
+          '#${red.toRadixString(16).padLeft(2, '0').toUpperCase()}${green.toRadixString(16).padLeft(2, '0').toUpperCase()}${blue.toRadixString(16).padLeft(2, '0').toUpperCase()}';
       setState(() {
         _localBackgroundColor = hex;
         _localBackgroundUrl = null; // limpa imagem ao escolher cor
@@ -448,9 +420,11 @@ class _EditCommunityProfileScreenState
     final removedImages = _gallery.toSet().difference(sanitizedGallery.toSet());
 
     _gallery = sanitizedGallery;
-    _localBannerUrl = sanitizedGallery.isNotEmpty ? sanitizedGallery.first : null;
+    _localBannerUrl =
+        sanitizedGallery.isNotEmpty ? sanitizedGallery.first : null;
 
-    if (_localBackgroundUrl != null && removedImages.contains(_localBackgroundUrl)) {
+    if (_localBackgroundUrl != null &&
+        removedImages.contains(_localBackgroundUrl)) {
       _localBackgroundUrl = null;
     }
   }
@@ -521,7 +495,8 @@ class _EditCommunityProfileScreenState
         // Carregamento inicial falhou — buscar valores atuais antes de salvar
         try {
           final current = await SupabaseService.table('community_members')
-              .select('local_icon_url, local_banner_url, local_background_url, local_background_color')
+              .select(
+                  'local_icon_url, local_banner_url, local_background_url, local_background_color')
               .eq('community_id', widget.communityId)
               .eq('user_id', userId)
               .maybeSingle();
@@ -529,7 +504,8 @@ class _EditCommunityProfileScreenState
             iconUrlToSave = current['local_icon_url'] as String?;
             bannerUrlToSave = current['local_banner_url'] as String?;
             backgroundUrlToSave = current['local_background_url'] as String?;
-            backgroundColorToSave = current['local_background_color'] as String?;
+            backgroundColorToSave =
+                current['local_background_color'] as String?;
           }
         } catch (_) {
           // Se falhar novamente, aborta o save para não apagar dados
@@ -622,11 +598,12 @@ class _EditCommunityProfileScreenState
             child: GestureDetector(
               onTap: _isSaving ? null : _save,
               child: Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: r.s(16), vertical: r.s(8)),
+                padding:
+                    EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                 decoration: BoxDecoration(
                   color: _isSaving
-                      ? context.nexusTheme.accentSecondary.withValues(alpha: 0.5)
+                      ? context.nexusTheme.accentSecondary
+                          .withValues(alpha: 0.5)
                       : context.nexusTheme.accentSecondary,
                   borderRadius: BorderRadius.circular(r.s(20)),
                 ),
@@ -733,7 +710,8 @@ class _EditCommunityProfileScreenState
                                     hintText: s.leaveEmptyBio,
                                   ),
                                   trailing: Icon(Icons.chevron_right_rounded,
-                                      color: context.nexusTheme.textHint, size: r.s(20)),
+                                      color: context.nexusTheme.textHint,
+                                      size: r.s(20)),
                                 ),
                               ],
                             ),
@@ -760,9 +738,11 @@ class _EditCommunityProfileScreenState
                                         icon: Icons.circle,
                                         label: s.backgroundColorSolid,
                                         selected: _localBackgroundColor != null,
-                                        selectedColor: _parseStoredBackgroundColor(
-                                                _localBackgroundColor) ??
-                                            context.nexusTheme.accentSecondary,
+                                        selectedColor:
+                                            _parseStoredBackgroundColor(
+                                                    _localBackgroundColor) ??
+                                                context
+                                                    .nexusTheme.accentSecondary,
                                         onTap: _pickBackgroundColor,
                                         onClear: _localBackgroundColor != null
                                             ? () => setState(() =>
@@ -777,7 +757,8 @@ class _EditCommunityProfileScreenState
                                         label: s.backgroundFromGallery,
                                         selected: _localBackgroundUrl != null,
                                         imageUrl: _localBackgroundUrl,
-                                        selectedColor: context.nexusTheme.accentSecondary,
+                                        selectedColor:
+                                            context.nexusTheme.accentSecondary,
                                         onTap: _pickBackground,
                                         onClear: _localBackgroundUrl != null
                                             ? () => setState(() =>
@@ -793,10 +774,14 @@ class _EditCommunityProfileScreenState
                                   child: Container(
                                     padding: EdgeInsets.all(r.s(14)),
                                     decoration: BoxDecoration(
-                                      color: context.nexusTheme.backgroundPrimary.withValues(alpha: 0.45),
-                                      borderRadius: BorderRadius.circular(r.s(18)),
+                                      color: context
+                                          .nexusTheme.backgroundPrimary
+                                          .withValues(alpha: 0.45),
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(18)),
                                       border: Border.all(
-                                        color: Colors.white.withValues(alpha: 0.06),
+                                        color: Colors.white
+                                            .withValues(alpha: 0.06),
                                       ),
                                     ),
                                     child: Row(
@@ -814,14 +799,16 @@ class _EditCommunityProfileScreenState
                                             vertical: r.s(6),
                                           ),
                                           decoration: BoxDecoration(
-                                            color: Colors.white.withValues(alpha: 0.06),
+                                            color: Colors.white
+                                                .withValues(alpha: 0.06),
                                             borderRadius:
                                                 BorderRadius.circular(r.s(999)),
                                           ),
                                           child: Text(
                                             '${_gallery.length}',
                                             style: TextStyle(
-                                              color: context.nexusTheme.textPrimary,
+                                              color: context
+                                                  .nexusTheme.textPrimary,
                                               fontSize: r.fs(12),
                                               fontWeight: FontWeight.w700,
                                             ),
@@ -1250,7 +1237,9 @@ class _BackgroundOptionButton extends StatelessWidget {
           vertical: r.s(12),
         ),
         decoration: BoxDecoration(
-          color: selected ? selectedColor : context.nexusTheme.backgroundPrimary.withValues(alpha: 0.45),
+          color: selected
+              ? selectedColor
+              : context.nexusTheme.backgroundPrimary.withValues(alpha: 0.45),
           borderRadius: BorderRadius.circular(r.s(16)),
           border: Border.all(
             color: selected
@@ -1271,7 +1260,11 @@ class _BackgroundOptionButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, size: r.s(16), color: selected ? Colors.white : context.nexusTheme.accentSecondary),
+            Icon(icon,
+                size: r.s(16),
+                color: selected
+                    ? Colors.white
+                    : context.nexusTheme.accentSecondary),
             SizedBox(width: r.s(8)),
             Expanded(
               child: Text(
@@ -1289,7 +1282,8 @@ class _BackgroundOptionButton extends StatelessWidget {
               GestureDetector(
                 onTap: onClear,
                 child: Icon(Icons.close_rounded,
-                    color: selected ? Colors.white70 : context.nexusTheme.textHint,
+                    color:
+                        selected ? Colors.white70 : context.nexusTheme.textHint,
                     size: r.s(16)),
               ),
           ],
@@ -1344,7 +1338,8 @@ class _InlineTextField extends StatelessWidget {
           TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(15)),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(color: context.nexusTheme.textHint, fontSize: r.fs(14)),
+        hintStyle:
+            TextStyle(color: context.nexusTheme.textHint, fontSize: r.fs(14)),
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
         focusedBorder: InputBorder.none,
@@ -1510,7 +1505,8 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
       selection: selection != null
           ? TextSelection(
               baseOffset: selection.baseOffset.clamp(0, value.length) as int,
-              extentOffset: selection.extentOffset.clamp(0, value.length) as int,
+              extentOffset:
+                  selection.extentOffset.clamp(0, value.length) as int,
             )
           : TextSelection.collapsed(offset: clampedOffset),
     );
@@ -1572,15 +1568,13 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
         .where((line) => line.trim().isNotEmpty)
         .every((line) => line.startsWith(prefix));
 
-    final updatedBlock = lines
-        .map((line) {
-          if (line.trim().isEmpty) return line;
-          if (allPrefixed) {
-            return line.startsWith(prefix) ? line.substring(prefix.length) : line;
-          }
-          return line.startsWith(prefix) ? line : '$prefix$line';
-        })
-        .join('\n');
+    final updatedBlock = lines.map((line) {
+      if (line.trim().isEmpty) return line;
+      if (allPrefixed) {
+        return line.startsWith(prefix) ? line.substring(prefix.length) : line;
+      }
+      return line.startsWith(prefix) ? line : '$prefix$line';
+    }).join('\n');
 
     final updated = text.replaceRange(blockStart, blockEnd, updatedBlock);
     _replaceValue(
@@ -1759,7 +1753,8 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                     ),
                     SizedBox(width: r.s(6)),
                     FilledButton(
-                      onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
+                      onPressed: () =>
+                          Navigator.of(context).pop(_controller.text.trim()),
                       child: Text(widget.saveLabel),
                     ),
                   ],
@@ -1845,14 +1840,16 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                       border: Border.all(
                         color: _showPreview
                             ? context.dividerClr
-                            : context.nexusTheme.accentSecondary.withValues(alpha: 0.55),
+                            : context.nexusTheme.accentSecondary
+                                .withValues(alpha: 0.55),
                         width: 1.4,
                       ),
                     ),
                     child: Column(
                       children: [
                         Padding(
-                          padding: EdgeInsets.fromLTRB(r.s(10), r.s(10), r.s(10), r.s(8)),
+                          padding: EdgeInsets.fromLTRB(
+                              r.s(10), r.s(10), r.s(10), r.s(8)),
                           child: Row(
                             children: [
                               Expanded(
@@ -1866,15 +1863,18 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                                     ),
                                     ButtonSegment<bool>(
                                       value: true,
-                                      icon: const Icon(Icons.visibility_rounded),
+                                      icon:
+                                          const Icon(Icons.visibility_rounded),
                                       label: Text(widget.previewLabel),
                                     ),
                                   ],
                                   selected: {_showPreview},
                                   onSelectionChanged: (selection) {
-                                    setState(() => _showPreview = selection.first);
+                                    setState(
+                                        () => _showPreview = selection.first);
                                     if (!_showPreview) {
-                                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
                                         if (mounted) _focusNode.requestFocus();
                                       });
                                     } else {
@@ -1913,7 +1913,8 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(10)),
+                          padding:
+                              EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(10)),
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
@@ -1931,7 +1932,8 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                         const Divider(height: 1),
                         Expanded(
                           child: ClipRRect(
-                            borderRadius: BorderRadius.vertical(bottom: Radius.circular(r.s(18))),
+                            borderRadius: BorderRadius.vertical(
+                                bottom: Radius.circular(r.s(18))),
                             child: ValueListenableBuilder<TextEditingValue>(
                               valueListenable: _controller,
                               builder: (_, value, __) {
@@ -1943,7 +1945,8 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                                         ? Text(
                                             widget.hintText,
                                             style: TextStyle(
-                                              color: context.nexusTheme.textHint,
+                                              color:
+                                                  context.nexusTheme.textHint,
                                               fontSize: r.fs(14),
                                               height: 1.55,
                                             ),
@@ -1951,27 +1954,40 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                                         : MarkdownBody(
                                             data: previewText,
                                             selectable: false,
-                                            styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                                            styleSheet:
+                                                MarkdownStyleSheet.fromTheme(
+                                                        Theme.of(context))
+                                                    .copyWith(
                                               p: TextStyle(
-                                                color: context.nexusTheme.textPrimary,
+                                                color: context
+                                                    .nexusTheme.textPrimary,
                                                 fontSize: r.fs(14),
                                                 height: 1.6,
                                               ),
                                               h2: TextStyle(
-                                                color: context.nexusTheme.textPrimary,
+                                                color: context
+                                                    .nexusTheme.textPrimary,
                                                 fontSize: r.fs(18),
                                                 fontWeight: FontWeight.w700,
                                               ),
                                               blockquote: TextStyle(
-                                                color: context.nexusTheme.textSecondary,
+                                                color: context
+                                                    .nexusTheme.textSecondary,
                                                 fontSize: r.fs(14),
                                                 fontStyle: FontStyle.italic,
                                               ),
-                                              blockquoteDecoration: BoxDecoration(
-                                                color: context.nexusTheme.accentSecondary.withValues(alpha: 0.08),
-                                                borderRadius: BorderRadius.circular(r.s(12)),
+                                              blockquoteDecoration:
+                                                  BoxDecoration(
+                                                color: context
+                                                    .nexusTheme.accentSecondary
+                                                    .withValues(alpha: 0.08),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        r.s(12)),
                                                 border: Border.all(
-                                                  color: context.nexusTheme.accentSecondary.withValues(alpha: 0.18),
+                                                  color: context.nexusTheme
+                                                      .accentSecondary
+                                                      .withValues(alpha: 0.18),
                                                 ),
                                               ),
                                             ),
@@ -2201,7 +2217,8 @@ class _GallerySummaryContent extends StatelessWidget {
                       vertical: r.s(4),
                     ),
                     decoration: BoxDecoration(
-                      color: context.nexusTheme.accentSecondary.withValues(alpha: 0.12),
+                      color: context.nexusTheme.accentSecondary
+                          .withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(r.s(999)),
                     ),
                     child: Text(
@@ -2217,7 +2234,9 @@ class _GallerySummaryContent extends StatelessWidget {
               ),
               SizedBox(height: r.s(4)),
               Text(
-                photos.length == 1 ? 'Toque para gerenciar' : 'Toque para organizar',
+                photos.length == 1
+                    ? 'Toque para gerenciar'
+                    : 'Toque para organizar',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -2348,7 +2367,8 @@ class _CommunityGalleryManagerScreenState
                             width: r.s(64),
                             height: r.s(64),
                             decoration: BoxDecoration(
-                              color: context.nexusTheme.accentSecondary.withValues(alpha: 0.12),
+                              color: context.nexusTheme.accentSecondary
+                                  .withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(r.s(20)),
                             ),
                             child: Icon(
@@ -2382,7 +2402,8 @@ class _CommunityGalleryManagerScreenState
                     ),
                   )
                 : ReorderableListView.builder(
-                    padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(16)),
+                    padding:
+                        EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(16)),
                     itemCount: _photos.length,
                     onReorder: _reorderPhotos,
                     buildDefaultDragHandles: false,
@@ -2412,7 +2433,8 @@ class _CommunityGalleryManagerScreenState
                             ),
                             Expanded(
                               child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: r.s(12)),
+                                padding:
+                                    EdgeInsets.symmetric(vertical: r.s(12)),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -2423,16 +2445,23 @@ class _CommunityGalleryManagerScreenState
                                       ),
                                       decoration: BoxDecoration(
                                         color: index == 0
-                                            ? context.nexusTheme.accentSecondary.withValues(alpha: 0.14)
-                                            : context.dividerClr.withValues(alpha: 0.35),
-                                        borderRadius: BorderRadius.circular(r.s(999)),
+                                            ? context.nexusTheme.accentSecondary
+                                                .withValues(alpha: 0.14)
+                                            : context.dividerClr
+                                                .withValues(alpha: 0.35),
+                                        borderRadius:
+                                            BorderRadius.circular(r.s(999)),
                                       ),
                                       child: Text(
-                                        index == 0 ? 'Capa' : 'Imagem ${index + 1}',
+                                        index == 0
+                                            ? 'Capa'
+                                            : 'Imagem ${index + 1}',
                                         style: TextStyle(
                                           color: index == 0
-                                              ? context.nexusTheme.accentSecondary
-                                              : context.nexusTheme.textSecondary,
+                                              ? context
+                                                  .nexusTheme.accentSecondary
+                                              : context
+                                                  .nexusTheme.textSecondary,
                                           fontSize: r.fs(11),
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -2440,7 +2469,9 @@ class _CommunityGalleryManagerScreenState
                                     ),
                                     SizedBox(height: r.s(8)),
                                     Text(
-                                      index == 0 ? 'Capa atual' : 'Arraste para reordenar',
+                                      index == 0
+                                          ? 'Capa atual'
+                                          : 'Arraste para reordenar',
                                       style: TextStyle(
                                         color: context.nexusTheme.textSecondary,
                                         fontSize: r.fs(12),
@@ -2503,14 +2534,14 @@ class _CommunityGalleryManagerScreenState
                         )
                       : const Icon(Icons.add_photo_alternate_outlined),
                   label: Text(
-                        _photos.length >= widget.maxPhotos
-                            ? 'Limite de ${widget.maxPhotos} imagens'
-                            : 'Adicionar imagem',
+                    _photos.length >= widget.maxPhotos
+                        ? 'Limite de ${widget.maxPhotos} imagens'
+                        : 'Adicionar imagem',
                   ),
                   style: FilledButton.styleFrom(
                     backgroundColor: context.nexusTheme.accentSecondary,
-                    disabledBackgroundColor:
-                        context.nexusTheme.accentSecondary.withValues(alpha: 0.45),
+                    disabledBackgroundColor: context.nexusTheme.accentSecondary
+                        .withValues(alpha: 0.45),
                     padding: EdgeInsets.symmetric(vertical: r.s(14)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(r.s(12)),

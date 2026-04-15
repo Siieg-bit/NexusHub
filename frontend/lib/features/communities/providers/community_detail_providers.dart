@@ -20,7 +20,8 @@ final communityDetailProvider =
 final communityFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
-      .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+      .select(
+          '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
       .eq('community_id', communityId)
       .eq('status', 'ok')
       .order('is_pinned', ascending: false)
@@ -62,7 +63,8 @@ final communityFeaturedFeedProvider =
 final pinnedFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
-      .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+      .select(
+          '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
       .eq('community_id', communityId)
       .eq('status', 'ok')
       .eq('is_pinned', true)
@@ -84,7 +86,8 @@ final pinnedFeedProvider =
 final activeFeaturedFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
-      .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+      .select(
+          '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
       .eq('community_id', communityId)
       .eq('status', 'ok')
       .eq('is_featured', true)
@@ -113,7 +116,8 @@ final activeFeaturedFeedProvider =
 final archivedFeaturedFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
-      .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+      .select(
+          '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
       .eq('community_id', communityId)
       .eq('status', 'ok')
       .eq('is_pinned', false)
@@ -137,7 +141,8 @@ final archivedFeaturedFeedProvider =
 final latestFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
-      .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+      .select(
+          '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
       .eq('community_id', communityId)
       .eq('status', 'ok')
       .eq('is_pinned', false)
@@ -173,7 +178,8 @@ Future<void> _injectCommunityAuthorIdentity(
 
   try {
     final membershipsRes = await SupabaseService.table('community_members')
-        .select('user_id, local_nickname, local_icon_url, local_banner_url, local_level')
+        .select(
+            'user_id, local_nickname, local_icon_url, local_banner_url, local_level')
         .eq('community_id', communityId)
         .inFilter('user_id', authorIds);
 
@@ -194,16 +200,18 @@ Future<void> _injectCommunityAuthorIdentity(
       post['author_local_banner_url'] = membership['local_banner_url'];
 
       final currentAuthor = Map<String, dynamic>.from(
-        (post['author'] ?? post['profiles'] ?? const <String, dynamic>{}) as Map,
+        (post['author'] ?? post['profiles'] ?? const <String, dynamic>{})
+            as Map,
       );
       // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
       final localNickname = (membership['local_nickname'] as String?)?.trim();
       final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
-      final localBannerUrl = (membership['local_banner_url'] as String?)?.trim();
+      final localBannerUrl =
+          (membership['local_banner_url'] as String?)?.trim();
 
-      if (localNickname != null) currentAuthor['nickname'] = localNickname;
-      if (localIconUrl != null) currentAuthor['icon_url'] = localIconUrl;
-      if (localBannerUrl != null) currentAuthor['banner_url'] = localBannerUrl;
+      currentAuthor['nickname'] = localNickname;
+      currentAuthor['icon_url'] = localIconUrl;
+      currentAuthor['banner_url'] = localBannerUrl;
 
       post['author'] = currentAuthor;
       post['profiles'] = currentAuthor;
@@ -259,9 +267,9 @@ final communityMembersProvider =
     final localIconUrl = (member['local_icon_url'] as String?)?.trim();
     final localBannerUrl = (member['local_banner_url'] as String?)?.trim();
 
-    if (localNickname != null) profile['nickname'] = localNickname;
-    if (localIconUrl != null) profile['icon_url'] = localIconUrl;
-    if (localBannerUrl != null) profile['banner_url'] = localBannerUrl;
+    profile['nickname'] = localNickname;
+    profile['icon_url'] = localIconUrl;
+    profile['banner_url'] = localBannerUrl;
 
     member['profiles'] = profile;
   }
@@ -347,8 +355,8 @@ const Map<String, dynamic> defaultLayout = {
 };
 
 /// Guidelines da comunidade (tabela guidelines)
-final guidelinesProvider =
-    FutureProvider.family<Map<String, dynamic>?, String>((ref, communityId) async {
+final guidelinesProvider = FutureProvider.family<Map<String, dynamic>?, String>(
+    (ref, communityId) async {
   try {
     final response = await SupabaseService.table('guidelines')
         .select('title, content, updated_at')

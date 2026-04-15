@@ -105,7 +105,7 @@ Future<void> _enrichAuthorData(Map<String, dynamic> map) async {
       );
       currentAuthor['nickname'] = localNickname;
       currentAuthor['icon_url'] = localIconUrl;
-      if (localBannerUrl != null) currentAuthor['banner_url'] = localBannerUrl;
+      currentAuthor['banner_url'] = localBannerUrl;
 
       map['author'] = currentAuthor;
       map['profiles'] = currentAuthor;
@@ -144,19 +144,22 @@ Future<List<Map<String, dynamic>>> _injectIsLiked(
 
 List<Map<String, dynamic>> _normalizeMediaList(dynamic rawMediaList) {
   if (rawMediaList is List) {
-    return rawMediaList.map((item) {
-      if (item is Map<String, dynamic>) {
-        return Map<String, dynamic>.from(item);
-      }
-      if (item is Map) {
-        return Map<String, dynamic>.from(item);
-      }
-      final url = item?.toString() ?? '';
-      return {
-        'url': url,
-        'type': 'image',
-      };
-    }).where((item) => (item['url'] as String?)?.isNotEmpty == true).toList();
+    return rawMediaList
+        .map((item) {
+          if (item is Map<String, dynamic>) {
+            return Map<String, dynamic>.from(item);
+          }
+          if (item is Map) {
+            return Map<String, dynamic>.from(item);
+          }
+          final url = item?.toString() ?? '';
+          return {
+            'url': url,
+            'type': 'image',
+          };
+        })
+        .where((item) => (item['url'] as String?)?.isNotEmpty == true)
+        .toList();
   }
   return const [];
 }
@@ -489,9 +492,10 @@ final pinnedPostsProvider = FutureProvider.family<List<PostModel>, String>(
   },
 );
 
-final activeFeaturedPostsProvider = FutureProvider.family<List<PostModel>, String>(
+final activeFeaturedPostsProvider =
+    FutureProvider.family<List<PostModel>, String>(
   (ref, communityId) async {
-     final res = await SupabaseService.table('posts')
+    final res = await SupabaseService.table('posts')
         .select(_kPostSelect)
         .eq('community_id', communityId)
         .eq('is_featured', true)
@@ -531,5 +535,6 @@ final latestPostsProvider = FutureProvider.family<List<PostModel>, String>(
 );
 
 final featuredPostsProvider = FutureProvider.family<List<PostModel>, String>(
-  (ref, communityId) => ref.watch(activeFeaturedPostsProvider(communityId).future),
+  (ref, communityId) =>
+      ref.watch(activeFeaturedPostsProvider(communityId).future),
 );

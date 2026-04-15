@@ -30,8 +30,8 @@ final allCommunityMembersProvider =
     // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
     final localNickname = (member['local_nickname'] as String?)?.trim();
     final localIconUrl = (member['local_icon_url'] as String?)?.trim();
-    if (localNickname != null) profile['nickname'] = localNickname;
-    if (localIconUrl != null) profile['icon_url'] = localIconUrl;
+    profile['nickname'] = localNickname;
+    profile['icon_url'] = localIconUrl;
     member['profiles'] = profile;
   }
   return members;
@@ -94,7 +94,7 @@ class CommunityMembersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     final membersAsync = ref.watch(allCommunityMembersProvider(communityId));
 
@@ -104,7 +104,8 @@ class CommunityMembersScreen extends ConsumerWidget {
         backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: context.nexusTheme.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded,
+              color: context.nexusTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: Text(
@@ -317,7 +318,7 @@ class _MemberTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     final profile = member['profiles'] as Map<String, dynamic>? ?? {};
     final userId = profile['id'] as String? ?? member['user_id'] as String?;

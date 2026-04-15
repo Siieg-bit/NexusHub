@@ -111,27 +111,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
       if (membership == null) return map;
 
-      final localNickname =
-          (membership['local_nickname'] as String?)?.trim();
-      final localIconUrl =
-          (membership['local_icon_url'] as String?)?.trim();
+      final localNickname = (membership['local_nickname'] as String?)?.trim();
+      final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
       final localBannerUrl =
           (membership['local_banner_url'] as String?)?.trim();
 
       final mergedAuthor = Map<String, dynamic>.from(
-        (map['author'] ?? map['sender'] ?? map['profiles'] ?? const <String, dynamic>{})
-            as Map,
+        (map['author'] ??
+            map['sender'] ??
+            map['profiles'] ??
+            const <String, dynamic>{}) as Map,
       );
 
-      if (localNickname != null && localNickname.isNotEmpty) {
-        mergedAuthor['nickname'] = localNickname;
-      }
-      if (localIconUrl != null && localIconUrl.isNotEmpty) {
-        mergedAuthor['icon_url'] = localIconUrl;
-      }
-      if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
-        mergedAuthor['banner_url'] = localBannerUrl;
-      }
+      mergedAuthor['nickname'] = localNickname;
+      mergedAuthor['icon_url'] = localIconUrl;
+      mergedAuthor['banner_url'] = localBannerUrl;
 
       map['profiles'] = mergedAuthor;
       map['sender'] = mergedAuthor;
@@ -144,6 +138,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
     return map;
   }
+
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   final Map<String, GlobalKey> _messageKeys = {};
@@ -238,7 +233,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _jumpToMessage(String messageId) async {
-    final targetIndex = _messages.indexWhere((message) => message.id == messageId);
+    final targetIndex =
+        _messages.indexWhere((message) => message.id == messageId);
     if (targetIndex == -1) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -365,7 +361,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           if ((pendingMembers as List?)?.isNotEmpty == true) {
             _isDmInviteSender = true;
             _membershipConfirmed = true; // Remetente pode enviar mensagens
-            debugPrint('[ChatRoom] User is DM invite sender, waiting for acceptance');
+            debugPrint(
+                '[ChatRoom] User is DM invite sender, waiting for acceptance');
             return;
           }
         } catch (e) {
@@ -469,18 +466,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           final dmMemberList =
               List<Map<String, dynamic>>.from(dmMembers as List? ?? []);
           if (dmMemberList.isNotEmpty) {
-            final counterpartMap = Map<String, dynamic>.from(dmMemberList.first);
+            final counterpartMap =
+                Map<String, dynamic>.from(dmMemberList.first);
             final counterpartUserId = counterpartMap['user_id'] as String?;
             final profile = _extractProfile(counterpartMap['profiles']);
             if (profile != null) {
               final mergedProfile = Map<String, dynamic>.from(profile);
-              final communityId = (threadInfo['community_id'] as String?)?.trim();
+              final communityId =
+                  (threadInfo['community_id'] as String?)?.trim();
 
               if (communityId != null &&
                   communityId.isNotEmpty &&
                   counterpartUserId != null) {
                 try {
-                  final membership = await SupabaseService.table('community_members')
+                  final membership = await SupabaseService.table(
+                          'community_members')
                       .select(
                           'local_nickname, local_icon_url, local_banner_url')
                       .eq('community_id', communityId)
@@ -496,22 +496,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     final localBannerUrl =
                         (localMap['local_banner_url'] as String?)?.trim();
 
-                    if (localNickname != null && localNickname.isNotEmpty) {
-                      mergedProfile['nickname'] = localNickname;
-                    }
-                    if (localIconUrl != null && localIconUrl.isNotEmpty) {
-                      mergedProfile['icon_url'] = localIconUrl;
-                    }
-                    if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
-                      mergedProfile['banner_url'] = localBannerUrl;
-                    }
+                    mergedProfile['nickname'] = localNickname;
+                    mergedProfile['icon_url'] = localIconUrl;
+                    mergedProfile['banner_url'] = localBannerUrl;
                   }
                 } catch (e) {
                   debugPrint('[ChatRoom] Erro ao aplicar identidade local: $e');
                 }
               }
 
-              threadInfo['title'] = mergedProfile['nickname'] ?? threadInfo['title'];
+              threadInfo['title'] =
+                  mergedProfile['nickname'] ?? threadInfo['title'];
               threadInfo['icon_url'] = mergedProfile['icon_url'];
               threadInfo['host_id'] = mergedProfile['id'] ??
                   counterpartUserId ??
@@ -664,7 +659,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted && !_isDisposed) {
         setState(() {
           _chatCoverUrl = threadData['cover_image_url'] as String?;
-          _isAnnouncementOnly = threadData['is_announcement_only'] as bool? ?? false;
+          _isAnnouncementOnly =
+              threadData['is_announcement_only'] as bool? ?? false;
         });
       }
       // Role do usuário atual
@@ -679,8 +675,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           final hostId = _threadInfo?['host_id'] as String?;
           final coHosts = _threadInfo?['co_hosts'] as List?;
           String? role = memberData?['role'] as String?;
-          if (userId == hostId) role = 'host';
-          else if (coHosts != null && coHosts.contains(userId)) role = 'co_host';
+          if (userId == hostId)
+            role = 'host';
+          else if (coHosts != null && coHosts.contains(userId))
+            role = 'co_host';
           setState(() => _callerRole = role ?? 'member');
         }
       }
@@ -731,8 +729,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   await _normalizeMessageAuthorIdentity(newMessage);
               if (_isDisposed || !mounted) return;
               final message = MessageModel.fromJson(normalizedMessage);
-              final shouldAutoScroll =
-                  _isNearBottom() || message.authorId == SupabaseService.currentUserId;
+              final shouldAutoScroll = _isNearBottom() ||
+                  message.authorId == SupabaseService.currentUserId;
               setState(() {
                 _messages.insert(0, message);
                 if (!shouldAutoScroll) {
@@ -1025,8 +1023,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         setState(() => _isSending = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(s.couldNotConfirmParticipation),
+            content: Text(s.couldNotConfirmParticipation),
             backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -1081,8 +1078,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         if (mediaDuration != null) 'p_media_duration': mediaDuration,
         'p_reply_to': replyToId,
         if (stickerId != null) 'p_sticker_id': stickerId,
-        if (stickerUrl != null && stickerUrl.isNotEmpty) 'p_sticker_url': stickerUrl,
-        if (stickerName != null && stickerName.isNotEmpty) 'p_sticker_name': stickerName,
+        if (stickerUrl != null && stickerUrl.isNotEmpty)
+          'p_sticker_url': stickerUrl,
+        if (stickerName != null && stickerName.isNotEmpty)
+          'p_sticker_name': stickerName,
         if (packId != null && packId.isNotEmpty) 'p_pack_id': packId,
       };
 
@@ -1101,7 +1100,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         if (errorStr.contains('not a member')) {
           errorMsg = s.notMemberChatRetry;
           _membershipConfirmed = false;
-        } else if (errorStr.contains('unauthenticated') || errorStr.contains('session')) {
+        } else if (errorStr.contains('unauthenticated') ||
+            errorStr.contains('session')) {
           errorMsg = s.sessionExpiredPleaseLogInAgain;
         } else {
           // Mostrar erro técnico completo para diagnóstico
@@ -1209,7 +1209,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             _settingsTile(r, Icons.notifications_rounded, s.notifications, () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
-                 SnackBar(
+                SnackBar(
                   content: Text(s.notificationSettingsComingSoon),
                   backgroundColor: context.nexusTheme.accentPrimary,
                   behavior: SnackBarBehavior.floating,
@@ -1319,7 +1319,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 'p_item_type': itemType,
               },
             );
-            debugPrint('[EquipBubble] RPC result: $result (${result.runtimeType})');
+            debugPrint(
+                '[EquipBubble] RPC result: $result (${result.runtimeType})');
             final resultMap =
                 result is Map ? Map<String, dynamic>.from(result) : null;
             final ok = resultMap?['success'] as bool? ?? false;
@@ -1335,7 +1336,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   content: Text(ok
                       ? (equipped ? 'Bubble equipado!' : 'Bubble removido.')
                       : 'Não foi possível atualizar o bubble.'),
-                  backgroundColor: ok ? context.nexusTheme.accentPrimary : context.nexusTheme.error,
+                  backgroundColor: ok
+                      ? context.nexusTheme.accentPrimary
+                      : context.nexusTheme.error,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(r.s(10)),
@@ -1377,7 +1380,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             borderRadius: BorderRadius.circular(r.s(16))),
         title: Text(s.leaveChatTitle,
             style: TextStyle(
-                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
+                color: context.nexusTheme.textPrimary,
+                fontWeight: FontWeight.w700)),
         content: Text(s.confirmLeaveChat,
             style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14))),
         actions: [
@@ -1392,7 +1396,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             },
             child: Text(s.logout,
                 style: TextStyle(
-                    color: context.nexusTheme.error, fontWeight: FontWeight.w700)),
+                    color: context.nexusTheme.error,
+                    fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -1431,7 +1436,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       debugPrint('[ChatRoom] leave_public_chat RPC error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(s.errorLeavingChat),
             backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
@@ -1456,7 +1461,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           debugPrint('[chat_room_screen.dart] $e');
         }
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(s.chatDeletedMsg),
             backgroundColor: context.nexusTheme.accentPrimary,
             behavior: SnackBarBehavior.floating,
@@ -1468,7 +1473,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       debugPrint('[ChatRoom] delete_public_chat RPC error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(s.errorDeletingChat),
             backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
@@ -1489,9 +1494,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             borderRadius: BorderRadius.circular(r.s(16))),
         title: Text(s.deleteChatTitle,
             style: TextStyle(
-                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
-        content: Text(
-            s.confirmDeleteChat2,
+                color: context.nexusTheme.textPrimary,
+                fontWeight: FontWeight.w700)),
+        content: Text(s.confirmDeleteChat2,
             style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14))),
         actions: [
           TextButton(
@@ -1505,7 +1510,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             },
             child: Text(s.delete,
                 style: TextStyle(
-                    color: context.nexusTheme.error, fontWeight: FontWeight.w700)),
+                    color: context.nexusTheme.error,
+                    fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -1530,10 +1536,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       final rawBytes = await image.readAsBytes();
       final bytes = await MediaUtils.compressImage(rawBytes);
       debugPrint('[ChatRoom] 🖼️ Uploading image: $path');
-      await SupabaseService.storage
-          .from('chat-media')
-          .uploadBinary(path, bytes,
-              fileOptions: const FileOptions(contentType: 'image/jpeg'));
+      await SupabaseService.storage.from('chat-media').uploadBinary(path, bytes,
+          fileOptions: const FileOptions(contentType: 'image/jpeg'));
       final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
       debugPrint('[ChatRoom] ✅ Image uploaded: $url');
       await _sendMessage(type: 'image', mediaUrl: url, mediaType: 'image');
@@ -1860,20 +1864,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             borderRadius: BorderRadius.circular(r.s(16))),
         title: Text(s.shareLinkTitle,
             style: TextStyle(
-                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
+                color: context.nexusTheme.textPrimary,
+                fontWeight: FontWeight.w700)),
         content:
             _dialogInput(linkCtrl, 'https://...', icon: Icons.link_rounded),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child:
-                  Text(s.cancel, style: TextStyle(color: Colors.grey[500]))),
+              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500]))),
           ElevatedButton(
             onPressed: () {
               final url = linkCtrl.text;
               Navigator.pop(ctx);
               // Bug fix: Future.microtask para evitar dirty widget in wrong build scope
-              Future.microtask(() => _sendMessage(type: 'link', sharedUrl: url));
+              Future.microtask(
+                  () => _sendMessage(type: 'link', sharedUrl: url));
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: context.nexusTheme.accentPrimary,
@@ -1900,7 +1905,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       ),
       child: TextField(
         controller: controller,
-        style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(13)),
+        style: TextStyle(
+            color: context.nexusTheme.textPrimary, fontSize: r.fs(13)),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(color: Colors.grey[700], fontSize: r.fs(13)),
@@ -1927,7 +1933,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             borderRadius: BorderRadius.circular(r.s(16))),
         title: Text(s.editMessage,
             style: TextStyle(
-                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
+                color: context.nexusTheme.textPrimary,
+                fontWeight: FontWeight.w700)),
         content: Container(
           decoration: BoxDecoration(
             color: context.nexusTheme.surfacePrimary,
@@ -1937,7 +1944,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           child: TextField(
             controller: editController,
             autofocus: true,
-            style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
+            style: TextStyle(
+                color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
             decoration: InputDecoration(
               hintText: s.editMessageHint,
               hintStyle: TextStyle(color: Colors.grey[700], fontSize: r.fs(14)),
@@ -2028,7 +2036,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         break;
       case ChatMessageAction.copy:
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(s.copiedMsg),
             backgroundColor: context.nexusTheme.accentPrimary,
           ),
@@ -2099,7 +2107,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         break;
       case ChatMessageAction.report:
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(s.reportSubmittedThankYou),
             backgroundColor: context.nexusTheme.accentPrimary,
           ),
@@ -2167,7 +2175,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     final currentUserId = SupabaseService.currentUserId;
     final threadTitle = _threadInfo?['title'] as String? ?? s.chat;
@@ -2197,7 +2205,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         context: context,
                         threadId: widget.threadId,
                         currentCover: _chatCoverUrl,
-                        canEdit: _callerRole == 'host' || _callerRole == 'co_host',
+                        canEdit:
+                            _callerRole == 'host' || _callerRole == 'co_host',
                         onChanged: (url) {
                           if (mounted) setState(() => _chatCoverUrl = url);
                         },
@@ -2390,7 +2399,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     color: context.nexusTheme.warning.withValues(alpha: 0.08),
                     border: Border(
                       bottom: BorderSide(
-                          color: context.nexusTheme.warning.withValues(alpha: 0.2)),
+                          color: context.nexusTheme.warning
+                              .withValues(alpha: 0.2)),
                     ),
                   ),
                   child: Row(
@@ -2437,8 +2447,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                         color: context.surfaceColor,
                                         shape: BoxShape.circle,
                                       ),
-                                      child: Icon(Icons.chat_bubble_outline_rounded,
-                                          size: r.s(32), color: Colors.grey[700]),
+                                      child: Icon(
+                                          Icons.chat_bubble_outline_rounded,
+                                          size: r.s(32),
+                                          color: Colors.grey[700]),
                                     ),
                                     SizedBox(height: r.s(16)),
                                     Text(s.noMessagesYet,
@@ -2462,15 +2474,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                 itemCount: _messages.length,
                                 itemBuilder: (context, index) {
                                   final message = _messages[index];
-                                  final isMe = message.authorId == currentUserId;
+                                  final isMe =
+                                      message.authorId == currentUserId;
                                   final showAvatar = !message.isSystemMessage;
 
                                   // Separador de data: exibe quando a mensagem atual
                                   // é de um dia diferente da próxima mais antiga.
                                   // Como a lista é reverse: true, index+1 é mais antigo.
-                                  final DateTime? prevDate = index < _messages.length - 1
-                                      ? _messages[index + 1].createdAt
-                                      : null;
+                                  final DateTime? prevDate =
+                                      index < _messages.length - 1
+                                          ? _messages[index + 1].createdAt
+                                          : null;
                                   final showDateSep = shouldShowDateSeparator(
                                       message.createdAt, prevDate);
 
@@ -2485,7 +2499,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         if (showDateSep)
-                                          ChatDateSeparator(date: message.createdAt),
+                                          ChatDateSeparator(
+                                              date: message.createdAt),
                                         AnimatedContainer(
                                           key: messageKey,
                                           duration:
@@ -2494,11 +2509,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                           margin: EdgeInsets.symmetric(
                                               vertical: r.s(2)),
                                           padding: EdgeInsets.all(
-                                            isReplyTargetHighlighted ? r.s(4) : 0,
+                                            isReplyTargetHighlighted
+                                                ? r.s(4)
+                                                : 0,
                                           ),
                                           decoration: BoxDecoration(
                                             color: isReplyTargetHighlighted
-                                                ? context.nexusTheme.accentPrimary
+                                                ? context
+                                                    .nexusTheme.accentPrimary
                                                     .withValues(alpha: 0.12)
                                                 : Colors.transparent,
                                             borderRadius:
@@ -2507,7 +2525,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                                 ? Border.all(
                                                     color: context.nexusTheme
                                                         .accentPrimary
-                                                        .withValues(alpha: 0.35),
+                                                        .withValues(
+                                                            alpha: 0.35),
                                                   )
                                                 : null,
                                           ),
@@ -2519,13 +2538,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                               isMe: isMe,
                                               showAvatar: showAvatar,
                                               showAuthorName:
-                                                  (_threadInfo?['type'] as String? ??
+                                                  (_threadInfo?['type']
+                                                              as String? ??
                                                           'group') !=
                                                       'dm',
                                               onReactionTap: (emoji) =>
-                                                  _addReaction(message.id, emoji),
-                                              communityId: _threadInfo?['community_id']
-                                                  as String?,
+                                                  _addReaction(
+                                                      message.id, emoji),
+                                              communityId:
+                                                  _threadInfo?['community_id']
+                                                      as String?,
                                               repliedMessage: repliedMessage,
                                               onReplyTap: repliedMessage == null
                                                   ? null
@@ -2558,7 +2580,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                               duration: const Duration(milliseconds: 180),
                               curve: Curves.easeOutCubic,
                               padding: EdgeInsets.symmetric(
-                                horizontal: r.s(_unseenMessagesCount > 0 ? 12 : 10),
+                                horizontal:
+                                    r.s(_unseenMessagesCount > 0 ? 12 : 10),
                                 vertical: r.s(10),
                               ),
                               decoration: BoxDecoration(
@@ -2639,10 +2662,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 padding: EdgeInsets.symmetric(
                     horizontal: r.s(16), vertical: r.s(14)),
                 decoration: BoxDecoration(
-                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
+                  color:
+                      context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
                   border: Border(
                       top: BorderSide(
-                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2))),
+                          color: context.nexusTheme.accentPrimary
+                              .withValues(alpha: 0.2))),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -2651,7 +2676,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     Row(
                       children: [
                         Icon(Icons.mail_rounded,
-                            color: context.nexusTheme.accentPrimary, size: r.s(18)),
+                            color: context.nexusTheme.accentPrimary,
+                            size: r.s(18)),
                         SizedBox(width: r.s(8)),
                         Expanded(
                           child: Text(
@@ -2684,13 +2710,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                       context.pop();
                                     }
                                   } catch (e) {
-                                    debugPrint('[ChatRoom] decline invite error: $e');
+                                    debugPrint(
+                                        '[ChatRoom] decline invite error: $e');
                                     if (mounted) {
                                       setState(() => _isSending = false);
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         SnackBar(
-                                          content: const Text('Erro ao recusar convite.'),
-                                          backgroundColor: context.nexusTheme.error,
+                                          content: const Text(
+                                              'Erro ao recusar convite.'),
+                                          backgroundColor:
+                                              context.nexusTheme.error,
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -2729,22 +2759,29 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                       });
                                       ref.invalidate(chatListProvider);
                                       ref.invalidate(chatCommunitiesProvider);
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         SnackBar(
-                                          content: const Text('Convite aceito! Agora você pode conversar.'),
-                                          backgroundColor: context.nexusTheme.accentPrimary,
+                                          content: const Text(
+                                              'Convite aceito! Agora você pode conversar.'),
+                                          backgroundColor:
+                                              context.nexusTheme.accentPrimary,
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
                                     }
                                   } catch (e) {
-                                    debugPrint('[ChatRoom] accept invite error: $e');
+                                    debugPrint(
+                                        '[ChatRoom] accept invite error: $e');
                                     if (mounted) {
                                       setState(() => _isSending = false);
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         SnackBar(
-                                          content: const Text('Erro ao aceitar convite.'),
-                                          backgroundColor: context.nexusTheme.error,
+                                          content: const Text(
+                                              'Erro ao aceitar convite.'),
+                                          backgroundColor:
+                                              context.nexusTheme.error,
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -2813,9 +2850,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(16), vertical: r.s(12)),
                   decoration: BoxDecoration(
-                    color:
-                        (isPublic ? context.nexusTheme.accentPrimary : Colors.grey[700]!)
-                            .withValues(alpha: 0.08),
+                    color: (isPublic
+                            ? context.nexusTheme.accentPrimary
+                            : Colors.grey[700]!)
+                        .withValues(alpha: 0.08),
                     border: Border(
                         top: BorderSide(
                             color: (isPublic
@@ -2863,7 +2901,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                       }
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
-                                         SnackBar(
+                                        SnackBar(
                                           content: Text(s.joinedChat),
                                           backgroundColor:
                                               context.nexusTheme.accentPrimary,
@@ -2878,10 +2916,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                       setState(() => _isSending = false);
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
-                                         SnackBar(
-                                          content: Text(
-                                              s.errorJoiningChat),
-                                          backgroundColor: context.nexusTheme.error,
+                                        SnackBar(
+                                          content: Text(s.errorJoiningChat),
+                                          backgroundColor:
+                                              context.nexusTheme.error,
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -2958,8 +2996,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       final file = File(filePath);
                       final fileName =
                           'voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
-                      final storagePath =
-                          'audio/${widget.threadId}/$fileName';
+                      final storagePath = 'audio/${widget.threadId}/$fileName';
                       debugPrint('[ChatRoom] 🎤 Uploading audio: $storagePath');
                       await SupabaseService.client.storage
                           .from('chat-media')
@@ -3013,8 +3050,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 onSend: () => _sendMessage(),
                 onEmojiToggle: () =>
                     setState(() => _showEmojiPicker = !_showEmojiPicker),
-                onAudioTap: () =>
-                    setState(() => _isRecordingVoice = true),
+                onAudioTap: () => setState(() => _isRecordingVoice = true),
                 onTextChanged: _onTextChanged,
               ),
 
@@ -3114,13 +3150,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             backgroundColor: context.surfaceColor,
             title: Text(s.nameLink,
                 style: TextStyle(
-                    color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
+                    color: context.nexusTheme.textPrimary,
+                    fontWeight: FontWeight.w700)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(s.nameLinkOptional,
-                    style:
-                        TextStyle(color: context.nexusTheme.textSecondary, fontSize: 13)),
+                    style: TextStyle(
+                        color: context.nexusTheme.textSecondary, fontSize: 13)),
                 const SizedBox(height: 8),
                 TextField(
                   controller: nameCtrl,
@@ -3193,7 +3230,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 decoration: BoxDecoration(
                   color: context.nexusTheme.warning,
                   shape: BoxShape.circle,
-                  border: Border.all(color: context.nexusTheme.backgroundPrimary, width: 1.5),
+                  border: Border.all(
+                      color: context.nexusTheme.backgroundPrimary, width: 1.5),
                 ),
                 constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
                 child: Text(
@@ -3220,11 +3258,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         children: [
           Icon(icon,
               size: r.s(18),
-              color: isDestructive ? context.nexusTheme.error : Colors.grey[400]),
+              color:
+                  isDestructive ? context.nexusTheme.error : Colors.grey[400]),
           SizedBox(width: r.s(10)),
           Text(label,
               style: TextStyle(
-                  color: isDestructive ? context.nexusTheme.error : Colors.grey[300],
+                  color: isDestructive
+                      ? context.nexusTheme.error
+                      : Colors.grey[300],
                   fontSize: r.fs(13))),
         ],
       ),
@@ -3329,7 +3370,8 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                 ? '$nickname removido de co-admin'
                 : '$nickname é agora co-admin'),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: isCurrentlyCoHost ? Colors.grey[700] : Colors.green[700],
+            backgroundColor:
+                isCurrentlyCoHost ? Colors.grey[700] : Colors.green[700],
           ),
         );
       }
@@ -3367,7 +3409,8 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: context.nexusTheme.error),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: context.nexusTheme.error),
             child: const Text('Remover', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -3434,8 +3477,8 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                   borderRadius: BorderRadius.circular(2)),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: r.s(16), vertical: r.s(10)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(10)),
               child: Text(
                 nickname,
                 style: TextStyle(
@@ -3448,16 +3491,13 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
             // Tornar / Remover co-admin
             ListTile(
               leading: Icon(
-                isCoHost
-                    ? Icons.shield_outlined
-                    : Icons.shield_rounded,
+                isCoHost ? Icons.shield_outlined : Icons.shield_rounded,
                 color: isCoHost ? Colors.grey : Colors.amber[600],
               ),
               title: Text(
                 isCoHost ? 'Remover co-admin' : 'Tornar co-admin',
                 style: TextStyle(
-                    color: context.nexusTheme.textPrimary,
-                    fontSize: r.fs(14)),
+                    color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
               ),
               subtitle: Text(
                 isCoHost
@@ -3479,8 +3519,7 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                   color: context.nexusTheme.error),
               title: Text('Remover do chat',
                   style: TextStyle(
-                      color: context.nexusTheme.error,
-                      fontSize: r.fs(14))),
+                      color: context.nexusTheme.error, fontSize: r.fs(14))),
               onTap: () {
                 Navigator.pop(ctx);
                 _kickMember(userId, nickname);
@@ -3530,8 +3569,8 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                       color: context.nexusTheme.textPrimary)),
               const Spacer(),
               Text('${_members.length}',
-                  style: TextStyle(
-                      color: Colors.grey[500], fontSize: r.fs(13))),
+                  style:
+                      TextStyle(color: Colors.grey[500], fontSize: r.fs(13))),
             ],
           ),
         ),
@@ -3539,8 +3578,7 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
           child: _isLoading
               ? Center(
                   child: CircularProgressIndicator(
-                      color: context.nexusTheme.accentPrimary,
-                      strokeWidth: 2))
+                      color: context.nexusTheme.accentPrimary, strokeWidth: 2))
               : _members.isEmpty
                   ? Center(
                       child: Text(s.noMemberFound,
@@ -3589,8 +3627,8 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                             decoration: BoxDecoration(
                               border: Border(
                                 bottom: BorderSide(
-                                    color: Colors.white
-                                        .withValues(alpha: 0.05)),
+                                    color:
+                                        Colors.white.withValues(alpha: 0.05)),
                               ),
                             ),
                             child: Row(
@@ -3603,8 +3641,7 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                                           .nexusTheme.accentPrimary
                                           .withValues(alpha: 0.2),
                                       backgroundImage: iconUrl != null
-                                          ? CachedNetworkImageProvider(
-                                              iconUrl)
+                                          ? CachedNetworkImageProvider(iconUrl)
                                           : null,
                                       child: iconUrl == null
                                           ? Text(
@@ -3612,10 +3649,9 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                                                   ? nickname[0].toUpperCase()
                                                   : '?',
                                               style: TextStyle(
-                                                  color: context.nexusTheme
-                                                      .accentPrimary,
-                                                  fontWeight:
-                                                      FontWeight.w700))
+                                                  color: context
+                                                      .nexusTheme.accentPrimary,
+                                                  fontWeight: FontWeight.w700))
                                           : null,
                                     ),
                                     if (chatRole != null)
@@ -3651,13 +3687,15 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
                                     children: [
                                       Text(nickname,
                                           style: TextStyle(
-                                              color:
-                                                  context.nexusTheme.textPrimary,
+                                              color: context
+                                                  .nexusTheme.textPrimary,
                                               fontWeight: FontWeight.w500,
                                               fontSize: r.fs(14))),
                                       if (chatRole != null)
                                         Text(
-                                          chatRole == 'host' ? 'Host' : 'Co-admin',
+                                          chatRole == 'host'
+                                              ? 'Host'
+                                              : 'Co-admin',
                                           style: TextStyle(
                                             color: _roleColor(chatRole),
                                             fontSize: r.fs(11),
@@ -3703,7 +3741,8 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
 class _BubblePickerSheet extends ConsumerStatefulWidget {
   /// Callback chamado quando o usuário toca em um bubble.
   /// Recebe o [purchaseId] e o [itemType] para passar ao RPC equip_store_item.
-  final Future<void> Function(String purchaseId, String itemType) onBubbleSelected;
+  final Future<void> Function(String purchaseId, String itemType)
+      onBubbleSelected;
 
   const _BubblePickerSheet({required this.onBubbleSelected});
 
@@ -3879,8 +3918,8 @@ class _BubblePickerSheetState extends ConsumerState<_BubblePickerSheet> {
                       r: r,
                       name: 'Padrão',
                       subtitle: 'Bubble padrão do app',
-                      isEquipped: _ownedBubbles.every(
-                          (b) => !(b['is_equipped'] as bool? ?? false)),
+                      isEquipped: _ownedBubbles
+                          .every((b) => !(b['is_equipped'] as bool? ?? false)),
                       isBusy: false,
                       previewWidget: _DefaultBubblePreview(r: r),
                       onTap: () async {
@@ -3904,17 +3943,25 @@ class _BubblePickerSheetState extends ConsumerState<_BubblePickerSheet> {
                   final assetConfig =
                       bubble['asset_config'] as Map<String, dynamic>? ?? {};
                   final imageUrl = (assetConfig['bubble_url'] as String?)
-                      ?.trim()
-                      .isNotEmpty == true
+                              ?.trim()
+                              .isNotEmpty ==
+                          true
                       ? assetConfig['bubble_url'] as String
-                      : (assetConfig['image_url'] as String?)?.trim().isNotEmpty == true
+                      : (assetConfig['image_url'] as String?)
+                                  ?.trim()
+                                  .isNotEmpty ==
+                              true
                           ? assetConfig['image_url'] as String
-                          : (bubble['preview_url'] as String?)?.trim().isNotEmpty == true
+                          : (bubble['preview_url'] as String?)
+                                      ?.trim()
+                                      .isNotEmpty ==
+                                  true
                               ? bubble['preview_url'] as String
                               : null;
                   final bubbleColor = _parseColor(
                       assetConfig['bubble_color'] as String? ??
-                          assetConfig['color'] as String? ?? '');
+                          assetConfig['color'] as String? ??
+                          '');
                   final isEquipped = bubble['is_equipped'] as bool? ?? false;
                   final purchaseId = bubble['purchase_id'] as String? ?? '';
                   final isBusy = _busyPurchaseId == purchaseId;
@@ -4050,8 +4097,7 @@ class _DefaultBubblePreview extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        padding: EdgeInsets.symmetric(
-            horizontal: r.s(12), vertical: r.s(8)),
+        padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
         decoration: BoxDecoration(
           color: context.nexusTheme.accentPrimary,
           borderRadius: const BorderRadius.only(
@@ -4275,13 +4321,12 @@ class _PollCreatorDialogState extends State<_PollCreatorDialog> {
     final accent = context.nexusTheme.accentPrimary;
     return AlertDialog(
       backgroundColor: context.surfaceColor,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(r.s(16))),
+      shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
       title: Text(
         s.createPoll,
         style: TextStyle(
-            color: context.nexusTheme.textPrimary,
-            fontWeight: FontWeight.w700),
+            color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700),
       ),
       content: SizedBox(
         width: double.maxFinite,
@@ -4295,8 +4340,7 @@ class _PollCreatorDialogState extends State<_PollCreatorDialog> {
                 controller: _questionCtrl,
                 maxLength: 200,
                 style: TextStyle(
-                    color: context.nexusTheme.textPrimary,
-                    fontSize: r.fs(14)),
+                    color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
                 decoration: InputDecoration(
                   hintText: s.question,
                   hintStyle: TextStyle(
@@ -4347,8 +4391,7 @@ class _PollCreatorDialogState extends State<_PollCreatorDialog> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(r.s(8)),
-                              borderSide:
-                                  BorderSide(color: accent, width: 1.5),
+                              borderSide: BorderSide(color: accent, width: 1.5),
                             ),
                             counterText: '',
                             contentPadding: EdgeInsets.symmetric(
@@ -4376,8 +4419,7 @@ class _PollCreatorDialogState extends State<_PollCreatorDialog> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.add_rounded,
-                            size: r.s(16), color: accent),
+                        Icon(Icons.add_rounded, size: r.s(16), color: accent),
                         SizedBox(width: r.s(4)),
                         Text(
                           s.addOptionLabel,
@@ -4397,8 +4439,7 @@ class _PollCreatorDialogState extends State<_PollCreatorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(s.cancel,
-              style: TextStyle(color: Colors.grey[500])),
+          child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
         ),
         ElevatedButton(
           onPressed: _submit,

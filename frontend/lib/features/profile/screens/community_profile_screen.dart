@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/community_profile_service.dart';
 import '../../../core/services/presence_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/providers/dm_invite_provider.dart';
@@ -45,7 +46,8 @@ class CommunityProfileScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<CommunityProfileScreen> createState() => _CommunityProfileScreenState();
+  ConsumerState<CommunityProfileScreen> createState() =>
+      _CommunityProfileScreenState();
 }
 
 class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
@@ -68,7 +70,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   String? _communityBannerUrl;
 
   bool get _isOwnProfile => widget.userId == SupabaseService.currentUserId;
-  Map<String, dynamic>? _myMembership; // membership do usuário logado na comunidade
+  Map<String, dynamic>?
+      _myMembership; // membership do usuário logado na comunidade
 
   // Banner rotativo
   int _bannerIndex = 0;
@@ -102,7 +105,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
 
     void addUrl(String? rawUrl) {
       final normalized = rawUrl?.trim();
-      if (normalized == null || normalized.isEmpty || urls.contains(normalized)) {
+      if (normalized == null ||
+          normalized.isEmpty ||
+          urls.contains(normalized)) {
         return;
       }
       urls.add(normalized);
@@ -157,47 +162,17 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         debugPrint('[community_profile_screen.dart] $e');
       }
 
+      if (_isOwnProfile) {
+        await CommunityProfileService.ensureMyCommunityProfile(
+            widget.communityId);
+      }
+
       // Membership na comunidade (do usuário alvo)
       final memberRes = await SupabaseService.table('community_members')
           .select()
           .eq('user_id', widget.userId)
           .eq('community_id', widget.communityId)
           .maybeSingle();
-
-      if (_isOwnProfile && memberRes != null) {
-        final profileSeed = <String, dynamic>{};
-        final localNickname = (memberRes['local_nickname'] as String?)?.trim();
-        final localBio = (memberRes['local_bio'] as String?)?.trim();
-        final localIconUrl = (memberRes['local_icon_url'] as String?)?.trim();
-        final localBannerUrl = (memberRes['local_banner_url'] as String?)?.trim();
-
-        if ((localNickname == null || localNickname.isEmpty) &&
-            (_user?.nickname.trim().isNotEmpty ?? false)) {
-          profileSeed['local_nickname'] = _user!.nickname.trim();
-        }
-        if ((localBio == null || localBio.isEmpty) &&
-            (_user?.bio.trim().isNotEmpty ?? false)) {
-          profileSeed['local_bio'] = _user!.bio.trim();
-        }
-        if ((localIconUrl == null || localIconUrl.isEmpty) &&
-            (_user?.iconUrl?.trim().isNotEmpty ?? false)) {
-          profileSeed['local_icon_url'] = _user!.iconUrl!.trim();
-        }
-        if ((localBannerUrl == null || localBannerUrl.isEmpty) &&
-            (_user?.bannerUrl?.trim().isNotEmpty ?? false)) {
-          profileSeed['local_banner_url'] = _user!.bannerUrl!.trim();
-        }
-
-        if (profileSeed.isNotEmpty) {
-          try {
-            await SupabaseService.table('community_members')
-                .update(profileSeed)
-                .eq('user_id', widget.userId)
-                .eq('community_id', widget.communityId);
-            memberRes.addAll(profileSeed);
-          } catch (_) {}
-        }
-      }
 
       _membership = memberRes;
 
@@ -230,7 +205,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
 
       // Posts do usuário na comunidade
       final postsRes = await SupabaseService.table('posts')
-          .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+          .select(
+              '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
           .eq('author_id', widget.userId)
           .eq('community_id', widget.communityId)
           .eq('status', 'ok')
@@ -278,12 +254,14 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       if (!mounted) return;
       setState(() {
         _isInitialLoading = false;
-        _savedPostsLoaded = false; // força recarregar posts salvos na próxima vez
+        _savedPostsLoaded =
+            false; // força recarregar posts salvos na próxima vez
         _bannerIndex = 0; // reinicia o índice ao recarregar
       });
       // Iniciar timer de banner rotativo se houver galeria
       final rawGallery = _membership?['local_gallery'] as List<dynamic>?;
-      final gallery = rawGallery?.map((e) => e.toString()).toList() ?? <String>[];
+      final gallery =
+          rawGallery?.map((e) => e.toString()).toList() ?? <String>[];
       _startBannerTimer(gallery);
     } catch (e) {
       if (mounted) setState(() => _isInitialLoading = false);
@@ -304,7 +282,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            nextOffline ? 'Status alterado para offline' : 'Status alterado para online',
+            nextOffline
+                ? 'Status alterado para offline'
+                : 'Status alterado para online',
           ),
         ),
       );
@@ -327,7 +307,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_isInitialLoading) {
       return Scaffold(
@@ -349,10 +329,13 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final localIconUrl = _membership?['local_icon_url'] as String?;
     final localBannerUrl = _membership?['local_banner_url'] as String?;
     final localBio = _membership?['local_bio'] as String?;
-    final localBackgroundUrl = (_membership?['local_background_url'] as String?)?.trim();
-    final localBackgroundColor = (_membership?['local_background_color'] as String?)?.trim();
+    final localBackgroundUrl =
+        (_membership?['local_background_url'] as String?)?.trim();
+    final localBackgroundColor =
+        (_membership?['local_background_color'] as String?)?.trim();
     final rawGallery = _membership?['local_gallery'] as List<dynamic>?;
-    final displayGallery = rawGallery?.map((e) => e.toString()).toList() ?? <String>[];
+    final displayGallery =
+        rawGallery?.map((e) => e.toString()).toList() ?? <String>[];
 
     Color? parseProfileBackgroundColor(String? rawColor) {
       if (rawColor == null || rawColor.trim().isEmpty) return null;
@@ -398,12 +381,15 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             ? 'há ${_user!.lastActiveBucketMinutes} minutos'
             : s.offline);
     final isPremium = _user?.isPremium ?? false;
-    final displayName =
-        (localNickname?.trim().isNotEmpty ?? false) ? localNickname!.trim() : (_user?.nickname ?? s.user);
-    final displayAvatar =
-        (localIconUrl?.trim().isNotEmpty ?? false) ? localIconUrl!.trim() : null;
-    final displayBanner =
-        (localBannerUrl?.trim().isNotEmpty ?? false) ? localBannerUrl!.trim() : null;
+    final displayName = (localNickname?.trim().isNotEmpty ?? false)
+        ? localNickname!.trim()
+        : s.user;
+    final displayAvatar = (localIconUrl?.trim().isNotEmpty ?? false)
+        ? localIconUrl!.trim()
+        : null;
+    final displayBanner = (localBannerUrl?.trim().isNotEmpty ?? false)
+        ? localBannerUrl!.trim()
+        : null;
     final displayBio =
         (localBio?.trim().isNotEmpty ?? false) ? localBio!.trim() : '';
     final profileMediaUrls = _buildProfileMediaUrls(
@@ -426,7 +412,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         (titles.isNotEmpty ? r.s(40) : 0) +
         (roleTitle != null ? r.s(28) : 0);
 
-    final effectiveBgColor = dynamicBgColor ?? context.nexusTheme.backgroundPrimary;
+    final effectiveBgColor =
+        dynamicBgColor ?? context.nexusTheme.backgroundPrimary;
     final layeredBgColor = hasProfileBackgroundImage
         ? effectiveBgColor.withValues(alpha: 0.84)
         : effectiveBgColor;
@@ -475,892 +462,942 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             ),
           ),
           RefreshIndicator(
-        color: context.nexusTheme.accentPrimary,
-        backgroundColor: context.surfaceColor,
-        onRefresh: _loadProfile,
-        edgeOffset: 0,
-        displacement: 60,
-        notificationPredicate: (notification) => true,
-        child: NestedScrollView(
-          floatHeaderSlivers: true,
-          physics: const AlwaysScrollableScrollPhysics(),
-          headerSliverBuilder: (context, innerBoxIsScrolled) => [
-            // ================================================================
-            // HEADER — Banner + Avatar + Nome + Level + Tags + Botões
-            //          + Conquistas/Moedas (tudo dentro do FlexibleSpaceBar)
-            // ================================================================
-            SliverAppBar(
-              expandedHeight: expandedHeight,
-              pinned: true,
-              backgroundColor: layeredBgColor,
-              elevation: 0,
-              leading: IconButton(
-                icon: Icon(Icons.arrow_back_ios_rounded,
-                    color: Colors.white, size: r.s(20)),
-                onPressed: () => context.pop(),
-              ),
-              actions: [
-                // Online indicator — texto direto estilo Amino (sem chip)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: r.s(8),
-                      height: r.s(8),
-                      decoration: BoxDecoration(
-                        color: isOnline
-                            ? const Color(0xFF4CAF50)
-                            : Colors.grey[500],
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    SizedBox(width: r.s(5)),
-                    Text(
-                      presenceLabel,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: r.fs(13),
-                        fontWeight: FontWeight.w600,
-                        shadows: const [
-                          Shadow(
-                            color: Colors.black54,
-                            blurRadius: 4,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: r.s(4)),
-                  ],
-                ),
-                IconButton(
-                  icon: Icon(Icons.more_horiz_rounded,
-                      color: Colors.white, size: r.s(22)),
-                  onPressed: () => _showOptions(context),
-                ),
-              ],
-              flexibleSpace: FlexibleSpaceBar(
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // ── Banner background (galeria rotativa ou banner estático) ──
-                    // A galeria tem prioridade: cada imagem é exibida como capa
-                    // alternando com fade a cada 20 segundos.
-                    if (activeBannerUrl != null)
-                      GestureDetector(
-                        onTap: () => _openProfileMediaViewer(
-                          context,
-                          mediaUrls: profileMediaUrls,
-                          initialUrl: activeBannerUrl,
-                          heroTag: 'community-profile-media-${widget.communityId}-${widget.userId}',
-                        ),
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 800),
-                          transitionBuilder: (child, animation) =>
-                              FadeTransition(opacity: animation, child: child),
-                          child: CachedNetworkImage(
-                            key: ValueKey(activeBannerUrl),
-                            imageUrl: activeBannerUrl,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                            color: Colors.black.withValues(alpha: 0.20),
-                            colorBlendMode: BlendMode.darken,
-                            errorWidget: (_, __, ___) => displayBanner != null
-                                ? CachedNetworkImage(
-                                    imageUrl: displayBanner,
-                                    fit: BoxFit.cover,
-                                    color: Colors.black.withValues(alpha: 0.25),
-                                    colorBlendMode: BlendMode.darken,
-                                    errorWidget: (_, __, ___) => _defaultBannerGradient(),
-                                  )
-                                : _defaultBannerGradient(),
+            color: context.nexusTheme.accentPrimary,
+            backgroundColor: context.surfaceColor,
+            onRefresh: _loadProfile,
+            edgeOffset: 0,
+            displacement: 60,
+            notificationPredicate: (notification) => true,
+            child: NestedScrollView(
+              floatHeaderSlivers: true,
+              physics: const AlwaysScrollableScrollPhysics(),
+              headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                // ================================================================
+                // HEADER — Banner + Avatar + Nome + Level + Tags + Botões
+                //          + Conquistas/Moedas (tudo dentro do FlexibleSpaceBar)
+                // ================================================================
+                SliverAppBar(
+                  expandedHeight: expandedHeight,
+                  pinned: true,
+                  backgroundColor: layeredBgColor,
+                  elevation: 0,
+                  leading: IconButton(
+                    icon: Icon(Icons.arrow_back_ios_rounded,
+                        color: Colors.white, size: r.s(20)),
+                    onPressed: () => context.pop(),
+                  ),
+                  actions: [
+                    // Online indicator — texto direto estilo Amino (sem chip)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: r.s(8),
+                          height: r.s(8),
+                          decoration: BoxDecoration(
+                            color: isOnline
+                                ? const Color(0xFF4CAF50)
+                                : Colors.grey[500],
+                            shape: BoxShape.circle,
                           ),
                         ),
-                      )
-                    else if (displayBanner != null)
-                      GestureDetector(
-                        onTap: () => _openProfileMediaViewer(
-                          context,
-                          mediaUrls: profileMediaUrls,
-                          initialUrl: displayBanner,
-                          heroTag: 'community-profile-media-${widget.communityId}-${widget.userId}',
-                        ),
-                        child: CachedNetworkImage(
-                          imageUrl: displayBanner,
-                          fit: BoxFit.cover,
-                          color: Colors.black.withValues(alpha: 0.25),
-                          colorBlendMode: BlendMode.darken,
-                          errorWidget: (_, __, ___) => _defaultBannerGradient(),
-                        ),
-                      )
-                    else
-                      _defaultBannerGradient(),
-
-                    // ── Gradient overlay (fade para effectiveBgColor na base) ──
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: r.s(200),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.transparent,
-                              bannerFadeColor.withValues(alpha: 0.7),
-                              bannerFadeColor,
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // ── Conteúdo do perfil (sobre o banner) ──────────────────────
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Avatar centralizado
-                          AvatarWithFrame(
-                            avatarUrl: displayAvatar,
-                            frameUrl: (ref.watch(equippedItemsProvider(widget.userId)).valueOrNull ?? {})['frame_url'] as String?,
-                            isFrameAnimated: (ref.watch(equippedItemsProvider(widget.userId)).valueOrNull ?? {})['frame_is_animated'] as bool? ?? false,
-                            size: r.s(96),
-                            showAminoPlus: isPremium,
-                            onTap: profileMediaUrls.isEmpty
-                                ? null
-                                : () => _openProfileMediaViewer(
-                                      context,
-                                      mediaUrls: profileMediaUrls,
-                                      initialUrl: displayAvatar,
-                                      heroTag: 'community-profile-media-${widget.communityId}-${widget.userId}',
-                                    ),
-                          ),
-                          SizedBox(height: r.s(10)),
-
-                          // Nome + badge Amino+
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  displayName,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: r.fs(22),
-                                    fontWeight: FontWeight.w800,
-                                    shadows: const [
-                                      Shadow(
-                                        color: Colors.black54,
-                                        blurRadius: 8,
-                                        offset: Offset(0, 1),
-                                      ),
-                                    ],
-                                  ),
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                        SizedBox(width: r.s(5)),
+                        Text(
+                          presenceLabel,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: r.fs(13),
+                            fontWeight: FontWeight.w600,
+                            shadows: const [
+                              Shadow(
+                                color: Colors.black54,
+                                blurRadius: 4,
                               ),
-                              if (isPremium) ...[
-                                SizedBox(width: r.s(6)),
-                                const AminoPlusBadge(),
-                              ],
                             ],
                           ),
-                          SizedBox(height: r.s(6)),
-
-                          // Level badge — dois containers separados: [lv13] [Best Wizzard]
-                          // Clicável: abre tela de todos os rankings
+                        ),
+                        SizedBox(width: r.s(4)),
+                      ],
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.more_horiz_rounded,
+                          color: Colors.white, size: r.s(22)),
+                      onPressed: () => _showOptions(context),
+                    ),
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // ── Banner background (galeria rotativa ou banner estático) ──
+                        // A galeria tem prioridade: cada imagem é exibida como capa
+                        // alternando com fade a cada 20 segundos.
+                        if (activeBannerUrl != null)
                           GestureDetector(
-                            onTap: () => context.push('/all-rankings', extra: {
-                              'level': level,
-                              'reputation': reputation,
-                              'bannerUrl': _communityBannerUrl,
-                            }),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Badge roxo/azul com "lv" + número
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: r.s(8), vertical: r.s(4)),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.getLevelColor(level),
-                                    borderRadius: BorderRadius.circular(r.s(14)),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        s.drawerLvLabel,
-                                        style: TextStyle(
-                                          color: Colors.white
-                                              .withValues(alpha: 0.85),
-                                          fontSize: r.fs(10),
-                                          fontWeight: FontWeight.w600,
+                            onTap: () => _openProfileMediaViewer(
+                              context,
+                              mediaUrls: profileMediaUrls,
+                              initialUrl: activeBannerUrl,
+                              heroTag:
+                                  'community-profile-media-${widget.communityId}-${widget.userId}',
+                            ),
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 800),
+                              transitionBuilder: (child, animation) =>
+                                  FadeTransition(
+                                      opacity: animation, child: child),
+                              child: CachedNetworkImage(
+                                key: ValueKey(activeBannerUrl),
+                                imageUrl: activeBannerUrl,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: double.infinity,
+                                color: Colors.black.withValues(alpha: 0.20),
+                                colorBlendMode: BlendMode.darken,
+                                errorWidget: (_, __, ___) =>
+                                    displayBanner != null
+                                        ? CachedNetworkImage(
+                                            imageUrl: displayBanner,
+                                            fit: BoxFit.cover,
+                                            color: Colors.black
+                                                .withValues(alpha: 0.25),
+                                            colorBlendMode: BlendMode.darken,
+                                            errorWidget: (_, __, ___) =>
+                                                _defaultBannerGradient(),
+                                          )
+                                        : _defaultBannerGradient(),
+                              ),
+                            ),
+                          )
+                        else if (displayBanner != null)
+                          GestureDetector(
+                            onTap: () => _openProfileMediaViewer(
+                              context,
+                              mediaUrls: profileMediaUrls,
+                              initialUrl: displayBanner,
+                              heroTag:
+                                  'community-profile-media-${widget.communityId}-${widget.userId}',
+                            ),
+                            child: CachedNetworkImage(
+                              imageUrl: displayBanner,
+                              fit: BoxFit.cover,
+                              color: Colors.black.withValues(alpha: 0.25),
+                              colorBlendMode: BlendMode.darken,
+                              errorWidget: (_, __, ___) =>
+                                  _defaultBannerGradient(),
+                            ),
+                          )
+                        else
+                          _defaultBannerGradient(),
+
+                        // ── Gradient overlay (fade para effectiveBgColor na base) ──
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: r.s(200),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.transparent,
+                                  bannerFadeColor.withValues(alpha: 0.7),
+                                  bannerFadeColor,
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // ── Conteúdo do perfil (sobre o banner) ──────────────────────
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Avatar centralizado
+                              AvatarWithFrame(
+                                avatarUrl: displayAvatar,
+                                frameUrl: (ref
+                                        .watch(equippedItemsProvider(
+                                            widget.userId))
+                                        .valueOrNull ??
+                                    {})['frame_url'] as String?,
+                                isFrameAnimated: (ref
+                                            .watch(equippedItemsProvider(
+                                                widget.userId))
+                                            .valueOrNull ??
+                                        {})['frame_is_animated'] as bool? ??
+                                    false,
+                                size: r.s(96),
+                                showAminoPlus: isPremium,
+                                onTap: profileMediaUrls.isEmpty
+                                    ? null
+                                    : () => _openProfileMediaViewer(
+                                          context,
+                                          mediaUrls: profileMediaUrls,
+                                          initialUrl: displayAvatar,
+                                          heroTag:
+                                              'community-profile-media-${widget.communityId}-${widget.userId}',
                                         ),
+                              ),
+                              SizedBox(height: r.s(10)),
+
+                              // Nome + badge Amino+
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      displayName,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: r.fs(22),
+                                        fontWeight: FontWeight.w800,
+                                        shadows: const [
+                                          Shadow(
+                                            color: Colors.black54,
+                                            blurRadius: 8,
+                                            offset: Offset(0, 1),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        '$level',
+                                      textAlign: TextAlign.center,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (isPremium) ...[
+                                    SizedBox(width: r.s(6)),
+                                    const AminoPlusBadge(),
+                                  ],
+                                ],
+                              ),
+                              SizedBox(height: r.s(6)),
+
+                              // Level badge — dois containers separados: [lv13] [Best Wizzard]
+                              // Clicável: abre tela de todos os rankings
+                              GestureDetector(
+                                onTap: () =>
+                                    context.push('/all-rankings', extra: {
+                                  'level': level,
+                                  'reputation': reputation,
+                                  'bannerUrl': _communityBannerUrl,
+                                }),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Badge roxo/azul com "lv" + número
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: r.s(8), vertical: r.s(4)),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.getLevelColor(level),
+                                        borderRadius:
+                                            BorderRadius.circular(r.s(14)),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            s.drawerLvLabel,
+                                            style: TextStyle(
+                                              color: Colors.white
+                                                  .withValues(alpha: 0.85),
+                                              fontSize: r.fs(10),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          Text(
+                                            '$level',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: r.fs(14),
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(width: r.s(6)),
+                                    // Badge cinza escuro com título do level
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: r.s(10),
+                                          vertical: r.s(4)),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[800],
+                                        borderRadius:
+                                            BorderRadius.circular(r.s(14)),
+                                      ),
+                                      child: Text(
+                                        title,
                                         style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: r.fs(14),
-                                          fontWeight: FontWeight.w900,
+                                          fontSize: r.fs(12),
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                                SizedBox(width: r.s(6)),
-                                // Badge cinza escuro com título do level
+                              ),
+
+                              // Role badge (Líder/Curador) separado
+                              if (roleTitle != null) ...[
+                                SizedBox(height: r.s(4)),
                                 Container(
                                   padding: EdgeInsets.symmetric(
                                       horizontal: r.s(10), vertical: r.s(4)),
                                   decoration: BoxDecoration(
-                                    color: Colors.grey[800],
-                                    borderRadius: BorderRadius.circular(r.s(14)),
+                                    color: Colors.white.withValues(alpha: 0.15),
+                                    borderRadius:
+                                        BorderRadius.circular(r.s(12)),
                                   ),
                                   child: Text(
-                                    title,
+                                    roleTitle,
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: r.fs(12),
+                                      fontSize: r.fs(11),
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
                               ],
-                            ),
-                          ),
+                              SizedBox(height: r.s(8)),
 
-                          // Role badge (Líder/Curador) separado
-                          if (roleTitle != null) ...[
-                            SizedBox(height: r.s(4)),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: r.s(10), vertical: r.s(4)),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(r.s(12)),
-                              ),
-                              child: Text(
-                                roleTitle,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: r.fs(11),
-                                  fontWeight: FontWeight.w700,
+                              // Custom titles (tags/chips coloridas)
+                              if (titles.isNotEmpty)
+                                Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: r.s(24)),
+                                  child: AminoCustomTitleList(
+                                    titles: titles,
+                                    maxVisible: 6,
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ],
-                          SizedBox(height: r.s(8)),
+                              SizedBox(height: r.s(10)),
 
-                          // Custom titles (tags/chips coloridas)
-                          if (titles.isNotEmpty)
-                            Padding(
-                              padding:
-                                  EdgeInsets.symmetric(horizontal: r.s(24)),
-                              child: AminoCustomTitleList(
-                                titles: titles,
-                                maxVisible: 6,
-                              ),
-                            ),
-                          SizedBox(height: r.s(10)),
-
-                          // Botão Editar (próprio) / Friends + Chat (outro)
-                          if (_isOwnProfile)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                GestureDetector(
-                                  onTap: () => context.push(
-                                      '/community/${widget.communityId}/profile/edit')
-                                      .then((_) => _loadProfile()),
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(28), vertical: r.s(9)),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(r.s(6)),
-                                      border: Border.all(
-                                        color: Colors.white.withValues(alpha: 0.35),
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.edit_rounded,
-                                            size: r.s(14), color: Colors.white),
-                                        SizedBox(width: r.s(6)),
-                                        Text(
-                                          s.edit,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: r.fs(14),
+                              // Botão Editar (próprio) / Friends + Chat (outro)
+                              if (_isOwnProfile)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => context
+                                          .push(
+                                              '/community/${widget.communityId}/profile/edit')
+                                          .then((_) => _loadProfile()),
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: r.s(28),
+                                            vertical: r.s(9)),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(r.s(6)),
+                                          border: Border.all(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.35),
+                                            width: 1.5,
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: r.s(10)),
-                                GestureDetector(
-                                  onTap: _isUpdatingManualPresence
-                                      ? null
-                                      : _toggleManualPresence,
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(18), vertical: r.s(9)),
-                                    decoration: BoxDecoration(
-                                      color: isManualOffline
-                                          ? Colors.grey.withValues(alpha: 0.20)
-                                          : const Color(0xFF4CAF50).withValues(alpha: 0.18),
-                                      borderRadius: BorderRadius.circular(r.s(6)),
-                                      border: Border.all(
-                                        color: isManualOffline
-                                            ? Colors.grey.shade400
-                                            : const Color(0xFF4CAF50),
-                                        width: 1.4,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (_isUpdatingManualPresence)
-                                          SizedBox(
-                                            width: r.s(14),
-                                            height: r.s(14),
-                                            child: const CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white,
-                                            ),
-                                          )
-                                        else
-                                          Icon(
-                                            isManualOffline
-                                                ? Icons.visibility_off_rounded
-                                                : Icons.circle,
-                                            size: r.s(14),
-                                            color: Colors.white,
-                                          ),
-                                        SizedBox(width: r.s(6)),
-                                        Text(
-                                          isManualOffline ? 'Aparecer online' : 'Ficar offline',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: r.fs(13),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )
-                          else
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                // Botão Seguir/Seguindo
-                                GestureDetector(
-                                  onTap: _isTogglingFollow
-                                      ? null
-                                      : () => _toggleFollow(context),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(16), vertical: r.s(8)),
-                                    decoration: BoxDecoration(
-                                      color: _isFollowing
-                                          ? Colors.transparent
-                                          : const Color(0xFFFF9800),
-                                      borderRadius:
-                                          BorderRadius.circular(r.s(20)),
-                                      border: _isFollowing
-                                          ? Border.all(
-                                              color: const Color(0xFFFF9800),
-                                              width: 1.5)
-                                          : null,
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (_isTogglingFollow)
-                                          SizedBox(
-                                            width: r.s(14),
-                                            height: r.s(14),
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: _isFollowing
-                                                  ? const Color(0xFFFF9800)
-                                                  : Colors.white,
-                                            ),
-                                          )
-                                        else
-                                          Text(
-                                            _isFollowing ? '✓' : '😊',
-                                            style:
-                                                TextStyle(fontSize: r.fs(14)),
-                                          ),
-                                        SizedBox(width: r.s(6)),
-                                        Text(
-                                          _isFollowing
-                                              ? 'Seguindo'
-                                              : 'Seguir',
-                                          style: TextStyle(
-                                            color: _isFollowing
-                                                ? const Color(0xFFFF9800)
-                                                : Colors.white,
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: r.fs(13),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: r.s(10)),
-                                // Botão Chat
-                                GestureDetector(
-                                  onTap: () => _openDm(context),
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(16), vertical: r.s(8)),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.15),
-                                      borderRadius:
-                                          BorderRadius.circular(r.s(20)),
-                                      border: Border.all(
-                                        color:
-                                            Colors.white.withValues(alpha: 0.3),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.chat_bubble_rounded,
-                                            size: r.s(14),
-                                            color: Colors.grey[300]),
-                                        SizedBox(width: r.s(6)),
-                                        Text(
-                                          s.chat,
-                                          style: TextStyle(
-                                            color: Colors.grey[200],
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: r.fs(13),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          SizedBox(height: r.s(12)),
-
-                          // ── CONQUISTAS + MOEDAS BAR (dentro do banner) ──
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: r.s(12)),
-                            child: Row(
-                              children: [
-                                // Conquistas badge
-                                GestureDetector(
-                                  onTap: () => context.push('/achievements', extra: {
-                                    'communityId': widget.communityId,
-                                    'bannerUrl': _communityBannerUrl,
-                                  }),
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(12), vertical: r.s(6)),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          Color(0xFFFF9800),
-                                          Color(0xFFFFB74D)
-                                        ],
-                                      ),
-                                      borderRadius:
-                                          BorderRadius.circular(r.s(16)),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.emoji_events_rounded,
-                                            color: Colors.white, size: r.s(14)),
-                                        SizedBox(width: r.s(4)),
-                                        Text(
-                                          streak > 0
-                                              ? s.streakDaysLabel(streak)
-                                              : s.achievements,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: r.fs(11),
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const Spacer(),
-                                // Moedas badge
-                                GestureDetector(
-                                  onTap: canViewCoins ? () => context.push('/wallet') : null,
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(10), vertical: r.s(6)),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          Color(0xFF2196F3),
-                                          Color(0xFF42A5F5)
-                                        ],
-                                      ),
-                                      borderRadius:
-                                          BorderRadius.circular(r.s(16)),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Container(
-                                          width: r.s(16),
-                                          height: r.s(16),
-                                          decoration: const BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            gradient: LinearGradient(
-                                              colors: [
-                                                Color(0xFFFFD700),
-                                                Color(0xFFFFA500)
-                                              ],
-                                            ),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              'A',
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.edit_rounded,
+                                                size: r.s(14),
+                                                color: Colors.white),
+                                            SizedBox(width: r.s(6)),
+                                            Text(
+                                              s.edit,
                                               style: TextStyle(
                                                 color: Colors.white,
-                                                fontSize: r.fs(9),
-                                                fontWeight: FontWeight.w900,
-                                                height: 1.0,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: r.fs(14),
                                               ),
                                             ),
-                                          ),
+                                          ],
                                         ),
-                                        SizedBox(width: r.s(4)),
-                                        Text(
-                                          canViewCoins
-                                              ? formatCount(coins)
-                                              : s.privateLabel,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: r.fs(12),
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        if (canViewCoins) ...[
-                                          SizedBox(width: r.s(4)),
-                                          Container(
-                                            width: r.s(16),
-                                            height: r.s(16),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white
-                                                  .withValues(alpha: 0.3),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Icon(Icons.add,
-                                                color: Colors.white,
-                                                size: r.s(11)),
-                                          ),
-                                        ],
-                                      ],
+                                      ),
                                     ),
-                                  ),
+                                    SizedBox(width: r.s(10)),
+                                    GestureDetector(
+                                      onTap: _isUpdatingManualPresence
+                                          ? null
+                                          : _toggleManualPresence,
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: r.s(18),
+                                            vertical: r.s(9)),
+                                        decoration: BoxDecoration(
+                                          color: isManualOffline
+                                              ? Colors.grey
+                                                  .withValues(alpha: 0.20)
+                                              : const Color(0xFF4CAF50)
+                                                  .withValues(alpha: 0.18),
+                                          borderRadius:
+                                              BorderRadius.circular(r.s(6)),
+                                          border: Border.all(
+                                            color: isManualOffline
+                                                ? Colors.grey.shade400
+                                                : const Color(0xFF4CAF50),
+                                            width: 1.4,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (_isUpdatingManualPresence)
+                                              SizedBox(
+                                                width: r.s(14),
+                                                height: r.s(14),
+                                                child:
+                                                    const CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: Colors.white,
+                                                ),
+                                              )
+                                            else
+                                              Icon(
+                                                isManualOffline
+                                                    ? Icons
+                                                        .visibility_off_rounded
+                                                    : Icons.circle,
+                                                size: r.s(14),
+                                                color: Colors.white,
+                                              ),
+                                            SizedBox(width: r.s(6)),
+                                            Text(
+                                              isManualOffline
+                                                  ? 'Aparecer online'
+                                                  : 'Ficar offline',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: r.fs(13),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              else
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    // Botão Seguir/Seguindo
+                                    GestureDetector(
+                                      onTap: _isTogglingFollow
+                                          ? null
+                                          : () => _toggleFollow(context),
+                                      child: AnimatedContainer(
+                                        duration:
+                                            const Duration(milliseconds: 200),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: r.s(16),
+                                            vertical: r.s(8)),
+                                        decoration: BoxDecoration(
+                                          color: _isFollowing
+                                              ? Colors.transparent
+                                              : const Color(0xFFFF9800),
+                                          borderRadius:
+                                              BorderRadius.circular(r.s(20)),
+                                          border: _isFollowing
+                                              ? Border.all(
+                                                  color:
+                                                      const Color(0xFFFF9800),
+                                                  width: 1.5)
+                                              : null,
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (_isTogglingFollow)
+                                              SizedBox(
+                                                width: r.s(14),
+                                                height: r.s(14),
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: _isFollowing
+                                                      ? const Color(0xFFFF9800)
+                                                      : Colors.white,
+                                                ),
+                                              )
+                                            else
+                                              Text(
+                                                _isFollowing ? '✓' : '😊',
+                                                style: TextStyle(
+                                                    fontSize: r.fs(14)),
+                                              ),
+                                            SizedBox(width: r.s(6)),
+                                            Text(
+                                              _isFollowing
+                                                  ? 'Seguindo'
+                                                  : 'Seguir',
+                                              style: TextStyle(
+                                                color: _isFollowing
+                                                    ? const Color(0xFFFF9800)
+                                                    : Colors.white,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: r.fs(13),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: r.s(10)),
+                                    // Botão Chat
+                                    GestureDetector(
+                                      onTap: () => _openDm(context),
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: r.s(16),
+                                            vertical: r.s(8)),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.15),
+                                          borderRadius:
+                                              BorderRadius.circular(r.s(20)),
+                                          border: Border.all(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.3),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.chat_bubble_rounded,
+                                                size: r.s(14),
+                                                color: Colors.grey[300]),
+                                            SizedBox(width: r.s(6)),
+                                            Text(
+                                              s.chat,
+                                              style: TextStyle(
+                                                color: Colors.grey[200],
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: r.fs(13),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: r.s(12)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                              SizedBox(height: r.s(12)),
 
-            // ================================================================
-            // STATS — 3 colunas: Reputação | Seguindo | Seguidores
-            // ================================================================
-            SliverToBoxAdapter(
-              child: Container(
-                color: layeredBgColor,
-                padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
-                child: Row(
-                  children: [
-                    // Reputação
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Text(
-                            formatCount(reputation),
-                            style: TextStyle(
-                              color: context.nexusTheme.textPrimary,
-                              fontSize: r.fs(28),
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            s.reputation,
-                            style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: r.fs(12),
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Seguindo
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => context.push(
-                            '/user/${widget.userId}/followers?tab=following'),
-                        child: Column(
-                          children: [
-                            Text(
-                              formatCount(_followingCount),
-                              style: TextStyle(
-                                color: context.nexusTheme.textPrimary,
-                                fontSize: r.fs(28),
-                                fontWeight: FontWeight.w900,
+                              // ── CONQUISTAS + MOEDAS BAR (dentro do banner) ──
+                              Padding(
+                                padding:
+                                    EdgeInsets.symmetric(horizontal: r.s(12)),
+                                child: Row(
+                                  children: [
+                                    // Conquistas badge
+                                    GestureDetector(
+                                      onTap: () =>
+                                          context.push('/achievements', extra: {
+                                        'communityId': widget.communityId,
+                                        'bannerUrl': _communityBannerUrl,
+                                      }),
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: r.s(12),
+                                            vertical: r.s(6)),
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              Color(0xFFFF9800),
+                                              Color(0xFFFFB74D)
+                                            ],
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(r.s(16)),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.emoji_events_rounded,
+                                                color: Colors.white,
+                                                size: r.s(14)),
+                                            SizedBox(width: r.s(4)),
+                                            Text(
+                                              streak > 0
+                                                  ? s.streakDaysLabel(streak)
+                                                  : s.achievements,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: r.fs(11),
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    // Moedas badge
+                                    GestureDetector(
+                                      onTap: canViewCoins
+                                          ? () => context.push('/wallet')
+                                          : null,
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: r.s(10),
+                                            vertical: r.s(6)),
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              Color(0xFF2196F3),
+                                              Color(0xFF42A5F5)
+                                            ],
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(r.s(16)),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              width: r.s(16),
+                                              height: r.s(16),
+                                              decoration: const BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    Color(0xFFFFD700),
+                                                    Color(0xFFFFA500)
+                                                  ],
+                                                ),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  'A',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: r.fs(9),
+                                                    fontWeight: FontWeight.w900,
+                                                    height: 1.0,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(width: r.s(4)),
+                                            Text(
+                                              canViewCoins
+                                                  ? formatCount(coins)
+                                                  : s.privateLabel,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: r.fs(12),
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                            if (canViewCoins) ...[
+                                              SizedBox(width: r.s(4)),
+                                              Container(
+                                                width: r.s(16),
+                                                height: r.s(16),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.3),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Icon(Icons.add,
+                                                    color: Colors.white,
+                                                    size: r.s(11)),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              s.following,
-                              style: TextStyle(
-                                  color: Colors.grey[500],
-                                  fontSize: r.fs(12),
-                                  fontWeight: FontWeight.w500),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // Seguidores
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () =>
-                            context.push('/user/${widget.userId}/followers'),
-                        child: Column(
-                          children: [
-                            Text(
-                              formatCount(_followersCount),
-                              style: TextStyle(
-                                color: context.nexusTheme.textPrimary,
-                                fontSize: r.fs(28),
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              s.followers,
-                              style: TextStyle(
-                                  color: Colors.grey[500],
-                                  fontSize: r.fs(12),
-                                  fontWeight: FontWeight.w500),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // ================================================================
-            // BIO — "Biografia" + "Membro desde..." + texto + seta expandir
-            // ================================================================
-            SliverToBoxAdapter(
-              child: Container(
-                margin: EdgeInsets.fromLTRB(0, r.s(4), 0, 0),
-                padding:
-                    EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(12)),
-                decoration: BoxDecoration(
-                  color: context.surfaceColor,
-                  border: Border(
-                    top:
-                        BorderSide(color: Colors.white.withValues(alpha: 0.05)),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header: "Biografia" + "Membro desde..."
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Text(
-                          s.biography,
-                          style: TextStyle(
-                            color: context.nexusTheme.textPrimary,
-                            fontSize: r.fs(18),
-                            fontWeight: FontWeight.w800,
+                              SizedBox(height: r.s(12)),
+                            ],
                           ),
                         ),
-                        SizedBox(width: r.s(10)),
-                        if (joinedAt != null)
-                          Expanded(
-                            child: Text(
-                              _memberSinceText(joinedAt),
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: r.fs(11),
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
                       ],
                     ),
-                    SizedBox(height: r.s(10)),
-                    // Bio text + seta para abrir BioAndWallScreen
-                    if (displayBio.isNotEmpty)
-                      GestureDetector(
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => BioAndWallScreen(
-                              userId: widget.userId,
-                              communityId: widget.communityId,
-                              displayName: displayName,
-                              avatarUrl: displayAvatar,
-                              bio: displayBio,
-                              isOwnProfile: _isOwnProfile,
-                            ),
-                          ),
-                        ),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: r.s(12),
-                            vertical: r.s(10),
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.04),
-                            borderRadius: BorderRadius.circular(r.s(16)),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.08),
-                            ),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                  ),
+                ),
+
+                // ================================================================
+                // STATS — 3 colunas: Reputação | Seguindo | Seguidores
+                // ================================================================
+                SliverToBoxAdapter(
+                  child: Container(
+                    color: layeredBgColor,
+                    padding:
+                        EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
+                    child: Row(
+                      children: [
+                        // Reputação
+                        Expanded(
+                          child: Column(
                             children: [
-                              Expanded(
-                                child: RichBioRenderer(
-                                  rawContent: displayBio,
-                                  fontSize: r.fs(14),
-                                  fallbackTextColor: Colors.grey[300],
-                                  maxPreviewLines: 3,
+                              Text(
+                                formatCount(reputation),
+                                style: TextStyle(
+                                  color: context.nexusTheme.textPrimary,
+                                  fontSize: r.fs(28),
+                                  fontWeight: FontWeight.w900,
                                 ),
                               ),
-                              SizedBox(width: r.s(8)),
-                              Icon(
-                                Icons.keyboard_arrow_right_rounded,
-                                color: Colors.grey[500],
-                                size: r.s(20),
+                              const SizedBox(height: 2),
+                              Text(
+                                s.reputation,
+                                style: TextStyle(
+                                    color: Colors.grey[500],
+                                    fontSize: r.fs(12),
+                                    fontWeight: FontWeight.w500),
                               ),
                             ],
                           ),
                         ),
-                      )
-                    else if (_isOwnProfile)
-                      GestureDetector(
-                        onTap: () => context.push(
-                            '/community/${widget.communityId}/profile/edit')
-                            .then((_) => _loadProfile()),
-                        child: Text(
-                          s.tapToAddBio,
-                          style: TextStyle(
-                            color: context.nexusTheme.accentSecondary,
-                            fontSize: r.fs(13),
+                        // Seguindo
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => context.push(
+                                '/user/${widget.userId}/followers?tab=following'),
+                            child: Column(
+                              children: [
+                                Text(
+                                  formatCount(_followingCount),
+                                  style: TextStyle(
+                                    color: context.nexusTheme.textPrimary,
+                                    fontSize: r.fs(28),
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  s.following,
+                                  style: TextStyle(
+                                      color: Colors.grey[500],
+                                      fontSize: r.fs(12),
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      )
-                    else
-                      Text(
-                        s.noBio,
-                        style: TextStyle(
-                            color: Colors.grey[600], fontSize: r.fs(13)),
-                      ),
-                  ],
+                        // Seguidores
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => context
+                                .push('/user/${widget.userId}/followers'),
+                            child: Column(
+                              children: [
+                                Text(
+                                  formatCount(_followersCount),
+                                  style: TextStyle(
+                                    color: context.nexusTheme.textPrimary,
+                                    fontSize: r.fs(28),
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  s.followers,
+                                  style: TextStyle(
+                                      color: Colors.grey[500],
+                                      fontSize: r.fs(12),
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
 
-            // A galeria definida na edição do perfil local é usada apenas
-            // como fonte para a capa/banner rotativo do topo. Ela não deve
-            // ser exibida como seção própria abaixo da biografia.
-
-            // ================================================================
-            // TABS — Posts | Mural | Posts Salvos
-            // ================================================================
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _TabBarDelegate(
-                TabBar(
-                  controller: _tabController,
-                  labelColor: context.nexusTheme.accentPrimary,
-                  unselectedLabelColor: Colors.grey[500],
-                  indicatorColor: Colors.transparent,
-                  dividerColor: Colors.transparent,
-                  indicator: BoxDecoration(
-                    color: Colors.grey[800],
-                    borderRadius: BorderRadius.circular(r.s(8)),
-                  ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  labelStyle: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: r.fs(14),
-                  ),
-                  unselectedLabelStyle: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: r.fs(14),
-                  ),
-                  tabs: [
-                    Tab(
-                      child: Text(
-                        '${s.posts}${_userPosts.isNotEmpty ? ' ${_userPosts.length}' : ''}',
+                // ================================================================
+                // BIO — "Biografia" + "Membro desde..." + texto + seta expandir
+                // ================================================================
+                SliverToBoxAdapter(
+                  child: Container(
+                    margin: EdgeInsets.fromLTRB(0, r.s(4), 0, 0),
+                    padding:
+                        EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(12)),
+                    decoration: BoxDecoration(
+                      color: context.surfaceColor,
+                      border: Border(
+                        top: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.05)),
                       ),
                     ),
-                    Tab(text: s.wall),
-                    Tab(text: s.savedPosts),
-                  ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header: "Biografia" + "Membro desde..."
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              s.biography,
+                              style: TextStyle(
+                                color: context.nexusTheme.textPrimary,
+                                fontSize: r.fs(18),
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            SizedBox(width: r.s(10)),
+                            if (joinedAt != null)
+                              Expanded(
+                                child: Text(
+                                  _memberSinceText(joinedAt),
+                                  style: TextStyle(
+                                    color: Colors.grey[500],
+                                    fontSize: r.fs(11),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                          ],
+                        ),
+                        SizedBox(height: r.s(10)),
+                        // Bio text + seta para abrir BioAndWallScreen
+                        if (displayBio.isNotEmpty)
+                          GestureDetector(
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => BioAndWallScreen(
+                                  userId: widget.userId,
+                                  communityId: widget.communityId,
+                                  displayName: displayName,
+                                  avatarUrl: displayAvatar,
+                                  bio: displayBio,
+                                  isOwnProfile: _isOwnProfile,
+                                ),
+                              ),
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: r.s(12),
+                                vertical: r.s(10),
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.04),
+                                borderRadius: BorderRadius.circular(r.s(16)),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: RichBioRenderer(
+                                      rawContent: displayBio,
+                                      fontSize: r.fs(14),
+                                      fallbackTextColor: Colors.grey[300],
+                                      maxPreviewLines: 3,
+                                    ),
+                                  ),
+                                  SizedBox(width: r.s(8)),
+                                  Icon(
+                                    Icons.keyboard_arrow_right_rounded,
+                                    color: Colors.grey[500],
+                                    size: r.s(20),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        else if (_isOwnProfile)
+                          GestureDetector(
+                            onTap: () => context
+                                .push(
+                                    '/community/${widget.communityId}/profile/edit')
+                                .then((_) => _loadProfile()),
+                            child: Text(
+                              s.tapToAddBio,
+                              style: TextStyle(
+                                color: context.nexusTheme.accentSecondary,
+                                fontSize: r.fs(13),
+                              ),
+                            ),
+                          )
+                        else
+                          Text(
+                            s.noBio,
+                            style: TextStyle(
+                                color: Colors.grey[600], fontSize: r.fs(13)),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
+
+                // A galeria definida na edição do perfil local é usada apenas
+                // como fonte para a capa/banner rotativo do topo. Ela não deve
+                // ser exibida como seção própria abaixo da biografia.
+
+                // ================================================================
+                // TABS — Posts | Mural | Posts Salvos
+                // ================================================================
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _TabBarDelegate(
+                    TabBar(
+                      controller: _tabController,
+                      labelColor: context.nexusTheme.accentPrimary,
+                      unselectedLabelColor: Colors.grey[500],
+                      indicatorColor: Colors.transparent,
+                      dividerColor: Colors.transparent,
+                      indicator: BoxDecoration(
+                        color: Colors.grey[800],
+                        borderRadius: BorderRadius.circular(r.s(8)),
+                      ),
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      labelStyle: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: r.fs(14),
+                      ),
+                      unselectedLabelStyle: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: r.fs(14),
+                      ),
+                      tabs: [
+                        Tab(
+                          child: Text(
+                            '${s.posts}${_userPosts.isNotEmpty ? ' ${_userPosts.length}' : ''}',
+                          ),
+                        ),
+                        Tab(text: s.wall),
+                        Tab(text: s.savedPosts),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              body: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildPostsTab(),
+                  WallCommentSheet(
+                    wallUserId: widget.userId,
+                    isOwnWall: false,
+                    asBottomSheet: false,
+                  ),
+                  _buildSavedPostsTab(),
+                ],
               ),
             ),
-          ],
-          body: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildPostsTab(),
-              WallCommentSheet(
-                wallUserId: widget.userId,
-                isOwnWall: false,
-                asBottomSheet: false,
-              ),
-              _buildSavedPostsTab(),
-            ],
-          ),
-        ),
           ),
         ],
       ),
@@ -1636,7 +1673,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           boxShadow: highlighted
               ? [
                   BoxShadow(
-                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.14),
+                    color: context.nexusTheme.accentPrimary
+                        .withValues(alpha: 0.14),
                     blurRadius: 18,
                     offset: const Offset(0, 6),
                   ),
@@ -1661,7 +1699,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                             vertical: r.s(5),
                           ),
                           decoration: BoxDecoration(
-                            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.14),
+                            color: context.nexusTheme.accentPrimary
+                                .withValues(alpha: 0.14),
                             borderRadius: BorderRadius.circular(r.s(999)),
                           ),
                           child: Row(
@@ -1726,7 +1765,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                               isPinnedProfile
                                   ? 'Desafixar do perfil'
                                   : 'Fixar no perfil',
-                              style: TextStyle(color: context.nexusTheme.textPrimary),
+                              style: TextStyle(
+                                  color: context.nexusTheme.textPrimary),
                             ),
                           ],
                         ),
@@ -1791,7 +1831,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     bool isActive = false,
   }) {
     final r = context.r;
-    final color = isActive ? (activeColor ?? context.nexusTheme.accentPrimary) : Colors.grey[600];
+    final color = isActive
+        ? (activeColor ?? context.nexusTheme.accentPrimary)
+        : Colors.grey[600];
 
     return GestureDetector(
       onTap: onTap,
@@ -1814,7 +1856,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     );
   }
 
-  Future<void> _toggleCommunityProfilePostLike(Map<String, dynamic> post) async {
+  Future<void> _toggleCommunityProfilePostLike(
+      Map<String, dynamic> post) async {
     final postId = post['id'] as String?;
     final currentUserId = SupabaseService.currentUserId;
     if (postId == null || currentUserId == null) {
@@ -1915,7 +1958,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     );
 
     if ((post['author_id'] as String?) == currentUserId) {
-      debugPrint('[community_profile_screen][repost] aborted: own post postId=$postId');
+      debugPrint(
+          '[community_profile_screen][repost] aborted: own post postId=$postId');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Não é possível republicar seu próprio post.'),
@@ -1926,7 +1970,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     }
 
     if ((post['type'] as String?) == 'repost') {
-      debugPrint('[community_profile_screen][repost] aborted: post already is repost postId=$postId');
+      debugPrint(
+          '[community_profile_screen][repost] aborted: post already is repost postId=$postId');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Não é possível republicar um repost.'),
@@ -2026,7 +2071,6 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   // WALL TAB
   // ============================================================================
 
-
   // ============================================================================
   // SAVED POSTS TAB
   // ============================================================================
@@ -2036,7 +2080,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     if (!_savedPostsLoaded) {
       _loadSavedPosts();
       return Center(
-        child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
+        child:
+            CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
       );
     }
 
@@ -2087,11 +2132,12 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         final author = post['profiles'] as Map<String, dynamic>?;
         final postId = post['id'] as String?;
         final authorId = post['author_id'] as String?;
-        final localSelfNickname = (_membership?['local_nickname'] as String?)?.trim();
-        final displayAuthorName =
-            authorId == widget.userId && (localSelfNickname?.isNotEmpty ?? false)
-                ? localSelfNickname!
-                : (author?['nickname'] as String? ?? s.user);
+        final localSelfNickname =
+            (_membership?['local_nickname'] as String?)?.trim();
+        final displayAuthorName = authorId == widget.userId &&
+                (localSelfNickname?.isNotEmpty ?? false)
+            ? localSelfNickname!
+            : (author?['nickname'] as String? ?? s.user);
 
         return GestureDetector(
           onTap: () {
@@ -2279,8 +2325,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           message = s.thisUserDoesNotAcceptDirectMessages;
         } else if (err.contains(s.onlyAcceptsDMs)) {
           message = s.thisUserOnlyAcceptsMessagesFromAllowedProfiles;
-        } else if (err
-            .contains(s.cannotMessageUser)) {
+        } else if (err.contains(s.cannotMessageUser)) {
           message = s.couldNotStartAConversationWithThisUser;
         }
 
@@ -2307,7 +2352,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
           ),
           title: Text(s.unblockUser,
-              style: TextStyle(color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
+              style: TextStyle(
+                  color: context.nexusTheme.textPrimary,
+                  fontWeight: FontWeight.w800)),
           content: Text(s.confirmUnblockUser,
               style: TextStyle(color: Colors.grey[500])),
           actions: [
@@ -2318,7 +2365,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(s.unblock,
-                  style: TextStyle(color: context.nexusTheme.error, fontWeight: FontWeight.w800)),
+                  style: TextStyle(
+                      color: context.nexusTheme.error,
+                      fontWeight: FontWeight.w800)),
             ),
           ],
         ),
@@ -2343,7 +2392,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
           ),
           title: Text(s.blockConfirmTitle,
-              style: TextStyle(color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w800)),
+              style: TextStyle(
+                  color: context.nexusTheme.textPrimary,
+                  fontWeight: FontWeight.w800)),
           content: Text(s.blockConfirmMsg,
               style: TextStyle(color: Colors.grey[500])),
           actions: [
@@ -2354,7 +2405,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(s.block,
-                  style: TextStyle(color: context.nexusTheme.error, fontWeight: FontWeight.w800)),
+                  style: TextStyle(
+                      color: context.nexusTheme.error,
+                      fontWeight: FontWeight.w800)),
             ),
           ],
         ),
@@ -2390,92 +2443,95 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         final canManageRoles = !_isOwnProfile &&
             (myRole == 'agent' || myRole == 'leader' || myRole == 'curator');
         return Padding(
-        padding: EdgeInsets.all(r.s(16)),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: r.s(36),
-              height: r.s(4),
-              margin: EdgeInsets.only(bottom: r.s(16)),
-              decoration: BoxDecoration(
-                color: Colors.grey[700],
-                borderRadius: BorderRadius.circular(2),
+          padding: EdgeInsets.all(r.s(16)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: r.s(36),
+                height: r.s(4),
+                margin: EdgeInsets.only(bottom: r.s(16)),
+                decoration: BoxDecoration(
+                  color: Colors.grey[700],
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            if (canManageRoles)
-              _optionTile(
-                Icons.manage_accounts_rounded,
-                'Gerenciar Cargo',
-                () async {
+              if (canManageRoles)
+                _optionTile(
+                  Icons.manage_accounts_rounded,
+                  'Gerenciar Cargo',
+                  () async {
+                    Navigator.pop(ctx);
+                    final targetRole =
+                        _membership?['role'] as String? ?? 'member';
+                    final targetName = _user?.nickname ?? 'Membro';
+                    String? currentTitle;
+                    try {
+                      final titleRes =
+                          await SupabaseService.table('member_titles')
+                              .select('title')
+                              .eq('community_id', widget.communityId)
+                              .eq('user_id', widget.userId)
+                              .maybeSingle();
+                      currentTitle = titleRes?['title'] as String?;
+                    } catch (_) {}
+                    if (!mounted) return;
+                    final changed = await showMemberRoleManager(
+                      context: context,
+                      ref: ref,
+                      communityId: widget.communityId,
+                      targetUserId: widget.userId,
+                      targetUserName: targetName,
+                      currentRole: targetRole,
+                      currentTitle: currentTitle,
+                      callerRole: _myMembership?['role'] as String? ??
+                          (_isOwnProfile
+                              ? (_membership?['role'] as String? ?? 'member')
+                              : 'member'),
+                    );
+                    if (changed == true && mounted) {
+                      _loadProfile();
+                    }
+                  },
+                ),
+              if (!_isOwnProfile) ...[
+                _optionTile(Icons.flag_rounded, s.report, () {
                   Navigator.pop(ctx);
-                  final targetRole = _membership?['role'] as String? ?? 'member';
-                  final targetName = _user?.nickname ?? 'Membro';
-                  String? currentTitle;
-                  try {
-                    final titleRes = await SupabaseService.table('member_titles')
-                        .select('title')
-                        .eq('community_id', widget.communityId)
-                        .eq('user_id', widget.userId)
-                        .maybeSingle();
-                    currentTitle = titleRes?['title'] as String?;
-                  } catch (_) {}
-                  if (!mounted) return;
-                  final changed = await showMemberRoleManager(
-                    context: context,
-                    ref: ref,
-                    communityId: widget.communityId,
-                    targetUserId: widget.userId,
-                    targetUserName: targetName,
-                    currentRole: targetRole,
-                    currentTitle: currentTitle,
-                    callerRole: _myMembership?['role'] as String? ??
-                        (_isOwnProfile
-                            ? (_membership?['role'] as String? ?? 'member')
-                            : 'member'),
-                  );
-                  if (changed == true && mounted) {
-                    _loadProfile();
-                  }
-                },
-              ),
-            if (!_isOwnProfile) ...[
-              _optionTile(Icons.flag_rounded, s.report, () {
+                }, isDestructive: true),
+                Consumer(
+                  builder: (ctx2, ref2, _) {
+                    final isBlocked =
+                        ref2.watch(isBlockedProvider(widget.userId));
+                    return _optionTile(
+                      isBlocked ? Icons.lock_open_rounded : Icons.block_rounded,
+                      isBlocked ? s.unblockAction : s.block,
+                      () async {
+                        Navigator.pop(ctx);
+                        await _handleBlockToggle(isBlocked);
+                      },
+                      isDestructive: true,
+                    );
+                  },
+                ),
+              ],
+              _optionTile(Icons.share_rounded, s.shareProfile, () {
                 Navigator.pop(ctx);
-              }, isDestructive: true),
-              Consumer(
-                builder: (ctx2, ref2, _) {
-                  final isBlocked = ref2.watch(isBlockedProvider(widget.userId));
-                  return _optionTile(
-                    isBlocked ? Icons.lock_open_rounded : Icons.block_rounded,
-                    isBlocked ? s.unblockAction : s.block,
-                    () async {
-                      Navigator.pop(ctx);
-                      await _handleBlockToggle(isBlocked);
-                    },
-                    isDestructive: true,
+                final link =
+                    'https://nexushub.app/community/${widget.communityId}/profile/${widget.userId}';
+                Clipboard.setData(ClipboardData(text: link));
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(s.profileLinkCopied),
+                      backgroundColor: context.nexusTheme.accentPrimary,
+                      behavior: SnackBarBehavior.floating,
+                    ),
                   );
-                },
-              ),
+                }
+              }),
             ],
-            _optionTile(Icons.share_rounded, s.shareProfile, () {
-              Navigator.pop(ctx);
-              final link =
-                  'https://nexushub.app/community/${widget.communityId}/profile/${widget.userId}';
-              Clipboard.setData(ClipboardData(text: link));
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(s.profileLinkCopied),
-                    backgroundColor: context.nexusTheme.accentPrimary,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              }
-            }),
-          ],
-        ),
-      );
+          ),
+        );
       },
     );
   }
@@ -2568,4 +2624,3 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(covariant _TabBarDelegate oldDelegate) => false;
 }
-

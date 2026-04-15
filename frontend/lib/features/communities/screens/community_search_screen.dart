@@ -22,7 +22,8 @@ class CommunitySearchScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<CommunitySearchScreen> createState() => _CommunitySearchScreenState();
+  ConsumerState<CommunitySearchScreen> createState() =>
+      _CommunitySearchScreenState();
 }
 
 class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
@@ -194,8 +195,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
               final profiles = post['profiles'] as Map<String, dynamic>?;
               if (profiles != null) {
                 final updated = Map<String, dynamic>.from(profiles);
-                if (localNickname != null) updated['nickname'] = localNickname;
-                if (localIconUrl != null) updated['icon_url'] = localIconUrl;
+                updated['nickname'] = localNickname;
+                updated['icon_url'] = localIconUrl;
                 post['profiles'] = updated;
               }
             }
@@ -221,7 +222,10 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
           .limit(20);
       // Unir e deduplicar por user_id
       final memberMap = <String, Map<String, dynamic>>{};
-      for (final e in [...(memberRes1 as List? ?? []), ...(memberRes2 as List? ?? [])]) {
+      for (final e in [
+        ...(memberRes1 as List? ?? []),
+        ...(memberRes2 as List? ?? [])
+      ]) {
         final uid = (e as Map<String, dynamic>)['user_id'] as String?;
         if (uid != null) memberMap[uid] = e;
       }
@@ -229,16 +233,15 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
       _members = (memberRes as List? ?? [])
           .where((e) => e['profiles'] != null)
           .map((e) {
-            final row = e as Map<String, dynamic>;
-            final profile = Map<String, dynamic>.from(row['profiles'] as Map);
-            // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
-            final localNickname = (row['local_nickname'] as String?)?.trim();
-            final localIconUrl = (row['local_icon_url'] as String?)?.trim();
-            if (localNickname != null) profile['nickname'] = localNickname;
-            if (localIconUrl != null) profile['icon_url'] = localIconUrl;
-            return profile;
-          })
-          .toList();
+        final row = e as Map<String, dynamic>;
+        final profile = Map<String, dynamic>.from(row['profiles'] as Map);
+        // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
+        final localNickname = (row['local_nickname'] as String?)?.trim();
+        final localIconUrl = (row['local_icon_url'] as String?)?.trim();
+        profile['nickname'] = localNickname;
+        profile['icon_url'] = localIconUrl;
+        return profile;
+      }).toList();
 
       // Buscar wiki — enriquecer autor com dados locais
       final wikiRes = await SupabaseService.table('wiki_entries')
@@ -281,8 +284,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                   (membership['local_nickname'] as String?)?.trim();
               final localIconUrl =
                   (membership['local_icon_url'] as String?)?.trim();
-              if (localNickname != null) merged['nickname'] = localNickname;
-              if (localIconUrl != null) merged['icon_url'] = localIconUrl;
+              merged['nickname'] = localNickname;
+              merged['icon_url'] = localIconUrl;
               wiki['profiles'] = merged;
             }
           }
@@ -304,7 +307,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.nexusTheme.backgroundPrimary,
@@ -312,7 +315,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
         backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: context.nexusTheme.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded,
+              color: context.nexusTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: _buildSearchField(r),
@@ -332,24 +336,23 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
         ),
       ),
       body: SafeArea(
-        bottom: true,
-        child: Stack(
-          children: [
-            TabBarView(
-              controller: _tabController,
-              children: [
-                _buildPostsTab(r),
-                _buildMembersTab(r),
-                _buildWikiTab(r),
-              ],
-            ),
-            // Overlay de sugestões
-            if (_showSuggestions &&
-                (_suggestions.isNotEmpty || _recentSearches.isNotEmpty))
-              _buildSuggestionsOverlay(r),
-          ],
-        )
-      ),
+          bottom: true,
+          child: Stack(
+            children: [
+              TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildPostsTab(r),
+                  _buildMembersTab(r),
+                  _buildWikiTab(r),
+                ],
+              ),
+              // Overlay de sugestões
+              if (_showSuggestions &&
+                  (_suggestions.isNotEmpty || _recentSearches.isNotEmpty))
+                _buildSuggestionsOverlay(r),
+            ],
+          )),
     );
   }
 
@@ -364,10 +367,12 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
         controller: _searchController,
         focusNode: _focusNode,
         autofocus: true,
-        style: TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
+        style: TextStyle(
+            color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
         decoration: InputDecoration(
           hintText: 'Buscar em ${widget.communityName}...',
-          hintStyle: TextStyle(color: context.nexusTheme.textHint, fontSize: r.fs(14)),
+          hintStyle:
+              TextStyle(color: context.nexusTheme.textHint, fontSize: r.fs(14)),
           prefixIcon: Icon(Icons.search_rounded,
               color: context.nexusTheme.textHint, size: r.s(18)),
           suffixIcon: _query.isNotEmpty
@@ -422,8 +427,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
               ),
               title: Text(
                 items[index],
-                style:
-                    TextStyle(color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
               ),
               onTap: () => _selectSuggestion(items[index]),
             );
@@ -678,7 +683,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                       Text(
                         '$likesCount',
                         style: TextStyle(
-                            color: context.nexusTheme.textHint, fontSize: r.fs(11)),
+                            color: context.nexusTheme.textHint,
+                            fontSize: r.fs(11)),
                       ),
                       SizedBox(width: r.s(8)),
                       Icon(Icons.comment_rounded,
@@ -687,7 +693,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                       Text(
                         '$commentsCount',
                         style: TextStyle(
-                            color: context.nexusTheme.textHint, fontSize: r.fs(11)),
+                            color: context.nexusTheme.textHint,
+                            fontSize: r.fs(11)),
                       ),
                     ],
                   ),
@@ -709,7 +716,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
         ? _buildEmptySearch(r, s.searchCommunityMembers)
         : _isSearching
             ? Center(
-                child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
+                child: CircularProgressIndicator(
+                    color: context.nexusTheme.accentPrimary))
             : _members.isEmpty
                 ? _buildNoResults(r, s.noMemberFound)
                 : ListView.builder(
@@ -727,8 +735,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
     final reputation = member['reputation'] as int? ?? 0;
 
     return InkWell(
-      onTap: () =>
-          context.push('/community/${widget.communityId}/profile/${member["id"]}'),
+      onTap: () => context
+          .push('/community/${widget.communityId}/profile/${member["id"]}'),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
         decoration: BoxDecoration(
@@ -760,7 +768,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                   Text(
                     s.levelAndRep(level, reputation),
                     style: TextStyle(
-                        color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
+                        color: context.nexusTheme.textSecondary,
+                        fontSize: r.fs(12)),
                   ),
                 ],
               ),
@@ -782,7 +791,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
         ? _buildEmptySearch(r, s.searchWikiArticles)
         : _isSearching
             ? Center(
-                child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary))
+                child: CircularProgressIndicator(
+                    color: context.nexusTheme.accentPrimary))
             : _wikis.isEmpty
                 ? _buildNoResults(r, 'Nenhum artigo wiki encontrado')
                 : ListView.builder(
@@ -842,7 +852,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                   Text(
                     preview,
                     style: TextStyle(
-                        color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
+                        color: context.nexusTheme.textSecondary,
+                        fontSize: r.fs(12)),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -851,7 +862,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                     Text(
                       'por ${author["nickname"] ?? ""}',
                       style: TextStyle(
-                          color: context.nexusTheme.textHint, fontSize: r.fs(11)),
+                          color: context.nexusTheme.textHint,
+                          fontSize: r.fs(11)),
                     ),
                   ],
                 ],
@@ -872,11 +884,13 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.search_rounded, color: context.nexusTheme.textHint, size: r.s(48)),
+          Icon(Icons.search_rounded,
+              color: context.nexusTheme.textHint, size: r.s(48)),
           SizedBox(height: r.s(12)),
           Text(
             message,
-            style: TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
+            style: TextStyle(
+                color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
             textAlign: TextAlign.center,
           ),
           if (_recentSearches.isNotEmpty) ...[
@@ -938,7 +952,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
           SizedBox(height: r.s(12)),
           Text(
             message,
-            style: TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
+            style: TextStyle(
+                color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
           ),
           SizedBox(height: r.s(6)),
           Text(
@@ -1027,12 +1042,16 @@ class _SortOption extends ConsumerWidget {
     return ListTile(
       dense: true,
       leading: Icon(icon,
-          color: selected ? context.nexusTheme.accentPrimary : context.nexusTheme.textSecondary,
+          color: selected
+              ? context.nexusTheme.accentPrimary
+              : context.nexusTheme.textSecondary,
           size: r.s(20)),
       title: Text(
         label,
         style: TextStyle(
-          color: selected ? context.nexusTheme.accentPrimary : context.nexusTheme.textPrimary,
+          color: selected
+              ? context.nexusTheme.accentPrimary
+              : context.nexusTheme.textPrimary,
           fontSize: r.fs(14),
           fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
         ),
