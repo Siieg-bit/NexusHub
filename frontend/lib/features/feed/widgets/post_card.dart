@@ -926,10 +926,15 @@ class _PostCardState extends ConsumerState<PostCard>
     if (quizData == null) return const SizedBox.shrink();
     final questions = (quizData['questions'] as List<dynamic>?) ?? [];
     if (questions.isEmpty) return const SizedBox.shrink();
-    final q = questions[0] as Map<String, dynamic>;
-    final qText = q['text'] as String? ?? s.question;
+    final q = Map<String, dynamic>.from(questions[0] as Map);
+    final qText = q['text'] as String? ??
+        q['prompt'] as String? ??
+        q['question_text'] as String? ??
+        s.question;
     final opts = (q['options'] as List<dynamic>?) ?? [];
-    final correctIndex = q['correct_index'] as int? ?? 0;
+    final correctIndex = (q['correct_index'] as num?)?.toInt() ??
+        (q['correct_option_index'] as num?)?.toInt() ??
+        0;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
@@ -969,7 +974,14 @@ class _PostCardState extends ConsumerState<PostCard>
                     color: context.nexusTheme.textPrimary)),
             SizedBox(height: r.s(8)),
             ...List.generate(opts.length, (i) {
-              final optText = opts[i] as String? ?? s.optionNumber(i + 1);
+              final rawOption = opts[i];
+              final optionMap = rawOption is Map
+                  ? Map<String, dynamic>.from(rawOption)
+                  : null;
+              final optText = optionMap?['text'] as String? ??
+                  optionMap?['label'] as String? ??
+                  rawOption?.toString() ??
+                  s.optionNumber(i + 1);
               final isCorrect = i == correctIndex;
               final isSelected = _selectedQuizOption == i;
               Color bgColor = context.nexusTheme.surfacePrimary;
