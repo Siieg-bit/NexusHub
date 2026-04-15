@@ -491,9 +491,81 @@ class _PostCardState extends ConsumerState<PostCard>
     }
   }
 
+  Widget _buildHiddenPostPlaceholder(BuildContext context) {
+    final r = context.r;
+    return Container(
+      margin: EdgeInsets.only(bottom: r.s(10)),
+      decoration: BoxDecoration(
+        color: context.nexusTheme.surfacePrimary,
+        borderRadius: BorderRadius.circular(r.s(12)),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.03),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.showCommunity) _buildCommunityHeader(),
+          _buildAuthorHeader(context),
+          Padding(
+            padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(14)),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(r.s(14)),
+              decoration: BoxDecoration(
+                color: context.nexusTheme.warning.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(r.s(10)),
+                border: Border.all(
+                  color: context.nexusTheme.warning.withValues(alpha: 0.22),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.visibility_off_rounded,
+                          color: context.nexusTheme.warning, size: r.s(18)),
+                      SizedBox(width: r.s(8)),
+                      Expanded(
+                        child: Text(
+                          'Post ocultado',
+                          style: TextStyle(
+                            color: context.nexusTheme.textPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: r.fs(14),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: r.s(8)),
+                  Text(
+                    'Este conteúdo foi ocultado porque quebrou as diretrizes da comunidade.',
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: r.fs(12),
+                      height: 1.45,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final r = context.r;
+    if (_post.status == 'disabled') {
+      return AminoAnimations.cardPress(
+        onTap: () => context.push('/post/${_post.id}'),
+        child: _buildHiddenPostPlaceholder(context),
+      );
+    }
     return AminoAnimations.cardPress(
       onTap: () => context.push('/post/${_post.id}'),
       child: Container(
@@ -1231,7 +1303,15 @@ class _PostCardState extends ConsumerState<PostCard>
   Widget _buildRepostCard(AppStrings s, Responsive r) {
     final originalPost = _post.originalPost;
     final originalAuthor = _post.originalAuthor ?? originalPost?.author;
-    final reposterName = _post.author?.nickname ?? s.user;
+    final reposterName = _post.authorLocalNickname?.trim().isNotEmpty == true
+        ? _post.authorLocalNickname!.trim()
+        : (_post.author?.nickname ?? s.user);
+    final originalAuthorName = originalPost?.authorLocalNickname?.trim().isNotEmpty == true
+        ? originalPost!.authorLocalNickname!.trim()
+        : (originalAuthor?.nickname ?? s.user);
+    final originalAuthorAvatar = originalPost?.authorLocalIconUrl?.trim().isNotEmpty == true
+        ? originalPost!.authorLocalIconUrl!.trim()
+        : originalAuthor?.iconUrl;
     final repostComment = _post.content.trim();
 
     return Column(
@@ -1305,11 +1385,11 @@ class _PostCardState extends ConsumerState<PostCard>
                         r.s(10), r.s(10), r.s(10), r.s(6)),
                     child: Row(
                       children: [
-                        if (originalAuthor?.iconUrl != null)
+                        if (originalAuthorAvatar != null)
                           ClipRRect(
                             borderRadius: BorderRadius.circular(r.s(14)),
                             child: CachedNetworkImage(
-                              imageUrl: originalAuthor!.iconUrl!,
+                              imageUrl: originalAuthorAvatar!,
                               width: r.s(28),
                               height: r.s(28),
                               fit: BoxFit.cover,
@@ -1335,7 +1415,7 @@ class _PostCardState extends ConsumerState<PostCard>
                         SizedBox(width: r.s(8)),
                         Expanded(
                           child: Text(
-                            originalAuthor?.nickname ?? s.user,
+                            originalAuthorName,
                             style: TextStyle(
                               color: context.nexusTheme.textPrimary,
                               fontWeight: FontWeight.w600,

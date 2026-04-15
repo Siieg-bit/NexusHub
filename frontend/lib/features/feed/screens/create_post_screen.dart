@@ -1294,7 +1294,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   style: TextStyle(
                       color: _textColor, fontSize: r.fs(13)),
                   decoration: InputDecoration(
-                    hintText: s.addTag,
+                    hintText: 'Adicionar tag',
                     hintStyle: TextStyle(
                         color: _textColor.withValues(alpha: 0.2),
                         fontSize: r.fs(13)),

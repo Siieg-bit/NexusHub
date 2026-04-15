@@ -176,9 +176,9 @@ class _PostModerationMenuSheetState
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: Theme.of(context).colorScheme.surface,
-        title: const Text('Desabilitar Post'),
+        title: const Text('Ocultar Post'),
         content: const Text(
-            'Tem certeza que deseja desabilitar este post? Ele ficará oculto para os membros.'),
+            'Tem certeza que deseja ocultar este post? Os membros verão apenas um aviso de conteúdo ocultado.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -186,7 +186,7 @@ class _PostModerationMenuSheetState
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Desabilitar',
+            child: const Text('Ocultar',
                 style: TextStyle(color: Colors.red)),
           ),
         ],
@@ -203,12 +203,12 @@ class _PostModerationMenuSheetState
         'p_community_id': widget.communityId,
         'p_action': 'hide_post',
         'p_target_post_id': widget.postId,
-        'p_reason': 'Post desabilitado pela moderação',
+        'p_reason': 'Post ocultado pela moderação',
       });
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Post desabilitado.'),
+        content: Text('Post ocultado para membros comuns.'),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
       ));
@@ -409,7 +409,7 @@ class _PostModerationMenuSheetState
             const Divider(height: 1, thickness: 0.5),
             // 5. Desabilitar Este Post
             _MenuItem(
-              label: 'Desabilitar Este Post',
+              label: 'Ocultar Este Post',
               icon: Icons.block_rounded,
               isDestructive: true,
               onTap: _disablePost,

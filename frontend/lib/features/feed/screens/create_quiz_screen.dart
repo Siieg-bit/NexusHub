@@ -59,7 +59,13 @@ class _QuizQuestion {
 class CreateQuizScreen extends ConsumerStatefulWidget {
   final String communityId;
   final PostModel? editingPost;
-  const CreateQuizScreen({super.key, required this.communityId, this.editingPost});
+  final String? draftId;
+  const CreateQuizScreen({
+    super.key,
+    required this.communityId,
+    this.editingPost,
+    this.draftId,
+  });
 
   @override
   ConsumerState<CreateQuizScreen> createState() => _CreateQuizScreenState();
@@ -180,13 +186,17 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     if (userId == null) return;
 
     try {
-      final result = await SupabaseService.table('post_drafts')
+      final query = SupabaseService.table('post_drafts')
           .select()
           .eq('user_id', userId)
-          .eq('community_id', widget.communityId)
-          .eq('post_type', 'quiz')
-          .order('updated_at', ascending: false)
-          .limit(1);
+          .eq('community_id', widget.communityId);
+
+      final result = widget.draftId != null
+          ? await query.eq('id', widget.draftId!).limit(1)
+          : await query
+              .eq('post_type', 'quiz')
+              .order('updated_at', ascending: false)
+              .limit(1);
 
       if (!mounted) return;
       final list = (result as List?) ?? const [];

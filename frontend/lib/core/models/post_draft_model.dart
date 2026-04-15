@@ -86,12 +86,26 @@ class PostDraftModel {
       coverImageUrl: json['cover_image_url'] as String?,
       backgroundUrl: json['background_url'] as String?,
       externalUrl: json['external_url'] as String?,
-      pollData: json['poll_data'] as Map<String, dynamic>?,
-      quizData: json['quiz_data'] as Map<String, dynamic>?,
-      storyData: json['story_data'] as Map<String, dynamic>?,
-      chatData: json['chat_data'] as Map<String, dynamic>?,
-      wikiData: json['wiki_data'] as Map<String, dynamic>?,
-      editorState: json['editor_state'] as Map<String, dynamic>?,
+      pollData: (json['poll_data'] ?? json['poll_options']) is Map
+          ? Map<String, dynamic>.from(
+              (json['poll_data'] ?? json['poll_options']) as Map,
+            )
+          : null,
+      quizData: json['quiz_data'] is Map
+          ? Map<String, dynamic>.from(json['quiz_data'] as Map)
+          : null,
+      storyData: json['story_data'] is Map
+          ? Map<String, dynamic>.from(json['story_data'] as Map)
+          : null,
+      chatData: json['chat_data'] is Map
+          ? Map<String, dynamic>.from(json['chat_data'] as Map)
+          : null,
+      wikiData: json['wiki_data'] is Map
+          ? Map<String, dynamic>.from(json['wiki_data'] as Map)
+          : null,
+      editorState: json['editor_state'] is Map
+          ? Map<String, dynamic>.from(json['editor_state'] as Map)
+          : null,
       tags: json['tags'] != null
           ? (json['tags'] as List).map((e) => e as String).toList()
           : const [],
@@ -122,6 +136,7 @@ class PostDraftModel {
       if (backgroundUrl != null) 'background_url': backgroundUrl,
       if (externalUrl != null) 'external_url': externalUrl,
       if (pollData != null) 'poll_data': pollData,
+      if (pollData != null) 'poll_options': pollData,
       if (quizData != null) 'quiz_data': quizData,
       if (storyData != null) 'story_data': storyData,
       if (chatData != null) 'chat_data': chatData,

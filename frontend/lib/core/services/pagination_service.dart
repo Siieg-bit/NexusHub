@@ -7,6 +7,52 @@ import 'supabase_service.dart';
 /// Todas as queries retornam listas paginadas com ordenação consistente.
 /// ============================================================================
 
+void _applyLocalProfileToPost(
+  Map<String, dynamic> post,
+  Map<String, Map<String, dynamic>> memberships,
+) {
+  void applyOnMap(Map<String, dynamic> target) {
+    final authorId = target['author_id']?.toString();
+    if (authorId == null || authorId.isEmpty) return;
+
+    final membership = memberships[authorId];
+    if (membership == null) return;
+
+    final localNickname = membership['local_nickname']?.toString().trim();
+    final localIconUrl = membership['local_icon_url']?.toString().trim();
+    final localBannerUrl = membership['local_banner_url']?.toString().trim();
+
+    target['author_local_nickname'] = localNickname;
+    target['author_local_icon_url'] = localIconUrl;
+    target['author_local_banner_url'] = localBannerUrl;
+    target['author_local_level'] ??= membership['local_level'];
+
+    final currentProfile = Map<String, dynamic>.from(
+      (target['profiles'] ?? target['author'] ?? const <String, dynamic>{}) as Map,
+    );
+    currentProfile['nickname'] = localNickname;
+    currentProfile['icon_url'] = localIconUrl;
+    currentProfile['banner_url'] = localBannerUrl;
+
+    target['profiles'] = currentProfile;
+    target['author'] = currentProfile;
+  }
+
+  applyOnMap(post);
+
+  final originalPostRaw = post['original_post'];
+  if (originalPostRaw is Map) {
+    final originalPost = Map<String, dynamic>.from(originalPostRaw);
+    applyOnMap(originalPost);
+    post['original_post'] = originalPost;
+
+    final originalAuthor = originalPost['author'] ?? originalPost['profiles'];
+    if (originalAuthor is Map) {
+      post['original_author'] = Map<String, dynamic>.from(originalAuthor);
+    }
+  }
+}
+
 class PaginationService {
   /// Busca posts paginados de uma comunidade
   static Future<List<Map<String, dynamic>>> fetchPosts({
@@ -18,7 +64,7 @@ class PaginationService {
     String? postType,
   }) async {
     var query = SupabaseService.table('posts')
-        .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+        .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id, profiles!posts_author_id_fkey(id, nickname, icon_url))')
         .eq('community_id', communityId);
 
     if (postType != null) {
@@ -29,7 +75,44 @@ class PaginationService {
         .order(orderBy, ascending: ascending)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return List<Map<String, dynamic>>.from(res as List? ?? []);
+    final posts = List<Map<String, dynamic>>.from(res as List? ?? []);
+    if (posts.isEmpty) return posts;
+
+    final authorIds = <String>{};
+    for (final post in posts) {
+      final authorId = post['author_id']?.toString();
+      if (authorId != null && authorId.isNotEmpty) {
+        authorIds.add(authorId);
+      }
+      final originalPost = post['original_post'];
+      if (originalPost is Map) {
+        final originalAuthorId = originalPost['author_id']?.toString();
+        if (originalAuthorId != null && originalAuthorId.isNotEmpty) {
+          authorIds.add(originalAuthorId);
+        }
+      }
+    }
+
+    if (authorIds.isEmpty) return posts;
+
+    final membershipsRes = await SupabaseService.table('community_members')
+        .select('user_id, local_nickname, local_icon_url, local_banner_url, local_level')
+        .eq('community_id', communityId)
+        .inFilter('user_id', authorIds.toList());
+
+    final memberships = <String, Map<String, dynamic>>{};
+    for (final row in List<Map<String, dynamic>>.from(membershipsRes as List? ?? [])) {
+      final userId = row['user_id']?.toString();
+      if (userId != null && userId.isNotEmpty) {
+        memberships[userId] = row;
+      }
+    }
+
+    for (final post in posts) {
+      _applyLocalProfileToPost(post, memberships);
+    }
+
+    return posts;
   }
 
   /// Busca comunidades paginadas (para Discover)

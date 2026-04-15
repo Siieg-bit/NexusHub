@@ -1830,6 +1830,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   Widget _buildOriginalPostCard(PostModel post, Responsive r, AppStrings s) {
     final originalPost = post.originalPost;
     final originalAuthor = post.originalAuthor ?? originalPost?.author;
+    final originalAuthorName = originalPost?.authorLocalNickname?.trim().isNotEmpty == true
+        ? originalPost!.authorLocalNickname!.trim()
+        : (originalAuthor?.nickname ?? s.user);
+    final originalAuthorAvatar = originalPost?.authorLocalIconUrl?.trim().isNotEmpty == true
+        ? originalPost!.authorLocalIconUrl!.trim()
+        : originalAuthor?.iconUrl;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(16), 0, r.s(16), r.s(16)),
@@ -1856,11 +1862,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     EdgeInsets.fromLTRB(r.s(12), r.s(12), r.s(12), r.s(6)),
                 child: Row(
                   children: [
-                    if (originalAuthor?.iconUrl != null)
+                    if (originalAuthorAvatar != null)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(r.s(16)),
                         child: CachedNetworkImage(
-                          imageUrl: originalAuthor!.iconUrl!,
+                          imageUrl: originalAuthorAvatar!,
                           width: r.s(32),
                           height: r.s(32),
                           fit: BoxFit.cover,
@@ -1886,7 +1892,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     SizedBox(width: r.s(10)),
                     Expanded(
                       child: Text(
-                        originalAuthor?.nickname ?? s.user,
+                        originalAuthorName,
                         style: TextStyle(
                           color: context.nexusTheme.textPrimary,
                           fontWeight: FontWeight.w600,

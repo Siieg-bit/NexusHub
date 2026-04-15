@@ -92,14 +92,25 @@ class _MemberRoleManagerSheetState
               widget.currentRole != 'agent' &&
               widget.currentRole != 'leader'));
 
-  bool get _canBanAndPunish =>
+  bool get _canIssueWarnings =>
       !_isSelf &&
       (widget.callerRole == 'agent' ||
           (widget.callerRole == 'leader' &&
               widget.currentRole != 'agent' &&
               widget.currentRole != 'leader') ||
-          (widget.callerRole == 'moderator' &&
-              widget.currentRole == 'member'));
+          (widget.callerRole == 'curator' && widget.currentRole == 'member'));
+
+  bool get _canHideProfile => _canIssueWarnings;
+
+  bool get _canBanMember =>
+      !_isSelf &&
+      (widget.callerRole == 'agent' ||
+          (widget.callerRole == 'leader' &&
+              widget.currentRole != 'agent' &&
+              widget.currentRole != 'leader'));
+
+  bool get _canBanAndPunish =>
+      _canIssueWarnings || _canHideProfile || _canBanMember;
 
   bool get _canTransferFounder =>
       !_isSelf &&
@@ -152,7 +163,7 @@ class _MemberRoleManagerSheetState
         } else if (error == 'cannot_change_agent_role') {
           msg = 'O cargo de Agente (Fundador) não pode ser alterado aqui.';
         } else if (error == 'leaders_can_only_manage_curators') {
-          msg = 'Líderes só podem gerenciar Curadores e Moderadores.';
+          msg = 'Líderes só podem gerenciar Curadores e Membros.';
         }
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(msg)));
@@ -340,16 +351,180 @@ class _MemberRoleManagerSheetState
   }
 
   Future<void> _strikeWarning() async {
+    bool sendVerbalWarning = true;
+    String silenceOption = 'none';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => AlertDialog(
+          backgroundColor: ctx.surfaceColor,
+          title: Text(
+            'Advertir ${widget.targetUserName}',
+            style: TextStyle(color: ctx.nexusTheme.textPrimary),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CheckboxListTile(
+                value: sendVerbalWarning,
+                onChanged: (value) => setModalState(
+                  () => sendVerbalWarning = value ?? false,
+                ),
+                contentPadding: EdgeInsets.zero,
+                activeColor: ctx.nexusTheme.warning,
+                title: Text(
+                  'Enviar advertência verbal',
+                  style: TextStyle(color: ctx.nexusTheme.textPrimary),
+                ),
+                subtitle: Text(
+                  'Gera um aviso urgente nas notificações do membro.',
+                  style: TextStyle(color: ctx.nexusTheme.textSecondary),
+                ),
+              ),
+              SizedBox(height: context.r.s(8)),
+              Text(
+                'Silenciamento',
+                style: TextStyle(
+                  color: ctx.nexusTheme.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              RadioListTile<String>(
+                value: 'none',
+                groupValue: silenceOption,
+                onChanged: (value) => setModalState(() => silenceOption = value ?? 'none'),
+                contentPadding: EdgeInsets.zero,
+                activeColor: ctx.nexusTheme.warning,
+                title: Text('Sem silenciamento',
+                    style: TextStyle(color: ctx.nexusTheme.textPrimary)),
+              ),
+              RadioListTile<String>(
+                value: '24h',
+                groupValue: silenceOption,
+                onChanged: (value) => setModalState(() => silenceOption = value ?? 'none'),
+                contentPadding: EdgeInsets.zero,
+                activeColor: ctx.nexusTheme.warning,
+                title: Text('Silenciar por 24 horas',
+                    style: TextStyle(color: ctx.nexusTheme.textPrimary)),
+              ),
+              RadioListTile<String>(
+                value: '7d',
+                groupValue: silenceOption,
+                onChanged: (value) => setModalState(() => silenceOption = value ?? 'none'),
+                contentPadding: EdgeInsets.zero,
+                activeColor: ctx.nexusTheme.warning,
+                title: Text('Silenciar por 7 dias',
+                    style: TextStyle(color: ctx.nexusTheme.textPrimary)),
+              ),
+              RadioListTile<String>(
+                value: '30d',
+                groupValue: silenceOption,
+                onChanged: (value) => setModalState(() => silenceOption = value ?? 'none'),
+                contentPadding: EdgeInsets.zero,
+                activeColor: ctx.nexusTheme.warning,
+                title: Text('Silenciar por 1 mês',
+                    style: TextStyle(color: ctx.nexusTheme.textPrimary)),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ctx.nexusTheme.warning,
+              ),
+              child: const Text(
+                'Aplicar',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true || (!sendVerbalWarning && silenceOption == 'none')) {
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
-      await SupabaseService.rpc('apply_member_strike', params: {
-        'p_community_id': widget.communityId,
-        'p_target_user_id': widget.targetUserId,
-        'p_reason': 'Strike aplicado por ${_roleLabel(widget.callerRole)}',
-      });
+      final roleLabel = _roleLabel(widget.callerRole);
+      final notificationRows = <Map<String, dynamic>>[];
+
+      if (sendVerbalWarning) {
+        await SupabaseService.rpc('log_moderation_action', params: {
+          'p_community_id': widget.communityId,
+          'p_action': 'warn',
+          'p_target_user_id': widget.targetUserId,
+          'p_reason': 'Advertência verbal aplicada por $roleLabel',
+        });
+
+        notificationRows.add({
+          'user_id': widget.targetUserId,
+          'actor_id': SupabaseService.currentUserId,
+          'type': 'moderation',
+          'title': 'Advertência da comunidade',
+          'body': 'Você recebeu uma advertência verbal da moderação.',
+          'community_id': widget.communityId,
+        });
+      }
+
+      if (silenceOption != 'none') {
+        final durationHours = switch (silenceOption) {
+          '24h' => 24,
+          '7d' => 24 * 7,
+          '30d' => 24 * 30,
+          _ => 0,
+        };
+
+        final silencedUntil = DateTime.now()
+            .toUtc()
+            .add(Duration(hours: durationHours))
+            .toIso8601String();
+
+        await SupabaseService.table('community_members').update({
+          'is_silenced': true,
+          'silenced_until': silencedUntil,
+        }).eq('community_id', widget.communityId).eq('user_id', widget.targetUserId);
+
+        await SupabaseService.rpc('log_moderation_action', params: {
+          'p_community_id': widget.communityId,
+          'p_action': 'mute',
+          'p_target_user_id': widget.targetUserId,
+          'p_reason': 'Silenciamento aplicado por $roleLabel ($silenceOption)',
+          'p_duration_hours': durationHours,
+        });
+
+        notificationRows.add({
+          'user_id': widget.targetUserId,
+          'actor_id': SupabaseService.currentUserId,
+          'type': 'moderation',
+          'title': 'Silenciamento aplicado',
+          'body': 'Você foi silenciado por $silenceOption nesta comunidade.',
+          'community_id': widget.communityId,
+        });
+      }
+
+      if (notificationRows.isNotEmpty) {
+        await SupabaseService.table('notifications').insert(notificationRows);
+      }
+
       if (mounted) {
+        final actionSummary = <String>[];
+        if (sendVerbalWarning) actionSummary.add('advertência verbal');
+        if (silenceOption != 'none') actionSummary.add('silenciamento de $silenceOption');
+
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Strike aplicado a ${widget.targetUserName}.'),
+          content: Text(
+            '${widget.targetUserName} recebeu ${actionSummary.join(' + ')}.',
+          ),
           backgroundColor: context.nexusTheme.warning,
           behavior: SnackBarBehavior.floating,
         ));
@@ -357,8 +532,9 @@ class _MemberRoleManagerSheetState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Erro ao aplicar strike: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao aplicar advertência: $e')),
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -499,11 +675,11 @@ class _MemberRoleManagerSheetState
   String _roleDescription(String role) {
     switch (role) {
       case 'leader':
-        return 'Pode gerenciar moderadores e curadores';
+        return 'Pode gerenciar curadores e membros, além de banir e moderar';
       case 'curator':
-        return 'Pode destacar e fixar conteúdo';
+        return 'Pode advertir, ocultar perfis, ocultar posts e gerenciar tags';
       case 'moderator':
-        return 'Pode banir e moderar membros';
+        return 'Cargo legado sem uso no fluxo atual';
       case 'member':
         return 'Remove todos os cargos de staff';
       default:
@@ -618,7 +794,7 @@ class _MemberRoleManagerSheetState
               // ── SEÇÃO: PROMOÇÃO / DEMISSÃO ────────────────────────────────
               if (_canManageRoles) ...[
                 _sectionHeader('CARGO', r),
-                ...['leader', 'curator', 'moderator', 'member'].map((role) {
+                ...['leader', 'curator', 'member'].map((role) {
                   final isCurrentRole = widget.currentRole == role;
                   final roleColor = _roleColor(role);
                   final isDemote = role == 'member';
@@ -1005,11 +1181,12 @@ class _MemberRoleManagerSheetState
 
               // ── SEÇÃO: AÇÕES DISCIPLINARES ────────────────────────────────
               if (_canBanAndPunish) ...[
-                _sectionHeader('AÇÕES DISCIPLINARES', r),
+                _sectionHeader('OPÇÕES DE MODERAÇÃO', r),
 
-                // Strike / Advertência
-                InkWell(
-                  onTap: _strikeWarning,
+                // Advertências e silenciamentos
+                if (_canIssueWarnings)
+                  InkWell(
+                    onTap: _strikeWarning,
                   child: Padding(
                     padding: EdgeInsets.symmetric(
                         horizontal: r.s(20), vertical: r.s(14)),
@@ -1032,13 +1209,13 @@ class _MemberRoleManagerSheetState
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Aplicar Strike',
+                              Text('Aplicar Advertência',
                                   style: TextStyle(
                                     color: context.nexusTheme.warning,
                                     fontWeight: FontWeight.w600,
                                     fontSize: r.fs(14),
                                   )),
-                              Text('Advertência formal registrada no histórico',
+                              Text('Aviso verbal e silenciamento de 24h, 7 dias ou 1 mês',
                                   style: TextStyle(
                                       color: Colors.grey[500],
                                       fontSize: r.fs(12))),
@@ -1052,8 +1229,9 @@ class _MemberRoleManagerSheetState
                 const Divider(height: 1, thickness: 0.5),
 
                 // Ocultar perfil
-                InkWell(
-                  onTap: _hideProfile,
+                if (_canHideProfile)
+                  InkWell(
+                    onTap: _hideProfile,
                   child: Padding(
                     padding: EdgeInsets.symmetric(
                         horizontal: r.s(20), vertical: r.s(14)),
@@ -1080,7 +1258,7 @@ class _MemberRoleManagerSheetState
                                     fontWeight: FontWeight.w600,
                                     fontSize: r.fs(14),
                                   )),
-                              Text('O perfil fica invisível para outros membros',
+                              Text('Oculta conteúdo, foto, capa e bio para membros comuns até reativação',
                                   style: TextStyle(
                                       color: Colors.grey[500],
                                       fontSize: r.fs(12))),
@@ -1094,8 +1272,9 @@ class _MemberRoleManagerSheetState
                 const Divider(height: 1, thickness: 0.5),
 
                 // Banir
-                InkWell(
-                  onTap: _banMember,
+                if (_canBanMember)
+                  InkWell(
+                    onTap: _banMember,
                   child: Padding(
                     padding: EdgeInsets.symmetric(
                         horizontal: r.s(20), vertical: r.s(14)),

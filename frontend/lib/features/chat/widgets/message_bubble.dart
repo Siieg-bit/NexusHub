@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
@@ -1092,46 +1094,12 @@ class MessageBubble extends ConsumerWidget {
       }
     }
 
-    // Poll (armazenado como text com JSON no content)
-    if (message.content != null && message.content!.startsWith('{"question"')) {
-      try {
-        // Tentar parsear o JSON do poll
-        final content = message.content!;
-        final questionMatch =
-            RegExp(r'"question":"([^"]*)"').firstMatch(content);
-        final question = questionMatch?.group(1) ?? s.poll;
-        final optionsMatch = RegExp(r'"options":\[(.*?)\]').firstMatch(content);
-        final optionsStr = optionsMatch?.group(1) ?? '';
-        final options = RegExp(r'"([^"]*)"')
-            .allMatches(optionsStr)
-            .map((m) => m.group(1) ?? '')
-            .toList();
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('\uD83D\uDCCA $question',
-                style: TextStyle(
-                    color: textColor,
-                    fontWeight: FontWeight.w600,
-                    fontSize: r.fs(14))),
-            SizedBox(height: r.s(8)),
-            ...options.map((opt) => Container(
-                  margin: EdgeInsets.only(bottom: r.s(4)),
-                  padding: EdgeInsets.symmetric(
-                      horizontal: r.s(12), vertical: r.s(8)),
-                  decoration: BoxDecoration(
-                    color: textColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(r.s(8)),
-                  ),
-                  child: Text(opt,
-                      style: TextStyle(color: textColor, fontSize: r.fs(13))),
-                )),
-          ],
-        );
-      } catch (_) {
-        // Se falhar o parse, mostra como texto normal
-      }
+    // Poll do chat (armazenado como JSON em content e votado por message_id)
+    if (type == 'poll' || message.isPoll) {
+      return _ChatPollBubble(
+        message: message,
+        isMe: isMe,
+      );
     }
 
     // Reply (tipo text com reply_to_id)
@@ -1309,6 +1277,251 @@ class MediaOptionItem extends ConsumerWidget {
               style: TextStyle(fontSize: r.fs(11), color: Colors.grey[500])),
         ],
       ),
+    );
+  }
+}
+
+class _ChatPollPayload {
+  final String question;
+  final List<String> options;
+
+  const _ChatPollPayload({
+    required this.question,
+    required this.options,
+  });
+
+  static _ChatPollPayload? tryParse(String? rawContent) {
+    if (rawContent == null || rawContent.trim().isEmpty) return null;
+
+    try {
+      final decoded = jsonDecode(rawContent);
+      if (decoded is! Map) return null;
+
+      final question = decoded['question']?.toString().trim();
+      final rawOptions = decoded['options'];
+      if (question == null || question.isEmpty || rawOptions is! List) {
+        return null;
+      }
+
+      final options = rawOptions
+          .map((option) => option.toString().trim())
+          .where((option) => option.isNotEmpty)
+          .toList();
+      if (options.length < 2) return null;
+
+      return _ChatPollPayload(question: question, options: options);
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+class _ChatPollBubble extends StatefulWidget {
+  final MessageModel message;
+  final bool isMe;
+
+  const _ChatPollBubble({
+    required this.message,
+    required this.isMe,
+  });
+
+  @override
+  State<_ChatPollBubble> createState() => _ChatPollBubbleState();
+}
+
+class _ChatPollBubbleState extends State<_ChatPollBubble> {
+  bool _isSubmitting = false;
+
+  Future<void> _vote(int optionIndex) async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null || _isSubmitting) return;
+
+    setState(() => _isSubmitting = true);
+    try {
+      await SupabaseService.client.from('chat_poll_votes').insert({
+        'message_id': widget.message.id,
+        'user_id': userId,
+        'option_index': optionIndex,
+      });
+    } catch (e) {
+      if (!mounted) return;
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      messenger?.showSnackBar(
+        SnackBar(
+          content: Text('Não foi possível registrar seu voto: $e'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    final s = getStrings();
+    final textColor = widget.isMe ? Colors.white : context.nexusTheme.textPrimary;
+    final accentColor = widget.isMe
+        ? Colors.white.withValues(alpha: 0.92)
+        : context.nexusTheme.accentPrimary;
+    final payload = _ChatPollPayload.tryParse(widget.message.content);
+
+    if (payload == null) {
+      return LinkifiedText(
+        text: widget.message.content ?? '',
+        style: TextStyle(color: textColor, fontSize: r.fs(14)),
+        linkStyle: TextStyle(
+          color: context.nexusTheme.accentSecondary,
+          fontSize: r.fs(14),
+          decoration: TextDecoration.underline,
+        ),
+      );
+    }
+
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: SupabaseService.client
+          .from('chat_poll_votes')
+          .stream(primaryKey: ['id'])
+          .eq('message_id', widget.message.id),
+      builder: (context, snapshot) {
+        final votes = snapshot.data ?? const <Map<String, dynamic>>[];
+        final counts = List<int>.filled(payload.options.length, 0);
+        final currentUserId = SupabaseService.currentUserId;
+        int? myVoteIndex;
+
+        for (final vote in votes) {
+          final rawIndex = vote['option_index'];
+          final optionIndex = rawIndex is int
+              ? rawIndex
+              : int.tryParse(rawIndex?.toString() ?? '');
+          if (optionIndex == null || optionIndex < 0 || optionIndex >= counts.length) {
+            continue;
+          }
+          counts[optionIndex] += 1;
+          if (currentUserId != null && vote['user_id']?.toString() == currentUserId) {
+            myVoteIndex = optionIndex;
+          }
+        }
+
+        final totalVotes = counts.fold<int>(0, (sum, value) => sum + value);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.poll_rounded, color: accentColor, size: r.s(18)),
+                SizedBox(width: r.s(6)),
+                Expanded(
+                  child: Text(
+                    payload.question,
+                    style: TextStyle(
+                      color: textColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: r.fs(14),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: r.s(8)),
+            ...List.generate(payload.options.length, (index) {
+              final option = payload.options[index];
+              final votesForOption = counts[index];
+              final percentage = totalVotes == 0 ? 0.0 : votesForOption / totalVotes;
+              final isSelected = myVoteIndex == index;
+              final canVote = myVoteIndex == null && !_isSubmitting;
+
+              return Padding(
+                padding: EdgeInsets.only(bottom: r.s(6)),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: canVote ? () => _vote(index) : null,
+                    borderRadius: BorderRadius.circular(r.s(10)),
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        color: textColor.withValues(alpha: widget.isMe ? 0.10 : 0.08),
+                        borderRadius: BorderRadius.circular(r.s(10)),
+                        border: Border.all(
+                          color: isSelected
+                              ? accentColor.withValues(alpha: 0.70)
+                              : textColor.withValues(alpha: 0.16),
+                        ),
+                      ),
+                      child: Stack(
+                        children: [
+                          if (totalVotes > 0)
+                            FractionallySizedBox(
+                              widthFactor: percentage.clamp(0.0, 1.0),
+                              child: Container(
+                                height: r.s(44),
+                                decoration: BoxDecoration(
+                                  color: accentColor.withValues(alpha: widget.isMe ? 0.16 : 0.12),
+                                  borderRadius: BorderRadius.circular(r.s(10)),
+                                ),
+                              ),
+                            ),
+                          Container(
+                            constraints: BoxConstraints(minHeight: r.s(44)),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: r.s(12),
+                              vertical: r.s(10),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    option,
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: r.fs(13),
+                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: r.s(10)),
+                                Text(
+                                  totalVotes == 0
+                                      ? s.vote
+                                      : '${(percentage * 100).round()}% • $votesForOption',
+                                  style: TextStyle(
+                                    color: textColor.withValues(alpha: 0.78),
+                                    fontSize: r.fs(11),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (isSelected) ...[
+                                  SizedBox(width: r.s(6)),
+                                  Icon(Icons.check_circle_rounded,
+                                      color: accentColor, size: r.s(16)),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+            SizedBox(height: r.s(2)),
+            Text(
+              totalVotes == 0
+                  ? 'Toque em uma opção para votar'
+                  : '$totalVotes voto${totalVotes == 1 ? '' : 's'}',
+              style: TextStyle(
+                color: textColor.withValues(alpha: 0.72),
+                fontSize: r.fs(11),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

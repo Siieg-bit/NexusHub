@@ -25,7 +25,8 @@ const _kPostSelect =
     'original_post:original_post_id('
     'id, title, content, type, cover_image_url, media_list, created_at, '
     'author_id, community_id, original_post_id, editor_type, post_variant, '
-    'editor_metadata, editor_state, story_data, chat_data, wiki_data'
+    'editor_metadata, editor_state, story_data, chat_data, wiki_data, '
+    'profiles!posts_author_id_fkey(id, nickname, icon_url)'
     ')';
 
 Map<String, dynamic> _normalizePostMap(Map<String, dynamic> map) {
@@ -53,6 +54,37 @@ bool _hasAuthorAvatar(Map<String, dynamic> map) {
   return localIconUrl.isNotEmpty;
 }
 
+void _mergeResolvedAuthor(
+  Map<String, dynamic> map,
+  Map<String, dynamic> author,
+) {
+  map['profiles'] = author;
+  map['author'] = author;
+}
+
+void _applyLocalAuthorData(
+  Map<String, dynamic> map,
+  Map<String, dynamic> member,
+) {
+  final localNickname = member['local_nickname']?.toString().trim();
+  final localIconUrl = member['local_icon_url']?.toString().trim();
+  final localBannerUrl = member['local_banner_url']?.toString().trim();
+
+  map['author_local_nickname'] = localNickname;
+  map['author_local_icon_url'] = localIconUrl;
+  map['author_local_banner_url'] = localBannerUrl;
+  map['author_local_level'] ??= member['local_level'];
+
+  final currentAuthor = Map<String, dynamic>.from(
+    (map['author'] ?? map['profiles'] ?? const <String, dynamic>{}) as Map,
+  );
+  currentAuthor['nickname'] = localNickname;
+  currentAuthor['icon_url'] = localIconUrl;
+  currentAuthor['banner_url'] = localBannerUrl;
+
+  _mergeResolvedAuthor(map, currentAuthor);
+}
+
 Future<void> _enrichAuthorData(Map<String, dynamic> map) async {
   final authorId = map['author_id']?.toString();
   if (authorId == null || authorId.isEmpty) return;
@@ -71,8 +103,7 @@ Future<void> _enrichAuthorData(Map<String, dynamic> map) async {
               : <String, dynamic>{}),
           ...Map<String, dynamic>.from(profile),
         };
-        map['profiles'] = mergedAuthor;
-        map['author'] = mergedAuthor;
+        _mergeResolvedAuthor(map, mergedAuthor);
       }
     }
   } catch (e) {
@@ -90,28 +121,22 @@ Future<void> _enrichAuthorData(Map<String, dynamic> map) async {
         .maybeSingle();
 
     if (member != null) {
-      // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
-      final localNickname = member['local_nickname']?.toString().trim();
-      final localIconUrl = member['local_icon_url']?.toString().trim();
-      final localBannerUrl = member['local_banner_url']?.toString().trim();
-
-      map['author_local_nickname'] = localNickname;
-      map['author_local_icon_url'] = localIconUrl;
-      map['author_local_banner_url'] = localBannerUrl;
-      map['author_local_level'] ??= member['local_level'];
-
-      final currentAuthor = Map<String, dynamic>.from(
-        (map['author'] ?? map['profiles'] ?? const <String, dynamic>{}) as Map,
-      );
-      currentAuthor['nickname'] = localNickname;
-      currentAuthor['icon_url'] = localIconUrl;
-      currentAuthor['banner_url'] = localBannerUrl;
-
-      map['author'] = currentAuthor;
-      map['profiles'] = currentAuthor;
+      _applyLocalAuthorData(map, Map<String, dynamic>.from(member));
     }
   } catch (e) {
     debugPrint('[post_provider] _enrichAuthorData member fallback error: $e');
+  }
+
+  final originalPostRaw = map['original_post'];
+  if (originalPostRaw is Map) {
+    final originalPost = Map<String, dynamic>.from(originalPostRaw);
+    await _enrichAuthorData(originalPost);
+    map['original_post'] = originalPost;
+
+    final originalAuthorRaw = originalPost['author'] ?? originalPost['profiles'];
+    if (originalAuthorRaw is Map) {
+      map['original_author'] = Map<String, dynamic>.from(originalAuthorRaw);
+    }
   }
 }
 
@@ -519,7 +544,7 @@ final latestPostsProvider = FutureProvider.family<List<PostModel>, String>(
     final res = await SupabaseService.table('posts')
         .select(_kPostSelect)
         .eq('community_id', communityId)
-        .eq('status', 'ok')
+        .inFilter('status', ['ok', 'disabled'])
         .eq('is_pinned', false)
         .eq('is_featured', false)
         .order('created_at', ascending: false)

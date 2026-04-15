@@ -119,6 +119,27 @@ class DraftsScreen extends ConsumerWidget {
   }
 }
 
+String _draftRouteFor(String communityId, PostDraftModel draft) {
+  final type = draft.effectiveEditorType;
+  switch (type) {
+    case 'blog':
+      return '/community/$communityId/create-blog';
+    case 'image':
+      return '/community/$communityId/create-image';
+    case 'link':
+      return '/community/$communityId/create-link';
+    case 'poll':
+      return '/community/$communityId/create-poll';
+    case 'quiz':
+      return '/community/$communityId/create-quiz';
+    case 'question':
+    case 'qa':
+      return '/community/$communityId/create-question';
+    default:
+      return '/community/$communityId/create-post';
+  }
+}
+
 class _DraftCard extends ConsumerWidget {
   final PostDraftModel draft;
 
@@ -182,7 +203,10 @@ class _DraftCard extends ConsumerWidget {
         onTap: () {
           if (!context.mounted) return;
           final cid = draft.communityId ?? 'global';
-          context.push('/community/$cid/create-post', extra: {'draftId': draft.id});
+          context.push(
+            _draftRouteFor(cid, draft),
+            extra: {'draftId': draft.id, 'initialType': draft.effectiveEditorType},
+          );
         },
         child: Container(
           margin: EdgeInsets.only(bottom: r.s(12)),

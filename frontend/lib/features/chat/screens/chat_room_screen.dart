@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1037,8 +1038,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
       String content;
       if (type == 'poll' && pollQuestion != null) {
-        content =
-            '{"question":"$pollQuestion","options":${pollOptions?.map((o) => '"$o"').toList() ?? []}}';
+        content = jsonEncode({
+          'question': pollQuestion,
+          'options': (pollOptions ?? const <String>[])
+              .map((option) => option.trim())
+              .where((option) => option.isNotEmpty)
+              .toList(),
+        });
       } else if (type == 'link' && sharedUrl != null) {
         content = text.isNotEmpty ? text : sharedUrl;
       } else if (type == 'tip' && tipAmount != null) {
@@ -2194,7 +2200,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_rounded,
               color: context.nexusTheme.textPrimary, size: r.s(20)),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/chat');
+            }
+          },
         ),
         titleSpacing: 0,
         title: Row(
