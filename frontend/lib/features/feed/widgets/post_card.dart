@@ -560,7 +560,21 @@ class _PostCardState extends ConsumerState<PostCard>
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    if (_post.status == 'disabled') {
+    final currentUser = ref.watch(auth_providers.currentUserProvider);
+    final membership = _post.communityId.isNotEmpty
+        ? ref
+            .watch(
+                community_providers.communityMembershipProvider(_post.communityId))
+            .valueOrNull
+        : null;
+    final currentUserRole = membership?['role'] as String?;
+    final canModeratePost = _post.communityId.isNotEmpty &&
+        _isCommunityStaff(
+          isTeamMember: currentUser?.isTeamMember ?? false,
+          userRole: currentUserRole,
+        );
+
+    if (_post.status == 'disabled' && !canModeratePost) {
       return AminoAnimations.cardPress(
         onTap: () => context.push('/post/${_post.id}'),
         child: _buildHiddenPostPlaceholder(context),
@@ -580,6 +594,45 @@ class _PostCardState extends ConsumerState<PostCard>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (_post.status == 'disabled' && canModeratePost)
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(
+                  horizontal: r.s(12),
+                  vertical: r.s(10),
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(r.s(12)),
+                  ),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.orange.withValues(alpha: 0.2),
+                    ),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.visibility_off_rounded,
+                      size: r.s(16),
+                      color: Colors.orange[300],
+                    ),
+                    SizedBox(width: r.s(8)),
+                    Expanded(
+                      child: Text(
+                        'Post ocultado pela moderação. Você ainda vê o conteúdo porque possui permissão de staff.',
+                        style: TextStyle(
+                          color: Colors.orange[100],
+                          fontSize: r.fs(12),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             // ── Community header (se showCommunity) ──
             if (widget.showCommunity) _buildCommunityHeader(),
 
@@ -734,19 +787,6 @@ class _PostCardState extends ConsumerState<PostCard>
   Widget _buildAuthorHeader(BuildContext context) {
     final s = ref.read(stringsProvider);
     final r = context.r;
-    final currentUser = ref.watch(auth_providers.currentUserProvider);
-    final membership = _post.communityId.isNotEmpty
-        ? ref
-            .watch(
-                community_providers.communityMembershipProvider(_post.communityId))
-            .valueOrNull
-        : null;
-    final currentUserRole = membership?['role'] as String?;
-    final canModeratePost = _post.communityId.isNotEmpty &&
-        _isCommunityStaff(
-          isTeamMember: currentUser?.isTeamMember ?? false,
-          userRole: currentUserRole,
-        );
     // Perguntas anônimas não devem expor identidade nem permitir navegação ao perfil.
     final isAnonymousQuestion =
         (_post.type == 'qa' || _post.editorType == 'qa' || _post.variant == 'qa') &&

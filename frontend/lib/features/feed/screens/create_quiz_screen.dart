@@ -586,7 +586,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         'total_questions': questions.length,
       };
 
-      await SupabaseService.rpc('create_quiz_with_questions', params: {
+      final result = await SupabaseService.rpc('create_quiz_with_questions', params: {
         'p_community_id': widget.communityId,
         'p_title': title,
         'p_content': _descriptionController.text.trim(),
@@ -595,25 +595,25 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         'p_allow_comments': true,
       });
 
-      // Atualizar editor_metadata e cover no post criado
-      try {
-        final posts = await SupabaseService.table('posts')
-            .select('id')
-            .eq('community_id', widget.communityId)
-            .eq('author_id', userId)
-            .eq('type', 'quiz')
-            .order('created_at', ascending: false)
-            .limit(1);
-        if (posts.isNotEmpty) {
-          await SupabaseService.table('posts').update({
-            'editor_metadata': editorMetadata,
-            'editor_type': 'quiz',
-            if (_coverImageUrl != null) 'cover_image_url': _coverImageUrl,
-          }).eq('id', posts[0]['id']);
-        }
-      } catch (_) {}
+      final resultMap = result is Map<String, dynamic>
+          ? result
+          : (result is Map ? Map<String, dynamic>.from(result) : <String, dynamic>{});
+      final createdPostId = resultMap['post_id'] as String?;
+      final createdSuccessfully = resultMap['success'] == true && createdPostId != null;
+
+      if (!createdSuccessfully) {
+        throw Exception(resultMap['error'] ?? 'quiz_creation_failed');
+      }
+
+      await SupabaseService.table('posts').update({
+        'editor_metadata': editorMetadata,
+        'editor_type': 'quiz',
+        'quiz_data': {'questions': questions},
+        if (_coverImageUrl != null) 'cover_image_url': _coverImageUrl,
+      }).eq('id', createdPostId);
 
       if (mounted) {
+        ref.invalidate(communityFeedProvider(widget.communityId));
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -622,6 +622,10 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             behavior: SnackBarBehavior.floating,
           ),
         );
+      } 
+
+      if (mounted) {
+        setState(() => _isSubmitting = false);
       }
     } catch (e) {
       if (mounted) {

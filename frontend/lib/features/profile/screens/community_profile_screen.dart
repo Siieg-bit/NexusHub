@@ -406,6 +406,65 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       roleTitle = s.curator;
     }
 
+    final viewerRole = (_myMembership?['role'] as String? ?? '').toLowerCase();
+    final canViewHiddenProfile =
+        _isOwnProfile || _viewerIsTeamMember || viewerRole == 'agent' || viewerRole == 'leader' || viewerRole == 'curator';
+    final isHiddenProfile = _membership?['is_hidden'] == true;
+
+    if (isHiddenProfile && !canViewHiddenProfile) {
+      return Scaffold(
+        backgroundColor: context.nexusTheme.backgroundPrimary,
+        appBar: AppBar(
+          backgroundColor: context.nexusTheme.backgroundPrimary,
+          foregroundColor: context.nexusTheme.textPrimary,
+          title: Text(displayName),
+        ),
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.all(r.s(24)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: r.s(72),
+                  height: r.s(72),
+                  decoration: BoxDecoration(
+                    color: context.nexusTheme.surfaceSecondary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.visibility_off_rounded,
+                    size: r.s(32),
+                    color: context.nexusTheme.textSecondary,
+                  ),
+                ),
+                SizedBox(height: r.s(16)),
+                Text(
+                  'Perfil ocultado nesta comunidade',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(18),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: r.s(10)),
+                Text(
+                  'Este perfil foi ocultado pela moderação da comunidade e não está visível para membros comuns no momento.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: context.nexusTheme.textSecondary,
+                    fontSize: r.fs(13),
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     // Altura do FlexibleSpaceBar: varia conforme conteúdo
     // Base: 200 (banner) + avatar(96) + nome + level + tags + botões + conquistas
     final double expandedHeight = 420 +
@@ -2459,7 +2518,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
               if (canManageRoles)
                 _optionTile(
                   Icons.manage_accounts_rounded,
-                  'Gerenciar Cargo',
+                  'Opções de moderação',
                   () async {
                     Navigator.pop(ctx);
                     final targetRole =

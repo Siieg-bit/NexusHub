@@ -167,6 +167,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   String? _chatCoverUrl;
   String? _callerRole; // 'host', 'co_host', 'member'
   bool _isAnnouncementOnly = false;
+  bool get _isChatDisabled => (_threadInfo?['status'] as String? ?? 'ok') == 'disabled';
   // Fluxo de DM invite
   // _isDmInvitePending: true quando o usuário atual é o destinatário de um convite pendente (status='invite_sent')
   // _isDmInviteSender:  true quando o usuário atual é o remetente e aguarda aceitação
@@ -1017,6 +1018,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       }
     });
 
+    if (_isChatDisabled) {
+      if (mounted) {
+        setState(() => _isSending = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Este chat está desativado no momento.'),
+            backgroundColor: context.nexusTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
     // Se membership não foi confirmada, tentar novamente antes de enviar
     if (!_membershipConfirmed) {
       await _ensureMembership();
@@ -1208,6 +1223,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   },
                 );
               }),
+            if ((_callerRole == 'host' || _callerRole == 'co_host') &&
+                (_threadInfo?['type'] as String? ?? 'public') != 'dm')
+              _settingsTile(
+                r,
+                _isChatDisabled
+                    ? Icons.visibility_rounded
+                    : Icons.visibility_off_rounded,
+                _isChatDisabled ? 'Reativar chat' : 'Desativar chat',
+                () async {
+                  Navigator.pop(ctx);
+                  await _toggleChatDisabled(!_isChatDisabled);
+                },
+                isDestructive: !_isChatDisabled,
+              ),
             _settingsTile(r, Icons.chat_bubble_rounded, 'Meu Bubble', () {
               Navigator.pop(ctx);
               _showBubblePicker();
@@ -1408,6 +1437,47 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _toggleChatDisabled(bool disabled) async {
+    try {
+      final result = await SupabaseService.rpc('toggle_chat_thread_status', params: {
+        'p_thread_id': widget.threadId,
+        'p_disabled': disabled,
+      });
+      final resultMap = result is Map<String, dynamic>
+          ? result
+          : (result is Map ? Map<String, dynamic>.from(result) : <String, dynamic>{});
+      final success = resultMap['success'] == true;
+      if (!mounted) return;
+      if (!success) {
+        throw Exception(resultMap['error'] ?? 'toggle_chat_thread_status_failed');
+      }
+      setState(() {
+        _threadInfo = {
+          ...?_threadInfo,
+          'status': disabled ? 'disabled' : 'ok',
+        };
+      });
+      ref.invalidate(chatListProvider);
+      ref.invalidate(chatCommunitiesProvider);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(disabled ? 'Chat desativado com sucesso.' : 'Chat reativado com sucesso.'),
+          backgroundColor: context.nexusTheme.accentPrimary,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Não foi possível atualizar o status do chat.'),
+          backgroundColor: context.nexusTheme.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Future<void> _leaveChat() async {
@@ -2853,6 +2923,24 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
               ),
 
+            if (_isChatDisabled)
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(10)),
+                color: context.nexusTheme.error.withValues(alpha: 0.10),
+                child: Text(
+                  _callerRole == 'host' || _callerRole == 'co_host'
+                      ? 'Este chat está desativado. A equipe ainda pode visualizar a conversa, mas novas mensagens foram bloqueadas.'
+                      : 'Este chat foi desativado temporariamente pela equipe.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(12),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
             // CTA: não membro (chat público ou acesso restrito)
             if (!_membershipConfirmed && !_isDmInvitePending && !_isLoading)
               Builder(builder: (context) {
@@ -3052,6 +3140,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
               )
             else if ((_membershipConfirmed || _isLoading) &&
+                !_isChatDisabled &&
                 !(_isAnnouncementOnly &&
                     _callerRole != 'host' &&
                     _callerRole != 'co_host'))

@@ -53,6 +53,32 @@ void _applyLocalProfileToPost(
   }
 }
 
+Future<bool> _canCurrentUserViewHiddenProfiles(String communityId) async {
+  final userId = SupabaseService.currentUserId;
+  if (userId == null) return false;
+
+  try {
+    final membership = await SupabaseService.table('community_members')
+        .select('role')
+        .eq('community_id', communityId)
+        .eq('user_id', userId)
+        .maybeSingle();
+    final role = (membership?['role'] as String? ?? '').toLowerCase();
+    if (role == 'agent' || role == 'leader' || role == 'curator') {
+      return true;
+    }
+
+    final profile = await SupabaseService.table('profiles')
+        .select('is_team_admin, is_team_moderator')
+        .eq('id', userId)
+        .maybeSingle();
+    return (profile?['is_team_admin'] == true) ||
+        (profile?['is_team_moderator'] == true);
+  } catch (_) {
+    return false;
+  }
+}
+
 class PaginationService {
   /// Busca posts paginados de uma comunidade
   static Future<List<Map<String, dynamic>>> fetchPosts({
@@ -183,9 +209,15 @@ class PaginationService {
     int pageSize = 30,
     String? role,
   }) async {
+    final canViewHidden = await _canCurrentUserViewHiddenProfiles(communityId);
+
     var query = SupabaseService.table('community_members')
         .select('*, profiles!community_members_user_id_fkey(*)')
         .eq('community_id', communityId);
+
+    if (!canViewHidden) {
+      query = query.neq('is_hidden', true);
+    }
 
     if (role != null) {
       query = query.eq('role', role);
@@ -348,9 +380,17 @@ class PaginationService {
     required int page,
     int pageSize = 50,
   }) async {
-    final res = await SupabaseService.table('community_members')
+    final canViewHidden = await _canCurrentUserViewHiddenProfiles(communityId);
+
+    var query = SupabaseService.table('community_members')
         .select('*, profiles!community_members_user_id_fkey(*)')
-        .eq('community_id', communityId)
+        .eq('community_id', communityId);
+
+    if (!canViewHidden) {
+      query = query.neq('is_hidden', true);
+    }
+
+    final res = await query
         .order('local_reputation', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 

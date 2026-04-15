@@ -541,27 +541,34 @@ class _MemberRoleManagerSheetState
     }
   }
 
-  Future<void> _hideProfile() async {
+  Future<void> _toggleHiddenProfile() async {
+    final isCurrentlyHidden = widget.membershipData['is_hidden'] == true;
+    final nextHiddenState = !isCurrentlyHidden;
+
     setState(() => _isLoading = true);
     try {
       await SupabaseService.table('community_members').update({
-        'is_hidden': true,
+        'is_hidden': nextHiddenState,
       })
           .eq('community_id', widget.communityId)
           .eq('user_id', widget.targetUserId);
 
       if (mounted) {
+        final message = nextHiddenState
+            ? 'Perfil de ${widget.targetUserName} ocultado na comunidade.'
+            : 'Perfil de ${widget.targetUserName} reativado na comunidade.';
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content:
-              Text('Perfil de ${widget.targetUserName} ocultado na comunidade.'),
+          content: Text(message),
           behavior: SnackBarBehavior.floating,
         ));
         Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Erro ao ocultar perfil: $e')));
+        final actionLabel = nextHiddenState ? 'ocultar' : 'reativar';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao $actionLabel perfil: $e')),
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -636,7 +643,7 @@ class _MemberRoleManagerSheetState
       case 'curator':
         return 'Curador';
       case 'moderator':
-        return 'Moderador';
+        return 'Curador';
       default:
         return 'Membro';
     }
@@ -651,7 +658,7 @@ class _MemberRoleManagerSheetState
       case 'curator':
         return const Color(0xFF7C4DFF);
       case 'moderator':
-        return const Color(0xFF00BCD4);
+        return const Color(0xFF7C4DFF);
       default:
         return Colors.grey;
     }
@@ -666,7 +673,7 @@ class _MemberRoleManagerSheetState
       case 'curator':
         return Icons.auto_awesome_rounded;
       case 'moderator':
-        return Icons.security_rounded;
+        return Icons.auto_awesome_rounded;
       default:
         return Icons.person_rounded;
     }
@@ -675,11 +682,11 @@ class _MemberRoleManagerSheetState
   String _roleDescription(String role) {
     switch (role) {
       case 'leader':
-        return 'Pode gerenciar curadores e membros, além de banir e moderar';
+        return 'Pode gerenciar curadores e membros, além de banir, ocultar e reverter moderações';
       case 'curator':
-        return 'Pode advertir, ocultar perfis, ocultar posts e gerenciar tags';
+        return 'Pode advertir, ocultar ou reativar perfis e ocultar posts';
       case 'moderator':
-        return 'Cargo legado sem uso no fluxo atual';
+        return 'Compatibilidade legada tratada visualmente como curadoria';
       case 'member':
         return 'Remove todos os cargos de staff';
       default:
@@ -744,7 +751,7 @@ class _MemberRoleManagerSheetState
               child: Column(
                 children: [
                   Text(
-                    _isSelf ? 'Meu Cargo & Título' : 'Gerenciar Membro',
+                    _isSelf ? 'Meu Cargo & Título' : 'Opções de moderação',
                     style: TextStyle(
                       color: context.nexusTheme.accentPrimary,
                       fontSize: r.fs(18),
@@ -1228,10 +1235,10 @@ class _MemberRoleManagerSheetState
                 ),
                 const Divider(height: 1, thickness: 0.5),
 
-                // Ocultar perfil
+                // Ocultar/Reativar perfil
                 if (_canHideProfile)
                   InkWell(
-                    onTap: _hideProfile,
+                    onTap: _toggleHiddenProfile,
                   child: Padding(
                     padding: EdgeInsets.symmetric(
                         horizontal: r.s(20), vertical: r.s(14)),
@@ -1252,13 +1259,19 @@ class _MemberRoleManagerSheetState
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Ocultar Perfil na Comunidade',
+                              Text(
+                                  widget.membershipData['is_hidden'] == true
+                                      ? 'Reativar Perfil na Comunidade'
+                                      : 'Ocultar Perfil na Comunidade',
                                   style: TextStyle(
                                     color: Colors.grey[400],
                                     fontWeight: FontWeight.w600,
                                     fontSize: r.fs(14),
                                   )),
-                              Text('Oculta conteúdo, foto, capa e bio para membros comuns até reativação',
+                              Text(
+                                  widget.membershipData['is_hidden'] == true
+                                      ? 'Restaura conteúdo, foto, capa e bio para membros comuns.'
+                                      : 'Oculta conteúdo, foto, capa e bio para membros comuns até reativação',
                                   style: TextStyle(
                                       color: Colors.grey[500],
                                       fontSize: r.fs(12))),
