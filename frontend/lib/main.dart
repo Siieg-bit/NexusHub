@@ -205,8 +205,13 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
         break;
       case 'chat_message':
       case 'chat_mention':
-        final target = chatId ?? communityId;
-        if (target != null) router.push('/chat/$target');
+        if (chatId != null) {
+          router.push('/chat/$chatId');
+        } else if (communityId != null) {
+          router.push('/community/$communityId');
+        } else {
+          router.push('/chats');
+        }
         break;
       case 'dm_invite':
         router.push('/chats');

@@ -54,7 +54,9 @@ String _mapMessageType(String type) {
     case 'tip':
       return 'system_tip';
     case 'quiz':
-      return 'poll'; // quiz → poll (mais próximo)
+      // Quizzes legados no chat compartilham o mesmo payload JSON
+      // de pergunta/opções e são renderizados pelo mesmo fluxo de enquete.
+      return 'poll';
     default:
       return 'text';
   }

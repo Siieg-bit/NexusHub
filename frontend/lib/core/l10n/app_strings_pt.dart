@@ -5066,7 +5066,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get plagiarism => 'plagiarism';
   @override
-  String get pollDuration => 'pollDuration';
+  String get pollDuration => 'Duração da enquete';
   @override
   String get pollEndsIn => 'pollEndsIn';
   @override
@@ -5074,7 +5074,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get pollPublishedSuccess => 'pollPublishedSuccess';
   @override
-  String get popular2 => 'popular2';
+  String get popular2 => 'Popular';
   @override
   String get post2 => 'post2';
   @override
@@ -5182,7 +5182,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get questionCannotBeEmpty => 'questionCannotBeEmpty';
   @override
-  String get questionCreatedSuccess => 'questionCreatedSuccess';
+  String get questionCreatedSuccess => 'Pergunta publicada com sucesso';
   @override
   String get questionIsRequired => 'questionIsRequired';
   @override
@@ -5196,7 +5196,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get quizOptions => 'quizOptions';
   @override
-  String get quizPublishedSuccess => 'quizPublishedSuccess';
+  String get quizPublishedSuccess => 'Quiz publicado com sucesso';
   @override
   String get quizPublishedSuccess2 => 'quizPublishedSuccess2';
   @override
@@ -5206,7 +5206,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get readOnly => 'readOnly';
   @override
-  String get reason2 => 'reason2';
+  String get reason2 => 'Motivo';
   @override
   String get reasonForAction => 'reasonForAction';
   @override

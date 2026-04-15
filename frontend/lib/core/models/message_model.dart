@@ -183,7 +183,11 @@ class MessageModel {
   bool get isFile => type == 'file';
   bool get isLink => type == 'share_url' || sharedUrl != null;
   bool get isPoll => content != null && content!.startsWith('{"question"');
-  bool get isQuiz => false; // Quiz não implementado no banco
+  bool get isQuiz => type == 'quiz' ||
+      (isPoll &&
+          content != null &&
+          (content!.contains('"correctIndex"') ||
+              content!.contains('"correct_option_index"')));
   bool get isTip => type == 'system_tip' || tipAmount != null;
   bool get isReply => replyToId != null;
   bool get isForward => type == 'forward';

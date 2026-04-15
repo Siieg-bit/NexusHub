@@ -4935,7 +4935,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get plagiarism => 'plagiarism';
   @override
-  String get pollDuration => 'pollDuration';
+  String get pollDuration => 'アンケートの期間';
   @override
   String get pollEndsIn => 'pollEndsIn';
   @override
@@ -4943,7 +4943,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get pollPublishedSuccess => 'pollPublishedSuccess';
   @override
-  String get popular2 => 'popular2';
+  String get popular2 => '人気';
   @override
   String get post2 => 'post2';
   @override
@@ -5051,7 +5051,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get questionCannotBeEmpty => 'questionCannotBeEmpty';
   @override
-  String get questionCreatedSuccess => 'questionCreatedSuccess';
+  String get questionCreatedSuccess => '質問を公開しました';
   @override
   String get questionIsRequired => 'questionIsRequired';
   @override
@@ -5065,7 +5065,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get quizOptions => 'quizOptions';
   @override
-  String get quizPublishedSuccess => 'quizPublishedSuccess';
+  String get quizPublishedSuccess => 'クイズを公開しました';
   @override
   String get quizPublishedSuccess2 => 'quizPublishedSuccess2';
   @override
@@ -5075,7 +5075,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get readOnly => 'readOnly';
   @override
-  String get reason2 => 'reason2';
+  String get reason2 => '理由';
   @override
   String get reasonForAction => 'reasonForAction';
   @override

@@ -6,13 +6,18 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'supabase_service.dart';
+import '../../firebase_options.dart';
 import '../l10n/locale_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show CountOption;
 
 /// Handler para mensagens em background (deve ser top-level function)
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
   debugPrint('[Push] Background message: ${message.messageId}');
 }
 
@@ -24,12 +29,11 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 /// - Deep link handling a partir de notificações
 /// - Canais de notificação (Android)
 ///
-/// Para configurar:
-/// 1. Crie um projeto Firebase em https://console.firebase.google.com
-/// 2. Adicione o app Android com package name "com.nexushub.app"
-/// 3. Baixe o google-services.json e coloque em android/app/
-/// 4. Execute `flutterfire configure` para gerar firebase_options.dart
+/// Serviço centralizado de push via Firebase para o app.
+/// A configuração Android já está versionada no projeto e a inicialização
+/// em foreground/background usa as opções definidas em `firebase_options.dart`.
 class PushNotificationService {
+
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 

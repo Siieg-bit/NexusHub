@@ -274,6 +274,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/quiz/:id',
+        redirect: (context, state) => '/post/${state.pathParameters['id']!}',
+      ),
+      GoRoute(
+        path: '/poll/:id',
+        redirect: (context, state) => '/post/${state.pathParameters['id']!}',
+      ),
+      GoRoute(
+        path: '/question/:id',
+        redirect: (context, state) => '/post/${state.pathParameters['id']!}',
+      ),
+      GoRoute(
         path: '/community/:communityId/create-post',
         name: 'create-post',
         builder: (context, state) {
@@ -358,11 +370,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // ROTAS DE CHAT
       // ====================================================================
       GoRoute(
+        path: '/chat',
+        redirect: (context, state) => '/chats',
+      ),
+      GoRoute(
         path: '/chat/:id',
         name: 'chat-room',
         builder: (context, state) => ChatRoomScreen(
           threadId: state.pathParameters['id']!,
         ),
+      ),
+      GoRoute(
+        path: '/thread/:id',
+        redirect: (context, state) => '/chat/${state.pathParameters['id']!}',
       ),
       GoRoute(
         path: '/create-group-chat',
