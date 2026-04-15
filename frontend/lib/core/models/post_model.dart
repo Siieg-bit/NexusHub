@@ -228,6 +228,7 @@ class PostModel {
     bool? isPinned,
     bool? isPinnedProfile,
     DateTime? featuredUntil,
+    Map<String, dynamic>? pollData,
     UserModel? originalAuthor,
     PostModel? originalPost,
   }) {
@@ -254,7 +255,7 @@ class PostModel {
       originalCommunityId: originalCommunityId,
       externalUrl: externalUrl,
       linkSummary: linkSummary,
-      pollData: pollData,
+      pollData: pollData ?? this.pollData,
       quizData: quizData,
       editorState: editorState,
       likesCount: likesCount ?? this.likesCount,

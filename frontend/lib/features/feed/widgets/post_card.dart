@@ -236,15 +236,107 @@ class _PostCardState extends ConsumerState<PostCard>
 
   Future<void> _votePoll(int optionIndex) async {
     if (_selectedPollOption != null) return;
-    setState(() => _selectedPollOption = optionIndex);
+
+    final pollData = _post.pollData;
+    final options = (pollData?['options'] as List<dynamic>?) ?? const [];
+    if (optionIndex >= options.length) return;
+
+    final selectedOption = options[optionIndex] as Map<String, dynamic>;
+    final optionId = selectedOption['id']?.toString();
+    if (optionId == null || optionId.isEmpty) {
+      debugPrint('[post_card] Enquete sem option id válido');
+      return;
+    }
+
+    final normalizedOptions = options
+        .map((option) => Map<String, dynamic>.from(option as Map))
+        .toList(growable: false);
+    final previousPollData = pollData == null
+        ? null
+        : Map<String, dynamic>.from(pollData);
+    final previousTotalVotes = (pollData?['total_votes'] as num?)?.toInt() ??
+        normalizedOptions.fold<int>(
+          0,
+          (sum, option) => sum + ((option['votes'] as num?)?.toInt() ?? 0),
+        );
+
+    final updatedOptions = normalizedOptions.toList(growable: false);
+    final currentVotes = (updatedOptions[optionIndex]['votes'] as num?)?.toInt() ?? 0;
+    updatedOptions[optionIndex] = {
+      ...updatedOptions[optionIndex],
+      'votes': currentVotes + 1,
+      'votes_count': ((updatedOptions[optionIndex]['votes_count'] as num?)?.toInt() ?? currentVotes) + 1,
+    };
+
+    setState(() {
+      _selectedPollOption = optionIndex;
+      _post = _post.copyWith(
+        pollData: {
+          ...?previousPollData,
+          'options': updatedOptions,
+          'total_votes': previousTotalVotes + 1,
+          'user_vote': optionId,
+        },
+      );
+    });
+
     try {
-      await SupabaseService.table('poll_votes').upsert({
-        'post_id': _post.id,
-        'user_id': SupabaseService.currentUserId,
-        'option_index': optionIndex,
+      final result = await SupabaseService.rpc(
+        'vote_on_poll',
+        params: {'p_option_id': optionId},
+      );
+
+      if (result is Map<String, dynamic> && result['success'] == true) {
+        final returnedOptionId = result['option_id']?.toString();
+        final optionVotes = (result['option_votes'] as num?)?.toInt();
+        final totalVotes = (result['total_votes'] as num?)?.toInt();
+
+        if (!mounted) return;
+        setState(() {
+          if (returnedOptionId != null && optionVotes != null) {
+            final syncedOptions = updatedOptions
+                .map((option) => Map<String, dynamic>.from(option))
+                .toList(growable: false);
+            final syncedIndex = syncedOptions.indexWhere(
+              (option) => option['id']?.toString() == returnedOptionId,
+            );
+            if (syncedIndex != -1) {
+              syncedOptions[syncedIndex] = {
+                ...syncedOptions[syncedIndex],
+                'votes': optionVotes,
+                'votes_count': optionVotes,
+              };
+            }
+            _post = _post.copyWith(
+              pollData: {
+                ...?_post.pollData,
+                'options': syncedOptions,
+                'total_votes': totalVotes ?? previousTotalVotes + 1,
+                'user_vote': returnedOptionId,
+              },
+            );
+          }
+        });
+        return;
+      }
+
+      final alreadyVoted = result is Map<String, dynamic> && result['error'] == 'already_voted';
+      if (!mounted) return;
+      setState(() {
+        _selectedPollOption = alreadyVoted
+            ? normalizedOptions.indexWhere(
+                (option) => option['id']?.toString() == result['option_id']?.toString(),
+              )
+            : null;
+        _post = _post.copyWith(pollData: previousPollData);
       });
     } catch (e) {
-      debugPrint('[post_card] Erro: $e');
+      if (!mounted) return;
+      setState(() {
+        _selectedPollOption = null;
+        _post = _post.copyWith(pollData: previousPollData);
+      });
+      debugPrint('[post_card] Erro ao votar na enquete: $e');
     }
   }
 

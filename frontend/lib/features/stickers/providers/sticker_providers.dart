@@ -122,18 +122,49 @@ class StickerPickerNotifier extends StateNotifier<StickerPickerState> {
 
   /// Salva/remove um pack e atualiza o estado local.
   Future<bool> toggleSavePack(StickerPackModel pack) async {
+    final wasSaved = state.isPackSaved(pack.id) || pack.isSaved;
     final saved = await _repo.savePack(pack.id);
 
+    // Se o pack não estava salvo e a RPC retornou false, tratamos como falha
+    // para não remover/localmente algo que nunca esteve salvo.
+    if (!wasSaved && !saved) {
+      state = state.copyWith(error: 'save_pack_failed');
+      return false;
+    }
+
     final currentSaved = List<StickerPackModel>.from(state.savedPacks);
+    final currentStore = List<StickerPackModel>.from(state.storePacks);
+    final currentMine = List<StickerPackModel>.from(state.myPacks);
+
+    StickerPackModel syncPack(StickerPackModel item) {
+      if (item.id != pack.id) return item;
+      final nextCount = saved
+          ? item.savesCount + (wasSaved ? 0 : 1)
+          : (item.savesCount > 0 ? item.savesCount - 1 : 0);
+      return item.copyWith(
+        isSaved: saved,
+        savesCount: nextCount,
+      );
+    }
+
     if (saved) {
-      if (!currentSaved.any((p) => p.id == pack.id)) {
-        currentSaved.insert(0, pack.copyWith(isSaved: true));
+      final updatedPack = syncPack(pack);
+      final existingIndex = currentSaved.indexWhere((p) => p.id == pack.id);
+      if (existingIndex == -1) {
+        currentSaved.insert(0, updatedPack);
+      } else {
+        currentSaved[existingIndex] = syncPack(currentSaved[existingIndex]);
       }
     } else {
       currentSaved.removeWhere((p) => p.id == pack.id);
     }
 
-    state = state.copyWith(savedPacks: currentSaved);
+    state = state.copyWith(
+      savedPacks: currentSaved,
+      storePacks: currentStore.map(syncPack).toList(growable: false),
+      myPacks: currentMine.map(syncPack).toList(growable: false),
+      error: null,
+    );
     return saved;
   }
 
