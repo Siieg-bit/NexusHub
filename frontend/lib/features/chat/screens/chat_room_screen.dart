@@ -487,8 +487,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       .eq('user_id', counterpartUserId)
                       .maybeSingle();
 
-                  if (membership != null && membership is Map) {
-                    final localMap = Map<String, dynamic>.from(membership as Map);
+                  if (membership != null) {
+                    final localMap = Map<String, dynamic>.from(membership);
                     final localNickname =
                         (localMap['local_nickname'] as String?)?.trim();
                     final localIconUrl =
@@ -1320,9 +1320,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               },
             );
             debugPrint('[EquipBubble] RPC result: $result (${result.runtimeType})');
-            final resultMap = result is Map
-                ? Map<String, dynamic>.from(result as Map)
-                : null;
+            final resultMap =
+                result is Map ? Map<String, dynamic>.from(result) : null;
             final ok = resultMap?['success'] as bool? ?? false;
             final equipped = resultMap?['equipped'] as bool? ?? false;
             debugPrint('[EquipBubble] ok=$ok equipped=$equipped');

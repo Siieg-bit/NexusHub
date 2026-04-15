@@ -374,7 +374,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       await showRGBColorPicker(ctx, initialColor: initial);
                   if (picked != null) {
                     final hex =
-                        '#${picked.value.toRadixString(16).substring(2).toUpperCase()}';
+                        '#${picked.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
                     setS(() => selectedColor = hex);
                   }
                 },
