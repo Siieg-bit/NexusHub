@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:amino_clone/config/app_config.dart';
 
 /// Serviço de Deep Links e URLs Curtas do NexusHub.
 ///
@@ -102,9 +103,9 @@ class DeepLinkService {
       // o scheme nexushub:// para https:// antes de passar para o SDK.
       Uri normalizedUri = uri;
       if (uri.scheme != 'http' && uri.scheme != 'https') {
-        // Substitui o scheme por https e usa o Supabase URL como host
-        final supabaseHost =
-            Uri.parse('https://ylvzqqvcanzzswjkqeya.supabase.co').host;
+        // Substitui o scheme por https e usa o Supabase URL como host.
+        // Usa AppConfig para não duplicar a URL de produção.
+        final supabaseHost = Uri.parse(AppConfig.supabaseUrl).host;
         normalizedUri = uri.replace(
           scheme: 'https',
           host: supabaseHost,
@@ -157,42 +158,58 @@ class DeepLinkService {
   }
 
   static bool _handleCustomScheme(Uri uri) {
-    final segments = uri.pathSegments;
-    if (segments.isEmpty) return false;
+    // Em URIs com custom scheme (nexushub://tipo/id), o Dart coloca o primeiro
+    // segmento lógico em uri.host, não em uri.pathSegments.
+    // Exemplo: nexushub://user/123  → host='user', pathSegments=['123']
+    // Exemplo: nexushub:///user/123 → host='',     pathSegments=['user','123']
+    // A normalização abaixo trata ambos os formatos corretamente.
+    final String head;
+    final String id;
+    if (uri.host.isNotEmpty) {
+      // Formato canônico: nexushub://tipo/id
+      head = uri.host;
+      id = uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : '';
+    } else {
+      // Formato alternativo: nexushub:///tipo/id
+      final segments = uri.pathSegments;
+      if (segments.isEmpty) return false;
+      head = segments[0];
+      id = segments.length > 1 ? segments[1] : '';
+    }
 
-    switch (segments[0]) {
+    switch (head) {
       case 'u':
       case 'user':
-        if (segments.length > 1) { _navigateToUser(segments[1]); return true; }
+        if (id.isNotEmpty) { _navigateToUser(id); return true; }
         break;
       case 'c':
       case 'community':
-        if (segments.length > 1) { _navigateToCommunity(segments[1]); return true; }
+        if (id.isNotEmpty) { _navigateToCommunity(id); return true; }
         break;
       case 'p':
       case 'post':
-        if (segments.length > 1) { _navigateToPost(segments[1]); return true; }
+        if (id.isNotEmpty) { _navigateToPost(id); return true; }
         break;
       case 'w':
       case 'wiki':
-        if (segments.length > 1) { _navigateToWiki(segments[1]); return true; }
+        if (id.isNotEmpty) { _navigateToWiki(id); return true; }
         break;
       case 'chat':
-        if (segments.length > 1) { _navigateToChat(segments[1]); return true; }
+        if (id.isNotEmpty) { _navigateToChat(id); return true; }
         break;
       case 's':
       case 'sticker':
-        if (segments.length > 1) { _navigateToStickerPack(segments[1]); return true; }
+        if (id.isNotEmpty) { _navigateToStickerPack(id); return true; }
         break;
       case 'invite':
-        if (segments.length > 1) { _handleInviteCode(segments[1]); return true; }
+        if (id.isNotEmpty) { _handleInviteCode(id); return true; }
         break;
       // Legado
       case 'ch':
-        if (segments.length > 1) { _navigateToChat(segments[1]); return true; }
+        if (id.isNotEmpty) { _navigateToChat(id); return true; }
         break;
       case 'i':
-        if (segments.length > 1) { _handleInviteCode(segments[1]); return true; }
+        if (id.isNotEmpty) { _handleInviteCode(id); return true; }
         break;
     }
     return false;
