@@ -40,23 +40,29 @@ bool _isDirectLikeCommunityThread(
 ) {
   if (thread == null) return false;
 
+  final threadCommunityId = thread['community_id'] as String?;
+
+  // Regra principal: o thread DEVE pertencer a esta comunidade.
+  // DMs globais (community_id == null) NUNCA devem aparecer dentro de uma
+  // comunidade — eles pertencem à lista global de chats do usuário.
+  if (threadCommunityId != communityId) return false;
+
   final type = (thread['type'] as String? ?? '').trim().toLowerCase();
+
+  // Tipos explícitos de DM/privado dentro da comunidade
   if (type == 'dm' || type == 'direct' || type == 'private') return true;
+
+  // Tipos explícitos de chat público/grupo não são DM
   if (type == 'public' || type == 'group') return false;
 
-  final threadCommunityId = thread['community_id'] as String?;
+  // Para threads sem tipo explícito, usa heurística de formato:
+  // thread com 2 membros ou menos e título genérico é tratado como DM
   final membersCount = thread['members_count'] as int? ?? 0;
   final title = ((thread['title'] as String?) ?? '').trim().toLowerCase();
   final hasGenericTitle = title.isEmpty || title == 'chat';
-
-  final belongsToCurrentCommunity = threadCommunityId == communityId;
   final hasDmShape = membersCount > 0 && membersCount <= 2;
 
-  if (belongsToCurrentCommunity && (hasDmShape || hasGenericTitle)) {
-    return true;
-  }
-
-  return threadCommunityId == null && (hasDmShape || hasGenericTitle);
+  return hasDmShape || hasGenericTitle;
 }
 
 bool _isDirectLikeChatRoom(ChatRoomModel chatRoom, String communityId) {
