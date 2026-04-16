@@ -31,7 +31,18 @@ import 'firebase_options.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 void main() async {
-  try { await dotenv.load(fileName: ".env"); } catch (e) { debugPrint("DotEnv: erro ao carregar .env"); }
+  // Carrega variáveis de ambiente do arquivo .env se ele existir.
+  // O arquivo é opcional: em produção e em builds sem .env, o app usa
+  // os valores padrão definidos em AppConfig. O mergeWith({}) garante
+  // que dotenv.env fique inicializado mesmo sem arquivo, evitando
+  // LateInitializationError ao acessar dotenv.env nos getters.
+  try {
+    await dotenv.load(fileName: ".env", mergeWith: {});
+  } catch (_) {
+    // Arquivo .env ausente ou ilegível — comportamento esperado em produção.
+    // Inicializa dotenv com mapa vazio para que dotenv.env esteja disponível.
+    dotenv.testLoad(mergeWith: {});
+  }
   final binding = WidgetsFlutterBinding.ensureInitialized();
 
   // ── 120Hz: Solicitar a maior taxa de atualização disponível ────────
