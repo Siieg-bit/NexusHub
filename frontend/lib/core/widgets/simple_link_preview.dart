@@ -82,7 +82,10 @@ class SimpleLinkPreview extends StatelessWidget {
     if (internalInfo != null) {
       final path = uri.path;
       if (path.isNotEmpty && context.mounted) {
-        GoRouter.of(context).push(path);
+        // Preserva query string e fragment para que rotas que dependem de
+        // estado por query (ex: ?tab=following) funcionem corretamente.
+        final internalLocation = uri.replace(scheme: '', host: '').toString();
+        GoRouter.of(context).push(internalLocation);
         return;
       }
     }

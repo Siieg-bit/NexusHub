@@ -63,13 +63,20 @@ class LinkifiedText extends StatefulWidget {
 
   /// Abre uma URL: tenta navegar internamente via GoRouter;
   /// se falhar, abre no navegador externo.
+  ///
+  /// Preserva query string e fragment para que rotas que dependem de estado
+  /// por query (ex: /user/:id/followers?tab=following) funcionem corretamente.
   static void openUrl(BuildContext context, String url) {
     final uri = Uri.tryParse(url);
     if (uri != null) {
       final path = uri.path;
       if (path.isNotEmpty && path != '/') {
+        // Reconstrói a URL interna preservando query string e fragment.
+        // Usa uri.replace para descartar apenas scheme e host, mantendo
+        // path, queryParameters e fragment intactos.
+        final internalLocation = uri.replace(scheme: '', host: '').toString();
         try {
-          GoRouter.of(context).push(path);
+          GoRouter.of(context).push(internalLocation);
           return;
         } catch (_) {
           // GoRouter não encontrou a rota — abrir externamente
