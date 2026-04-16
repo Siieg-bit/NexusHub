@@ -11,6 +11,7 @@ import '../../stories/widgets/story_carousel.dart';
 import '../providers/community_detail_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/services/supabase_service.dart';
 
 // =============================================================================
 // TAB: Feed (Destaque / Recentes)
@@ -513,22 +514,74 @@ class _PinnedPostRow extends ConsumerWidget {
   }
 }
 
-class _FeaturedHeroCard extends StatelessWidget {
+class _FeaturedHeroCard extends ConsumerStatefulWidget {
   final PostModel post;
   final Color accent;
 
   const _FeaturedHeroCard({required this.post, required this.accent});
 
   @override
+  ConsumerState<_FeaturedHeroCard> createState() => _FeaturedHeroCardState();
+}
+
+class _FeaturedHeroCardState extends ConsumerState<_FeaturedHeroCard> {
+  late PostModel _post;
+
+  @override
+  void initState() {
+    super.initState();
+    _post = widget.post;
+  }
+
+  @override
+  void didUpdateWidget(_FeaturedHeroCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.post.id != widget.post.id ||
+        oldWidget.post.isLiked != widget.post.isLiked ||
+        oldWidget.post.likesCount != widget.post.likesCount) {
+      _post = widget.post;
+    }
+  }
+
+  Future<void> _toggleLike() async {
+    final wasLiked = _post.isLiked;
+    // Atualização otimista
+    setState(() {
+      _post = _post.copyWith(
+        isLiked: !wasLiked,
+        likesCount: _post.likesCount + (wasLiked ? -1 : 1),
+      );
+    });
+    try {
+      await SupabaseService.client.rpc('toggle_like_with_reputation', params: {
+        'p_community_id': _post.communityId,
+        'p_user_id': SupabaseService.currentUserId,
+        'p_post_id': _post.id,
+      });
+    } catch (_) {
+      // Reverte em caso de erro
+      if (mounted) {
+        setState(() {
+          _post = _post.copyWith(
+            isLiked: wasLiked,
+            likesCount: _post.likesCount + (wasLiked ? 1 : -1),
+          );
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final imageUrl = post.coverImageUrl ?? post.mediaUrl;
+    final accent = widget.accent;
+    final imageUrl = _post.coverImageUrl ?? _post.mediaUrl;
     final hasImage = imageUrl != null && imageUrl.isNotEmpty;
 
     return AminoAnimations.cardPress(
-      onTap: () => context.push('/post/${post.id}'),
+      onTap: () => context.push('/post/${_post.id}'),
       child: Container(
-        height: r.s(220),
+        height: r.s(240),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(r.s(20)),
           border: Border.all(color: accent.withValues(alpha: 0.28)),
@@ -555,7 +608,7 @@ class _FeaturedHeroCard extends StatelessWidget {
               end: Alignment.bottomCenter,
               colors: [
                 Colors.black.withValues(alpha: hasImage ? 0.08 : 0.02),
-                Colors.black.withValues(alpha: 0.82),
+                Colors.black.withValues(alpha: 0.88),
               ],
             ),
           ),
@@ -563,6 +616,7 @@ class _FeaturedHeroCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Badge "Destaque principal"
               Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: r.s(10),
@@ -582,10 +636,11 @@ class _FeaturedHeroCard extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              // Título do post
               Text(
-                post.title?.trim().isNotEmpty == true
-                    ? post.title!.trim()
-                    : post.content,
+                _post.title?.trim().isNotEmpty == true
+                    ? _post.title!.trim()
+                    : _post.content,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -595,16 +650,87 @@ class _FeaturedHeroCard extends StatelessWidget {
                   height: 1.15,
                 ),
               ),
-              SizedBox(height: r.s(8)),
+              SizedBox(height: r.s(6)),
+              // Prévia do conteúdo
               Text(
-                post.content,
+                _post.content,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.82),
+                  color: Colors.white.withValues(alpha: 0.75),
                   fontSize: r.fs(12),
                   height: 1.35,
                 ),
+              ),
+              SizedBox(height: r.s(10)),
+              // ── Barra de ações ──
+              Row(
+                children: [
+                  // Botão de like com atualização otimista
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: _toggleLike,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          transitionBuilder: (child, anim) => ScaleTransition(
+                            scale: anim,
+                            child: child,
+                          ),
+                          child: Icon(
+                            _post.isLiked
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_border_rounded,
+                            key: ValueKey(_post.isLiked),
+                            size: r.s(18),
+                            color: _post.isLiked
+                                ? Colors.red[400]
+                                : Colors.white.withValues(alpha: 0.85),
+                          ),
+                        ),
+                        SizedBox(width: r.s(4)),
+                        Text(
+                          '${_post.likesCount}',
+                          style: TextStyle(
+                            color: _post.isLiked
+                                ? Colors.red[300]
+                                : Colors.white.withValues(alpha: 0.85),
+                            fontSize: r.fs(13),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: r.s(16)),
+                  // Botão de comentários — abre o post diretamente na seção de comentários
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => context
+                        .push('/post/${_post.id}?scrollToComments=true'),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.chat_bubble_outline_rounded,
+                          size: r.s(17),
+                          color: Colors.white.withValues(alpha: 0.85),
+                        ),
+                        SizedBox(width: r.s(4)),
+                        Text(
+                          '${_post.commentsCount}',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontSize: r.fs(13),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

@@ -103,7 +103,14 @@ final postCommentsProvider =
 class PostDetailScreen extends ConsumerStatefulWidget {
   final String postId;
 
-  const PostDetailScreen({super.key, required this.postId});
+  /// Se true, rola automaticamente até a seção de comentários e foca o campo de texto.
+  final bool scrollToComments;
+
+  const PostDetailScreen({
+    super.key,
+    required this.postId,
+    this.scrollToComments = false,
+  });
 
   @override
   ConsumerState<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -156,6 +163,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           .update({'views_count': current + 1}).eq('id', widget.postId);
     } catch (e) {
       debugPrint('[NexusHub] Erro ao registrar visualização: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.scrollToComments) {
+      // Aguarda o primeiro frame para que o layout esteja pronto antes de focar
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _focusCommentComposer();
+      });
     }
   }
 

@@ -279,6 +279,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'post-detail',
         builder: (context, state) => PostDetailScreen(
           postId: state.pathParameters['id']!,
+          scrollToComments:
+              state.uri.queryParameters['scrollToComments'] == 'true',
         ),
       ),
       GoRoute(
