@@ -506,7 +506,8 @@ class _PostCardState extends ConsumerState<PostCard>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (widget.showCommunity) _buildCommunityHeader(),
-          _buildAuthorHeader(context),
+                _buildAuthorHeader(context, canModeratePost: canModeratePost),
+
           Padding(
             padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(14)),
             child: Container(
@@ -784,7 +785,7 @@ class _PostCardState extends ConsumerState<PostCard>
   // ══════════════════════════════════════════════════════════════════════════
   // AUTHOR HEADER — Estilo Amino
   // ══════════════════════════════════════════════════════════════════════════
-  Widget _buildAuthorHeader(BuildContext context) {
+  Widget _buildAuthorHeader(BuildContext context, {required bool canModeratePost}) {
     final s = ref.read(stringsProvider);
     final r = context.r;
     // Perguntas anônimas não devem expor identidade nem permitir navegação ao perfil.

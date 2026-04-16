@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -127,7 +129,7 @@ class _CommunityVisualEditorState extends ConsumerState<CommunityVisualEditor> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(s.successfullySaved),
+              content: Text(s.success),
               backgroundColor: context.nexusTheme.success,
               behavior: SnackBarBehavior.floating,
             ),
@@ -141,7 +143,7 @@ class _CommunityVisualEditorState extends ConsumerState<CommunityVisualEditor> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.errorTryAgain),
+            content: Text(s.errorSavingTryAgain),
             backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -420,12 +422,17 @@ class _CommunityVisualEditorState extends ConsumerState<CommunityVisualEditor> {
           children: [
             GestureDetector(
               onTap: () async {
-                final pickedColor = await showColorPicker(
+                final initialColorValue = Color(
+                  int.parse(color.replaceFirst('#', '0xff')),
+                );
+                final pickedColor = await showRGBColorPicker(
                   context,
-                  initialColor: color,
+                  initialColor: initialColorValue,
+                  title: label,
                 );
                 if (pickedColor != null) {
-                  onChanged(pickedColor);
+                  final hexColor = '#${pickedColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+                  onChanged(hexColor);
                 }
               },
               child: Container(

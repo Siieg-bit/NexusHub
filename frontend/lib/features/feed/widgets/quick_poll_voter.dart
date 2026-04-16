@@ -80,7 +80,7 @@ class _QuickPollVoterState extends ConsumerState<QuickPollVoter> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.errorTryAgain),
+            content: Text(s.errorVoting),
             backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -318,7 +318,7 @@ class _QuickPollCreatorState extends ConsumerState<QuickPollCreator> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.successfullySent),
+            content: Text(s.success),
             backgroundColor: context.nexusTheme.success,
             behavior: SnackBarBehavior.floating,
           ),
@@ -331,7 +331,7 @@ class _QuickPollCreatorState extends ConsumerState<QuickPollCreator> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.errorTryAgain),
+            content: Text(s.errorCreatingPoll),
             backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),

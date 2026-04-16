@@ -32,6 +32,7 @@ Future<bool?> showMemberRoleManager({
   required String targetUserName,
   required String currentRole,
   String? currentTitle,
+  Map<String, dynamic> membershipData = const <String, dynamic>{},
   /// Role do usuário que está abrindo o painel
   String callerRole = 'member',
 }) {
@@ -45,6 +46,7 @@ Future<bool?> showMemberRoleManager({
       targetUserName: targetUserName,
       currentRole: currentRole,
       currentTitle: currentTitle,
+      membershipData: membershipData,
       callerRole: callerRole,
     ),
   );
@@ -56,6 +58,7 @@ class _MemberRoleManagerSheet extends ConsumerStatefulWidget {
   final String targetUserName;
   final String currentRole;
   final String? currentTitle;
+  final Map<String, dynamic> membershipData;
   final String callerRole;
 
   const _MemberRoleManagerSheet({
@@ -64,6 +67,7 @@ class _MemberRoleManagerSheet extends ConsumerStatefulWidget {
     required this.targetUserName,
     required this.currentRole,
     this.currentTitle,
+    this.membershipData = const <String, dynamic>{},
     this.callerRole = 'member',
   });
 
