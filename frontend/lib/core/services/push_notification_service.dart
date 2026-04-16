@@ -284,7 +284,7 @@ class PushNotificationService {
           .eq('user_id', userId)
           .eq('is_read', false)
           .count(CountOption.exact);
-      final count = res.count ?? 1;
+      final count = res.count;
       await FlutterAppBadger.updateBadgeCount(count);
     } catch (e) {
       debugPrint('[Push] Erro ao atualizar badge: \$e');

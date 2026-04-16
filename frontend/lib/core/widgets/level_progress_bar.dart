@@ -108,12 +108,6 @@ class LevelProgressBar extends StatelessWidget {
     );
   }
 
-  Widget _buildLevelIcon(Responsive r, Color levelColor) {
-    // Nota: este widget é StatelessWidget sem acesso direto ao context.
-    // O context é passado via _buildLevelIconWithContext chamado no build.
-    return _LevelIconPlaceholder(r: r, levelColor: levelColor, level: level);
-  }
-
   Widget _buildProgressBar(
     Responsive r,
     BuildContext context,

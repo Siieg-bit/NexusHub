@@ -1599,7 +1599,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   Future<void> _sendImage() async {
-    final s = getStrings();
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
@@ -1638,7 +1637,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _sendVideoFile() async {
-    final s = getStrings();
     final picker = ImagePicker();
     final video = await picker.pickVideo(source: ImageSource.gallery);
     if (video == null) return;

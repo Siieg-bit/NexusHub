@@ -1,16 +1,12 @@
-import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/presence_service.dart';
 
-/// Provider que expõe o Set de userIds online em uma comunidade específica.
-/// Atualiza em tempo real via Supabase Realtime Presence.
+/// Provider que expõe um conjunto de usuários online por comunidade.
 ///
-/// Uso:
-/// ```dart
-/// final onlineUsers = ref.watch(communityPresenceProvider(communityId));
-/// final count = onlineUsers.length;
-/// final isOnline = onlineUsers.contains(userId);
-/// ```
+/// A presença em tempo real por canal foi removida do projeto em favor de
+/// janelas graduais de 15 minutos baseadas em `profiles.last_seen_at`.
+/// Enquanto não houver uma fonte reativa específica por comunidade, este
+/// provider mantém uma API compatível para o restante da UI sem depender das
+/// chamadas deprecated do serviço legado.
 final communityPresenceProvider = StreamNotifierProvider.family<
     CommunityPresenceNotifier, Set<String>, String>(
   CommunityPresenceNotifier.new,
@@ -20,34 +16,11 @@ class CommunityPresenceNotifier
     extends FamilyStreamNotifier<Set<String>, String> {
   @override
   Stream<Set<String>> build(String arg) {
-    final communityId = arg;
-    final presence = PresenceService.instance;
-
-    // Entrar no canal de presença da comunidade
-    presence.joinChannel(communityId);
-
-    // Limpar ao sair
-    ref.onDispose(() {
-      presence.leaveChannel(communityId);
-    });
-
-    // Emitir estado inicial + stream de mudanças
-    return _mergeInitialAndStream(communityId);
-  }
-
-  Stream<Set<String>> _mergeInitialAndStream(String communityId) async* {
-    final presence = PresenceService.instance;
-
-    // Emitir estado atual primeiro
-    yield presence.getOnlineUsers(communityId);
-
-    // Depois emitir mudanças em tempo real
-    yield* presence.onlineUsersStream(communityId);
+    return const Stream<Set<String>>.value(<String>{});
   }
 }
 
 /// Provider simples para contagem de membros online em uma comunidade.
-/// Derivado do communityPresenceProvider.
 final onlineCountProvider = Provider.family<int, String>((ref, communityId) {
   final presenceAsync = ref.watch(communityPresenceProvider(communityId));
   return presenceAsync.valueOrNull?.length ?? 0;
@@ -65,7 +38,7 @@ final isUserOnlineProvider = Provider.family<bool, String>((ref, key) {
   return presenceAsync.valueOrNull?.contains(userId) ?? false;
 });
 
-/// Provider para presença global (não específica de comunidade).
+/// Provider para presença global.
 final globalPresenceProvider =
     StreamNotifierProvider<GlobalPresenceNotifier, Set<String>>(
   GlobalPresenceNotifier.new,
@@ -74,13 +47,7 @@ final globalPresenceProvider =
 class GlobalPresenceNotifier extends StreamNotifier<Set<String>> {
   @override
   Stream<Set<String>> build() {
-    return _mergeInitialAndStream();
-  }
-
-  Stream<Set<String>> _mergeInitialAndStream() async* {
-    final presence = PresenceService.instance;
-    yield presence.getOnlineUsers('global');
-    yield* presence.onlineUsersStream('global');
+    return const Stream<Set<String>>.value(<String>{});
   }
 }
 

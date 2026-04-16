@@ -20,8 +20,6 @@ class PresenceService {
   static const Duration heartbeatInterval = Duration(minutes: 15);
   static const Duration onlineWindow = Duration(minutes: 15);
 
-  final _supabase = Supabase.instance.client;
-
   Timer? _heartbeatTimer;
   String? _currentUserId;
   DateTime? _lastHeartbeatAt;

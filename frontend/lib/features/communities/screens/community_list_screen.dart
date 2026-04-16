@@ -29,7 +29,6 @@ class CommunityListScreen extends ConsumerStatefulWidget {
 class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   // _avatarUrl removido: agora usa currentUserAvatarProvider (atualização em tempo real)
   int _coins = 0;
-  List<CommunityModel>? _reorderedCommunities;
 
   @override
   void initState() {
@@ -78,7 +77,6 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
               child: RefreshIndicator(
                 color: context.nexusTheme.accentPrimary,
                 onRefresh: () async {
-                  setState(() => _reorderedCommunities = null);
                   ref.invalidate(userCommunitiesProvider);
                   ref.invalidate(checkInStatusProvider);
                 },
@@ -111,12 +109,11 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
     
     // Ordenar comunidades por mais recentes primeiro
     final sortedCommunities = List<CommunityModel>.from(communities)
-      ..sort((a, b) => (b.createdAt ?? DateTime.now()).compareTo(a.createdAt ?? DateTime.now()));
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     
     return RefreshIndicator(
       color: context.nexusTheme.accentPrimary,
       onRefresh: () async {
-        setState(() => _reorderedCommunities = null);
         ref.invalidate(userCommunitiesProvider);
         ref.invalidate(checkInStatusProvider);
       },

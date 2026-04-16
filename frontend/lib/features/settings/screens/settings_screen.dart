@@ -5,7 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/services/supabase_service.dart';
-import '../../../core/providers/theme_provider.dart';
 import 'package:amino_clone/core/providers/nexus_theme_provider.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';

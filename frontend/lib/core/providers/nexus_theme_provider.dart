@@ -117,7 +117,7 @@ class NexusThemeNotifier extends StateNotifier<NexusThemeData> {
           .eq('slug', slug)
           .eq('is_active', true)
           .limit(1);
-      if ((rows as List).isNotEmpty && mounted) {
+      if (rows.isNotEmpty && mounted) {
         state = NexusThemeData.fromRemoteJson(rows.first as Map<String, dynamic>);
       }
     } catch (e) {

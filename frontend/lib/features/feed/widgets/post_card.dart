@@ -491,7 +491,7 @@ class _PostCardState extends ConsumerState<PostCard>
     }
   }
 
-  Widget _buildHiddenPostPlaceholder(BuildContext context) {
+  Widget _buildHiddenPostPlaceholder(BuildContext context, {required bool canModeratePost}) {
     final r = context.r;
     return Container(
       margin: EdgeInsets.only(bottom: r.s(10)),
@@ -578,7 +578,7 @@ class _PostCardState extends ConsumerState<PostCard>
     if (_post.status == 'disabled' && !canModeratePost) {
       return AminoAnimations.cardPress(
         onTap: () => context.push('/post/${_post.id}'),
-        child: _buildHiddenPostPlaceholder(context),
+        child: _buildHiddenPostPlaceholder(context, canModeratePost: canModeratePost),
       );
     }
     return AminoAnimations.cardPress(
@@ -638,7 +638,7 @@ class _PostCardState extends ConsumerState<PostCard>
             if (widget.showCommunity) _buildCommunityHeader(),
 
             // ── Author header ──
-            _buildAuthorHeader(context),
+            _buildAuthorHeader(context, canModeratePost: canModeratePost),
 
             // ── Title (oculto para reposts — título fica no card aninhado) ──
             if (_post.type != 'repost' && (_post.title ?? '').isNotEmpty)

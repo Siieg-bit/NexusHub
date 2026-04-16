@@ -222,7 +222,7 @@ class _MediaViewerScreenState extends State<_MediaViewerScreen>
       }
 
       // Limpar arquivo temporário
-      await file.delete().catchError((_) {});
+      await file.delete().catchError((_) => file);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -577,7 +577,6 @@ class _VideoPlayerWidget extends StatefulWidget {
 class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
   late VideoPlayerController _controller;
   bool _initialized = false;
-  bool _showControls = true;
   bool _isMuted = false;
 
   @override

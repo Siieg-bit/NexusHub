@@ -1866,7 +1866,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(r.s(16)),
                         child: CachedNetworkImage(
-                          imageUrl: originalAuthorAvatar!,
+                          imageUrl: originalAuthorAvatar,
                           width: r.s(32),
                           height: r.s(32),
                           fit: BoxFit.cover,

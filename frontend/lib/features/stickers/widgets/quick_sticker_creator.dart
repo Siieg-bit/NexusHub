@@ -132,7 +132,7 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
             .limit(1);
 
         String packId;
-        if (existingPacks is List && existingPacks.isNotEmpty) {
+        if (existingPacks.isNotEmpty) {
           packId = existingPacks[0]['id'] as String;
         } else {
           // Criar pack pessoal

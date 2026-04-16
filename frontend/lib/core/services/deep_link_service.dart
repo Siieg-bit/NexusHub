@@ -21,7 +21,6 @@ class DeepLinkService {
   DeepLinkService._();
 
   static const String _baseUrl = 'https://nexushub.app';
-  static const List<String> _hosts = ['nexushub.app', 'www.nexushub.app'];
 
   static GoRouter? _router;
   static StreamSubscription? _authSubscription;
