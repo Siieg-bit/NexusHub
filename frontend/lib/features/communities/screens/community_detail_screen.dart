@@ -339,7 +339,13 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                 .valueOrNull?[widget.communityId] ??
                             0) >
                         0,
-                    avatarUrl: ref.watch(currentUserAvatarProvider),
+                    // Usa o avatar local da comunidade se o usuário tiver
+                    // definido um, senão cai no avatar global.
+                    avatarUrl: ref
+                            .watch(communityLocalAvatarProvider(
+                                widget.communityId))
+                            .valueOrNull ??
+                        ref.watch(currentUserAvatarProvider),
                     onMenuTap: () =>
                         AminoDrawerController.of(context)?.toggle(),
                     onOnlineTap: () => _showOnlineMembersSheet(

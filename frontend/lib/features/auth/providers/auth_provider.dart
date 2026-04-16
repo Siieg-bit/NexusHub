@@ -320,3 +320,26 @@ final currentUserAvatarProvider = Provider<String?>((ref) {
 final currentUserNicknameProvider = Provider<String?>((ref) {
   return ref.watch(authProvider).user?.nickname;
 });
+
+/// Provider do avatar do usuário logado DENTRO de uma comunidade específica.
+///
+/// Prioridade: local_icon_url da comunidade > icon_url global.
+/// Usado no botão "Eu" do bottom nav e em qualquer widget que precise exibir
+/// o avatar do usuário logado no contexto de uma comunidade.
+final communityLocalAvatarProvider =
+    FutureProvider.family<String?, String>((ref, communityId) async {
+  final globalAvatar = ref.watch(currentUserAvatarProvider);
+  if (communityId.isEmpty) return globalAvatar;
+  final userId = SupabaseService.currentUserId;
+  if (userId == null) return globalAvatar;
+  try {
+    final membership = await SupabaseService.table('community_members')
+        .select('local_icon_url')
+        .eq('community_id', communityId)
+        .eq('user_id', userId)
+        .maybeSingle();
+    final localIcon = (membership?['local_icon_url'] as String?)?.trim();
+    if (localIcon != null && localIcon.isNotEmpty) return localIcon;
+  } catch (_) {}
+  return globalAvatar;
+});
