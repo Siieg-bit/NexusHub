@@ -903,9 +903,6 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
   Color? _legacyTextColor;
   String _activeToolSection = 'text';
 
-  static final RegExp _inlineTextColorPattern = RegExp(
-    r'\[color=(#[0-9A-Fa-f]{6})\]([\s\S]+?)\[/color\]',
-  );
 
   @override
   void initState() {
