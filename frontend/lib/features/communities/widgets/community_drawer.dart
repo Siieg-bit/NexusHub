@@ -880,7 +880,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           iconColor: theme.accentSecondary,
           label: s.stories,
           onTap: () => _closeAndNavigate(() {
-            context.push('/profile/${SupabaseService.currentUserId}');
+            // Navega para o perfil do usuário DENTRO da comunidade
+            context.push('/community/${widget.community.id}/my-profile');
           }),
         ),
       ],
@@ -943,7 +944,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           iconColor: theme.error,
           label: 'Saved Posts',
           onTap: () => _closeAndNavigate(() {
-            context.push('/profile/${SupabaseService.currentUserId}');
+            // Navega para o perfil do usuário DENTRO da comunidade (aba Saved Posts)
+            context.push('/community/${widget.community.id}/my-profile');
           }),
         ),
       ],
