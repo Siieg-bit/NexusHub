@@ -1,25 +1,24 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 /// Configurações globais do aplicativo NexusHub.
-/// Credenciais do Supabase configuradas para o projeto de produção.
+/// Credenciais do Supabase configuradas a partir das variáveis de ambiente.
 class AppConfig {
   AppConfig._();
 
   // ============================================================================
   // SUPABASE
   // ============================================================================
-
   /// URL do projeto Supabase
-  static const String supabaseUrl = 'https://ylvzqqvcanzzswjkqeya.supabase.co';
+  static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? 'https://ylvzqqvcanzzswjkqeya.supabase.co';
 
   /// Publishable API Key do Supabase — substitui a antiga anon key (JWT).
   /// Segura para uso no client-side com RLS habilitado.
   /// Ref: https://supabase.com/dashboard > Settings > API Keys
-  static const String supabaseAnonKey =
-      'sb_publishable_HYsYzaF8DuBgXpqJAICJ1Q_b73GLUeb';
+  static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? 'sb_publishable_HYsYzaF8DuBgXpqJAICJ1Q_b73GLUeb';
 
   // ============================================================================
   // APP
   // ============================================================================
-
   static const String appName = 'NexusHub';
   static const String appVersion = '1.0.0';
   static const String appTagline = 'Connect with your communities';
@@ -27,7 +26,6 @@ class AppConfig {
   // ============================================================================
   // GAMIFICAÇÃO
   // ============================================================================
-
   /// XP necessário para cada nível (índice = nível - 1)
   static const List<int> xpThresholds = [
     0, // Nível 1
@@ -62,7 +60,6 @@ class AppConfig {
   // ============================================================================
   // PAGINAÇÃO
   // ============================================================================
-
   static const int defaultPageSize = 20;
   static const int chatPageSize = 50;
   static const int searchPageSize = 15;
@@ -70,7 +67,6 @@ class AppConfig {
   // ============================================================================
   // LIMITES
   // ============================================================================
-
   static const int maxPostTitleLength = 300;
   static const int maxPostContentLength = 10000;
   static const int maxCommentLength = 2000;
