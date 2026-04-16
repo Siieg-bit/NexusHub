@@ -50,7 +50,6 @@ class _CallScreenState extends ConsumerState<CallScreen> {
 
   bool _isMuted = false;
   bool _isSpeakerOn = true;
-  bool _isCameraOn = false;
   bool _controlsVisible = true;
 
   late DateTime _startTime;
@@ -61,7 +60,6 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   void initState() {
     super.initState();
     _startTime = DateTime.now();
-    _isCameraOn = widget.session.type == CallType.video;
     _isMuted = CallService.isMuted;
     _isSpeakerOn = CallService.isSpeakerOn;
 
@@ -121,16 +119,6 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     setState(() => _isSpeakerOn = CallService.isSpeakerOn);
   }
 
-  Future<void> _toggleCamera() async {
-    await CallService.toggleCamera();
-    if (!mounted) return;
-    setState(() => _isCameraOn = CallService.isCameraOn);
-  }
-
-  Future<void> _switchCamera() async {
-    await CallService.switchCamera();
-  }
-
   Future<void> _endCall() async {
     await CallService.leaveCall();
     if (!mounted) return;
@@ -140,13 +128,8 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final isVideo = widget.session.type == CallType.video;
     final isScreening = widget.session.type == CallType.screeningRoom;
-    final title = isScreening
-        ? 'Sala de Projeção'
-        : isVideo
-            ? 'Video Chat'
-            : 'Voice Chat';
+    final title = isScreening ? 'Sala de Projeção' : 'Voice Chat';
     final bgColor = context.nexusTheme.backgroundPrimary;
 
     return Scaffold(
@@ -166,9 +149,9 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                     child: _buildHeader(title),
                   ),
 
-                  // ── Video/Audio Grid ──
+                  // ── Audio Grid ──
                   Expanded(
-                    child: isVideo ? _buildVideoGrid() : _buildAudioGrid(),
+                    child: _buildAudioGrid(),
                   ),
 
                   // ── Sala de Projeção: área de vídeo ──
@@ -178,39 +161,12 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                   AnimatedOpacity(
                     opacity: _controlsVisible ? 1.0 : 0.0,
                     duration: const Duration(milliseconds: 200),
-                    child: _buildControls(isVideo),
+                    child: _buildControls(),
                   ),
                 ],
               ),
 
-              // ── Local video preview (PiP) ──
-              if (isVideo && _isCameraOn && _remoteUsers.isNotEmpty)
-                Positioned(
-                  top: 80,
-                  right: 16,
-                  child: GestureDetector(
-                    onTap: _switchCamera,
-                    child: Container(
-                      width: r.s(120),
-                      height: r.s(160),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(r.s(12)),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.05),
-                            width: 1),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: CallService.engine != null
-                          ? AgoraVideoView(
-                              controller: VideoViewController(
-                                rtcEngine: CallService.engine!,
-                                canvas: const VideoCanvas(uid: 0),
-                              ),
-                            )
-                          : const SizedBox(),
-                    ),
-                  ),
-                ),
+              // Video PiP removido — video chat não suportado
             ],
           ),
         ),
@@ -281,8 +237,11 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     );
   }
 
-  /// Grid de vídeo real via Agora
-  Widget _buildVideoGrid() {
+  // _buildVideoGrid removido — video chat não suportado
+
+  /// Grid de áudio com indicadores de volume — placeholder para evitar erro de compilação
+  // ignore: unused_element
+  Widget _buildVideoGrid_removed() {
     final s = getStrings();
     final r = context.r;
     if (CallService.engine == null) {
@@ -293,18 +252,9 @@ class _CallScreenState extends ConsumerState<CallScreen> {
 
     final List<Widget> videoViews = [];
 
-    // Se não há usuários remotos, mostrar vídeo local em tela cheia
+    // Se não há usuários remotos, mostrar placeholder
     if (_remoteUsers.isEmpty) {
-      videoViews.add(
-        _isCameraOn
-            ? AgoraVideoView(
-                controller: VideoViewController(
-                  rtcEngine: CallService.engine!,
-                  canvas: const VideoCanvas(uid: 0),
-                ),
-              )
-            : _buildAvatarPlaceholder(s.you),
-      );
+      videoViews.add(_buildAvatarPlaceholder(s.you));
     } else {
       // Mostrar vídeos remotos
       for (final uid in _remoteUsers) {
@@ -539,7 +489,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     );
   }
 
-  Widget _buildControls(bool isVideo) {
+  Widget _buildControls() {
     final s = getStrings();
     final r = context.r;
     return Padding(
@@ -561,22 +511,6 @@ class _CallScreenState extends ConsumerState<CallScreen> {
             isActive: _isSpeakerOn,
             onTap: _toggleSpeaker,
           ),
-          if (isVideo) ...[
-            _ControlButton(
-              icon: _isCameraOn
-                  ? Icons.videocam_rounded
-                  : Icons.videocam_off_rounded,
-              label: s.camera,
-              isActive: _isCameraOn,
-              onTap: _toggleCamera,
-            ),
-            _ControlButton(
-              icon: Icons.cameraswitch_rounded,
-              label: s.switchCamera,
-              isActive: true,
-              onTap: _switchCamera,
-            ),
-          ],
           _ControlButton(
             icon: Icons.call_end_rounded,
             label: s.end,

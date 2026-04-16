@@ -787,14 +787,7 @@ class _CreatePublicChatScreenState
                 onChanged: (v) => setState(() => _isVoiceEnabled = v),
                 iconColor: Colors.green,
               ),
-              _buildSettingTile(
-                icon: Icons.videocam_rounded,
-                title: s.videoChatEnabled,
-                subtitle: s.videoChatEnabledDesc,
-                value: _isVideoEnabled,
-                onChanged: (v) => setState(() => _isVideoEnabled = v),
-                iconColor: Colors.blue,
-              ),
+              // Video chat não suportado neste app
               _buildSettingTile(
                 icon: Icons.movie_rounded,
                 title: s.projectionRoomEnabled,
