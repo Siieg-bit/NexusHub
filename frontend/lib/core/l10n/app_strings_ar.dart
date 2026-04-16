@@ -5790,5 +5790,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get galleryAsBannerHint => 'ستُعرض صور المعرض كغلاف للملف الشخصي، مع التبديل كل 20 ثانية';
   @override
+  String get viewWikiEntry => 'عرض مقالة الويكي';
+  @override
   String get bioAndWallTitle => 'السيرة الذاتية والحائط';
 }

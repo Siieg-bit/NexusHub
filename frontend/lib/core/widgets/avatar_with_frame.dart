@@ -49,6 +49,10 @@ class AvatarWithFrame extends ConsumerWidget {
   /// vez lê `asset_config.is_animated` do banco de dados.
   final bool isFrameAnimated;
 
+  /// Indica se o usuário tem um story ativo. Quando `true`, exibe um anel
+  /// gradiente ao redor do avatar (estilo Instagram/Amino).
+  final bool hasActiveStory;
+
   const AvatarWithFrame({
     super.key,
     this.avatarUrl,
@@ -58,6 +62,7 @@ class AvatarWithFrame extends ConsumerWidget {
     this.showOnline = false,
     this.onTap,
     this.isFrameAnimated = false,
+    this.hasActiveStory = false,
   });
 
   @override
@@ -68,6 +73,8 @@ class AvatarWithFrame extends ConsumerWidget {
     final frameSize = size * 1.4;
     // O SizedBox total tem o tamanho do frame para não cortar as bordas
     final totalSize = hasFrame ? frameSize : size;
+    // Anel de story: 4px de padding ao redor do avatar
+    final storyRingSize = size + 8.0;
 
     final widget = GestureDetector(
       onTap: onTap,
@@ -78,6 +85,27 @@ class AvatarWithFrame extends ConsumerWidget {
           clipBehavior: Clip.none,
           alignment: Alignment.center,
           children: [
+            // ── Anel de story (camada inferior, quando ativo) ──
+            if (hasActiveStory && !hasFrame)
+              Center(
+                child: Container(
+                  width: storyRingSize,
+                  height: storyRingSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFFE91E63),
+                        Color(0xFFFF5722),
+                        Color(0xFFFF9800),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                ),
+              ),
+
             // ── Avatar circular (camada base, centralizado) ──
             Center(
               child: Container(
@@ -86,12 +114,17 @@ class AvatarWithFrame extends ConsumerWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: context.surfaceColor,
-                  border: !hasFrame
+                  border: !hasFrame && !hasActiveStory
                       ? Border.all(
                           color: Colors.white.withValues(alpha: 0.10),
                           width: 1.5,
                         )
-                      : null,
+                      : hasActiveStory && !hasFrame
+                          ? Border.all(
+                              color: context.nexusTheme.backgroundPrimary,
+                              width: 2.5,
+                            )
+                          : null,
                 ),
                 child: ClipOval(
                   child: (avatarUrl ?? '').isNotEmpty

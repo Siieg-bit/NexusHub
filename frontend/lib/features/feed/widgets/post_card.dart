@@ -60,6 +60,24 @@ class _PostCardState extends ConsumerState<PostCard>
     if (_post.type == 'quiz') {
       _loadQuizAttempt();
     }
+    // Restaurar voto anterior na enquete a partir do poll_data.user_vote
+    if (_post.type == 'poll') {
+      _restorePollVote();
+    }
+  }
+
+  void _restorePollVote() {
+    final pollData = _post.pollData;
+    if (pollData == null) return;
+    final userVote = pollData['user_vote']?.toString();
+    if (userVote == null || userVote.isEmpty) return;
+    final options = (pollData['options'] as List<dynamic>?) ?? [];
+    final idx = options.indexWhere(
+      (o) => (o as Map<String, dynamic>)['id']?.toString() == userVote,
+    );
+    if (idx != -1 && mounted) {
+      setState(() => _selectedPollOption = idx);
+    }
   }
 
   @override
@@ -165,6 +183,7 @@ class _PostCardState extends ConsumerState<PostCard>
     final repostComment = await showModalBottomSheet<String?>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: context.surfaceColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -965,8 +984,54 @@ class _PostCardState extends ConsumerState<PostCard>
       case 'repost':
         return _buildCrosspostBanner();
       default:
+        // Verificar se é um post de wiki pelo variant
+        if (_post.variant == 'wiki' && _post.wikiData != null) {
+          return _buildWikiCard();
+        }
         return const SizedBox.shrink();
     }
+  }
+
+  // ── WIKI CARD ──
+  Widget _buildWikiCard() {
+    final s = ref.read(stringsProvider);
+    final theme = Theme.of(context).extension<NexusThemeExtension>()!;
+    final wikiEntryId = _post.wikiData?['wiki_entry_id'] as String?;
+    return GestureDetector(
+      onTap: wikiEntryId != null
+          ? () => context.push('/wiki/\$wikiEntryId')
+          : null,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.surfaceColor.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: theme.accentPrimary.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.menu_book_rounded,
+                color: theme.accentPrimary, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                s.viewWikiEntry,
+                style: TextStyle(
+                  color: theme.accentPrimary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios_rounded,
+                color: theme.accentPrimary, size: 14),
+          ],
+        ),
+      ),
+    );
   }
 
   // ── POLL ──
@@ -1426,33 +1491,11 @@ class _PostCardState extends ConsumerState<PostCard>
                         r.s(10), r.s(10), r.s(10), r.s(6)),
                     child: Row(
                       children: [
-                        if (originalAuthorAvatar != null)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(r.s(14)),
-                            child: CachedNetworkImage(
-                              imageUrl: originalAuthorAvatar,
-                              width: r.s(28),
-                              height: r.s(28),
-                              fit: BoxFit.cover,
-                              errorWidget: (_, __, ___) => CircleAvatar(
-                                radius: r.s(14),
-                                backgroundColor:
-                                    context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
-                                child: Icon(Icons.person_rounded,
-                                    size: r.s(14),
-                                    color: context.nexusTheme.accentPrimary),
-                              ),
-                            ),
-                          )
-                        else
-                          CircleAvatar(
-                            radius: r.s(14),
-                            backgroundColor:
-                                context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
-                            child: Icon(Icons.person_rounded,
-                                size: r.s(14),
-                                color: context.nexusTheme.accentPrimary),
-                          ),
+                        CosmeticAvatar(
+                          userId: originalAuthor?.id ?? originalPost?.authorId,
+                          avatarUrl: originalAuthorAvatar,
+                          size: r.s(28),
+                        ),
                         SizedBox(width: r.s(8)),
                         Expanded(
                           child: Text(

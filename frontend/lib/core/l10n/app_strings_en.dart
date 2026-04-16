@@ -5866,5 +5866,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get galleryAsBannerHint => 'Gallery images will be shown as profile cover, rotating every 20s';
   @override
+  String get viewWikiEntry => 'View Wiki Entry';
+  @override
   String get bioAndWallTitle => 'Biography & Wall';
 }

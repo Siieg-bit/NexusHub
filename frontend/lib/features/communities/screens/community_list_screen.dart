@@ -427,6 +427,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         return Consumer(

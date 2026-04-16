@@ -161,7 +161,56 @@ Future<List<Map<String, dynamic>>> _injectIsLiked(
       post['is_liked'] = likedPostIds.contains(post['id']);
     }
   } catch (e) {
-    debugPrint('[post_provider] _injectIsLiked error: $e');
+    debugPrint('[post_provider] _injectIsLiked error: \$e');
+  }
+
+  // Injetar user_vote para enquetes
+  try {
+    final pollPostIds = posts
+        .where((p) => p['type'] == 'poll')
+        .map((p) => p['id'] as String)
+        .toList();
+    if (pollPostIds.isNotEmpty) {
+      // Buscar as opções de cada post de enquete
+      final optionsRaw = await SupabaseService.table('poll_options')
+          .select('id, post_id')
+          .inFilter('post_id', pollPostIds);
+      final optionsList = (optionsRaw as List)
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+      final allOptionIds = optionsList.map((e) => e['id'] as String).toList();
+      if (allOptionIds.isNotEmpty) {
+        final votesRes = await SupabaseService.table('poll_votes')
+            .select('option_id')
+            .eq('user_id', userId)
+            .inFilter('option_id', allOptionIds);
+        final votedOptionIds = (votesRes as List)
+            .map((e) => e['option_id'] as String)
+            .toSet();
+        // Mapear option_id -> post_id
+        final optionToPost = <String, String>{
+          for (final o in optionsList)
+            o['id'] as String: o['post_id'] as String,
+        };
+        // Injetar user_vote no poll_data de cada post
+        for (final post in posts) {
+          if (post['type'] != 'poll') continue;
+          final pollData = post['poll_data'];
+          if (pollData is! Map) continue;
+          final options = (pollData['options'] as List<dynamic>?) ?? [];
+          for (final optId in votedOptionIds) {
+            if (optionToPost[optId] == post['id']) {
+              final updatedPollData = Map<String, dynamic>.from(pollData);
+              updatedPollData['user_vote'] = optId;
+              post['poll_data'] = updatedPollData;
+              break;
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    debugPrint('[post_provider] _injectPollVote error: \$e');
   }
 
   return posts;

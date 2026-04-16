@@ -35,6 +35,9 @@ class CosmeticAvatar extends ConsumerWidget {
   /// Só relevante quando [frameUrlOverride] é fornecido.
   final bool isFrameOverrideAnimated;
 
+  /// Indica se o usuário tem um story ativo. Quando `true`, exibe anel gradiente.
+  final bool hasActiveStory;
+
   const CosmeticAvatar({
     super.key,
     this.userId,
@@ -44,6 +47,7 @@ class CosmeticAvatar extends ConsumerWidget {
     this.onTap,
     this.frameUrlOverride,
     this.isFrameOverrideAnimated = false,
+    this.hasActiveStory = false,
   });
 
   @override
@@ -57,6 +61,7 @@ class CosmeticAvatar extends ConsumerWidget {
         showOnline: showOnline,
         onTap: onTap,
         isFrameAnimated: isFrameOverrideAnimated,
+        hasActiveStory: hasActiveStory,
       );
     }
 
@@ -69,6 +74,7 @@ class CosmeticAvatar extends ConsumerWidget {
         showOnline: showOnline,
         onTap: onTap,
         isFrameAnimated: isFrameOverrideAnimated,
+        hasActiveStory: hasActiveStory,
       );
     }
 
@@ -85,18 +91,21 @@ class CosmeticAvatar extends ConsumerWidget {
         onTap: onTap,
         // Propaga is_animated do asset_config para renderizar GIF/WebP animado
         isFrameAnimated: cosmetics.isAvatarFrameAnimated,
+        hasActiveStory: hasActiveStory,
       ),
       loading: () => AvatarWithFrame(
         avatarUrl: avatarUrl,
         size: size,
         showOnline: showOnline,
         onTap: onTap,
+        hasActiveStory: hasActiveStory,
       ),
       error: (_, __) => AvatarWithFrame(
         avatarUrl: avatarUrl,
         size: size,
         showOnline: showOnline,
         onTap: onTap,
+        hasActiveStory: hasActiveStory,
       ),
     );
   }

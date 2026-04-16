@@ -278,6 +278,38 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
     _notifyChanged();
   }
 
+  /// Insere um link no formato Markdown [texto](url) no cursor do bloco.
+  Future<void> _insertLink(int index, BuildContext context) async {
+    final block = _blocks[index];
+    if (!block.isTextBased || block.controller == null) return;
+    final ctrl = block.controller!;
+    final selection = ctrl.selection;
+    final selectedText = selection.isValid && !selection.isCollapsed
+        ? ctrl.text.substring(selection.start, selection.end)
+        : '';
+    // Mostrar dialog para inserir URL e texto do link
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (ctx) => _LinkInsertDialog(initialText: selectedText),
+    );
+    if (result == null) return;
+    final linkText = result['text'] ?? '';
+    final linkUrl = result['url'] ?? '';
+    if (linkUrl.isEmpty) return;
+    final markdownLink = '[${linkText.isEmpty ? linkUrl : linkText}]($linkUrl)';
+    final newText = selection.isValid && !selection.isCollapsed
+        ? ctrl.text.replaceRange(selection.start, selection.end, markdownLink)
+        : ctrl.text + markdownLink;
+    ctrl.text = newText;
+    ctrl.selection = TextSelection.collapsed(
+      offset: selection.isValid && !selection.isCollapsed
+          ? selection.start + markdownLink.length
+          : newText.length,
+    );
+    block.text = ctrl.text;
+    _notifyChanged();
+  }
+
   void _cycleAlignment(int index) {
     const alignments = ['left', 'center', 'right'];
     final current = _blocks[index].align;
@@ -445,6 +477,9 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
               onDividerStyleChanged: block.type == BlockType.divider
                   ? (style) => _changeDividerStyle(index, style)
                   : null,
+              onInsertLink: block.isTextBased
+                  ? () => _insertLink(index, context)
+                  : null,
             );
           },
         ),
@@ -486,6 +521,7 @@ class _SeamlessBlock extends ConsumerWidget {
   final VoidCallback? onMoveUp;
   final VoidCallback? onMoveDown;
   final ValueChanged<String>? onDividerStyleChanged;
+  final VoidCallback? onInsertLink;
 
   const _SeamlessBlock({
     super.key,
@@ -508,6 +544,7 @@ class _SeamlessBlock extends ConsumerWidget {
     this.onMoveUp,
     this.onMoveDown,
     this.onDividerStyleChanged,
+    this.onInsertLink,
   });
 
   @override
@@ -533,6 +570,7 @@ class _SeamlessBlock extends ConsumerWidget {
               onRemove: onRemove,
               onMoveUp: onMoveUp,
               onMoveDown: onMoveDown,
+              onInsertLink: onInsertLink,
             ),
           // Toolbar para divisor focado
           if (isFocused && block.type == BlockType.divider)
@@ -923,6 +961,7 @@ class _InlineFormatBar extends StatelessWidget {
   final VoidCallback onRemove;
   final VoidCallback? onMoveUp;
   final VoidCallback? onMoveDown;
+  final VoidCallback? onInsertLink;
 
   const _InlineFormatBar({
     required this.block,
@@ -935,6 +974,7 @@ class _InlineFormatBar extends StatelessWidget {
     required this.onRemove,
     this.onMoveUp,
     this.onMoveDown,
+    this.onInsertLink,
   });
 
   @override
@@ -984,6 +1024,14 @@ class _InlineFormatBar extends StatelessWidget {
               selected: false,
               onTap: onCycleAlignment,
             ),
+            if (onInsertLink != null) ...[  
+              SizedBox(width: r.s(2)),
+              _MiniIconBtn(
+                icon: Icons.link_rounded,
+                selected: false,
+                onTap: onInsertLink!,
+              ),
+            ],
             if (block.type == BlockType.heading) ...[
               SizedBox(width: r.s(2)),
               PopupMenuButton<int>(
@@ -1484,5 +1532,116 @@ IconData _alignmentIcon(String align) {
       return Icons.format_align_right_rounded;
     default:
       return Icons.format_align_left_rounded;
+  }
+}
+
+// =============================================================================
+// _LinkInsertDialog — Dialog para inserir link no formato Markdown
+// =============================================================================
+class _LinkInsertDialog extends StatefulWidget {
+  final String initialText;
+  const _LinkInsertDialog({this.initialText = ''});
+
+  @override
+  State<_LinkInsertDialog> createState() => _LinkInsertDialogState();
+}
+
+class _LinkInsertDialogState extends State<_LinkInsertDialog> {
+  late final TextEditingController _textCtrl;
+  late final TextEditingController _urlCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _textCtrl = TextEditingController(text: widget.initialText);
+    _urlCtrl = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _textCtrl.dispose();
+    _urlCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return AlertDialog(
+      backgroundColor: context.surfaceColor,
+      title: Text(
+        'Inserir link',
+        style: TextStyle(
+          color: context.nexusTheme.textPrimary,
+          fontSize: r.fs(16),
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _textCtrl,
+            style: TextStyle(color: context.nexusTheme.textPrimary),
+            decoration: InputDecoration(
+              labelText: 'Texto do link',
+              labelStyle: TextStyle(color: context.nexusTheme.textSecondary),
+              hintText: 'Ex: Clique aqui',
+              hintStyle: TextStyle(color: context.nexusTheme.textSecondary.withValues(alpha: 0.5)),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: context.nexusTheme.textSecondary.withValues(alpha: 0.3)),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: context.nexusTheme.accentPrimary),
+              ),
+            ),
+          ),
+          SizedBox(height: r.s(12)),
+          TextField(
+            controller: _urlCtrl,
+            style: TextStyle(color: context.nexusTheme.textPrimary),
+            keyboardType: TextInputType.url,
+            decoration: InputDecoration(
+              labelText: 'URL',
+              labelStyle: TextStyle(color: context.nexusTheme.textSecondary),
+              hintText: 'https://...',
+              hintStyle: TextStyle(color: context.nexusTheme.textSecondary.withValues(alpha: 0.5)),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: context.nexusTheme.textSecondary.withValues(alpha: 0.3)),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: context.nexusTheme.accentPrimary),
+              ),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(
+            'Cancelar',
+            style: TextStyle(color: context.nexusTheme.textSecondary),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            final url = _urlCtrl.text.trim();
+            if (url.isEmpty) return;
+            Navigator.of(context).pop({
+              'text': _textCtrl.text.trim(),
+              'url': url,
+            });
+          },
+          child: Text(
+            'Inserir',
+            style: TextStyle(
+              color: context.nexusTheme.accentPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

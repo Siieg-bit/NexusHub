@@ -40,6 +40,7 @@ Future<bool?> showMemberRoleManager({
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
+    useSafeArea: true,
     builder: (_) => _MemberRoleManagerSheet(
       communityId: communityId,
       targetUserId: targetUserId,
@@ -86,6 +87,10 @@ class _MemberRoleManagerSheetState
   // Ban
   String _banDuration = '7d';
 
+  // Histórico de advertências
+  List<Map<String, dynamic>> _moderationHistory = [];
+  bool _historyLoaded = false;
+
   bool get _isSelf =>
       widget.targetUserId == SupabaseService.currentUserId;
 
@@ -131,6 +136,7 @@ class _MemberRoleManagerSheetState
   @override
   void initState() {
     super.initState();
+    _loadModerationHistory();
     if (widget.currentTitle != null) {
       _titleController.text = widget.currentTitle!;
     }
@@ -140,6 +146,26 @@ class _MemberRoleManagerSheetState
   void dispose() {
     _titleController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadModerationHistory() async {
+    try {
+      final response = await SupabaseService.table('moderation_logs')
+          .select('id, action, reason, created_at, moderator:profiles!moderation_logs_moderator_id_fkey(nickname)')
+          .eq('community_id', widget.communityId)
+          .eq('target_user_id', widget.targetUserId)
+          .inFilter('action', ['warn', 'mute', 'ban', 'kick'])
+          .order('created_at', ascending: false)
+          .limit(20);
+      if (mounted) {
+        setState(() {
+          _moderationHistory = List<Map<String, dynamic>>.from(response as List? ?? []);
+          _historyLoaded = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _historyLoaded = true);
+    }
   }
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -357,6 +383,7 @@ class _MemberRoleManagerSheetState
   Future<void> _strikeWarning() async {
     bool sendVerbalWarning = true;
     String silenceOption = 'none';
+    final warningMessageController = TextEditingController();
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -367,7 +394,8 @@ class _MemberRoleManagerSheetState
             'Advertir ${widget.targetUserName}',
             style: TextStyle(color: ctx.nexusTheme.textPrimary),
           ),
-          content: Column(
+          content: SingleChildScrollView(
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -387,6 +415,36 @@ class _MemberRoleManagerSheetState
                   style: TextStyle(color: ctx.nexusTheme.textSecondary),
                 ),
               ),
+              if (sendVerbalWarning) ...[  
+                SizedBox(height: context.r.s(8)),
+                Text(
+                  'Mensagem para o membro',
+                  style: TextStyle(
+                    color: ctx.nexusTheme.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
+                SizedBox(height: context.r.s(6)),
+                TextField(
+                  controller: warningMessageController,
+                  style: TextStyle(color: ctx.nexusTheme.textPrimary),
+                  maxLines: 3,
+                  maxLength: 300,
+                  decoration: InputDecoration(
+                    hintText: 'Ex: Para aí mano, isso não é permitido aqui.',
+                    hintStyle: TextStyle(color: ctx.nexusTheme.textHint),
+                    filled: true,
+                    fillColor: ctx.nexusTheme.surfaceSecondary,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    counterStyle: TextStyle(color: ctx.nexusTheme.textHint, fontSize: 11),
+                  ),
+                ),
+              ],
               SizedBox(height: context.r.s(8)),
               Text(
                 'Silenciamento',
@@ -433,6 +491,7 @@ class _MemberRoleManagerSheetState
               ),
             ],
           ),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
@@ -463,22 +522,30 @@ class _MemberRoleManagerSheetState
       final notificationRows = <Map<String, dynamic>>[];
 
       if (sendVerbalWarning) {
+        final customMsg = warningMessageController.text.trim();
+        final reasonText = customMsg.isNotEmpty
+            ? 'Advertência verbal por $roleLabel: $customMsg'
+            : 'Advertência verbal aplicada por $roleLabel';
         await SupabaseService.rpc('log_moderation_action', params: {
           'p_community_id': widget.communityId,
           'p_action': 'warn',
           'p_target_user_id': widget.targetUserId,
-          'p_reason': 'Advertência verbal aplicada por $roleLabel',
+          'p_reason': reasonText,
         });
 
+        final notifBody = customMsg.isNotEmpty
+            ? customMsg
+            : 'Você recebeu uma advertência verbal da moderação.';
         notificationRows.add({
           'user_id': widget.targetUserId,
           'actor_id': SupabaseService.currentUserId,
           'type': 'moderation',
           'title': 'Advertência da comunidade',
-          'body': 'Você recebeu uma advertência verbal da moderação.',
+          'body': notifBody,
           'community_id': widget.communityId,
         });
       }
+      warningMessageController.dispose();
 
       if (silenceOption != 'none') {
         final durationHours = switch (silenceOption) {
@@ -1383,7 +1450,104 @@ class _MemberRoleManagerSheetState
 
             ],
 
-            // ── Fechar ────────────────────────────────────────────────────
+            // ── Histórico de advertências ───────────────────────────────────
+            if (!_isSelf && _historyLoaded && _moderationHistory.isNotEmpty) ...[  
+              _sectionHeader('HISTÓRICO DE MODERAÇÃO', r),
+              ..._moderationHistory.asMap().entries.map((entry) {
+                final i = entry.key;
+                final log = entry.value;
+                final action = log['action'] as String? ?? 'warn';
+                final reason = log['reason'] as String? ?? '';
+                final createdAt = log['created_at'] as String? ?? '';
+                final moderatorMap = log['moderator'];
+                final moderatorNick = moderatorMap is Map
+                    ? (moderatorMap['nickname'] as String? ?? 'Moderador')
+                    : 'Moderador';
+                final warnIndex = _moderationHistory
+                    .where((l) => l['action'] == 'warn')
+                    .toList()
+                    .indexOf(log);
+                final label = action == 'warn'
+                    ? 'ADV ${warnIndex + 1}'
+                    : action == 'mute'
+                        ? 'MUTE'
+                        : action == 'ban'
+                            ? 'BAN'
+                            : 'KICK';
+                final labelColor = action == 'warn'
+                    ? context.nexusTheme.warning
+                    : action == 'ban'
+                        ? context.nexusTheme.error
+                        : Colors.grey[500]!;
+                final dateStr = createdAt.isNotEmpty
+                    ? createdAt.substring(0, 10)
+                    : '';
+                return Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(20), vertical: r.s(10)),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: labelColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                  color: labelColor.withValues(alpha: 0.5)),
+                            ),
+                            child: Text(
+                              label,
+                              style: TextStyle(
+                                color: labelColor,
+                                fontSize: r.fs(11),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: r.s(10)),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (reason.isNotEmpty)
+                                  Text(
+                                    reason,
+                                    style: TextStyle(
+                                      color: context.nexusTheme.textPrimary,
+                                      fontSize: r.fs(12),
+                                    ),
+                                  ),
+                                SizedBox(height: r.s(2)),
+                                Text(
+                                  'por $moderatorNick · $dateStr',
+                                  style: TextStyle(
+                                    color: context.nexusTheme.textHint,
+                                    fontSize: r.fs(11),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (i < _moderationHistory.length - 1)
+                      Divider(
+                          height: 1,
+                          thickness: 0.5,
+                          indent: r.s(20),
+                          endIndent: r.s(20)),
+                  ],
+                );
+              }),
+              const Divider(height: 1, thickness: 0.5),
+            ],
+
+            // ── Fechar ────────────────────────────────────────────
             Padding(
               padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16),
                   r.s(16) + MediaQuery.of(context).padding.bottom),

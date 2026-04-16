@@ -199,6 +199,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
+      useSafeArea: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
       ),

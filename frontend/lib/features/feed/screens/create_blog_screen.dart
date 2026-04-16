@@ -25,11 +25,13 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 class CreateBlogScreen extends ConsumerStatefulWidget {
   final String communityId;
   final PostModel? editingPost;
+  final String? draftId;
 
   const CreateBlogScreen({
     super.key,
     required this.communityId,
     this.editingPost,
+    this.draftId,
   });
 
   @override
@@ -71,7 +73,13 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
       _populateFromPost(widget.editingPost!);
       _restoringDraft = false;
     } else {
-      Future.microtask(_restoreLatestDraft);
+      // Só restaurar rascunho automaticamente quando um draftId específico é fornecido
+      // (via tela de rascunhos). Ao criar novo, não restaurar automaticamente.
+      if (widget.draftId != null) {
+        Future.microtask(_restoreLatestDraft);
+      } else {
+        _restoringDraft = false;
+      }
     }
   }
 
@@ -300,13 +308,16 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
     }
 
     try {
-      final result = await SupabaseService.table('post_drafts')
+      final query = SupabaseService.table('post_drafts')
           .select()
           .eq('user_id', userId)
-          .eq('community_id', widget.communityId)
-          .eq('post_type', 'blog')
-          .order('updated_at', ascending: false)
-          .limit(1);
+          .eq('community_id', widget.communityId);
+      final result = widget.draftId != null
+          ? await query.eq('id', widget.draftId!).limit(1)
+          : await query
+              .eq('post_type', 'blog')
+              .order('updated_at', ascending: false)
+              .limit(1);
 
       if (!mounted) return;
 

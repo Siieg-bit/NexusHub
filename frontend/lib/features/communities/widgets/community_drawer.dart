@@ -1003,6 +1003,21 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             context.push('/community/${widget.community.id}/acm');
           }),
         ),
+        // Separador antes das configurações
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
+          height: 0.5,
+          color: theme.divider,
+        ),
+        // Configurações gerais do app acessíveis pelo drawer
+        _AminoDrawerTile(
+          icon: Icons.manage_accounts_rounded,
+          iconColor: theme.textSecondary,
+          label: s.settings,
+          onTap: () => _closeAndNavigate(() {
+            context.push('/settings');
+          }),
+        ),
       ],
     );
   }

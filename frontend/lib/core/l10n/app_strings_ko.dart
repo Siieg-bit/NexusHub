@@ -5791,5 +5791,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get galleryAsBannerHint => '갤러리 이미지가 프로필 커버로 표시되며 20초마다 전환됩니다';
   @override
+  String get viewWikiEntry => '위키 항목 보기';
+  @override
   String get bioAndWallTitle => '소개 & 게시판';
 }

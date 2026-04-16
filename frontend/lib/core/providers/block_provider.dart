@@ -69,7 +69,24 @@ class BlockedIdsNotifier extends AsyncNotifier<Set<String>> {
       state = AsyncData({...?state.valueOrNull, targetUserId});
       return true;
     } catch (e) {
-      return false;
+      // Fallback: inserção direta + remoção de follows
+      try {
+        await SupabaseService.table('blocks').upsert({
+          'blocker_id': userId,
+          'blocked_id': targetUserId,
+        }, onConflict: 'blocker_id,blocked_id');
+
+        // Remover follows mútuos
+        await SupabaseService.table('follows')
+            .delete()
+            .or('and(follower_id.eq.$userId,following_id.eq.$targetUserId),and(follower_id.eq.$targetUserId,following_id.eq.$userId)');
+
+        // Atualizar estado local
+        state = AsyncData({...?state.valueOrNull, targetUserId});
+        return true;
+      } catch (e2) {
+        return false;
+      }
     }
   }
 

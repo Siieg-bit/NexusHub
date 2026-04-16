@@ -253,6 +253,21 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     final r = context.r;
     final chatsAsync = ref.watch(chatListProvider);
     final communitiesAsync = ref.watch(chatCommunitiesProvider);
+    // Determinar communityId selecionado para exibir avatar local
+    String? _selectedCommunityId;
+    if (_selectedSidebarIndex >= 2) {
+      final communities = communitiesAsync.valueOrNull;
+      if (communities != null) {
+        final idx = _selectedSidebarIndex - 2;
+        if (idx < communities.length) {
+          _selectedCommunityId = communities[idx].id;
+        }
+      }
+    }
+    final _topBarAvatar = _selectedCommunityId != null
+        ? ref.watch(communityLocalAvatarProvider(_selectedCommunityId)).valueOrNull
+            ?? ref.watch(currentUserAvatarProvider)
+        : ref.watch(currentUserAvatarProvider);
 
     return Scaffold(
       backgroundColor: context.nexusTheme.backgroundPrimary,
@@ -261,7 +276,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
           children: [
             // ── Top Bar Amino ──
             AminoTopBar(
-              avatarUrl: ref.watch(currentUserAvatarProvider),
+              avatarUrl: _topBarAvatar,
               coins: _coins,
               notificationCount: ref.watch(unreadNotificationCountProvider),
               onSearchTap: () => context.push('/search'),
@@ -479,6 +494,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         }
 
                         // Filtrar por comunidade selecionada na sidebar
+                        // Índice 0 (Recente) = apenas chats sem comunidade (DMs globais)
+                        // Índice 2+ = chats da comunidade selecionada
                         final filtered = _selectedSidebarIndex >= 2
                             ? communitiesAsync.whenOrNull(
                                   data: (communities) {
@@ -492,7 +509,11 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                   },
                                 ) ??
                                 chatRooms
-                            : chatRooms;
+                            : _selectedSidebarIndex == 0
+                                ? chatRooms
+                                    .where((c) => c.communityId == null)
+                                    .toList()
+                                : chatRooms;
 
                         if (filtered.isEmpty) {
                           return _buildEmptyChats();

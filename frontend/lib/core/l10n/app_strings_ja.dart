@@ -5789,5 +5789,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get galleryAsBannerHint => 'ギャラリーの画像がプロフィールカバーとして20秒ごとに切り替わります';
   @override
+  String get viewWikiEntry => 'Wikiエントリを見る';
+  @override
   String get bioAndWallTitle => '自己紹介 & 掲示板';
 }

@@ -106,7 +106,11 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     if (_isEditing) {
       _populateFromPost(widget.editingPost!);
     } else {
-      Future.microtask(_restoreLatestDraft);
+      // Só restaurar rascunho automaticamente quando um draftId específico é fornecido
+      // (via tela de rascunhos). Ao criar novo, não restaurar automaticamente.
+      if (widget.draftId != null) {
+        Future.microtask(_restoreLatestDraft);
+      }
       _startAutoDraftTimer();
     }
   }

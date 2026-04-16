@@ -5791,5 +5791,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get galleryAsBannerHint => 'Galeriebilder werden als Profilcover angezeigt und wechseln alle 20s';
   @override
+  String get viewWikiEntry => 'Wiki-Eintrag anzeigen';
+  @override
   String get bioAndWallTitle => 'Biografie & Pinnwand';
 }

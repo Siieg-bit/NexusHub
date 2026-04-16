@@ -718,8 +718,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           isTeamMember: currentUserData?.isTeamMember ?? false,
           userRole: currentUserRole,
         );
-    // Avatar reativo do usuário logado (já considera local_icon_url via authProvider)
-    final currentUserAvatar = ref.watch(currentUserAvatarProvider);
+    // Avatar reativo do usuário logado — usa avatar local da comunidade quando disponível
+    final _communityIdForAvatar = post?.communityId ?? _postCommunityId;
+    final currentUserAvatar = _communityIdForAvatar.isNotEmpty
+        ? ref.watch(communityLocalAvatarProvider(_communityIdForAvatar)).valueOrNull
+            ?? ref.watch(currentUserAvatarProvider)
+        : ref.watch(currentUserAvatarProvider);
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: context.nexusTheme.backgroundPrimary,

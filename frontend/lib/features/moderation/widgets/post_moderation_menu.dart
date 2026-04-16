@@ -35,6 +35,7 @@ Future<bool?> showPostModerationMenu({
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
+    useSafeArea: true,
     builder: (_) => _PostModerationMenuSheet(
       communityId: communityId,
       postId: postId,

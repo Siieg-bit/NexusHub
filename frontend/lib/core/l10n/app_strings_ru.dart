@@ -5791,5 +5791,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get galleryAsBannerHint => 'Изображения галереи будут показаны как обложка профиля, меняясь каждые 20 секунд';
   @override
+  String get viewWikiEntry => 'Просмотреть статью Wiki';
+  @override
   String get bioAndWallTitle => 'Биография и стена';
 }

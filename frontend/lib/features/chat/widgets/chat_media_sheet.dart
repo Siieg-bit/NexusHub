@@ -42,7 +42,7 @@ class ChatMediaSheet extends ConsumerWidget {
     final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
-      padding: EdgeInsets.all(r.s(20)),
+      padding: EdgeInsets.fromLTRB(r.s(20), r.s(20), r.s(20), r.s(20) + MediaQuery.of(context).viewPadding.bottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -164,6 +164,7 @@ class ChatMediaSheet extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),

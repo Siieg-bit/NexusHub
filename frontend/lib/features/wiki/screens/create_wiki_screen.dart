@@ -589,6 +589,28 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
           .select()
           .single();
 
+      // Publicar no feed da comunidade como post do tipo 'normal' com wiki_data
+      try {
+        final wikiEntryId = result['id'] as String?;
+        if (wikiEntryId != null) {
+          await SupabaseService.table('posts').insert({
+            'author_id': userId,
+            'community_id': widget.communityId,
+            'type': 'normal',
+            'post_variant': 'wiki',
+            'title': title,
+            'content': _subtitleController.text.trim().isNotEmpty
+                ? _subtitleController.text.trim()
+                : '',
+            'cover_image_url': _coverImageUrl,
+            'tags': _tags,
+            'status': 'ok',
+            'wiki_data': {'wiki_entry_id': wikiEntryId},
+          });
+        }
+      } catch (e) {
+        debugPrint('[create_wiki] Erro ao publicar no feed: \$e');
+      }
       try {
         await SupabaseService.rpc('add_reputation', params: {
           'p_user_id': userId,

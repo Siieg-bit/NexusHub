@@ -26,6 +26,7 @@ void showCommunityCreateMenu(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
+    useSafeArea: true,
     builder: (_) => _CommunityCreateMenuSheet(
       communityId: communityId,
       communityName: communityName,

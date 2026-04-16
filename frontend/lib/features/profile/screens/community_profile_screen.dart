@@ -65,7 +65,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   int _followersCount = 0;
   int _followingCount = 0;
   bool _isFollowing = false; // estado real do botão Seguir/Seguindo
+  bool _isFollowingMe = false; // o outro usuário me segue (amizade mútua)
   bool _isTogglingFollow = false; // evita double-tap
+  bool _hasActiveStory = false; // usuário tem story ativo nesta comunidade
   String _communityName = '';
   String? _communityBannerUrl;
 
@@ -244,13 +246,28 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             .eq('following_id', widget.userId)
             .limit(1);
         _isFollowing = ((followCheckRes as List?)?.length ?? 0) > 0;
+        // Verificar se o outro usuário também me segue (amizade mútua)
+        final reverseCheckRes = await SupabaseService.table('follows')
+            .select('id')
+            .eq('follower_id', widget.userId)
+            .eq('following_id', currentUserId)
+            .limit(1);
+        _isFollowingMe = ((reverseCheckRes as List?)?.length ?? 0) > 0;
       }
 
       final followingRes = await SupabaseService.table('follows')
           .select()
           .eq('follower_id', widget.userId);
       _followingCount = (followingRes as List?)?.length ?? 0;
-
+      // Verificar se o usuário tem story ativo nesta comunidade
+      final now = DateTime.now().toUtc().toIso8601String();
+      final storyRes = await SupabaseService.table('stories')
+          .select('id')
+          .eq('author_id', widget.userId)
+          .eq('community_id', widget.communityId)
+          .gt('expires_at', now)
+          .limit(1);
+      _hasActiveStory = ((storyRes as List?)?.length ?? 0) > 0;
       if (!mounted) return;
       setState(() {
         _isInitialLoading = false;
@@ -670,6 +687,34 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                           ),
                         ),
 
+                        // ── Aviso de perfil oculto (visível apenas para moderadores) ──
+                        if (isHiddenProfile && canViewHiddenProfile)
+                          Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              color: const Color(0xFFDC2626).withValues(alpha: 0.88),
+                              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.visibility_off_rounded,
+                                      color: Colors.white, size: 14),
+                                  const SizedBox(width: 6),
+                                  const Text(
+                                    'Perfil oculto pela moderação — visível apenas para a equipe',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
                         // ── Conteúdo do perfil (sobre o banner) ──────────────────────
                         Positioned(
                           bottom: 0,
@@ -694,6 +739,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                     false,
                                 size: r.s(96),
                                 showAminoPlus: isPremium,
+                                hasActiveStory: _hasActiveStory,
                                 onTap: profileMediaUrls.isEmpty
                                     ? null
                                     : () => _openProfileMediaViewer(
@@ -992,15 +1038,21 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                               )
                                             else
                                               Text(
-                                                _isFollowing ? '✓' : '😊',
+                                                _isFollowing && _isFollowingMe
+                                                    ? '😸'
+                                                    : _isFollowing
+                                                        ? '✓'
+                                                        : '😊',
                                                 style: TextStyle(
                                                     fontSize: r.fs(14)),
                                               ),
                                             SizedBox(width: r.s(6)),
                                             Text(
-                                              _isFollowing
-                                                  ? 'Seguindo'
-                                                  : 'Seguir',
+                                              _isFollowing && _isFollowingMe
+                                                  ? 'Amigos'
+                                                  : _isFollowing
+                                                      ? 'Seguindo'
+                                                      : 'Seguir',
                                               style: TextStyle(
                                                 color: _isFollowing
                                                     ? const Color(0xFFFF9800)
@@ -2472,15 +2524,50 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         ),
       );
       if (confirm != true || !mounted) return;
+      // Mostrar loading
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: context.nexusTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(s.block + '...'),
+            ],
+          ),
+          backgroundColor: context.surfaceColor,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 10),
+        ));
+      }
       final ok = await notifier.block(widget.userId);
       if (!mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       if (ok) {
+        // Atualizar estado local: remover follows mútuos
+        setState(() {
+          _isFollowing = false;
+          _isFollowingMe = false;
+          if (_followersCount > 0) _followersCount--;
+        });
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s.blockSuccess),
           backgroundColor: context.surfaceColor,
           behavior: SnackBarBehavior.floating,
         ));
         if (mounted) context.pop();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Erro ao bloquear usuário. Tente novamente.'),
+          backgroundColor: context.nexusTheme.error,
+          behavior: SnackBarBehavior.floating,
+        ));
       }
     }
   }
@@ -2494,6 +2581,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -2502,7 +2590,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         final canManageRoles = !_isOwnProfile &&
             (myRole == 'agent' || myRole == 'leader' || myRole == 'curator');
         return Padding(
-          padding: EdgeInsets.all(r.s(16)),
+          padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(16) + MediaQuery.of(ctx).viewPadding.bottom),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

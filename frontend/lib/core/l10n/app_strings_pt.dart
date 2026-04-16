@@ -5920,5 +5920,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get galleryAsBannerHint => 'As imagens da galeria serão exibidas como capa do perfil, alternando a cada 20s';
   @override
+  String get viewWikiEntry => 'Ver entrada da Wiki';
+  @override
   String get bioAndWallTitle => 'Biografia & Mural';
 }

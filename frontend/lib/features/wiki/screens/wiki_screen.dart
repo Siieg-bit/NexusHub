@@ -435,7 +435,11 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
       final res = await SupabaseService.table('wiki_entries')
           .select('*, profiles(*), wiki_categories(id, name)')
           .eq('id', widget.wikiId)
-          .single();
+          .maybeSingle();
+      if (res == null) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
       // Enriquecer o author com dados do perfil local de comunidade
       final entry = Map<String, dynamic>.from(res as Map);
       final communityId = entry['community_id'] as String?;

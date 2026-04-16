@@ -2984,6 +2984,7 @@ abstract class AppStrings {
   String get backgroundFromGallery;
   String get backgroundTypeLabel;
   String get galleryAsBannerHint;
-  String get bioAndWallTitle;
-
+   String get bioAndWallTitle;
+  // ── Wiki no feed ──
+  String get viewWikiEntry;
 }
