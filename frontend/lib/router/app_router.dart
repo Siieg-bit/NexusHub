@@ -9,6 +9,7 @@ import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/onboarding_screen.dart';
 import '../features/auth/screens/signup_screen.dart';
 import '../features/auth/screens/interest_wizard_screen.dart';
+import '../features/auth/screens/reset_password_screen.dart';
 import '../features/chat/screens/chat_list_screen.dart';
 import '../features/chat/screens/chat_room_screen.dart';
 import '../features/communities/screens/community_detail_screen.dart';
@@ -96,7 +97,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isAuthRoute = state.matchedLocation == '/login' ||
           state.matchedLocation == '/signup' ||
           state.matchedLocation == '/onboarding' ||
-          state.matchedLocation == '/interest-wizard';
+          state.matchedLocation == '/interest-wizard' ||
+          // Recuperação de senha: o usuário pode não estar autenticado ainda
+          state.matchedLocation == '/reset-password';
 
       if (!isAuth && !isAuthRoute) return '/onboarding';
       if (isAuth &&
@@ -129,6 +132,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/interest-wizard',
         name: 'interest-wizard',
         builder: (context, state) => const InterestWizardScreen(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        name: 'reset-password',
+        builder: (context, state) => const ResetPasswordScreen(),
       ),
 
       // ====================================================================

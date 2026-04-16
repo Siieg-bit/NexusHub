@@ -87,7 +87,9 @@ class DeepLinkService {
 
   static bool _isAuthUri(Uri uri) {
     return uri.queryParameters.containsKey('code') ||
+        uri.queryParameters['type'] == 'recovery' ||
         uri.fragment.contains('access_token') ||
+        uri.fragment.contains('type=recovery') ||
         uri.path.contains('/auth/');
   }
 
@@ -120,6 +122,12 @@ class DeepLinkService {
           ? Uri.splitQueryString(normalizedUri.fragment)['refresh_token']
           : null;
 
+      // Detectar tipo do link (signup, recovery, etc.)
+      final type = normalizedUri.queryParameters['type'] ??
+          (normalizedUri.fragment.isNotEmpty
+              ? Uri.splitQueryString(normalizedUri.fragment)['type']
+              : null);
+
       if (code != null) {
         // PKCE flow: trocar code por sessão usando a URL normalizada
         await Supabase.instance.client.auth
@@ -127,6 +135,13 @@ class DeepLinkService {
       } else if (accessToken != null && refreshToken != null) {
         // Implicit flow legado
         await Supabase.instance.client.auth.setSession(accessToken);
+      }
+
+      // Se for um link de recuperação de senha, navegar para a tela de reset
+      // (deve ser feito APÓS exchangeCodeForSession para que a sessão esteja ativa)
+      if (type == 'recovery' && _router != null) {
+        _router!.push('/reset-password');
+        return;
       }
       // O onAuthStateChange vai disparar signedIn e redirecionar para home
     } catch (e) {
