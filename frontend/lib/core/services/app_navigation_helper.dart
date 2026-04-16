@@ -80,7 +80,9 @@ class AppNavigationHelper {
     final postId = data['post_id'] as String?;
     final communityId = data['community_id'] as String?;
     final userId = data['user_id'] as String? ?? data['actor_id'] as String?;
-    final chatId = data['chat_id'] as String? ?? data['thread_id'] as String?;
+    final chatId = data['chat_id'] as String? ??
+        data['thread_id'] as String? ??
+        data['chat_thread_id'] as String?;
 
     switch (type) {
       case 'like':
@@ -114,7 +116,12 @@ class AppNavigationHelper {
         break;
 
       case 'dm_invite':
-        navigateToChats(router);
+      case 'chat_invite':
+        if (chatId != null) {
+          navigateToChat(router, chatId);
+        } else {
+          navigateToChats(router);
+        }
         break;
 
       case 'level_up':
