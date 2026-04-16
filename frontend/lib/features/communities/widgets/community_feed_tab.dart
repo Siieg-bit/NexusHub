@@ -670,64 +670,70 @@ class _FeaturedHeroCardState extends ConsumerState<_FeaturedHeroCard> {
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: _toggleLike,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 200),
-                          transitionBuilder: (child, anim) => ScaleTransition(
-                            scale: anim,
-                            child: child,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: r.s(6), horizontal: r.s(2)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            transitionBuilder: (child, anim) => ScaleTransition(
+                              scale: anim,
+                              child: child,
+                            ),
+                            child: Icon(
+                              _post.isLiked
+                                  ? Icons.favorite_rounded
+                                  : Icons.favorite_border_rounded,
+                              key: ValueKey(_post.isLiked),
+                              size: r.s(21),
+                              color: _post.isLiked
+                                  ? Colors.red[400]
+                                  : Colors.white.withValues(alpha: 0.85),
+                            ),
                           ),
-                          child: Icon(
-                            _post.isLiked
-                                ? Icons.favorite_rounded
-                                : Icons.favorite_border_rounded,
-                            key: ValueKey(_post.isLiked),
-                            size: r.s(18),
-                            color: _post.isLiked
-                                ? Colors.red[400]
-                                : Colors.white.withValues(alpha: 0.85),
+                          SizedBox(width: r.s(5)),
+                          Text(
+                            '${_post.likesCount}',
+                            style: TextStyle(
+                              color: _post.isLiked
+                                  ? Colors.red[300]
+                                  : Colors.white.withValues(alpha: 0.85),
+                              fontSize: r.fs(14),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: r.s(4)),
-                        Text(
-                          '${_post.likesCount}',
-                          style: TextStyle(
-                            color: _post.isLiked
-                                ? Colors.red[300]
-                                : Colors.white.withValues(alpha: 0.85),
-                            fontSize: r.fs(13),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                  SizedBox(width: r.s(16)),
+                  SizedBox(width: r.s(18)),
                   // Botão de comentários — abre o post diretamente na seção de comentários
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () => context
                         .push('/post/${_post.id}?scrollToComments=true'),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.chat_bubble_outline_rounded,
-                          size: r.s(17),
-                          color: Colors.white.withValues(alpha: 0.85),
-                        ),
-                        SizedBox(width: r.s(4)),
-                        Text(
-                          '${_post.commentsCount}',
-                          style: TextStyle(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: r.s(6), horizontal: r.s(2)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.chat_bubble_outline_rounded,
+                            size: r.s(20),
                             color: Colors.white.withValues(alpha: 0.85),
-                            fontSize: r.fs(13),
-                            fontWeight: FontWeight.w600,
                           ),
-                        ),
-                      ],
+                          SizedBox(width: r.s(5)),
+                          Text(
+                            '${_post.commentsCount}',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: r.fs(14),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

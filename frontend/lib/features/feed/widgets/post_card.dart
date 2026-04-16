@@ -1558,7 +1558,7 @@ class _PostCardState extends ConsumerState<PostCard>
       onTap: () {}, // absorve o toque — impede propagação ao cardPress
       behavior: HitTestBehavior.opaque,
       child: Padding(
-      padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(10)),
+      padding: EdgeInsets.fromLTRB(r.s(12), r.s(2), r.s(12), r.s(10)),
       child: Row(
         children: [
           // Like button (animated heart)
@@ -1570,38 +1570,41 @@ class _PostCardState extends ConsumerState<PostCard>
             child: GestureDetector(
               onTap: _toggleLike,
               behavior: HitTestBehavior.opaque,
-              child: Row(
-                children: [
-                  ScaleTransition(
-                    scale: Tween<double>(begin: 1.0, end: 1.3)
-                        .chain(CurveTween(curve: Curves.easeOut))
-                        .animate(_likeController),
-                    child: Icon(
-                      _post.isLiked
-                          ? Icons.favorite_rounded
-                          : Icons.favorite_border_rounded,
-                      size: r.s(16),
-                      color: _post.isLiked
-                          ? const Color(0xFFEF4444)
-                          : Colors.grey[600],
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: r.s(6), horizontal: r.s(2)),
+                child: Row(
+                  children: [
+                    ScaleTransition(
+                      scale: Tween<double>(begin: 1.0, end: 1.3)
+                          .chain(CurveTween(curve: Curves.easeOut))
+                          .animate(_likeController),
+                      child: Icon(
+                        _post.isLiked
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        size: r.s(21),
+                        color: _post.isLiked
+                            ? const Color(0xFFEF4444)
+                            : Colors.grey[600],
+                      ),
                     ),
-                  ),
-                  SizedBox(width: r.s(4)),
-                  Text(
-                    '${_post.likesCount}',
-                    style: TextStyle(
-                      color: _post.isLiked
-                          ? const Color(0xFFEF4444)
-                          : Colors.grey[600],
-                      fontSize: r.fs(12),
-                      fontWeight: FontWeight.w500,
+                    SizedBox(width: r.s(5)),
+                    Text(
+                      '${_post.likesCount}',
+                      style: TextStyle(
+                        color: _post.isLiked
+                            ? const Color(0xFFEF4444)
+                            : Colors.grey[600],
+                        fontSize: r.fs(13),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-          SizedBox(width: r.s(16)),
+          SizedBox(width: r.s(18)),
 
           // Comment button
           Semantics(
@@ -1610,36 +1613,42 @@ class _PostCardState extends ConsumerState<PostCard>
             child: GestureDetector(
               onTap: () => context.push('/post/${_post.id}'),
               behavior: HitTestBehavior.opaque,
-              child: Row(
-                children: [
-                  Icon(Icons.chat_bubble_outline_rounded,
-                      size: r.s(16), color: Colors.grey[600]),
-                  SizedBox(width: r.s(4)),
-                  Text(
-                    '${_post.commentsCount}',
-                    style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: r.fs(12),
-                        fontWeight: FontWeight.w500),
-                  ),
-                ],
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: r.s(6), horizontal: r.s(2)),
+                child: Row(
+                  children: [
+                    Icon(Icons.chat_bubble_outline_rounded,
+                        size: r.s(20), color: Colors.grey[600]),
+                    SizedBox(width: r.s(5)),
+                    Text(
+                      '${_post.commentsCount}',
+                      style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: r.fs(13),
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
 
           // Repost button
           if (_post.type != 'repost') ...[
-            SizedBox(width: r.s(16)),
+            SizedBox(width: r.s(18)),
             Semantics(
               label: s.repostAction,
               button: true,
               child: GestureDetector(
                 onTap: _doRepost,
                 behavior: HitTestBehavior.opaque,
-                child: Icon(
-                  Icons.repeat_rounded,
-                  size: r.s(16),
-                  color: Colors.grey[600],
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: r.s(6), horizontal: r.s(2)),
+                  child: Icon(
+                    Icons.repeat_rounded,
+                    size: r.s(21),
+                    color: Colors.grey[600],
+                  ),
                 ),
               ),
             ),
