@@ -5,6 +5,7 @@ import 'package:badges/badges.dart' as badges;
 import '../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../core/providers/chat_provider.dart';
 
 /// Bottom Navigation Bar Global — réplica pixel-perfect do Amino Apps.
 ///
@@ -25,14 +26,68 @@ class ShellScreen extends ConsumerWidget {
   final Widget child;
   const ShellScreen({super.key, required this.child});
 
+  /// Determina a aba ativa com base na rota atual usando correspondência por prefixo.
+  ///
+  /// Retorna -1 para rotas que não pertencem a nenhuma aba (ex: /notifications),
+  /// evitando que "Discover" apareça ativo em contextos incorretos.
   int _getSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    if (location == '/explore' || location == '/') return 0;
-    if (location == '/communities') return 1;
-    if (location == '/chats') return 2;
-    if (location == '/store') return 3;
+
+    // Rotas que não pertencem a nenhuma aba da navegação global
     if (location.startsWith('/notifications')) return -1;
-    return 0;
+    if (location.startsWith('/settings')) return -1;
+    if (location.startsWith('/search')) return -1;
+    if (location.startsWith('/admin')) return -1;
+
+    // Aba 2 — Chats: prefixos de chat e thread
+    if (location == '/chats' ||
+        location.startsWith('/chats/') ||
+        location.startsWith('/chat/') ||
+        location.startsWith('/thread/') ||
+        location.startsWith('/create-group-chat') ||
+        location.startsWith('/create-public-chat') ||
+        location.startsWith('/screening-room/')) {
+      return 2;
+    }
+
+    // Aba 1 — Communities: prefixos de comunidade
+    if (location == '/communities' ||
+        location.startsWith('/communities/') ||
+        location.startsWith('/community/')) {
+      return 1;
+    }
+
+    // Aba 3 — Store: prefixos de loja, stickers e moedas
+    if (location == '/store' ||
+        location.startsWith('/store/') ||
+        location.startsWith('/stickers') ||
+        location.startsWith('/coin-shop') ||
+        location.startsWith('/free-coins') ||
+        location.startsWith('/wallet') ||
+        location.startsWith('/inventory')) {
+      return 3;
+    }
+
+    // Aba 0 — Discover: raiz, explore, feed e demais rotas não mapeadas
+    if (location == '/' ||
+        location == '/explore' ||
+        location.startsWith('/explore/') ||
+        location.startsWith('/feed') ||
+        location.startsWith('/post/') ||
+        location.startsWith('/user/') ||
+        location.startsWith('/profile') ||
+        location.startsWith('/wiki/') ||
+        location.startsWith('/quiz/') ||
+        location.startsWith('/poll/') ||
+        location.startsWith('/question/') ||
+        location.startsWith('/check-in') ||
+        location.startsWith('/achievements') ||
+        location.startsWith('/all-rankings')) {
+      return 0;
+    }
+
+    // Fallback: nenhuma aba ativa para rotas não reconhecidas
+    return -1;
   }
 
   void _onItemTapped(BuildContext context, int index) {
@@ -56,6 +111,11 @@ class ShellScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(stringsProvider);
     final selectedIndex = _getSelectedIndex(context);
+
+    // Badge real de chats não lidos via unreadCountProvider
+    final unreadAsync = ref.watch(unreadCountProvider);
+    final unreadCount = unreadAsync.valueOrNull ?? 0;
+
     return Scaffold(
       body: child,
       extendBody: true,
@@ -94,14 +154,14 @@ class ShellScreen extends ConsumerWidget {
                       isSelected: selectedIndex == 1,
                       onTap: () => _onItemTapped(context, 1),
                     ),
-                    // ── Chats
+                    // ── Chats (com badge real de não lidas)
                     _AminoNavItem(
                       icon: Icons.chat_bubble_outline_rounded,
                       activeIcon: Icons.chat_bubble_rounded,
                       label: s.chats2,
                       isSelected: selectedIndex == 2,
                       onTap: () => _onItemTapped(context, 2),
-                      badgeCount: 0,
+                      badgeCount: unreadCount,
                     ),
                     // ── Store
                     _AminoNavItem(
