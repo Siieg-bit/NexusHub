@@ -691,7 +691,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       final result = await SupabaseService.rpc(
         'toggle_follow_with_reputation',
         params: {
-          'p_community_id': '00000000-0000-0000-0000-000000000000',
+          'p_community_id': null,
           'p_follower_id': SupabaseService.currentUserId ?? '',
           'p_following_id': widget.userId,
         },

@@ -217,6 +217,7 @@ final followingStoriesProvider =
     // Buscar quem o usuário segue
     final follows = await SupabaseService.table('follows')
         .select('following_id')
+        .isFilter('community_id', null)
         .eq('follower_id', userId)
         .limit(50);
     final followingIds = (follows as List? ?? [])

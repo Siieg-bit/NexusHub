@@ -367,6 +367,7 @@ class PaginationService {
 
     final res = await SupabaseService.table('follows')
         .select('*, $joinColumn')
+        .isFilter('community_id', null)
         .eq(column, userId)
         .order('created_at', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);

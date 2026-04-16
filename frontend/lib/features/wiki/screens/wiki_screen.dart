@@ -876,6 +876,325 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
     return topLevel;
   }
 
+  List<CommentModel> _sortedComments(List<CommentModel> comments) {
+    final sorted = List<CommentModel>.from(comments);
+    switch (_commentSortOrder) {
+      case _CommentSortOrder.mostRecent:
+        sorted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        break;
+      case _CommentSortOrder.oldest:
+        sorted.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        break;
+      case _CommentSortOrder.mostPopular:
+        sorted.sort((a, b) => b.likesCount.compareTo(a.likesCount));
+        break;
+    }
+    return sorted;
+  }
+
+  Widget _buildCommentsSheetBody({
+    required BuildContext context,
+    required AsyncValue<List<CommentModel>> commentsAsync,
+    required bool canModerate,
+    required UserModel? currentUser,
+    required String? currentUserAvatar,
+    required StateSetter setModalState,
+  }) {
+    final s = getStrings();
+    final r = context.r;
+
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
+          child: Row(
+            children: [
+              Container(
+                width: r.s(40),
+                height: r.s(4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(r.s(999)),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                s.comments,
+                style: TextStyle(
+                  fontSize: r.fs(16),
+                  fontWeight: FontWeight.w800,
+                  color: context.nexusTheme.textPrimary,
+                ),
+              ),
+              const Spacer(),
+              PopupMenuButton<_CommentSortOrder>(
+                tooltip: s.sortBy,
+                initialValue: _commentSortOrder,
+                onSelected: (value) {
+                  setState(() => _commentSortOrder = value);
+                  setModalState(() {});
+                },
+                color: context.surfaceColor,
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(r.s(14)),
+                  side: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.08),
+                  ),
+                ),
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: _CommentSortOrder.mostRecent,
+                    child: Text(s.mostRecent,
+                        style: TextStyle(
+                            color: context.nexusTheme.textPrimary)),
+                  ),
+                  PopupMenuItem(
+                    value: _CommentSortOrder.oldest,
+                    child: Text(s.oldest,
+                        style: TextStyle(
+                            color: context.nexusTheme.textPrimary)),
+                  ),
+                  PopupMenuItem(
+                    value: _CommentSortOrder.mostPopular,
+                    child: Text(s.mostPopular,
+                        style: TextStyle(
+                            color: context.nexusTheme.textPrimary)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        Divider(color: Colors.white.withValues(alpha: 0.06), height: 1),
+        Expanded(
+          child: commentsAsync.when(
+            loading: () => Center(
+              child: CircularProgressIndicator(
+                color: context.nexusTheme.accentPrimary,
+              ),
+            ),
+            error: (e, _) => Center(
+              child: Text(
+                s.anErrorOccurredTryAgain,
+                style: TextStyle(color: context.nexusTheme.textSecondary),
+              ),
+            ),
+            data: (comments) {
+              final sorted = _sortedComments(comments);
+              final tree = _buildCommentTree(sorted);
+              if (tree.isEmpty) {
+                return Center(
+                  child: Text(
+                    s.noComments,
+                    style: TextStyle(
+                      color: context.nexusTheme.textSecondary,
+                    ),
+                  ),
+                );
+              }
+              return ListView(
+                padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(16)),
+                children: tree
+                    .map((c) => _WikiCommentTile(
+                          comment: c,
+                          communityId: _communityId,
+                          canModerate: canModerate,
+                          onReply: (comment) {
+                            setState(() => _replyingToComment = comment);
+                            setModalState(() {});
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              _commentFocusNode.requestFocus();
+                            });
+                          },
+                          onDelete: _deleteComment,
+                        ))
+                    .toList(),
+              );
+            },
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: context.nexusTheme.backgroundPrimary,
+            border: Border(
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
+            ),
+          ),
+          padding: EdgeInsets.only(
+            left: r.s(12),
+            right: r.s(12),
+            top: r.s(8),
+            bottom: r.s(8) + MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_replyingToComment != null)
+                Container(
+                  margin: EdgeInsets.only(bottom: r.s(6)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(12), vertical: r.s(6)),
+                  decoration: BoxDecoration(
+                    color: context.nexusTheme.accentPrimary
+                        .withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(r.s(8)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.reply_rounded,
+                          color: context.nexusTheme.accentPrimary,
+                          size: r.s(16)),
+                      SizedBox(width: r.s(6)),
+                      Expanded(
+                        child: Text(
+                          '${s.reply}: ${_replyingToComment!.effectiveNickname(s.user)}',
+                          style: TextStyle(
+                            color: context.nexusTheme.accentPrimary,
+                            fontSize: r.fs(12),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() => _replyingToComment = null);
+                          setModalState(() {});
+                        },
+                        child: Icon(Icons.close_rounded,
+                            color: Colors.grey[600], size: r.s(18)),
+                      ),
+                    ],
+                  ),
+                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CosmeticAvatar(
+                    userId: currentUser?.id ?? SupabaseService.currentUserId ?? '',
+                    avatarUrl: currentUserAvatar ?? currentUser?.iconUrl,
+                    size: r.s(32),
+                  ),
+                  SizedBox(width: r.s(8)),
+                  Expanded(
+                    child: TextField(
+                      controller: _commentController,
+                      focusNode: _commentFocusNode,
+                      style: TextStyle(
+                          color: context.nexusTheme.textPrimary,
+                          fontSize: r.fs(14)),
+                      maxLines: null,
+                      textInputAction: TextInputAction.newline,
+                      decoration: InputDecoration(
+                        hintText: SupabaseService.currentUserId != null
+                            ? s.saySomethingHint
+                            : s.needLoginToComment,
+                        hintStyle: TextStyle(
+                            color: context.nexusTheme.textSecondary,
+                            fontSize: r.fs(14)),
+                        filled: true,
+                        fillColor: context.surfaceColor,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(r.s(20)),
+                          borderSide: BorderSide.none,
+                        ),
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: r.s(16), vertical: r.s(10)),
+                      ),
+                      enabled: SupabaseService.currentUserId != null,
+                    ),
+                  ),
+                  SizedBox(width: r.s(8)),
+                  GestureDetector(
+                    onTap: _isSendingComment
+                        ? null
+                        : () async {
+                            await _sendComment();
+                            setModalState(() {});
+                          },
+                    child: Container(
+                      padding: EdgeInsets.all(r.s(10)),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            context.nexusTheme.accentPrimary,
+                            context.nexusTheme.accentSecondary,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: context.nexusTheme.accentPrimary
+                                .withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: _isSendingComment
+                          ? SizedBox(
+                              width: r.s(18),
+                              height: r.s(18),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Icon(Icons.send_rounded,
+                              color: Colors.white, size: r.s(18)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _openCommentsSheet({
+    required bool canModerate,
+    required UserModel? currentUser,
+    required String? currentUserAvatar,
+  }) async {
+    final r = context.r;
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(24))),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setModalState) => Consumer(
+          builder: (sheetContext, ref, _) {
+            final commentsAsync =
+                ref.watch(wikiCommentsProvider((widget.wikiId, _communityId)));
+            return SafeArea(
+              top: false,
+              child: SizedBox(
+                height: MediaQuery.of(sheetContext).size.height * 0.82,
+                child: _buildCommentsSheetBody(
+                  context: sheetContext,
+                  commentsAsync: commentsAsync,
+                  canModerate: canModerate,
+                  currentUser: currentUser,
+                  currentUserAvatar: currentUserAvatar,
+                  setModalState: setModalState,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = ref.watch(stringsProvider);
@@ -936,10 +1255,6 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                 .valueOrNull ??
             ref.watch(currentUserAvatarProvider)
         : ref.watch(currentUserAvatarProvider);
-
-    // Provider de comentários
-    final commentsAsync =
-        ref.watch(wikiCommentsProvider((widget.wikiId, _communityId)));
 
     return Scaffold(
       backgroundColor: context.nexusTheme.backgroundPrimary,
@@ -1466,129 +1781,81 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                         }),
 
                         // ══════════════════════════════════════════════════
-                        // SEÇÃO DE COMENTÁRIOS
+                        // COMENTÁRIOS EM MODAL (mesmo padrão de interação do blog)
                         // ══════════════════════════════════════════════════
                         SizedBox(height: r.s(24)),
                         Divider(
                             color: Colors.white.withValues(alpha: 0.05)),
                         SizedBox(height: r.s(12)),
-                        Row(
-                          children: [
-                            Text(
-                              s.comments,
-                              style: TextStyle(
-                                fontSize: r.fs(15),
-                                fontWeight: FontWeight.w700,
-                                color: Colors.grey[600],
+                        GestureDetector(
+                          onTap: () => _openCommentsSheet(
+                            canModerate: canModerate,
+                            currentUser: currentUser,
+                            currentUserAvatar: currentUserAvatar,
+                          ),
+                          child: Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.all(r.s(16)),
+                            decoration: BoxDecoration(
+                              color: context.surfaceColor,
+                              borderRadius: BorderRadius.circular(r.s(18)),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.06),
                               ),
                             ),
-                            const Spacer(),
-                            PopupMenuButton<_CommentSortOrder>(
-                              tooltip: s.sortBy,
-                              initialValue: _commentSortOrder,
-                              onSelected: (value) {
-                                setState(
-                                    () => _commentSortOrder = value);
-                              },
-                              color: context.surfaceColor,
-                              elevation: 8,
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(r.s(14)),
-                                side: BorderSide(
-                                  color:
-                                      Colors.white.withValues(alpha: 0.08),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: r.s(44),
+                                  height: r.s(44),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        context.nexusTheme.accentPrimary,
+                                        context.nexusTheme.accentSecondary,
+                                      ],
+                                    ),
+                                    borderRadius:
+                                        BorderRadius.circular(r.s(14)),
+                                  ),
+                                  child: Icon(Icons.forum_rounded,
+                                      color: Colors.white, size: r.s(22)),
                                 ),
-                              ),
-                              itemBuilder: (_) => [
-                                PopupMenuItem(
-                                  value: _CommentSortOrder.mostRecent,
-                                  child: Text(s.mostRecent,
-                                      style: TextStyle(
+                                SizedBox(width: r.s(12)),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        s.comments,
+                                        style: TextStyle(
+                                          fontSize: r.fs(15),
+                                          fontWeight: FontWeight.w800,
                                           color: context
-                                              .nexusTheme.textPrimary)),
-                                ),
-                                PopupMenuItem(
-                                  value: _CommentSortOrder.oldest,
-                                  child: Text(s.oldest,
-                                      style: TextStyle(
+                                              .nexusTheme.textPrimary,
+                                        ),
+                                      ),
+                                      SizedBox(height: r.s(4)),
+                                      Text(
+                                        s.tapToView,
+                                        style: TextStyle(
+                                          fontSize: r.fs(13),
                                           color: context
-                                              .nexusTheme.textPrimary)),
+                                              .nexusTheme.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                PopupMenuItem(
-                                  value: _CommentSortOrder.mostPopular,
-                                  child: Text(s.mostPopular,
-                                      style: TextStyle(
-                                          color: context
-                                              .nexusTheme.textPrimary)),
-                                ),
+                                Icon(Icons.chevron_right_rounded,
+                                    color: context.nexusTheme.textSecondary,
+                                    size: r.s(24)),
                               ],
                             ),
-                          ],
-                        ),
-                        SizedBox(height: r.s(8)),
-                        commentsAsync.when(
-                          loading: () => Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(r.s(16)),
-                              child: CircularProgressIndicator(
-                                  color: context.nexusTheme.accentPrimary),
-                            ),
                           ),
-                          error: (e, _) => Center(
-                            child: Text(s.anErrorOccurredTryAgain,
-                                style: TextStyle(
-                                    color:
-                                        context.nexusTheme.textSecondary)),
-                          ),
-                          data: (comments) {
-                            // Ordenar
-                            final sorted = List<CommentModel>.from(comments);
-                            switch (_commentSortOrder) {
-                              case _CommentSortOrder.mostRecent:
-                                sorted.sort((a, b) =>
-                                    b.createdAt.compareTo(a.createdAt));
-                                break;
-                              case _CommentSortOrder.oldest:
-                                sorted.sort((a, b) =>
-                                    a.createdAt.compareTo(b.createdAt));
-                                break;
-                              case _CommentSortOrder.mostPopular:
-                                sorted.sort((a, b) =>
-                                    b.likesCount.compareTo(a.likesCount));
-                                break;
-                            }
-                            final tree = _buildCommentTree(sorted);
-                            if (tree.isEmpty) {
-                              return Padding(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: r.s(16)),
-                                child: Center(
-                                  child: Text(s.noComments,
-                                      style: TextStyle(
-                                          color: context
-                                              .nexusTheme.textSecondary)),
-                                ),
-                              );
-                            }
-                            return Column(
-                              children: tree
-                                  .map((c) => _WikiCommentTile(
-                                        comment: c,
-                                        communityId: _communityId,
-                                        canModerate: canModerate,
-                                        onReply: (comment) {
-                                          setState(() =>
-                                              _replyingToComment = comment);
-                                          _commentFocusNode.requestFocus();
-                                        },
-                                        onDelete: _deleteComment,
-                                      ))
-                                  .toList(),
-                            );
-                          },
                         ),
-                        SizedBox(height: r.s(80)),
+                        SizedBox(height: r.s(24)),
                       ],
                     ),
                   ),
@@ -1597,145 +1864,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
             ),
           ),
 
-          // ── Composer de comentários ──────────────────────────────────────
-          Container(
-            decoration: BoxDecoration(
-              color: context.nexusTheme.backgroundPrimary,
-              border: Border(
-                top: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.06)),
-              ),
-            ),
-            padding: EdgeInsets.only(
-              left: r.s(12),
-              right: r.s(12),
-              top: r.s(8),
-              bottom: r.s(8) +
-                  MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Banner de resposta
-                if (_replyingToComment != null)
-                  Container(
-                    margin: EdgeInsets.only(bottom: r.s(6)),
-                    padding: EdgeInsets.symmetric(
-                        horizontal: r.s(12), vertical: r.s(6)),
-                    decoration: BoxDecoration(
-                      color: context.nexusTheme.accentPrimary
-                          .withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(r.s(8)),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.reply_rounded,
-                            color: context.nexusTheme.accentPrimary,
-                            size: r.s(16)),
-                        SizedBox(width: r.s(6)),
-                        Expanded(
-                          child: Text(
-                            '${s.reply}: ${_replyingToComment!.effectiveNickname(s.user)}',
-                            style: TextStyle(
-                              color: context.nexusTheme.accentPrimary,
-                              fontSize: r.fs(12),
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () =>
-                              setState(() => _replyingToComment = null),
-                          child: Icon(Icons.close_rounded,
-                              color: Colors.grey[600], size: r.s(18)),
-                        ),
-                      ],
-                    ),
-                  ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CosmeticAvatar(
-                      userId: currentUser?.id ??
-                          SupabaseService.currentUserId ??
-                          '',
-                      avatarUrl: currentUserAvatar ??
-                          currentUser?.iconUrl,
-                      size: r.s(32),
-                    ),
-                    SizedBox(width: r.s(8)),
-                    Expanded(
-                      child: TextField(
-                        controller: _commentController,
-                        focusNode: _commentFocusNode,
-                        style: TextStyle(
-                            color: context.nexusTheme.textPrimary,
-                            fontSize: r.fs(14)),
-                        maxLines: null,
-                        textInputAction: TextInputAction.newline,
-                        decoration: InputDecoration(
-                          hintText: SupabaseService.currentUserId != null
-                              ? s.saySomethingHint
-                              : s.needLoginToComment,
-                          hintStyle: TextStyle(
-                              color: context.nexusTheme.textSecondary,
-                              fontSize: r.fs(14)),
-                          filled: true,
-                          fillColor: context.surfaceColor,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(r.s(20)),
-                            borderSide: BorderSide.none,
-                          ),
-                          isDense: true,
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: r.s(16), vertical: r.s(10)),
-                        ),
-                        enabled: SupabaseService.currentUserId != null,
-                      ),
-                    ),
-                    SizedBox(width: r.s(8)),
-                    GestureDetector(
-                      onTap: _isSendingComment ? null : _sendComment,
-                      child: Container(
-                        padding: EdgeInsets.all(r.s(10)),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              context.nexusTheme.accentPrimary,
-                              context.nexusTheme.accentSecondary,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: context.nexusTheme.accentPrimary
-                                  .withValues(alpha: 0.4),
-                              blurRadius: 8,
-                              spreadRadius: 1,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: _isSendingComment
-                            ? SizedBox(
-                                width: r.s(18),
-                                height: r.s(18),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Icon(Icons.send_rounded,
-                                color: Colors.white, size: r.s(18)),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+
         ],
       ),
     );

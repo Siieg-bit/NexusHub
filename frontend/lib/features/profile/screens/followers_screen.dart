@@ -24,8 +24,6 @@ class FollowersScreen extends ConsumerStatefulWidget {
 
 class _FollowersScreenState extends ConsumerState<FollowersScreen>
     with SingleTickerProviderStateMixin {
-  static const String _globalCommunityId =
-      '00000000-0000-0000-0000-000000000000';
   late TabController _tabController;
   List<Map<String, dynamic>> _followers = [];
   List<Map<String, dynamic>> _following = [];
@@ -53,7 +51,7 @@ class _FollowersScreenState extends ConsumerState<FollowersScreen>
       final followersRes = await SupabaseService.table('follows')
           .select(
               '*, profiles!follows_follower_id_fkey(id, nickname, icon_url, level)')
-          .eq('community_id', _globalCommunityId)
+          .isFilter('community_id', null)
           .eq('following_id', widget.userId)
           .order('created_at', ascending: false);
       _followers = List<Map<String, dynamic>>.from(followersRes as List? ?? []);
@@ -62,7 +60,7 @@ class _FollowersScreenState extends ConsumerState<FollowersScreen>
       final followingRes = await SupabaseService.table('follows')
           .select(
               '*, profiles!follows_following_id_fkey(id, nickname, icon_url, level)')
-          .eq('community_id', _globalCommunityId)
+          .isFilter('community_id', null)
           .eq('follower_id', widget.userId)
           .order('created_at', ascending: false);
       _following = List<Map<String, dynamic>>.from(followingRes as List? ?? []);
