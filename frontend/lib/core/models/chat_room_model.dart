@@ -118,7 +118,7 @@ class ChatRoomModel {
     final elapsed = DateTime.now().toUtc().difference(seenAt.toUtc());
     if (elapsed.inMinutes < 1) return 'agora mesmo';
     if (elapsed.inMinutes < 60) {
-      final m = ((elapsed.inMinutes + 14) ~/ 15) * 15;
+      final m = elapsed.inMinutes;
       return 'há $m ${m == 1 ? 'minuto' : 'minutos'}';
     }
     if (elapsed.inHours < 24) {

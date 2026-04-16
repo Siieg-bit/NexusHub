@@ -24,6 +24,8 @@ class FollowersScreen extends ConsumerStatefulWidget {
 
 class _FollowersScreenState extends ConsumerState<FollowersScreen>
     with SingleTickerProviderStateMixin {
+  static const String _globalCommunityId =
+      '00000000-0000-0000-0000-000000000000';
   late TabController _tabController;
   List<Map<String, dynamic>> _followers = [];
   List<Map<String, dynamic>> _following = [];
@@ -51,6 +53,7 @@ class _FollowersScreenState extends ConsumerState<FollowersScreen>
       final followersRes = await SupabaseService.table('follows')
           .select(
               '*, profiles!follows_follower_id_fkey(id, nickname, icon_url, level)')
+          .eq('community_id', _globalCommunityId)
           .eq('following_id', widget.userId)
           .order('created_at', ascending: false);
       _followers = List<Map<String, dynamic>>.from(followersRes as List? ?? []);
@@ -59,6 +62,7 @@ class _FollowersScreenState extends ConsumerState<FollowersScreen>
       final followingRes = await SupabaseService.table('follows')
           .select(
               '*, profiles!follows_following_id_fkey(id, nickname, icon_url, level)')
+          .eq('community_id', _globalCommunityId)
           .eq('follower_id', widget.userId)
           .order('created_at', ascending: false);
       _following = List<Map<String, dynamic>>.from(followingRes as List? ?? []);
@@ -202,6 +206,8 @@ class _FollowButton extends ConsumerStatefulWidget {
 }
 
 class _FollowButtonState extends ConsumerState<_FollowButton> {
+  static const String _globalCommunityId =
+      '00000000-0000-0000-0000-000000000000';
   bool _isFollowing = false;
   bool _isLoading = true;
 
@@ -221,6 +227,7 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
 
       final res = await SupabaseService.table('follows')
           .select('id')
+          .eq('community_id', _globalCommunityId)
           .eq('follower_id', currentUserId)
           .eq('following_id', widget.targetUserId)
           .maybeSingle();
@@ -245,7 +252,7 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
       final result = await SupabaseService.rpc(
         'toggle_follow_with_reputation',
         params: {
-          'p_community_id': '00000000-0000-0000-0000-000000000000',
+          'p_community_id': _globalCommunityId,
           'p_follower_id': currentUserId,
           'p_following_id': widget.targetUserId,
         },

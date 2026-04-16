@@ -234,6 +234,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       // Contagem de seguidores/seguindo
       final followersRes = await SupabaseService.table('follows')
           .select()
+          .eq('community_id', widget.communityId)
           .eq('following_id', widget.userId);
       _followersCount = (followersRes as List?)?.length ?? 0;
 
@@ -242,6 +243,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       if (!_isOwnProfile && currentUserId != null) {
         final followCheckRes = await SupabaseService.table('follows')
             .select('id')
+            .eq('community_id', widget.communityId)
             .eq('follower_id', currentUserId)
             .eq('following_id', widget.userId)
             .limit(1);
@@ -249,6 +251,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         // Verificar se o outro usuário também me segue (amizade mútua)
         final reverseCheckRes = await SupabaseService.table('follows')
             .select('id')
+            .eq('community_id', widget.communityId)
             .eq('follower_id', widget.userId)
             .eq('following_id', currentUserId)
             .limit(1);
@@ -257,6 +260,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
 
       final followingRes = await SupabaseService.table('follows')
           .select()
+          .eq('community_id', widget.communityId)
           .eq('follower_id', widget.userId);
       _followingCount = (followingRes as List?)?.length ?? 0;
       // Verificar se o usuário tem story ativo nesta comunidade
@@ -833,10 +837,24 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                             right: 0,
                             child: SafeArea(
                               bottom: false,
-                              child: Container(
-                                color: const Color(0xFFDC2626).withValues(alpha: 0.88),
-                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                                child: Row(
+                              child: Padding(
+                                padding: EdgeInsets.fromLTRB(
+                                  r.s(12),
+                                  r.s(10),
+                                  r.s(12),
+                                  0,
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFDC2626)
+                                        .withValues(alpha: 0.88),
+                                    borderRadius: BorderRadius.circular(r.s(14)),
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: r.s(10),
+                                    horizontal: r.s(14),
+                                  ),
+                                  child: Row(
                                   children: [
                                     const Icon(Icons.visibility_off_rounded,
                                         color: Colors.white, size: 14),
@@ -2593,6 +2611,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         // Recarregar contagem real
         final followersRes = await SupabaseService.table('follows')
             .select()
+            .eq('community_id', widget.communityId)
             .eq('following_id', widget.userId);
         if (mounted) {
           setState(() {
@@ -2852,6 +2871,58 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                   },
                 ),
               if (!_isOwnProfile) ...[
+                if ((_membership?['is_hidden'] as bool?) == true && canManageRoles)
+                  _optionTile(
+                    Icons.visibility_rounded,
+                    'Desocultar perfil',
+                    () async {
+                      Navigator.pop(ctx);
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (dialogCtx) => AlertDialog(
+                          title: const Text('Desocultar perfil'),
+                          content: const Text(
+                            'Deseja restaurar a visibilidade deste perfil para todos os membros?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(dialogCtx, false),
+                              child: const Text('Cancelar'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(dialogCtx, true),
+                              child: const Text('Desocultar'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed != true || !mounted) return;
+                      try {
+                        await SupabaseService.table('community_members')
+                            .update({'is_hidden': false})
+                            .eq('community_id', widget.communityId)
+                            .eq('user_id', widget.userId);
+                        await _loadProfile();
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Perfil desocultado com sucesso'),
+                            backgroundColor: context.nexusTheme.accentPrimary,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      } catch (e) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Erro ao desocultar: $e'),
+                            backgroundColor: Colors.red,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+                  ),
                 _optionTile(Icons.flag_rounded, s.report, () {
                   Navigator.pop(ctx);
                 }, isDestructive: true),

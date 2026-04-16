@@ -57,6 +57,7 @@ class _CommunityFollowersScreenState
       // Seguidores — busca perfil global + perfil de comunidade
       final followersRes = await SupabaseService.table('follows')
           .select('*, profiles!follows_follower_id_fkey(id, nickname, icon_url, level)')
+          .eq('community_id', widget.communityId)
           .eq('following_id', widget.userId)
           .order('created_at', ascending: false);
       final followersList =
@@ -65,6 +66,7 @@ class _CommunityFollowersScreenState
       // Seguindo — busca perfil global + perfil de comunidade
       final followingRes = await SupabaseService.table('follows')
           .select('*, profiles!follows_following_id_fkey(id, nickname, icon_url, level)')
+          .eq('community_id', widget.communityId)
           .eq('follower_id', widget.userId)
           .order('created_at', ascending: false);
       final followingList =

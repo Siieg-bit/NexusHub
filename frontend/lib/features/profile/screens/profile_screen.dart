@@ -62,6 +62,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final equippedAsync = ref.watch(equippedItemsProvider(widget.userId));
     final currentUser = ref.watch(currentUserProvider);
     final isOwnProfile = currentUser?.id == widget.userId;
+    final isBlocked = ref.watch(isBlockedProvider(widget.userId));
 
     return profileAsync.when(
       loading: () => Scaffold(
@@ -117,6 +118,71 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             equippedAsync.valueOrNull?['frame_is_animated'] as bool? ?? false;
         final isAminoPlus = user.isPremium || IAPService.isAminoPlus;
         final displayedIsFollowing = _followOverride ?? (user.isFollowing == true);
+
+        if (isBlocked && !isOwnProfile) {
+          final displayName = user.nickname.isNotEmpty ? user.nickname : s.user;
+          return Scaffold(
+            backgroundColor: context.nexusTheme.backgroundPrimary,
+            appBar: AppBar(
+              backgroundColor: context.nexusTheme.backgroundPrimary,
+              foregroundColor: context.nexusTheme.textPrimary,
+              title: Text(displayName),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.more_vert),
+                  onPressed: () => _showOptions(context),
+                ),
+              ],
+            ),
+            body: Center(
+              child: Padding(
+                padding: EdgeInsets.all(r.s(32)),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.block_rounded,
+                      size: r.s(64),
+                      color: context.nexusTheme.textSecondary,
+                    ),
+                    SizedBox(height: r.s(20)),
+                    Text(
+                      'Usuário bloqueado',
+                      style: TextStyle(
+                        fontSize: r.fs(20),
+                        fontWeight: FontWeight.bold,
+                        color: context.nexusTheme.textPrimary,
+                      ),
+                    ),
+                    SizedBox(height: r.s(8)),
+                    Text(
+                      'Você bloqueou este usuário. Posts, mural e outras informações do perfil foram ocultados.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: r.fs(14),
+                        color: context.nexusTheme.textSecondary,
+                      ),
+                    ),
+                    SizedBox(height: r.s(24)),
+                    OutlinedButton.icon(
+                      onPressed: () => _handleBlockToggle(true),
+                      icon: const Icon(Icons.lock_open_rounded),
+                      label: const Text('Desbloquear'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: context.nexusTheme.accentPrimary,
+                        side: BorderSide(color: context.nexusTheme.accentPrimary),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: r.s(24),
+                          vertical: r.s(12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
 
         return Scaffold(
           resizeToAvoidBottomInset: true,

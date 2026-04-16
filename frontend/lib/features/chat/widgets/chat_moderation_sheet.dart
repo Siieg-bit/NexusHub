@@ -128,14 +128,10 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
               if (cm == null) continue;
               final profile =
                   Map<String, dynamic>.from(m['profiles'] as Map? ?? {});
-              final localNick = cm['local_nickname'] as String?;
-              final localIcon = cm['local_icon_url'] as String?;
-              if (localNick != null && localNick.trim().isNotEmpty) {
-                profile['nickname'] = localNick.trim();
-              }
-              if (localIcon != null && localIcon.trim().isNotEmpty) {
-                profile['icon_url'] = localIcon.trim();
-              }
+              final localNick = (cm['local_nickname'] as String?)?.trim();
+              final localIcon = (cm['local_icon_url'] as String?)?.trim();
+              profile['nickname'] = localNick;
+              profile['icon_url'] = localIcon;
               m['profiles'] = profile;
             }
           } catch (e) {
@@ -189,7 +185,12 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
       color: Colors.blue,
       onTap: () {
         Navigator.pop(ctx);
-        ctx.push('/user/$targetId');
+        final communityId = widget.communityId?.trim();
+        if (communityId != null && communityId.isNotEmpty) {
+          ctx.push('/community/$communityId/profile/$targetId');
+        } else {
+          ctx.push('/user/$targetId');
+        }
       },
     ));
 
@@ -756,7 +757,14 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                                       final uid = profile['id'] as String?;
                                       if (uid != null) {
                                         Navigator.pop(ctx);
-                                        ctx.push('/user/$uid');
+                                        final communityId = widget.communityId?.trim();
+                                        if (communityId != null &&
+                                            communityId.isNotEmpty) {
+                                          ctx.push(
+                                              '/community/$communityId/profile/$uid');
+                                        } else {
+                                          ctx.push('/user/$uid');
+                                        }
                                       }
                                     },
                               behavior: HitTestBehavior.opaque,
