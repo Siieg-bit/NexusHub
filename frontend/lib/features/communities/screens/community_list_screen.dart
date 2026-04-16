@@ -396,7 +396,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 
         if (mounted) {
           ref.invalidate(userCommunitiesProvider);
-          setState(() => _reorderedCommunities = null);
+          setState(() {});
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(s.leftCommunityMsg(community.name)),

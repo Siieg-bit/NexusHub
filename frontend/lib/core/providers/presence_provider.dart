@@ -16,7 +16,7 @@ class CommunityPresenceNotifier
     extends FamilyStreamNotifier<Set<String>, String> {
   @override
   Stream<Set<String>> build(String arg) {
-    return const Stream<Set<String>>.value(<String>{});
+    return Stream<Set<String>>.value(<String>{});
   }
 }
 
@@ -47,7 +47,7 @@ final globalPresenceProvider =
 class GlobalPresenceNotifier extends StreamNotifier<Set<String>> {
   @override
   Stream<Set<String>> build() {
-    return const Stream<Set<String>>.value(<String>{});
+    return Stream<Set<String>>.value(<String>{});
   }
 }
 
