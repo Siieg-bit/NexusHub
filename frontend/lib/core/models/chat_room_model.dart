@@ -113,9 +113,28 @@ class ChatRoomModel {
 
   String get counterpartPresenceLabel {
     if (isCounterpartOnline) return 'online';
-    final bucket = counterpartLastActiveBucketMinutes;
-    if (bucket <= 0) return 'offline';
-    return 'há $bucket minutos';
+    final seenAt = counterpartLastSeenAt;
+    if (seenAt == null) return 'offline';
+    final elapsed = DateTime.now().toUtc().difference(seenAt.toUtc());
+    if (elapsed.inMinutes < 1) return 'agora mesmo';
+    if (elapsed.inMinutes < 60) {
+      final m = ((elapsed.inMinutes + 14) ~/ 15) * 15;
+      return 'há $m ${m == 1 ? 'minuto' : 'minutos'}';
+    }
+    if (elapsed.inHours < 24) {
+      final h = elapsed.inHours;
+      return 'há $h ${h == 1 ? 'hora' : 'horas'}';
+    }
+    if (elapsed.inDays < 30) {
+      final d = elapsed.inDays;
+      return 'há $d ${d == 1 ? 'dia' : 'dias'}';
+    }
+    if (elapsed.inDays < 365) {
+      final mo = (elapsed.inDays / 30).floor();
+      return 'há $mo ${mo == 1 ? 'mês' : 'meses'}';
+    }
+    final y = (elapsed.inDays / 365).floor();
+    return 'há $y ${y == 1 ? 'ano' : 'anos'}';
   }
 
   factory ChatRoomModel.fromJson(Map<String, dynamic> json) {
