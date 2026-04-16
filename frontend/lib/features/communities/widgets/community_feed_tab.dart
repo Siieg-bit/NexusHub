@@ -337,21 +337,36 @@ class _LatestTab extends ConsumerWidget {
         child: CircularProgressIndicator(
             color: context.nexusTheme.accentPrimary, strokeWidth: 2.5),
       ),
-      error: (error, _) => RefreshIndicator(
-        onRefresh: () => onRefresh(ref),
-        color: context.nexusTheme.accentPrimary,
-        backgroundColor: context.surfaceColor,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.5,
-            child: Center(
-              child: Text(s.errorLoadingPosts,
-                  style: TextStyle(color: context.nexusTheme.textSecondary)),
+      error: (error, stackTrace) {
+        debugPrint('[CommunityFeedTab][latestFeed] ERROR: $error');
+        debugPrint('[CommunityFeedTab][latestFeed] STACK: $stackTrace');
+        return RefreshIndicator(
+          onRefresh: () => onRefresh(ref),
+          color: context.nexusTheme.accentPrimary,
+          backgroundColor: context.surfaceColor,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(s.errorLoadingPosts,
+                        style: TextStyle(color: context.nexusTheme.textSecondary)),
+                    const SizedBox(height: 8),
+                    Text(
+                      error.toString(),
+                      style: const TextStyle(color: Colors.red, fontSize: 11),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
       data: (posts) {
         if (posts.isEmpty) {
           return RefreshIndicator(

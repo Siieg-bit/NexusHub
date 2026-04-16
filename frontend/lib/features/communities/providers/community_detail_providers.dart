@@ -12,9 +12,15 @@ import '../../../core/services/supabase_service.dart';
 
 final communityDetailProvider =
     FutureProvider.family<CommunityModel, String>((ref, id) async {
-  final response =
-      await SupabaseService.table('communities').select().eq('id', id).single();
-  return CommunityModel.fromJson(response);
+  try {
+    final response =
+        await SupabaseService.table('communities').select().eq('id', id).single();
+    return CommunityModel.fromJson(response);
+  } catch (e, st) {
+    debugPrint('[communityDetailProvider] ERROR id=$id error=$e');
+    debugPrint('[communityDetailProvider] STACK: $st');
+    rethrow;
+  }
 });
 
 final communityFeedProvider =
@@ -85,26 +91,46 @@ final pinnedFeedProvider =
 /// Posts em DESTAQUE ATIVOS (is_featured=true) — seção 2 da aba Destaque.
 final activeFeaturedFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
-  final response = await SupabaseService.table('posts')
-      .select(
-          '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
-      .eq('community_id', communityId)
-      .eq('status', 'ok')
-      .eq('is_featured', true)
-      .order('featured_at', ascending: false)
-      .limit(100);
+  try {
+    debugPrint('[activeFeaturedFeedProvider] loading communityId=$communityId');
+    final response = await SupabaseService.table('posts')
+        .select(
+            '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+        .eq('community_id', communityId)
+        .eq('status', 'ok')
+        .eq('is_featured', true)
+        .order('featured_at', ascending: false)
+        .limit(100);
 
-  final maps = (response as List? ?? []).map((e) {
-    final map = Map<String, dynamic>.from(e);
-    if (map['profiles'] != null) map['author'] = map['profiles'];
-    return map;
-  }).toList();
+    debugPrint('[activeFeaturedFeedProvider] raw count=${((response as List?)?.length ?? 0)}');
 
-  await _injectCommunityAuthorIdentity(maps, communityId);
-  await _injectIsLikedCommunity(maps);
+    final maps = (response as List? ?? []).map((e) {
+      final map = Map<String, dynamic>.from(e);
+      if (map['profiles'] != null) map['author'] = map['profiles'];
+      return map;
+    }).toList();
 
-  final posts = maps.map((map) => PostModel.fromJson(map)).toList();
-  return posts.where((p) => p.isFeatured).toList();
+    await _injectCommunityAuthorIdentity(maps, communityId);
+    await _injectIsLikedCommunity(maps);
+
+    final posts = <PostModel>[];
+    for (var i = 0; i < maps.length; i++) {
+      try {
+        posts.add(PostModel.fromJson(maps[i]));
+      } catch (e, st) {
+        debugPrint('[activeFeaturedFeedProvider] PostModel.fromJson FAILED at index=$i id=${maps[i]['id']} type=${maps[i]['type']} error=$e');
+        debugPrint('[activeFeaturedFeedProvider] fromJson STACK: $st');
+        rethrow;
+      }
+    }
+    final result = posts.where((p) => p.isFeatured).toList();
+    debugPrint('[activeFeaturedFeedProvider] loaded ${result.length} featured posts OK');
+    return result;
+  } catch (e, st) {
+    debugPrint('[activeFeaturedFeedProvider] FATAL ERROR communityId=$communityId error=$e');
+    debugPrint('[activeFeaturedFeedProvider] FATAL STACK: $st');
+    rethrow;
+  }
 });
 
 /// Posts que já passaram pela vitrine, mas saíram da rotação ativa.
@@ -140,26 +166,47 @@ final archivedFeaturedFeedProvider =
 /// Posts RECENTES (excluindo fixados e históricos de destaque) — seção 3 da aba Destaque.
 final latestFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
-  final response = await SupabaseService.table('posts')
-      .select(
-          '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
-      .eq('community_id', communityId)
-      .eq('status', 'ok')
-      .eq('is_pinned', false)
-      .eq('is_featured', false)
-      .isFilter('featured_by', null)
-      .order('created_at', ascending: false)
-      .limit(20);
+  try {
+    debugPrint('[latestFeedProvider] loading communityId=$communityId');
+    final response = await SupabaseService.table('posts')
+        .select(
+            '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+        .eq('community_id', communityId)
+        .eq('status', 'ok')
+        .eq('is_pinned', false)
+        .eq('is_featured', false)
+        .isFilter('featured_by', null)
+        .order('created_at', ascending: false)
+        .limit(20);
 
-  final maps = (response as List? ?? []).map((e) {
-    final map = Map<String, dynamic>.from(e);
-    if (map['profiles'] != null) map['author'] = map['profiles'];
-    return map;
-  }).toList();
+    debugPrint('[latestFeedProvider] raw response count=${((response as List?)?.length ?? 0)}');
 
-  await _injectCommunityAuthorIdentity(maps, communityId);
-  await _injectIsLikedCommunity(maps);
-  return maps.map((map) => PostModel.fromJson(map)).toList();
+    final maps = (response as List? ?? []).map((e) {
+      final map = Map<String, dynamic>.from(e);
+      if (map['profiles'] != null) map['author'] = map['profiles'];
+      return map;
+    }).toList();
+
+    await _injectCommunityAuthorIdentity(maps, communityId);
+    await _injectIsLikedCommunity(maps);
+
+    final posts = <PostModel>[];
+    for (var i = 0; i < maps.length; i++) {
+      try {
+        posts.add(PostModel.fromJson(maps[i]));
+      } catch (e, st) {
+        debugPrint('[latestFeedProvider] PostModel.fromJson FAILED at index=$i id=${maps[i]['id']} type=${maps[i]['type']} error=$e');
+        debugPrint('[latestFeedProvider] fromJson STACK: $st');
+        rethrow;
+      }
+    }
+    debugPrint('[latestFeedProvider] loaded ${posts.length} posts OK');
+    return posts;
+  } catch (e, st) {
+    debugPrint('[latestFeedProvider] FATAL ERROR communityId=$communityId error=$e');
+    debugPrint('[latestFeedProvider] FATAL STACK: $st');
+    rethrow;
+  }
 });
 
 Future<void> _injectCommunityAuthorIdentity(
@@ -248,10 +295,12 @@ Future<void> _injectCommunityAuthorIdentity(
         }
       }
     }
-  } catch (e) {
+  } catch (e, st) {
     debugPrint(
       '[community_detail_providers] _injectCommunityAuthorIdentity error: $e',
     );
+    debugPrint('[community_detail_providers] _injectCommunityAuthorIdentity STACK: $st');
+    rethrow;
   }
 }
 
@@ -274,9 +323,11 @@ Future<void> _injectIsLikedCommunity(List<Map<String, dynamic>> posts) async {
     for (final post in posts) {
       post['is_liked'] = likedPostIds.contains(post['id']);
     }
-  } catch (e) {
+  } catch (e, st) {
     debugPrint(
         '[community_detail_providers] _injectIsLikedCommunity error: $e');
+    debugPrint('[community_detail_providers] _injectIsLikedCommunity STACK: $st');
+    rethrow;
   }
   // ── Injetar poll_data para enquetes (busca opções do banco) ──────────────
   try {
@@ -345,8 +396,10 @@ Future<void> _injectIsLikedCommunity(List<Map<String, dynamic>> posts) async {
         };
       }
     }
-  } catch (e) {
+  } catch (e, st) {
     debugPrint('[community_detail_providers] _injectPollData error: $e');
+    debugPrint('[community_detail_providers] _injectPollData STACK: $st');
+    rethrow;
   }
 }
 
