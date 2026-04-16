@@ -187,23 +187,10 @@ final communityMyChatsProvider =
         final membership = localMemberships[counterpartUserId];
 
         if (membership != null) {
-          // Aplica valor local apenas se existir e não for vazio;
-          // caso contrário preserva o valor global do perfil.
-          final localNickname =
-              _normalizedString(membership['local_nickname']);
-          final localIconUrl =
-              _normalizedString(membership['local_icon_url']);
-          final localBannerUrl =
-              _normalizedString(membership['local_banner_url']);
-          if (localNickname != null && localNickname.isNotEmpty) {
-            mergedProfile['nickname'] = localNickname;
-          }
-          if (localIconUrl != null && localIconUrl.isNotEmpty) {
-            mergedProfile['icon_url'] = localIconUrl;
-          }
-          if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
-            mergedProfile['banner_url'] = localBannerUrl;
-          }
+          // Usa sempre o valor local da comunidade (pode ser null se não definido).
+          mergedProfile['nickname'] = _normalizedString(membership['local_nickname']);
+          mergedProfile['icon_url'] = _normalizedString(membership['local_icon_url']);
+          mergedProfile['banner_url'] = _normalizedString(membership['local_banner_url']);
         }
 
         dmCounterparts[threadId] = mergedProfile;
@@ -263,16 +250,9 @@ final communityMemberAvatarsProvider =
     final profile = _extractProfile(row['profiles']);
     if (profile == null) continue;
     final mergedProfile = Map<String, dynamic>.from(profile);
-    final localNickname = _normalizedString(row['local_nickname']);
-    final localIconUrl = _normalizedString(row['local_icon_url']);
-    // Aplica valor local apenas se existir e não for vazio;
-    // caso contrário preserva o valor global do perfil.
-    if (localNickname != null && localNickname.isNotEmpty) {
-      mergedProfile['nickname'] = localNickname;
-    }
-    if (localIconUrl != null && localIconUrl.isNotEmpty) {
-      mergedProfile['icon_url'] = localIconUrl;
-    }
+    // Usa sempre o valor local da comunidade (pode ser null se não definido).
+    mergedProfile['nickname'] = _normalizedString(row['local_nickname']);
+    mergedProfile['icon_url'] = _normalizedString(row['local_icon_url']);
     row['profiles'] = mergedProfile;
   }
   return rows;

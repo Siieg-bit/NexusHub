@@ -124,17 +124,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             const <String, dynamic>{}) as Map,
       );
 
-      // Aplica o valor local apenas se existir e não for vazio;
-      // caso contrário preserva o valor global já presente no mergedAuthor.
-      if (localNickname != null && localNickname.isNotEmpty) {
-        mergedAuthor['nickname'] = localNickname;
-      }
-      if (localIconUrl != null && localIconUrl.isNotEmpty) {
-        mergedAuthor['icon_url'] = localIconUrl;
-      }
-      if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
-        mergedAuthor['banner_url'] = localBannerUrl;
-      }
+      // Usa sempre o valor local da comunidade (pode ser null se não definido).
+      mergedAuthor['nickname'] = localNickname;
+      mergedAuthor['icon_url'] = localIconUrl;
+      mergedAuthor['banner_url'] = localBannerUrl;
 
       map['profiles'] = mergedAuthor;
       map['sender'] = mergedAuthor;
@@ -498,25 +491,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       .maybeSingle();
 
                   if (membership != null) {
-                    final localMap = Map<String, dynamic>.from(membership);
-                    final localNickname =
-                        (localMap['local_nickname'] as String?)?.trim();
-                    final localIconUrl =
-                        (localMap['local_icon_url'] as String?)?.trim();
-                    final localBannerUrl =
-                        (localMap['local_banner_url'] as String?)?.trim();
-
-                    // Aplica valor local apenas se existir e não for vazio;
-                    // caso contrário preserva o valor global do perfil.
-                    if (localNickname != null && localNickname.isNotEmpty) {
-                      mergedProfile['nickname'] = localNickname;
-                    }
-                    if (localIconUrl != null && localIconUrl.isNotEmpty) {
-                      mergedProfile['icon_url'] = localIconUrl;
-                    }
-                    if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
-                      mergedProfile['banner_url'] = localBannerUrl;
-                    }
+                    // Usa sempre o valor local da comunidade (pode ser null se não definido).
+                    mergedProfile['nickname'] =
+                        (membership['local_nickname'] as String?)?.trim();
+                    mergedProfile['icon_url'] =
+                        (membership['local_icon_url'] as String?)?.trim();
+                    mergedProfile['banner_url'] =
+                        (membership['local_banner_url'] as String?)?.trim();
                   }
                 } catch (e) {
                   debugPrint('[ChatRoom] Erro ao aplicar identidade local: $e');

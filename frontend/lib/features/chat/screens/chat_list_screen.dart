@@ -136,23 +136,10 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
             : localMemberships['$communityId:$counterpartUserId'];
 
         if (membership != null) {
-          // Aplica valor local apenas se existir e não for vazio;
-          // caso contrário preserva o valor global do perfil.
-          final localNickname =
-              normalizedString(membership['local_nickname']);
-          final localIconUrl =
-              normalizedString(membership['local_icon_url']);
-          final localBannerUrl =
-              normalizedString(membership['local_banner_url']);
-          if (localNickname != null && localNickname.isNotEmpty) {
-            mergedProfile['nickname'] = localNickname;
-          }
-          if (localIconUrl != null && localIconUrl.isNotEmpty) {
-            mergedProfile['icon_url'] = localIconUrl;
-          }
-          if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
-            mergedProfile['banner_url'] = localBannerUrl;
-          }
+          // Usa sempre o valor local da comunidade (pode ser null se não definido).
+          mergedProfile['nickname'] = normalizedString(membership['local_nickname']);
+          mergedProfile['icon_url'] = normalizedString(membership['local_icon_url']);
+          mergedProfile['banner_url'] = normalizedString(membership['local_banner_url']);
         }
 
         dmCounterparts[threadId] = mergedProfile;
