@@ -1,6 +1,10 @@
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
@@ -17,7 +21,7 @@ class PrivacySettingsScreen extends ConsumerStatefulWidget {
 
 class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
   bool _isLoading = true;
-
+  bool _isExporting = false;
   // Configurações de privacidade
   bool _profilePublic = true;
   bool _showOnlineStatus = true;
@@ -39,6 +43,60 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
   void initState() {
     super.initState();
     _loadSettings();
+  }
+
+  // ===========================================================================
+  // EXPORTAR DADOS DO USUÁRIO (LGPD)
+  // ===========================================================================
+  Future<void> _exportUserData() async {
+    if (_isExporting) return;
+    setState(() => _isExporting = true);
+    try {
+      final session = SupabaseService.client.auth.currentSession;
+      if (session == null) throw Exception('Não autenticado');
+
+      final response = await SupabaseService.client.functions.invoke(
+        'export-user-data',
+        body: {},
+      );
+
+      if (response.status != 200) {
+        final errBody = response.data;
+        final msg = (errBody is Map && errBody['error'] != null)
+            ? errBody['error'].toString()
+            : 'Erro ao exportar dados (${response.status})';
+        throw Exception(msg);
+      }
+
+      // Serializar o JSON retornado
+      final jsonString = jsonEncode(response.data);
+      final bytes = utf8.encode(jsonString);
+
+      // Salvar em arquivo temporário
+      final dir = await getTemporaryDirectory();
+      final userId = SupabaseService.currentUserId ?? 'user';
+      final file = File('${dir.path}/nexushub_export_$userId.json');
+      await file.writeAsBytes(bytes);
+
+      if (!mounted) return;
+
+      // Compartilhar / fazer download via share sheet nativa
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'application/json')],
+        subject: 'NexusHub — Exportação de Dados',
+        text: 'Seus dados do NexusHub exportados conforme a LGPD.',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
   }
 
   Future<void> _loadSettings() async {
@@ -392,14 +450,18 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                               color: Colors.grey[500],
                             ),
                           ),
-                          trailing: Icon(Icons.chevron_right_rounded,
-                              color: Colors.grey[600]),
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                               SnackBar(
-                                  content: Text(s.exportInProgress)),
-                            );
-                          },
+                          trailing: _isExporting
+                              ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: context.nexusTheme.accentPrimary,
+                                  ),
+                                )
+                              : Icon(Icons.chevron_right_rounded,
+                                  color: Colors.grey[600]),
+                          onTap: _isExporting ? null : _exportUserData,
                         ),
                         Divider(
                             height: 1,
