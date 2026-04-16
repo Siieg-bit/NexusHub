@@ -502,11 +502,29 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
                 return;
               }
               try {
-                await SupabaseService.rpc('transfer_coins', params: {
-                  'p_target_amino_id': targetAminoId,
-                  'p_amount': amount,
-                });
+                final result = await SupabaseService.rpc(
+                  'transfer_coins_by_amino_id',
+                  params: {
+                    'p_target_amino_id': targetAminoId,
+                    'p_amount': amount,
+                  },
+                );
                 if (!mounted) return;
+                // Verificar erro retornado pela RPC
+                if (result is Map && result['error'] != null) {
+                  final err = result['error'] as String;
+                  final msg = err == 'user_not_found'
+                      ? 'Usuário não encontrado'
+                      : err == 'insufficient_coins'
+                          ? s.insufficientBalance
+                          : err == 'cannot_transfer_to_self'
+                              ? 'Você não pode transferir para si mesmo'
+                              : s.anErrorOccurredTryAgain;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(msg)),
+                  );
+                  return;
+                }
                 setState(() => _coins -= amount);
                 await _loadWallet();
                 if (mounted) {
@@ -637,11 +655,29 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
                   return;
                 }
                 try {
-                  await SupabaseService.rpc('send_tip', params: {
-                    'p_target_user_id': targetAminoId,
-                    'p_amount': selectedAmount,
-                  });
+                  final result = await SupabaseService.rpc(
+                    'send_tip_by_amino_id',
+                    params: {
+                      'p_target_amino_id': targetAminoId,
+                      'p_amount': selectedAmount,
+                    },
+                  );
                   if (!mounted) return;
+                  // Verificar erro retornado pela RPC
+                  if (result is Map && result['error'] != null) {
+                    final err = result['error'] as String;
+                    final msg = err == 'user_not_found'
+                        ? 'Usuário não encontrado'
+                        : err == 'insufficient_coins'
+                            ? s.insufficientBalance
+                            : err == 'cannot_tip_self'
+                                ? 'Você não pode enviar Props para si mesmo'
+                                : s.anErrorOccurredTryAgain;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(msg)),
+                    );
+                    return;
+                  }
                   setState(() => _coins -= selectedAmount);
                   await _loadWallet();
                   if (mounted) {
