@@ -634,9 +634,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   Future<void> _loadChatCoverAndRole() async {
     try {
       final userId = SupabaseService.currentUserId;
-      // Capa do chat
+      // Capa do chat + host_id + co_hosts (tudo em uma query só)
       final threadData = await SupabaseService.table('chat_threads')
-          .select('cover_image_url, is_announcement_only')
+          .select('cover_image_url, is_announcement_only, host_id, co_hosts')
           .eq('id', widget.threadId)
           .single();
       if (mounted && !_isDisposed) {
@@ -646,22 +646,25 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               threadData['is_announcement_only'] as bool? ?? false;
         });
       }
-      // Role do usuário atual
+      // Role do usuário atual — usa host_id/co_hosts do banco diretamente
       if (userId != null) {
-        final memberData = await SupabaseService.table('chat_members')
-            .select('role')
-            .eq('thread_id', widget.threadId)
-            .eq('user_id', userId)
-            .maybeSingle();
+        final hostId = threadData['host_id'] as String?;
+        final coHosts = (threadData['co_hosts'] as List?);
+        String? role;
+        if (userId == hostId) {
+          role = 'host';
+        } else if (coHosts != null && coHosts.contains(userId)) {
+          role = 'co_host';
+        } else {
+          // Fallback: verificar na tabela chat_members
+          final memberData = await SupabaseService.table('chat_members')
+              .select('role')
+              .eq('thread_id', widget.threadId)
+              .eq('user_id', userId)
+              .maybeSingle();
+          role = memberData?['role'] as String?;
+        }
         if (mounted && !_isDisposed) {
-          // Verificar também se é host pelo host_id do thread
-          final hostId = _threadInfo?['host_id'] as String?;
-          final coHosts = _threadInfo?['co_hosts'] as List?;
-          String? role = memberData?['role'] as String?;
-          if (userId == hostId)
-            role = 'host';
-          else if (coHosts != null && coHosts.contains(userId))
-            role = 'co_host';
           setState(() => _callerRole = role ?? 'member');
         }
       }
@@ -1140,6 +1143,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       isAnnouncementOnly: _isAnnouncementOnly,
       currentCover: _chatCoverUrl,
       currentTitle: _threadInfo?['title'] as String?,
+      communityId: _threadInfo?['community_id'] as String?,
       onTitleChanged: () {
         // Recarregar info do thread após renomear
         _loadThreadInfo();

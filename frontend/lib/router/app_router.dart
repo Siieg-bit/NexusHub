@@ -56,6 +56,7 @@ import '../features/settings/screens/theme_selector_screen.dart';
 import '../features/explore/screens/search_screen.dart';
 import '../features/profile/screens/user_wall_screen.dart';
 import '../features/profile/screens/followers_screen.dart';
+import '../features/profile/screens/community_followers_screen.dart';
 import '../features/store/screens/store_screen.dart';
 import '../features/store/screens/coin_shop_screen.dart';
 import '../features/gamification/screens/free_coins_screen.dart';
@@ -448,6 +449,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => CommunityProfileScreen(
           communityId: state.pathParameters['communityId']!,
           userId: state.pathParameters['userId']!,
+        ),
+      ),
+
+      // Conexões dentro de uma comunidade (usa perfil de comunidade)
+      GoRoute(
+        path: '/community/:communityId/profile/:userId/followers',
+        name: 'community-followers',
+        builder: (context, state) => CommunityFollowersScreen(
+          communityId: state.pathParameters['communityId']!,
+          userId: state.pathParameters['userId']!,
+          showFollowers: state.uri.queryParameters['tab'] != 'following',
         ),
       ),
 

@@ -5794,4 +5794,28 @@ class AppStringsRu implements AppStrings {
   String get viewWikiEntry => 'Просмотреть статью Wiki';
   @override
   String get bioAndWallTitle => 'Биография и стена';
+  @override
+  String get wikiHide => 'Скрыть Wiki';
+  @override
+  String get wikiUnhide => 'Показать Wiki';
+  @override
+  String get wikiHidden => 'Wiki успешно скрыта';
+  @override
+  String get wikiUnhidden => 'Wiki снова видима';
+  @override
+  String get wikiCanonize => 'Канонизировать Wiki';
+  @override
+  String get wikiDecanonize => 'Убрать канонизацию';
+  @override
+  String get wikiCanonized => 'Wiki канонизирована! ⭐';
+  @override
+  String get wikiDecanonized => 'Канонизация убрана';
+  @override
+  String get wikiCanonicalBadge => 'Каноническая';
+  @override
+  String get wikiCommentDeleted => 'Комментарий удалён';
+  @override
+  String get wikiCommentDeleteError => 'Не удалось удалить комментарий';
+  @override
+  String get wikiCommentCopied => 'Комментарий скопирован';
 }

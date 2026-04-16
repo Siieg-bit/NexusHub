@@ -392,11 +392,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final canViewCoins = _isOwnProfile || _viewerIsTeamMember;
     final isOnline = _user?.isOnline ?? false;
     final isManualOffline = _user?.isGhostMode ?? false;
-    final presenceLabel = isOnline
-        ? s.online
-        : ((_user?.lastActiveBucketMinutes ?? 0) > 0
-            ? 'há ${_user!.lastActiveBucketMinutes} minutos'
-            : s.offline);
+    final presenceLabel = _user?.gradualPresenceLabel ?? s.offline;
     final isPremium = _user?.isPremium ?? false;
     final displayName = (localNickname?.trim().isNotEmpty ?? false)
         ? localNickname!.trim()
@@ -427,6 +423,67 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final canViewHiddenProfile =
         _isOwnProfile || _viewerIsTeamMember || viewerRole == 'agent' || viewerRole == 'leader' || viewerRole == 'curator';
     final isHiddenProfile = _membership?['is_hidden'] == true;
+    final isBlocked = ref.watch(isBlockedProvider(widget.userId));
+
+    // ── Perfil de usuário bloqueado ─────────────────────────────────────────
+    if (isBlocked && !_isOwnProfile) {
+      return Scaffold(
+        backgroundColor: context.nexusTheme.backgroundPrimary,
+        appBar: AppBar(
+          backgroundColor: context.nexusTheme.backgroundPrimary,
+          foregroundColor: context.nexusTheme.textPrimary,
+          title: Text(displayName),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () => _showOptions(context),
+            ),
+          ],
+        ),
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.all(r.s(32)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.block_rounded,
+                    size: r.s(64), color: context.nexusTheme.textSecondary),
+                SizedBox(height: r.s(20)),
+                Text(
+                  'Usuário bloqueado',
+                  style: TextStyle(
+                    fontSize: r.fs(20),
+                    fontWeight: FontWeight.bold,
+                    color: context.nexusTheme.textPrimary,
+                  ),
+                ),
+                SizedBox(height: r.s(8)),
+                Text(
+                  'Você bloqueou este usuário. O conteúdo dele não está disponível.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: r.fs(14),
+                    color: context.nexusTheme.textSecondary,
+                  ),
+                ),
+                SizedBox(height: r.s(24)),
+                OutlinedButton.icon(
+                  onPressed: () => _handleBlockToggle(true),
+                  icon: const Icon(Icons.lock_open_rounded),
+                  label: const Text('Desbloquear'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: context.nexusTheme.accentPrimary,
+                    side: BorderSide(color: context.nexusTheme.accentPrimary),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(24), vertical: r.s(12)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     if (isHiddenProfile && !canViewHiddenProfile) {
       // Perfil oculto: exibe layout temático com banner/avatar borrados e ícone de olho riscado
@@ -774,24 +831,92 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                             top: 0,
                             left: 0,
                             right: 0,
-                            child: Container(
-                              color: const Color(0xFFDC2626).withValues(alpha: 0.88),
-                              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.visibility_off_rounded,
-                                      color: Colors.white, size: 14),
-                                  const SizedBox(width: 6),
-                                  const Text(
-                                    'Perfil oculto pela moderação — visível apenas para a equipe',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
+                            child: SafeArea(
+                              bottom: false,
+                              child: Container(
+                                color: const Color(0xFFDC2626).withValues(alpha: 0.88),
+                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.visibility_off_rounded,
+                                        color: Colors.white, size: 14),
+                                    const SizedBox(width: 6),
+                                    const Flexible(
+                                      child: Text(
+                                        'Perfil oculto pela moderação',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 8),
+                                    GestureDetector(
+                                      onTap: () async {
+                                        final confirmed = await showDialog<bool>(
+                                          context: context,
+                                          builder: (ctx) => AlertDialog(
+                                            title: const Text('Desocultar perfil'),
+                                            content: const Text(
+                                                'Deseja restaurar a visibilidade deste perfil para todos os membros?'),
+                                            actions: [
+                                              TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(ctx, false),
+                                                  child: const Text('Cancelar')),
+                                              TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(ctx, true),
+                                                  child: const Text('Desocultar')),
+                                            ],
+                                          ),
+                                        );
+                                        if (confirmed == true && mounted) {
+                                          try {
+                                            await SupabaseService.table(
+                                                    'community_members')
+                                                .update({'is_hidden': false})
+                                                .eq('community_id',
+                                                    widget.communityId)
+                                                .eq('user_id', widget.userId);
+                                            if (mounted) _loadProfile();
+                                          } catch (e) {
+                                            if (mounted) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(SnackBar(
+                                                content: Text(
+                                                    'Erro ao desocultar: $e'),
+                                                backgroundColor: Colors.red,
+                                              ));
+                                            }
+                                          }
+                                        }
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.2),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          border: Border.all(
+                                              color: Colors.white
+                                                  .withValues(alpha: 0.5)),
+                                        ),
+                                        child: const Text(
+                                          'Desocultar',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -1361,7 +1486,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                         Expanded(
                           child: GestureDetector(
                             onTap: () => context.push(
-                                '/user/${widget.userId}/followers?tab=following'),
+                                '/community/${widget.communityId}/profile/${widget.userId}/followers?tab=following'),
                             child: Column(
                               children: [
                                 Text(
@@ -1388,7 +1513,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                         Expanded(
                           child: GestureDetector(
                             onTap: () => context
-                                .push('/user/${widget.userId}/followers'),
+                                .push('/community/${widget.communityId}/profile/${widget.userId}/followers'),
                             child: Column(
                               children: [
                                 Text(

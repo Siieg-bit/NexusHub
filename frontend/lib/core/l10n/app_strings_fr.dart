@@ -5794,4 +5794,28 @@ class AppStringsFr implements AppStrings {
   String get viewWikiEntry => "Voir l'entrée Wiki";
   @override
   String get bioAndWallTitle => 'Biographie & Mur';
+  @override
+  String get wikiHide => 'Masquer le Wiki';
+  @override
+  String get wikiUnhide => 'Afficher le Wiki';
+  @override
+  String get wikiHidden => 'Wiki masqué avec succès';
+  @override
+  String get wikiUnhidden => 'Wiki rendu visible';
+  @override
+  String get wikiCanonize => 'Canoniser le Wiki';
+  @override
+  String get wikiDecanonize => 'Retirer la canonisation';
+  @override
+  String get wikiCanonized => 'Wiki canonique ! ⭐';
+  @override
+  String get wikiDecanonized => 'Canonisation retirée';
+  @override
+  String get wikiCanonicalBadge => 'Canonique';
+  @override
+  String get wikiCommentDeleted => 'Commentaire supprimé';
+  @override
+  String get wikiCommentDeleteError => 'Impossible de supprimer le commentaire';
+  @override
+  String get wikiCommentCopied => 'Commentaire copié';
 }

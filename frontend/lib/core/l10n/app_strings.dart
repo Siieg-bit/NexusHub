@@ -2987,4 +2987,17 @@ abstract class AppStrings {
    String get bioAndWallTitle;
   // ── Wiki no feed ──
   String get viewWikiEntry;
+  // ── Wiki modais (comentários, denúncia, ocultamento, canonização) ──
+  String get wikiHide;
+  String get wikiUnhide;
+  String get wikiHidden;
+  String get wikiUnhidden;
+  String get wikiCanonize;
+  String get wikiDecanonize;
+  String get wikiCanonized;
+  String get wikiDecanonized;
+  String get wikiCanonicalBadge;
+  String get wikiCommentDeleted;
+  String get wikiCommentDeleteError;
+  String get wikiCommentCopied;
 }

@@ -5794,4 +5794,28 @@ class AppStringsKo implements AppStrings {
   String get viewWikiEntry => '위키 항목 보기';
   @override
   String get bioAndWallTitle => '소개 & 게시판';
+  @override
+  String get wikiHide => '위키 숨기기';
+  @override
+  String get wikiUnhide => '위키 보이기';
+  @override
+  String get wikiHidden => '위키가 숨겨졌습니다';
+  @override
+  String get wikiUnhidden => '위키가 표시되었습니다';
+  @override
+  String get wikiCanonize => '위키 정전화';
+  @override
+  String get wikiDecanonize => '정전화 해제';
+  @override
+  String get wikiCanonized => '위키가 정전화되었습니다! ⭐';
+  @override
+  String get wikiDecanonized => '정전화가 해제되었습니다';
+  @override
+  String get wikiCanonicalBadge => '정전';
+  @override
+  String get wikiCommentDeleted => '댓글이 삭제되었습니다';
+  @override
+  String get wikiCommentDeleteError => '댓글을 삭제할 수 없습니다';
+  @override
+  String get wikiCommentCopied => '댓글이 복사되었습니다';
 }

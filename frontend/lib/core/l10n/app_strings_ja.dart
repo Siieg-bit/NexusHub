@@ -5792,4 +5792,28 @@ class AppStringsJa implements AppStrings {
   String get viewWikiEntry => 'Wikiエントリを見る';
   @override
   String get bioAndWallTitle => '自己紹介 & 掲示板';
+  @override
+  String get wikiHide => 'Wikiを非表示';
+  @override
+  String get wikiUnhide => 'Wikiを表示';
+  @override
+  String get wikiHidden => 'Wikiを非表示にしました';
+  @override
+  String get wikiUnhidden => 'Wikiを表示にしました';
+  @override
+  String get wikiCanonize => 'Wikiを正典化';
+  @override
+  String get wikiDecanonize => '正典化を解除';
+  @override
+  String get wikiCanonized => 'Wikiが正典化されました！ ⭐';
+  @override
+  String get wikiDecanonized => '正典化を解除しました';
+  @override
+  String get wikiCanonicalBadge => '正典';
+  @override
+  String get wikiCommentDeleted => 'コメントを削除しました';
+  @override
+  String get wikiCommentDeleteError => 'コメントを削除できませんでした';
+  @override
+  String get wikiCommentCopied => 'コメントをコピーしました';
 }

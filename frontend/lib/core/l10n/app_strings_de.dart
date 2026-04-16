@@ -5794,4 +5794,28 @@ class AppStringsDe implements AppStrings {
   String get viewWikiEntry => 'Wiki-Eintrag anzeigen';
   @override
   String get bioAndWallTitle => 'Biografie & Pinnwand';
+  @override
+  String get wikiHide => 'Wiki ausblenden';
+  @override
+  String get wikiUnhide => 'Wiki einblenden';
+  @override
+  String get wikiHidden => 'Wiki erfolgreich ausgeblendet';
+  @override
+  String get wikiUnhidden => 'Wiki wieder sichtbar';
+  @override
+  String get wikiCanonize => 'Wiki kanonisieren';
+  @override
+  String get wikiDecanonize => 'Kanonisierung entfernen';
+  @override
+  String get wikiCanonized => 'Wiki kanonisiert! ⭐';
+  @override
+  String get wikiDecanonized => 'Kanonisierung entfernt';
+  @override
+  String get wikiCanonicalBadge => 'Kanonisch';
+  @override
+  String get wikiCommentDeleted => 'Kommentar gelöscht';
+  @override
+  String get wikiCommentDeleteError => 'Kommentar konnte nicht gelöscht werden';
+  @override
+  String get wikiCommentCopied => 'Kommentar kopiert';
 }

@@ -5793,4 +5793,28 @@ class AppStringsAr implements AppStrings {
   String get viewWikiEntry => 'عرض مقالة الويكي';
   @override
   String get bioAndWallTitle => 'السيرة الذاتية والحائط';
+  @override
+  String get wikiHide => 'إخفاء الويكي';
+  @override
+  String get wikiUnhide => 'إظهار الويكي';
+  @override
+  String get wikiHidden => 'تم إخفاء الويكي بنجاح';
+  @override
+  String get wikiUnhidden => 'تم إظهار الويكي';
+  @override
+  String get wikiCanonize => 'جعل الويكي قانونيا';
+  @override
+  String get wikiDecanonize => 'إلغاء التصنيف القانوني';
+  @override
+  String get wikiCanonized => 'الويكي أصبح قانونيا！ ⭐';
+  @override
+  String get wikiDecanonized => 'تم إلغاء التصنيف القانوني';
+  @override
+  String get wikiCanonicalBadge => 'قانوني';
+  @override
+  String get wikiCommentDeleted => 'تم حذف التعليق';
+  @override
+  String get wikiCommentDeleteError => 'تعذر حذف التعليق';
+  @override
+  String get wikiCommentCopied => 'تم نسخ التعليق';
 }

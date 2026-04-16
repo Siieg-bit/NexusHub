@@ -31,6 +31,7 @@ Future<void> showChatModerationSheet({
   required VoidCallback onTitleChanged,
   required ValueChanged<String?> onCoverChanged,
   required ValueChanged<bool> onAnnouncementOnlyChanged,
+  String? communityId, // quando não-nulo, usa perfil de comunidade
 }) {
   return showModalBottomSheet(
     context: context,
@@ -45,6 +46,7 @@ Future<void> showChatModerationSheet({
       onTitleChanged: onTitleChanged,
       onCoverChanged: onCoverChanged,
       onAnnouncementOnlyChanged: onAnnouncementOnlyChanged,
+      communityId: communityId,
     ),
   );
 }
@@ -58,6 +60,7 @@ class _ChatModerationSheet extends StatefulWidget {
   final VoidCallback onTitleChanged;
   final ValueChanged<String?> onCoverChanged;
   final ValueChanged<bool> onAnnouncementOnlyChanged;
+  final String? communityId;
 
   const _ChatModerationSheet({
     required this.threadId,
@@ -68,6 +71,7 @@ class _ChatModerationSheet extends StatefulWidget {
     required this.onTitleChanged,
     required this.onCoverChanged,
     required this.onAnnouncementOnlyChanged,
+    this.communityId,
   });
 
   @override
@@ -98,10 +102,51 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
           .eq('thread_id', widget.threadId)
           .order('joined_at', ascending: true)
           .limit(200);
+      final members = List<Map<String, dynamic>>.from(response as List? ?? []);
+
+      // Se o chat é de uma comunidade, sobrescreve nickname/icon_url com perfil local
+      if (widget.communityId != null && widget.communityId!.isNotEmpty) {
+        final userIds = members
+            .map((m) => m['user_id'] as String?)
+            .where((id) => id != null)
+            .toList();
+        if (userIds.isNotEmpty) {
+          try {
+            final cmResp = await SupabaseService.table('community_members')
+                .select('user_id, local_nickname, local_icon_url')
+                .eq('community_id', widget.communityId!)
+                .inFilter('user_id', userIds);
+            final cmMap = <String, Map<String, dynamic>>{};
+            for (final cm in (cmResp as List? ?? [])) {
+              cmMap[cm['user_id'] as String] =
+                  Map<String, dynamic>.from(cm as Map);
+            }
+            for (final m in members) {
+              final uid = m['user_id'] as String?;
+              if (uid == null) continue;
+              final cm = cmMap[uid];
+              if (cm == null) continue;
+              final profile =
+                  Map<String, dynamic>.from(m['profiles'] as Map? ?? {});
+              final localNick = cm['local_nickname'] as String?;
+              final localIcon = cm['local_icon_url'] as String?;
+              if (localNick != null && localNick.trim().isNotEmpty) {
+                profile['nickname'] = localNick.trim();
+              }
+              if (localIcon != null && localIcon.trim().isNotEmpty) {
+                profile['icon_url'] = localIcon.trim();
+              }
+              m['profiles'] = profile;
+            }
+          } catch (e) {
+            debugPrint('[ChatModeration] Community profile inject error: $e');
+          }
+        }
+      }
+
       if (mounted) {
         setState(() {
-          _members =
-              List<Map<String, dynamic>>.from(response as List? ?? []);
+          _members = members;
           _isLoading = false;
         });
       }

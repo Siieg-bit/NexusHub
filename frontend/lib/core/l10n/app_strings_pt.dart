@@ -5923,4 +5923,28 @@ class AppStringsPt implements AppStrings {
   String get viewWikiEntry => 'Ver entrada da Wiki';
   @override
   String get bioAndWallTitle => 'Biografia & Mural';
+  @override
+  String get wikiHide => 'Ocultar Wiki';
+  @override
+  String get wikiUnhide => 'Desocultar Wiki';
+  @override
+  String get wikiHidden => 'Wiki ocultada com sucesso';
+  @override
+  String get wikiUnhidden => 'Wiki desocultada com sucesso';
+  @override
+  String get wikiCanonize => 'Canonizar Wiki';
+  @override
+  String get wikiDecanonize => 'Remover canonização';
+  @override
+  String get wikiCanonized => 'Wiki canonizada! ⭐';
+  @override
+  String get wikiDecanonized => 'Canonização removida';
+  @override
+  String get wikiCanonicalBadge => 'Canônica';
+  @override
+  String get wikiCommentDeleted => 'Comentário excluído';
+  @override
+  String get wikiCommentDeleteError => 'Não foi possível excluir o comentário';
+  @override
+  String get wikiCommentCopied => 'Comentário copiado';
 }
