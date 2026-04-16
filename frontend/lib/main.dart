@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ import 'core/providers/theme_provider.dart';
 import 'package:amino_clone/core/providers/nexus_theme_provider.dart';
 import 'core/services/device_fingerprint_service.dart';
 import 'core/services/deep_link_service.dart';
+import 'core/services/app_navigation_helper.dart';
 import 'core/services/push_notification_service.dart';
 import 'core/services/iap_service.dart';
 import 'core/services/ad_service.dart';
@@ -29,6 +31,7 @@ import 'firebase_options.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 void main() async {
+  try { await dotenv.load(fileName: ".env"); } catch (e) { debugPrint("DotEnv: erro ao carregar .env"); }
   final binding = WidgetsFlutterBinding.ensureInitialized();
 
   // ── 120Hz: Solicitar a maior taxa de atualização disponível ────────
@@ -157,10 +160,26 @@ class NexusHubApp extends ConsumerStatefulWidget {
 
 class _NexusHubAppState extends ConsumerState<NexusHubApp> {
   StreamSubscription<Map<String, dynamic>>? _pushSubscription;
+  GoRouter? _initializedRouter;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Inicializa deep link e push apenas quando o router mudar de instância.
+    // Usar didChangeDependencies (em vez de build) garante que side effects
+    // não sejam recriados a cada rebuild causado por tema, locale ou auth.
+    final router = ref.read(appRouterProvider);
+    if (_initializedRouter != router) {
+      _initializedRouter = router;
+      DeepLinkService.init(router);
+      _setupPushNotificationListener(router);
+    }
+  }
 
   @override
   void dispose() {
     _pushSubscription?.cancel();
+    DeepLinkService.dispose();
     super.dispose();
   }
 
@@ -174,76 +193,10 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
   }
 
   /// Navega para a tela correta baseado no payload da notificação push.
+  /// Delega ao AppNavigationHelper para manter a lógica centralizada.
   void _handlePushNotificationTap(
       GoRouter router, Map<String, dynamic> data) {
-    final type = data['type'] as String? ?? '';
-    final postId = data['post_id'] as String?;
-    final communityId = data['community_id'] as String?;
-    final userId = data['user_id'] as String? ?? data['actor_id'] as String?;
-    final chatId = data['chat_id'] as String? ?? data['thread_id'] as String?;
-
-    switch (type) {
-      case 'like':
-      case 'comment':
-      case 'mention':
-        if (postId != null) {
-          router.push('/post/$postId');
-        } else if (communityId != null) {
-          router.push('/community/$communityId');
-        }
-        break;
-      case 'follow':
-        if (userId != null) {
-          router.push('/user/$userId');
-        }
-        break;
-      case 'community_invite':
-      case 'community_update':
-        if (communityId != null) {
-          router.push('/community/$communityId');
-        }
-        break;
-      case 'chat_message':
-      case 'chat_mention':
-        if (chatId != null) {
-          router.push('/chat/$chatId');
-        } else if (communityId != null) {
-          router.push('/community/$communityId');
-        } else {
-          router.push('/chats');
-        }
-        break;
-      case 'dm_invite':
-        router.push('/chats');
-        break;
-      case 'level_up':
-      case 'achievement':
-      case 'check_in_streak':
-        router.push('/profile');
-        break;
-      case 'wall_post':
-        if (userId != null) {
-          router.push('/user/$userId');
-        }
-        break;
-      case 'moderation':
-      case 'strike':
-      case 'ban':
-        if (communityId != null) {
-          router.push('/community/$communityId');
-        }
-        break;
-      default:
-        // Fallback: tentar navegar para o recurso mais relevante
-        if (postId != null) {
-          router.push('/post/$postId');
-        } else if (communityId != null) {
-          router.push('/community/$communityId');
-        } else if (userId != null) {
-          router.push('/user/$userId');
-        }
-        break;
-    }
+    AppNavigationHelper.navigateFromNotificationPayload(router, data);
   }
 
   @override
@@ -254,12 +207,6 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
     final themeMode = ref.watch(themeProvider);
     final nexusTheme = ref.watch(nexusThemeProvider);
     final currentLocale = ref.watch(localeProvider);
-
-    // Inicializar Deep Link service com o router
-    DeepLinkService.init(router);
-
-    // Conectar push notification stream ao router para navegação
-    _setupPushNotificationListener(router);
 
     // Manter edge-to-edge com contraste e legibilidade adequados em Android 15/16.
     // O SystemUiOverlayStyle é derivado do baseMode do tema NexusHub ativo,
