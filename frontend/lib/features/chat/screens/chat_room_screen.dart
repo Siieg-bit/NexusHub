@@ -124,9 +124,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             const <String, dynamic>{}) as Map,
       );
 
-      mergedAuthor['nickname'] = localNickname;
-      mergedAuthor['icon_url'] = localIconUrl;
-      mergedAuthor['banner_url'] = localBannerUrl;
+      // Aplica o valor local apenas se existir e não for vazio;
+      // caso contrário preserva o valor global já presente no mergedAuthor.
+      if (localNickname != null && localNickname.isNotEmpty) {
+        mergedAuthor['nickname'] = localNickname;
+      }
+      if (localIconUrl != null && localIconUrl.isNotEmpty) {
+        mergedAuthor['icon_url'] = localIconUrl;
+      }
+      if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
+        mergedAuthor['banner_url'] = localBannerUrl;
+      }
 
       map['profiles'] = mergedAuthor;
       map['sender'] = mergedAuthor;
@@ -498,9 +506,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     final localBannerUrl =
                         (localMap['local_banner_url'] as String?)?.trim();
 
-                    mergedProfile['nickname'] = localNickname;
-                    mergedProfile['icon_url'] = localIconUrl;
-                    mergedProfile['banner_url'] = localBannerUrl;
+                    // Aplica valor local apenas se existir e não for vazio;
+                    // caso contrário preserva o valor global do perfil.
+                    if (localNickname != null && localNickname.isNotEmpty) {
+                      mergedProfile['nickname'] = localNickname;
+                    }
+                    if (localIconUrl != null && localIconUrl.isNotEmpty) {
+                      mergedProfile['icon_url'] = localIconUrl;
+                    }
+                    if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
+                      mergedProfile['banner_url'] = localBannerUrl;
+                    }
                   }
                 } catch (e) {
                   debugPrint('[ChatRoom] Erro ao aplicar identidade local: $e');
