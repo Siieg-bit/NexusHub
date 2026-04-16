@@ -429,23 +429,6 @@ class _EditCommunityProfileScreenState
     }
   }
 
-  Future<void> _addGalleryPhoto() async {
-    if (_gallery.length >= _maxGalleryPhotos) {
-      final s = getStrings();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(s.maxGalleryPhotos),
-        backgroundColor: context.nexusTheme.warning,
-      ));
-      return;
-    }
-    final url = await _uploadCommunityImage('gallery');
-    if (url != null && mounted) {
-      setState(() {
-        _applyGalleryUpdate([..._gallery, url]);
-      });
-    }
-  }
-
   Future<void> _openGalleryManager() async {
     final updatedGallery = await Navigator.of(context).push<List<String>>(
       MaterialPageRoute(
@@ -1297,16 +1280,6 @@ class _BackgroundOptionButton extends StatelessWidget {
 // DIVISOR ESTILO AMINO (linha fina de separação)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-class _AminoDivider extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 0.5,
-      color: context.dividerClr,
-    );
-  }
-}
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // CAMPO DE TEXTO INLINE (sem borda, integrado ao tile)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1314,14 +1287,12 @@ class _AminoDivider extends StatelessWidget {
 class _InlineTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
-  final int maxLines;
   final int? maxLength;
   final TextStyle? style;
 
   const _InlineTextField({
     required this.controller,
     required this.hintText,
-    this.maxLines = 1,
     this.maxLength,
     this.style,
   });
@@ -1331,7 +1302,7 @@ class _InlineTextField extends StatelessWidget {
     final r = context.r;
     return TextField(
       controller: controller,
-      maxLines: maxLines,
+      maxLines: 1,
       maxLength: maxLength,
       onTapOutside: (_) => FocusScope.of(context).unfocus(),
       style: style ??
@@ -1415,39 +1386,6 @@ class _CommunityBioField extends StatelessWidget {
   }
 }
 
-class _BioInfoChip extends StatelessWidget {
-  final String label;
-
-  const _BioInfoChip({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.r;
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: r.s(8),
-        vertical: r.s(4),
-      ),
-      decoration: BoxDecoration(
-        color: context.nexusTheme.accentSecondary.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(r.s(999)),
-        border: Border.all(
-          color: context.nexusTheme.accentSecondary.withValues(alpha: 0.12),
-        ),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: context.nexusTheme.accentSecondary,
-          fontSize: r.fs(10),
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.2,
-        ),
-      ),
-    );
-  }
-}
-
 class _BioRichEditorSheet extends StatefulWidget {
   final String initialValue;
   final String title;
@@ -1468,7 +1406,7 @@ class _BioRichEditorSheet extends StatefulWidget {
     required this.editorLabel,
     required this.previewLabel,
     required this.markdownLabel,
-    this.maxLength = 500,
+    required this.maxLength,
   });
 
   @override
@@ -1499,14 +1437,14 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
 
   void _replaceValue(String value, {TextSelection? selection}) {
     final safeOffset = selection?.extentOffset ?? value.length;
-    final clampedOffset = safeOffset.clamp(0, value.length) as int;
+    final clampedOffset = safeOffset.clamp(0, value.length);
     _controller.value = TextEditingValue(
       text: value,
       selection: selection != null
           ? TextSelection(
-              baseOffset: selection.baseOffset.clamp(0, value.length) as int,
+              baseOffset: selection.baseOffset.clamp(0, value.length),
               extentOffset:
-                  selection.extentOffset.clamp(0, value.length) as int,
+                  selection.extentOffset.clamp(0, value.length),
             )
           : TextSelection.collapsed(offset: clampedOffset),
     );

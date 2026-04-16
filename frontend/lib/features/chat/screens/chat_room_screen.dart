@@ -633,22 +633,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     );
   }
 
-  Future<void> _saveChatBackground(String? url) async {
-    try {
-      final userId = SupabaseService.currentUserId;
-      if (userId == null) return;
-      await SupabaseService.table('chat_backgrounds').upsert({
-        'thread_id': widget.threadId,
-        'user_id': userId,
-        'background_url': url,
-      });
-      if (!mounted) return;
-      if (mounted) setState(() => _chatBackground = url);
-    } catch (e) {
-      debugPrint('[ChatRoom] Background save error: $e');
-    }
-  }
-
   /// Carrega a capa do chat e o role do usuário atual neste thread.
   Future<void> _loadChatCoverAndRole() async {
     try {
@@ -4289,18 +4273,6 @@ class _BubblePreview extends StatelessWidget {
     );
   }
 
-  Widget _fallbackContainer(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(r.s(10)),
-        border: Border.all(
-          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-    );
-  }
 }
 
 // ─── Estado vazio (sem bubbles comprados) ────────────────────────────────────

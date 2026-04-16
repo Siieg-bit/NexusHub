@@ -930,14 +930,14 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
 
   void _replaceValue(String value, {TextSelection? selection}) {
     final safeOffset = selection?.extentOffset ?? value.length;
-    final clampedOffset = safeOffset.clamp(0, value.length) as int;
+    final clampedOffset = safeOffset.clamp(0, value.length);
     _controller.value = TextEditingValue(
       text: value,
       selection: selection != null
           ? TextSelection(
-              baseOffset: selection.baseOffset.clamp(0, value.length) as int,
+              baseOffset: selection.baseOffset.clamp(0, value.length),
               extentOffset:
-                  selection.extentOffset.clamp(0, value.length) as int,
+                  selection.extentOffset.clamp(0, value.length),
             )
           : TextSelection.collapsed(offset: clampedOffset),
     );
@@ -1041,9 +1041,6 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
       ),
     );
   }
-
-  bool get _hasInlineTextColors =>
-      _inlineTextColorPattern.hasMatch(_controller.text);
 
   String? get _effectiveGlobalTextColorHex =>
       RichBioCodec.colorToHex(_legacyTextColor);

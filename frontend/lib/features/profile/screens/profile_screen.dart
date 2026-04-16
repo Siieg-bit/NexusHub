@@ -605,22 +605,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   // HELPERS
   // ============================================================================
 
-  static String _formatCoins(int coins) {
-    if (coins >= 1000000) {
-      return '${(coins / 1000000).toStringAsFixed(1)}M';
-    }
-    if (coins >= 1000) {
-      final str = coins.toString();
-      final buffer = StringBuffer();
-      for (int i = 0; i < str.length; i++) {
-        if (i > 0 && (str.length - i) % 3 == 0) buffer.write('.');
-        buffer.write(str[i]);
-      }
-      return buffer.toString();
-    }
-    return coins.toString();
-  }
-
   static String _formatCount(int count) {
     if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
     if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';

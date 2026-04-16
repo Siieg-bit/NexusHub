@@ -35,7 +35,6 @@ class _FormMessageBubbleState extends ConsumerState<FormMessageBubble> {
   late Map<String, dynamic> _formValues;
   bool _isSubmitting = false;
   bool _hasResponded = false;
-  String? _responseId;
 
   @override
   void initState() {
@@ -79,7 +78,6 @@ class _FormMessageBubbleState extends ConsumerState<FormMessageBubble> {
         if (responses != null && responses.isNotEmpty) {
           setState(() {
             _hasResponded = true;
-            _responseId = responses[0]['response_id'] as String?;
           });
         }
       }
@@ -126,7 +124,6 @@ class _FormMessageBubbleState extends ConsumerState<FormMessageBubble> {
         if (mounted) {
           setState(() {
             _hasResponded = true;
-            _responseId = result['response_id'] as String?;
           });
 
           ScaffoldMessenger.of(context).showSnackBar(

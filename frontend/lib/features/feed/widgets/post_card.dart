@@ -1430,7 +1430,7 @@ class _PostCardState extends ConsumerState<PostCard>
                           ClipRRect(
                             borderRadius: BorderRadius.circular(r.s(14)),
                             child: CachedNetworkImage(
-                              imageUrl: originalAuthorAvatar!,
+                              imageUrl: originalAuthorAvatar,
                               width: r.s(28),
                               height: r.s(28),
                               fit: BoxFit.cover,

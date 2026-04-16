@@ -118,7 +118,7 @@ class NexusThemeNotifier extends StateNotifier<NexusThemeData> {
           .eq('is_active', true)
           .limit(1);
       if (rows.isNotEmpty && mounted) {
-        state = NexusThemeData.fromRemoteJson(rows.first as Map<String, dynamic>);
+        state = NexusThemeData.fromRemoteJson(rows.first);
       }
     } catch (e) {
       debugLog('[NexusTheme] Erro ao carregar tema remoto "$slug": $e');

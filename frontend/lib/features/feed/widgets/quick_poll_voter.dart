@@ -347,7 +347,6 @@ class _QuickPollCreatorState extends ConsumerState<QuickPollCreator> {
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final s = ref.read(stringsProvider);
 
     return Dialog(
       backgroundColor: context.surfaceColor,

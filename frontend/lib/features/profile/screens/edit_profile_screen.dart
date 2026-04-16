@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -22,15 +21,12 @@ class EditProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
-    with SingleTickerProviderStateMixin {
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nicknameController;
   late TextEditingController _bioController;
   late TextEditingController _aminoIdController;
   bool _isLoading = false;
-  bool _bioPreviewMode = false;
-  late TabController _bioTabController;
   Timer? _aminoIdDebounce;
   bool _isCheckingAminoId = false;
   bool? _isAminoIdAvailable;
@@ -56,10 +52,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     _isAminoIdAvailable = _initialAminoId.isEmpty ? null : true;
     _avatarUrl = user?.iconUrl;
     _originalAvatarUrl = user?.iconUrl;
-    _bioTabController = TabController(length: 2, vsync: this);
-    _bioTabController.addListener(() {
-      setState(() => _bioPreviewMode = _bioTabController.index == 1);
-    });
   }
 
   @override
@@ -68,7 +60,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     _bioController.dispose();
     _aminoIdDebounce?.cancel();
     _aminoIdController.dispose();
-    _bioTabController.dispose();
     _bioFocusNode.dispose();
     super.dispose();
   }
@@ -320,28 +311,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     }
   }
 
-  /// Insere formatação Markdown no campo de bio.
-  void _applyFormat(String prefix, String suffix,
-      {String placeholder = 'texto'}) {
-    final ctrl = _bioController;
-    final sel = ctrl.selection;
-    final text = ctrl.text;
-    final selectedText = sel.isValid && sel.start != sel.end
-        ? text.substring(sel.start, sel.end)
-        : placeholder;
-    final replacement = '$prefix$selectedText$suffix';
-    final newText = sel.isValid
-        ? text.replaceRange(sel.start, sel.end, replacement)
-        : text + replacement;
-    ctrl.value = TextEditingValue(
-      text: newText,
-      selection: TextSelection.collapsed(
-          offset:
-              sel.isValid ? sel.start + replacement.length : newText.length),
-    );
-    // FIX Bug #4: Re-focar o campo de bio após aplicar formatação
-    _bioFocusNode.requestFocus();
-  }
 
   Widget _buildBioPreviewPane(Responsive r,
       {EdgeInsetsGeometry? padding, double? fontSize}) {
@@ -671,129 +640,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
       ),
     );
   }
-
-  Widget _buildFormatToolbar(Responsive r) {
-    final s = getStrings();
-    final buttons = [
-      _FormatButton(
-          icon: Icons.format_bold,
-          tooltip: s.bold,
-          onTap: () => _applyFormat('**', '**')),
-      _FormatButton(
-          icon: Icons.format_italic,
-          tooltip: s.italic,
-          onTap: () => _applyFormat('*', '*')),
-      _FormatButton(
-          icon: Icons.format_strikethrough,
-          tooltip: s.strikethrough,
-          onTap: () => _applyFormat('~~', '~~')),
-      _FormatButton(
-          icon: Icons.link_rounded,
-          tooltip: s.link,
-          onTap: () => _showLinkDialog()),
-      _FormatButton(
-          icon: Icons.format_list_bulleted_rounded,
-          tooltip: s.list,
-          onTap: () => _applyFormat('\n- ', '', placeholder: 'item')),
-    ];
-
-    return Container(
-      height: r.s(36),
-      margin: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
-      decoration: BoxDecoration(
-        color: context.nexusTheme.backgroundPrimary,
-        borderRadius: BorderRadius.circular(r.s(8)),
-      ),
-      child: Row(
-        children: buttons
-            .map((b) => Tooltip(
-                  message: b.tooltip,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: b.onTap,
-                      borderRadius: BorderRadius.circular(r.s(6)),
-                      splashColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
-                      highlightColor:
-                          context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: r.s(8)),
-                        child: Icon(b.icon,
-                            size: r.s(18), color: Colors.grey[400]),
-                      ),
-                    ),
-                  ),
-                ))
-            .toList(),
-      ),
-    );
-  }
-
-  void _showLinkDialog() {
-    final s = getStrings();
-    final urlCtrl = TextEditingController();
-    final labelCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: context.surfaceColor,
-        title: Text(s.insertLink2,
-            style: TextStyle(
-                color: context.nexusTheme.textPrimary, fontWeight: FontWeight.w700)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: labelCtrl,
-              style: TextStyle(color: context.nexusTheme.textPrimary),
-              decoration: InputDecoration(
-                labelText: s.linkTitle,
-                labelStyle: TextStyle(color: Colors.grey[500]),
-                border: const OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: urlCtrl,
-              style: TextStyle(color: context.nexusTheme.textPrimary),
-              decoration: InputDecoration(
-                labelText: s.linkUrl,
-                labelStyle: TextStyle(color: Colors.grey[500]),
-                hintText: 'https://',
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                border: const OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
-          ),
-          TextButton(
-            onPressed: () {
-              final label = labelCtrl.text.trim().isEmpty
-                  ? urlCtrl.text.trim()
-                  : labelCtrl.text.trim();
-              final url = urlCtrl.text.trim();
-              if (url.isNotEmpty) {
-                _applyFormat('[$label](', ')', placeholder: url);
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(s.insertLink,
-                style: TextStyle(
-                    color: context.nexusTheme.accentPrimary, fontWeight: FontWeight.w700)),
-          ),
-        ],
-      ),
-    ).then((_) {
-      urlCtrl.dispose();
-      labelCtrl.dispose();
-    });
-  }
-
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -837,13 +683,4 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
       ),
     );
   }
-}
-
-class _FormatButton {
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback onTap;
-
-  const _FormatButton(
-      {required this.icon, required this.tooltip, required this.onTap});
 }
