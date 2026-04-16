@@ -185,15 +185,25 @@ final communityMyChatsProvider =
         final mergedProfile = Map<String, dynamic>.from(profile)
           ..['user_id'] = counterpartUserId;
         final membership = localMemberships[counterpartUserId];
-        final localNickname = _normalizedString(membership?['local_nickname']);
-        final localIconUrl = _normalizedString(membership?['local_icon_url']);
-        final localBannerUrl =
-            _normalizedString(membership?['local_banner_url']);
 
         if (membership != null) {
-          mergedProfile['nickname'] = localNickname;
-          mergedProfile['icon_url'] = localIconUrl;
-          mergedProfile['banner_url'] = localBannerUrl;
+          // Aplica valor local apenas se existir e não for vazio;
+          // caso contrário preserva o valor global do perfil.
+          final localNickname =
+              _normalizedString(membership['local_nickname']);
+          final localIconUrl =
+              _normalizedString(membership['local_icon_url']);
+          final localBannerUrl =
+              _normalizedString(membership['local_banner_url']);
+          if (localNickname != null && localNickname.isNotEmpty) {
+            mergedProfile['nickname'] = localNickname;
+          }
+          if (localIconUrl != null && localIconUrl.isNotEmpty) {
+            mergedProfile['icon_url'] = localIconUrl;
+          }
+          if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
+            mergedProfile['banner_url'] = localBannerUrl;
+          }
         }
 
         dmCounterparts[threadId] = mergedProfile;
@@ -255,8 +265,14 @@ final communityMemberAvatarsProvider =
     final mergedProfile = Map<String, dynamic>.from(profile);
     final localNickname = _normalizedString(row['local_nickname']);
     final localIconUrl = _normalizedString(row['local_icon_url']);
-    mergedProfile['nickname'] = localNickname;
-    mergedProfile['icon_url'] = localIconUrl;
+    // Aplica valor local apenas se existir e não for vazio;
+    // caso contrário preserva o valor global do perfil.
+    if (localNickname != null && localNickname.isNotEmpty) {
+      mergedProfile['nickname'] = localNickname;
+    }
+    if (localIconUrl != null && localIconUrl.isNotEmpty) {
+      mergedProfile['icon_url'] = localIconUrl;
+    }
     row['profiles'] = mergedProfile;
   }
   return rows;
