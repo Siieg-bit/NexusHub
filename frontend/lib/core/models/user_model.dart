@@ -131,7 +131,7 @@ class UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) {
     final s = getStrings();
     return UserModel(
-      id: json['id'] as String,
+      id: json['id'] as String? ?? '',
       aminoId: json['amino_id'] as String? ?? '',
       nickname: json['nickname'] as String? ?? s.user2,
       isNicknameVerified: json['is_nickname_verified'] as bool? ?? false,

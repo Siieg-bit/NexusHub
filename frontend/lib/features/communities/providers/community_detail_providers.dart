@@ -27,29 +27,16 @@ final communityFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
       .select(
-          '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+          '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id, profiles!posts_author_id_fkey(id, nickname, icon_url, online_status))')
       .eq('community_id', communityId)
       .eq('status', 'ok')
       .order('is_pinned', ascending: false)
       .order('created_at', ascending: false)
       .limit(30);
 
-  final maps = (response as List? ?? []).map((e) {
-    final map = Map<String, dynamic>.from(e);
-    if (map['profiles'] != null) {
-      map['author'] = map['profiles'];
-    }
-    // original_author is already keyed correctly from the join alias
-    // Process original_post nested data
-    if (map['original_post'] != null) {
-      final op = Map<String, dynamic>.from(map['original_post'] as Map);
-      if (op['profiles'] != null) {
-        op['author'] = op['profiles'];
-      }
-      map['original_post'] = op;
-    }
-    return map;
-  }).toList();
+  final maps = (response as List? ?? [])
+      .map((e) => _normalizePostMap(Map<String, dynamic>.from(e)))
+      .toList();
 
   await _injectCommunityAuthorIdentity(maps, communityId);
 
@@ -70,18 +57,16 @@ final pinnedFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
       .select(
-          '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+          '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id, profiles!posts_author_id_fkey(id, nickname, icon_url, online_status))')
       .eq('community_id', communityId)
       .eq('status', 'ok')
       .eq('is_pinned', true)
       .order('created_at', ascending: false)
       .limit(5);
 
-  final maps = (response as List? ?? []).map((e) {
-    final map = Map<String, dynamic>.from(e);
-    if (map['profiles'] != null) map['author'] = map['profiles'];
-    return map;
-  }).toList();
+  final maps = (response as List? ?? [])
+      .map((e) => _normalizePostMap(Map<String, dynamic>.from(e)))
+      .toList();
 
   await _injectCommunityAuthorIdentity(maps, communityId);
   await _injectIsLikedCommunity(maps);
@@ -95,7 +80,7 @@ final activeFeaturedFeedProvider =
     debugPrint('[activeFeaturedFeedProvider] loading communityId=$communityId');
     final response = await SupabaseService.table('posts')
         .select(
-            '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+            '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id, profiles!posts_author_id_fkey(id, nickname, icon_url, online_status))')
         .eq('community_id', communityId)
         .eq('status', 'ok')
         .eq('is_featured', true)
@@ -104,11 +89,9 @@ final activeFeaturedFeedProvider =
 
     debugPrint('[activeFeaturedFeedProvider] raw count=${((response as List?)?.length ?? 0)}');
 
-    final maps = (response as List? ?? []).map((e) {
-      final map = Map<String, dynamic>.from(e);
-      if (map['profiles'] != null) map['author'] = map['profiles'];
-      return map;
-    }).toList();
+    final maps = (response as List? ?? [])
+        .map((e) => _normalizePostMap(Map<String, dynamic>.from(e)))
+        .toList();
 
     await _injectCommunityAuthorIdentity(maps, communityId);
     await _injectIsLikedCommunity(maps);
@@ -143,7 +126,7 @@ final archivedFeaturedFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
       .select(
-          '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+          '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id, profiles!posts_author_id_fkey(id, nickname, icon_url, online_status))')
       .eq('community_id', communityId)
       .eq('status', 'ok')
       .eq('is_pinned', false)
@@ -152,11 +135,9 @@ final archivedFeaturedFeedProvider =
       .order('updated_at', ascending: false)
       .limit(50);
 
-  final maps = (response as List? ?? []).map((e) {
-    final map = Map<String, dynamic>.from(e);
-    if (map['profiles'] != null) map['author'] = map['profiles'];
-    return map;
-  }).toList();
+  final maps = (response as List? ?? [])
+      .map((e) => _normalizePostMap(Map<String, dynamic>.from(e)))
+      .toList();
 
   await _injectCommunityAuthorIdentity(maps, communityId);
   await _injectIsLikedCommunity(maps);
@@ -170,7 +151,7 @@ final latestFeedProvider =
     debugPrint('[latestFeedProvider] loading communityId=$communityId');
     final response = await SupabaseService.table('posts')
         .select(
-            '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+            '*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id, profiles!posts_author_id_fkey(id, nickname, icon_url, online_status))')
         .eq('community_id', communityId)
         .eq('status', 'ok')
         .eq('is_pinned', false)
@@ -181,11 +162,9 @@ final latestFeedProvider =
 
     debugPrint('[latestFeedProvider] raw response count=${((response as List?)?.length ?? 0)}');
 
-    final maps = (response as List? ?? []).map((e) {
-      final map = Map<String, dynamic>.from(e);
-      if (map['profiles'] != null) map['author'] = map['profiles'];
-      return map;
-    }).toList();
+    final maps = (response as List? ?? [])
+        .map((e) => _normalizePostMap(Map<String, dynamic>.from(e)))
+        .toList();
 
     await _injectCommunityAuthorIdentity(maps, communityId);
     await _injectIsLikedCommunity(maps);
@@ -208,6 +187,19 @@ final latestFeedProvider =
     rethrow;
   }
 });
+
+/// Normaliza um map de post do banco: mapeia `profiles` -> `author` no post principal
+/// e no `original_post` aninhado (para reposts).
+Map<String, dynamic> _normalizePostMap(Map<String, dynamic> raw) {
+  final map = Map<String, dynamic>.from(raw);
+  if (map['profiles'] != null) map['author'] = map['profiles'];
+  if (map['original_post'] != null) {
+    final op = Map<String, dynamic>.from(map['original_post'] as Map);
+    if (op['profiles'] != null) op['author'] = op['profiles'];
+    map['original_post'] = op;
+  }
+  return map;
+}
 
 Future<void> _injectCommunityAuthorIdentity(
   List<Map<String, dynamic>> posts,
