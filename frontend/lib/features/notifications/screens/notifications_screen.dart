@@ -7,6 +7,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/app_navigation_helper.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
@@ -265,72 +266,31 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
     final type = notification['type'] as String? ?? '';
     final payload = _notificationData(notification);
-    final postId = notification['post_id'] as String? ?? payload['post_id'] as String?;
-    final communityId = notification['community_id'] as String? ?? payload['community_id'] as String?;
-    final actorId = notification['actor_id'] as String? ?? payload['actor_id'] as String?;
-    final chatId = payload['chat_id'] as String? ?? payload['thread_id'] as String?;
-    final userId = payload['user_id'] as String? ?? actorId;
 
-    switch (type) {
-      case 'like':
-      case 'comment':
-      case 'mention':
-        if (postId != null) {
-          context.push('/post/$postId');
-        } else if (communityId != null) {
-          context.push('/community/$communityId');
-        }
-        break;
-      case 'follow':
-        if (userId != null) {
-          context.push('/user/$userId');
-        }
-        break;
-      case 'community_invite':
-      case 'community_update':
-        final cId = _communityIdFromNotification(notification);
-        if (cId != null) {
-          context.push('/community/$cId');
-        } else if (type == 'community_invite') {
-          await _acceptCommunityInvite(notification);
-        }
-        break;
-      case 'chat_message':
-      case 'chat_mention':
-        final target = chatId ?? communityId;
-        if (target != null) context.push('/chat/$target');
-        break;
-      case 'dm_invite':
-        context.push('/chats');
-        break;
-      case 'level_up':
-      case 'achievement':
-      case 'check_in_streak':
-        context.push('/profile');
-        break;
-      case 'wall_post':
-        if (userId != null) {
-          context.push('/user/$userId');
-        }
-        break;
-      case 'moderation':
-      case 'strike':
-      case 'ban':
-        if (communityId != null) {
-          context.push('/community/$communityId');
-        }
-        break;
-      default:
-        // Fallback: tentar navegar para o recurso mais relevante
-        if (postId != null) {
-          context.push('/post/$postId');
-        } else if (communityId != null) {
-          context.push('/community/$communityId');
-        } else if (userId != null) {
-          context.push('/user/$userId');
-        }
-        break;
+    // Tratamento especial para convites de comunidade (fluxo de aceite)
+    if (type == 'community_invite') {
+      final cId = _communityIdFromNotification(notification);
+      if (cId != null) {
+        context.push('/community/$cId');
+      } else {
+        await _acceptCommunityInvite(notification);
+      }
+      return;
     }
+
+    // Para todos os demais tipos, delega ao AppNavigationHelper centralizado.
+    // Monta o payload no formato esperado pelo helper.
+    final router = GoRouter.of(context);
+    final normalizedPayload = <String, dynamic>{
+      'type': type,
+      'post_id': notification['post_id'] ?? payload['post_id'],
+      'community_id': notification['community_id'] ?? payload['community_id'],
+      'actor_id': notification['actor_id'] ?? payload['actor_id'],
+      'user_id': payload['user_id'],
+      'chat_id': payload['chat_id'],
+      'thread_id': payload['thread_id'],
+    };
+    AppNavigationHelper.navigateFromNotificationPayload(router, normalizedPayload);
   }
 
   @override
