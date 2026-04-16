@@ -65,11 +65,38 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Future<void> _loadCheckInStatus() async {
-    final user = ref.read(currentUserProvider);
-    if (user != null) {
+    // Sempre busca o valor mais recente do banco para evitar exibir streak
+    // desatualizado quando o usuário volta à tela após um check-in anterior.
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+      final row = await SupabaseService.table('profiles')
+          .select('consecutive_checkin_days, last_checkin_at')
+          .eq('id', userId)
+          .single();
+      final streak = (row['consecutive_checkin_days'] as num?)?.toInt() ?? 0;
+      final lastCheckin = row['last_checkin_at'] as String?;
+      final alreadyCheckedIn = lastCheckin != null &&
+          DateTime.tryParse(lastCheckin)?.toLocal().toLocal().day ==
+              DateTime.now().toLocal().day &&
+          DateTime.tryParse(lastCheckin)?.toLocal().month ==
+              DateTime.now().toLocal().month &&
+          DateTime.tryParse(lastCheckin)?.toLocal().year ==
+              DateTime.now().toLocal().year;
+      if (!mounted) return;
       setState(() {
-        _consecutiveDays = user.consecutiveCheckinDays;
+        _consecutiveDays = streak;
+        _checkedIn = alreadyCheckedIn;
       });
+      if (alreadyCheckedIn) {
+        _pulseController.stop();
+      }
+    } catch (_) {
+      // Fallback para o cache em memória se o banco falhar
+      final user = ref.read(currentUserProvider);
+      if (user != null && mounted) {
+        setState(() => _consecutiveDays = user.consecutiveCheckinDays);
+      }
     }
   }
 
@@ -174,9 +201,10 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
         final data = result as Map<String, dynamic>;
         if (data['success'] == true) {
           if (!mounted) return;
+          final newStreak = data['streak'] as int? ?? 0;
           setState(() {
             _checkedIn = true;
-            _consecutiveDays = data['streak'] as int? ?? 0;
+            _consecutiveDays = newStreak;
             _xpEarned = (data['xp_earned'] as int?) ??
                 (data['reputation_earned'] as int?) ??
                 0;
@@ -184,6 +212,9 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           });
           _pulseController.stop();
           _celebrateController.forward();
+          // Atualiza o cache global do usuário para que outros widgets
+          // (ex: badges de streak) reflitam o novo valor imediatamente.
+          ref.read(authProvider.notifier).refreshProfile();
         } else {
           final errorCode = data['error'] as String?;
           final alreadyCheckedIn = errorCode == 'already_checked_in';
@@ -308,13 +339,24 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: List.generate(7, (index) {
-                  final isCompleted = index < _consecutiveDays % 7;
-                  final isToday = index == _consecutiveDays % 7;
+                  // Quantos dias do ciclo atual (0-7) já foram completados.
+                  // Ex: streak=7 → cicloAtual=7 (semana cheia completa)
+                  //     streak=8 → cicloAtual=1 (começou novo ciclo)
+                  final cicloAtual = _consecutiveDays % 7 == 0 && _consecutiveDays > 0
+                      ? 7  // Semana exatamente completa: todos os 7 marcados
+                      : _consecutiveDays % 7;
+                  // index < cicloAtual: dias já concluídos neste ciclo
+                  final isCompleted = _checkedIn
+                      ? index < cicloAtual  // após check-in: inclui o dia de hoje
+                      : index < cicloAtual; // antes do check-in: dias anteriores
+                  // index == cicloAtual: o dia de hoje (ainda não concluído)
+                  final isToday = !_checkedIn && index == cicloAtual && cicloAtual < 7;
+                  final isTodayCompleted = _checkedIn && index == cicloAtual - 1 && cicloAtual > 0;
                   return _DayCircle(
                     day: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'][index],
                     isCompleted: isCompleted,
-                    isToday: isToday && !_checkedIn,
-                    isTodayCompleted: isToday && _checkedIn,
+                    isToday: isToday,
+                    isTodayCompleted: isTodayCompleted,
                   );
                 }),
               ),

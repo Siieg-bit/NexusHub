@@ -290,6 +290,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   void updateUserProfile(UserModel updatedUser) {
     state = state.copyWith(user: updatedUser);
   }
+
+  /// Recarrega o perfil do usuário do banco de dados.
+  /// Deve ser chamado após operações que alteram campos do perfil
+  /// (ex: check-in, compra de moedas, alteração de streak).
+  Future<void> refreshProfile() => _loadUserProfile();
 }
 
 /// Provider global de autenticação.
