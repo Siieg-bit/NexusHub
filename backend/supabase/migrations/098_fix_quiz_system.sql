@@ -19,9 +19,9 @@ CREATE TABLE IF NOT EXISTS public.quiz_answers (
   UNIQUE(quiz_attempt_id, question_id)
 );
 
-CREATE INDEX idx_quiz_answers_attempt ON public.quiz_answers(quiz_attempt_id);
-CREATE INDEX idx_quiz_answers_question ON public.quiz_answers(question_id);
-CREATE INDEX idx_quiz_answers_option ON public.quiz_answers(selected_option_id);
+CREATE INDEX IF NOT EXISTS idx_quiz_answers_attempt ON public.quiz_answers(quiz_attempt_id);
+CREATE INDEX IF NOT EXISTS idx_quiz_answers_question ON public.quiz_answers(question_id);
+CREATE INDEX IF NOT EXISTS idx_quiz_answers_option ON public.quiz_answers(selected_option_id);
 
 -- ========================
 -- 2. HABILITAR RLS
@@ -30,6 +30,7 @@ CREATE INDEX idx_quiz_answers_option ON public.quiz_answers(selected_option_id);
 ALTER TABLE public.quiz_answers ENABLE ROW LEVEL SECURITY;
 
 -- Qualquer um pode ver respostas de quiz público
+DROP POLICY IF EXISTS "quiz_answers_select_public" ON public.quiz_answers;
 CREATE POLICY "quiz_answers_select_public" ON public.quiz_answers
   FOR SELECT
   USING (
@@ -42,6 +43,7 @@ CREATE POLICY "quiz_answers_select_public" ON public.quiz_answers
   );
 
 -- Usuário pode ver suas próprias respostas
+DROP POLICY IF EXISTS "quiz_answers_select_own" ON public.quiz_answers;
 CREATE POLICY "quiz_answers_select_own" ON public.quiz_answers
   FOR SELECT
   USING (
@@ -53,6 +55,7 @@ CREATE POLICY "quiz_answers_select_own" ON public.quiz_answers
   );
 
 -- Usuário autenticado pode inserir suas próprias respostas
+DROP POLICY IF EXISTS "quiz_answers_insert_own" ON public.quiz_answers;
 CREATE POLICY "quiz_answers_insert_own" ON public.quiz_answers
   FOR INSERT
   WITH CHECK (

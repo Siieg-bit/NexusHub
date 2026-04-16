@@ -50,6 +50,15 @@ CREATE POLICY "cm_select_members_visible"
 -- Necessária para que o upsert com onConflict: 'user_id,device_id' funcione
 -- corretamente no DeviceFingerprintService.
 
-ALTER TABLE public.device_fingerprints
-  ADD CONSTRAINT device_fingerprints_user_device_unique
-  UNIQUE (user_id, device_id);
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'device_fingerprints_user_device_unique'
+      AND conrelid = 'public.device_fingerprints'::regclass
+  ) THEN
+    ALTER TABLE public.device_fingerprints
+      ADD CONSTRAINT device_fingerprints_user_device_unique
+      UNIQUE (user_id, device_id);
+  END IF;
+END $$;

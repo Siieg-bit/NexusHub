@@ -468,6 +468,7 @@ GRANT EXECUTE ON FUNCTION public.ban_community_member(UUID, UUID, TEXT, TEXT) TO
 -- mantém visibilidade total para staff da comunidade.
 DROP POLICY IF EXISTS "cm_select_members" ON public.community_members;
 DROP POLICY IF EXISTS "hide_hidden_profiles" ON public.community_members;
+DROP POLICY IF EXISTS "cm_select_members_visible" ON public.community_members;
 CREATE POLICY "cm_select_members_visible"
   ON public.community_members
   FOR SELECT

@@ -7,7 +7,19 @@
 -- ========================
 
 -- Adicionar novo tipo ao enum chat_message_type
-ALTER TYPE public.chat_message_type ADD VALUE 'form' BEFORE 'share_url';
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_enum e
+    JOIN pg_type t ON t.oid = e.enumtypid
+    JOIN pg_namespace n ON n.oid = t.typnamespace
+    WHERE n.nspname = 'public'
+      AND t.typname = 'chat_message_type'
+      AND e.enumlabel = 'form'
+  ) THEN
+    ALTER TYPE public.chat_message_type ADD VALUE 'form' BEFORE 'share_url';
+  END IF;
+END $$;
 
 -- ========================
 -- 2. CRIAR TABELA CHAT_FORMS
@@ -34,9 +46,9 @@ CREATE TABLE IF NOT EXISTS public.chat_forms (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_chat_forms_message ON public.chat_forms(message_id);
-CREATE INDEX idx_chat_forms_thread ON public.chat_forms(chat_thread_id);
-CREATE INDEX idx_chat_forms_creator ON public.chat_forms(creator_id);
+CREATE INDEX IF NOT EXISTS idx_chat_forms_message ON public.chat_forms(message_id);
+CREATE INDEX IF NOT EXISTS idx_chat_forms_thread ON public.chat_forms(chat_thread_id);
+CREATE INDEX IF NOT EXISTS idx_chat_forms_creator ON public.chat_forms(creator_id);
 
 -- ========================
 -- 3. CRIAR TABELA CHAT_FORM_RESPONSES
@@ -57,8 +69,8 @@ CREATE TABLE IF NOT EXISTS public.chat_form_responses (
   UNIQUE(form_id, responder_id)
 );
 
-CREATE INDEX idx_chat_form_responses_form ON public.chat_form_responses(form_id);
-CREATE INDEX idx_chat_form_responses_responder ON public.chat_form_responses(responder_id);
+CREATE INDEX IF NOT EXISTS idx_chat_form_responses_form ON public.chat_form_responses(form_id);
+CREATE INDEX IF NOT EXISTS idx_chat_form_responses_responder ON public.chat_form_responses(responder_id);
 
 -- ========================
 -- 4. HABILITAR RLS
@@ -68,33 +80,38 @@ ALTER TABLE public.chat_forms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chat_form_responses ENABLE ROW LEVEL SECURITY;
 
 -- RLS para chat_forms: membros do chat podem ver
+DROP POLICY IF EXISTS "chat_forms_select_members" ON public.chat_forms;
 CREATE POLICY "chat_forms_select_members" ON public.chat_forms
   FOR SELECT
   USING (
     EXISTS (
-      SELECT 1 FROM public.chat_thread_members
-      WHERE chat_thread_id = chat_forms.chat_thread_id
+      SELECT 1 FROM public.chat_members
+      WHERE thread_id = chat_forms.chat_thread_id
         AND user_id = auth.uid()
     )
   );
 
 -- RLS para chat_forms: apenas criador pode inserir
+DROP POLICY IF EXISTS "chat_forms_insert_creator" ON public.chat_forms;
 CREATE POLICY "chat_forms_insert_creator" ON public.chat_forms
   FOR INSERT
   WITH CHECK (creator_id = auth.uid());
 
 -- RLS para chat_forms: apenas criador pode atualizar
+DROP POLICY IF EXISTS "chat_forms_update_creator" ON public.chat_forms;
 CREATE POLICY "chat_forms_update_creator" ON public.chat_forms
   FOR UPDATE
   USING (creator_id = auth.uid())
   WITH CHECK (creator_id = auth.uid());
 
 -- RLS para chat_form_responses: usuário pode ver suas próprias respostas
+DROP POLICY IF EXISTS "chat_form_responses_select_own" ON public.chat_form_responses;
 CREATE POLICY "chat_form_responses_select_own" ON public.chat_form_responses
   FOR SELECT
   USING (responder_id = auth.uid());
 
 -- RLS para chat_form_responses: criador do form pode ver respostas
+DROP POLICY IF EXISTS "chat_form_responses_select_creator" ON public.chat_form_responses;
 CREATE POLICY "chat_form_responses_select_creator" ON public.chat_form_responses
   FOR SELECT
   USING (
@@ -105,13 +122,14 @@ CREATE POLICY "chat_form_responses_select_creator" ON public.chat_form_responses
   );
 
 -- RLS para chat_form_responses: usuário autenticado pode inserir respostas
+DROP POLICY IF EXISTS "chat_form_responses_insert_authenticated" ON public.chat_form_responses;
 CREATE POLICY "chat_form_responses_insert_authenticated" ON public.chat_form_responses
   FOR INSERT
   WITH CHECK (
     responder_id = auth.uid()
     AND EXISTS (
-      SELECT 1 FROM public.chat_thread_members
-      WHERE chat_thread_id = (
+      SELECT 1 FROM public.chat_members
+      WHERE thread_id = (
         SELECT chat_thread_id FROM public.chat_forms WHERE id = form_id
       )
       AND user_id = auth.uid()
@@ -148,8 +166,8 @@ BEGIN
 
   -- Validar que usuário é membro do chat
   IF NOT EXISTS (
-    SELECT 1 FROM public.chat_thread_members
-    WHERE chat_thread_id = p_chat_thread_id AND user_id = v_user_id
+    SELECT 1 FROM public.chat_members
+    WHERE thread_id = p_chat_thread_id AND user_id = v_user_id
   ) THEN
     RAISE EXCEPTION 'Você não é membro deste chat';
   END IF;
@@ -187,7 +205,7 @@ BEGIN
 
   -- Criar mensagem de sistema para o formulário
   INSERT INTO public.chat_messages (
-    chat_thread_id,
+    thread_id,
     sender_id,
     type,
     content,

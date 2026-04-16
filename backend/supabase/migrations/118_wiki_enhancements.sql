@@ -38,12 +38,15 @@ CREATE TABLE IF NOT EXISTS public.wiki_ratings (
 
 ALTER TABLE public.wiki_ratings ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "wiki_ratings_select" ON public.wiki_ratings;
 CREATE POLICY "wiki_ratings_select" ON public.wiki_ratings
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "wiki_ratings_insert" ON public.wiki_ratings;
 CREATE POLICY "wiki_ratings_insert" ON public.wiki_ratings
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "wiki_ratings_update" ON public.wiki_ratings;
 CREATE POLICY "wiki_ratings_update" ON public.wiki_ratings
   FOR UPDATE USING (auth.uid() = user_id);
 
@@ -75,11 +78,14 @@ CREATE TABLE IF NOT EXISTS public.wiki_what_i_like (
 
 ALTER TABLE public.wiki_what_i_like ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "wiki_what_i_like_select" ON public.wiki_what_i_like;
 CREATE POLICY "wiki_what_i_like_select" ON public.wiki_what_i_like
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "wiki_what_i_like_insert" ON public.wiki_what_i_like;
 CREATE POLICY "wiki_what_i_like_insert" ON public.wiki_what_i_like
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "wiki_what_i_like_delete" ON public.wiki_what_i_like;
 CREATE POLICY "wiki_what_i_like_delete" ON public.wiki_what_i_like
   FOR DELETE USING (auth.uid() = user_id);
