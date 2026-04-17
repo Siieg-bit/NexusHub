@@ -182,19 +182,36 @@ final userStoriesProvider =
   }
 });
 
-/// Provider que verifica se um usuário específico tem stories ativos (não expirados).
-/// Usado para exibir o anel de story ao redor do avatar do usuário.
+/// Provider que verifica se um usuário específico tem stories ativos não visualizados
+/// pelo usuário atual. O anel de story some após o usuário visualizar todos os stories.
 final userHasActiveStoryProvider =
     FutureProvider.family<bool, String>((ref, userId) async {
   if (userId.isEmpty) return false;
   try {
+    final currentUserId = SupabaseService.currentUserId;
+    // Buscar stories ativos do autor
     final response = await SupabaseService.table('stories')
         .select('id')
         .eq('author_id', userId)
         .eq('is_active', true)
-        .gte('expires_at', DateTime.now().toUtc().toIso8601String())
-        .limit(1);
-    return ((response as List?) ?? []).isNotEmpty;
+        .gte('expires_at', DateTime.now().toUtc().toIso8601String());
+    final stories = (response as List?) ?? [];
+    if (stories.isEmpty) return false;
+    // Se não há usuário logado, exibir ring
+    if (currentUserId == null) return true;
+    // O próprio autor sempre vê o ring enquanto tiver story ativo
+    if (currentUserId == userId) return true;
+    // Verificar se há algum story não visualizado pelo usuário atual
+    final storyIds = stories.map((s) => s['id'] as String).toList();
+    final viewedRes = await SupabaseService.table('story_views')
+        .select('story_id')
+        .eq('viewer_id', currentUserId)
+        .inFilter('story_id', storyIds);
+    final viewedIds = ((viewedRes as List?) ?? [])
+        .map((v) => v['story_id'] as String)
+        .toSet();
+    // Ring ativo apenas se houver story não visualizado
+    return storyIds.any((id) => !viewedIds.contains(id));
   } catch (_) {
     return false;
   }

@@ -270,10 +270,17 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
                       ),
                     )
             else if (type == 'image' && mediaUrl != null)
-              Image.network(
-                mediaUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(color: Colors.black),
+              // Imagem levemente escurecida para melhor legibilidade do header
+              ColorFiltered(
+                colorFilter: ColorFilter.mode(
+                  Colors.black.withValues(alpha: 0.20),
+                  BlendMode.darken,
+                ),
+                child: Image.network(
+                  mediaUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(color: Colors.black),
+                ),
               )
             else if (type == 'text')
               Container(
