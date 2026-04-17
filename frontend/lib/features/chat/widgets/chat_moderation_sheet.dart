@@ -82,6 +82,7 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
   List<Map<String, dynamic>> _members = [];
   bool _isLoading = true;
   bool _isAnnouncementOnly = false;
+  String _chatType = 'public'; // 'public' | 'private'
 
   bool get _isHost => widget.callerRole == 'host';
   bool get _isCoHost => widget.callerRole == 'co_host';
@@ -92,6 +93,222 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
     super.initState();
     _isAnnouncementOnly = widget.isAnnouncementOnly;
     _loadMembers();
+    _loadChatType();
+  }
+
+  Future<void> _loadChatType() async {
+    try {
+      final res = await SupabaseService.table('chat_threads')
+          .select('type')
+          .eq('id', widget.threadId)
+          .maybeSingle();
+      if (res != null && mounted) {
+        setState(() => _chatType = (res['type'] as String?) ?? 'public');
+      }
+    } catch (e) {
+      debugPrint('[ChatModeration] Load chat type error: $e');
+    }
+  }
+
+  /// Converte o chat entre público e privado
+  Future<void> _convertChatType(String newType) async {
+    try {
+      await SupabaseService.table('chat_threads')
+          .update({'type': newType})
+          .eq('id', widget.threadId);
+      if (mounted) {
+        setState(() => _chatType = newType);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(newType == 'private'
+              ? 'Chat convertido para privado. Novos membros precisarão ser convidados.'
+              : 'Chat convertido para público. Qualquer membro pode entrar.'),
+          backgroundColor: newType == 'private'
+              ? Colors.orange[700]
+              : Colors.green[700],
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } catch (e) {
+      debugPrint('[ChatModeration] Convert type error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Erro ao alterar tipo do chat. Tente novamente.'),
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    }
+  }
+
+  /// Mostra lista de seguidores do host para convidar ao chat
+  Future<void> _showInviteFollowers() async {
+    final currentUserId = SupabaseService.currentUserId;
+    if (currentUserId == null) return;
+    final r = context.r;
+    // Buscar quem o host segue
+    List<Map<String, dynamic>> following = [];
+    try {
+      final res = await SupabaseService.table('follows')
+          .select('following_id, profiles!follows_following_id_fkey(id, nickname, icon_url)')
+          .eq('follower_id', currentUserId);
+      following = List<Map<String, dynamic>>.from(res as List? ?? []);
+    } catch (e) {
+      debugPrint('[ChatModeration] Load following error: $e');
+    }
+    // Filtrar quem já está no chat
+    final memberIds = _members.map((m) => m['user_id'] as String?).toSet();
+    final notInChat = following.where((f) {
+      final uid = (f['profiles'] as Map?)?['id'] as String?;
+      return uid != null && !memberIds.contains(uid);
+    }).toList();
+    if (!mounted) return;
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.4,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (_, scrollCtrl) => Container(
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(8)),
+                child: Column(
+                  children: [
+                    Container(
+                      width: r.s(36),
+                      height: r.s(4),
+                      margin: EdgeInsets.only(bottom: r.s(16)),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[700],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          'Convidar para o chat',
+                          style: TextStyle(
+                            fontSize: r.fs(18),
+                            fontWeight: FontWeight.w800,
+                            color: context.nexusTheme.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: r.s(4)),
+                    Text(
+                      'Pessoas que você segue e ainda não estão no chat',
+                      style: TextStyle(
+                        fontSize: r.fs(12),
+                        color: context.nexusTheme.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: notInChat.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Todos os seus seguidores já estão no chat',
+                          style: TextStyle(
+                              color: Colors.grey[500], fontSize: r.fs(13)),
+                          textAlign: TextAlign.center,
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: scrollCtrl,
+                        padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+                        itemCount: notInChat.length,
+                        itemBuilder: (ctx, i) {
+                          final profile =
+                              notInChat[i]['profiles'] as Map<String, dynamic>? ?? {};
+                          final uid = profile['id'] as String? ?? '';
+                          final nickname =
+                              profile['nickname'] as String? ?? 'Usuário';
+                          final iconUrl = profile['icon_url'] as String?;
+                          return ListTile(
+                            leading: CircleAvatar(
+                              radius: r.s(20),
+                              backgroundColor: context.nexusTheme.accentPrimary
+                                  .withValues(alpha: 0.2),
+                              backgroundImage: iconUrl != null
+                                  ? NetworkImage(iconUrl)
+                                  : null,
+                              child: iconUrl == null
+                                  ? Text(
+                                      nickname.isNotEmpty
+                                          ? nickname[0].toUpperCase()
+                                          : '?',
+                                      style: TextStyle(
+                                          color: context.nexusTheme.accentPrimary,
+                                          fontWeight: FontWeight.w700))
+                                  : null,
+                            ),
+                            title: Text(nickname,
+                                style: TextStyle(
+                                    color: context.nexusTheme.textPrimary,
+                                    fontSize: r.fs(14))),
+                            trailing: ElevatedButton(
+                              onPressed: () async {
+                                try {
+                                  await SupabaseService.table('chat_members')
+                                      .insert({
+                                    'thread_id': widget.threadId,
+                                    'user_id': uid,
+                                    'role': 'member',
+                                    'status': 'active',
+                                  });
+                                  if (ctx.mounted) {
+                                    Navigator.pop(ctx);
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(SnackBar(
+                                      content: Text('$nickname foi convidado!'),
+                                      backgroundColor: Colors.green[700],
+                                      behavior: SnackBarBehavior.floating,
+                                    ));
+                                    await _loadMembers();
+                                  }
+                                } catch (e) {
+                                  debugPrint('[ChatModeration] Invite error: $e');
+                                  if (ctx.mounted) {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(const SnackBar(
+                                      content:
+                                          Text('Erro ao convidar. Tente novamente.'),
+                                      behavior: SnackBarBehavior.floating,
+                                    ));
+                                  }
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: context.nexusTheme.accentPrimary,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(r.s(20))),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(16), vertical: r.s(8)),
+                              ),
+                              child: Text('Convidar',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: r.fs(12))),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _loadMembers() async {
@@ -130,8 +347,13 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                   Map<String, dynamic>.from(m['profiles'] as Map? ?? {});
               final localNick = (cm['local_nickname'] as String?)?.trim();
               final localIcon = (cm['local_icon_url'] as String?)?.trim();
-              profile['nickname'] = localNick;
-              profile['icon_url'] = localIcon;
+              // Só sobrescreve quando o valor local estiver preenchido
+              if (localNick != null && localNick.isNotEmpty) {
+                profile['nickname'] = localNick;
+              }
+              if (localIcon != null && localIcon.isNotEmpty) {
+                profile['icon_url'] = localIcon;
+              }
               m['profiles'] = profile;
             }
           } catch (e) {
@@ -694,6 +916,81 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                         _showRenameDialog();
                       },
                     ),
+                    SizedBox(height: r.s(8)),
+                    // Convidar seguidores (host e co_host, apenas para chats públicos e privados)
+                    if (_chatType != 'dm')
+                      _ButtonTile(
+                        r: r,
+                        icon: Icons.person_add_rounded,
+                        label: 'Convidar pessoas que sigo',
+                        onTap: () => _showInviteFollowers(),
+                      ),
+                    if (_chatType != 'dm') SizedBox(height: r.s(8)),
+                    // Converter chat público <-> privado (apenas host)
+                    if (_isHost && _chatType != 'dm')
+                      _ButtonTile(
+                        r: r,
+                        icon: _chatType == 'public'
+                            ? Icons.lock_rounded
+                            : Icons.lock_open_rounded,
+                        label: _chatType == 'public'
+                            ? 'Tornar chat privado'
+                            : 'Tornar chat público',
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final newType =
+                              _chatType == 'public' ? 'private' : 'public';
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              backgroundColor: ctx.surfaceColor,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(r.s(16))),
+                              title: Text(
+                                newType == 'private'
+                                    ? 'Tornar chat privado?'
+                                    : 'Tornar chat público?',
+                                style: TextStyle(
+                                    color: ctx.textPrimary,
+                                    fontWeight: FontWeight.w700),
+                              ),
+                              content: Text(
+                                newType == 'private'
+                                    ? 'O chat ficará visível apenas para membros convidados. Membros atuais permanecem.'
+                                    : 'O chat ficará visível na aba de chats da comunidade e qualquer membro poderá entrar.',
+                                style: TextStyle(
+                                    color: ctx.textSecondary,
+                                    fontSize: r.fs(13)),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: Text('Cancelar',
+                                      style: TextStyle(
+                                          color: Colors.grey[500])),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        context.nexusTheme.accentPrimary,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(r.s(10))),
+                                  ),
+                                  child: Text('Confirmar',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: r.fs(14))),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirm == true) {
+                            await _convertChatType(newType);
+                          }
+                        },
+                      ),
                   ],
                 ),
               ),
