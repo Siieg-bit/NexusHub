@@ -30,6 +30,7 @@ Future<bool?> showPostModerationMenu({
   required bool isPinned,
   required bool isFeatured,
   required String postTitle,
+  bool isHidden = false,
 }) {
   return showModalBottomSheet<bool>(
     context: context,
@@ -42,6 +43,7 @@ Future<bool?> showPostModerationMenu({
       isPinned: isPinned,
       isFeatured: isFeatured,
       postTitle: postTitle,
+      isHidden: isHidden,
     ),
   );
 }
@@ -52,6 +54,7 @@ class _PostModerationMenuSheet extends ConsumerStatefulWidget {
   final bool isPinned;
   final bool isFeatured;
   final String postTitle;
+  final bool isHidden;
 
   const _PostModerationMenuSheet({
     required this.communityId,
@@ -59,6 +62,7 @@ class _PostModerationMenuSheet extends ConsumerStatefulWidget {
     required this.isPinned,
     required this.isFeatured,
     required this.postTitle,
+    this.isHidden = false,
   });
 
   @override
@@ -69,6 +73,14 @@ class _PostModerationMenuSheet extends ConsumerStatefulWidget {
 class _PostModerationMenuSheetState
     extends ConsumerState<_PostModerationMenuSheet> {
   bool _isLoading = false;
+  // Estado local para refletir a mudança de visibilidade sem fechar o menu
+  late bool _isHidden;
+
+  @override
+  void initState() {
+    super.initState();
+    _isHidden = widget.isHidden;
+  }
 
   Future<void> _pinPost() async {
     setState(() => _isLoading = true);
@@ -213,6 +225,57 @@ class _PostModerationMenuSheetState
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
       ));
+       if (mounted) setState(() => _isHidden = true);
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro: ${e.toString()}')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _unhidePost() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: const Text('Desocultar Post'),
+        content: const Text(
+            'Deseja restaurar a visibilidade deste post para todos os membros?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Desocultar',
+                style: TextStyle(color: Colors.green)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    setState(() => _isLoading = true);
+    try {
+      await SupabaseService.table('posts')
+          .update({'status': 'ok'}).eq('id', widget.postId);
+      await SupabaseService.rpc('log_moderation_action', params: {
+        'p_community_id': widget.communityId,
+        'p_action': 'unhide_post',
+        'p_target_post_id': widget.postId,
+        'p_reason': 'Post desocultado pela moderação',
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Post restaurado e visível para todos os membros.'),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ));
+      if (mounted) setState(() => _isHidden = false);
       Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
@@ -408,12 +471,14 @@ class _PostModerationMenuSheetState
               onTap: _sendBroadcast,
             ),
             const Divider(height: 1, thickness: 0.5),
-            // 5. Desabilitar Este Post
+            // 5. Ocultar / Desocultar Este Post
             _MenuItem(
-              label: 'Ocultar Este Post',
-              icon: Icons.block_rounded,
-              isDestructive: true,
-              onTap: _disablePost,
+              label: _isHidden ? 'Desocultar Este Post' : 'Ocultar Este Post',
+              icon: _isHidden
+                  ? Icons.visibility_rounded
+                  : Icons.block_rounded,
+              isDestructive: !_isHidden,
+              onTap: _isHidden ? _unhidePost : _disablePost,
             ),
             const Divider(height: 1, thickness: 0.5),
             // 6. Histórico da Moderação

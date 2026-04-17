@@ -809,6 +809,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     isPinned: post.isPinned,
                     isFeatured: post.isFeatured,
                     postTitle: post.title ?? '',
+                    isHidden: post.status == 'disabled',
                   );
                   if (changed == true && mounted) {
                     ref.invalidate(postDetailProvider(widget.postId));

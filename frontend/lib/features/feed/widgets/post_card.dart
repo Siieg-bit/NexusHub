@@ -135,6 +135,7 @@ class _PostCardState extends ConsumerState<PostCard>
       postTitle: (_post.title ?? '').trim().isNotEmpty
           ? (_post.title ?? '').trim()
           : _post.content,
+      isHidden: _post.status == 'disabled',
     );
 
     if (changed == true) {
