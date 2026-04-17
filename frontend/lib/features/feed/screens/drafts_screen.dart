@@ -3,14 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/models/community_model.dart';
 import '../../../core/models/post_draft_model.dart';
+import '../../../core/providers/community_provider.dart';
 import '../../../core/providers/draft_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../communities/widgets/community_create_menu.dart';
 
 class DraftsScreen extends ConsumerWidget {
-  const DraftsScreen({super.key});
+  /// Quando fornecido, o FAB e os rascunhos sem comunidade usam este ID
+  /// automaticamente, sem exibir o seletor de comunidade.
+  final String? communityId;
+
+  const DraftsScreen({super.key, this.communityId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -167,18 +174,37 @@ class DraftsScreen extends ConsumerWidget {
           return ListView.builder(
             padding: EdgeInsets.all(r.s(16)),
             itemCount: drafts.length,
-            itemBuilder: (context, index) => _DraftCard(draft: drafts[index]),
+            itemBuilder: (context, index) => _DraftCard(
+                draft: drafts[index], defaultCommunityId: communityId),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final draft = await ref
-              .read(postDraftsProvider.notifier)
-              .createDraft(title: '', content: '');
-          if (draft != null && context.mounted) {
-            final cid = draft.communityId ?? 'global';
-            context.push('/community/$cid/create-post', extra: {'draftId': draft.id});
+          if (communityId != null) {
+            // Já temos a comunidade — abre o menu de criação igual ao FAB principal
+            final community = await ref
+                .read(communityDetailProvider(communityId!).future)
+                .catchError((_) => null);
+            if (!context.mounted) return;
+            showCommunityCreateMenu(
+              context,
+              communityId: communityId!,
+              communityName: community?.name ?? '',
+            );
+          } else {
+            // Sem comunidade — pede ao usuário para selecionar
+            final cid = await _pickCommunity(context, ref);
+            if (cid == null || !context.mounted) return;
+            final community = await ref
+                .read(communityDetailProvider(cid).future)
+                .catchError((_) => null);
+            if (!context.mounted) return;
+            showCommunityCreateMenu(
+              context,
+              communityId: cid,
+              communityName: community?.name ?? '',
+            );
           }
         },
         backgroundColor: context.nexusTheme.accentPrimary,
@@ -186,6 +212,102 @@ class DraftsScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Exibe um bottom sheet para o usuário selecionar a comunidade onde quer criar o post.
+/// Retorna o id da comunidade selecionada ou null se cancelado.
+Future<String?> _pickCommunity(BuildContext context, WidgetRef ref) async {
+  final r = context.r;
+  final communities = await ref.read(myCommunitiesProvider.future).catchError((_) => <CommunityModel>[]);
+
+  if (!context.mounted) return null;
+
+  if (communities.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Você precisa participar de uma comunidade para criar um post.'),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: context.nexusTheme.error,
+      ),
+    );
+    return null;
+  }
+
+  return showModalBottomSheet<String>(
+    context: context,
+    backgroundColor: context.surfaceColor,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+    ),
+    builder: (ctx) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: r.s(12)),
+          Container(
+            width: r.s(40),
+            height: r.s(4),
+            decoration: BoxDecoration(
+              color: Colors.grey[600],
+              borderRadius: BorderRadius.circular(r.s(2)),
+            ),
+          ),
+          SizedBox(height: r.s(16)),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: r.s(20)),
+            child: Text(
+              'Selecionar comunidade',
+              style: TextStyle(
+                color: context.nexusTheme.textPrimary,
+                fontSize: r.fs(16),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          SizedBox(height: r.s(12)),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: r.s(320)),
+            child: ListView.builder(
+              shrinkWrap: true,
+              padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(4)),
+              itemCount: communities.length,
+              itemBuilder: (_, i) {
+                final c = communities[i];
+                return ListTile(
+                  leading: CircleAvatar(
+                    radius: r.s(18),
+                    backgroundImage: c.iconUrl != null ? NetworkImage(c.iconUrl!) : null,
+                    backgroundColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
+                    child: c.iconUrl == null
+                        ? Text(c.name[0].toUpperCase(),
+                            style: TextStyle(
+                              color: context.nexusTheme.accentPrimary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: r.fs(14),
+                            ))
+                        : null,
+                  ),
+                  title: Text(
+                    c.name,
+                    style: TextStyle(
+                      color: context.nexusTheme.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: r.fs(14),
+                    ),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(r.s(12)),
+                  ),
+                  onTap: () => Navigator.pop(ctx, c.id),
+                );
+              },
+            ),
+          ),
+          SizedBox(height: r.s(8)),
+        ],
+      ),
+    ),
+  );
 }
 
 String _draftRouteFor(String communityId, PostDraftModel draft) {
@@ -211,8 +333,10 @@ String _draftRouteFor(String communityId, PostDraftModel draft) {
 
 class _DraftCard extends ConsumerWidget {
   final PostDraftModel draft;
+  /// communityId da tela atual — usado como fallback quando o rascunho não tem comunidade
+  final String? defaultCommunityId;
 
-  const _DraftCard({required this.draft});
+  const _DraftCard({required this.draft, this.defaultCommunityId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -269,9 +393,13 @@ class _DraftCard extends ConsumerWidget {
         ref.read(postDraftsProvider.notifier).deleteDraft(draft.id);
       },
       child: GestureDetector(
-        onTap: () {
+        onTap: () async {
           if (!context.mounted) return;
-          final cid = draft.communityId ?? 'global';
+          // Prioridade: comunidade do rascunho > comunidade atual > seletor
+          final cid = (draft.communityId?.isNotEmpty == true)
+              ? draft.communityId!
+              : (defaultCommunityId ?? await _pickCommunity(context, ref));
+          if (cid == null || !context.mounted) return;
           context.push(
             _draftRouteFor(cid, draft),
             extra: {'draftId': draft.id, 'initialType': draft.effectiveEditorType},

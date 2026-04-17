@@ -75,6 +75,15 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
   bool get _isEditing => widget.editingPost != null;
 
+  /// Retorna true se há qualquer conteúdo digitado que justifique salvar rascunho.
+  bool get _hasContent =>
+      _titleController.text.trim().isNotEmpty ||
+      _contentController.text.trim().isNotEmpty ||
+      _subtitleController.text.trim().isNotEmpty ||
+      _mediaUrls.isNotEmpty ||
+      _gifUrl != null ||
+      _coverImageUrl != null;
+
   // Fontes disponíveis
   static const _availableFonts = [
     'Plus Jakarta Sans',
@@ -715,6 +724,53 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   }
 
   // ════════════════════════════════════════════════════════════════════════════
+  // AUTO-SAVE
+  // ════════════════════════════════════════════════════════════════════════════
+
+  /// Salva rascunho silenciosamente ao sair da tela (sem bloquear navegação).
+  Future<void> _autoSaveDraft() async {
+    if (!_hasContent || _isEditing) return;
+    try {
+      await ref.read(postDraftsProvider.notifier).createDraft(
+            communityId: widget.communityId,
+            title: _titleController.text.trim().isNotEmpty
+                ? _titleController.text.trim()
+                : null,
+            content: _contentController.text.trim().isNotEmpty
+                ? _contentController.text.trim()
+                : null,
+            postType: 'normal',
+          );
+    } catch (_) {
+      // Falha silenciosa — não bloqueia a navegação.
+    }
+  }
+
+  /// Intercepta o botão de voltar: salva rascunho se houver conteúdo e exibe snackbar.
+  Future<bool> _onWillPop() async {
+    if (!_hasContent || _isEditing) return true;
+    await _autoSaveDraft();
+    if (mounted) {
+      final s = getStrings();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.drafts_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 10),
+              Text(s.draftSaved),
+            ],
+          ),
+          backgroundColor: context.nexusTheme.accentPrimary,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+    return true;
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
   // BUILD
   // ════════════════════════════════════════════════════════════════════════════
 
@@ -723,7 +779,14 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     final s = ref.watch(stringsProvider);
     final r = context.r;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final canLeave = await _onWillPop();
+        if (canLeave && mounted) context.pop();
+      },
+      child: Scaffold(
       backgroundColor: _bgColor,
       appBar: _buildAppBar(s, r),
       body: Column(
@@ -878,7 +941,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           _buildToolbar(r, s),
         ],
       ),
-    );
+    ), // Scaffold
+    ); // PopScope
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -891,7 +955,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       elevation: 0,
       leading: IconButton(
         icon: Icon(Icons.close_rounded, color: _textColor),
-        onPressed: () => context.pop(),
+        onPressed: () async {
+          final canLeave = await _onWillPop();
+          if (canLeave && mounted) context.pop();
+        },
       ),
       title: Text(
         _isEditing ? s.editPost : s.createPost,
@@ -908,7 +975,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             icon: Icon(Icons.drafts_rounded,
                 color: _textColor.withValues(alpha: 0.6), size: r.s(22)),
             tooltip: s.drafts,
-            onPressed: () => context.push('/drafts'),
+            onPressed: () => context.push('/drafts?communityId=${widget.communityId}'),
           ),
           IconButton(
             icon: Icon(Icons.save_outlined,

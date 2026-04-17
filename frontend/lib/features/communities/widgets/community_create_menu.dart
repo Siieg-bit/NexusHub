@@ -152,7 +152,7 @@ class _CommunityCreateMenuSheet extends ConsumerWidget {
         color: const Color(0xFF4338CA),
         onTap: (ctx) {
           Navigator.pop(ctx);
-          ctx.push('/drafts');
+          ctx.push('/drafts?communityId=$communityId');
         },
       ),
     ];

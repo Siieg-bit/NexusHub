@@ -12,6 +12,7 @@ import '../features/auth/screens/interest_wizard_screen.dart';
 import '../features/auth/screens/reset_password_screen.dart';
 import '../features/chat/screens/chat_list_screen.dart';
 import '../features/chat/screens/chat_room_screen.dart';
+import '../features/chat/screens/chat_details_screen.dart';
 import '../features/communities/screens/community_detail_screen.dart';
 import '../features/communities/screens/my_community_chats_screen.dart';
 import '../features/communities/screens/community_info_screen.dart';
@@ -389,6 +390,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/chat/:id',
         name: 'chat-room',
         builder: (context, state) => ChatRoomScreen(
+          threadId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: '/chat/:id/details',
+        name: 'chat-details',
+        builder: (context, state) => ChatDetailsScreen(
           threadId: state.pathParameters['id']!,
         ),
       ),
@@ -786,7 +794,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/drafts',
         name: 'drafts',
-        builder: (context, state) => const DraftsScreen(),
+        builder: (context, state) => DraftsScreen(
+          communityId: state.uri.queryParameters['communityId'],
+        ),
       ),
 
       // ====================================================================

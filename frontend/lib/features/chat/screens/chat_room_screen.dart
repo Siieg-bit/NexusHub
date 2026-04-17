@@ -1229,119 +1229,218 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   // ==========================================================================
-  // CHAT SETTINGS — Bug #6 fix
+  // CHAT SETTINGS — Versão melhorada com seções e opções completas
   // ==========================================================================
 
   void _showChatSettings() {
     final s = getStrings();
     final r = context.r;
+    final threadType = _threadInfo?['type'] as String? ?? 'public';
+    final isPublic = threadType == 'public';
+    final isHost = _callerRole == 'host' || _callerRole == 'co_host';
+    final userId = SupabaseService.currentUserId;
+    final hostId = _threadInfo?['host_id'] as String?;
+    final currentUser = ref.read(currentUserProvider);
+    final canDelete = (userId != null && userId == hostId) ||
+        (currentUser?.isTeamMember ?? false);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
+      isScrollControlled: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
       ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.all(r.s(16)),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: r.s(36),
-              height: r.s(4),
-              margin: EdgeInsets.only(bottom: r.s(16)),
-              decoration: BoxDecoration(
-                color: Colors.grey[700],
-                borderRadius: BorderRadius.circular(2),
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          builder: (_, scrollCtrl) => SingleChildScrollView(
+            controller: scrollCtrl,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                  r.s(16), r.s(8), r.s(16), r.s(24) + MediaQuery.of(ctx).viewInsets.bottom),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle
+                  Center(
+                    child: Container(
+                      width: r.s(36),
+                      height: r.s(4),
+                      margin: EdgeInsets.only(bottom: r.s(16)),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[700],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  // Título
+                  Text(s.chatSettingsTitle,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: r.fs(16),
+                          color: context.nexusTheme.textPrimary)),
+                  SizedBox(height: r.s(20)),
+
+                  // ── SEÇÃO: Personalização ──────────────────────────────
+                  _settingsSectionLabel(r, 'Personalização'),
+                  _settingsTile(r, Icons.wallpaper_rounded, s.chatBackground, () {
+                    Navigator.pop(ctx);
+                    _showBackgroundPicker();
+                  }),
+                  _settingsTile(r, Icons.chat_bubble_rounded, 'Meu Bubble', () {
+                    Navigator.pop(ctx);
+                    _showBubblePicker();
+                  }),
+                  if (isHost)
+                    _settingsTile(r, Icons.image_rounded, 'Capa do chat', () {
+                      Navigator.pop(ctx);
+                      showChatCoverPicker(
+                        context: context,
+                        threadId: widget.threadId,
+                        currentCover: _chatCoverUrl,
+                        canEdit: true,
+                        onChanged: (url) {
+                          if (mounted) setState(() => _chatCoverUrl = url);
+                        },
+                      );
+                    }),
+
+                  SizedBox(height: r.s(8)),
+
+                  // ── SEÇÃO: Membros e Convites ──────────────────────────
+                  if (isPublic) ...[
+                    _settingsSectionLabel(r, 'Membros'),
+                    _settingsTile(r, Icons.people_rounded, 'Ver Membros', () {
+                      Navigator.pop(ctx);
+                      _showChatMembers();
+                    }),
+                    _settingsTile(r, Icons.info_outline_rounded, 'Detalhes do chat', () {
+                      Navigator.pop(ctx);
+                      context.push('/chat/${widget.threadId}/details');
+                    }),
+                    if (isPublic)
+                      _settingsTile(r, Icons.person_add_rounded, 'Convidar pessoas', () {
+                        Navigator.pop(ctx);
+                        DeepLinkService.shareUrl(
+                          type: 'chat',
+                          targetId: widget.threadId,
+                          title: _threadInfo?['title'] as String? ?? '',
+                          text: _threadInfo?['title'] as String? ?? '',
+                        );
+                      }),
+                    SizedBox(height: r.s(8)),
+                  ],
+
+                  // ── SEÇÃO: Notificações ────────────────────────────────
+                  _settingsSectionLabel(r, 'Notificações'),
+                  _settingsTile(r, Icons.notifications_rounded, s.notifications, () {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(s.notificationSettingsComingSoon),
+                        backgroundColor: context.nexusTheme.accentPrimary,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }),
+
+                  SizedBox(height: r.s(8)),
+
+                  // ── SEÇÃO: Moderação (apenas host/co_host) ─────────────
+                  if (isHost && isPublic) ...[
+                    _settingsSectionLabel(r, 'Moderação'),
+                    _settingsTile(r, Icons.manage_accounts_rounded, 'Gerenciar membros', () {
+                      Navigator.pop(ctx);
+                      _showChatMembers();
+                    }),
+                    _settingsTile(
+                      r,
+                      _isAnnouncementOnly
+                          ? Icons.record_voice_over_rounded
+                          : Icons.voice_over_off_rounded,
+                      _isAnnouncementOnly
+                          ? 'Desativar modo anúncio'
+                          : 'Modo somente anúncio',
+                      () async {
+                        Navigator.pop(ctx);
+                        final newVal = !_isAnnouncementOnly;
+                        try {
+                          await SupabaseService.table('chat_threads')
+                              .update({'is_announcement_only': newVal})
+                              .eq('id', widget.threadId);
+                          if (mounted) setState(() => _isAnnouncementOnly = newVal);
+                        } catch (e) {
+                          debugPrint('[ChatRoom] toggle announcement: $e');
+                        }
+                      },
+                    ),
+                    _settingsTile(
+                      r,
+                      _isChatDisabled
+                          ? Icons.visibility_rounded
+                          : Icons.visibility_off_rounded,
+                      _isChatDisabled ? 'Reativar chat' : 'Desativar chat',
+                      () async {
+                        Navigator.pop(ctx);
+                        await _toggleChatDisabled(!_isChatDisabled);
+                      },
+                      isDestructive: !_isChatDisabled,
+                    ),
+                    SizedBox(height: r.s(8)),
+                  ],
+
+                  // ── Zona de perigo ─────────────────────────────────────
+                  if (canDelete || !isHost) ...[
+                    Divider(
+                        color: Colors.white.withValues(alpha: 0.07),
+                        height: r.s(16)),
+                    if (!isHost)
+                      _settingsTile(
+                        r,
+                        Icons.exit_to_app_rounded,
+                        s.leaveChatTitle,
+                        () {
+                          Navigator.pop(ctx);
+                          _leaveChatConfirm();
+                        },
+                        isDestructive: true,
+                      ),
+                    if (canDelete)
+                      _settingsTile(
+                        r,
+                        Icons.delete_rounded,
+                        s.deleteChatTitle,
+                        () {
+                          Navigator.pop(ctx);
+                          _deleteChatConfirm();
+                        },
+                        isDestructive: true,
+                      ),
+                  ],
+                ],
               ),
             ),
-            Text(s.chatSettingsTitle,
-                style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: r.fs(16),
-                    color: context.nexusTheme.textPrimary)),
-            SizedBox(height: r.s(16)),
-            _settingsTile(r, Icons.wallpaper_rounded, s.chatBackground, () {
-              Navigator.pop(ctx);
-              _showBackgroundPicker();
-            }),
-            if (_callerRole == 'host' || _callerRole == 'co_host')
-              _settingsTile(r, Icons.image_rounded, 'Capa do chat', () {
-                Navigator.pop(ctx);
-                showChatCoverPicker(
-                  context: context,
-                  threadId: widget.threadId,
-                  currentCover: _chatCoverUrl,
-                  canEdit: true,
-                  onChanged: (url) {
-                    if (mounted) setState(() => _chatCoverUrl = url);
-                  },
-                );
-              }),
-            if ((_callerRole == 'host' || _callerRole == 'co_host') &&
-                (_threadInfo?['type'] as String? ?? 'public') != 'dm')
-              _settingsTile(
-                r,
-                _isChatDisabled
-                    ? Icons.visibility_rounded
-                    : Icons.visibility_off_rounded,
-                _isChatDisabled ? 'Reativar chat' : 'Desativar chat',
-                () async {
-                  Navigator.pop(ctx);
-                  await _toggleChatDisabled(!_isChatDisabled);
-                },
-                isDestructive: !_isChatDisabled,
-              ),
-            _settingsTile(r, Icons.chat_bubble_rounded, 'Meu Bubble', () {
-              Navigator.pop(ctx);
-              _showBubblePicker();
-            }),
-            _settingsTile(r, Icons.notifications_rounded, s.notifications, () {
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(s.notificationSettingsComingSoon),
-                  backgroundColor: context.nexusTheme.accentPrimary,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            }),
-            _settingsTile(r, Icons.people_rounded, 'Ver Membros', () {
-              Navigator.pop(ctx);
-              _showChatMembers();
-            }),
-            if (_threadInfo?['community_id'] != null)
-              _settingsTile(r, Icons.settings_rounded, 'Config. Gerais', () {
-                Navigator.pop(ctx);
-                context.push('/settings');
-              }),
-            SizedBox(height: r.s(8)),
-            // Excluir chat — visível apenas para host e team_admin/moderator
-            Builder(builder: (_) {
-              final userId = SupabaseService.currentUserId;
-              final hostId = _threadInfo?['host_id'] as String?;
-              final currentUser = ref.read(currentUserProvider);
-              final canDelete = (userId != null && userId == hostId) ||
-                  (currentUser?.isTeamMember ?? false);
-              if (!canDelete) return const SizedBox.shrink();
-              return Column(mainAxisSize: MainAxisSize.min, children: [
-                Divider(
-                    color: Colors.white.withValues(alpha: 0.07),
-                    height: r.s(16)),
-                _settingsTile(
-                  r,
-                  Icons.delete_rounded,
-                  s.deleteChatTitle,
-                  () {
-                    Navigator.pop(ctx);
-                    _deleteChatConfirm();
-                  },
-                  isDestructive: true,
-                ),
-              ]);
-            }),
-          ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _settingsSectionLabel(Responsive r, String label) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: r.s(4), top: r.s(2)),
+      child: Text(
+        label.toUpperCase(),
+        style: TextStyle(
+          color: Colors.grey[600],
+          fontSize: r.fs(10),
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.8,
         ),
       ),
     );
@@ -2367,19 +2466,38 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             ),
             SizedBox(width: r.s(10)),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(threadTitle,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: r.fs(15),
-                          color: context.nexusTheme.textPrimary)),
-                  if (threadType != 'dm')
-                    Text(s.memberCountMembers(memberCount),
-                        style: TextStyle(
-                            fontSize: r.fs(11), color: Colors.grey[500])),
-                ],
+              child: GestureDetector(
+                onTap: threadType == 'public'
+                    ? () => context.push('/chat/${widget.threadId}/details')
+                    : null,
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(threadTitle,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: r.fs(15),
+                                  color: context.nexusTheme.textPrimary),
+                              overflow: TextOverflow.ellipsis),
+                        ),
+                        if (threadType == 'public')
+                          Padding(
+                            padding: EdgeInsets.only(left: r.s(4)),
+                            child: Icon(Icons.chevron_right_rounded,
+                                color: Colors.grey[600], size: r.s(14)),
+                          ),
+                      ],
+                    ),
+                    if (threadType != 'dm')
+                      Text(s.memberCountMembers(memberCount),
+                          style: TextStyle(
+                              fontSize: r.fs(11), color: Colors.grey[500])),
+                  ],
+                ),
               ),
             ),
           ],
