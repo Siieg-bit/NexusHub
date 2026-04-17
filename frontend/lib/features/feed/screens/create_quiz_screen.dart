@@ -496,6 +496,12 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);
 
+      debugPrint('[CreateQuiz] ► Iniciando submissão do quiz');
+      debugPrint('[CreateQuiz] communityId: ${widget.communityId}');
+      debugPrint('[CreateQuiz] userId: $userId');
+      debugPrint('[CreateQuiz] title: $title');
+      debugPrint('[CreateQuiz] isEditing: $_isEditing');
+
       // ── Modo de EDIÇÃO ──
       if (_isEditing) {
         final questions = validQuestions
@@ -582,6 +588,12 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
               })
           .toList();
 
+      debugPrint('[CreateQuiz] Número de perguntas válidas: ${questions.length}');
+      for (int i = 0; i < questions.length; i++) {
+        final q = questions[i];
+        debugPrint('[CreateQuiz] Pergunta $i: ${q['question_text']} | opções: ${(q['options'] as List).length} | correta: ${q['correct_option_index']}');
+      }
+
       final editorMetadata = <String, dynamic>{
         'editor_type': 'quiz',
         'difficulty': _difficulty,
@@ -590,14 +602,25 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         'total_questions': questions.length,
       };
 
-      final result = await SupabaseService.rpc('create_quiz_with_questions', params: {
-        'p_community_id': widget.communityId,
-        'p_title': title,
-        'p_content': _descriptionController.text.trim(),
-        'p_media_urls': <dynamic>[],
-        'p_questions': questions,
-        'p_allow_comments': true,
-      });
+      debugPrint('[CreateQuiz] Chamando RPC create_quiz_with_questions...');
+      debugPrint('[CreateQuiz] Params: community=${ widget.communityId}, title=$title, questions=${questions.length}');
+
+      dynamic result;
+      try {
+        result = await SupabaseService.rpc('create_quiz_with_questions', params: {
+          'p_community_id': widget.communityId,
+          'p_title': title,
+          'p_content': _descriptionController.text.trim(),
+          'p_media_urls': <dynamic>[],
+          'p_questions': questions,
+          'p_allow_comments': true,
+        });
+        debugPrint('[CreateQuiz] RPC retornou: $result');
+      } catch (rpcError, rpcStack) {
+        debugPrint('[CreateQuiz] ✗ ERRO no RPC create_quiz_with_questions: $rpcError');
+        debugPrint('[CreateQuiz] Stack: $rpcStack');
+        rethrow;
+      }
 
       final resultMap = result is Map<String, dynamic>
           ? result
@@ -605,16 +628,27 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       final createdPostId = resultMap['post_id'] as String?;
       final createdSuccessfully = resultMap['success'] == true && createdPostId != null;
 
+      debugPrint('[CreateQuiz] resultMap: $resultMap');
+      debugPrint('[CreateQuiz] createdPostId: $createdPostId');
+      debugPrint('[CreateQuiz] createdSuccessfully: $createdSuccessfully');
+
       if (!createdSuccessfully) {
+        debugPrint('[CreateQuiz] ✗ Criação falhou. error: ${resultMap['error']}');
         throw Exception(resultMap['error'] ?? 'quiz_creation_failed');
       }
 
-      await SupabaseService.table('posts').update({
-        'editor_metadata': editorMetadata,
-        'editor_type': 'quiz',
-        'quiz_data': {'questions': questions},
-        if (_coverImageUrl != null) 'cover_image_url': _coverImageUrl,
-      }).eq('id', createdPostId);
+      debugPrint('[CreateQuiz] Atualizando post $createdPostId com editor_metadata e quiz_data...');
+      try {
+        await SupabaseService.table('posts').update({
+          'editor_metadata': editorMetadata,
+          'editor_type': 'quiz',
+          'quiz_data': {'questions': questions},
+          if (_coverImageUrl != null) 'cover_image_url': _coverImageUrl,
+        }).eq('id', createdPostId);
+        debugPrint('[CreateQuiz] ✓ Post atualizado com sucesso');
+      } catch (updateError) {
+        debugPrint('[CreateQuiz] ⚠ Erro ao atualizar post (não crítico): $updateError');
+      }
 
       if (mounted) {
         ref.invalidate(communityFeedProvider(widget.communityId));
@@ -631,14 +665,17 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       if (mounted) {
         setState(() => _isSubmitting = false);
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('[CreateQuiz] ✗ ERRO GERAL na criação do quiz: $e');
+      debugPrint('[CreateQuiz] Stack trace: $stack');
       if (mounted) {
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.errorCreatingQuiz),
+            content: Text('${s.errorCreatingQuiz}: ${e.toString()}'),
             backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 6),
           ),
         );
       }
