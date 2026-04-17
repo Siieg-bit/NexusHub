@@ -9,6 +9,7 @@ import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/comment_model.dart';
+import '../../../core/models/user_model.dart';
 import '../../../core/services/deep_link_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../communities/providers/community_detail_providers.dart'

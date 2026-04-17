@@ -130,7 +130,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               actions: [
                 IconButton(
                   icon: const Icon(Icons.more_vert),
-                  onPressed: () => _showOptions(context),
+                  onPressed: () => _showUserOptions(context, user),
                 ),
               ],
             ),

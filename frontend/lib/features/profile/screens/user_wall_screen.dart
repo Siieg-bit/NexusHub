@@ -72,7 +72,7 @@ class UserWallScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: Icon(Icons.refresh_rounded, color: Colors.grey[400], size: r.s(20)),
-            onPressed: () => ref.invalidate(wallCommentsProvider(userId)),
+            onPressed: () => ref.invalidate(wallCommentsProvider((userId: userId, communityId: ''))),
           ),
         ],
       ),

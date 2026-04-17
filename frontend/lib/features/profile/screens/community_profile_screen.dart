@@ -514,7 +514,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                     ),
                     child: displayBanner != null
                         ? Image.network(
-                            displayBanner!,
+                            displayBanner,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Container(
                               color: context.nexusTheme.surfaceSecondary,
@@ -550,7 +550,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                             ),
                             child: displayAvatar != null
                                 ? Image.network(
-                                    displayAvatar!,
+                                    displayAvatar,
                                     fit: BoxFit.cover,
                                     errorBuilder: (_, __, ___) => Container(
                                       color: context.nexusTheme.surfaceSecondary,
