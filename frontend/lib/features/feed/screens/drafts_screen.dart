@@ -37,6 +37,75 @@ class DraftsScreen extends ConsumerWidget {
         ),
         centerTitle: true,
         elevation: 0,
+        actions: [
+          draftsAsync.maybeWhen(
+            data: (drafts) => drafts.isNotEmpty
+                ? IconButton(
+                    icon: Icon(Icons.delete_sweep_rounded,
+                        color: context.nexusTheme.error, size: r.s(24)),
+                    tooltip: 'Apagar todos os rascunhos',
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: context.surfaceColor,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(r.s(16))),
+                          title: Text(
+                            'Apagar todos os rascunhos?',
+                            style: TextStyle(
+                                color: context.nexusTheme.textPrimary,
+                                fontWeight: FontWeight.w700),
+                          ),
+                          content: Text(
+                            'Todos os ${drafts.length} rascunhos serão apagados permanentemente. Esta ação não pode ser desfeita.',
+                            style: TextStyle(
+                                color: Colors.grey[400], fontSize: r.fs(14)),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: Text(s.cancel,
+                                  style: TextStyle(color: Colors.grey[500])),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: context.nexusTheme.error,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(r.s(10))),
+                              ),
+                              child: const Text('Apagar todos',
+                                  style: TextStyle(color: Colors.white)),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true && context.mounted) {
+                        final ok = await ref
+                            .read(postDraftsProvider.notifier)
+                            .deleteAllDrafts();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(ok
+                                  ? 'Todos os rascunhos foram apagados.'
+                                  : 'Erro ao apagar rascunhos.'),
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: ok
+                                  ? context.nexusTheme.success
+                                  : context.nexusTheme.error,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                  )
+                : const SizedBox.shrink(),
+            orElse: () => const SizedBox.shrink(),
+          ),
+        ],
       ),
       body: draftsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

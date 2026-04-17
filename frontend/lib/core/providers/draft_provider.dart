@@ -378,6 +378,22 @@ class PostDraftsNotifier extends AsyncNotifier<List<PostDraftModel>> {
     }
   }
 
+  /// Deletar todos os rascunhos do usuário atual.
+  Future<bool> deleteAllDrafts() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return false;
+    try {
+      await SupabaseService.table('post_drafts')
+          .delete()
+          .eq('user_id', userId);
+      state = const AsyncData([]);
+      return true;
+    } catch (e) {
+      debugPrint('[draft_provider] Erro ao deletar todos os rascunhos: $e');
+      return false;
+    }
+  }
+
   /// Recarregar rascunhos do servidor.
   Future<void> refresh() async {
     state = const AsyncLoading();
