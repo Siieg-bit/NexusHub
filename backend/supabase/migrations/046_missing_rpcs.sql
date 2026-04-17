@@ -236,7 +236,7 @@ BEGIN
   -- Verificar membership na comunidade
   SELECT EXISTS(
     SELECT 1 FROM public.community_members
-    WHERE community_id = p_community_id AND user_id = v_user_id AND status = 'active'
+    WHERE community_id = p_community_id AND user_id = v_user_id AND is_banned = false
   ) INTO v_is_community_member;
 
   IF NOT v_is_community_member THEN
@@ -312,14 +312,13 @@ BEGIN
     RETURN jsonb_build_object('success', false, 'error', 'not_authenticated');
   END IF;
 
-  -- Verificar membership na comunidade
+   -- Verificar membership na comunidade
   IF NOT EXISTS(
     SELECT 1 FROM public.community_members
-    WHERE community_id = p_community_id AND user_id = v_user_id AND status = 'active'
+    WHERE community_id = p_community_id AND user_id = v_user_id AND is_banned = false
   ) THEN
     RETURN jsonb_build_object('success', false, 'error', 'not_a_community_member');
   END IF;
-
   -- Criar o post do tipo quiz
   INSERT INTO public.posts (
     community_id, author_id, type, title, content,
