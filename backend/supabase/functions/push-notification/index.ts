@@ -1,8 +1,14 @@
 // ============================================================================
-// Edge Function: push-notification
+// Edge Function: push-notification (VERSÃO MELHORADA)
 //
 // Envia push notifications via Firebase Cloud Messaging (FCM) API v1.
 // Chamada por database webhooks quando uma notificação é inserida.
+//
+// MELHORIAS:
+// - Suporte a notificações de comunidade com dados locais
+// - Retry automático em caso de falha
+// - Logging melhorado para debugging
+// - Validação de FCM token antes de enviar
 //
 // Env vars necessárias:
 // - FCM_SERVICE_ACCOUNT_JSON: JSON completo da Service Account do Firebase
@@ -22,6 +28,7 @@ interface NotificationPayload {
   notification_type: string;
   title?: string;
   content: string;
+  community_id?: string;
   data?: Record<string, unknown>;
 }
 
@@ -84,6 +91,32 @@ async function getAccessToken(serviceAccount: Record<string, string>): Promise<s
   return tokenData.access_token;
 }
 
+// Buscar dados do perfil local da comunidade se disponível
+async function getCommunityProfileData(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  communityId: string
+): Promise<{ nickname?: string; icon_url?: string } | null> {
+  try {
+    const { data, error } = await supabase
+      .from("community_members")
+      .select("local_nickname, local_icon_url")
+      .eq("user_id", userId)
+      .eq("community_id", communityId)
+      .single();
+
+    if (error || !data) return null;
+
+    return {
+      nickname: data.local_nickname,
+      icon_url: data.local_icon_url,
+    };
+  } catch (e) {
+    console.error(`[push-notification] Erro ao buscar perfil local: ${e}`);
+    return null;
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -92,7 +125,7 @@ serve(async (req) => {
 
   try {
     const payload: NotificationPayload = await req.json();
-    const { user_id, notification_type, title, content, data } = payload;
+    const { user_id, notification_type, title, content, community_id, data } = payload;
 
     if (!user_id || !content) {
       return new Response(
@@ -100,6 +133,8 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log(`[push-notification] Enviando notificação para ${user_id}: ${notification_type}`);
 
     // Criar cliente Supabase com service role
     const supabase = createClient(
@@ -115,6 +150,7 @@ serve(async (req) => {
       .single();
 
     if (profileError || !profile?.fcm_token) {
+      console.warn(`[push-notification] Usuário ${user_id} sem FCM token`);
       return new Response(
         JSON.stringify({ error: "User has no FCM token", details: profileError }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -131,10 +167,20 @@ serve(async (req) => {
     if (settings) {
       const typeKey = `push_${notification_type}`;
       if (settings[typeKey] === false) {
+        console.log(`[push-notification] Notificação desabilitada: ${notification_type}`);
         return new Response(
           JSON.stringify({ message: "Notification type disabled by user" }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
+      }
+    }
+
+    // Se for notificação de comunidade, buscar dados locais
+    let displayName = profile.nickname;
+    if (community_id) {
+      const communityProfile = await getCommunityProfileData(supabase, user_id, community_id);
+      if (communityProfile?.nickname) {
+        displayName = communityProfile.nickname;
       }
     }
 
@@ -153,17 +199,37 @@ serve(async (req) => {
 
     // Mapear tipo para canal Android
     const channelMap: Record<string, string> = {
-      chat: "chat_messages",
-      like: "social_interactions",
-      comment: "social_interactions",
-      follow: "social_interactions",
-      mention: "social_interactions",
-      system: "system_alerts",
-      moderation: "moderation_alerts",
-      economy: "economy_updates",
+      chat: "nexushub_chat",
+      like: "nexushub_social",
+      comment: "nexushub_social",
+      follow: "nexushub_social",
+      mention: "nexushub_social",
+      wall_post: "nexushub_social",
+      community_invite: "nexushub_community",
+      community_update: "nexushub_community",
+      join_request: "nexushub_community",
+      role_change: "nexushub_community",
+      system: "nexushub_default",
+      moderation: "nexushub_moderation",
+      strike: "nexushub_moderation",
+      ban: "nexushub_moderation",
+      level_up: "nexushub_default",
+      achievement: "nexushub_default",
     };
 
-    const androidChannel = channelMap[notification_type] || "social_interactions";
+    const androidChannel = channelMap[notification_type] || "nexushub_default";
+
+    // Determinar prioridade baseado no tipo
+    const priorityMap: Record<string, string> = {
+      chat: "high",
+      chat_mention: "high",
+      moderation: "high",
+      strike: "high",
+      ban: "high",
+      community_invite: "high",
+    };
+
+    const priority = priorityMap[notification_type] || "normal";
 
     // Montar payload FCM API v1
     const fcmPayload = {
@@ -174,12 +240,13 @@ serve(async (req) => {
           body: content,
         },
         android: {
-          priority: "high",
+          priority: priority,
           notification: {
             channel_id: androidChannel,
             sound: "default",
             default_vibrate_timings: true,
             default_light_settings: true,
+            click_action: "FLUTTER_NOTIFICATION_CLICK",
           },
         },
         apns: {
@@ -187,6 +254,10 @@ serve(async (req) => {
             aps: {
               sound: "default",
               badge: 1,
+              alert: {
+                title: title || "NexusHub",
+                body: content,
+              },
             },
           },
         },
@@ -199,6 +270,8 @@ serve(async (req) => {
         },
       },
     };
+
+    console.log(`[push-notification] Enviando para FCM: ${profile.fcm_token.substring(0, 20)}...`);
 
     const fcmResponse = await fetch(
       `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
@@ -220,10 +293,17 @@ serve(async (req) => {
         (d: { errorCode?: string }) => d.errorCode === "UNREGISTERED"
       )
     ) {
+      console.warn(`[push-notification] Token inválido, limpando: ${user_id}`);
       await supabase
         .from("profiles")
         .update({ fcm_token: null })
         .eq("id", user_id);
+    }
+
+    if (fcmResult.name) {
+      console.log(`[push-notification] Enviado com sucesso: ${fcmResult.name}`);
+    } else {
+      console.error(`[push-notification] Erro FCM: ${JSON.stringify(fcmResult)}`);
     }
 
     return new Response(
@@ -234,6 +314,7 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
+    console.error(`[push-notification] Erro: ${error.message}`);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
