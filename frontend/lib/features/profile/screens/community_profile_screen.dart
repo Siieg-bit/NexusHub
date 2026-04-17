@@ -830,20 +830,19 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                         ),
 
                         // ── Aviso de perfil oculto (visível apenas para moderadores) ──
+                        // Posicionado abaixo da AppBar para não conflitar com a status bar Android
                         if (isHiddenProfile && canViewHiddenProfile)
                           Positioned(
-                            top: 0,
+                            top: kToolbarHeight + MediaQuery.of(context).padding.top + r.s(8),
                             left: 0,
                             right: 0,
-                            child: SafeArea(
-                              bottom: false,
-                              child: Padding(
-                                padding: EdgeInsets.fromLTRB(
-                                  r.s(12),
-                                  r.s(10),
-                                  r.s(12),
-                                  0,
-                                ),
+                            child: Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                r.s(12),
+                                0,
+                                r.s(12),
+                                0,
+                              ),
                                 child: Container(
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFDC2626)
@@ -1720,8 +1719,10 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                   _buildPostsTab(),
                   WallCommentSheet(
                     wallUserId: widget.userId,
-                    isOwnWall: false,
+                    isOwnWall: widget.userId == SupabaseService.currentUserId,
                     asBottomSheet: false,
+                    // communityId garante que o mural é separado por comunidade
+                    communityId: widget.communityId,
                   ),
                   _buildSavedPostsTab(),
                 ],
