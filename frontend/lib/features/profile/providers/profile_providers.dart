@@ -33,6 +33,8 @@ PostModel _mapProfilePost(dynamic raw) {
 /// Tenta RPC get_user_profile primeiro; se falhar, busca direto da tabela.
 final userProfileProvider =
     FutureProvider.family<UserModel, String>((ref, userId) async {
+  // Mantém o perfil em memória para evitar re-fetch ao navegar entre telas.
+  ref.keepAlive();
   // ── Tentativa 1: RPC (retorna JSONB com followers_count, is_following, etc.) ──
   try {
     final response = await SupabaseService.rpc('get_user_profile',

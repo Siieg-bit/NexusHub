@@ -101,6 +101,10 @@ class UserCosmetics {
 /// os bubbles de outros participantes no chat).
 final userCosmeticsProvider =
     FutureProvider.family<UserCosmetics, String>((ref, userId) async {
+  // Mantém o resultado em memória enquanto o app estiver rodando.
+  // Evita re-fetch toda vez que o widget é reconstruído ou a tela é reaberta.
+  // Os cosméticos mudam raramente — o custo de manter em memória é mínimo.
+  ref.keepAlive();
   try {
     final equipped = await SupabaseService.table('user_purchases')
         .select('*, store_items!user_purchases_item_id_fkey(*)')
@@ -187,6 +191,8 @@ final userCosmeticsProvider =
 final batchCosmeticsProvider =
     FutureProvider.family<Map<String, UserCosmetics>, List<String>>(
         (ref, userIds) async {
+  // Mantém o batch em memória para evitar re-fetch ao reabrir o chat.
+  ref.keepAlive();
   final result = <String, UserCosmetics>{};
 
   if (userIds.isEmpty) return result;
