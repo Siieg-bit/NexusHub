@@ -33,6 +33,16 @@ class AdService {
   static Future<void> initialize() async {
     if (_initialized) return;
     try {
+      // Registrar dispositivos de teste em modo debug para evitar
+      // cliques inválidos e possível bloqueio de conta AdMob.
+      // O ID abaixo foi obtido do log: "Use RequestConfiguration.Builder()..."
+      if (kDebugMode) {
+        MobileAds.instance.updateRequestConfiguration(
+          RequestConfiguration(
+            testDeviceIds: const ['AF681C65379386F3419B92ABCC9444EC'],
+          ),
+        );
+      }
       await MobileAds.instance.initialize();
       _initialized = true;
       await _loadRewardedAd();
