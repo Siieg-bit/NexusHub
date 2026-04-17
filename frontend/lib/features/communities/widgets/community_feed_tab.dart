@@ -125,6 +125,8 @@ class _FeaturedTab extends ConsumerWidget {
       backgroundColor: context.surfaceColor,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
+        // Pré-renderiza 500px além da área visível para scroll mais suave
+        cacheExtent: 500,
         slivers: [
           // ── Seção 1: Posts Fixados ──────────────────────────────────────
           if (pinnedPosts.isNotEmpty) ...[
@@ -405,6 +407,8 @@ class _LatestTab extends ConsumerWidget {
           backgroundColor: context.surfaceColor,
           child: ListView.builder(
             physics: const AlwaysScrollableScrollPhysics(),
+            // Pré-renderiza 500px além da área visível para scroll mais suave
+            cacheExtent: 500,
             padding:
                 EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
             itemCount: posts.length + 1, // +1 para o carrossel de stories

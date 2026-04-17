@@ -4,43 +4,158 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/models/post_model.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/cache_service.dart';
 import '../widgets/post_card.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
-/// Provider para feed global (posts de todas as comunidades do usuário).
-final globalFeedProvider = FutureProvider<List<PostModel>>((ref) async {
-  final userId = SupabaseService.currentUserId;
-  if (userId == null) return [];
+// ─────────────────────────────────────────────────────────────────────────────
+// Provider de feed global com paginação (AsyncNotifier)
+// Usa o RPC get_global_feed para evitar N+1 e suportar infinite scroll.
+// ─────────────────────────────────────────────────────────────────────────────
 
-  // Buscar posts das comunidades que o usuário participa
-  final response = await SupabaseService.table('posts')
-      .select(
-          '*, profiles!posts_author_id_fkey(*), communities!posts_community_id_fkey(name, icon_url, theme_color), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id, profiles!posts_author_id_fkey(id, nickname, icon_url))')
-      .eq('status', 'ok')
-      .order('created_at', ascending: false)
-      .limit(30);
+class GlobalFeedNotifier extends AsyncNotifier<List<PostModel>> {
+  static const _pageSize = 20;
+  int _page = 0;
+  bool _hasMore = true;
 
-  return (response as List? ?? []).map((e) {
-    final map = Map<String, dynamic>.from(e);
-    if (map['profiles'] != null) map['author'] = map['profiles'];
-    if (map['original_post'] != null) {
-      final op = Map<String, dynamic>.from(map['original_post'] as Map);
-      if (op['profiles'] != null) op['author'] = op['profiles'];
-      map['original_post'] = op;
+  bool get hasMore => _hasMore;
+
+  @override
+  Future<List<PostModel>> build() async {
+    _page = 0;
+    _hasMore = true;
+
+    // Cache-first: exibe dados do cache imediatamente enquanto busca da rede
+    final cached = CacheService.getCachedGlobalFeed();
+    if (cached != null && cached.isNotEmpty) {
+      // Emite cache imediatamente e atualiza em background
+      Future.microtask(() async {
+        try {
+          final fresh = await _fetchPage(0);
+          state = AsyncData(fresh);
+        } catch (_) {}
+      });
+      return cached.map((e) => PostModel.fromJson(e)).toList();
     }
-    return PostModel.fromJson(map);
-  }).toList();
-});
 
-/// Tela de feed global com posts de todas as comunidades.
-class GlobalFeedScreen extends ConsumerWidget {
+    return _fetchPage(0);
+  }
+
+  Future<List<PostModel>> _fetchPage(int page) async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return [];
+
+    try {
+      final response = await SupabaseService.rpc('get_global_feed', params: {
+        'p_user_id': userId,
+        'p_limit': _pageSize,
+        'p_offset': page * _pageSize,
+      });
+
+      final list = (response as List? ?? []);
+      _hasMore = list.length >= _pageSize;
+
+      final posts = list.map((e) {
+        final map = Map<String, dynamic>.from(e as Map);
+        return PostModel.fromJson(map);
+      }).toList();
+
+      // Salva apenas a primeira página no cache
+      if (page == 0 && posts.isNotEmpty) {
+        CacheService.cacheGlobalFeed(
+            list.map((e) => Map<String, dynamic>.from(e as Map)).toList());
+      }
+
+      return posts;
+    } catch (e) {
+      debugPrint('[GlobalFeed] Erro ao buscar feed: $e');
+      // Fallback para query direta se RPC falhar
+      final response = await SupabaseService.table('posts')
+          .select(
+              '*, profiles!posts_author_id_fkey(*), communities!posts_community_id_fkey(id, name, icon_url, theme_color)')
+          .eq('status', 'ok')
+          .order('created_at', ascending: false)
+          .range(page * _pageSize, (page + 1) * _pageSize - 1);
+
+      final list = (response as List? ?? []);
+      _hasMore = list.length >= _pageSize;
+
+      return list.map((e) {
+        final map = Map<String, dynamic>.from(e as Map);
+        if (map['profiles'] != null) map['author'] = map['profiles'];
+        return PostModel.fromJson(map);
+      }).toList();
+    }
+  }
+
+  /// Carrega a próxima página (infinite scroll)
+  Future<void> loadMore() async {
+    if (!_hasMore || state.isLoading) return;
+    final current = state.valueOrNull ?? [];
+    _page++;
+    try {
+      final next = await _fetchPage(_page);
+      state = AsyncData([...current, ...next]);
+    } catch (_) {
+      _page--;
+    }
+  }
+
+  /// Atualiza o feed do início
+  Future<void> refresh() async {
+    _page = 0;
+    _hasMore = true;
+    state = const AsyncLoading();
+    state = AsyncData(await _fetchPage(0));
+  }
+}
+
+final globalFeedProvider =
+    AsyncNotifierProvider<GlobalFeedNotifier, List<PostModel>>(
+        GlobalFeedNotifier.new);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tela de feed global
+// ─────────────────────────────────────────────────────────────────────────────
+
+class GlobalFeedScreen extends ConsumerStatefulWidget {
   const GlobalFeedScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+  ConsumerState<GlobalFeedScreen> createState() => _GlobalFeedScreenState();
+}
+
+class _GlobalFeedScreenState extends ConsumerState<GlobalFeedScreen> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    // Carrega mais quando chegar a 200px do final
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final notifier = ref.read(globalFeedProvider.notifier);
+      if (notifier.hasMore) {
+        notifier.loadMore();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     final feedAsync = ref.watch(globalFeedProvider);
 
@@ -48,11 +163,11 @@ class GlobalFeedScreen extends ConsumerWidget {
       backgroundColor: context.nexusTheme.backgroundPrimary,
       body: RefreshIndicator(
         color: context.nexusTheme.accentPrimary,
-        onRefresh: () async {
-          ref.invalidate(globalFeedProvider);
-          await Future.delayed(const Duration(milliseconds: 300));
-        },
+        onRefresh: () => ref.read(globalFeedProvider.notifier).refresh(),
         child: CustomScrollView(
+          controller: _scrollController,
+          // Pré-renderiza 500px além da área visível para scroll mais suave
+          cacheExtent: 500,
           slivers: [
             // ================================================================
             // HEADER
@@ -159,7 +274,7 @@ class GlobalFeedScreen extends ConsumerWidget {
             ),
 
             // ================================================================
-            // FEED
+            // FEED HEADER
             // ================================================================
             SliverToBoxAdapter(
               child: Padding(
@@ -176,7 +291,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => ref.invalidate(globalFeedProvider),
+                      onTap: () => ref.read(globalFeedProvider.notifier).refresh(),
                       child: Container(
                         padding: EdgeInsets.symmetric(
                             horizontal: r.s(12), vertical: r.s(6)),
@@ -202,6 +317,9 @@ class GlobalFeedScreen extends ConsumerWidget {
               ),
             ),
 
+            // ================================================================
+            // FEED CONTENT
+            // ================================================================
             feedAsync.when(
               loading: () => SliverFillRemaining(
                 child: Center(
@@ -223,7 +341,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                       ),
                       SizedBox(height: r.s(16)),
                       GestureDetector(
-                        onTap: () => ref.invalidate(globalFeedProvider),
+                        onTap: () => ref.read(globalFeedProvider.notifier).refresh(),
                         child: Container(
                           padding: EdgeInsets.symmetric(
                               horizontal: r.s(24), vertical: r.s(12)),
@@ -244,9 +362,9 @@ class GlobalFeedScreen extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          child:  Text(
+                          child: Text(
                             s.retry,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
                             ),
@@ -265,17 +383,15 @@ class GlobalFeedScreen extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.explore_rounded,
-                              size: r.s(64), color: Colors.grey[600]),
+                              size: r.s(64),
+                              color: context.nexusTheme.textHint),
                           SizedBox(height: r.s(16)),
-                          Text(s.feedEmpty,
-                              style: TextStyle(
-                                  color: context.nexusTheme.textPrimary,
-                                  fontSize: r.fs(18),
-                                  fontWeight: FontWeight.w700)),
-                          SizedBox(height: r.s(8)),
                           Text(
-                            'Explore e entre em comunidades para ver posts aqui!',
-                            style: TextStyle(color: Colors.grey[500]),
+                            'Entre em comunidades para ver posts aqui.',
+                            style: TextStyle(
+                              color: context.nexusTheme.textSecondary,
+                              fontSize: r.fs(14),
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -286,10 +402,22 @@ class GlobalFeedScreen extends ConsumerWidget {
 
                 return SliverList(
                   delegate: SliverChildBuilderDelegate(
-                    (context, index) => RepaintBoundary(
-                      child: PostCard(post: posts[index]),
-                    ),
-                    childCount: posts.length,
+                    (context, index) {
+                      // Indicador de carregamento no final da lista
+                      if (index == posts.length) {
+                        final notifier = ref.read(globalFeedProvider.notifier);
+                        if (!notifier.hasMore) return const SizedBox.shrink();
+                        return const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        );
+                      }
+                      return RepaintBoundary(
+                        child: PostCard(post: posts[index]),
+                      );
+                    },
+                    // +1 para o indicador de carregamento no final
+                    childCount: posts.length + 1,
                   ),
                 );
               },
@@ -303,7 +431,10 @@ class GlobalFeedScreen extends ConsumerWidget {
   }
 }
 
-class _QuickAction extends ConsumerWidget {
+// ─────────────────────────────────────────────────────────────────────────────
+// Widget auxiliar: ação rápida
+// ─────────────────────────────────────────────────────────────────────────────
+class _QuickAction extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
@@ -317,45 +448,37 @@ class _QuickAction extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: r.s(80),
-        margin: EdgeInsets.only(right: r.s(12)),
+        width: r.s(72),
+        margin: EdgeInsets.only(right: r.s(8)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: r.s(50),
-              height: r.s(50),
+              width: r.s(48),
+              height: r.s(48),
               decoration: BoxDecoration(
-                color: context.surfaceColor,
-                borderRadius: BorderRadius.circular(r.s(16)),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.05),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                color: color.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+                border: Border.all(color: color.withValues(alpha: 0.3)),
               ),
-              child: Icon(icon, color: color, size: r.s(24)),
+              child: Icon(icon, color: color, size: r.s(22)),
             ),
-            SizedBox(height: r.s(8)),
+            SizedBox(height: r.s(4)),
             Text(
               label,
               style: TextStyle(
-                fontSize: r.fs(11),
-                color: Colors.grey[500],
+                color: context.nexusTheme.textSecondary,
+                fontSize: r.fs(10),
                 fontWeight: FontWeight.w600,
               ),
               textAlign: TextAlign.center,
               maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
