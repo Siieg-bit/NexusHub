@@ -6,10 +6,11 @@ import 'supabase_service.dart';
 
 /// ============================================================================
 /// RealtimeService — Gerenciamento centralizado de canais Realtime com
-/// reconexão automática e backoff exponencial.
+/// reconexão automática, backoff exponencial e refresh de JWT expirado.
 ///
 /// Problemas resolvidos:
 /// - Canais que morrem silenciosamente após perda de conexão
+/// - Loop infinito de reconexão quando o JWT está expirado
 /// - Sem feedback visual de status de conexão
 /// - Sem retry automático
 ///
@@ -48,6 +49,9 @@ class RealtimeService {
 
   /// Canais gerenciados: channelName → _ManagedChannel
   final Map<String, _ManagedChannel> _channels = {};
+
+  /// Flag para evitar múltiplos refreshes simultâneos de token.
+  bool _isRefreshingToken = false;
 
   /// Cria e inscreve um canal Realtime com reconexão automática.
   ///
@@ -106,30 +110,80 @@ class RealtimeService {
       switch (status) {
         case RealtimeSubscribeStatus.subscribed:
           managed.retryCount = 0;
+          managed.jwtExpiredRetryDone = false;
           managed.retryTimer?.cancel();
           _updateGlobalStatus();
           break;
 
         case RealtimeSubscribeStatus.closed:
-          _handleDisconnect(managed);
+          _handleDisconnect(managed, error: error);
           break;
 
         case RealtimeSubscribeStatus.channelError:
-          _handleDisconnect(managed);
+          _handleDisconnect(managed, error: error);
           break;
 
         case RealtimeSubscribeStatus.timedOut:
-          _handleDisconnect(managed);
+          _handleDisconnect(managed, error: error);
           break;
       }
     });
   }
 
+  /// Verifica se o erro é de JWT expirado.
+  bool _isJwtExpiredError(Object? error) {
+    if (error == null) return false;
+    final msg = error.toString().toLowerCase();
+    return msg.contains('invalidjwttoken') ||
+        msg.contains('jwt expired') ||
+        msg.contains('token has expired') ||
+        msg.contains('token expired');
+  }
+
   /// Trata desconexão com retry exponencial.
-  void _handleDisconnect(_ManagedChannel managed) {
+  /// Se o erro for JWT expirado, tenta refresh de sessão primeiro.
+  void _handleDisconnect(_ManagedChannel managed, {Object? error}) {
     _updateGlobalStatus();
 
-    // Calcular delay com backoff exponencial: 1s, 2s, 4s, 8s, 16s, max 30s
+    // Detectar JWT expirado e fazer refresh antes de reconectar
+    if (_isJwtExpiredError(error) && !managed.jwtExpiredRetryDone) {
+      managed.jwtExpiredRetryDone = true;
+      debugPrint(
+          '[RealtimeService] ${managed.name}: JWT expirado — fazendo refresh de sessão...');
+      connectionStatus.value = RealtimeConnectionStatus.connecting;
+
+      managed.retryTimer?.cancel();
+      managed.retryTimer = Timer(const Duration(milliseconds: 500), () async {
+        if (!_channels.containsKey(managed.name)) return;
+
+        // Evitar múltiplos refreshes simultâneos
+        if (!_isRefreshingToken) {
+          _isRefreshingToken = true;
+          try {
+            await SupabaseService.client.auth.refreshSession();
+            debugPrint(
+                '[RealtimeService] ${managed.name}: sessão renovada com sucesso');
+          } catch (e) {
+            debugPrint(
+                '[RealtimeService] ${managed.name}: falha ao renovar sessão: $e');
+          } finally {
+            _isRefreshingToken = false;
+          }
+        } else {
+          // Aguardar o refresh em andamento
+          await Future.doWhile(() async {
+            await Future.delayed(const Duration(milliseconds: 200));
+            return _isRefreshingToken;
+          });
+        }
+
+        if (!_channels.containsKey(managed.name)) return;
+        _reconnectChannel(managed);
+      });
+      return;
+    }
+
+    // Backoff exponencial padrão: 1s, 2s, 4s, 8s, 16s, max 30s
     final delay = min(
       30,
       pow(2, managed.retryCount).toInt(),
@@ -143,23 +197,26 @@ class RealtimeService {
 
     managed.retryTimer?.cancel();
     managed.retryTimer = Timer(Duration(seconds: delay), () {
-      if (!_channels.containsKey(managed.name)) return; // Foi removido
-
+      if (!_channels.containsKey(managed.name)) return;
       debugPrint('[RealtimeService] ${managed.name}: tentando reconexão...');
-
-      // Recriar o canal (o antigo pode estar em estado inválido)
-      try {
-        managed.channel.unsubscribe();
-      } catch (e) {
-        debugPrint('[realtime_service.dart] $e');
-      }
-
-      final newChannel = SupabaseService.client.channel(managed.name);
-      managed.configure(newChannel);
-      managed.channel = newChannel;
-
-      _subscribeManaged(managed);
+      _reconnectChannel(managed);
     });
+  }
+
+  /// Recria o canal e reinicia a inscrição.
+  void _reconnectChannel(_ManagedChannel managed) {
+    // Recriar o canal (o antigo pode estar em estado inválido)
+    try {
+      managed.channel.unsubscribe();
+    } catch (e) {
+      debugPrint('[realtime_service.dart] unsubscribe error: $e');
+    }
+
+    final newChannel = SupabaseService.client.channel(managed.name);
+    managed.configure(newChannel);
+    managed.channel = newChannel;
+
+    _subscribeManaged(managed);
   }
 
   /// Atualiza o status global baseado no estado de todos os canais.
@@ -186,6 +243,9 @@ class _ManagedChannel {
   final void Function(RealtimeChannel channel) configure;
   int retryCount = 0;
   Timer? retryTimer;
+
+  /// Garante que o refresh de JWT seja tentado apenas uma vez por ciclo de erro.
+  bool jwtExpiredRetryDone = false;
 
   _ManagedChannel({
     required this.name,
