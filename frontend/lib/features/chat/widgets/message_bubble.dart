@@ -434,6 +434,10 @@ class MessageBubble extends ConsumerWidget {
     final bubbleSliceInsets = activeCosmetics?.chatBubbleSliceInsets;
     final bubbleImageSize = activeCosmetics?.chatBubbleImageSize;
     final bubbleContentPadding = activeCosmetics?.chatBubbleContentPadding;
+    // Indica se o bubble equipado é animado (GIF/WebP).
+    // Quando true, ChatBubble usa Image.network com gaplessPlayback
+    // em vez de NineSliceBubble (que só suporta frames estáticos).
+    final isBubbleAnimated = activeCosmetics?.isChatBubbleAnimated ?? false;
 
     // Determina o bubbleFrameUrl para o ChatBubble.
     // Prioridade: image_url > procedural:style > null (bubble padrão)
@@ -570,6 +574,7 @@ class MessageBubble extends ConsumerWidget {
                             bubbleFrameUrl: bubbleFrameUrl,
                             bubbleColor: bubbleColor,
                             showTail: showAvatar,
+                            isBubbleAnimated: isBubbleAnimated,
                             sliceInsets: bubbleSliceInsets,
                             imageSize: bubbleImageSize,
                             contentPadding: bubbleContentPadding,
