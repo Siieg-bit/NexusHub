@@ -13,6 +13,12 @@ import '../services/supabase_service.dart';
 /// [AvatarWithFrame] usa [Image.network] em vez de [CachedNetworkImage]
 /// para garantir que a animação seja reproduzida corretamente, já que
 /// o [CachedNetworkImage] pode armazenar apenas o primeiro frame em cache.
+///
+/// O campo [isChatBubbleAnimated] indica se o balão de chat equipado é
+/// um arquivo animado (GIF ou WebP animado). Quando verdadeiro, o widget
+/// [ChatBubble] usa um modo de renderização alternativo com [Image.network]
+/// e [gaplessPlayback] em vez do [NineSliceBubble] (que usa
+/// [Canvas.drawImageNine] e só suporta frames estáticos).
 class UserCosmetics {
   final String userId;
   final String? avatarFrameUrl;
@@ -25,6 +31,13 @@ class UserCosmetics {
   final String? chatBubbleStyle;
   final String? chatBubbleColor;
   final String? chatBubbleImageUrl;
+
+  /// Indica se o balão de chat equipado é animado (GIF / WebP animado).
+  /// Lido de [asset_config.is_animated] no banco de dados.
+  /// Quando true, [ChatBubble] usa [Image.network] com [gaplessPlayback]
+  /// em vez de [NineSliceBubble] + [Canvas.drawImageNine].
+  final bool isChatBubbleAnimated;
+
   final bool isAminoPlus;
 
   // Parâmetros nine-slice vindos do asset_config
@@ -40,6 +53,7 @@ class UserCosmetics {
     this.chatBubbleStyle,
     this.chatBubbleColor,
     this.chatBubbleImageUrl,
+    this.isChatBubbleAnimated = false,
     this.isAminoPlus = false,
     this.chatBubbleSliceInsets = const EdgeInsets.all(38),
     this.chatBubbleImageSize = const Size(128, 128),
@@ -60,6 +74,7 @@ class UserCosmetics {
       chatBubbleStyle: json['chat_bubble_style'] as String?,
       chatBubbleColor: json['chat_bubble_color'] as String?,
       chatBubbleImageUrl: json['chat_bubble_image_url'] as String?,
+      isChatBubbleAnimated: json['is_chat_bubble_animated'] as bool? ?? false,
       isAminoPlus: json['is_amino_plus'] as bool? ?? false,
     );
   }
@@ -117,6 +132,7 @@ final userCosmeticsProvider =
     String? chatBubbleStyle;
     String? chatBubbleColor;
     String? chatBubbleImageUrl;
+    bool isChatBubbleAnimated = false;
     var sliceParams = _extractNineSliceParams({});
 
     for (final item in ((equipped as List? ?? []))) {
@@ -154,6 +170,10 @@ final userCosmeticsProvider =
           _asString(storeItem['asset_url']),
           _asString(storeItem['preview_url']),
         ]);
+        // Lê is_animated do asset_config para chat bubbles animados.
+        // Quando true, ChatBubble usa Image.network com gaplessPlayback
+        // em vez de NineSliceBubble (que só suporta frames estáticos).
+        isChatBubbleAnimated = assetConfig['is_animated'] as bool? ?? false;
         // Extrai parâmetros nine-slice do asset_config
         sliceParams = _extractNineSliceParams(assetConfig);
       }
@@ -173,6 +193,7 @@ final userCosmeticsProvider =
       chatBubbleStyle: chatBubbleStyle,
       chatBubbleColor: chatBubbleColor,
       chatBubbleImageUrl: chatBubbleImageUrl,
+      isChatBubbleAnimated: isChatBubbleAnimated,
       isAminoPlus: isAminoPlus,
       chatBubbleSliceInsets: sliceParams.sliceInsets,
       chatBubbleImageSize: sliceParams.imageSize,
@@ -219,6 +240,7 @@ final batchCosmeticsProvider =
       String? chatBubbleStyle;
       String? chatBubbleColor;
       String? chatBubbleImageUrl;
+      bool isChatBubbleAnimated = false;
       var sliceParams = _extractNineSliceParams({});
 
       for (final item in items) {
@@ -253,6 +275,7 @@ final batchCosmeticsProvider =
             _asString(storeItem['asset_url']),
             _asString(storeItem['preview_url']),
           ]);
+          isChatBubbleAnimated = assetConfig['is_animated'] as bool? ?? false;
           sliceParams = _extractNineSliceParams(assetConfig);
         }
       }
@@ -265,6 +288,7 @@ final batchCosmeticsProvider =
         chatBubbleStyle: chatBubbleStyle,
         chatBubbleColor: chatBubbleColor,
         chatBubbleImageUrl: chatBubbleImageUrl,
+        isChatBubbleAnimated: isChatBubbleAnimated,
         chatBubbleSliceInsets: sliceParams.sliceInsets,
         chatBubbleImageSize: sliceParams.imageSize,
         chatBubbleContentPadding: sliceParams.contentPadding,
