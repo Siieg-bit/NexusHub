@@ -37,7 +37,17 @@ type BubbleForm = {
   priceCoins: number;
   rarity: "common" | "rare" | "epic" | "legendary";
   isActive: boolean;
+  isAnimated: boolean;
 };
+
+/// Detecta automaticamente se um arquivo de imagem é animado
+/// pela extensão e tipo MIME. GIF e APNG são sempre animados.
+function detectBubbleIsAnimated(file: File): boolean {
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  if (file.type === "image/gif" || ext === "gif") return true;
+  if (ext === "apng") return true;
+  return false;
+}
 
 const RARITY_COLORS: Record<string, string> = {
   common: "#9CA3AF",
@@ -119,6 +129,7 @@ function BubblesDashboard() {
     priceCoins: 150,
     rarity: "common",
     isActive: true,
+    isAnimated: false,
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -151,7 +162,7 @@ function BubblesDashboard() {
 
   function handleFile(file: File) {
     if (!file.type.startsWith("image/")) {
-      toast.error("Arquivo inválido. Envie uma imagem PNG ou WebP.");
+      toast.error("Arquivo inválido. Envie uma imagem PNG, WebP ou GIF.");
       return;
     }
     const url = URL.createObjectURL(file);
@@ -165,6 +176,12 @@ function BubblesDashboard() {
     const reader = new FileReader();
     reader.onload = (e) => setImagePreview(e.target?.result as string);
     reader.readAsDataURL(file);
+    // Detecta automaticamente se o arquivo é animado (GIF/APNG)
+    const detected = detectBubbleIsAnimated(file);
+    setForm((prev) => ({ ...prev, isAnimated: detected }));
+    if (detected) {
+      toast.success("✨ Arquivo animado detectado! O bubble será exibido com animação no app.");
+    }
   }
 
   const onDrop = useCallback((e: React.DragEvent) => {
@@ -182,6 +199,7 @@ function BubblesDashboard() {
       priceCoins: bubble.price_coins,
       rarity: (bubble.asset_config as Record<string, string>)?.rarity as BubbleForm["rarity"] ?? "common",
       isActive: bubble.is_active,
+      isAnimated: (bubble.asset_config as Record<string, unknown>)?.is_animated as boolean ?? false,
     });
     setImagePreview(bubble.preview_url);
     setImageFile(null);
@@ -189,7 +207,7 @@ function BubblesDashboard() {
 
   function cancelEdit() {
     setEditingBubble(null);
-    setForm({ name: "", description: "", priceCoins: 150, rarity: "common", isActive: true });
+    setForm({ name: "", description: "", priceCoins: 150, rarity: "common", isActive: true, isAnimated: false });
     setImageFile(null);
     setImagePreview(null);
     setImageDimensions(null);
@@ -224,20 +242,35 @@ function BubblesDashboard() {
       const imgW = imageDimensions?.w ?? 128;
       const imgH = imageDimensions?.h ?? 128;
       const sliceRatio = 38 / 128;
-      const assetConfig = {
-        image_url: publicUrl,
-        bubble_url: publicUrl,
-        bubble_style: "nine_slice",
-        image_width: imgW,
-        image_height: imgH,
-        slice_top: Math.round(imgH * sliceRatio),
-        slice_left: Math.round(imgW * sliceRatio),
-        slice_right: Math.round(imgW * sliceRatio),
-        slice_bottom: Math.round(imgH * sliceRatio),
-        content_padding_h: 20,
-        content_padding_v: 14,
-        rarity: form.rarity,
-      };
+      // Bubbles animados não usam nine-slice (GIF não suporta).
+      // O app Flutter usará Image.network com gaplessPlayback.
+      const assetConfig = form.isAnimated
+        ? {
+            image_url: publicUrl,
+            bubble_url: publicUrl,
+            bubble_style: "animated",
+            image_width: imgW,
+            image_height: imgH,
+            content_padding_h: 20,
+            content_padding_v: 14,
+            is_animated: true,
+            rarity: form.rarity,
+          }
+        : {
+            image_url: publicUrl,
+            bubble_url: publicUrl,
+            bubble_style: "nine_slice",
+            image_width: imgW,
+            image_height: imgH,
+            slice_top: Math.round(imgH * sliceRatio),
+            slice_left: Math.round(imgW * sliceRatio),
+            slice_right: Math.round(imgW * sliceRatio),
+            slice_bottom: Math.round(imgH * sliceRatio),
+            content_padding_h: 20,
+            content_padding_v: 14,
+            is_animated: false,
+            rarity: form.rarity,
+          };
 
       const payload = {
         type: "chat_bubble",
@@ -416,6 +449,27 @@ function BubblesDashboard() {
               </div>
             </div>
 
+            {/* Toggle: Bubble Animado */}
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.isAnimated}
+                onChange={(e) => setForm({ ...form, isAnimated: e.target.checked })}
+                className="w-4 h-4 rounded border-[#2A2D34] bg-[#111214] accent-[#E040FB]"
+              />
+              <span className="text-[#9CA3AF] text-sm">
+                Bubble animado
+                <span className="ml-1.5 text-[#E040FB] text-xs">(GIF / WebP animado)</span>
+              </span>
+            </label>
+            {form.isAnimated && (
+              <div className="flex items-start gap-2 rounded-lg bg-[#E040FB]/10 border border-[#E040FB]/20 px-3 py-2">
+                <span className="text-[#E040FB] text-xs leading-relaxed">
+                  ✨ Modo animado ativo — o app usará <strong>Image.network</strong> com loop contínuo.
+                  O 9-slice scaling não será aplicado.
+                </span>
+              </div>
+            )}
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
