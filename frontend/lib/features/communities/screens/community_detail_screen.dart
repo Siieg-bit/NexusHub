@@ -589,29 +589,57 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                         height: r.s(64),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(r.s(16)),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.1),
-                            width: 2,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              themeColor.withValues(alpha: 0.9),
+                              themeColor.withValues(alpha: 0.65),
+                            ],
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 8.0,
+                              color: themeColor.withValues(alpha: 0.35),
+                              blurRadius: r.s(20),
+                              offset: const Offset(0, 8),
                             ),
                           ],
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.15),
+                          ),
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(r.s(14)),
-                          child: (community.iconUrl ?? '').isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: community.iconUrl ?? '',
-                                  fit: BoxFit.cover,
-                                )
-                              : Container(
-                                  color: themeColor,
-                                  child: Icon(Icons.groups_rounded,
-                                      color: Colors.white70, size: r.s(32)),
+                        child: Padding(
+                          padding: EdgeInsets.all(r.s(2)),
+                          child: GestureDetector(
+                            onTap: () => context.push(
+                              '/community/${widget.communityId}/info',
+                            ),
+                            child: Container(
+                              width: r.s(62),
+                              height: r.s(62),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.circular(r.s(14)),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.18),
                                 ),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(r.s(14)),
+                                child: (community.iconUrl ?? '').isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: community.iconUrl ?? '',
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Container(
+                                        color: themeColor,
+                                        child: Icon(Icons.groups_rounded,
+                                            color: Colors.white70,
+                                            size: r.s(32)),
+                                      ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                       SizedBox(width: r.s(12)),
@@ -622,29 +650,39 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                community.name,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: r.fs(18),
-                                  fontWeight: FontWeight.w900,
-                                  height: 1.1,
+                              GestureDetector(
+                                onTap: () => context.push(
+                                  '/community/${widget.communityId}/info',
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                                child: Text(
+                                  community.name,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: r.fs(18),
+                                    fontWeight: FontWeight.w900,
+                                    height: 1.1,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                               SizedBox(height: r.s(4)),
                               Row(
                                 children: [
                                   Flexible(
-                                    child: Text(
-                                      '${formatCount(community.membersCount)} Membros',
-                                      style: TextStyle(
-                                        color: Colors.grey[300],
-                                        fontSize: r.fs(11),
+                                    child: GestureDetector(
+                                      onTap: () => context.push(
+                                        '/community/${widget.communityId}/members',
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                      child: Text(
+                                        '${formatCount(community.membersCount)} Membros',
+                                        style: TextStyle(
+                                          color: Colors.grey[300],
+                                          fontSize: r.fs(11),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   ),
                                   SizedBox(width: r.s(8)),

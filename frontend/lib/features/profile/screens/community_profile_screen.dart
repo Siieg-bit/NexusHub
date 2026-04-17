@@ -393,7 +393,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         ? DateTime.tryParse(_membership?['joined_at'] as String? ?? '')
         : null;
     final coins = _user?.coins ?? 0;
-    final canViewCoins = _isOwnProfile || _viewerIsTeamMember;
+    final canViewCoins = _isOwnProfile;
     final isOnline = _user?.isOnline ?? false;
     final isManualOffline = _user?.isGhostMode ?? false;
     final presenceLabel = _user?.gradualPresenceLabel ?? s.offline;
@@ -1379,64 +1379,59 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                       ),
                                     ),
                                     const Spacer(),
-                                    // Moedas badge
-                                    GestureDetector(
-                                      onTap: canViewCoins
-                                          ? () => context.push('/wallet')
-                                          : null,
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: r.s(10),
-                                            vertical: r.s(6)),
-                                        decoration: BoxDecoration(
-                                          gradient: const LinearGradient(
-                                            colors: [
-                                              Color(0xFF2196F3),
-                                              Color(0xFF42A5F5)
-                                            ],
+                                    if (canViewCoins)
+                                      GestureDetector(
+                                        onTap: () => context.push('/wallet'),
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: r.s(10),
+                                              vertical: r.s(6)),
+                                          decoration: BoxDecoration(
+                                            gradient: const LinearGradient(
+                                              colors: [
+                                                Color(0xFF2196F3),
+                                                Color(0xFF42A5F5)
+                                              ],
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(r.s(16)),
                                           ),
-                                          borderRadius:
-                                              BorderRadius.circular(r.s(16)),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Container(
-                                              width: r.s(16),
-                                              height: r.s(16),
-                                              decoration: const BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                gradient: LinearGradient(
-                                                  colors: [
-                                                    Color(0xFFFFD700),
-                                                    Color(0xFFFFA500)
-                                                  ],
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                width: r.s(16),
+                                                height: r.s(16),
+                                                decoration: const BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  gradient: LinearGradient(
+                                                    colors: [
+                                                      Color(0xFFFFD700),
+                                                      Color(0xFFFFA500)
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  'A',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: r.fs(9),
-                                                    fontWeight: FontWeight.w900,
-                                                    height: 1.0,
+                                                child: Center(
+                                                  child: Text(
+                                                    'A',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: r.fs(9),
+                                                      fontWeight: FontWeight.w900,
+                                                      height: 1.0,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                            SizedBox(width: r.s(4)),
-                                            Text(
-                                              canViewCoins
-                                                  ? formatCount(coins)
-                                                  : s.privateLabel,
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: r.fs(12),
-                                                fontWeight: FontWeight.w700,
+                                              SizedBox(width: r.s(4)),
+                                              Text(
+                                                formatCount(coins),
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: r.fs(12),
+                                                  fontWeight: FontWeight.w700,
+                                                ),
                                               ),
-                                            ),
-                                            if (canViewCoins) ...[
                                               SizedBox(width: r.s(4)),
                                               Container(
                                                 width: r.s(16),
@@ -1451,10 +1446,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                                     size: r.s(11)),
                                               ),
                                             ],
-                                          ],
+                                          ),
                                         ),
                                       ),
-                                    ),
                                   ],
                                 ),
                               ),

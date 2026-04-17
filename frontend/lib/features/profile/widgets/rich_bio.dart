@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
@@ -1057,8 +1058,9 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
 
   void _armInlineImageInsertion() {
     if (_isUploading) return;
-    setState(() => _isAwaitingInlineImageTap = true);
     _focusNode.requestFocus();
+    setState(() => _isAwaitingInlineImageTap = false);
+    unawaited(_openInlineImageOptions());
   }
 
   void _handleEditorTap() {

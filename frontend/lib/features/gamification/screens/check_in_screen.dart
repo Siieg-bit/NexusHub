@@ -76,13 +76,25 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           .single();
       final streak = (row['consecutive_checkin_days'] as num?)?.toInt() ?? 0;
       final lastCheckin = row['last_checkin_at'] as String?;
-      final alreadyCheckedIn = lastCheckin != null &&
-          DateTime.tryParse(lastCheckin)?.toLocal().toLocal().day ==
-              DateTime.now().toLocal().day &&
-          DateTime.tryParse(lastCheckin)?.toLocal().month ==
-              DateTime.now().toLocal().month &&
-          DateTime.tryParse(lastCheckin)?.toLocal().year ==
-              DateTime.now().toLocal().year;
+      DateTime serverNow;
+      try {
+        final serverTimeResult = await SupabaseService.rpc('get_server_time');
+        if (serverTimeResult is String) {
+          serverNow = DateTime.parse(serverTimeResult).toUtc();
+        } else if (serverTimeResult is Map && serverTimeResult['now'] is String) {
+          serverNow = DateTime.parse(serverTimeResult['now'] as String).toUtc();
+        } else {
+          serverNow = DateTime.now().toUtc();
+        }
+      } catch (_) {
+        serverNow = DateTime.now().toUtc();
+      }
+      final parsedLastCheckin =
+          lastCheckin != null ? DateTime.tryParse(lastCheckin)?.toUtc() : null;
+      final alreadyCheckedIn = parsedLastCheckin != null &&
+          parsedLastCheckin.year == serverNow.year &&
+          parsedLastCheckin.month == serverNow.month &&
+          parsedLastCheckin.day == serverNow.day;
       if (!mounted) return;
       setState(() {
         _consecutiveDays = streak;
