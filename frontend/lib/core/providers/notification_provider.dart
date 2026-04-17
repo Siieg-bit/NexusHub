@@ -608,7 +608,7 @@ class CommunityNotificationNotifier
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
           SupabaseService.table('notifications').select(
-        '*, profiles!notifications_actor_id_fkey(id, nickname, icon_url)',
+        '*, community_members!inner(local_nickname, local_icon_url)',
       );
 
       query = query.eq('user_id', userId).eq('community_id', communityId);

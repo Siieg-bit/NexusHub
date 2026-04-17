@@ -731,17 +731,24 @@ class _NotificationTile extends ConsumerWidget {
     final r = context.r;
     final type = data['type'] as String? ?? 'general';
     final isRead = data['is_read'] as bool? ?? false;
-    final actor = data['profiles'] as Map<String, dynamic>?;
+    
+    // Tentar obter dados do perfil local da comunidade primeiro
+    final communityMembers = data['community_members'] as Map<String, dynamic>?;
+    final globalProfile = data['profiles'] as Map<String, dynamic>?;
+    
+    // Usar perfil local se disponível, senão usar global
+    final avatarUrl = communityMembers?['local_icon_url'] as String? ?? globalProfile?['icon_url'] as String?;
+    final nickname = communityMembers?['local_nickname'] as String? ?? globalProfile?['nickname'] as String? ?? '';
+    
     final content =
         data['body'] as String? ?? data['title'] as String? ?? s.notificationLabel;
     final createdAt = DateTime.tryParse(data['created_at'] as String? ?? '') ??
         DateTime.now();
 
     final iconColor = _getIconColor(context, type);
-    final avatarUrl = actor?['icon_url'] as String?;
-    final nickname = actor?['nickname'] as String? ?? '';
     final hasPrimaryAction =
         type == 'community_invite' && onPrimaryAction != null;
+    final isCommunityScoped = communityMembers != null;
 
     return InkWell(
       onTap: onTap,
