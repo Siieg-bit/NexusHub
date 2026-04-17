@@ -1563,12 +1563,117 @@ class _MemberRoleManagerSheetState
               }),
               const Divider(height: 1, thickness: 0.5),
             ],
-
-            // ── Fechar ────────────────────────────────────────────
+            // ── Limpar ADVs (apenas agentes/líderes) ──────────────────────────────────────────────────────
+            if (!_isSelf &&
+                _canIssueWarnings &&
+                _historyLoaded &&
+                _moderationHistory.any((l) => l['action'] == 'warn'))
+              Padding(
+                padding: EdgeInsets.fromLTRB(r.s(16), r.s(4), r.s(16), r.s(4)),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: ctx.surfaceColor,
+                          title: Text(
+                            'Limpar ADVs da conta?',
+                            style: TextStyle(
+                                color: ctx.textPrimary,
+                                fontWeight: FontWeight.w700),
+                          ),
+                          content: Text(
+                            'Todos os registros de advertência deste usuário nesta comunidade serão removidos. Esta ação não pode ser desfeita.',
+                            style: TextStyle(
+                                color: ctx.textSecondary,
+                                fontSize: r.fs(13)),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: Text('Cancelar',
+                                  style: TextStyle(color: Colors.grey[500])),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: context.nexusTheme.warning,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(r.s(10))),
+                              ),
+                              child: Text('Limpar',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: r.fs(14))),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed == true && mounted) {
+                        try {
+                          await SupabaseService.table('moderation_logs')
+                              .delete()
+                              .eq('community_id', widget.communityId)
+                              .eq('target_user_id', widget.targetUserId)
+                              .eq('action', 'warn');
+                          setState(() {
+                            _moderationHistory.removeWhere(
+                                (l) => l['action'] == 'warn');
+                          });
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content:
+                                    const Text('ADVs removidos com sucesso'),
+                                backgroundColor: Colors.green[700],
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          debugPrint(
+                              '[MemberRoleManager] Clear warns error: $e');
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'Erro ao limpar ADVs. Tente novamente.'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        }
+                      }
+                    },
+                    icon: Icon(Icons.cleaning_services_rounded,
+                        color: context.nexusTheme.warning, size: r.s(18)),
+                    label: Text(
+                      'Limpar ADVs da conta',
+                      style: TextStyle(
+                        color: context.nexusTheme.warning,
+                        fontSize: r.fs(14),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: r.s(12)),
+                      side: BorderSide(
+                          color: context.nexusTheme.warning
+                              .withValues(alpha: 0.5)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(r.s(10)),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            // ── Fechar ──────────────────────────────────────────────────────
             Padding(
               padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16),
-                  r.s(16) + MediaQuery.of(context).padding.bottom),
-              child: SizedBox(
+                  r.s(16) + MediaQuery.of(context).padding.bottom),      child: SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () => Navigator.of(context).pop(false),
