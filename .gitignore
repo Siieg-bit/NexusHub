@@ -58,3 +58,4 @@ backend/supabase/supabase/.temp/
 *.pem
 *.key
 *.crt
+vapid_keys.json
