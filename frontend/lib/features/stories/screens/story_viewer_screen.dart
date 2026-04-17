@@ -17,6 +17,7 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 ///   - Auto-advance após duração
 ///   - Registro de visualização
 ///   - Reações rápidas
+///   - Foto escurece quando o story já foi visualizado anteriormente
 class StoryViewerScreen extends ConsumerStatefulWidget {
   final List<Map<String, dynamic>> stories;
   final Map<String, dynamic> authorProfile;
@@ -39,6 +40,11 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
   VideoPlayerController? _videoController;
   VoidCallback? _videoEndListener;
 
+  /// IDs dos stories JÁ visualizados ANTES de abrir este viewer
+  /// (carregados do banco ao iniciar — não inclui a visualização atual)
+  final Set<String> _preViewedStoryIds = {};
+  bool _viewedIdsLoaded = false;
+
   static const _reactions = ['❤️', '🔥', '😂', '😮', '😢', '👏'];
 
   @override
@@ -48,7 +54,7 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
       const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
     );
     _progressController = AnimationController(vsync: this);
-    _startStory();
+    _loadViewedIds().then((_) => _startStory());
   }
 
   @override
@@ -60,6 +66,38 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
     }
     _videoController?.dispose();
     super.dispose();
+  }
+
+  /// Carrega os IDs dos stories desta sessão que o usuário já visualizou
+  Future<void> _loadViewedIds() async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+      final storyIds = widget.stories
+          .map((s) => s['id'] as String?)
+          .where((id) => id != null)
+          .cast<String>()
+          .toList();
+      if (storyIds.isEmpty) return;
+      final res = await SupabaseService.table('story_views')
+          .select('story_id')
+          .eq('viewer_id', userId)
+          .inFilter('story_id', storyIds);
+      final ids = ((res as List?) ?? [])
+          .map((v) => v['story_id'] as String?)
+          .where((id) => id != null)
+          .cast<String>()
+          .toSet();
+      if (mounted) {
+        setState(() {
+          _preViewedStoryIds.addAll(ids);
+          _viewedIdsLoaded = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('[story_viewer_screen] _loadViewedIds: $e');
+      if (mounted) setState(() => _viewedIdsLoaded = true);
+    }
   }
 
   Future<void> _initVideo(String url) async {
@@ -116,8 +154,9 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
       _progressController.addStatusListener(_onProgressComplete);
     }
 
-    // Registrar visualização
-    _registerView(story['id'] as String? ?? '');
+    // Registrar visualização e marcar como visto localmente
+    final storyId = story['id'] as String? ?? '';
+    _registerView(storyId);
   }
 
   void _onProgressComplete(AnimationStatus status) {
@@ -132,6 +171,7 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
   }
 
   Future<void> _registerView(String storyId) async {
+    if (storyId.isEmpty) return;
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
@@ -144,6 +184,10 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
       // Incrementar views_count
       await SupabaseService.client.rpc('increment_story_views',
           params: {'p_story_id': storyId}).catchError((_) => null);
+
+      // Não adicionamos ao _preViewedStoryIds aqui — isso evita
+      // que o overlay escuro apareça durante a visualização atual.
+      // O escurecimento só ocorre em visitas SUBSEQUENTES.
     } catch (e) {
       debugPrint('[story_viewer_screen] Erro: $e');
     }
@@ -230,6 +274,11 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
         widget.authorProfile['avatar_url']) as String?;
     final createdAt = story['created_at'] as String?;
 
+    // Story é "já visualizado" apenas se estava no banco ANTES de abrir o viewer.
+    // A visualização atual não conta — o escurecimento só aparece em visitas futuras.
+    final storyId = story['id'] as String? ?? '';
+    final isAlreadyViewed = _viewedIdsLoaded && _preViewedStoryIds.contains(storyId);
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
@@ -270,10 +319,13 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
                       ),
                     )
             else if (type == 'image' && mediaUrl != null)
-              // Imagem levemente escurecida para melhor legibilidade do header
+              // Foto escurece mais quando o story já foi visualizado anteriormente
               ColorFiltered(
                 colorFilter: ColorFilter.mode(
-                  Colors.black.withValues(alpha: 0.20),
+                  Colors.black.withValues(
+                    // Story já visto: overlay escuro (0.45); novo: leve (0.20)
+                    alpha: isAlreadyViewed ? 0.45 : 0.20,
+                  ),
                   BlendMode.darken,
                 ),
                 child: Image.network(
@@ -327,7 +379,7 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
               bottom: 0,
               left: 0,
               right: 0,
-              height: r.s(160),
+              height: r.s(120),
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -430,6 +482,16 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
                     ),
                   ),
                   const Spacer(),
+                  // Ícone de "já visualizado" quando aplicável
+                  if (isAlreadyViewed)
+                    Padding(
+                      padding: EdgeInsets.only(right: r.s(8)),
+                      child: Icon(
+                        Icons.check_circle_rounded,
+                        color: Colors.white.withValues(alpha: 0.7),
+                        size: r.s(16),
+                      ),
+                    ),
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
                     child: Icon(Icons.close_rounded,
@@ -440,63 +502,57 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
             ),
 
             // ── Text overlay para stories de imagem ──
-            if (type == 'image' &&
-                textContent != null &&
-                textContent.isNotEmpty)
+            if (type == 'image' && textContent != null && textContent.isNotEmpty)
               Positioned(
-                bottom: 100,
-                left: 16,
-                right: 16,
+                bottom: r.s(100),
+                left: r.s(16),
+                right: r.s(16),
                 child: Container(
-                  padding: EdgeInsets.all(r.s(12)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(12), vertical: r.s(8)),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(r.s(12)),
+                    borderRadius: BorderRadius.circular(r.s(8)),
                   ),
                   child: Text(
                     textContent,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: r.fs(16),
+                      fontSize: r.fs(14),
                       fontWeight: FontWeight.w600,
+                      height: 1.4,
                     ),
                     textAlign: TextAlign.center,
                   ),
                 ),
               ),
 
-            // ── Reactions bar ──
+            // ── Reações ──
             Positioned(
               bottom: MediaQuery.of(context).padding.bottom + 16,
               left: 0,
               right: 0,
-              child: Center(
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: r.s(16), vertical: r.s(8)),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(r.s(30)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: _reactions.map((emoji) {
-                      return GestureDetector(
-                        onTap: () => _sendReaction(emoji),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: r.s(8)),
-                          child:
-                              Text(emoji, style: TextStyle(fontSize: r.fs(24))),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: _reactions.map((emoji) {
+                  return GestureDetector(
+                    onTap: () => _sendReaction(emoji),
+                    child: Container(
+                      margin: EdgeInsets.symmetric(horizontal: r.s(6)),
+                      padding: EdgeInsets.all(r.s(8)),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(emoji, style: TextStyle(fontSize: r.fs(20))),
+                    ),
+                  );
+                }).toList(),
               ),
             ),
 
-            // ── Views count (para stories do próprio usuário) ──
-            if (story['author_id'] == SupabaseService.currentUserId)
+            // ── Contador de views (apenas para o autor) ──
+            if (widget.authorProfile['id'] == SupabaseService.currentUserId)
               Positioned(
                 bottom: MediaQuery.of(context).padding.bottom + 60,
                 left: 0,
