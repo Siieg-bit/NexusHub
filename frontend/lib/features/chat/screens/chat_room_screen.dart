@@ -16,6 +16,7 @@ import '../../../core/services/call_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/providers/cosmetics_provider.dart';
 import '../../../core/services/realtime_service.dart';
+import '../../../core/services/cache_service.dart';
 // call_screen.dart removido — chamadas de voz/vídeo substituídas por projeção
 import '../widgets/giphy_picker.dart';
 import '../widgets/forward_message_sheet.dart';
@@ -71,6 +72,10 @@ class ChatRoomScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
+  /// Cache de identidade local por userId — evita N+1 queries ao carregar mensagens.
+  /// Chave: userId, Valor: {local_nickname, local_icon_url, local_banner_url} ou null se sem membership.
+  final Map<String, Map<String, dynamic>?> _memberCache = {};
+
   Map<String, dynamic>? _extractProfile(dynamic rawProfile) {
     if (rawProfile is Map<String, dynamic>) return rawProfile;
     if (rawProfile is Map) return Map<String, dynamic>.from(rawProfile);
@@ -82,9 +87,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     return null;
   }
 
-  Future<Map<String, dynamic>> _normalizeMessageAuthorIdentity(
+  /// Normaliza a identidade do autor de UMA mensagem usando o _memberCache (síncrono).
+  /// DEVE ser chamado após _prefetchMemberCache para garantir que o cache está populado.
+  Map<String, dynamic> _normalizeMessageAuthorIdentity(
     Map<String, dynamic> rawMap,
-  ) async {
+  ) {
     final map = Map<String, dynamic>.from(rawMap);
     final baseProfile = _extractProfile(
       map['author'] ?? map['sender'] ?? map['profiles'],
@@ -98,47 +105,73 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     }
 
     final authorId = (map['author_id'] as String?)?.trim();
-    final communityId = (_threadInfo?['community_id'] as String?)?.trim();
-
     if (authorId == null || authorId.isEmpty) return map;
-    if (communityId == null || communityId.isEmpty) return map;
 
-    try {
-      final membership = await SupabaseService.table('community_members')
-          .select('local_nickname, local_icon_url, local_banner_url')
-          .eq('community_id', communityId)
-          .eq('user_id', authorId)
-          .maybeSingle();
+    final membership = _memberCache[authorId];
+    if (membership == null) return map;
 
-      if (membership == null) return map;
+    final mergedAuthor = Map<String, dynamic>.from(
+      (map['author'] ??
+          map['sender'] ??
+          map['profiles'] ??
+          const <String, dynamic>{}) as Map,
+    );
 
-      final localNickname = (membership['local_nickname'] as String?)?.trim();
-      final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
-      final localBannerUrl =
-          (membership['local_banner_url'] as String?)?.trim();
+    final localNickname = (membership['local_nickname'] as String?)?.trim();
+    final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
+    final localBannerUrl = (membership['local_banner_url'] as String?)?.trim();
 
-      final mergedAuthor = Map<String, dynamic>.from(
-        (map['author'] ??
-            map['sender'] ??
-            map['profiles'] ??
-            const <String, dynamic>{}) as Map,
-      );
-
-      // Usa sempre o valor local da comunidade (pode ser null se não definido).
+    // Sobrescreve apenas quando o valor local está definido.
+    if (localNickname != null && localNickname.isNotEmpty) {
       mergedAuthor['nickname'] = localNickname;
+    }
+    if (localIconUrl != null && localIconUrl.isNotEmpty) {
       mergedAuthor['icon_url'] = localIconUrl;
+    }
+    if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
       mergedAuthor['banner_url'] = localBannerUrl;
-
-      map['profiles'] = mergedAuthor;
-      map['sender'] = mergedAuthor;
-      map['author'] = mergedAuthor;
-    } catch (e) {
-      debugPrint(
-        '[chat_room_screen] _normalizeMessageAuthorIdentity member fallback error: $e',
-      );
     }
 
+    map['profiles'] = mergedAuthor;
+    map['sender'] = mergedAuthor;
+    map['author'] = mergedAuthor;
     return map;
+  }
+
+  /// Pré-carrega o cache de identidade local para uma lista de userIds.
+  /// Faz UMA única query batch (inFilter) em vez de N queries individuais.
+  /// Reduz o carregamento de 100 mensagens de ~100 queries para 1 query.
+  Future<void> _prefetchMemberCache(List<String> userIds) async {
+    final communityId = (_threadInfo?['community_id'] as String?)?.trim();
+    if (communityId == null || communityId.isEmpty) return;
+
+    // Filtrar apenas IDs que ainda não estão no cache
+    final missing = userIds
+        .where((id) => id.isNotEmpty && !_memberCache.containsKey(id))
+        .toSet()
+        .toList();
+    if (missing.isEmpty) return;
+
+    try {
+      final rows = await SupabaseService.table('community_members')
+          .select('user_id, local_nickname, local_icon_url, local_banner_url')
+          .eq('community_id', communityId)
+          .inFilter('user_id', missing);
+
+      // Popular cache com os resultados
+      for (final row in (rows as List? ?? [])) {
+        final uid = row['user_id'] as String?;
+        if (uid != null) {
+          _memberCache[uid] = Map<String, dynamic>.from(row as Map);
+        }
+      }
+      // Marcar IDs sem membership como null (evita re-query futura)
+      for (final id in missing) {
+        _memberCache.putIfAbsent(id, () => null);
+      }
+    } catch (e) {
+      debugPrint('[chat_room_screen] _prefetchMemberCache error: $e');
+    }
   }
 
   final _messageController = TextEditingController();
@@ -524,7 +557,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     }
   }
 
-  Future<void> _loadMessages() async {
+   Future<void> _loadMessages() async {
+    // Cache-first: exibe mensagens do cache imediatamente (sem spinner)
+    final cachedRaw = CacheService.getCachedMessages(widget.threadId);
+    if (cachedRaw != null && cachedRaw.isNotEmpty && mounted && !_isDisposed) {
+      final cachedMsgs = cachedRaw.map((e) => MessageModel.fromJson(e)).toList();
+      setState(() {
+        _messages
+          ..clear()
+          ..addAll(cachedMsgs);
+        _isLoading = false;
+      });
+      _scrollToBottom();
+    }
+
     try {
       final response = await SupabaseService.table('chat_messages')
           .select(
@@ -533,17 +579,27 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .order('created_at', ascending: false)
           .limit(100);
 
-      final normalizedMessages = await Future.wait(
-        (response as List? ?? []).map((e) async {
-          final map = Map<String, dynamic>.from(e as Map);
-          if (map['profiles'] != null) {
-            map['sender'] = map['profiles'];
-            map['author'] = map['profiles'];
-          }
-          final normalizedMap = await _normalizeMessageAuthorIdentity(map);
-          return MessageModel.fromJson(normalizedMap);
-        }).toList(),
-      );
+      final rawList = (response as List? ?? []);
+
+      // 1. Coletar todos os author_ids únicos do lote
+      final authorIds = rawList
+          .map((e) => (e as Map)['author_id'] as String? ?? '')
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList();
+
+      // 2. UMA única query batch para todos os membros — elimina N+1
+      await _prefetchMemberCache(authorIds);
+
+      // 3. Normalização síncrona usando o cache populado
+      final normalizedMessages = rawList.map((e) {
+        final map = Map<String, dynamic>.from(e as Map);
+        if (map['profiles'] != null) {
+          map['sender'] = map['profiles'];
+          map['author'] = map['profiles'];
+        }
+        return MessageModel.fromJson(_normalizeMessageAuthorIdentity(map));
+      }).toList();
 
       if (mounted && !_isDisposed) {
         setState(() {
@@ -554,6 +610,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         });
         _scrollToBottom();
       }
+
+      // Salva no cache para exibição offline/instant na próxima abertura
+      CacheService.cacheMessages(
+        widget.threadId,
+        rawList.map((e) => Map<String, dynamic>.from(e as Map)).toList(),
+      );
     } catch (e) {
       if (mounted && !_isDisposed) setState(() => _isLoading = false);
       debugPrint('Error loading messages: $e');
@@ -578,16 +640,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               '*, profiles!chat_messages_author_id_fkey(id, nickname, icon_url)')
           .eq('id', pinnedId)
           .limit(1);
-      final normalizedPinnedMessages = await Future.wait(
-        (res as List? ?? []).map((e) async {
-          final map = Map<String, dynamic>.from(e as Map);
-          if (map['profiles'] != null) {
-            map['sender'] = map['profiles'];
-            map['author'] = map['profiles'];
-          }
-          return _normalizeMessageAuthorIdentity(map);
-        }).toList(),
-      );
+      final rawPinned = (res as List? ?? []);
+      final pinnedAuthorIds = rawPinned
+          .map((e) => (e as Map)['author_id'] as String? ?? '')
+          .where((id) => id.isNotEmpty)
+          .toList();
+      await _prefetchMemberCache(pinnedAuthorIds);
+      final normalizedPinnedMessages = rawPinned.map((e) {
+        final map = Map<String, dynamic>.from(e as Map);
+        if (map['profiles'] != null) {
+          map['sender'] = map['profiles'];
+          map['author'] = map['profiles'];
+        }
+        return _normalizeMessageAuthorIdentity(map);
+      }).toList();
       if (mounted && !_isDisposed) {
         setState(() {
           _pinnedMessages = normalizedPinnedMessages;
@@ -711,8 +777,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               } catch (e) {
                 debugPrint('[chat_room_screen.dart] $e');
               }
-              final normalizedMessage =
-                  await _normalizeMessageAuthorIdentity(newMessage);
+              // Prefetch cache para o autor desta mensagem (usa cache se já existir)
+              final realtimeAuthorId = newMessage['author_id'] as String?;
+              if (realtimeAuthorId != null && realtimeAuthorId.isNotEmpty) {
+                await _prefetchMemberCache([realtimeAuthorId]);
+              }
+              if (_isDisposed || !mounted) return;
+              final normalizedMessage = _normalizeMessageAuthorIdentity(newMessage);
               if (_isDisposed || !mounted) return;
               final message = MessageModel.fromJson(normalizedMessage);
               final shouldAutoScroll = _isNearBottom() ||
