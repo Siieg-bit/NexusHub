@@ -7,7 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/supabase_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show FetchOptions, CountOption, PostgrestResponse;
+import 'package:supabase_flutter/supabase_flutter.dart' show CountOption, PostgrestResponse;
 import '../../../core/services/community_profile_service.dart';
 import '../../../core/services/presence_service.dart';
 import '../../../core/utils/helpers.dart';
@@ -152,7 +152,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       // GRUPO 1: Queries totalmente independentes — disparadas em PARALELO.
       // Antes: 8+ awaits sequenciais (~2.5s). Agora: 1 Future.wait (~350ms).
       // -----------------------------------------------------------------------
-      final group1 = await Future.wait([
+      final group1 = await Future.wait<dynamic>([
         // [0] Perfil global do usuário alvo
         SupabaseService.table('profiles')
             .select()
@@ -219,14 +219,16 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         final group2Futures = <Future<dynamic>>[
           // [0] Contagem de seguidores via count exato (sem transferir linhas)
           SupabaseService.table('follows')
-              .select('id', const FetchOptions(count: CountOption.exact, head: true))
+              .select('id')
               .eq('community_id', widget.communityId)
-              .eq('following_id', widget.userId),
+              .eq('following_id', widget.userId)
+              .count(CountOption.exact),
           // [1] Contagem de seguindo via count exato
           SupabaseService.table('follows')
-              .select('id', const FetchOptions(count: CountOption.exact, head: true))
+              .select('id')
               .eq('community_id', widget.communityId)
-              .eq('follower_id', widget.userId),
+              .eq('follower_id', widget.userId)
+              .count(CountOption.exact),
         ];
 
         if (!_isOwnProfile) {
@@ -262,14 +264,10 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         final group2 = await Future.wait(group2Futures);
 
         // Contagens de seguidores/seguindo
-        final followersRes = group2[0];
-        _followersCount = followersRes is PostgrestResponse
-            ? (followersRes.count ?? 0)
-            : ((followersRes as List?)?.length ?? 0);
-        final followingRes = group2[1];
-        _followingCount = followingRes is PostgrestResponse
-            ? (followingRes.count ?? 0)
-            : ((followingRes as List?)?.length ?? 0);
+        final followersRes = group2[0] as PostgrestResponse;
+        _followersCount = followersRes.count ?? 0;
+        final followingRes = group2[1] as PostgrestResponse;
+        _followingCount = followingRes.count ?? 0;
 
         if (!_isOwnProfile && group2.length > 2) {
           _myMembership = group2[2] as Map<String, dynamic>?;
@@ -286,24 +284,20 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         }
       } else {
         // Usuário não autenticado: apenas contagens
-        final countResults = await Future.wait([
+        final countResults = await Future.wait<PostgrestResponse>([
           SupabaseService.table('follows')
-              .select('id', const FetchOptions(count: CountOption.exact, head: true))
+              .select('id')
               .eq('community_id', widget.communityId)
-              .eq('following_id', widget.userId),
+              .eq('following_id', widget.userId)
+              .count(CountOption.exact),
           SupabaseService.table('follows')
-              .select('id', const FetchOptions(count: CountOption.exact, head: true))
+              .select('id')
               .eq('community_id', widget.communityId)
-              .eq('follower_id', widget.userId),
+              .eq('follower_id', widget.userId)
+              .count(CountOption.exact),
         ]);
-        final followersRes = countResults[0];
-        _followersCount = followersRes is PostgrestResponse
-            ? (followersRes.count ?? 0)
-            : ((followersRes as List?)?.length ?? 0);
-        final followingRes = countResults[1];
-        _followingCount = followingRes is PostgrestResponse
-            ? (followingRes.count ?? 0)
-            : ((followingRes as List?)?.length ?? 0);
+        _followersCount = countResults[0].count ?? 0;
+        _followingCount = countResults[1].count ?? 0;
       }
       if (!mounted) return;
       setState(() {
