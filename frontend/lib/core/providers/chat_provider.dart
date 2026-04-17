@@ -387,26 +387,63 @@ final threadMessagesProvider = AsyncNotifierProvider.family<
     String>(ThreadMessagesNotifier.new);
 
 // ── Unread Count ──
-// Usa chat_members.unread_count (fonte de verdade) em vez de notifications
-final unreadCountProvider = FutureProvider<int>((ref) async {
+// Usa chat_members.unread_count (fonte de verdade) em vez de notifications.
+// Implementado como StreamProvider para atualizar em tempo real via Supabase
+// Realtime sem precisar de invalidate() manual.
+final unreadCountProvider = StreamProvider<int>((ref) async* {
   final userId = SupabaseService.currentUserId;
-  if (userId == null) return 0;
-
-  try {
-    final res = await SupabaseService.table('chat_members')
-        .select('unread_count')
-        .eq('user_id', userId)
-        .eq('status', 'active');
-
-    final list = res as List? ?? [];
-    int total = 0;
-    for (final row in list) {
-      total += (row['unread_count'] as int? ?? 0);
-    }
-    return total;
-  } catch (_) {
-    return 0;
+  if (userId == null) {
+    yield 0;
+    return;
   }
+
+  // Função auxiliar para buscar o total atual
+  Future<int> fetchTotal() async {
+    try {
+      final res = await SupabaseService.table('chat_members')
+          .select('unread_count')
+          .eq('user_id', userId)
+          .eq('status', 'active');
+      final list = res as List? ?? [];
+      int total = 0;
+      for (final row in list) {
+        total += (row['unread_count'] as int? ?? 0);
+      }
+      return total;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  // Emite o valor inicial imediatamente
+  yield await fetchTotal();
+
+  // Assina mudanças na tabela chat_members via Realtime
+  final controller = StreamController<int>();
+  ref.onDispose(controller.close);
+
+  final channel = SupabaseService.client
+      .channel('unread_count_$userId')
+      .onPostgresChanges(
+        event: PostgresChangeEvent.update,
+        schema: 'public',
+        table: 'chat_members',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'user_id',
+          value: userId,
+        ),
+        callback: (_) async {
+          if (!controller.isClosed) {
+            controller.add(await fetchTotal());
+          }
+        },
+      )
+      .subscribe();
+
+  ref.onDispose(() => channel.unsubscribe());
+
+  yield* controller.stream;
 });
 
 // ── Unread Count por Comunidade ──
