@@ -4,11 +4,22 @@ import 'supabase_service.dart';
 
 /// Serviço de In-App Purchases via RevenueCat.
 ///
-/// API Key Android: test_vLhJHaVBiGHrRySKvvnWlaqWrfN
+/// API Key Android (debug): test_vLhJHaVBiGHrRySKvvnWlaqWrfN
+/// API Key Android (release): configurar em _apiKeyAndroidRelease
 /// Entitlement: amino_plus
 /// Produtos: coins_100, coins_500, coins_1200, coins_3000, coins_7000, amino_plus_monthly
 class IAPService {
-  static const String _apiKeyAndroid = 'test_vLhJHaVBiGHrRySKvvnWlaqWrfN';
+  /// Chave de teste — usada apenas em modo debug/desenvolvimento.
+  /// NUNCA use esta chave em produção: apps serão rejeitados na App Review.
+  static const String _apiKeyAndroidDebug = 'test_vLhJHaVBiGHrRySKvvnWlaqWrfN';
+
+  /// Chave de produção — substitua pelo valor real do painel RevenueCat.
+  /// Obtenha em: https://app.revenuecat.com → Project Settings → API Keys
+  static const String _apiKeyAndroidRelease = 'REVENUECAT_ANDROID_PRODUCTION_KEY';
+
+  /// Chave ativa baseada no modo de build.
+  static String get _apiKeyAndroid =>
+      kDebugMode ? _apiKeyAndroidDebug : _apiKeyAndroidRelease;
   static const String entitlementAminoPlus = 'amino_plus';
 
   /// Identificadores dos produtos configurados no Google Play Console
