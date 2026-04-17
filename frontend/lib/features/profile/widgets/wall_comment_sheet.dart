@@ -21,14 +21,23 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 // PROVIDER — carregamento de comentários do mural via RPC
 // =============================================================================
 
+/// Chave composta para o mural: (wallUserId, communityId)
+/// communityId vazio ('') = mural global
+typedef WallKey = ({String userId, String communityId});
+
 final wallCommentsProvider =
-    FutureProvider.family<List<WallComment>, String>((ref, wallUserId) async {
+    FutureProvider.family<List<WallComment>, WallKey>((ref, key) async {
   try {
-    final res = await SupabaseService.rpc('get_wall_comments', params: {
-      'p_wall_user_id': wallUserId,
+    final params = <String, dynamic>{
+      'p_wall_user_id': key.userId,
       'p_limit': 60,
       'p_offset': 0,
-    });
+    };
+    // Passa community_id apenas quando for um mural de comunidade
+    if (key.communityId.isNotEmpty) {
+      params['p_community_id'] = key.communityId;
+    }
+    final res = await SupabaseService.rpc('get_wall_comments', params: params);
     final list = List<Map<String, dynamic>>.from(res as List? ?? []);
     return list.map(WallComment.fromJson).toList();
   } catch (e) {
@@ -111,12 +120,15 @@ class WallCommentSheet extends ConsumerStatefulWidget {
   final String wallUserId;
   final bool isOwnWall;
   final bool asBottomSheet;
+  /// communityId vazio ('') = mural global; preenchido = mural da comunidade
+  final String communityId;
 
   const WallCommentSheet({
     super.key,
     required this.wallUserId,
     required this.isOwnWall,
     this.asBottomSheet = false,
+    this.communityId = '',
   });
 
   /// Abre como bottom sheet modal.
@@ -124,6 +136,7 @@ class WallCommentSheet extends ConsumerStatefulWidget {
     BuildContext context, {
     required String wallUserId,
     required bool isOwnWall,
+    String communityId = '',
   }) {
     return showModalBottomSheet(
       context: context,
@@ -133,6 +146,7 @@ class WallCommentSheet extends ConsumerStatefulWidget {
         wallUserId: wallUserId,
         isOwnWall: isOwnWall,
         asBottomSheet: true,
+        communityId: communityId,
       ),
     );
   }
@@ -200,6 +214,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
         'p_sticker_name': _pendingStickerName,
         'p_pack_id': _pendingPackId,
         'p_parent_id': _replyingTo?.id,
+        if (widget.communityId.isNotEmpty) 'p_community_id': widget.communityId,
       });
 
       _textCtrl.clear();
@@ -215,7 +230,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
         _showEmojiPicker = false;
       });
       _focusNode.unfocus();
-      ref.invalidate(wallCommentsProvider(widget.wallUserId));
+      ref.invalidate(wallCommentsProvider((userId: widget.wallUserId, communityId: widget.communityId)));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -359,7 +374,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
       await SupabaseService.rpc('toggle_wall_comment_like', params: {
         'p_comment_id': comment.id,
       });
-      ref.invalidate(wallCommentsProvider(widget.wallUserId));
+      ref.invalidate(wallCommentsProvider((userId: widget.wallUserId, communityId: widget.communityId)));
     } catch (e) {
       debugPrint('[WallCommentSheet] toggleLike: $e');
     }
@@ -391,7 +406,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
         'p_comment_id': comment.id,
         'p_wall_user_id': widget.wallUserId,
       });
-      ref.invalidate(wallCommentsProvider(widget.wallUserId));
+      ref.invalidate(wallCommentsProvider((userId: widget.wallUserId, communityId: widget.communityId)));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -434,7 +449,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final commentsAsync = ref.watch(wallCommentsProvider(widget.wallUserId));
+    final commentsAsync = ref.watch(wallCommentsProvider((userId: widget.wallUserId, communityId: widget.communityId)));
     // Captura o viewInsets aqui no build (onde o NestedScrollView ainda propaga)
     // e injeta manualmente no MediaQuery dos filhos.
     final mq = MediaQuery.of(context);
@@ -473,7 +488,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
             ),
             const SizedBox(height: 8),
             TextButton(
-              onPressed: () => ref.invalidate(wallCommentsProvider(widget.wallUserId)),
+              onPressed: () => ref.invalidate(wallCommentsProvider((userId: widget.wallUserId, communityId: widget.communityId))),
               child: Text('Tentar novamente', style: TextStyle(color: context.nexusTheme.accentPrimary)),
             ),
           ],
@@ -504,7 +519,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
         return RefreshIndicator(
           color: context.nexusTheme.accentPrimary,
           backgroundColor: context.surfaceColor,
-          onRefresh: () async => ref.invalidate(wallCommentsProvider(widget.wallUserId)),
+          onRefresh: () async => ref.invalidate(wallCommentsProvider((userId: widget.wallUserId, communityId: widget.communityId))),
           child: ListView.builder(
             controller: scrollCtrl,
             padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
