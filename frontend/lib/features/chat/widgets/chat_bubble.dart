@@ -13,9 +13,22 @@ export '../../../core/widgets/avatar_with_frame.dart';
 /// O Amino permite que usuários comprem e equipem "bubble frames" que
 /// alteram a aparência visual dos balões de chat. Este widget implementa:
 /// - Bubble padrão (sem frame) via [CustomPaint]
-/// - Bubble com frame de imagem (9-patch style) via [CachedNetworkImage]
+/// - Bubble com frame de imagem estático (9-slice) via [NineSliceBubble]
+/// - Bubble com frame animado (GIF/WebP) via [Image.network] + [gaplessPlayback]
 /// - Cores customizáveis por role (Leader, Curator, Agent)
 /// - Tail (seta) apontando para o remetente
+///
+/// ## Modo Animado
+///
+/// Quando [isBubbleAnimated] é `true`, o widget usa [_buildAnimatedBubble]
+/// em vez do [NineSliceBubble]. Isso é necessário porque [Canvas.drawImageNine]
+/// (usado pelo [NineSliceBubble]) opera sobre [ui.Image] estático e não
+/// suporta animações GIF/WebP. O modo animado usa [Image.network] com
+/// [gaplessPlayback: true] como fundo do balão, preservando o loop completo.
+///
+/// O 9-slice scaling não é aplicado no modo animado (GIFs não suportam isso
+/// tecnicamente). O fundo é exibido com [BoxFit.fill] e [BorderRadius],
+/// que é o comportamento padrão de apps como Amino e Discord para bubbles animados.
 class ChatBubble extends ConsumerWidget {
   final Widget child;
   final bool isMine;
@@ -26,10 +39,21 @@ class ChatBubble extends ConsumerWidget {
   final double maxWidth;
 
   /// Parâmetros nine-slice vindos do asset_config do store_item.
+  /// Usados apenas quando [isBubbleAnimated] é false.
   /// Quando não fornecidos, usam os valores padrão do [NineSliceBubble].
   final EdgeInsets? sliceInsets;
   final Size? imageSize;
   final EdgeInsets? contentPadding;
+
+  /// Indica se o bubble frame é animado (GIF / WebP animado).
+  ///
+  /// Quando `true`, usa [Image.network] com [gaplessPlayback] para preservar
+  /// o loop da animação. Quando `false` (padrão), usa [NineSliceBubble] com
+  /// [Canvas.drawImageNine] para renderização estática com 9-slice scaling.
+  ///
+  /// Deve ser lido de [UserCosmetics.isChatBubbleAnimated], que por sua
+  /// vez lê [asset_config.is_animated] do banco de dados.
+  final bool isBubbleAnimated;
 
   const ChatBubble({
     super.key,
@@ -43,6 +67,7 @@ class ChatBubble extends ConsumerWidget {
     this.sliceInsets,
     this.imageSize,
     this.contentPadding,
+    this.isBubbleAnimated = false,
   });
 
   /// Cor do bubble baseada no role do usuário — estilo Amino
@@ -77,6 +102,10 @@ class ChatBubble extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Se tem frame de imagem, usar o frame
     if (bubbleFrameUrl != null && bubbleFrameUrl!.isNotEmpty) {
+      // Bubble animado: usa Image.network com gaplessPlayback
+      if (isBubbleAnimated && !bubbleFrameUrl!.startsWith('procedural:')) {
+        return _buildAnimatedBubble(context);
+      }
       return _buildFramedBubble(context);
     }
 
@@ -119,10 +148,87 @@ class ChatBubble extends ConsumerWidget {
     );
   }
 
-  /// Bubble com frame decorativo — réplica Amino com motor 9-slice real.
+  /// Bubble com frame animado (GIF / WebP animado).
+  ///
+  /// Usa [Image.network] com [gaplessPlayback: true] como fundo do balão,
+  /// preservando o loop completo da animação. O 9-slice scaling não é
+  /// aplicado pois [Canvas.drawImageNine] não suporta frames animados.
+  ///
+  /// O layout replica o [NineSliceBubble]: alinhamento, padding lateral,
+  /// [maxWidth] e padding do conteúdo são preservados.
+  Widget _buildAnimatedBubble(BuildContext context) {
+    final r = context.r;
+    final effectivePadding = contentPadding ??
+        const EdgeInsets.symmetric(horizontal: 20, vertical: 14);
+    return Align(
+      alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: isMine ? 48 : 4,
+          right: isMine ? 4 : 48,
+          top: r.s(3),
+          bottom: r.s(3),
+        ),
+        child: Container(
+          constraints: BoxConstraints(maxWidth: maxWidth, minHeight: 48),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            // Fallback de cor enquanto o GIF carrega
+            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              // Fundo animado: GIF/WebP em loop contínuo
+              Positioned.fill(
+                child: Image.network(
+                  bubbleFrameUrl!,
+                  fit: BoxFit.fill,
+                  // gaplessPlayback evita piscar entre loops da animação
+                  gaplessPlayback: true,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
+                  ),
+                  loadingBuilder: (_, child, progress) {
+                    if (progress == null) return child;
+                    // Enquanto carrega, mostra fundo semitransparente
+                    return Container(
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
+                    );
+                  },
+                ),
+              ),
+              // Conteúdo da mensagem sobre o GIF
+              Padding(
+                padding: effectivePadding,
+                child: DefaultTextStyle(
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: r.fs(14),
+                    height: 1.4,
+                    shadows: const [
+                      // Sombra sutil para legibilidade sobre o GIF
+                      Shadow(
+                        color: Colors.black54,
+                        blurRadius: 4,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: child,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Bubble com frame decorativo estático — réplica Amino com motor 9-slice real.
   ///
   /// Usa [NineSliceBubble] para imagens PNG da loja (9-slice scaling real
-  /// via centerSlice do Flutter) ou [ProceduralBubbleFrame] para frames
+  /// via [Canvas.drawImageNine]) ou [ProceduralBubbleFrame] para frames
   /// procedurais com decorações desenhadas via CustomPainter.
   Widget _buildFramedBubble(BuildContext context) {
     // Se a URL começa com 'procedural:' é um frame procedural
