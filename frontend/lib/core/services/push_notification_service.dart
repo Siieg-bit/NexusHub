@@ -256,8 +256,6 @@ class PushNotificationService {
           enableVibration: true,
           enableLights: true,
           playSound: true,
-          // Garantir que a notificação não seja descartada pelo sistema
-          setAsAction: true,
           ticker: notification.title,
         ),
       ),
