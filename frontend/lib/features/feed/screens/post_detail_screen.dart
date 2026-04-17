@@ -1837,12 +1837,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         context.push('/community/$communityId/create-story', extra: extra);
         break;
       default:
-        // Tipo normal ou desconhecido — usar o editor genérico
+        // Tipo normal ou desconhecido — usar o editor de blog (mais completo)
         context.push(
-          '/community/$communityId/create-post',
+          '/community/$communityId/create-blog',
           extra: {
             'editingPost': post,
-            'initialType': type,
           },
         );
     }

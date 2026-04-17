@@ -368,6 +368,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
 
   @override
   void dispose() {
+    _autoDraftTimer?.cancel();
     _titleController.dispose();
     _descriptionController.dispose();
     _tagController.dispose();
@@ -375,6 +376,29 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       q.dispose();
     }
     super.dispose();
+  }
+
+  bool get _hasContent =>
+      _titleController.text.trim().isNotEmpty ||
+      _descriptionController.text.trim().isNotEmpty ||
+      _questions.any((q) => q.questionController.text.trim().isNotEmpty) ||
+      _coverImageUrl != null;
+
+  Future<void> _onWillPop() async {
+    if (_hasContent && !_isEditing) {
+      await _saveDraft(silent: true);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(getStrings().draftSaved),
+            backgroundColor: context.nexusTheme.success,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+    if (mounted) context.pop();
   }
 
   void _addQuestion() {
@@ -701,7 +725,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         ),
         leading: IconButton(
           icon: Icon(Icons.close_rounded, color: context.nexusTheme.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: _onWillPop,
         ),
         actions: [
           PopupMenuButton<String>(

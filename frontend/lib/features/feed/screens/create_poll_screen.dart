@@ -254,12 +254,36 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
 
   @override
   void dispose() {
+    _autoDraftTimer?.cancel();
     _titleController.dispose();
     _descriptionController.dispose();
     for (final c in _options) {
       c.dispose();
     }
     super.dispose();
+  }
+
+  bool get _hasContent =>
+      _titleController.text.trim().isNotEmpty ||
+      _descriptionController.text.trim().isNotEmpty ||
+      _options.any((c) => c.text.trim().isNotEmpty) ||
+      _coverImageUrl != null;
+
+  Future<void> _onWillPop() async {
+    if (_hasContent && !_isEditing) {
+      await _saveDraft(silent: true);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(getStrings().draftSaved),
+            backgroundColor: context.nexusTheme.success,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+    if (mounted) context.pop();
   }
 
   void _addOption() {
@@ -486,7 +510,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
         ),
         leading: IconButton(
           icon: Icon(Icons.close_rounded, color: context.nexusTheme.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: _onWillPop,
         ),
         actions: [
           PopupMenuButton<String>(

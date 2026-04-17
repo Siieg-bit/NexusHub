@@ -326,8 +326,13 @@ String _draftRouteFor(String communityId, PostDraftModel draft) {
     case 'question':
     case 'qa':
       return '/community/$communityId/create-question';
+    case 'wiki':
+      return '/community/$communityId/wiki/create';
+    case 'normal':
+    case 'text':
     default:
-      return '/community/$communityId/create-post';
+      // Rascunhos de texto simples usam o editor de blog (mais completo)
+      return '/community/$communityId/create-blog';
   }
 }
 

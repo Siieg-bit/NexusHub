@@ -21,7 +21,6 @@ import '../features/communities/screens/create_community_screen.dart';
 import '../features/communities/screens/community_members_screen.dart';
 import '../features/communities/screens/acm_screen.dart';
 import '../features/explore/screens/explore_screen.dart';
-import '../features/feed/screens/create_post_screen.dart';
 import '../features/feed/screens/create_blog_screen.dart';
 import '../features/feed/screens/create_image_post_screen.dart';
 import '../features/feed/screens/create_link_post_screen.dart';
@@ -297,19 +296,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/question/:id',
         redirect: (context, state) => '/post/${state.pathParameters['id']!}',
       ),
-      GoRoute(
-        path: '/community/:communityId/create-post',
-        name: 'create-post',
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>? ?? {};
-          return CreatePostScreen(
-            communityId: state.pathParameters['communityId']!,
-            initialType: extra['initialType'] as String?,
-            editingPost: extra['editingPost'] as PostModel?,
-          );
-        },
-      ),
-
       // Rotas de criação dedicadas — cada tipo usa sua tela especializada
       GoRoute(
         path: '/community/:communityId/create-blog',

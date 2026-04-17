@@ -224,6 +224,29 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
     super.dispose();
   }
 
+  bool get _hasContent =>
+      _titleController.text.trim().isNotEmpty ||
+      _urlController.text.trim().isNotEmpty ||
+      _descriptionController.text.trim().isNotEmpty ||
+      _tags.isNotEmpty;
+
+  Future<void> _onWillPop() async {
+    if (_hasContent && !_isEditing) {
+      await _saveDraft(silent: true);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(getStrings().draftSaved),
+            backgroundColor: context.nexusTheme.success,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+    if (mounted) context.pop();
+  }
+
   void _onUrlChanged() {
     final url = _urlController.text.trim();
     final valid = Uri.tryParse(url)?.hasAbsolutePath == true &&
@@ -502,7 +525,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
         ),
         leading: IconButton(
           icon: Icon(Icons.close_rounded, color: context.nexusTheme.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: _onWillPop,
         ),
         actions: [
           PopupMenuButton<String>(
