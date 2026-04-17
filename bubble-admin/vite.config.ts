@@ -152,8 +152,12 @@ function vitePluginManusDebugCollector(): Plugin {
 
 const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
 
+// Em GitHub Pages o site fica em /NexusHub/ — usamos base path condicional
+const isGithubPages = process.env.GITHUB_PAGES === "true";
+
 export default defineConfig({
   plugins,
+  base: isGithubPages ? "/NexusHub/" : "/",
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
