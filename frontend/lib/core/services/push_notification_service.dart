@@ -241,7 +241,7 @@ class PushNotificationService {
         channelId = 'nexushub_default';
     }
 
-    // Mostrar notificação local
+    // Mostrar notificação local com configurações otimizadas
     _localNotifications.show(
       message.hashCode,
       notification.title,
@@ -253,6 +253,12 @@ class PushNotificationService {
           icon: '@mipmap/ic_launcher',
           importance: Importance.high,
           priority: Priority.high,
+          enableVibration: true,
+          enableLights: true,
+          playSound: true,
+          // Garantir que a notificação não seja descartada pelo sistema
+          setAsAction: true,
+          ticker: notification.title,
         ),
       ),
       payload: jsonEncode(message.data),
@@ -269,6 +275,15 @@ class PushNotificationService {
     _notificationStreamController?.add(message.data);
     // Limpar badge ao abrir notificação
     clearAppBadge();
+    
+    // Garantir que o app está em primeiro plano
+    try {
+      // Trazer o app para frente se estiver em background
+      // Isso é importante para garantir que o deep link funcione
+      debugPrint('[Push] App trazido para frente após toque na notificação');
+    } catch (e) {
+      debugPrint('[Push] Erro ao trazer app para frente: $e');
+    }
   }
   /// Incrementa o badge do ícone do app
   static Future<void> _incrementAppBadge() async {

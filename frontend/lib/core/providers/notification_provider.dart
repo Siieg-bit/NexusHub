@@ -606,42 +606,58 @@ class CommunityNotificationNotifier
     if (userId == null) return const NotificationState(hasMore: false);
 
     try {
-      PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
-          SupabaseService.table('notifications').select(
-        '*, community_members!inner(local_nickname, local_icon_url)',
-      );
+      // Usar RPC para buscar notificações com perfil local correto do ator
+      final categoryValue = switch (category) {
+        NotificationCategory.social => 'social',
+        NotificationCategory.chat => 'chat',
+        NotificationCategory.community => 'community',
+        NotificationCategory.system => 'system',
+        NotificationCategory.all => 'all',
+      };
 
-      query = query.eq('user_id', userId).eq('community_id', communityId);
-
-      switch (category) {
-        case NotificationCategory.social:
-          query = query.inFilter('type', ['like', 'comment', 'follow', 'mention', 'wall_post']);
-          break;
-        case NotificationCategory.chat:
-          query = query.inFilter('type', ['chat_message', 'chat_mention', 'dm_invite']);
-          break;
-        case NotificationCategory.community:
-          query = query.inFilter('type', ['community_invite', 'community_update', 'join_request', 'role_change']);
-          break;
-        case NotificationCategory.system:
-          query = query.inFilter('type', ['level_up', 'achievement', 'check_in_streak', 'moderation', 'strike', 'ban', 'broadcast', 'wiki_approved', 'wiki_rejected', 'tip']);
-          break;
-        case NotificationCategory.all:
-          break;
-      }
-
-      final rows = await query
-          .order('created_at', ascending: false)
-          .range(offset, offset + _pageSize - 1);
+      final rows = await SupabaseService.rpc(
+        'get_community_notifications_by_category',
+        params: {
+          'p_community_id': communityId,
+          'p_category': categoryValue,
+          'p_limit': _pageSize,
+          'p_offset': offset,
+        },
+      ) as List<dynamic>;
 
       final items = rows
           .map((e) => Map<String, dynamic>.from(e as Map))
           .toList();
 
+      // Transformar dados da RPC para o formato esperado pelo frontend
+      final normalizedItems = items.map((item) {
+        final actorLocalNickname = item['actor_local_nickname'] as String?;
+        final actorLocalIconUrl = item['actor_local_icon_url'] as String?;
+        final actorGlobalNickname = item['actor_global_nickname'] as String?;
+        final actorGlobalIconUrl = item['actor_global_icon_url'] as String?;
+
+        return {
+          ...item,
+          // Estrutura esperada pela tela: community_members com dados locais
+          'community_members': actorLocalNickname != null || actorLocalIconUrl != null
+              ? {
+                  'local_nickname': actorLocalNickname,
+                  'local_icon_url': actorLocalIconUrl,
+                }
+              : null,
+          // Estrutura esperada pela tela: profiles com dados globais
+          'profiles': {
+            'id': item['actor_id'],
+            'nickname': actorGlobalNickname,
+            'icon_url': actorGlobalIconUrl,
+          },
+        };
+      }).toList();
+
       final unreadCount = await _fetchUnreadCount(communityId);
 
       return NotificationState(
-        notifications: [...existing, ...items],
+        notifications: [...existing, ...normalizedItems],
         unreadCount: unreadCount,
         hasMore: items.length == _pageSize,
         category: category,
