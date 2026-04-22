@@ -55,6 +55,14 @@ class ChatBubble extends ConsumerWidget {
   /// vez lê [asset_config.is_animated] do banco de dados.
   final bool isBubbleAnimated;
 
+  /// Cor customizada do texto dentro do balão.
+  ///
+  /// Quando fornecida, sobrescreve a cor padrão calculada por [_textColor].
+  /// Lida de [asset_config.text_color] no banco de dados via
+  /// [UserCosmetics.chatBubbleTextColor].
+  /// Suporta formato hex com ou sem `#` (ex: `#FFFFFF` ou `FFFFFF`).
+  final Color? bubbleTextColor;
+
   const ChatBubble({
     super.key,
     required this.child,
@@ -68,6 +76,7 @@ class ChatBubble extends ConsumerWidget {
     this.imageSize,
     this.contentPadding,
     this.isBubbleAnimated = false,
+    this.bubbleTextColor,
   });
 
   /// Cor do bubble baseada no role do usuário — estilo Amino
@@ -87,8 +96,13 @@ class ChatBubble extends ConsumerWidget {
     }
   }
 
-  /// Cor do texto baseada no tipo de bubble
+  /// Cor do texto baseada no tipo de bubble.
+  ///
+  /// Prioridade:
+  /// 1. [bubbleTextColor] — cor customizada definida no asset_config do bubble
+  /// 2. Cor padrão baseada em role/isMine
   Color _textColor(BuildContext context) {
+    if (bubbleTextColor != null) return bubbleTextColor!;
     if (isMine ||
         userRole == 'agent' ||
         userRole == 'leader' ||
@@ -203,17 +217,19 @@ class ChatBubble extends ConsumerWidget {
                 padding: effectivePadding,
                 child: DefaultTextStyle(
                   style: TextStyle(
-                    color: Colors.white,
+                    // bubbleTextColor tem prioridade; fallback: branco com sombra
+                    color: bubbleTextColor ?? Colors.white,
                     fontSize: r.fs(14),
                     height: 1.4,
-                    shadows: const [
-                      // Sombra sutil para legibilidade sobre o GIF
-                      Shadow(
-                        color: Colors.black54,
-                        blurRadius: 4,
-                        offset: Offset(0, 1),
-                      ),
-                    ],
+                    shadows: bubbleTextColor == null
+                        ? const [
+                            Shadow(
+                              color: Colors.black54,
+                              blurRadius: 4,
+                              offset: Offset(0, 1),
+                            ),
+                          ]
+                        : null,
                   ),
                   child: child,
                 ),
@@ -254,6 +270,8 @@ class ChatBubble extends ConsumerWidget {
       imageSize: imageSize ?? const Size(128, 128),
       contentPadding: contentPadding ??
           const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      // Passa a cor do texto para o NineSliceBubble aplicar no DefaultTextStyle
+      textColor: bubbleTextColor,
       child: child,
     );
   }

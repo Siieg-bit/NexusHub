@@ -23,6 +23,12 @@ class NineSliceBubble extends StatelessWidget {
   final Size imageSize;
   final EdgeInsets contentPadding;
 
+  /// Cor customizada do texto dentro do balão.
+  ///
+  /// Quando fornecida, sobrescreve o branco padrão do [DefaultTextStyle].
+  /// Lida de [asset_config.text_color] via [UserCosmetics.chatBubbleTextColor].
+  final Color? textColor;
+
   const NineSliceBubble({
     super.key,
     required this.child,
@@ -35,6 +41,7 @@ class NineSliceBubble extends StatelessWidget {
       horizontal: 20,
       vertical: 14,
     ),
+    this.textColor,
   });
 
   @override
@@ -70,7 +77,8 @@ class NineSliceBubble extends StatelessWidget {
                 padding: contentPadding,
                 child: DefaultTextStyle(
                   style: TextStyle(
-                    color: Colors.white,
+                    // textColor tem prioridade; fallback: branco (padrão para frames)
+                    color: textColor ?? Colors.white,
                     fontSize: r.fs(14),
                     height: 1.4,
                   ),

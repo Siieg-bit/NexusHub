@@ -38,6 +38,13 @@ type BubbleForm = {
   rarity: "common" | "rare" | "epic" | "legendary";
   isActive: boolean;
   isAnimated: boolean;
+  // Bordas do nine-slice (pixels na imagem original)
+  sliceTop: number;
+  sliceLeft: number;
+  sliceRight: number;
+  sliceBottom: number;
+  // Cor customizada do texto do balão (hex, ex: #FFFFFF)
+  textColor: string;
 };
 
 /// Detecta automaticamente se um arquivo de imagem é animado
@@ -130,6 +137,11 @@ function BubblesDashboard() {
     rarity: "common",
     isActive: true,
     isAnimated: false,
+    sliceTop: 38,
+    sliceLeft: 38,
+    sliceRight: 38,
+    sliceBottom: 38,
+    textColor: "",
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -200,6 +212,11 @@ function BubblesDashboard() {
       rarity: (bubble.asset_config as Record<string, string>)?.rarity as BubbleForm["rarity"] ?? "common",
       isActive: bubble.is_active,
       isAnimated: (bubble.asset_config as Record<string, unknown>)?.is_animated as boolean ?? false,
+      sliceTop: Number((bubble.asset_config as Record<string, unknown>)?.slice_top ?? 38),
+      sliceLeft: Number((bubble.asset_config as Record<string, unknown>)?.slice_left ?? 38),
+      sliceRight: Number((bubble.asset_config as Record<string, unknown>)?.slice_right ?? 38),
+      sliceBottom: Number((bubble.asset_config as Record<string, unknown>)?.slice_bottom ?? 38),
+      textColor: String((bubble.asset_config as Record<string, unknown>)?.text_color ?? ""),
     });
     setImagePreview(bubble.preview_url);
     setImageFile(null);
@@ -207,7 +224,7 @@ function BubblesDashboard() {
 
   function cancelEdit() {
     setEditingBubble(null);
-    setForm({ name: "", description: "", priceCoins: 150, rarity: "common", isActive: true, isAnimated: false });
+    setForm({ name: "", description: "", priceCoins: 150, rarity: "common", isActive: true, isAnimated: false, sliceTop: 38, sliceLeft: 38, sliceRight: 38, sliceBottom: 38, textColor: "" });
     setImageFile(null);
     setImagePreview(null);
     setImageDimensions(null);
@@ -255,6 +272,8 @@ function BubblesDashboard() {
             content_padding_v: 14,
             is_animated: true,
             rarity: form.rarity,
+            // text_color: cor customizada do texto (omitido se vazio = usa padrão do app)
+            ...(form.textColor.trim() ? { text_color: form.textColor.trim() } : {}),
           }
         : {
             image_url: publicUrl,
@@ -262,14 +281,17 @@ function BubblesDashboard() {
             bubble_style: "nine_slice",
             image_width: imgW,
             image_height: imgH,
-            slice_top: Math.round(imgH * sliceRatio),
-            slice_left: Math.round(imgW * sliceRatio),
-            slice_right: Math.round(imgW * sliceRatio),
-            slice_bottom: Math.round(imgH * sliceRatio),
+            // Bordas nine-slice definidas manualmente no painel
+            slice_top: form.sliceTop,
+            slice_left: form.sliceLeft,
+            slice_right: form.sliceRight,
+            slice_bottom: form.sliceBottom,
             content_padding_h: 20,
             content_padding_v: 14,
             is_animated: false,
             rarity: form.rarity,
+            // text_color: cor customizada do texto (omitido se vazio = usa padrão do app)
+            ...(form.textColor.trim() ? { text_color: form.textColor.trim() } : {}),
           };
 
       const payload = {
@@ -470,6 +492,87 @@ function BubblesDashboard() {
                 </span>
               </div>
             )}
+            {/* Bordas Nine-Slice — apenas para bubbles estáticos */}
+            {!form.isAnimated && (
+              <div className="space-y-2">
+                <Label className="text-[#9CA3AF] text-xs uppercase tracking-wide" style={{ fontFamily: "'DM Mono', monospace" }}>
+                  Bordas Nine-Slice (px)
+                </Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <span className="text-[#6B7280] text-xs">Topo</span>
+                    <Input
+                      type="number" min={0} max={256}
+                      value={form.sliceTop}
+                      onChange={(e) => setForm({ ...form, sliceTop: parseInt(e.target.value) || 0 })}
+                      className="bg-[#111214] border-[#2A2D34] text-white h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[#6B7280] text-xs">Base</span>
+                    <Input
+                      type="number" min={0} max={256}
+                      value={form.sliceBottom}
+                      onChange={(e) => setForm({ ...form, sliceBottom: parseInt(e.target.value) || 0 })}
+                      className="bg-[#111214] border-[#2A2D34] text-white h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[#6B7280] text-xs">Esquerda</span>
+                    <Input
+                      type="number" min={0} max={256}
+                      value={form.sliceLeft}
+                      onChange={(e) => setForm({ ...form, sliceLeft: parseInt(e.target.value) || 0 })}
+                      className="bg-[#111214] border-[#2A2D34] text-white h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[#6B7280] text-xs">Direita</span>
+                    <Input
+                      type="number" min={0} max={256}
+                      value={form.sliceRight}
+                      onChange={(e) => setForm({ ...form, sliceRight: parseInt(e.target.value) || 0 })}
+                      className="bg-[#111214] border-[#2A2D34] text-white h-9 text-sm"
+                    />
+                  </div>
+                </div>
+                <p className="text-[#4B5563] text-xs">
+                  Pixels das bordas que não serão esticados. Padrão: 38px para imagens 128×128.
+                </p>
+              </div>
+            )}
+            {/* Cor do Texto */}
+            <div className="space-y-1.5">
+              <Label className="text-[#9CA3AF] text-xs uppercase tracking-wide" style={{ fontFamily: "'DM Mono', monospace" }}>
+                Cor do Texto
+              </Label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={form.textColor || "#FFFFFF"}
+                  onChange={(e) => setForm({ ...form, textColor: e.target.value })}
+                  className="w-10 h-10 rounded-md border border-[#2A2D34] bg-[#111214] cursor-pointer p-0.5 flex-shrink-0"
+                />
+                <Input
+                  value={form.textColor}
+                  onChange={(e) => setForm({ ...form, textColor: e.target.value })}
+                  placeholder="#FFFFFF (vazio = padrão do app)"
+                  className="bg-[#111214] border-[#2A2D34] text-white placeholder:text-[#4B5563] h-10 flex-1 font-mono text-sm"
+                />
+                {form.textColor && (
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, textColor: "" })}
+                    className="text-[#6B7280] hover:text-white text-xs px-2 py-1.5 rounded border border-[#2A2D34] hover:border-[#4B5563] transition-colors flex-shrink-0"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
+              <p className="text-[#4B5563] text-xs">
+                Cor das mensagens dentro do balão. Vazio = cor padrão do app (branco para frames).
+              </p>
+            </div>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"

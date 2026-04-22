@@ -45,6 +45,14 @@ class UserCosmetics {
   final Size chatBubbleImageSize;
   final EdgeInsets chatBubbleContentPadding;
 
+  /// Cor customizada do texto do balão.
+  ///
+  /// Lida de [asset_config.text_color] no banco de dados.
+  /// Quando nula, o [ChatBubble] usa a cor padrão baseada em role/isMine.
+  /// Formato hex armazenado como string (ex: `#FFFFFF`), convertido aqui
+  /// para [Color] via [_hexToColor].
+  final Color? chatBubbleTextColor;
+
   const UserCosmetics({
     required this.userId,
     this.avatarFrameUrl,
@@ -61,6 +69,7 @@ class UserCosmetics {
       horizontal: 20,
       vertical: 14,
     ),
+    this.chatBubbleTextColor,
   });
 
   factory UserCosmetics.empty(String userId) => UserCosmetics(userId: userId);
@@ -76,8 +85,24 @@ class UserCosmetics {
       chatBubbleImageUrl: json['chat_bubble_image_url'] as String?,
       isChatBubbleAnimated: json['is_chat_bubble_animated'] as bool? ?? false,
       isAminoPlus: json['is_amino_plus'] as bool? ?? false,
+      chatBubbleTextColor: _hexToColor(json['chat_bubble_text_color'] as String?),
     );
   }
+}
+
+/// Converte uma string hex (#RRGGBB ou RRGGBB) para [Color].
+/// Retorna null se a string for nula, vazia ou inválida.
+Color? _hexToColor(String? hex) {
+  if (hex == null || hex.trim().isEmpty) return null;
+  final clean = hex.trim().replaceFirst('#', '');
+  if (clean.length == 6) {
+    final value = int.tryParse('FF$clean', radix: 16);
+    if (value != null) return Color(value);
+  } else if (clean.length == 8) {
+    final value = int.tryParse(clean, radix: 16);
+    if (value != null) return Color(value);
+  }
+  return null;
 }
 
 /// Extrai os parâmetros de nine-slice do [assetConfig] de um store_item.
@@ -134,6 +159,7 @@ final userCosmeticsProvider =
     String? chatBubbleImageUrl;
     bool isChatBubbleAnimated = false;
     var sliceParams = _extractNineSliceParams({});
+    String chatBubbleTextColorHex = '';
 
     for (final item in ((equipped as List? ?? []))) {
       final storeItem = _asMap(item['store_items']);
@@ -176,6 +202,8 @@ final userCosmeticsProvider =
         isChatBubbleAnimated = assetConfig['is_animated'] as bool? ?? false;
         // Extrai parâmetros nine-slice do asset_config
         sliceParams = _extractNineSliceParams(assetConfig);
+        // Lê text_color do asset_config para cor customizada do texto
+        chatBubbleTextColorHex = _asString(assetConfig['text_color']);
       }
     }
 
@@ -198,6 +226,7 @@ final userCosmeticsProvider =
       chatBubbleSliceInsets: sliceParams.sliceInsets,
       chatBubbleImageSize: sliceParams.imageSize,
       chatBubbleContentPadding: sliceParams.contentPadding,
+      chatBubbleTextColor: _hexToColor(chatBubbleTextColorHex),
     );
   } catch (e, st) {
     debugPrint('[CosmeticsProvider] ERRO userId=$userId: $e\n$st');
@@ -242,6 +271,7 @@ final batchCosmeticsProvider =
       String? chatBubbleImageUrl;
       bool isChatBubbleAnimated = false;
       var sliceParams = _extractNineSliceParams({});
+      String chatBubbleTextColorHex = '';
 
       for (final item in items) {
         final storeItem = _asMap(item['store_items']);
@@ -277,6 +307,7 @@ final batchCosmeticsProvider =
           ]);
           isChatBubbleAnimated = assetConfig['is_animated'] as bool? ?? false;
           sliceParams = _extractNineSliceParams(assetConfig);
+          chatBubbleTextColorHex = _asString(assetConfig['text_color']);
         }
       }
 
@@ -292,6 +323,7 @@ final batchCosmeticsProvider =
         chatBubbleSliceInsets: sliceParams.sliceInsets,
         chatBubbleImageSize: sliceParams.imageSize,
         chatBubbleContentPadding: sliceParams.contentPadding,
+        chatBubbleTextColor: _hexToColor(chatBubbleTextColorHex),
       );
     }
   } catch (e) {

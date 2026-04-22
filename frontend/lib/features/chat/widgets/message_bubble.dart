@@ -578,6 +578,8 @@ class MessageBubble extends ConsumerWidget {
                             sliceInsets: bubbleSliceInsets,
                             imageSize: bubbleImageSize,
                             contentPadding: bubbleContentPadding,
+                            // Cor customizada do texto lida do asset_config.text_color
+                            bubbleTextColor: activeCosmetics?.chatBubbleTextColor,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
