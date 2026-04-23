@@ -220,3 +220,18 @@ body { font-family: 'Inter', system-ui, sans-serif; background-color: var(--nx-v
   @media (min-width: 640px) { .container { padding-left: 1.5rem; padding-right: 1.5rem; } }
   @media (min-width: 1024px) { .container { padding-left: 2rem; padding-right: 2rem; max-width: 1280px; } }
 }
+
+/* ─── Select / Dropdown global dark theme ────────────────────────────────── */
+select {
+  color-scheme: dark;
+  background-color: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.75);
+}
+select option {
+  background-color: #111827;
+  color: rgba(255, 255, 255, 0.85);
+}
+select option:checked {
+  background-color: rgba(124, 58, 237, 0.5);
+  color: #C4B5FD;
+}
