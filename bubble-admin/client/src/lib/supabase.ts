@@ -3,10 +3,6 @@ import { createClient } from "@supabase/supabase-js";
 const SUPABASE_URL = "https://ylvzqqvcanzzswjkqeya.supabase.co";
 // Usando a nova publishable key do Supabase (substitui a anon key legada)
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_HYsYzaF8DuBgXpqJAICJ1Q_b73GLUeb";
-// Secret key — lida da variável de ambiente VITE_SUPABASE_SECRET_KEY
-// Configurada como secret no GitHub Actions para não ser exposta no código
-const SUPABASE_SERVICE_ROLE_KEY = import.meta.env.VITE_SUPABASE_SECRET_KEY as string;
-
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     persistSession: true,
@@ -14,45 +10,9 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   },
 });
 
-// Cliente admin com secret key — bypassa RLS para operações do painel
-// A sb_secret key não é um JWT legacy, por isso usamos fetch customizado
-// para garantir que apikey e Authorization sejam sempre a secret key,
-// sobrescrevendo qualquer header que o supabase-js tente injetar.
-const adminFetch = (url: RequestInfo | URL, options: RequestInit = {}) => {
-  // Criar Headers do zero para evitar que o supabase-js sobrescreva com a publishable key
-  const headers = new Headers();
-  // Primeiro setar a secret key
-  headers.set("apikey", SUPABASE_SERVICE_ROLE_KEY);
-  headers.set("Authorization", `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`);
-  // Depois copiar os outros headers (Content-Type, Accept, etc.) sem sobrescrever auth
-  const incoming = options.headers;
-  if (incoming instanceof Headers) {
-    incoming.forEach((value, key) => {
-      const lower = key.toLowerCase();
-      if (lower !== "apikey" && lower !== "authorization") {
-        headers.set(key, value);
-      }
-    });
-  } else if (incoming && typeof incoming === "object") {
-    Object.entries(incoming as Record<string, string>).forEach(([key, value]) => {
-      const lower = key.toLowerCase();
-      if (lower !== "apikey" && lower !== "authorization") {
-        headers.set(key, value);
-      }
-    });
-  }
-  return fetch(url, { ...options, headers });
-};
-
-export const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-  },
-  global: {
-    fetch: adminFetch,
-  },
-});
+// supabaseAdmin é alias do supabase — as tabelas admin têm políticas RLS
+// que permitem acesso para a role anon (publishable key) diretamente
+export const supabaseAdmin = supabase;
 
 // ─── Tipos da Loja ─────────────────────────────────────────────────────────────
 
