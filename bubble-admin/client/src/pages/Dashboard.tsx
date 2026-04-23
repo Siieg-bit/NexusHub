@@ -130,18 +130,17 @@ function parseBubbleConfig(raw: Record<string, unknown>): BubbleAssetConfig {
 }
 
 // ─── Hook: useImageLoader ─────────────────────────────────────────────────────
-// Carrega uma imagem de forma segura, com suporte a Object URLs (revoga no cleanup),
-// URLs remotas (via fetch para evitar CORS no canvas) e estado reativo.
-
+// Carrega uma imagem de forma segura e reativa.
+// - Object URLs (blob:): carregados diretamente sem crossOrigin
+// - URLs remotas: usa crossOrigin="anonymous" para permitir drawImage no canvas
+//   sem "tainted canvas" (Supabase Storage serve com Access-Control-Allow-Origin: *)
 type ImageState =
   | { status: "idle" }
   | { status: "loading" }
   | { status: "ready"; img: HTMLImageElement }
   | { status: "error"; message: string };
-
-// Cache de sessão: evita múltiplos fetches da mesma URL remota
+// Cache de sessão: evita múltiplos carregamentos da mesma URL
 const _sessionCache = new Map<string, HTMLImageElement>();
-
 function useImageLoader(url: string | null): ImageState {
   const [state, setState] = useState<ImageState>(() => {
     if (!url) return { status: "idle" };
@@ -149,53 +148,30 @@ function useImageLoader(url: string | null): ImageState {
     if (cached) return { status: "ready", img: cached };
     return { status: "loading" };
   });
-
   useEffect(() => {
     if (!url) { setState({ status: "idle" }); return; }
-
-    // Já no cache — usa imediatamente sem async
+    // Já no cache — aplica imediatamente
     const cached = _sessionCache.get(url);
     if (cached) { setState({ status: "ready", img: cached }); return; }
-
     setState({ status: "loading" });
     let cancelled = false;
-    let blobUrl: string | null = null;
-
-    (async () => {
-      try {
-        let src = url;
-        // Para URLs remotas: fetch como blob para evitar taint no canvas (CORS)
-        if (!url.startsWith("blob:") && !url.startsWith("data:")) {
-          const res = await fetch(url);
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const blob = await res.blob();
-          blobUrl = URL.createObjectURL(blob);
-          src = blobUrl;
-        }
-        const img = new window.Image();
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => resolve();
-          img.onerror = () => reject(new Error("Falha ao decodificar imagem"));
-          img.src = src;
-        });
-        if (cancelled) return;
-        _sessionCache.set(url, img);
-        setState({ status: "ready", img });
-      } catch (err) {
-        if (cancelled) return;
-        setState({ status: "error", message: err instanceof Error ? err.message : "Erro desconhecido" });
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-      // Revoga blob URLs criados para arquivos locais (evita memory leak)
-      if (blobUrl && url.startsWith("blob:")) {
-        URL.revokeObjectURL(blobUrl);
-      }
+    const img = new window.Image();
+    // crossOrigin DEVE ser definido antes de img.src para ter efeito
+    if (!url.startsWith("blob:") && !url.startsWith("data:")) {
+      img.crossOrigin = "anonymous";
+    }
+    img.onload = () => {
+      if (cancelled) return;
+      _sessionCache.set(url, img);
+      setState({ status: "ready", img });
     };
+    img.onerror = () => {
+      if (cancelled) return;
+      setState({ status: "error", message: "Falha ao carregar imagem" });
+    };
+    img.src = url;
+    return () => { cancelled = true; };
   }, [url]);
-
   return state;
 }
 
