@@ -176,7 +176,7 @@ function useImageLoader(url: string | null): ImageState {
 }
 
 // ─── Chat Preview (cards da lista — usa CSS border-image) ─────────────────────
-function ChatPreview({ imageUrl, name }: { imageUrl: string | null; name: string }) {
+function ChatPreview({ imageUrl, name, cfg }: { imageUrl: string | null; name: string; cfg?: { slice_top: number; slice_bottom: number; slice_left: number; slice_right: number; font_size: number; text_color?: string; pad_top: number; pad_bottom: number; pad_left: number; pad_right: number } }) {
   const messages = [
     { id: 1, mine: false, text: "Que bubble incrível 👀" },
     { id: 2, mine: true,  text: name || "Novo bubble" },
@@ -189,18 +189,24 @@ function ChatPreview({ imageUrl, name }: { imageUrl: string | null; name: string
         <div key={msg.id} className={`flex ${msg.mine ? "justify-end" : "justify-start"}`}>
           {imageUrl ? (
             <div
-              className="relative max-w-[180px] px-4 py-2.5 text-[13px]"
+              className="relative max-w-[180px]"
               style={{
                 backgroundImage: `url(${imageUrl})`,
                 backgroundRepeat: "no-repeat",
                 backgroundSize: "100% 100%",
                 borderImageSource: `url(${imageUrl})`,
-                borderImageSlice: "38 fill",
-                borderImageWidth: "38px",
+                borderImageSlice: `${cfg?.slice_top ?? 38} ${cfg?.slice_right ?? 38} ${cfg?.slice_bottom ?? 38} ${cfg?.slice_left ?? 38} fill`,
+                borderImageWidth: `${cfg?.slice_top ?? 38}px ${cfg?.slice_right ?? 38}px ${cfg?.slice_bottom ?? 38}px ${cfg?.slice_left ?? 38}px`,
                 borderImageRepeat: "stretch",
                 minHeight: "40px",
-                color: "rgba(255,255,255,0.9)",
+                paddingTop: `${(cfg?.slice_top ?? 38) + (cfg?.pad_top ?? 8)}px`,
+                paddingBottom: `${(cfg?.slice_bottom ?? 38) + (cfg?.pad_bottom ?? 8)}px`,
+                paddingLeft: `${(cfg?.slice_left ?? 38) + (cfg?.pad_left ?? 8)}px`,
+                paddingRight: `${(cfg?.slice_right ?? 38) + (cfg?.pad_right ?? 8)}px`,
+                fontSize: `${cfg?.font_size ?? 13}px`,
+                color: cfg?.text_color?.trim() || "rgba(255,255,255,0.9)",
                 fontFamily: "'Space Grotesk', sans-serif",
+                lineHeight: "1.45",
               }}
             >
               {msg.text}
@@ -325,9 +331,9 @@ function NineSliceCanvas({
       }
     }
 
-    // Texto centralizado verticalmente na area FILL
-    const fillH = logH - st - sb;
-    const textStartY = st + Math.max(0, (fillH - textH) / 2);
+    // Texto centralizado verticalmente na area de conteudo (entre innerTop e logH-innerBot)
+    const contentH = logH - innerTop - innerBot;
+    const textStartY = innerTop + Math.max(0, (contentH - textH) / 2);
     const fillW = logW - innerLeft - innerRight;
 
     ctx.fillStyle = msgColor;
@@ -1237,7 +1243,13 @@ function BubblesDashboard() {
                             <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>Como ficará no chat</p>
                             <div className="rounded-xl overflow-hidden" style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.07)" }}>
                               {form.isAnimated ? (
-                                <ChatPreview imageUrl={imageUrl} name={form.name || "Bubble"} />
+                                <ChatPreview imageUrl={imageUrl} name={form.name || "Bubble"} cfg={{
+                                  slice_top: form.sliceTop, slice_bottom: form.sliceBottom,
+                                  slice_left: form.sliceLeft, slice_right: form.sliceRight,
+                                  font_size: form.fontSize, text_color: form.textColor,
+                                  pad_top: form.padTop, pad_bottom: form.padBottom,
+                                  pad_left: form.padLeft, pad_right: form.padRight,
+                                }} />
                               ) : (
                                 <NineSlicePreviewPanel
                                   imageUrl={imageUrl}
@@ -1315,7 +1327,7 @@ function BubblesDashboard() {
                 style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}
               >
                 <div className="relative" style={{ background: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                  <ChatPreview imageUrl={bubble.preview_url} name={bubble.name} />
+                  <ChatPreview imageUrl={bubble.preview_url} name={bubble.name} cfg={cfg} />
                   <div className="absolute top-2 right-2">
                     <span className="text-[9px] font-mono px-2 py-0.5 rounded-full"
                       style={{ background: `rgba(${rc.rgb},0.12)`, color: rc.color, border: `1px solid rgba(${rc.rgb},0.25)` }}>
