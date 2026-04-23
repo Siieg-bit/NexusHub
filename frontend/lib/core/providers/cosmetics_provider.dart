@@ -159,9 +159,16 @@ Color? _hexToColor(String? hex) {
   double imageWidth = _asDouble(assetConfig['image_width'], fallback: 128);
   double imageHeight = _asDouble(assetConfig['image_height'], fallback: 128);
 
-  // Padding bruto salvo pelo editor (distância a partir da borda da fill zone).
-  double paddingH = _asDouble(assetConfig['content_padding_h'], fallback: 20);
-  double paddingV = _asDouble(assetConfig['content_padding_v'], fallback: 14);
+  // Padding bruto salvo pelo editor.
+  // O novo editor poligonal salva pad_top/right/bottom/left individualmente.
+  // Para compatibilidade com itens antigos, usa content_padding_h/v como fallback.
+  final double fallbackH = _asDouble(assetConfig['content_padding_h'], fallback: 20);
+  final double fallbackV = _asDouble(assetConfig['content_padding_v'], fallback: 14);
+
+  final double padTop    = _asDouble(assetConfig['pad_top'],    fallback: fallbackV);
+  final double padRight  = _asDouble(assetConfig['pad_right'],  fallback: fallbackH);
+  final double padBottom = _asDouble(assetConfig['pad_bottom'], fallback: fallbackV);
+  final double padLeft   = _asDouble(assetConfig['pad_left'],   fallback: fallbackH);
 
   // O contentPadding efetivo deve posicionar o texto dentro da fill zone.
   //
@@ -180,22 +187,21 @@ Color? _hexToColor(String? hex) {
   //
   // Onde:
   //   sliceInset        = distância do canto decorativo na imagem original
-  //   kNineSliceOffset  = quanto a imagem já "avana" além do container
+  //   kNineSliceOffset  = quanto a imagem já "avança" além do container
   //   padBruto          = margem extra configurada no editor
-  //
-  // Isso replica exatamente o cálculo do editor bubble-admin:
-  //   paddingTop = sliceTop - offset + padTop
-  final double effectivePaddingH =
-      (sliceLeft - kNineSliceOffset + paddingH).clamp(4.0, double.infinity);
-  final double effectivePaddingV =
-      (sliceTop - kNineSliceOffset + paddingV).clamp(4.0, double.infinity);
+  final double effectivePadTop    = (sliceTop    - kNineSliceOffset + padTop).clamp(4.0, double.infinity);
+  final double effectivePadRight  = (sliceRight  - kNineSliceOffset + padRight).clamp(4.0, double.infinity);
+  final double effectivePadBottom = (sliceBottom - kNineSliceOffset + padBottom).clamp(4.0, double.infinity);
+  final double effectivePadLeft   = (sliceLeft   - kNineSliceOffset + padLeft).clamp(4.0, double.infinity);
 
   return (
     sliceInsets: EdgeInsets.fromLTRB(sliceLeft, sliceTop, sliceRight, sliceBottom),
     imageSize: Size(imageWidth, imageHeight),
-    contentPadding: EdgeInsets.symmetric(
-      horizontal: effectivePaddingH,
-      vertical: effectivePaddingV,
+    contentPadding: EdgeInsets.fromLTRB(
+      effectivePadLeft,
+      effectivePadTop,
+      effectivePadRight,
+      effectivePadBottom,
     ),
   );
 }

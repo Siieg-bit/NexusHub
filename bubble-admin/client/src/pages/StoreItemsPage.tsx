@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase, StoreItem, StoreItemType, Rarity } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
-  Plus, Trash2, Pencil, CheckCircle2, AlertCircle, Loader2,
-  Search, Upload, X, Save, ShoppingBag, Star, Zap, Package,
-  Eye, EyeOff
+  Plus, Trash2, Pencil, CheckCircle2, Loader2,
+  Search, Upload, X, Save, Zap,
+  Eye, EyeOff, Move
 } from "lucide-react";
 
 const TYPE_LABELS: Record<StoreItemType, string> = {
@@ -44,11 +44,245 @@ const DEFAULT_FORM: ItemForm = {
   is_active: true, sort_order: 0, rarity: "common", tags: "",
 };
 
+// ── Padding poligonal (top/right/bottom/left em px relativos à imagem 128×128) ──
+type PaddingPoly = { top: number; right: number; bottom: number; left: number };
+const DEFAULT_PADDING: PaddingPoly = { top: 14, right: 20, bottom: 14, left: 20 };
+
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
   show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.04, duration: 0.25, ease: "easeOut" as const } }),
 };
 
+// ── Componente do editor poligonal ──────────────────────────────────────────────
+function PolygonPaddingEditor({
+  imageUrl,
+  padding,
+  onChange,
+  imageSize = 128,
+}: {
+  imageUrl: string;
+  padding: PaddingPoly;
+  onChange: (p: PaddingPoly) => void;
+  imageSize?: number;
+}) {
+  // O canvas de edição é exibido em 200×200 px; a imagem real é imageSize×imageSize
+  const DISPLAY = 200;
+  const scale = DISPLAY / imageSize;
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef<null | "top" | "right" | "bottom" | "left">(null);
+
+  // Converte padding em px (espaço da imagem) → posição em px (espaço do display)
+  const top    = padding.top    * scale;
+  const right  = DISPLAY - padding.right  * scale;
+  const bottom = DISPLAY - padding.bottom * scale;
+  const left   = padding.left   * scale;
+
+  function clamp(v: number, min: number, max: number) { return Math.max(min, Math.min(max, v)); }
+
+  function onMouseDown(side: "top" | "right" | "bottom" | "left") {
+    return (e: React.MouseEvent) => {
+      e.preventDefault();
+      dragging.current = side;
+
+      function onMove(ev: MouseEvent) {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = ev.clientX - rect.left;
+        const y = ev.clientY - rect.top;
+        const newPad = { ...padding };
+        if (dragging.current === "top")    newPad.top    = clamp(Math.round(y / scale), 0, imageSize / 2);
+        if (dragging.current === "bottom") newPad.bottom = clamp(Math.round((DISPLAY - y) / scale), 0, imageSize / 2);
+        if (dragging.current === "left")   newPad.left   = clamp(Math.round(x / scale), 0, imageSize / 2);
+        if (dragging.current === "right")  newPad.right  = clamp(Math.round((DISPLAY - x) / scale), 0, imageSize / 2);
+        onChange(newPad);
+      }
+      function onUp() {
+        dragging.current = null;
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseup", onUp);
+      }
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onUp);
+    };
+  }
+
+  // Touch support
+  function onTouchStart(side: "top" | "right" | "bottom" | "left") {
+    return (e: React.TouchEvent) => {
+      e.preventDefault();
+      dragging.current = side;
+      function onMove(ev: TouchEvent) {
+        if (!containerRef.current || !ev.touches[0]) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = ev.touches[0].clientX - rect.left;
+        const y = ev.touches[0].clientY - rect.top;
+        const newPad = { ...padding };
+        if (dragging.current === "top")    newPad.top    = clamp(Math.round(y / scale), 0, imageSize / 2);
+        if (dragging.current === "bottom") newPad.bottom = clamp(Math.round((DISPLAY - y) / scale), 0, imageSize / 2);
+        if (dragging.current === "left")   newPad.left   = clamp(Math.round(x / scale), 0, imageSize / 2);
+        if (dragging.current === "right")  newPad.right  = clamp(Math.round((DISPLAY - x) / scale), 0, imageSize / 2);
+        onChange(newPad);
+      }
+      function onUp() {
+        dragging.current = null;
+        window.removeEventListener("touchmove", onMove);
+        window.removeEventListener("touchend", onUp);
+      }
+      window.addEventListener("touchmove", onMove, { passive: false });
+      window.addEventListener("touchend", onUp);
+    };
+  }
+
+  const HANDLE_SIZE = 14;
+  const midX = (left + right) / 2;
+  const midY = (top + bottom) / 2;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <Move size={11} style={{ color: "rgba(167,139,250,0.7)" }} />
+        <span className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>
+          Área de texto (arraste os handles)
+        </span>
+      </div>
+
+      {/* Canvas */}
+      <div
+        ref={containerRef}
+        className="relative mx-auto select-none"
+        style={{ width: DISPLAY, height: DISPLAY, cursor: "crosshair" }}
+      >
+        {/* Imagem de fundo */}
+        <img
+          src={imageUrl}
+          alt="bubble preview"
+          className="absolute inset-0 w-full h-full"
+          style={{ imageRendering: "pixelated", userSelect: "none", pointerEvents: "none" }}
+          draggable={false}
+        />
+
+        {/* Overlay escuro fora da área de texto */}
+        {/* top */}
+        <div className="absolute" style={{ top: 0, left: 0, right: 0, height: top, background: "rgba(0,0,0,0.45)", pointerEvents: "none" }} />
+        {/* bottom */}
+        <div className="absolute" style={{ bottom: 0, left: 0, right: 0, top: bottom, background: "rgba(0,0,0,0.45)", pointerEvents: "none" }} />
+        {/* left */}
+        <div className="absolute" style={{ top, bottom: DISPLAY - bottom, left: 0, width: left, background: "rgba(0,0,0,0.45)", pointerEvents: "none" }} />
+        {/* right */}
+        <div className="absolute" style={{ top, bottom: DISPLAY - bottom, right: 0, left: right, background: "rgba(0,0,0,0.45)", pointerEvents: "none" }} />
+
+        {/* Retângulo da área de texto */}
+        <div
+          className="absolute"
+          style={{
+            top, left, right: DISPLAY - right, bottom: DISPLAY - bottom,
+            border: "1.5px dashed rgba(167,139,250,0.8)",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* Handle TOP */}
+        <div
+          onMouseDown={onMouseDown("top")}
+          onTouchStart={onTouchStart("top")}
+          className="absolute flex items-center justify-center rounded-full"
+          style={{
+            width: HANDLE_SIZE, height: HANDLE_SIZE,
+            top: top - HANDLE_SIZE / 2,
+            left: midX - HANDLE_SIZE / 2,
+            background: "#A78BFA",
+            border: "2px solid white",
+            cursor: "ns-resize",
+            boxShadow: "0 0 8px rgba(167,139,250,0.6)",
+            zIndex: 10,
+          }}
+        />
+        {/* Handle BOTTOM */}
+        <div
+          onMouseDown={onMouseDown("bottom")}
+          onTouchStart={onTouchStart("bottom")}
+          className="absolute flex items-center justify-center rounded-full"
+          style={{
+            width: HANDLE_SIZE, height: HANDLE_SIZE,
+            top: bottom - HANDLE_SIZE / 2,
+            left: midX - HANDLE_SIZE / 2,
+            background: "#A78BFA",
+            border: "2px solid white",
+            cursor: "ns-resize",
+            boxShadow: "0 0 8px rgba(167,139,250,0.6)",
+            zIndex: 10,
+          }}
+        />
+        {/* Handle LEFT */}
+        <div
+          onMouseDown={onMouseDown("left")}
+          onTouchStart={onTouchStart("left")}
+          className="absolute flex items-center justify-center rounded-full"
+          style={{
+            width: HANDLE_SIZE, height: HANDLE_SIZE,
+            left: left - HANDLE_SIZE / 2,
+            top: midY - HANDLE_SIZE / 2,
+            background: "#A78BFA",
+            border: "2px solid white",
+            cursor: "ew-resize",
+            boxShadow: "0 0 8px rgba(167,139,250,0.6)",
+            zIndex: 10,
+          }}
+        />
+        {/* Handle RIGHT */}
+        <div
+          onMouseDown={onMouseDown("right")}
+          onTouchStart={onTouchStart("right")}
+          className="absolute flex items-center justify-center rounded-full"
+          style={{
+            width: HANDLE_SIZE, height: HANDLE_SIZE,
+            left: right - HANDLE_SIZE / 2,
+            top: midY - HANDLE_SIZE / 2,
+            background: "#A78BFA",
+            border: "2px solid white",
+            cursor: "ew-resize",
+            boxShadow: "0 0 8px rgba(167,139,250,0.6)",
+            zIndex: 10,
+          }}
+        />
+
+        {/* Texto de preview dentro da área */}
+        <div
+          className="absolute flex items-center justify-center"
+          style={{
+            top, left, right: DISPLAY - right, bottom: DISPLAY - bottom,
+            pointerEvents: "none",
+          }}
+        >
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", fontFamily: "'Space Grotesk', sans-serif", textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}>
+            oi
+          </span>
+        </div>
+      </div>
+
+      {/* Valores numéricos */}
+      <div className="grid grid-cols-4 gap-1.5">
+        {(["top", "right", "bottom", "left"] as const).map((side) => (
+          <div key={side} className="space-y-0.5">
+            <label className="text-[9px] font-mono tracking-widest uppercase block text-center" style={{ color: "rgba(255,255,255,0.25)" }}>{side}</label>
+            <input
+              type="number"
+              value={padding[side]}
+              min={0}
+              max={imageSize / 2}
+              onChange={(e) => onChange({ ...padding, [side]: Math.max(0, Math.min(imageSize / 2, parseInt(e.target.value) || 0)) })}
+              className="w-full px-2 py-1.5 rounded-lg text-[11px] text-center outline-none"
+              style={{ background: "rgba(167,139,250,0.08)", border: "1px solid rgba(167,139,250,0.2)", color: "#A78BFA", fontFamily: "'Space Mono', monospace" }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Página principal ────────────────────────────────────────────────────────────
 export default function StoreItemsPage() {
   const [items, setItems] = useState<StoreItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,6 +299,9 @@ export default function StoreItemsPage() {
   const [assetFile, setAssetFile] = useState<File | null>(null);
   const [assetUrl, setAssetUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [bubblePadding, setBubblePadding] = useState<PaddingPoly>(DEFAULT_PADDING);
+  const [bubbleTextColor, setBubbleTextColor] = useState<string>("#ffffff");
+  const [bubbleColor, setBubbleColor] = useState<string>("#E040FB");
   const previewInputRef = useRef<HTMLInputElement>(null);
   const assetInputRef = useRef<HTMLInputElement>(null);
 
@@ -80,7 +317,11 @@ export default function StoreItemsPage() {
   function openCreate() {
     setEditingItem(null); setForm(DEFAULT_FORM);
     setPreviewFile(null); setPreviewUrl(null);
-    setAssetFile(null); setAssetUrl(null); setShowForm(true);
+    setAssetFile(null); setAssetUrl(null);
+    setBubblePadding(DEFAULT_PADDING);
+    setBubbleTextColor("#ffffff");
+    setBubbleColor("#E040FB");
+    setShowForm(true);
   }
 
   function openEdit(item: StoreItem) {
@@ -93,7 +334,19 @@ export default function StoreItemsPage() {
       rarity: item.rarity ?? "common", tags: (item.tags ?? []).join(", "),
     });
     setPreviewUrl(item.preview_url); setAssetUrl(item.asset_url);
-    setPreviewFile(null); setAssetFile(null); setShowForm(true);
+    setPreviewFile(null); setAssetFile(null);
+
+    // Carrega padding e cores do asset_config existente
+    const cfg = (item.asset_config as Record<string, unknown>) ?? {};
+    setBubblePadding({
+      top:    typeof cfg.pad_top    === "number" ? cfg.pad_top    : DEFAULT_PADDING.top,
+      right:  typeof cfg.pad_right  === "number" ? cfg.pad_right  : DEFAULT_PADDING.right,
+      bottom: typeof cfg.pad_bottom === "number" ? cfg.pad_bottom : DEFAULT_PADDING.bottom,
+      left:   typeof cfg.pad_left   === "number" ? cfg.pad_left   : DEFAULT_PADDING.left,
+    });
+    setBubbleTextColor(typeof cfg.text_color === "string" ? cfg.text_color : "#ffffff");
+    setBubbleColor(typeof cfg.bubble_color === "string" ? cfg.bubble_color : "#E040FB");
+    setShowForm(true);
   }
 
   function closeForm() { setShowForm(false); setEditingItem(null); }
@@ -122,7 +375,36 @@ export default function StoreItemsPage() {
         finalAssetUrl = await uploadFile(assetFile, `assets/${form.type}/${Date.now()}_${form.name.replace(/\s+/g, "_")}.${ext}`);
         if (!finalAssetUrl) return;
       }
-      const payload = {
+
+      // Monta asset_config para chat_bubble com os valores do editor poligonal
+      let assetConfig: Record<string, unknown> | undefined;
+      if (form.type === "chat_bubble") {
+        const existingCfg = (editingItem?.asset_config as Record<string, unknown>) ?? {};
+        assetConfig = {
+          ...existingCfg,
+          bubble_url: finalAssetUrl ?? existingCfg.bubble_url,
+          image_url:  finalAssetUrl ?? existingCfg.image_url,
+          bubble_style: "nine_slice",
+          image_width: 128,
+          image_height: 128,
+          slice_top:    38,
+          slice_left:   38,
+          slice_right:  38,
+          slice_bottom: 38,
+          // Padding individual por lado (novo)
+          pad_top:    bubblePadding.top,
+          pad_right:  bubblePadding.right,
+          pad_bottom: bubblePadding.bottom,
+          pad_left:   bubblePadding.left,
+          // Compatibilidade com o provider Flutter (usa H/V como média dos lados)
+          content_padding_h: Math.round((bubblePadding.left + bubblePadding.right) / 2),
+          content_padding_v: Math.round((bubblePadding.top + bubblePadding.bottom) / 2),
+          text_color:   bubbleTextColor,
+          bubble_color: bubbleColor,
+        };
+      }
+
+      const payload: Record<string, unknown> = {
         name: form.name.trim(), description: form.description.trim(), type: form.type,
         price_coins: form.price_coins, price_real_cents: form.price_real_cents,
         is_premium_only: form.is_premium_only, is_limited_edition: form.is_limited_edition,
@@ -130,6 +412,8 @@ export default function StoreItemsPage() {
         tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
         preview_url: finalPreviewUrl, asset_url: finalAssetUrl,
       };
+      if (assetConfig) payload.asset_config = assetConfig;
+
       if (editingItem) {
         const { error } = await supabase.from("store_items").update(payload).eq("id", editingItem.id);
         if (error) throw error;
@@ -234,8 +518,8 @@ export default function StoreItemsPage() {
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value as StoreItemType | "all")}
-          className="px-3 py-2 rounded-xl text-[12px] outline-none"
-          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)", fontFamily: "'Space Mono', monospace" }}
+          className="px-3 py-2 rounded-xl text-[13px] outline-none"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)", fontFamily: "'Space Grotesk', sans-serif" }}
         >
           <option value="all">Todos os tipos</option>
           {Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -243,8 +527,8 @@ export default function StoreItemsPage() {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value as "all" | "active" | "inactive")}
-          className="px-3 py-2 rounded-xl text-[12px] outline-none"
-          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)", fontFamily: "'Space Mono', monospace" }}
+          className="px-3 py-2 rounded-xl text-[13px] outline-none"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)", fontFamily: "'Space Grotesk', sans-serif" }}
         >
           <option value="all">Todos os status</option>
           <option value="active">Ativos</option>
@@ -252,101 +536,79 @@ export default function StoreItemsPage() {
         </select>
       </motion.div>
 
-      {/* Content */}
+      {/* Table */}
       {loading ? (
-        <div className="space-y-2">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-16 rounded-xl nx-shimmer" style={{ background: "rgba(255,255,255,0.03)" }} />
-          ))}
+        <div className="flex items-center justify-center py-16">
+          <Loader2 size={20} className="animate-spin" style={{ color: "rgba(255,255,255,0.3)" }} />
         </div>
       ) : filtered.length === 0 ? (
         <motion.div variants={fadeUp} initial="hidden" animate="show" custom={2}
-          className="flex flex-col items-center justify-center py-20 rounded-2xl"
-          style={{ background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,255,255,0.08)" }}
+          className="flex flex-col items-center justify-center py-16 gap-3"
         >
-          <ShoppingBag size={32} style={{ color: "rgba(255,255,255,0.15)" }} />
-          <p className="mt-3 text-[13px] font-mono" style={{ color: "rgba(255,255,255,0.25)" }}>Nenhum item encontrado</p>
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+            <Zap size={20} style={{ color: "rgba(255,255,255,0.2)" }} />
+          </div>
+          <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif" }}>Nenhum item encontrado</p>
         </motion.div>
       ) : (
-        <motion.div variants={fadeUp} initial="hidden" animate="show" custom={2} className="rounded-2xl overflow-hidden"
-          style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}
+        <motion.div variants={fadeUp} initial="hidden" animate="show" custom={2}
+          className="rounded-2xl overflow-hidden"
+          style={{ border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}
         >
           <div className="overflow-x-auto">
-            <table className="w-full nx-table">
+            <table className="w-full text-[13px]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               <thead>
-                <tr>
-                  <th className="text-left">Item</th>
-                  <th className="text-left hidden sm:table-cell">Tipo</th>
-                  <th className="text-left hidden md:table-cell">Raridade</th>
-                  <th className="text-right">Preço</th>
-                  <th className="text-center">Status</th>
-                  <th className="text-right">Ações</th>
+                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                  {["Item", "Tipo", "Preço", "Raridade", "Status", ""].map((h) => (
+                    <th key={h} className="px-4 py-3 text-left text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.25)" }}>{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((item, i) => {
-                  const tc = TYPE_COLORS[item.type];
-                  const rc = RARITY_CONFIG[item.rarity ?? "common"];
+                  const typeColor = TYPE_COLORS[item.type];
+                  const rarityColor = RARITY_CONFIG[item.rarity ?? "common"].color;
                   return (
                     <motion.tr
                       key={item.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: i * 0.03 }}
-                      className="group"
+                      variants={fadeUp} initial="hidden" animate="show" custom={i}
+                      style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                     >
-                      <td>
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center"
-                            style={{ background: `rgba(${tc.rgb},0.1)`, border: `1px solid rgba(${tc.rgb},0.2)` }}
-                          >
-                            {item.preview_url ? (
-                              <img src={item.preview_url} alt={item.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <Package size={14} style={{ color: tc.hex }} />
-                            )}
-                          </div>
-                          <div>
-                            <div className="text-[13px] font-semibold" style={{ color: "rgba(255,255,255,0.9)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                              {item.name}
+                          {item.preview_url ? (
+                            <img src={item.preview_url} alt="" className="w-9 h-9 rounded-xl object-cover flex-shrink-0" style={{ border: "1px solid rgba(255,255,255,0.08)" }} />
+                          ) : (
+                            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                              <Zap size={14} style={{ color: "rgba(255,255,255,0.2)" }} />
                             </div>
-                            {item.description && (
-                              <div className="text-[11px] font-mono truncate max-w-[180px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-                                {item.description}
-                              </div>
-                            )}
+                          )}
+                          <div>
+                            <p className="font-semibold text-[13px]" style={{ color: "rgba(255,255,255,0.9)" }}>{item.name}</p>
+                            {item.description && <p className="text-[11px] truncate max-w-[180px]" style={{ color: "rgba(255,255,255,0.35)" }}>{item.description}</p>}
                           </div>
                         </div>
                       </td>
-                      <td className="hidden sm:table-cell">
-                        <span className="nx-badge" style={{ background: `rgba(${tc.rgb},0.1)`, color: tc.hex, border: `1px solid rgba(${tc.rgb},0.2)` }}>
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-0.5 rounded-md text-[11px] font-mono"
+                          style={{ background: `rgba(${typeColor.rgb},0.1)`, color: typeColor.hex, border: `1px solid rgba(${typeColor.rgb},0.2)` }}>
                           {TYPE_LABELS[item.type]}
                         </span>
                       </td>
-                      <td className="hidden md:table-cell">
-                        <span className="nx-badge" style={{ background: `rgba(${rc.rgb},0.1)`, color: rc.color, border: `1px solid rgba(${rc.rgb},0.2)` }}>
-                          {item.rarity === "legendary" && <Star size={9} fill="currentColor" />}
-                          {rc.label}
-                        </span>
+                      <td className="px-4 py-3">
+                        <span className="font-mono text-[12px]" style={{ color: "#F59E0B" }}>{item.price_coins.toLocaleString()} coins</span>
                       </td>
-                      <td className="text-right">
-                        <div className="text-[13px] font-mono font-bold" style={{ color: "#F59E0B" }}>
-                          {item.price_coins.toLocaleString()} ✦
-                        </div>
-                        {item.price_real_cents && (
-                          <div className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
-                            R$ {(item.price_real_cents / 100).toFixed(2)}
-                          </div>
-                        )}
+                      <td className="px-4 py-3">
+                        <span className="text-[12px] font-semibold" style={{ color: rarityColor }}>{RARITY_CONFIG[item.rarity ?? "common"].label}</span>
                       </td>
-                      <td className="text-center">
+                      <td className="px-4 py-3">
                         <button
                           onClick={() => toggleActive(item)}
-                          className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2.5 py-1 rounded-lg transition-all duration-150"
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all duration-150"
                           style={{
-                            background: item.is_active ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)",
-                            color: item.is_active ? "#34D399" : "#FCA5A5",
-                            border: `1px solid ${item.is_active ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)"}`,
+                            background: item.is_active ? "rgba(16,185,129,0.1)" : "rgba(255,255,255,0.04)",
+                            border: `1px solid ${item.is_active ? "rgba(16,185,129,0.25)" : "rgba(255,255,255,0.08)"}`,
+                            color: item.is_active ? "#10B981" : "rgba(255,255,255,0.3)",
                           }}
                         >
                           {item.is_active ? <Eye size={10} /> : <EyeOff size={10} />}
@@ -606,6 +868,80 @@ export default function StoreItemsPage() {
                       onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileChange(f, "asset"); }} />
                   </div>
                 </div>
+
+                {/* ── Editor poligonal de padding (só para chat_bubble) ── */}
+                {form.type === "chat_bubble" && (
+                  <div
+                    className="rounded-xl p-4 space-y-4"
+                    style={{ background: "rgba(167,139,250,0.04)", border: "1px solid rgba(167,139,250,0.15)" }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#A78BFA" }} />
+                      <span className="text-[11px] font-semibold tracking-wide" style={{ color: "rgba(167,139,250,0.9)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                        Configuração do Bubble
+                      </span>
+                    </div>
+
+                    {/* Editor poligonal — só exibe se tiver asset */}
+                    {assetUrl ? (
+                      <PolygonPaddingEditor
+                        imageUrl={assetUrl}
+                        padding={bubblePadding}
+                        onChange={setBubblePadding}
+                        imageSize={128}
+                      />
+                    ) : (
+                      <div className="flex items-center gap-3 py-3 px-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.08)" }}>
+                        <Move size={14} style={{ color: "rgba(255,255,255,0.2)" }} />
+                        <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                          Envie o asset do bubble para editar o padding visualmente
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Cor do texto + cor do bubble */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>Cor do texto</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={bubbleTextColor}
+                            onChange={(e) => setBubbleTextColor(e.target.value)}
+                            className="w-8 h-8 rounded-lg cursor-pointer border-0 p-0.5"
+                            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                          />
+                          <input
+                            type="text"
+                            value={bubbleTextColor}
+                            onChange={(e) => setBubbleTextColor(e.target.value)}
+                            className="flex-1 px-2 py-1.5 rounded-lg text-[11px] outline-none"
+                            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)", fontFamily: "'Space Mono', monospace" }}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>Cor do bubble</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={bubbleColor}
+                            onChange={(e) => setBubbleColor(e.target.value)}
+                            className="w-8 h-8 rounded-lg cursor-pointer border-0 p-0.5"
+                            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                          />
+                          <input
+                            type="text"
+                            value={bubbleColor}
+                            onChange={(e) => setBubbleColor(e.target.value)}
+                            className="flex-1 px-2 py-1.5 rounded-lg text-[11px] outline-none"
+                            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)", fontFamily: "'Space Mono', monospace" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="flex gap-3 pt-2">
