@@ -18,9 +18,28 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 // para garantir que apikey e Authorization sejam sempre a secret key,
 // sobrescrevendo qualquer header que o supabase-js tente injetar.
 const adminFetch = (url: RequestInfo | URL, options: RequestInit = {}) => {
-  const headers = new Headers(options.headers);
+  // Criar Headers do zero para evitar que o supabase-js sobrescreva com a publishable key
+  const headers = new Headers();
+  // Primeiro setar a secret key
   headers.set("apikey", SUPABASE_SERVICE_ROLE_KEY);
   headers.set("Authorization", `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`);
+  // Depois copiar os outros headers (Content-Type, Accept, etc.) sem sobrescrever auth
+  const incoming = options.headers;
+  if (incoming instanceof Headers) {
+    incoming.forEach((value, key) => {
+      const lower = key.toLowerCase();
+      if (lower !== "apikey" && lower !== "authorization") {
+        headers.set(key, value);
+      }
+    });
+  } else if (incoming && typeof incoming === "object") {
+    Object.entries(incoming as Record<string, string>).forEach(([key, value]) => {
+      const lower = key.toLowerCase();
+      if (lower !== "apikey" && lower !== "authorization") {
+        headers.set(key, value);
+      }
+    });
+  }
   return fetch(url, { ...options, headers });
 };
 
