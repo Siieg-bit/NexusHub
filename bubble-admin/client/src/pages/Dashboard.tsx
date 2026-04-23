@@ -527,7 +527,6 @@ function NineSliceBubble({
     const fontSize = 13;
     const lineHeight = 18;
     const padH = Math.max(slice.left, 12) + 8;
-    const padV = Math.max(slice.top, 8) + 4;
     const contentW = maxWidth - padH * 2;
 
     // Quebra o texto em linhas
@@ -547,7 +546,8 @@ function NineSliceBubble({
     if (cur) lines.push(cur);
 
     const textH = lines.length * lineHeight;
-    const totalH = Math.max(textH + padV * 2, slice.top + slice.bottom + 8);
+    const minPadV = 8;
+    const totalH = Math.max(textH + slice.top + slice.bottom + minPadV * 2, slice.top + slice.bottom + 8);
     const totalW = maxWidth;
 
     canvas.width = totalW;
@@ -581,12 +581,14 @@ function NineSliceBubble({
       }
     }
 
-    // Desenha o texto dentro da área central
+    // Desenha o texto centralizado verticalmente na área FILL do nine-slice
+    const fillH = totalH - slice.top - slice.bottom;
+    const textStartY = slice.top + Math.max(0, (fillH - textH) / 2);
     ctx.fillStyle = msgColor;
     ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
     ctx.textBaseline = "top";
     lines.forEach((line, i) => {
-      ctx.fillText(line, padH, padV + i * lineHeight);
+      ctx.fillText(line, padH, textStartY + i * lineHeight);
     });
   }, [imgReady, slice, textColor, text, maxWidth, msgColor]);
 
