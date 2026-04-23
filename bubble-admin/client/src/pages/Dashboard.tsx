@@ -559,31 +559,35 @@ function NineSliceBubble({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState({ w: maxWidth, h: 60 });
-  // Cache da imagem carregada — evita recarregar a cada mudança de slice
-  const imgCacheRef = useRef<HTMLImageElement | null>(null);
-  const [imgReady, setImgReady] = useState(false);
+  // Inicializa o cache de forma síncrona: se a imagem já está no cache global, usa imediatamente
+  const imgCacheRef = useRef<HTMLImageElement | null>(
+    imageUrl && _imgCache.has(imageUrl) ? _imgCache.get(imageUrl)! : null
+  );
+  const [imgReady, setImgReady] = useState<boolean>(
+    !!(imageUrl && _imgCache.has(imageUrl))
+  );
   const msgColor = textColor.trim() ? textColor : "rgba(255,255,255,0.9)";
 
   // Carrega a imagem usando o cache global (uma só vez por URL, compartilhado entre instâncias)
   useEffect(() => {
     if (!imageUrl) return;
-    let cancelled = false;
 
-    // Se já está no cache, usa imediatamente sem async
+    // Se já está no cache, garante que o ref e o estado estão corretos
     if (_imgCache.has(imageUrl)) {
-      imgCacheRef.current = _imgCache.get(imageUrl)!;
-      setImgReady(true);
+      if (!imgCacheRef.current) imgCacheRef.current = _imgCache.get(imageUrl)!;
+      if (!imgReady) setImgReady(true);
       return;
     }
 
     // Caso contrário, carrega e aguarda
+    let cancelled = false;
     setImgReady(false);
     imgCacheRef.current = null;
     loadImageCached(imageUrl)
       .then((img) => { if (!cancelled) { imgCacheRef.current = img; setImgReady(true); } })
       .catch(() => { /* imagem não carregou */ });
     return () => { cancelled = true; };
-  }, [imageUrl]);
+  }, [imageUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Redesenha o canvas sempre que a imagem estiver pronta ou slice/texto mudar
   useEffect(() => {
