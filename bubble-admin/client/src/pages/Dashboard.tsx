@@ -378,6 +378,27 @@ function NineSliceEditor({
         ))}
       </div>
 
+      {/* Texto de exemplo em tempo real sobre a área FILL */}
+      <div className="rounded-xl overflow-hidden" style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <p className="text-[9px] font-mono px-3 pt-2 pb-1" style={{ color: "rgba(255,255,255,0.25)" }}>TEXTO DE EXEMPLO (tempo real)</p>
+        <div className="flex flex-col gap-2 px-3 pb-3">
+          {[
+            { text: "Oi!", mine: true },
+            { text: "Esse bubble ficou incrível 🔥", mine: false },
+          ].map((msg, i) => (
+            <div key={i} className={`flex ${msg.mine ? "justify-end" : "justify-start"}`}>
+              <NineSliceBubble
+                imageUrl={imageUrl}
+                slice={slice}
+                textColor={textColor}
+                text={msg.text}
+                maxWidth={msg.mine ? 100 : 200}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Inputs numéricos sincronizados */}
       <div className="grid grid-cols-4 gap-2">
         {([
@@ -407,6 +428,112 @@ function NineSliceEditor({
 }
 
 // ─── Nine-Slice Chat Preview (resultado final) ────────────────────────────────
+// Usa canvas para renderizar o nine-slice corretamente com o texto dentro da área central
+function NineSliceBubble({
+  imageUrl,
+  slice,
+  textColor,
+  text,
+  maxWidth = 220,
+}: {
+  imageUrl: string;
+  slice: SliceValues;
+  textColor: string;
+  text: string;
+  maxWidth?: number;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [size, setSize] = useState({ w: maxWidth, h: 60 });
+  const msgColor = textColor.trim() ? textColor : "rgba(255,255,255,0.9)";
+
+  // Mede o tamanho necessário para o texto e desenha o nine-slice no canvas
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const fontSize = 13;
+      const lineHeight = 18;
+      const padH = Math.max(slice.left, 12) + 8;
+      const padV = Math.max(slice.top, 8) + 4;
+      const contentW = maxWidth - padH * 2;
+
+      // Quebra o texto em linhas
+      ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
+      const words = text.split(" ");
+      const lines: string[] = [];
+      let cur = "";
+      for (const w of words) {
+        const test = cur ? `${cur} ${w}` : w;
+        if (ctx.measureText(test).width > contentW && cur) {
+          lines.push(cur);
+          cur = w;
+        } else {
+          cur = test;
+        }
+      }
+      if (cur) lines.push(cur);
+
+      const textH = lines.length * lineHeight;
+      const totalH = Math.max(textH + padV * 2, slice.top + slice.bottom + 8);
+      const totalW = maxWidth;
+
+      canvas.width = totalW;
+      canvas.height = totalH;
+      setSize({ w: totalW, h: totalH });
+
+      // Desenha nine-slice
+      const iw = img.naturalWidth;
+      const ih = img.naturalHeight;
+      const sl = slice.left, sr = slice.right, st = slice.top, sb = slice.bottom;
+      const mw = totalW - sl - sr;
+      const mh = totalH - st - sb;
+
+      // 9 regiões: [srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH]
+      const regions = [
+        [0,      0,      sl,        st,        0,       0,       sl,  st  ],
+        [sl,     0,      iw-sl-sr,  st,        sl,      0,       mw,  st  ],
+        [iw-sr,  0,      sr,        st,        sl+mw,   0,       sr,  st  ],
+        [0,      st,     sl,        ih-st-sb,  0,       st,      sl,  mh  ],
+        [sl,     st,     iw-sl-sr,  ih-st-sb,  sl,      st,      mw,  mh  ],
+        [iw-sr,  st,     sr,        ih-st-sb,  sl+mw,   st,      sr,  mh  ],
+        [0,      ih-sb,  sl,        sb,        0,       st+mh,   sl,  sb  ],
+        [sl,     ih-sb,  iw-sl-sr,  sb,        sl,      st+mh,   mw,  sb  ],
+        [iw-sr,  ih-sb,  sr,        sb,        sl+mw,   st+mh,   sr,  sb  ],
+      ];
+
+      ctx.clearRect(0, 0, totalW, totalH);
+      for (const [sx, sy, sw, sh, dx, dy, dw, dh] of regions) {
+        if (sw > 0 && sh > 0 && dw > 0 && dh > 0) {
+          ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+        }
+      }
+
+      // Desenha o texto dentro da área central
+      ctx.fillStyle = msgColor;
+      ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
+      ctx.textBaseline = "top";
+      lines.forEach((line, i) => {
+        ctx.fillText(line, padH, padV + i * lineHeight);
+      });
+    };
+    img.src = imageUrl;
+  }, [imageUrl, slice, textColor, text, maxWidth, msgColor]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={size.w}
+      height={size.h}
+      style={{ display: "block", maxWidth: "100%" }}
+    />
+  );
+}
+
 function NineSliceChatPreview({
   imageUrl,
   slice,
@@ -416,9 +543,6 @@ function NineSliceChatPreview({
   slice: SliceValues;
   textColor: string;
 }) {
-  const msgColor = textColor.trim() ? textColor : "rgba(255,255,255,0.9)";
-  const sliceStr = `${slice.top} ${slice.right} ${slice.bottom} ${slice.left} fill`;
-
   const messages = [
     { id: 1, mine: true,  text: "Oi!" },
     { id: 2, mine: false, text: "Olá! Tudo bem?" },
@@ -427,27 +551,17 @@ function NineSliceChatPreview({
   ];
 
   return (
-    <div className="flex flex-col gap-2 p-3"
+    <div className="flex flex-col gap-3 p-3"
       style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12 }}>
       {messages.map((msg) => (
         <div key={msg.id} className={`flex ${msg.mine ? "justify-end" : "justify-start"}`}>
-          <div
-            className="max-w-[85%] px-4 py-2 text-[12px] leading-snug"
-            style={{
-              borderImageSource: `url(${imageUrl})`,
-              borderImageSlice: sliceStr,
-              borderImageWidth: `${slice.top}px ${slice.right}px ${slice.bottom}px ${slice.left}px`,
-              borderImageRepeat: "stretch",
-              borderStyle: "solid",
-              borderColor: "transparent",
-              background: "transparent",
-              color: msgColor,
-              fontFamily: "'Space Grotesk', sans-serif",
-              minHeight: `${slice.top + slice.bottom + 8}px`,
-            }}
-          >
-            {msg.text}
-          </div>
+          <NineSliceBubble
+            imageUrl={imageUrl}
+            slice={slice}
+            textColor={textColor}
+            text={msg.text}
+            maxWidth={msg.text.length > 20 ? 220 : 140}
+          />
         </div>
       ))}
     </div>
