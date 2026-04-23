@@ -10,6 +10,7 @@
  *  3. Preencher nome, descrição, preço, raridade e estilo
  *  4. Preview em tempo real com avatar simulado + animação rodando
  *  5. Publicar → upload para store-assets/frames/ + insert em store_items (type=avatar_frame)
+ *  6. Editar → preenche formulário com dados existentes, mantém imagem se não trocar
  *
  * asset_config gerado:
  *  { frame_url, image_url, rarity, frame_style, image_width, image_height, is_animated }
@@ -38,6 +39,8 @@ import {
   User,
   Frame,
   Zap,
+  Pencil,
+  X,
 } from "lucide-react";
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
@@ -283,6 +286,10 @@ export default function FramesDashboard() {
     isActive: true,
   });
 
+  // Editing state
+  const [editingFrame, setEditingFrame] = useState<StoreItem | null>(null);
+  const [showForm, setShowForm] = useState(false);
+
   // Upload state
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -323,7 +330,6 @@ export default function FramesDashboard() {
   // ── Image handling ─────────────────────────────────────────────────────────
 
   function handleFile(file: File) {
-    const validTypes = ["image/png", "image/gif", "image/webp", "image/apng"];
     if (!file.type.startsWith("image/")) {
       toast.error("Arquivo inválido. Envie PNG, GIF ou WebP.");
       return;
@@ -369,11 +375,60 @@ export default function FramesDashboard() {
     if (file) handleFile(file);
   }, []);
 
-  // ── Submit ─────────────────────────────────────────────────────────────────
+  // ── Open edit ──────────────────────────────────────────────────────────────
+
+  function openEdit(item: StoreItem) {
+    const cfg = (item.asset_config as Record<string, unknown>) ?? {};
+    setEditingFrame(item);
+    setForm({
+      name: item.name,
+      description: item.description ?? "",
+      priceCoins: item.price_coins,
+      rarity: ((cfg.rarity as FrameForm["rarity"]) ?? "common"),
+      frameStyle: ((cfg.frame_style as FrameForm["frameStyle"]) ?? "default"),
+      isActive: item.is_active,
+    });
+    setIsAnimated((cfg.is_animated as boolean) ?? false);
+    setIsWebP(false);
+    setImageFile(null);
+    setImagePreview(item.preview_url ?? null);
+    setImageDimensions(
+      cfg.image_width && cfg.image_height
+        ? { w: cfg.image_width as number, h: cfg.image_height as number }
+        : null
+    );
+    setShowForm(true);
+    // Scroll to top of form
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // ── Cancel edit ────────────────────────────────────────────────────────────
+
+  function cancelEdit() {
+    setEditingFrame(null);
+    setShowForm(false);
+    setForm({
+      name: "",
+      description: "",
+      priceCoins: 200,
+      rarity: "common",
+      frameStyle: "default",
+      isActive: true,
+    });
+    setImageFile(null);
+    setImagePreview(null);
+    setImageDimensions(null);
+    setIsAnimated(false);
+    setIsWebP(false);
+  }
+
+  // ── Submit (create or update) ──────────────────────────────────────────────
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!imageFile) {
+
+    // Ao criar, imagem é obrigatória; ao editar, pode manter a existente
+    if (!editingFrame && !imageFile) {
       toast.error("Selecione uma imagem para a moldura.");
       return;
     }
@@ -385,36 +440,36 @@ export default function FramesDashboard() {
     setSubmitting(true);
 
     try {
-      // 1. Upload da imagem para store-assets/frames/
-      const ext = imageFile.name.split(".").pop()?.toLowerCase() ?? "png";
-      const slug = form.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "_")
-        .replace(/^_|_$/g, "");
-      const path = `frames/${slug}_${Date.now()}.${ext}`;
+      // 1. Upload da imagem (somente se um novo arquivo foi selecionado)
+      let publicUrl: string | null = editingFrame?.preview_url ?? null;
 
-      const { error: uploadError } = await supabase.storage
-        .from("store-assets")
-        .upload(path, imageFile, {
-          contentType: imageFile.type,
-          upsert: false,
-        });
+      if (imageFile) {
+        const ext = imageFile.name.split(".").pop()?.toLowerCase() ?? "png";
+        const slug = form.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/^_|_$/g, "");
+        const path = `frames/${slug}_${Date.now()}.${ext}`;
 
-      if (uploadError) throw new Error(`Upload falhou: ${uploadError.message}`);
+        const { error: uploadError } = await supabase.storage
+          .from("store-assets")
+          .upload(path, imageFile, {
+            contentType: imageFile.type,
+            upsert: false,
+          });
 
-      // 2. Obter URL pública
-      const { data: urlData } = supabase.storage
-        .from("store-assets")
-        .getPublicUrl(path);
-      const publicUrl = urlData.publicUrl;
+        if (uploadError) throw new Error(`Upload falhou: ${uploadError.message}`);
+
+        const { data: urlData } = supabase.storage
+          .from("store-assets")
+          .getPublicUrl(path);
+        publicUrl = urlData.publicUrl;
+      }
 
       const imgW = imageDimensions?.w ?? 512;
       const imgH = imageDimensions?.h ?? 512;
 
-      // 3. Montar asset_config para avatar_frame
-      // O app Flutter lê: frame_url, image_url, rarity, frame_style,
-      //                    image_width, image_height, is_animated
-      // CachedNetworkImage renderiza GIF/WebP animado nativamente no Flutter 3+
+      // 2. Montar asset_config para avatar_frame
       const assetConfig = {
         frame_url: publicUrl,
         image_url: publicUrl,
@@ -423,48 +478,45 @@ export default function FramesDashboard() {
         image_width: imgW,
         image_height: imgH,
         is_animated: isAnimated,
-        // mime_type salvo para facilitar debug e decisões no app
-        mime_type: imageFile.type,
+        mime_type: imageFile?.type ?? (editingFrame?.asset_config as Record<string, unknown>)?.mime_type ?? "image/png",
       };
 
-      // 4. Inserir na tabela store_items com type = avatar_frame
-      const { error: insertError } = await supabase
-        .from("store_items")
-        .insert({
-          type: "avatar_frame",
-          name: form.name.trim(),
-          description: form.description.trim() || null,
-          preview_url: publicUrl,
-          asset_url: publicUrl,
-          asset_config: assetConfig,
-          price_coins: form.priceCoins,
-          price_real_cents: 0,
-          is_premium_only: false,
-          is_limited_edition: false,
-          is_active: form.isActive,
-          sort_order: 0,
-        });
+      const payload = {
+        type: "avatar_frame",
+        name: form.name.trim(),
+        description: form.description.trim() || null,
+        preview_url: publicUrl,
+        asset_url: publicUrl,
+        asset_config: assetConfig,
+        price_coins: form.priceCoins,
+        price_real_cents: 0,
+        is_premium_only: false,
+        is_limited_edition: false,
+        is_active: form.isActive,
+        sort_order: 0,
+      };
 
-      if (insertError) throw new Error(`DB error: ${insertError.message}`);
+      if (editingFrame) {
+        // 3a. Atualizar moldura existente
+        const { error: updateError } = await supabase
+          .from("store_items")
+          .update(payload)
+          .eq("id", editingFrame.id);
 
-      const animLabel = isAnimated ? " animada" : "";
-      toast.success(`"${form.name}" publicada na loja!${animLabel} 🎉`);
+        if (updateError) throw new Error(`DB error: ${updateError.message}`);
+        toast.success(`"${form.name}" atualizada com sucesso! ✨`);
+      } else {
+        // 3b. Inserir nova moldura
+        const { error: insertError } = await supabase
+          .from("store_items")
+          .insert(payload);
 
-      // Reset form
-      setForm({
-        name: "",
-        description: "",
-        priceCoins: 200,
-        rarity: "common",
-        frameStyle: "default",
-        isActive: true,
-      });
-      setImageFile(null);
-      setImagePreview(null);
-      setImageDimensions(null);
-      setIsAnimated(false);
-      setIsWebP(false);
+        if (insertError) throw new Error(`DB error: ${insertError.message}`);
+        const animLabel = isAnimated ? " animada" : "";
+        toast.success(`"${form.name}" publicada na loja!${animLabel} 🎉`);
+      }
 
+      cancelEdit();
       loadFrames();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -519,22 +571,60 @@ export default function FramesDashboard() {
 
   return (
     <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 py-5 md:py-8">
-      {/* ── Top: Criar nova moldura ── */}
+      {/* ── Top: Criar / Editar moldura ── */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-1 h-5 bg-[#E040FB] rounded-full" />
-          <h2 className="text-lg font-bold text-white">
-            Criar nova Moldura de Perfil
-          </h2>
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-1 h-5 rounded-full"
+              style={{ backgroundColor: editingFrame ? "#FBBF24" : "#E040FB" }}
+            />
+            <h2 className="text-lg font-bold text-white">
+              {editingFrame ? `Editando: ${editingFrame.name}` : "Criar nova Moldura de Perfil"}
+            </h2>
+          </div>
+          {editingFrame && (
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-[#2A2D34] text-[#9CA3AF] hover:text-white hover:bg-[#3A3D44] transition-colors"
+              style={{ fontFamily: "'DM Mono', monospace" }}
+            >
+              <X className="w-3.5 h-3.5" />
+              Cancelar edição
+            </button>
+          )}
         </div>
         <p
           className="text-[#9CA3AF] text-sm ml-3"
           style={{ fontFamily: "'DM Mono', monospace" }}
         >
-          Envie PNG, GIF animado ou WebP animado. Animação detectada
-          automaticamente — o Flutter renderiza o loop nativamente.
+          {editingFrame
+            ? "Altere os campos desejados. A imagem só será substituída se você enviar um novo arquivo."
+            : "Envie PNG, GIF animado ou WebP animado. Animação detectada automaticamente — o Flutter renderiza o loop nativamente."}
         </p>
       </div>
+
+      {/* ── Aviso de edição ativa ── */}
+      {editingFrame && (
+        <div className="flex items-start gap-3 bg-[#FBBF24]/5 border border-[#FBBF24]/20 rounded-xl p-4 mb-6">
+          <Pencil className="w-4 h-4 text-[#FBBF24] flex-shrink-0 mt-0.5" />
+          <div>
+            <p
+              className="text-[#FBBF24] text-sm font-medium"
+              style={{ fontFamily: "'DM Mono', monospace" }}
+            >
+              Modo de edição ativo
+            </p>
+            <p
+              className="text-[#4B5563] text-xs mt-1"
+              style={{ fontFamily: "'DM Mono', monospace" }}
+            >
+              Editando "{editingFrame.name}" (ID: {editingFrame.id.slice(0, 8)}...). Deixe o campo de imagem vazio para manter a imagem atual.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── Split layout: form | preview ── */}
       <form onSubmit={handleSubmit}>
@@ -551,6 +641,8 @@ export default function FramesDashboard() {
                   ? isAnimated
                     ? "border-[#34D399]/60 bg-[#34D399]/5"
                     : "border-[#E040FB]/50 bg-[#E040FB]/5"
+                  : editingFrame
+                  ? "border-[#FBBF24]/30 bg-[#FBBF24]/5 hover:border-[#FBBF24]/50"
                   : "border-[#2A2D34] bg-[#1C1E22] hover:border-[#E040FB]/40 hover:bg-[#E040FB]/5"
               }`}
               onClick={() => fileInputRef.current?.click()}
@@ -578,7 +670,7 @@ export default function FramesDashboard() {
                   <div
                     className="w-16 h-16 rounded-lg border overflow-hidden flex items-center justify-center flex-shrink-0 relative"
                     style={{
-                      borderColor: isAnimated ? "#34D39940" : "#2A2D34",
+                      borderColor: isAnimated ? "#34D39940" : editingFrame && !imageFile ? "#FBBF2440" : "#2A2D34",
                       backgroundImage:
                         "linear-gradient(45deg, #2A2D34 25%, transparent 25%), linear-gradient(-45deg, #2A2D34 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #2A2D34 75%), linear-gradient(-45deg, transparent 75%, #2A2D34 75%)",
                       backgroundSize: "8px 8px",
@@ -608,11 +700,26 @@ export default function FramesDashboard() {
                         </span>
                       </div>
                     )}
+                    {/* Badge de imagem atual (edição sem novo upload) */}
+                    {editingFrame && !imageFile && (
+                      <div className="absolute bottom-0.5 right-0.5 bg-[#FBBF24] rounded-sm px-1 flex items-center gap-0.5">
+                        <span
+                          style={{
+                            fontSize: 7,
+                            color: "#111214",
+                            fontFamily: "'DM Mono', monospace",
+                            fontWeight: 700,
+                          }}
+                        >
+                          ATUAL
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="text-left">
                     <div className="flex items-center gap-2">
                       <p className="text-white font-medium text-sm">
-                        {imageFile?.name}
+                        {imageFile ? imageFile.name : "Imagem atual"}
                       </p>
                       {isAnimated && (
                         <span
@@ -633,7 +740,7 @@ export default function FramesDashboard() {
                     >
                       {imageDimensions
                         ? `${imageDimensions.w}×${imageDimensions.h}px`
-                        : "Calculando..."}
+                        : "Dimensões não disponíveis"}
                       {imageDimensions &&
                         imageDimensions.w !== imageDimensions.h && (
                           <span className="text-yellow-400 ml-2">
@@ -641,8 +748,13 @@ export default function FramesDashboard() {
                           </span>
                         )}
                     </p>
-                    <p className="text-[#E040FB] text-xs mt-1">
-                      Clique para trocar
+                    <p
+                      className="text-xs mt-1"
+                      style={{ color: editingFrame ? "#FBBF24" : "#E040FB" }}
+                    >
+                      {editingFrame && !imageFile
+                        ? "Clique para substituir a imagem"
+                        : "Clique para trocar"}
                     </p>
                   </div>
                 </div>
@@ -663,7 +775,7 @@ export default function FramesDashboard() {
             </div>
 
             {/* Toggle: Moldura Animada — visível para WebP (ambíguo) ou quando não detectado */}
-            {imageFile && (isWebP || !isAnimated) && (
+            {(imageFile || editingFrame) && (isWebP || !isAnimated) && (
               <div
                 className="flex items-start gap-3 bg-[#1C1E22] border border-[#2A2D34] rounded-xl p-4"
                 style={{ borderColor: isAnimated ? "#34D39940" : undefined }}
@@ -878,36 +990,57 @@ export default function FramesDashboard() {
               </span>
             </div>
 
-            {/* Submit */}
-            <Button
-              type="submit"
-              disabled={submitting || !imageFile || !form.name.trim()}
-              className="w-full h-11 bg-[#E040FB] hover:bg-[#CE39E0] text-white font-semibold border-0 transition-all duration-200 disabled:opacity-40"
-            >
-              {submitting ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Publicando...
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  <Upload className="w-4 h-4" />
-                  Publicar na Loja
-                  {isAnimated && (
-                    <span
-                      className="text-[10px] px-1.5 py-0.5 rounded font-medium ml-1"
-                      style={{
-                        color: "#34D399",
-                        backgroundColor: "#34D39930",
-                        fontFamily: "'DM Mono', monospace",
-                      }}
-                    >
-                      ANIMADA
-                    </span>
-                  )}
-                </span>
+            {/* Botões de ação */}
+            <div className="flex gap-3">
+              <Button
+                type="submit"
+                disabled={submitting || (!editingFrame && !imageFile) || !form.name.trim()}
+                className="flex-1 h-11 text-white font-semibold border-0 transition-all duration-200 disabled:opacity-40"
+                style={{
+                  backgroundColor: editingFrame ? "#FBBF24" : "#E040FB",
+                }}
+              >
+                {submitting ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {editingFrame ? "Salvando..." : "Publicando..."}
+                  </span>
+                ) : editingFrame ? (
+                  <span className="flex items-center gap-2">
+                    <Pencil className="w-4 h-4" />
+                    Salvar Alterações
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Upload className="w-4 h-4" />
+                    Publicar na Loja
+                    {isAnimated && (
+                      <span
+                        className="text-[10px] px-1.5 py-0.5 rounded font-medium ml-1"
+                        style={{
+                          color: "#34D399",
+                          backgroundColor: "#34D39930",
+                          fontFamily: "'DM Mono', monospace",
+                        }}
+                      >
+                        ANIMADA
+                      </span>
+                    )}
+                  </span>
+                )}
+              </Button>
+              {editingFrame && (
+                <Button
+                  type="button"
+                  onClick={cancelEdit}
+                  variant="ghost"
+                  className="h-11 px-4 text-[#9CA3AF] hover:text-white hover:bg-[#2A2D34] border border-[#2A2D34]"
+                >
+                  <X className="w-4 h-4 mr-1.5" />
+                  Cancelar
+                </Button>
               )}
-            </Button>
+            </div>
           </div>
 
           {/* Preview — 2/5 */}
@@ -916,17 +1049,29 @@ export default function FramesDashboard() {
               className="border rounded-xl overflow-hidden lg:sticky lg:top-6"
               style={{
                 backgroundColor: "#1C1E22",
-                borderColor: isAnimated ? "#34D39930" : "#2A2D34",
+                borderColor: editingFrame
+                  ? "#FBBF2430"
+                  : isAnimated
+                  ? "#34D39930"
+                  : "#2A2D34",
               }}
             >
               {/* Preview header */}
               <div
                 className="px-4 py-3 border-b flex items-center gap-2"
-                style={{ borderColor: isAnimated ? "#34D39930" : "#2A2D34" }}
+                style={{
+                  borderColor: editingFrame
+                    ? "#FBBF2430"
+                    : isAnimated
+                    ? "#34D39930"
+                    : "#2A2D34",
+                }}
               >
                 <User
                   className="w-4 h-4"
-                  style={{ color: isAnimated ? "#34D399" : "#E040FB" }}
+                  style={{
+                    color: editingFrame ? "#FBBF24" : isAnimated ? "#34D399" : "#E040FB",
+                  }}
                 />
                 <span
                   className="text-xs uppercase tracking-widest"
@@ -937,7 +1082,20 @@ export default function FramesDashboard() {
                 >
                   Preview em tempo real
                 </span>
-                {isAnimated && (
+                {editingFrame && (
+                  <span
+                    className="ml-auto flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded font-medium"
+                    style={{
+                      color: "#FBBF24",
+                      backgroundColor: "#FBBF2420",
+                      fontFamily: "'DM Mono', monospace",
+                    }}
+                  >
+                    <Pencil className="w-2.5 h-2.5" />
+                    EDITANDO
+                  </span>
+                )}
+                {!editingFrame && isAnimated && (
                   <span
                     className="ml-auto flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded font-medium"
                     style={{
@@ -1013,12 +1171,15 @@ export default function FramesDashboard() {
                 (cfg?.frame_url as string) ||
                 item.preview_url ||
                 null;
+              const isEditing = editingFrame?.id === item.id;
 
               return (
                 <div
                   key={item.id}
                   className={`bg-[#1C1E22] border rounded-xl overflow-hidden transition-all duration-200 ${
-                    item.is_active
+                    isEditing
+                      ? "border-[#FBBF24]/50 ring-1 ring-[#FBBF24]/20"
+                      : item.is_active
                       ? frameIsAnimated
                         ? "border-[#34D399]/20 hover:border-[#34D399]/40"
                         : "border-[#2A2D34] hover:border-[#E040FB]/30"
@@ -1029,8 +1190,9 @@ export default function FramesDashboard() {
                   <div
                     className="h-1 w-full"
                     style={{
-                      backgroundColor:
-                        RARITY_COLORS[rarity] ?? RARITY_COLORS.common,
+                      backgroundColor: isEditing
+                        ? "#FBBF24"
+                        : RARITY_COLORS[rarity] ?? RARITY_COLORS.common,
                     }}
                   />
 
@@ -1117,6 +1279,21 @@ export default function FramesDashboard() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2">
+                      {/* Botão Editar */}
+                      <button
+                        onClick={() => openEdit(item)}
+                        className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md transition-colors ${
+                          isEditing
+                            ? "bg-[#FBBF24]/20 text-[#FBBF24]"
+                            : "bg-[#2A2D34] text-[#9CA3AF] hover:bg-[#3A3D44] hover:text-white"
+                        }`}
+                        style={{ fontFamily: "'DM Mono', monospace" }}
+                      >
+                        <Pencil className="w-3 h-3" />
+                        {isEditing ? "Editando" : "Editar"}
+                      </button>
+
+                      {/* Botão Ativar/Desativar */}
                       <button
                         onClick={() => toggleActive(item)}
                         className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md transition-colors ${
@@ -1139,6 +1316,7 @@ export default function FramesDashboard() {
                         )}
                       </button>
 
+                      {/* Botão Deletar */}
                       <button
                         onClick={() => deleteFrame(item)}
                         className="ml-auto p-1.5 rounded-md text-[#4B5563] hover:text-red-400 hover:bg-red-500/10 transition-colors"
