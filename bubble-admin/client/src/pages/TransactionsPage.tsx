@@ -6,7 +6,7 @@ import { ArrowUpRight, ArrowDownLeft, Filter, TrendingUp, TrendingDown, Activity
 type Transaction = {
   id: string; user_id: string; amount: number; source: string;
   description: string | null; created_at: string;
-  profiles?: { username: string; display_name: string | null };
+  profiles?: { nickname: string; amino_id: string | null };
 };
 
 const SOURCE_COLORS: Record<string, { color: string; rgb: string }> = {
@@ -40,7 +40,7 @@ export default function TransactionsPage() {
     setLoading(true);
     let query = supabaseAdmin
       .from("coin_transactions")
-      .select("id, user_id, amount, source, description, created_at, profiles:profiles!user_id(username, display_name)", { count: "exact" })
+      .select("id, user_id, amount, source, description, created_at, profiles:profiles!user_id(nickname, amino_id)", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
@@ -139,7 +139,7 @@ export default function TransactionsPage() {
                           </div>
                           <div>
                             <div className="text-[12px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif", color: "rgba(255,255,255,0.8)" }}>
-                              {(t.profiles as any)?.display_name || (t.profiles as any)?.username || t.user_id.slice(0, 8) + "…"}
+                              {(t.profiles as any)?.nickname || (t.profiles as any)?.amino_id || t.user_id.slice(0, 8) + "…"}
                             </div>
                             {t.description && <div className="text-[10px] font-mono truncate max-w-[140px]" style={{ color: "rgba(255,255,255,0.3)" }}>{t.description}</div>}
                           </div>
