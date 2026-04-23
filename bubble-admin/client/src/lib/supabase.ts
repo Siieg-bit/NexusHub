@@ -3,8 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 const SUPABASE_URL = "https://ylvzqqvcanzzswjkqeya.supabase.co";
 // Usando a nova publishable key do Supabase (substitui a anon key legada)
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_HYsYzaF8DuBgXpqJAICJ1Q_b73GLUeb";
-// Service role key — usada apenas para operações admin que exigem bypass de RLS
-const SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsdnpxcXZjYW56enN3amtxZXlhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDU1OTcwNiwiZXhwIjoyMDkwMTM1NzA2fQ.II7p22vhDzSW8fy5AaOilG68dSMVOoIvJyyCKtcUoMM";
+// Secret key — lida da variável de ambiente VITE_SUPABASE_SECRET_KEY
+// Configurada como secret no GitHub Actions para não ser exposta no código
+const SUPABASE_SERVICE_ROLE_KEY = import.meta.env.VITE_SUPABASE_SECRET_KEY as string;
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
