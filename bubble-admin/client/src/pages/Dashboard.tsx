@@ -489,6 +489,19 @@ function NineSliceTextPreview({
   padTop: number; padRight: number; padBottom: number; padLeft: number;
 }) {
   const [customText, setCustomText] = useState("");
+  // Aguarda a imagem estar no cache antes de renderizar os NineSliceBubble
+  const [imgCached, setImgCached] = useState(() => _imgCache.has(imageUrl));
+
+  useEffect(() => {
+    if (_imgCache.has(imageUrl)) { setImgCached(true); return; }
+    setImgCached(false);
+    let cancelled = false;
+    loadImageCached(imageUrl)
+      .then(() => { if (!cancelled) setImgCached(true); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [imageUrl]);
+
   const samples = [
     { id: "short", label: "Curto", text: customText || "Oi!" },
     { id: "medium", label: "Médio", text: customText || "Esse bubble é incrivel 🔥" },
@@ -506,26 +519,33 @@ function NineSliceTextPreview({
           style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)", fontFamily: "'Space Grotesk', sans-serif" }}
         />
       </div>
-      <div className="flex flex-col gap-2">
-        {samples.map((s) => (
-          <div key={s.id} className="flex items-center gap-2">
-            <span className="text-[8px] font-mono w-10 flex-shrink-0" style={{ color: "rgba(255,255,255,0.2)" }}>{s.label}</span>
-            <NineSliceBubble
-              imageUrl={imageUrl}
-              slice={slice}
-              textColor={textColor}
-              text={s.text}
-              maxWidth={s.id === "short" ? 120 : s.id === "medium" ? 180 : 240}
-              fontSize={fontSize}
-              textAlign={textAlign}
-              padTop={padTop}
-              padRight={padRight}
-              padBottom={padBottom}
-              padLeft={padLeft}
-            />
-          </div>
-        ))}
-      </div>
+      {!imgCached ? (
+        <div className="flex items-center justify-center py-4 gap-2">
+          <Loader2 size={14} className="animate-spin" style={{ color: "rgba(255,255,255,0.2)" }} />
+          <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>Carregando imagem...</span>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {samples.map((s) => (
+            <div key={s.id} className="flex items-center gap-2">
+              <span className="text-[8px] font-mono w-10 flex-shrink-0" style={{ color: "rgba(255,255,255,0.2)" }}>{s.label}</span>
+              <NineSliceBubble
+                imageUrl={imageUrl}
+                slice={slice}
+                textColor={textColor}
+                text={s.text}
+                maxWidth={s.id === "short" ? 120 : s.id === "medium" ? 180 : 240}
+                fontSize={fontSize}
+                textAlign={textAlign}
+                padTop={padTop}
+                padRight={padRight}
+                padBottom={padBottom}
+                padLeft={padLeft}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -777,14 +797,16 @@ function BubblesDashboard() {
   const handleFile = useCallback((file: File) => {
     if (!file.type.startsWith("image/")) { toast.error("Selecione uma imagem."); return; }
     setImageFile(file);
-    const url = URL.createObjectURL(file);
-    setImagePreview(url);
-    // Pré-carrega no cache global (blob: já está local, sem CORS)
-    loadImageCached(url)
-      .then((img) => setImageDimensions({ w: img.naturalWidth, h: img.naturalHeight }))
-      .catch(() => {});
     const isAnim = detectBubbleIsAnimated(file);
     setForm(f => ({ ...f, isAnimated: isAnim }));
+    const url = URL.createObjectURL(file);
+    // Carrega no cache global e só então define o preview (garante que NineSliceBubble monta com cache pronto)
+    loadImageCached(url)
+      .then((img) => {
+        setImageDimensions({ w: img.naturalWidth, h: img.naturalHeight });
+        setImagePreview(url);
+      })
+      .catch(() => { setImagePreview(url); }); // fallback: mostra mesmo sem cache
   }, []);
 
   const onDrop = useCallback((e: React.DragEvent) => {
@@ -793,7 +815,7 @@ function BubblesDashboard() {
     if (file) handleFile(file);
   }, [handleFile]);
 
-  function openEdit(item: StoreItem) {
+  async function openEdit(item: StoreItem) {
     const cfg = (item.asset_config as Record<string, unknown>) ?? {};
     setEditingBubble(item);
     setForm({
@@ -811,8 +833,10 @@ function BubblesDashboard() {
       padLeft: (cfg.pad_left as number) ?? 8,
     });
     setImagePreview(item.preview_url);
-    // Pré-carrega a imagem no cache global assim que o formulário abre
-    if (item.preview_url) loadImageCached(item.preview_url).catch(() => {});
+    // Garante que a imagem está no cache ANTES de abrir o modal
+    if (item.preview_url) {
+      try { await loadImageCached(item.preview_url); } catch { /* ignora */ }
+    }
     setShowForm(true);
   }
 
