@@ -24,6 +24,10 @@ type BubbleForm = {
   isActive: boolean; isAnimated: boolean;
   sliceTop: number; sliceLeft: number; sliceRight: number; sliceBottom: number;
   textColor: string;
+  // Tipografia e layout do texto
+  fontSize: number;
+  textAlign: "left" | "center" | "right";
+  padTop: number; padRight: number; padBottom: number; padLeft: number;
 };
 
 function detectBubbleIsAnimated(file: File): boolean {
@@ -153,12 +157,24 @@ function NineSliceEditor({
   slice,
   onChange,
   textColor,
+  fontSize,
+  textAlign,
+  padTop,
+  padRight,
+  padBottom,
+  padLeft,
 }: {
   imageUrl: string;
   imageDimensions: { w: number; h: number } | null;
   slice: SliceValues;
   onChange: (s: SliceValues) => void;
   textColor: string;
+  fontSize: number;
+  textAlign: "left" | "center" | "right";
+  padTop: number;
+  padRight: number;
+  padBottom: number;
+  padLeft: number;
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState({ w: 240, h: 240 });
@@ -423,25 +439,17 @@ function NineSliceEditor({
       </div>
 
       {/* Texto de exemplo em tempo real sobre a área FILL */}
-      <div className="rounded-xl overflow-hidden" style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.06)" }}>
-        <p className="text-[9px] font-mono px-3 pt-2 pb-1" style={{ color: "rgba(255,255,255,0.25)" }}>TEXTO DE EXEMPLO (tempo real)</p>
-        <div className="flex flex-col gap-2 px-3 pb-3">
-          {[
-            { text: "Oi!", mine: true },
-            { text: "Esse bubble ficou incrível 🔥", mine: false },
-          ].map((msg, i) => (
-            <div key={i} className={`flex ${msg.mine ? "justify-end" : "justify-start"}`}>
-              <NineSliceBubble
-                imageUrl={imageUrl}
-                slice={slice}
-                textColor={textColor}
-                text={msg.text}
-                maxWidth={msg.mine ? 100 : 200}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
+      <NineSliceTextPreview
+        imageUrl={imageUrl}
+        slice={slice}
+        textColor={textColor}
+        fontSize={fontSize}
+        textAlign={textAlign}
+        padTop={padTop}
+        padRight={padRight}
+        padBottom={padBottom}
+        padLeft={padLeft}
+      />
 
       {/* Inputs numéricos sincronizados */}
       <div className="grid grid-cols-4 gap-2">
@@ -471,21 +479,83 @@ function NineSliceEditor({
   );
 }
 
-// ─── Nine-Slice Chat Preview (resultado final) ────────────────────────────────
-// Usa canvas para renderizar o nine-slice corretamente com o texto dentro da área central
-// A imagem é carregada UMA VEZ e cacheada — redesenha instantaneamente ao mudar slice/texto
+// ─── NineSliceTextPreview ───────────────────────────────────────────────────────────────────────────
+// Preview de texto em tempo real no editor de bordas (aba Ajustar Bordas)
+function NineSliceTextPreview({
+  imageUrl, slice, textColor, fontSize, textAlign, padTop, padRight, padBottom, padLeft,
+}: {
+  imageUrl: string; slice: SliceValues; textColor: string;
+  fontSize: number; textAlign: "left" | "center" | "right";
+  padTop: number; padRight: number; padBottom: number; padLeft: number;
+}) {
+  const [customText, setCustomText] = useState("");
+  const samples = [
+    { id: "short", label: "Curto", text: customText || "Oi!" },
+    { id: "medium", label: "Médio", text: customText || "Esse bubble é incrivel 🔥" },
+    { id: "long", label: "Longo", text: customText || "Concordo! Muito estiloso mesmo, adorei o design!" },
+  ];
+  return (
+    <div className="rounded-xl overflow-hidden space-y-2" style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.06)", padding: "10px 12px" }}>
+      <div className="flex items-center gap-2">
+        <p className="text-[9px] font-mono tracking-widest uppercase flex-1" style={{ color: "rgba(255,255,255,0.25)" }}>TEXTO DE EXEMPLO</p>
+        <input
+          value={customText}
+          onChange={(e) => setCustomText(e.target.value)}
+          placeholder="Digite para testar..."
+          className="flex-1 px-2 py-1 rounded-lg text-[11px] outline-none"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)", fontFamily: "'Space Grotesk', sans-serif" }}
+        />
+      </div>
+      <div className="flex flex-col gap-2">
+        {samples.map((s) => (
+          <div key={s.id} className="flex items-center gap-2">
+            <span className="text-[8px] font-mono w-10 flex-shrink-0" style={{ color: "rgba(255,255,255,0.2)" }}>{s.label}</span>
+            <NineSliceBubble
+              imageUrl={imageUrl}
+              slice={slice}
+              textColor={textColor}
+              text={s.text}
+              maxWidth={s.id === "short" ? 120 : s.id === "medium" ? 180 : 240}
+              fontSize={fontSize}
+              textAlign={textAlign}
+              padTop={padTop}
+              padRight={padRight}
+              padBottom={padBottom}
+              padLeft={padLeft}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Nine-Slice Bubble (canvas) ──────────────────────────────────────────────
+// Renderiza o nine-slice com texto usando canvas. Suporta fontSize, textAlign e padding independente.
 function NineSliceBubble({
   imageUrl,
   slice,
   textColor,
   text,
   maxWidth = 220,
+  fontSize = 13,
+  textAlign = "left",
+  padTop = 8,
+  padRight = 8,
+  padBottom = 8,
+  padLeft = 8,
 }: {
   imageUrl: string;
   slice: SliceValues;
   textColor: string;
   text: string;
   maxWidth?: number;
+  fontSize?: number;
+  textAlign?: "left" | "center" | "right";
+  padTop?: number;
+  padRight?: number;
+  padBottom?: number;
+  padLeft?: number;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState({ w: maxWidth, h: 60 });
@@ -524,12 +594,15 @@ function NineSliceBubble({
     if (!ctx) return;
 
     const img = imgCacheRef.current;
-    const fontSize = 13;
-    const lineHeight = 18;
-    const padH = Math.max(slice.left, 12) + 8;
-    const maxContentW = maxWidth - padH * 2;
+    const lineHeight = Math.round(fontSize * 1.4);
+    // Padding interno independente das bordas de slice
+    const innerPadLeft  = slice.left  + padLeft;
+    const innerPadRight = slice.right + padRight;
+    const innerPadTop   = slice.top   + padTop;
+    const innerPadBot   = slice.bottom + padBottom;
+    const maxContentW = maxWidth - innerPadLeft - innerPadRight;
 
-    // Quebra o texto em linhas (usando largura máxima como limite)
+    // Quebra o texto em linhas
     ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
     const words = text.split(" ");
     const lines: string[] = [];
@@ -547,11 +620,10 @@ function NineSliceBubble({
 
     // Largura real do conteúdo (linha mais larga)
     const maxLineW = Math.max(...lines.map(l => ctx.measureText(l).width));
-    const minPadV = 8;
     const textH = lines.length * lineHeight;
-    // Largura do canvas: ajusta ao texto mas respeita mínimo (bordas L+R) e máximo
-    const totalW = Math.min(maxWidth, Math.max(maxLineW + padH * 2, slice.left + slice.right + 24));
-    const totalH = Math.max(textH + slice.top + slice.bottom + minPadV * 2, slice.top + slice.bottom + 8);
+    // Largura do canvas: ajusta ao texto mas respeita mínimo e máximo
+    const totalW = Math.min(maxWidth, Math.max(maxLineW + innerPadLeft + innerPadRight, slice.left + slice.right + 24));
+    const totalH = Math.max(textH + innerPadTop + innerPadBot, slice.top + slice.bottom + 8);
 
     canvas.width = totalW;
     canvas.height = totalH;
@@ -565,7 +637,7 @@ function NineSliceBubble({
     const mh = totalH - st - sb;
 
     // 9 regiões: [srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH]
-    const regions = [
+    const regions9 = [
       [0,      0,      sl,        st,        0,       0,       sl,  st  ],
       [sl,     0,      iw-sl-sr,  st,        sl,      0,       mw,  st  ],
       [iw-sr,  0,      sr,        st,        sl+mw,   0,       sr,  st  ],
@@ -578,22 +650,30 @@ function NineSliceBubble({
     ];
 
     ctx.clearRect(0, 0, totalW, totalH);
-    for (const [sx, sy, sw, sh, dx, dy, dw, dh] of regions) {
+    for (const [sx, sy, sw, sh, dx, dy, dw, dh] of regions9) {
       if (sw > 0 && sh > 0 && dw > 0 && dh > 0) {
         ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
       }
     }
 
-    // Desenha o texto centralizado verticalmente na área FILL do nine-slice
-    const fillH = totalH - slice.top - slice.bottom;
-    const textStartY = slice.top + Math.max(0, (fillH - textH) / 2);
+    // Posicionamento vertical: centralizado na área FILL
+    const fillH = totalH - st - sb;
+    const textStartY = st + Math.max(0, (fillH - textH) / 2);
+
+    // Posicionamento horizontal por alinhamento
+    const fillW = totalW - innerPadLeft - innerPadRight;
     ctx.fillStyle = msgColor;
     ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
     ctx.textBaseline = "top";
+    ctx.textAlign = textAlign;
     lines.forEach((line, i) => {
-      ctx.fillText(line, padH, textStartY + i * lineHeight);
+      let x: number;
+      if (textAlign === "center") x = innerPadLeft + fillW / 2;
+      else if (textAlign === "right") x = totalW - innerPadRight;
+      else x = innerPadLeft;
+      ctx.fillText(line, x, textStartY + i * lineHeight);
     });
-  }, [imgReady, slice, textColor, text, maxWidth, msgColor]);
+  }, [imgReady, slice, textColor, text, maxWidth, msgColor, fontSize, textAlign, padTop, padRight, padBottom, padLeft]);
 
   return (
     <canvas
@@ -606,35 +686,55 @@ function NineSliceBubble({
 }
 
 function NineSliceChatPreview({
-  imageUrl,
-  slice,
-  textColor,
+  imageUrl, slice, textColor, fontSize, textAlign, padTop, padRight, padBottom, padLeft,
 }: {
-  imageUrl: string;
-  slice: SliceValues;
-  textColor: string;
+  imageUrl: string; slice: SliceValues; textColor: string;
+  fontSize: number; textAlign: "left" | "center" | "right";
+  padTop: number; padRight: number; padBottom: number; padLeft: number;
 }) {
-  const messages = [
-    { id: 1, mine: true,  text: "Oi!" },
-    { id: 2, mine: false, text: "Olá! Tudo bem?" },
-    { id: 3, mine: true,  text: "Sim! Esse bubble ficou incrível 🔥" },
-    { id: 4, mine: false, text: "Concordo! Muito estiloso mesmo, adorei o design!" },
+  const [customText, setCustomText] = useState("");
+  const samples = [
+    { id: 1, mine: true,  label: "Curto",  text: customText || "Oi!" },
+    { id: 2, mine: false, label: "Médio",  text: customText || "Esse bubble ficou incrível 🔥" },
+    { id: 3, mine: true,  label: "Longo",  text: customText || "Concordo! Muito estiloso mesmo, adorei o design!" },
   ];
 
   return (
-    <div className="flex flex-col gap-3 p-3"
-      style={{ background: "rgba(0,0,0,0.2)", borderRadius: 12 }}>
-      {messages.map((msg) => (
-        <div key={msg.id} className={`flex ${msg.mine ? "justify-end" : "justify-start"}`}>
-          <NineSliceBubble
-            imageUrl={imageUrl}
-            slice={slice}
-            textColor={textColor}
-            text={msg.text}
-            maxWidth={msg.text.length > 20 ? 220 : 140}
-          />
-        </div>
-      ))}
+    <div className="space-y-3">
+      {/* Campo de texto editável */}
+      <div className="flex items-center gap-2">
+        <p className="text-[9px] font-mono tracking-widest uppercase flex-shrink-0" style={{ color: "rgba(255,255,255,0.25)" }}>TESTAR TEXTO</p>
+        <input
+          value={customText}
+          onChange={(e) => setCustomText(e.target.value)}
+          placeholder="Digite para testar (deixe vazio para exemplos padrão)"
+          className="flex-1 px-3 py-1.5 rounded-xl text-[12px] outline-none"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)", fontFamily: "'Space Grotesk', sans-serif" }}
+        />
+      </div>
+      {/* Previews */}
+      <div className="flex flex-col gap-3 p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.2)" }}>
+        {samples.map((msg) => (
+          <div key={msg.id}>
+            <p className="text-[8px] font-mono mb-1" style={{ color: "rgba(255,255,255,0.2)" }}>{msg.label}</p>
+            <div className={`flex ${msg.mine ? "justify-end" : "justify-start"}`}>
+              <NineSliceBubble
+                imageUrl={imageUrl}
+                slice={slice}
+                textColor={textColor}
+                text={msg.text}
+                maxWidth={msg.id === 1 ? 140 : msg.id === 2 ? 200 : 260}
+                fontSize={fontSize}
+                textAlign={textAlign}
+                padTop={padTop}
+                padRight={padRight}
+                padBottom={padBottom}
+                padLeft={padLeft}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -656,6 +756,8 @@ function BubblesDashboard() {
     name: "", description: "", priceCoins: 150, rarity: "common",
     isActive: true, isAnimated: false,
     sliceTop: 38, sliceLeft: 38, sliceRight: 38, sliceBottom: 38, textColor: "",
+    fontSize: 13, textAlign: "left",
+    padTop: 8, padRight: 8, padBottom: 8, padLeft: 8,
   });
 
   async function loadBubbles() {
@@ -697,6 +799,12 @@ function BubblesDashboard() {
       sliceTop: (cfg.slice_top as number) ?? 38, sliceLeft: (cfg.slice_left as number) ?? 38,
       sliceRight: (cfg.slice_right as number) ?? 38, sliceBottom: (cfg.slice_bottom as number) ?? 38,
       textColor: (cfg.text_color as string) ?? "",
+      fontSize: (cfg.font_size as number) ?? 13,
+      textAlign: (cfg.text_align as BubbleForm["textAlign"]) ?? "left",
+      padTop: (cfg.pad_top as number) ?? 8,
+      padRight: (cfg.pad_right as number) ?? 8,
+      padBottom: (cfg.pad_bottom as number) ?? 8,
+      padLeft: (cfg.pad_left as number) ?? 8,
     });
     setImagePreview(item.preview_url);
     // Pré-carrega a imagem no cache global assim que o formulário abre
@@ -706,7 +814,7 @@ function BubblesDashboard() {
 
   function cancelEdit() {
     setEditingBubble(null); setShowForm(false);
-    setForm({ name: "", description: "", priceCoins: 150, rarity: "common", isActive: true, isAnimated: false, sliceTop: 38, sliceLeft: 38, sliceRight: 38, sliceBottom: 38, textColor: "" });
+    setForm({ name: "", description: "", priceCoins: 150, rarity: "common", isActive: true, isAnimated: false, sliceTop: 38, sliceLeft: 38, sliceRight: 38, sliceBottom: 38, textColor: "", fontSize: 13, textAlign: "left", padTop: 8, padRight: 8, padBottom: 8, padLeft: 8 });
     setImageFile(null); setImagePreview(null); setImageDimensions(null);
     setPreviewTab("slice");
   }
@@ -729,9 +837,16 @@ function BubblesDashboard() {
       }
       const imgW = imageDimensions?.w ?? 128;
       const imgH = imageDimensions?.h ?? 128;
+      const textConfig = {
+        ...(form.textColor.trim() ? { text_color: form.textColor.trim() } : {}),
+        font_size: form.fontSize,
+        text_align: form.textAlign,
+        pad_top: form.padTop, pad_right: form.padRight,
+        pad_bottom: form.padBottom, pad_left: form.padLeft,
+      };
       const assetConfig = form.isAnimated
-        ? { image_url: publicUrl, bubble_url: publicUrl, bubble_style: "animated", image_width: imgW, image_height: imgH, content_padding_h: 20, content_padding_v: 14, is_animated: true, rarity: form.rarity, ...(form.textColor.trim() ? { text_color: form.textColor.trim() } : {}) }
-        : { image_url: publicUrl, bubble_url: publicUrl, bubble_style: "nine_slice", image_width: imgW, image_height: imgH, slice_top: form.sliceTop, slice_left: form.sliceLeft, slice_right: form.sliceRight, slice_bottom: form.sliceBottom, content_padding_h: 20, content_padding_v: 14, is_animated: false, rarity: form.rarity, ...(form.textColor.trim() ? { text_color: form.textColor.trim() } : {}) };
+        ? { image_url: publicUrl, bubble_url: publicUrl, bubble_style: "animated", image_width: imgW, image_height: imgH, is_animated: true, rarity: form.rarity, ...textConfig }
+        : { image_url: publicUrl, bubble_url: publicUrl, bubble_style: "nine_slice", image_width: imgW, image_height: imgH, slice_top: form.sliceTop, slice_left: form.sliceLeft, slice_right: form.sliceRight, slice_bottom: form.sliceBottom, is_animated: false, rarity: form.rarity, ...textConfig };
       const payload = { type: "chat_bubble", name: form.name.trim(), description: form.description.trim() || null, preview_url: publicUrl, asset_url: publicUrl, asset_config: assetConfig, price_coins: form.priceCoins, price_real_cents: 0, is_premium_only: false, is_limited_edition: false, is_active: form.isActive, sort_order: 0 };
       if (editingBubble) {
         const { error } = await supabase.from("store_items").update(payload).eq("id", editingBubble.id);
@@ -918,6 +1033,70 @@ function BubblesDashboard() {
                       </div>
                     </div>
 
+                    {/* Tipografia e Layout do Texto */}
+                    {!form.isAnimated && (
+                      <div className="space-y-3 rounded-xl p-3" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                        <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.25)" }}>Tipografia e Posicionamento</p>
+
+                        {/* Tamanho da fonte + Alinhamento */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[9px] font-mono block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Tamanho da Fonte (px)</label>
+                            <input
+                              type="number" min={8} max={32}
+                              value={form.fontSize}
+                              onChange={(e) => setForm(f => ({ ...f, fontSize: Math.max(8, Math.min(32, parseInt(e.target.value) || 13)) }))}
+                              className="w-full px-2 py-1.5 rounded-lg text-[12px] outline-none font-mono text-center"
+                              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.8)" }}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] font-mono block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Alinhamento</label>
+                            <div className="flex gap-1">
+                              {(["left", "center", "right"] as const).map((align) => (
+                                <button
+                                  key={align} type="button"
+                                  onClick={() => setForm(f => ({ ...f, textAlign: align }))}
+                                  className="flex-1 py-1.5 rounded-lg text-[10px] font-mono transition-all"
+                                  style={{
+                                    background: form.textAlign === align ? "rgba(124,58,237,0.2)" : "rgba(255,255,255,0.04)",
+                                    border: `1px solid ${form.textAlign === align ? "rgba(124,58,237,0.4)" : "rgba(255,255,255,0.08)"}`,
+                                    color: form.textAlign === align ? "#A78BFA" : "rgba(255,255,255,0.4)",
+                                  }}
+                                >
+                                  {align === "left" ? "←" : align === "center" ? "↔" : "→"}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Padding interno (4 lados) */}
+                        <div>
+                          <label className="text-[9px] font-mono block mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>Padding Interno (px) — independente das bordas de slice</label>
+                          <div className="grid grid-cols-4 gap-2">
+                            {([
+                              { label: "Topo", key: "padTop" as const, color: "#F59E0B" },
+                              { label: "Base", key: "padBottom" as const, color: "#F59E0B" },
+                              { label: "Esq.", key: "padLeft" as const, color: "#34D399" },
+                              { label: "Dir.", key: "padRight" as const, color: "#34D399" },
+                            ]).map(({ label, key, color }) => (
+                              <div key={key}>
+                                <label className="text-[8px] font-mono block mb-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>{label}</label>
+                                <input
+                                  type="number" min={0} max={60}
+                                  value={form[key]}
+                                  onChange={(e) => setForm(f => ({ ...f, [key]: Math.max(0, parseInt(e.target.value) || 0) }))}
+                                  className="w-full px-1.5 py-1.5 rounded-lg text-[11px] outline-none font-mono text-center"
+                                  style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${color}30`, color }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Toggles */}
                     <div className="flex flex-col sm:flex-row gap-3">
                       {[
@@ -990,6 +1169,12 @@ function BubblesDashboard() {
                             slice={sliceValues}
                             onChange={handleSliceChange}
                             textColor={form.textColor}
+                            fontSize={form.fontSize}
+                            textAlign={form.textAlign}
+                            padTop={form.padTop}
+                            padRight={form.padRight}
+                            padBottom={form.padBottom}
+                            padLeft={form.padLeft}
                           />
                         )}
 
@@ -1017,6 +1202,12 @@ function BubblesDashboard() {
                                   imageUrl={imagePreview}
                                   slice={sliceValues}
                                   textColor={form.textColor}
+                                  fontSize={form.fontSize}
+                                  textAlign={form.textAlign}
+                                  padTop={form.padTop}
+                                  padRight={form.padRight}
+                                  padBottom={form.padBottom}
+                                  padLeft={form.padLeft}
                                 />
                               )}
                             </div>
