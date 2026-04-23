@@ -1,13 +1,7 @@
-/**
- * Login — Stark Admin Precision
- * Dark neutral bg #111214, accent rosa #E040FB, DM Sans + DM Mono
- */
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function Login() {
   const { signIn } = useAuth();
@@ -26,121 +20,175 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-[#111214] flex items-center justify-center px-4">
-      {/* Background grid dots */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, #2A2D34 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-          opacity: 0.5,
-        }}
-      />
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
+      style={{ background: "#05060A" }}
+    >
+      {/* Ambient orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full opacity-20"
+          style={{ background: "radial-gradient(circle, rgba(124,58,237,0.6) 0%, transparent 70%)", filter: "blur(60px)" }}
+        />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-15"
+          style={{ background: "radial-gradient(circle, rgba(236,72,153,0.5) 0%, transparent 70%)", filter: "blur(60px)" }}
+        />
+        {/* Dot grid */}
+        <div className="absolute inset-0 nx-dot-bg opacity-40" />
+      </div>
 
-      <div className="relative w-full max-w-sm">
-        {/* Logo / Brand */}
-        <div className="mb-8 text-center">
-          <div className="inline-flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-[#E040FB]/20 border border-[#E040FB]/40 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-[#E040FB]" />
-            </div>
-            <span
-              className="text-white font-bold text-lg tracking-tight"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              NexusHub
-            </span>
-          </div>
-          <h1
-            className="text-2xl font-bold text-white mb-1"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="relative w-full max-w-[360px]"
+      >
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+            className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
+            style={{
+              background: "linear-gradient(135deg, rgba(124,58,237,0.2), rgba(236,72,153,0.15))",
+              border: "1px solid rgba(124,58,237,0.3)",
+              boxShadow: "0 0 40px rgba(124,58,237,0.2)",
+            }}
           >
-            Bubble Studio
-          </h1>
-          <p
-            className="text-[#9CA3AF] text-sm"
-            style={{ fontFamily: "'DM Mono', monospace" }}
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <circle cx="14" cy="14" r="6" fill="url(#g1)" />
+              <circle cx="14" cy="14" r="10" stroke="url(#g2)" strokeWidth="1.5" strokeDasharray="3 2" />
+              <circle cx="14" cy="14" r="13" stroke="rgba(124,58,237,0.3)" strokeWidth="0.5" />
+              <defs>
+                <radialGradient id="g1" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#C4B5FD" />
+                  <stop offset="100%" stopColor="#7C3AED" />
+                </radialGradient>
+                <linearGradient id="g2" x1="0" y1="0" x2="28" y2="28">
+                  <stop offset="0%" stopColor="#A78BFA" />
+                  <stop offset="100%" stopColor="#EC4899" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.35 }}
+            className="text-[26px] font-bold tracking-tight mb-1"
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(167,139,250,0.8))",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
           >
-            Acesso restrito — Team Members
-          </p>
+            NexusHub
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.35 }}
+            className="text-[11px] font-mono tracking-widest uppercase"
+            style={{ color: "rgba(255,255,255,0.3)" }}
+          >
+            Admin Studio · Acesso Restrito
+          </motion.p>
         </div>
 
         {/* Card */}
-        <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl p-6 shadow-2xl">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.4 }}
+          className="p-6 rounded-2xl"
+          style={{
+            background: "rgba(13,17,23,0.8)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            backdropFilter: "blur(20px)",
+            boxShadow: "0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(124,58,237,0.08)",
+          }}
+        >
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email */}
             <div className="space-y-1.5">
-              <Label
-                htmlFor="email"
-                className="text-[#9CA3AF] text-xs uppercase tracking-widest"
-                style={{ fontFamily: "'DM Mono', monospace" }}
-              >
+              <label className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>
                 Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu@email.com"
-                required
-                className="bg-[#111214] border-[#2A2D34] text-white placeholder:text-[#4B5563] focus:border-[#E040FB] focus:ring-[#E040FB]/20 h-10"
-                style={{ fontFamily: "'DM Mono', monospace", fontSize: "13px" }}
+              </label>
+              <input
+                type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com" required
+                className="w-full px-3 py-2.5 rounded-xl text-[13px] outline-none transition-all duration-200"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  color: "rgba(255,255,255,0.9)",
+                  fontFamily: "'Space Mono', monospace",
+                }}
+                onFocus={e => e.currentTarget.style.borderColor = "rgba(124,58,237,0.5)"}
+                onBlur={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"}
               />
             </div>
 
+            {/* Password */}
             <div className="space-y-1.5">
-              <Label
-                htmlFor="password"
-                className="text-[#9CA3AF] text-xs uppercase tracking-widest"
-                style={{ fontFamily: "'DM Mono', monospace" }}
-              >
+              <label className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>
                 Senha
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="bg-[#111214] border-[#2A2D34] text-white placeholder:text-[#4B5563] focus:border-[#E040FB] focus:ring-[#E040FB]/20 h-10"
+              </label>
+              <input
+                type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••" required
+                className="w-full px-3 py-2.5 rounded-xl text-[13px] outline-none transition-all duration-200"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  color: "rgba(255,255,255,0.9)",
+                  fontFamily: "'Space Mono', monospace",
+                }}
+                onFocus={e => e.currentTarget.style.borderColor = "rgba(124,58,237,0.5)"}
+                onBlur={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"}
               />
             </div>
 
+            {/* Error */}
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">
-                <p
-                  className="text-red-400 text-xs"
-                  style={{ fontFamily: "'DM Mono', monospace" }}
-                >
-                  {error}
-                </p>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                className="px-3 py-2 rounded-xl"
+                style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}
+              >
+                <p className="text-[11px] font-mono" style={{ color: "#FCA5A5" }}>{error}</p>
+              </motion.div>
             )}
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full h-10 bg-[#E040FB] hover:bg-[#CE39E0] text-white font-semibold border-0 transition-all duration-200"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            {/* Submit */}
+            <motion.button
+              type="submit" disabled={loading}
+              whileHover={{ scale: loading ? 1 : 1.01 }}
+              whileTap={{ scale: loading ? 1 : 0.98 }}
+              className="w-full py-2.5 rounded-xl text-[13px] font-bold flex items-center justify-center gap-2 transition-all duration-200"
+              style={{
+                background: loading ? "rgba(124,58,237,0.4)" : "linear-gradient(135deg, #7C3AED, #EC4899)",
+                boxShadow: loading ? "none" : "0 0 24px rgba(124,58,237,0.4)",
+                color: "white",
+                fontFamily: "'Space Grotesk', sans-serif",
+                letterSpacing: "0.02em",
+              }}
             >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                "Entrar"
-              )}
-            </Button>
+              {loading ? <Loader2 size={14} className="animate-spin" /> : null}
+              {loading ? "Entrando..." : "Entrar"}
+            </motion.button>
           </form>
-        </div>
+        </motion.div>
 
-        <p
-          className="text-center text-[#4B5563] text-xs mt-4"
-          style={{ fontFamily: "'DM Mono', monospace" }}
+        <motion.p
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+          className="text-center text-[10px] font-mono mt-4"
+          style={{ color: "rgba(255,255,255,0.2)" }}
         >
-          Apenas is_team_admin ou is_team_moderator
-        </p>
-      </div>
+          is_team_admin · is_team_moderator
+        </motion.p>
+      </motion.div>
     </div>
   );
 }

@@ -1,293 +1,197 @@
 import { useState, useEffect } from "react";
-import { supabase, CoinTransaction } from "@/lib/supabase";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2, RefreshCw, Search, ArrowLeftRight, TrendingUp, TrendingDown } from "lucide-react";
+import { motion } from "framer-motion";
+import { supabase } from "@/lib/supabase";
+import { ArrowUpRight, ArrowDownLeft, Filter, TrendingUp, TrendingDown, Activity } from "lucide-react";
 
-type TxWithProfile = CoinTransaction & {
-  profiles: { nickname: string; icon_url: string | null } | null;
+type Transaction = {
+  id: string; user_id: string; amount: number; source: string;
+  description: string | null; created_at: string;
+  profiles?: { username: string; display_name: string | null };
 };
 
-const SOURCE_LABELS: Record<string, string> = {
-  checkin: "Check-in",
-  lucky_draw: "Lucky Draw",
-  iap: "Compra Real (IAP)",
-  ad_reward: "Recompensa por Anúncio",
-  tip_received: "Gorjeta Recebida",
-  purchase: "Compra na Loja",
-  tip_sent: "Gorjeta Enviada",
-  streak_repair: "Reparo de Streak",
+const SOURCE_COLORS: Record<string, { color: string; rgb: string }> = {
+  purchase: { color: "#FCA5A5", rgb: "252,165,165" },
+  daily_reward: { color: "#34D399", rgb: "52,211,153" },
+  achievement: { color: "#A78BFA", rgb: "167,139,250" },
+  gift: { color: "#F9A8D4", rgb: "249,168,212" },
+  admin_grant: { color: "#67E8F9", rgb: "103,232,249" },
+  refund: { color: "#FCD34D", rgb: "252,211,77" },
 };
 
-const SOURCE_COLORS: Record<string, string> = {
-  checkin: "#4ADE80",
-  lucky_draw: "#FBBF24",
-  iap: "#60A5FA",
-  ad_reward: "#A78BFA",
-  tip_received: "#4ADE80",
-  purchase: "#F87171",
-  tip_sent: "#F87171",
-  streak_repair: "#FB923C",
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.04, duration: 0.25, ease: "easeOut" } }),
 };
+
+const PAGE_SIZE = 25;
 
 export default function TransactionsPage() {
-  const [transactions, setTransactions] = useState<TxWithProfile[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [filterSource, setFilterSource] = useState("all");
   const [filterType, setFilterType] = useState<"all" | "credit" | "debit">("all");
   const [page, setPage] = useState(0);
-  const PAGE_SIZE = 50;
+  const [total, setTotal] = useState(0);
+
+  const totalCredits = transactions.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+  const totalDebits = transactions.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
 
   async function loadTransactions() {
     setLoading(true);
     let query = supabase
       .from("coin_transactions")
-      .select("*, profiles(nickname, icon_url)")
+      .select("id, user_id, amount, source, description, created_at, profiles:profiles(username, display_name)", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
-    if (filterSource !== "all") {
-      query = query.eq("source", filterSource);
-    }
-    if (filterType === "credit") {
-      query = query.gt("amount", 0);
-    } else if (filterType === "debit") {
-      query = query.lt("amount", 0);
-    }
+    if (filterSource !== "all") query = query.eq("source", filterSource);
+    if (filterType === "credit") query = query.gt("amount", 0);
+    if (filterType === "debit") query = query.lt("amount", 0);
 
-    const { data, error } = await query;
-    if (!error && data) setTransactions(data as unknown as TxWithProfile[]);
+    const { data, error, count } = await query;
+    if (!error && data) setTransactions(data as Transaction[]);
+    if (count !== null) setTotal(count);
     setLoading(false);
   }
 
-  useEffect(() => {
-    loadTransactions();
-  }, [page, filterSource, filterType]);
+  useEffect(() => { loadTransactions(); }, [page, filterSource, filterType]);
 
-  const filtered = transactions.filter(
-    (tx) =>
-      !search ||
-      (tx.profiles?.nickname ?? "").toLowerCase().includes(search.toLowerCase()) ||
-      tx.source.toLowerCase().includes(search.toLowerCase()) ||
-      tx.description.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const totalCredit = filtered
-    .filter((tx) => tx.amount > 0)
-    .reduce((sum, tx) => sum + tx.amount, 0);
-  const totalDebit = filtered
-    .filter((tx) => tx.amount < 0)
-    .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+  const sources = ["all", "purchase", "daily_reward", "achievement", "gift", "admin_grant", "refund"];
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-5 gap-2">
-        <div>
-          <h1 className="text-lg md:text-xl font-bold text-white">Transações de Coins</h1>
-          <p className="text-[#6B7280] text-sm mt-0.5">
-            Histórico de movimentações da plataforma
-          </p>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={loadTransactions}
-          className="text-[#6B7280] hover:text-white hover:bg-[#2A2D34] h-9"
-        >
-          <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-          Atualizar
-        </Button>
-      </div>
+    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-5">
+      {/* Header */}
+      <motion.div variants={fadeUp} initial="hidden" animate="show" custom={0}>
+        <h1 className="text-[20px] font-bold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif", color: "rgba(255,255,255,0.95)" }}>
+          Transações
+        </h1>
+        <p className="text-[12px] font-mono mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+          {total.toLocaleString()} registros
+        </p>
+      </motion.div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-2 md:gap-4 mb-4 md:mb-6">
-        <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl p-4">
-          <p className="text-[#6B7280] text-xs mb-1">Total Exibido</p>
-          <p className="text-white text-xl font-bold">{filtered.length}</p>
-          <p className="text-[#4B5563] text-xs">transações</p>
-        </div>
-        <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl p-4">
-          <div className="flex items-center gap-1.5 mb-1">
-            <TrendingUp className="w-3.5 h-3.5 text-[#4ADE80]" />
-            <p className="text-[#6B7280] text-xs">Créditos</p>
+      {/* Stats */}
+      <motion.div variants={fadeUp} initial="hidden" animate="show" custom={1} className="grid grid-cols-3 gap-3">
+        {[
+          { label: "Total Registros", value: total.toLocaleString(), icon: Activity, color: "#A78BFA", rgb: "167,139,250" },
+          { label: "Créditos (pág.)", value: `+${totalCredits.toLocaleString()} ✦`, icon: TrendingUp, color: "#34D399", rgb: "52,211,153" },
+          { label: "Débitos (pág.)", value: `-${totalDebits.toLocaleString()} ✦`, icon: TrendingDown, color: "#FCA5A5", rgb: "252,165,165" },
+        ].map(({ label, value, icon: Icon, color, rgb }) => (
+          <div key={label} className="p-3 md:p-4 rounded-2xl" style={{ background: `rgba(${rgb},0.06)`, border: `1px solid rgba(${rgb},0.15)` }}>
+            <div className="flex items-center gap-2 mb-1">
+              <Icon size={12} style={{ color }} />
+              <span className="text-[10px] font-mono tracking-wider uppercase" style={{ color: "rgba(255,255,255,0.35)" }}>{label}</span>
+            </div>
+            <div className="text-[16px] font-bold font-mono" style={{ color }}>{value}</div>
           </div>
-          <p className="text-[#4ADE80] text-xl font-bold">
-            +{totalCredit.toLocaleString()}
-          </p>
-          <p className="text-[#4B5563] text-xs">coins ganhos</p>
-        </div>
-        <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl p-4">
-          <div className="flex items-center gap-1.5 mb-1">
-            <TrendingDown className="w-3.5 h-3.5 text-red-400" />
-            <p className="text-[#6B7280] text-xs">Débitos</p>
-          </div>
-          <p className="text-red-400 text-xl font-bold">
-            -{totalDebit.toLocaleString()}
-          </p>
-          <p className="text-[#4B5563] text-xs">coins gastos</p>
-        </div>
-      </div>
+        ))}
+      </motion.div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row flex-wrap gap-2 mb-4">
-        <div className="relative flex-1 min-w-0 sm:min-w-48">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
-          <Input
-            placeholder="Buscar por usuário ou descrição..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-[#1C1E22] border-[#2A2D34] text-white placeholder:text-[#4B5563] h-9"
-          />
-        </div>
+      <motion.div variants={fadeUp} initial="hidden" animate="show" custom={2} className="flex flex-col sm:flex-row gap-2">
         <select
-          value={filterSource}
-          onChange={(e) => {
-            setFilterSource(e.target.value);
-            setPage(0);
-          }}
-          className="bg-[#1C1E22] border border-[#2A2D34] text-[#9CA3AF] text-sm rounded-md px-3 h-9 focus:outline-none focus:border-[#E040FB]"
+          value={filterSource} onChange={(e) => { setFilterSource(e.target.value); setPage(0); }}
+          className="px-3 py-2 rounded-xl text-[12px] outline-none flex-1"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)", fontFamily: "'Space Mono', monospace" }}
         >
-          <option value="all">Todas as origens</option>
-          {Object.entries(SOURCE_LABELS).map(([k, v]) => (
-            <option key={k} value={k}>
-              {v}
-            </option>
-          ))}
+          {sources.map(s => <option key={s} value={s}>{s === "all" ? "Todas as fontes" : s}</option>)}
         </select>
         <select
-          value={filterType}
-          onChange={(e) => {
-            setFilterType(e.target.value as "all" | "credit" | "debit");
-            setPage(0);
-          }}
-          className="bg-[#1C1E22] border border-[#2A2D34] text-[#9CA3AF] text-sm rounded-md px-3 h-9 focus:outline-none focus:border-[#E040FB]"
+          value={filterType} onChange={(e) => { setFilterType(e.target.value as "all" | "credit" | "debit"); setPage(0); }}
+          className="px-3 py-2 rounded-xl text-[12px] outline-none"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)", fontFamily: "'Space Mono', monospace" }}
         >
-          <option value="all">Créditos e débitos</option>
-          <option value="credit">Apenas créditos</option>
-          <option value="debit">Apenas débitos</option>
+          <option value="all">Todos os tipos</option>
+          <option value="credit">Créditos</option>
+          <option value="debit">Débitos</option>
         </select>
-      </div>
+      </motion.div>
 
       {/* Table */}
       {loading ? (
-        <div className="flex items-center justify-center h-48">
-          <Loader2 className="w-6 h-6 text-[#E040FB] animate-spin" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl p-12 text-center">
-          <ArrowLeftRight className="w-10 h-10 text-[#2A2D34] mx-auto mb-3" />
-          <p className="text-[#4B5563] text-sm">Nenhuma transação encontrada</p>
-        </div>
+        <div className="space-y-2">{[...Array(8)].map((_, i) => <div key={i} className="h-12 rounded-xl nx-shimmer" style={{ background: "rgba(255,255,255,0.03)" }} />)}</div>
       ) : (
-        <>
-          <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl overflow-hidden">
-            <div className="overflow-x-auto">
-            <table className="w-full min-w-[580px]">
+        <motion.div variants={fadeUp} initial="hidden" animate="show" custom={3} className="rounded-2xl overflow-hidden"
+          style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}
+        >
+          <div className="overflow-x-auto">
+            <table className="w-full nx-table">
               <thead>
-                <tr className="border-b border-[#2A2D34]">
-                  <th className="text-left px-4 py-3 text-[#6B7280] text-xs font-medium uppercase">Usuário</th>
-                  <th className="text-left px-4 py-3 text-[#6B7280] text-xs font-medium uppercase">Origem</th>
-                  <th className="text-left px-4 py-3 text-[#6B7280] text-xs font-medium uppercase">Descrição</th>
-                  <th className="text-right px-4 py-3 text-[#6B7280] text-xs font-medium uppercase">Valor</th>
-                  <th className="text-right px-4 py-3 text-[#6B7280] text-xs font-medium uppercase">Saldo Após</th>
-                  <th className="text-right px-4 py-3 text-[#6B7280] text-xs font-medium uppercase">Data</th>
+                <tr>
+                  <th className="text-left">Usuário</th>
+                  <th className="text-left hidden sm:table-cell">Fonte</th>
+                  <th className="text-right">Valor</th>
+                  <th className="text-right hidden md:table-cell">Data</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#2A2D34]">
-                {filtered.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-[#1F2126] transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-[#2A2D34] flex items-center justify-center overflow-hidden flex-shrink-0">
-                          {tx.profiles?.icon_url ? (
-                            <img
-                              src={tx.profiles.icon_url}
-                              alt=""
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-[#6B7280] text-[10px]">
-                              {tx.profiles?.nickname?.[0]?.toUpperCase() ?? "?"}
-                            </span>
-                          )}
+              <tbody>
+                {transactions.map((t, i) => {
+                  const sc = SOURCE_COLORS[t.source] ?? { color: "#94A3B8", rgb: "148,163,184" };
+                  const isCredit = t.amount > 0;
+                  return (
+                    <motion.tr key={t.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{ background: isCredit ? "rgba(52,211,153,0.1)" : "rgba(252,165,165,0.1)" }}
+                          >
+                            {isCredit ? <ArrowUpRight size={10} style={{ color: "#34D399" }} /> : <ArrowDownLeft size={10} style={{ color: "#FCA5A5" }} />}
+                          </div>
+                          <div>
+                            <div className="text-[12px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif", color: "rgba(255,255,255,0.8)" }}>
+                              {(t.profiles as any)?.display_name || (t.profiles as any)?.username || t.user_id.slice(0, 8) + "…"}
+                            </div>
+                            {t.description && <div className="text-[10px] font-mono truncate max-w-[140px]" style={{ color: "rgba(255,255,255,0.3)" }}>{t.description}</div>}
+                          </div>
                         </div>
-                        <span className="text-white text-sm">
-                          {tx.profiles?.nickname ?? "Usuário"}
+                      </td>
+                      <td className="hidden sm:table-cell">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-lg"
+                          style={{ background: `rgba(${sc.rgb},0.1)`, color: sc.color, border: `1px solid rgba(${sc.rgb},0.2)` }}
+                        >
+                          {t.source}
                         </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className="text-xs px-2 py-0.5 rounded-full"
-                        style={{
-                          color: SOURCE_COLORS[tx.source] ?? "#9CA3AF",
-                          background: `${SOURCE_COLORS[tx.source] ?? "#9CA3AF"}20`,
-                          border: `1px solid ${SOURCE_COLORS[tx.source] ?? "#9CA3AF"}40`,
-                        }}
-                      >
-                        {SOURCE_LABELS[tx.source] ?? tx.source}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-[#6B7280] text-sm truncate max-w-[200px]">
-                      {tx.description || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span
-                        className={`text-sm font-bold ${
-                          tx.amount > 0 ? "text-[#4ADE80]" : "text-red-400"
-                        }`}
-                      >
-                        {tx.amount > 0 ? "+" : ""}
-                        {tx.amount}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right text-[#FBBF24] text-sm">
-                      {tx.balance_after}
-                    </td>
-                    <td className="px-4 py-3 text-right text-[#6B7280] text-xs">
-                      {new Date(tx.created_at).toLocaleString("pt-BR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="text-right">
+                        <span className="font-mono font-bold text-[13px]" style={{ color: isCredit ? "#34D399" : "#FCA5A5" }}>
+                          {isCredit ? "+" : ""}{t.amount} ✦
+                        </span>
+                      </td>
+                      <td className="text-right hidden md:table-cell">
+                        <span className="font-mono text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+                          {new Date(t.created_at).toLocaleDateString("pt-BR")}
+                        </span>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
               </tbody>
             </table>
-            </div>
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
-            <p className="text-[#6B7280] text-sm">
-              Página {page + 1} · {filtered.length} resultados
-            </p>
+          <div className="flex items-center justify-between px-4 py-3" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+            <span className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
+              {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} de {total}
+            </span>
             <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setPage(Math.max(0, page - 1))}
-                disabled={page === 0}
-                className="text-[#6B7280] hover:text-white hover:bg-[#2A2D34] h-8"
+              <button
+                disabled={page === 0} onClick={() => setPage(p => p - 1)}
+                className="px-3 py-1.5 rounded-lg text-[11px] font-mono transition-all duration-150 disabled:opacity-30"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}
               >
-                Anterior
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setPage(page + 1)}
-                disabled={transactions.length < PAGE_SIZE}
-                className="text-[#6B7280] hover:text-white hover:bg-[#2A2D34] h-8"
+                ← Anterior
+              </button>
+              <button
+                disabled={(page + 1) * PAGE_SIZE >= total} onClick={() => setPage(p => p + 1)}
+                className="px-3 py-1.5 rounded-lg text-[11px] font-mono transition-all duration-150 disabled:opacity-30"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}
               >
-                Próxima
-              </Button>
+                Próxima →
+              </button>
             </div>
           </div>
-        </>
+        </motion.div>
       )}
     </div>
   );
