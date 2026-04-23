@@ -14,18 +14,23 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 });
 
 // Cliente admin com secret key — bypassa RLS para operações do painel
-// A sb_secret key não é um JWT, por isso usamos global.headers para passar
-// apikey e Authorization manualmente, sem que o supabase-js tente validá-la como JWT
+// A sb_secret key não é um JWT legacy, por isso usamos fetch customizado
+// para garantir que apikey e Authorization sejam sempre a secret key,
+// sobrescrevendo qualquer header que o supabase-js tente injetar.
+const adminFetch = (url: RequestInfo | URL, options: RequestInit = {}) => {
+  const headers = new Headers(options.headers);
+  headers.set("apikey", SUPABASE_SERVICE_ROLE_KEY);
+  headers.set("Authorization", `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`);
+  return fetch(url, { ...options, headers });
+};
+
 export const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
   },
   global: {
-    headers: {
-      apikey: SUPABASE_SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-    },
+    fetch: adminFetch,
   },
 });
 
