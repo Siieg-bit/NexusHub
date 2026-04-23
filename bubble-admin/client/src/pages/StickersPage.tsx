@@ -361,6 +361,7 @@ export default function StickersPage() {
                 if (e.target.files?.length) uploadStickers(e.target.files);
               }}
             />
+            <p className="text-[10px] font-mono mt-1 text-right" style={{ color: "rgba(224,64,251,0.45)", fontFamily: "'DM Mono', monospace" }}>Recomendado: 512×512px · PNG transparente</p>
           </div>
         </div>
 
