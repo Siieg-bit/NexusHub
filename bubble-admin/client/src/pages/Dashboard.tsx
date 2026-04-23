@@ -1076,7 +1076,16 @@ function BubblesDashboard() {
         : [],
     });
     setImageUrl(item.preview_url);
-    setImageDimensions(cfg.image_width && cfg.image_height ? { w: cfg.image_width, h: cfg.image_height } : null);
+    if (cfg.image_width && cfg.image_height) {
+      setImageDimensions({ w: cfg.image_width, h: cfg.image_height });
+    } else if (item.preview_url) {
+      // Mede as dimensões reais da imagem quando não estão no asset_config
+      const img = new window.Image();
+      img.onload = () => setImageDimensions({ w: img.naturalWidth, h: img.naturalHeight });
+      img.src = item.preview_url;
+    } else {
+      setImageDimensions(null);
+    }
     setShowForm(true);
   }
 

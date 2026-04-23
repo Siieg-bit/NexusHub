@@ -68,23 +68,19 @@ class NineSliceBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = context.r;
 
-    // Dimensões mínimas do container baseadas na imagem original.
+    // Dimensões mínimas do container baseadas na fill zone real da imagem.
     //
-    // O nine-slice funciona corretamente apenas quando o container tem pelo
-    // menos o tamanho da "fill zone" (área central da imagem):
+    // A fill zone é a área central que o drawImageNine estica:
     //   fillW = imageSize.width  - sliceInsets.left - sliceInsets.right
     //   fillH = imageSize.height - sliceInsets.top  - sliceInsets.bottom
     //
-    // Se o container for menor que isso, o drawImageNine comprime os cantos
-    // e deforma a imagem. Usamos a imagem original como mínimo para garantir
-    // que os cantos nunca sejam comprimidos.
-    //
-    // O kNineSliceOffset (12 px) é subtraído porque o Positioned já expande
-    // a imagem 12 px além das bordas do container em cada lado — portanto o
-    // container precisa ser (imageSize - 2*offset) para que a imagem renderize
-    // com seu tamanho original.
-    final double minW = (imageSize.width  - 2 * kNineSliceOffset).clamp(48.0, maxWidth);
-    final double minH = (imageSize.height - 2 * kNineSliceOffset).clamp(48.0, double.infinity);
+    // O container deve ter pelo menos o tamanho da fill zone para que os
+    // cantos decorativos nunca sejam comprimidos. Usar imageSize.height inteira
+    // causava balões muito altos para imagens grandes (ex: 256×256).
+    final double fillW = imageSize.width  - sliceInsets.left - sliceInsets.right;
+    final double fillH = imageSize.height - sliceInsets.top  - sliceInsets.bottom;
+    final double minW = fillW.clamp(32.0, maxWidth);
+    final double minH = fillH.clamp(32.0, double.infinity);
 
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
