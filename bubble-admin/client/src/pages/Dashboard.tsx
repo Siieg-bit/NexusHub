@@ -429,6 +429,7 @@ function NineSliceEditor({
 
 // ─── Nine-Slice Chat Preview (resultado final) ────────────────────────────────
 // Usa canvas para renderizar o nine-slice corretamente com o texto dentro da área central
+// A imagem é carregada UMA VEZ e cacheada — redesenha instantaneamente ao mudar slice/texto
 function NineSliceBubble({
   imageUrl,
   slice,
@@ -444,85 +445,104 @@ function NineSliceBubble({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState({ w: maxWidth, h: 60 });
+  // Cache da imagem carregada — evita recarregar a cada mudança de slice
+  const imgCacheRef = useRef<HTMLImageElement | null>(null);
+  const [imgReady, setImgReady] = useState(false);
   const msgColor = textColor.trim() ? textColor : "rgba(255,255,255,0.9)";
 
-  // Mede o tamanho necessário para o texto e desenha o nine-slice no canvas
+  // Carrega a imagem apenas quando a URL muda
   useEffect(() => {
+    setImgReady(false);
+    imgCacheRef.current = null;
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      imgCacheRef.current = img;
+      setImgReady(true);
+    };
+    img.onerror = () => {
+      // Tenta sem crossOrigin (para URLs de blob local)
+      const img2 = new window.Image();
+      img2.onload = () => { imgCacheRef.current = img2; setImgReady(true); };
+      img2.src = imageUrl;
+    };
+    img.src = imageUrl;
+  }, [imageUrl]);
+
+  // Redesenha o canvas sempre que a imagem estiver pronta ou slice/texto mudar
+  useEffect(() => {
+    if (!imgReady || !imgCacheRef.current) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const img = new window.Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      const fontSize = 13;
-      const lineHeight = 18;
-      const padH = Math.max(slice.left, 12) + 8;
-      const padV = Math.max(slice.top, 8) + 4;
-      const contentW = maxWidth - padH * 2;
+    const img = imgCacheRef.current;
+    const fontSize = 13;
+    const lineHeight = 18;
+    const padH = Math.max(slice.left, 12) + 8;
+    const padV = Math.max(slice.top, 8) + 4;
+    const contentW = maxWidth - padH * 2;
 
-      // Quebra o texto em linhas
-      ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
-      const words = text.split(" ");
-      const lines: string[] = [];
-      let cur = "";
-      for (const w of words) {
-        const test = cur ? `${cur} ${w}` : w;
-        if (ctx.measureText(test).width > contentW && cur) {
-          lines.push(cur);
-          cur = w;
-        } else {
-          cur = test;
-        }
+    // Quebra o texto em linhas
+    ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
+    const words = text.split(" ");
+    const lines: string[] = [];
+    let cur = "";
+    for (const w of words) {
+      const test = cur ? `${cur} ${w}` : w;
+      if (ctx.measureText(test).width > contentW && cur) {
+        lines.push(cur);
+        cur = w;
+      } else {
+        cur = test;
       }
-      if (cur) lines.push(cur);
+    }
+    if (cur) lines.push(cur);
 
-      const textH = lines.length * lineHeight;
-      const totalH = Math.max(textH + padV * 2, slice.top + slice.bottom + 8);
-      const totalW = maxWidth;
+    const textH = lines.length * lineHeight;
+    const totalH = Math.max(textH + padV * 2, slice.top + slice.bottom + 8);
+    const totalW = maxWidth;
 
-      canvas.width = totalW;
-      canvas.height = totalH;
-      setSize({ w: totalW, h: totalH });
+    canvas.width = totalW;
+    canvas.height = totalH;
+    setSize({ w: totalW, h: totalH });
 
-      // Desenha nine-slice
-      const iw = img.naturalWidth;
-      const ih = img.naturalHeight;
-      const sl = slice.left, sr = slice.right, st = slice.top, sb = slice.bottom;
-      const mw = totalW - sl - sr;
-      const mh = totalH - st - sb;
+    // Desenha nine-slice
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const sl = slice.left, sr = slice.right, st = slice.top, sb = slice.bottom;
+    const mw = totalW - sl - sr;
+    const mh = totalH - st - sb;
 
-      // 9 regiões: [srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH]
-      const regions = [
-        [0,      0,      sl,        st,        0,       0,       sl,  st  ],
-        [sl,     0,      iw-sl-sr,  st,        sl,      0,       mw,  st  ],
-        [iw-sr,  0,      sr,        st,        sl+mw,   0,       sr,  st  ],
-        [0,      st,     sl,        ih-st-sb,  0,       st,      sl,  mh  ],
-        [sl,     st,     iw-sl-sr,  ih-st-sb,  sl,      st,      mw,  mh  ],
-        [iw-sr,  st,     sr,        ih-st-sb,  sl+mw,   st,      sr,  mh  ],
-        [0,      ih-sb,  sl,        sb,        0,       st+mh,   sl,  sb  ],
-        [sl,     ih-sb,  iw-sl-sr,  sb,        sl,      st+mh,   mw,  sb  ],
-        [iw-sr,  ih-sb,  sr,        sb,        sl+mw,   st+mh,   sr,  sb  ],
-      ];
+    // 9 regiões: [srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH]
+    const regions = [
+      [0,      0,      sl,        st,        0,       0,       sl,  st  ],
+      [sl,     0,      iw-sl-sr,  st,        sl,      0,       mw,  st  ],
+      [iw-sr,  0,      sr,        st,        sl+mw,   0,       sr,  st  ],
+      [0,      st,     sl,        ih-st-sb,  0,       st,      sl,  mh  ],
+      [sl,     st,     iw-sl-sr,  ih-st-sb,  sl,      st,      mw,  mh  ],
+      [iw-sr,  st,     sr,        ih-st-sb,  sl+mw,   st,      sr,  mh  ],
+      [0,      ih-sb,  sl,        sb,        0,       st+mh,   sl,  sb  ],
+      [sl,     ih-sb,  iw-sl-sr,  sb,        sl,      st+mh,   mw,  sb  ],
+      [iw-sr,  ih-sb,  sr,        sb,        sl+mw,   st+mh,   sr,  sb  ],
+    ];
 
-      ctx.clearRect(0, 0, totalW, totalH);
-      for (const [sx, sy, sw, sh, dx, dy, dw, dh] of regions) {
-        if (sw > 0 && sh > 0 && dw > 0 && dh > 0) {
-          ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
-        }
+    ctx.clearRect(0, 0, totalW, totalH);
+    for (const [sx, sy, sw, sh, dx, dy, dw, dh] of regions) {
+      if (sw > 0 && sh > 0 && dw > 0 && dh > 0) {
+        ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
       }
+    }
 
-      // Desenha o texto dentro da área central
-      ctx.fillStyle = msgColor;
-      ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
-      ctx.textBaseline = "top";
-      lines.forEach((line, i) => {
-        ctx.fillText(line, padH, padV + i * lineHeight);
-      });
-    };
-    img.src = imageUrl;
-  }, [imageUrl, slice, textColor, text, maxWidth, msgColor]);
+    // Desenha o texto dentro da área central
+    ctx.fillStyle = msgColor;
+    ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
+    ctx.textBaseline = "top";
+    lines.forEach((line, i) => {
+      ctx.fillText(line, padH, padV + i * lineHeight);
+    });
+  }, [imgReady, slice, textColor, text, maxWidth, msgColor]);
 
   return (
     <canvas
