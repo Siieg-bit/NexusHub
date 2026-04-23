@@ -527,16 +527,16 @@ function NineSliceBubble({
     const fontSize = 13;
     const lineHeight = 18;
     const padH = Math.max(slice.left, 12) + 8;
-    const contentW = maxWidth - padH * 2;
+    const maxContentW = maxWidth - padH * 2;
 
-    // Quebra o texto em linhas
+    // Quebra o texto em linhas (usando largura máxima como limite)
     ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
     const words = text.split(" ");
     const lines: string[] = [];
     let cur = "";
     for (const w of words) {
       const test = cur ? `${cur} ${w}` : w;
-      if (ctx.measureText(test).width > contentW && cur) {
+      if (ctx.measureText(test).width > maxContentW && cur) {
         lines.push(cur);
         cur = w;
       } else {
@@ -545,10 +545,13 @@ function NineSliceBubble({
     }
     if (cur) lines.push(cur);
 
-    const textH = lines.length * lineHeight;
+    // Largura real do conteúdo (linha mais larga)
+    const maxLineW = Math.max(...lines.map(l => ctx.measureText(l).width));
     const minPadV = 8;
+    const textH = lines.length * lineHeight;
+    // Largura do canvas: ajusta ao texto mas respeita mínimo (bordas L+R) e máximo
+    const totalW = Math.min(maxWidth, Math.max(maxLineW + padH * 2, slice.left + slice.right + 24));
     const totalH = Math.max(textH + slice.top + slice.bottom + minPadV * 2, slice.top + slice.bottom + 8);
-    const totalW = maxWidth;
 
     canvas.width = totalW;
     canvas.height = totalH;
