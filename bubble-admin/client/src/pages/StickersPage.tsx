@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { supabase, StickerPack, Sticker } from "@/lib/supabase";
+import { supabase, supabaseAdmin, StickerPack, Sticker } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -171,14 +171,14 @@ export default function StickersPage() {
       };
 
       if (editingPack) {
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
           .from("sticker_packs")
           .update(payload)
           .eq("id", editingPack.id);
         if (error) throw error;
         toast.success("Pack atualizado!");
       } else {
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
           .from("sticker_packs")
           .insert(payload);
         if (error) throw error;
@@ -198,7 +198,7 @@ export default function StickersPage() {
   async function deletePack(pack: StickerPack) {
     if (!confirm(`Excluir o pack "${pack.name}" e todos os seus stickers?`))
       return;
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("sticker_packs")
       .delete()
       .eq("id", pack.id);
@@ -212,7 +212,7 @@ export default function StickersPage() {
   }
 
   async function togglePackActive(pack: StickerPack) {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("sticker_packs")
       .update({ is_active: !pack.is_active })
       .eq("id", pack.id);
@@ -252,7 +252,7 @@ export default function StickersPage() {
       const isAnimated =
         ext === "gif" || ext === "apng" || ext === "webp";
 
-      const { error } = await supabase.from("stickers").insert({
+      const { error } = await supabaseAdmin.from("stickers").insert({
         pack_id: selectedPack.id,
         name: baseName,
         image_url: url,
@@ -268,7 +268,7 @@ export default function StickersPage() {
     }
 
     // Update sticker_count
-    await supabase
+    await supabaseAdmin
       .from("sticker_packs")
       .update({ sticker_count: stickers.length + successCount })
       .eq("id", selectedPack.id);
@@ -284,7 +284,7 @@ export default function StickersPage() {
   }
 
   async function deleteSticker(sticker: Sticker) {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("stickers")
       .delete()
       .eq("id", sticker.id);
@@ -293,7 +293,7 @@ export default function StickersPage() {
     } else {
       toast.success("Sticker excluído.");
       if (selectedPack) {
-        await supabase
+        await supabaseAdmin
           .from("sticker_packs")
           .update({ sticker_count: Math.max(0, stickers.length - 1) })
           .eq("id", selectedPack.id);
