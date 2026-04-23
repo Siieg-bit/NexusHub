@@ -518,7 +518,7 @@ export default function FramesDashboard() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
+    <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 py-5 md:py-8">
       {/* ── Top: Criar nova moldura ── */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-1">
@@ -538,7 +538,7 @@ export default function FramesDashboard() {
 
       {/* ── Split layout: form | preview ── */}
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 mb-6 md:mb-10">
           {/* Formulário — 3/5 */}
           <div className="lg:col-span-3 space-y-5">
 
@@ -768,7 +768,7 @@ export default function FramesDashboard() {
             </div>
 
             {/* Preço + Raridade */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2 md:gap-4">
               <div className="space-y-1.5">
                 <Label
                   className="text-[#9CA3AF] text-xs uppercase tracking-widest"
@@ -913,7 +913,7 @@ export default function FramesDashboard() {
           {/* Preview — 2/5 */}
           <div className="lg:col-span-2">
             <div
-              className="border rounded-xl overflow-hidden sticky top-6"
+              className="border rounded-xl overflow-hidden lg:sticky lg:top-6"
               style={{
                 backgroundColor: "#1C1E22",
                 borderColor: isAnimated ? "#34D39930" : "#2A2D34",

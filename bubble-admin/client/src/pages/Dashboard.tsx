@@ -356,7 +356,7 @@ function BubblesDashboard() {
   }
 
   return (
-    <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
+    <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 py-5 md:py-8">
       {/* Formulário de criação/edição */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-1">
@@ -371,7 +371,7 @@ function BubblesDashboard() {
 
         <form
           onSubmit={handleSubmit}
-          className="bg-[#1C1E22] border border-[#2A2D34] rounded-2xl p-6 grid grid-cols-1 lg:grid-cols-2 gap-6"
+          className="bg-[#1C1E22] border border-[#2A2D34] rounded-2xl p-4 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6"
         >
           {/* Upload */}
           <div className="flex flex-col gap-4">
@@ -442,7 +442,7 @@ function BubblesDashboard() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 md:gap-3">
               <div className="space-y-1.5">
                 <Label className="text-[#9CA3AF] text-xs uppercase tracking-wide" style={{ fontFamily: "'DM Mono', monospace" }}>
                   Preço (Coins)
@@ -498,7 +498,7 @@ function BubblesDashboard() {
                 <Label className="text-[#9CA3AF] text-xs uppercase tracking-wide" style={{ fontFamily: "'DM Mono', monospace" }}>
                   Bordas Nine-Slice (px)
                 </Label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 md:gap-3">
                   <div className="space-y-1">
                     <span className="text-[#6B7280] text-xs">Topo</span>
                     <Input

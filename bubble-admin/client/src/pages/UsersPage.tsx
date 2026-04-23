@@ -103,8 +103,8 @@ export default function UsersPage() {
   // User detail view
   if (selectedUser) {
     return (
-      <div className="p-6 max-w-5xl mx-auto">
-        <div className="flex items-center gap-3 mb-6">
+      <div className="p-4 md:p-6 max-w-5xl mx-auto">
+        <div className="flex items-center gap-3 mb-5 flex-wrap">
           <button
             onClick={() => setSelectedUser(null)}
             className="p-1.5 rounded-md text-[#6B7280] hover:text-white hover:bg-[#2A2D34] transition-colors"
@@ -127,7 +127,7 @@ export default function UsersPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-white">
+                <h1 className="text-lg md:text-xl font-bold text-white">
                   {selectedUser.nickname}
                 </h1>
                 {selectedUser.is_team_admin && (
@@ -154,7 +154,7 @@ export default function UsersPage() {
         </div>
 
         {/* Stats cards */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-2 md:gap-4 mb-4 md:mb-6">
           <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl p-4">
             <p className="text-[#6B7280] text-xs mb-1">Saldo de Coins</p>
             <p className="text-[#FBBF24] text-xl font-bold">
@@ -208,7 +208,8 @@ export default function UsersPage() {
                 Nenhuma compra registrada
               </div>
             ) : (
-              <table className="w-full">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-[480px]">
                 <thead>
                   <tr className="border-b border-[#2A2D34]">
                     <th className="text-left px-4 py-3 text-[#6B7280] text-xs font-medium uppercase">Item</th>
@@ -253,6 +254,7 @@ export default function UsersPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         ) : (
@@ -262,7 +264,8 @@ export default function UsersPage() {
                 Nenhuma transação registrada
               </div>
             ) : (
-              <table className="w-full">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-[480px]">
                 <thead>
                   <tr className="border-b border-[#2A2D34]">
                     <th className="text-left px-4 py-3 text-[#6B7280] text-xs font-medium uppercase">Origem</th>
@@ -296,6 +299,7 @@ export default function UsersPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         )}
@@ -304,10 +308,10 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between mb-5 gap-2">
         <div>
-          <h1 className="text-xl font-bold text-white">Usuários</h1>
+          <h1 className="text-lg md:text-xl font-bold text-white">Usuários</h1>
           <p className="text-[#6B7280] text-sm mt-0.5">
             {users.length} usuários registrados
           </p>
@@ -346,7 +350,8 @@ export default function UsersPage() {
         </div>
       ) : (
         <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl overflow-hidden">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[560px]">
             <thead>
               <tr className="border-b border-[#2A2D34]">
                 <th className="text-left px-4 py-3 text-[#6B7280] text-xs font-medium uppercase">Usuário</th>
@@ -420,6 +425,7 @@ export default function UsersPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

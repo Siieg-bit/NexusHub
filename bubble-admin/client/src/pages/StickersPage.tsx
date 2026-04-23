@@ -313,8 +313,8 @@ export default function StickersPage() {
   // Sticker management view
   if (selectedPack) {
     return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="flex items-center gap-3 mb-6">
+      <div className="p-4 md:p-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
           <button
             onClick={() => setSelectedPack(null)}
             className="p-1.5 rounded-md text-[#6B7280] hover:text-white hover:bg-[#2A2D34] transition-colors"
@@ -342,7 +342,7 @@ export default function StickersPage() {
             <Button
               onClick={() => stickerInputRef.current?.click()}
               disabled={uploadingStickers}
-              className="bg-[#E040FB] hover:bg-[#D030EB] text-white h-9 px-4 text-sm"
+              className="bg-[#E040FB] hover:bg-[#D030EB] text-white h-9 px-3 md:px-4 text-sm"
             >
               {uploadingStickers ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
@@ -416,9 +416,9 @@ export default function StickersPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4 md:mb-6">
         <div>
           <h1 className="text-xl font-bold text-white">Packs de Stickers</h1>
           <p className="text-[#6B7280] text-sm mt-0.5">
@@ -587,7 +587,7 @@ export default function StickersPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmitPack} className="p-6 space-y-4">
+            <form onSubmit={handleSubmitPack} className="p-4 md:p-6 space-y-4">
               {/* Icon upload */}
               <div className="space-y-1.5">
                 <Label className="text-[#9CA3AF] text-xs">Ícone do Pack</Label>
@@ -635,7 +635,7 @@ export default function StickersPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-[#9CA3AF] text-xs">Nome *</Label>
                   <Input
@@ -672,7 +672,7 @@ export default function StickersPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2 md:gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-[#9CA3AF] text-xs">
                     Preço (Coins)

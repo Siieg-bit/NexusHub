@@ -45,7 +45,7 @@ function StatCard({
   sub?: string;
 }) {
   return (
-    <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl p-5 flex flex-col gap-3">
+    <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl p-4 md:p-5 flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <span className="text-[#6B7280] text-sm">{label}</span>
         <div
@@ -56,7 +56,7 @@ function StatCard({
         </div>
       </div>
       <div>
-        <span className="text-2xl font-bold text-white">{value}</span>
+        <span className="text-xl md:text-2xl font-bold text-white">{value}</span>
         {sub && <p className="text-[#6B7280] text-xs mt-0.5">{sub}</p>}
       </div>
     </div>
@@ -135,11 +135,11 @@ export default function OverviewPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-5 gap-2">
         <div>
-          <h1 className="text-xl font-bold text-white">Visão Geral da Loja</h1>
+          <h1 className="text-lg md:text-xl font-bold text-white">Visão Geral da Loja</h1>
           <p className="text-[#6B7280] text-sm mt-0.5">
             Estatísticas e atividade recente
           </p>
@@ -157,7 +157,7 @@ export default function OverviewPage() {
 
       {/* Stats Grid */}
       {stats && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
           <StatCard
             label="Itens Ativos"
             value={stats.active_items}
@@ -191,7 +191,7 @@ export default function OverviewPage() {
 
       {/* Second row */}
       {stats && (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
           <StatCard
             label="Temas Ativos"
             value={stats.active_themes}
@@ -225,7 +225,7 @@ export default function OverviewPage() {
       )}
 
       {/* Recent activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Recent purchases */}
         <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-[#2A2D34]">

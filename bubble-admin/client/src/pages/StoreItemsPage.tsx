@@ -299,11 +299,11 @@ export default function StoreItemsPage() {
   });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-5 gap-2">
         <div>
-          <h1 className="text-xl font-bold text-white">Produtos da Loja</h1>
+          <h1 className="text-lg md:text-xl font-bold text-white">Produtos da Loja</h1>
           <p className="text-[#6B7280] text-sm mt-0.5">
             {items.length} itens cadastrados
           </p>
@@ -318,8 +318,8 @@ export default function StoreItemsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-5">
-        <div className="relative flex-1 min-w-48">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-2 mb-4">
+        <div className="relative flex-1 min-w-0 sm:min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
           <Input
             placeholder="Buscar por nome..."
@@ -373,7 +373,8 @@ export default function StoreItemsPage() {
         </div>
       ) : (
         <div className="bg-[#1C1E22] border border-[#2A2D34] rounded-xl overflow-hidden">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px]">
             <thead>
               <tr className="border-b border-[#2A2D34]">
                 <th className="text-left px-4 py-3 text-[#6B7280] text-xs font-medium uppercase tracking-wide">
@@ -499,6 +500,7 @@ export default function StoreItemsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
@@ -509,7 +511,7 @@ export default function StoreItemsPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={closeForm}
           />
-          <div className="relative bg-[#1C1E22] border border-[#2A2D34] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="relative bg-[#1C1E22] border border-[#2A2D34] rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl">
             {/* Modal header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-[#2A2D34] sticky top-0 bg-[#1C1E22] z-10">
               <h2 className="font-bold text-white">
@@ -523,9 +525,9 @@ export default function StoreItemsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4 md:space-y-5">
               {/* Name + Type */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-[#9CA3AF] text-xs">Nome *</Label>
                   <Input
@@ -631,7 +633,7 @@ export default function StoreItemsPage() {
               </div>
 
               {/* Tags + Sort */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-[#9CA3AF] text-xs">
                     Tags (separadas por vírgula)

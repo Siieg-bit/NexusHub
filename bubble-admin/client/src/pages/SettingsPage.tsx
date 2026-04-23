@@ -72,7 +72,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-4 md:p-6 max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-white">Configurações</h1>
         <p className="text-[#6B7280] text-sm mt-0.5">
@@ -289,7 +289,7 @@ export default function SettingsPage() {
               Informações do Sistema
             </h2>
           </div>
-          <div className="p-5 grid grid-cols-2 gap-4">
+          <div className="p-4 md:p-5 grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             {[
               { label: "Projeto", value: "NexusHub" },
               { label: "Ref. Supabase", value: "ylvzqqvcanzzswjkqeya" },
