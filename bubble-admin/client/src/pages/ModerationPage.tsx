@@ -26,18 +26,24 @@ type FlagType = "spam" | "harassment" | "hate_speech" | "nsfw" | "misinformation
 type Flag = {
   id: string;
   community_id: string;
-  reporter_id: string | null;
-  target_type: string;
-  target_id: string | null;
+  reporter_id: string;
+  target_user_id: string | null;
+  target_post_id: string | null;
+  target_wiki_id: string | null;
+  target_comment_id: string | null;
+  target_chat_message_id: string | null;
+  target_chat_thread_id: string | null;
   flag_type: FlagType;
   reason: string | null;
+  evidence_urls: string[];
   status: string;
   resolved_by: string | null;
   resolution_note: string | null;
-  resolution_action: string | null;
+  resolved_at: string | null;
   created_at: string;
-  is_reviewed: boolean;
-  is_escalated: boolean;
+  bot_analyzed: boolean;
+  bot_verdict: string | null;
+  auto_actioned: boolean;
   reporter?: { nickname: string | null; amino_id: string | null };
 };
 
@@ -123,9 +129,7 @@ function ResolveModal({
         status: action,
         resolved_by: user?.id ?? null,
         resolution_note: note.trim() || null,
-        is_reviewed: true,
-        reviewer_id: user?.id ?? null,
-        reviewed_at: new Date().toISOString(),
+        resolved_at: new Date().toISOString(),
       }).eq("id", flag.id);
       if (error) throw error;
 
@@ -136,6 +140,7 @@ function ResolveModal({
           moderator_id: user?.id,
           action: action === "approved" ? "flag_approved" : "flag_rejected",
           severity: "low",
+          target_user_id: flag.target_user_id ?? null,
           reason: note.trim() || null,
           details: { flag_type: flag.flag_type, flag_id: flag.id },
         });
@@ -243,7 +248,7 @@ export default function ModerationPage() {
       // Join com profiles usando nickname (campo real)
       let query = supabase
         .from("flags")
-        .select("id, community_id, reporter_id, target_type, target_id, flag_type, reason, status, resolved_by, resolution_note, resolution_action, created_at, is_reviewed, is_escalated, reporter:profiles!reporter_id(nickname, amino_id)")
+        .select("id, community_id, reporter_id, target_user_id, target_post_id, target_wiki_id, target_comment_id, target_chat_message_id, target_chat_thread_id, flag_type, reason, evidence_urls, status, resolved_by, resolution_note, resolved_at, created_at, bot_analyzed, bot_verdict, auto_actioned, reporter:profiles!reporter_id(nickname, amino_id)")
         .order("created_at", { ascending: false })
         .limit(50);
       if (flagFilter !== "all") query = query.eq("status", flagFilter);
@@ -436,6 +441,9 @@ export default function ModerationPage() {
                   const typeColor = FLAG_TYPE_COLORS[flag.flag_type] ?? "#6B7280";
                   const typeLabel = FLAG_TYPE_LABELS[flag.flag_type] ?? flag.flag_type;
                   const reporterName = displayUser(flag.reporter, flag.reporter_id ?? "anônimo");
+                  // Determinar qual target está preenchido
+                  const targetId = flag.target_user_id ?? flag.target_post_id ?? flag.target_comment_id ?? flag.target_wiki_id ?? flag.target_chat_message_id ?? flag.target_chat_thread_id;
+                  const targetType = flag.target_user_id ? "usuário" : flag.target_post_id ? "post" : flag.target_comment_id ? "comentário" : flag.target_wiki_id ? "wiki" : flag.target_chat_message_id ? "mensagem" : flag.target_chat_thread_id ? "chat" : "desconhecido";
                   return (
                     <motion.div key={flag.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}
                       className="rounded-xl overflow-hidden"
@@ -453,10 +461,13 @@ export default function ModerationPage() {
                             </span>
                             <span className="text-[10px] px-1.5 py-0.5 rounded font-mono"
                               style={{ background: `${typeColor}15`, color: typeColor }}>
-                              {flag.target_type}
+                              {targetType}
                             </span>
-                            {flag.is_escalated && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded font-mono" style={{ background: "rgba(239,68,68,0.1)", color: "#FCA5A5" }}>ESCALADO</span>
+                            {flag.auto_actioned && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded font-mono" style={{ background: "rgba(239,68,68,0.1)", color: "#FCA5A5" }}>AUTO</span>
+                            )}
+                            {flag.bot_analyzed && flag.bot_verdict && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded font-mono" style={{ background: "rgba(167,139,250,0.1)", color: "#A78BFA" }}>BOT: {flag.bot_verdict}</span>
                             )}
                           </div>
                           <p className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
@@ -480,10 +491,10 @@ export default function ModerationPage() {
                             <div className="px-4 pb-4 space-y-3" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
                               <div className="pt-3 grid grid-cols-2 gap-3">
                                 <div className="space-y-1">
-                                  <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>Target ID</p>
+                                  <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>Target ({targetType})</p>
                                   <div className="flex items-center gap-1.5">
                                     <Hash size={11} style={{ color: "rgba(255,255,255,0.3)" }} />
-                                    <p className="text-[11px] font-mono truncate" style={{ color: "rgba(255,255,255,0.5)" }}>{flag.target_id ?? "—"}</p>
+                                    <p className="text-[11px] font-mono truncate" style={{ color: "rgba(255,255,255,0.5)" }}>{targetId ?? "—"}</p>
                                   </div>
                                 </div>
                                 <div className="space-y-1">
