@@ -15,6 +15,7 @@ import 'package:amino_clone/config/nexus_theme_data.dart';
 import 'package:amino_clone/config/nexus_theme_scope.dart';
 import 'router/app_router.dart';
 import 'core/providers/theme_provider.dart';
+import 'core/providers/cosmetics_provider.dart';
 import 'package:amino_clone/core/providers/nexus_theme_provider.dart';
 import 'core/services/device_fingerprint_service.dart';
 import 'core/services/deep_link_service.dart';
@@ -216,6 +217,11 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
     final router = ref.watch(appRouterProvider);
     // ignore: unused_local_variable
     final themeMode = ref.watch(themeProvider);
+    // Inicializa o invalidador de cache de cosméticos via Supabase Realtime.
+    // Escuta mudanças em user_purchases e store_items para invalidar
+    // o userCosmeticsProvider sem reiniciar o app.
+    // ignore: unused_local_variable
+    ref.watch(cosmeticsInvalidatorProvider);
     final nexusTheme = ref.watch(nexusThemeProvider);
     final currentLocale = ref.watch(localeProvider);
 

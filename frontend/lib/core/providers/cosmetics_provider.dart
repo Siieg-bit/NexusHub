@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/supabase_service.dart';
+import '../services/realtime_service.dart';
 
 /// Modelo de cosméticos equipados de um usuário.
 ///
@@ -360,3 +361,72 @@ String? _firstNonEmpty(List<String> values) {
   }
   return null;
 }
+
+// =============================================================================
+// cosmeticsInvalidatorProvider — Invalida o cache de cosméticos via Realtime
+//
+// Escuta mudanças em `user_purchases` (equip/unequip) e `store_items`
+// (atualização de asset_config pelo painel admin) para o usuário atual.
+// Quando detecta uma mudança relevante, invalida o userCosmeticsProvider
+// correspondente, forçando um re-fetch transparente sem reiniciar o app.
+//
+// Deve ser inicializado uma vez no app via:
+//   ref.watch(cosmeticsInvalidatorProvider)
+// em um widget de alto nível (ex: _NexusHubAppState).
+// =============================================================================
+final cosmeticsInvalidatorProvider = Provider<void>((ref) {
+  final userId = SupabaseService.currentUserId;
+  if (userId == null) return;
+
+  /// Invalida o cache do usuário e força re-fetch.
+  void invalidate(String targetUserId) {
+    ref.invalidate(userCosmeticsProvider(targetUserId));
+    debugPrint('[CosmeticsInvalidator] cache invalidado para userId=$targetUserId');
+  }
+
+  RealtimeService.instance.subscribeWithRetry(
+    channelName: 'cosmetics_invalidator:$userId',
+    configure: (channel) {
+      channel
+          // Escuta INSERT em user_purchases (compra/equip de novo cosmético)
+          .onPostgresChanges(
+            event: PostgresChangeEvent.insert,
+            schema: 'public',
+            table: 'user_purchases',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'user_id',
+              value: userId,
+            ),
+            callback: (_) => invalidate(userId),
+          )
+          // Escuta UPDATE em user_purchases (equip/unequip de cosmético)
+          .onPostgresChanges(
+            event: PostgresChangeEvent.update,
+            schema: 'public',
+            table: 'user_purchases',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'user_id',
+              value: userId,
+            ),
+            callback: (_) => invalidate(userId),
+          )
+          // Escuta UPDATE em store_items (admin atualizou asset_config no painel)
+          // Sem filtro de user_id — qualquer item pode ter sido atualizado.
+          // Invalida o cache do usuário atual para buscar os dados novos.
+          .onPostgresChanges(
+            event: PostgresChangeEvent.update,
+            schema: 'public',
+            table: 'store_items',
+            callback: (_) => invalidate(userId),
+          );
+    },
+  );
+
+  // Cleanup: cancela a inscrição Realtime quando o provider é descartado
+  ref.onDispose(() {
+    RealtimeService.instance.unsubscribe('cosmetics_invalidator:$userId');
+    debugPrint('[CosmeticsInvalidator] canal cancelado para userId=$userId');
+  });
+});
