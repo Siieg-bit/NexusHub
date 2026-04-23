@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase";
 import { ArrowUpRight, ArrowDownLeft, Filter, TrendingUp, TrendingDown, Activity } from "lucide-react";
 
 type Transaction = {
@@ -38,9 +38,9 @@ export default function TransactionsPage() {
 
   async function loadTransactions() {
     setLoading(true);
-    let query = supabase
+    let query = supabaseAdmin
       .from("coin_transactions")
-      .select("id, user_id, amount, source, description, created_at, profiles:profiles(username, display_name)", { count: "exact" })
+      .select("id, user_id, amount, source, description, created_at, profiles:profiles!user_id(username, display_name)", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
