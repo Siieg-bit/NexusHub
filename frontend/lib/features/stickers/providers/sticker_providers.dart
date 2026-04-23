@@ -77,7 +77,6 @@ class StickerPickerNotifier extends StateNotifier<StickerPickerState> {
       final results = await Future.wait([
         _repo.getMyPacks(),
         _repo.getSavedPacks(),
-        _repo.getStorePacks(),
         _repo.getFavorites(),
         _repo.getRecents(),
       ]);
@@ -85,9 +84,9 @@ class StickerPickerNotifier extends StateNotifier<StickerPickerState> {
       state = StickerPickerState(
         myPacks: results[0] as List<StickerPackModel>,
         savedPacks: results[1] as List<StickerPackModel>,
-        storePacks: results[2] as List<StickerPackModel>,
-        favorites: results[3] as List<StickerModel>,
-        recents: results[4] as List<StickerModel>,
+        storePacks: const [], // aba Loja removida do picker — packs da loja ficam em /store
+        favorites: results[2] as List<StickerModel>,
+        recents: results[3] as List<StickerModel>,
         isLoading: false,
       );
     } catch (e) {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/utils/responsive.dart';
 import '../models/sticker_model.dart';
 import '../providers/sticker_providers.dart';
 import '../screens/sticker_gallery_screen.dart';
-import '../screens/sticker_explore_screen.dart';
 import '../screens/create_pack_screen.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import 'quick_sticker_creator.dart';
@@ -53,7 +53,7 @@ class _StickerPickerV2State extends ConsumerState<StickerPickerV2>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -172,18 +172,16 @@ class _StickerPickerV2State extends ConsumerState<StickerPickerV2>
                     constraints: BoxConstraints(minWidth: r.s(32), minHeight: r.s(32)),
                     tooltip: 'Criar figurinha rápida',
                   ),
-                  // Botão explorar
+                  // Botão ir para a loja principal do app
                   IconButton(
-                    icon: Icon(Icons.explore_rounded, color: Colors.grey[500], size: r.s(20)),
+                    icon: Icon(Icons.storefront_rounded, color: Colors.grey[500], size: r.s(20)),
                     onPressed: () {
                       Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const StickerExploreScreen()),
-                      );
+                      context.push('/store');
                     },
                     padding: EdgeInsets.zero,
                     constraints: BoxConstraints(minWidth: r.s(32), minHeight: r.s(32)),
+                    tooltip: 'Loja de figurinhas',
                   ),
                   // Botão gerenciar
                   IconButton(
@@ -257,23 +255,12 @@ class _StickerPickerV2State extends ConsumerState<StickerPickerV2>
                           onStickerTap: _onStickerTap,
                           favorites: pickerState.favorites,
                           emptyTitle: 'Nenhum pack salvo',
-                          emptySubtitle: 'Explore e salve packs de outros usuários!',
+                          emptySubtitle: 'Compre packs de figurinhas na loja!',
                           onEmptyAction: () {
                             Navigator.pop(context);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const StickerExploreScreen()),
-                            );
+                            context.push('/store');
                           },
-                          emptyActionLabel: 'Explorar',
-                        ),
-                        // Aba Loja
-                        _PacksTab(
-                          packs: pickerState.storePacks,
-                          onStickerTap: _onStickerTap,
-                          favorites: pickerState.favorites,
-                          emptyTitle: 'Nenhum pack na loja',
-                          emptySubtitle: 'Em breve novos packs!',
+                          emptyActionLabel: 'Ir para a Loja',
                         ),
                       ],
                     ),
@@ -302,7 +289,6 @@ class _StickerPickerV2State extends ConsumerState<StickerPickerV2>
           Tab(text: 'Favoritos'),
           Tab(text: 'Meus'),
           Tab(text: 'Salvos'),
-          Tab(text: 'Loja'),
         ],
       ),
     );
