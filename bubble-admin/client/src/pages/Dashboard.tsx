@@ -45,6 +45,8 @@ interface BubbleAssetConfig {
   pad_bottom: number;
   pad_left: number;
   pad_right: number;
+  content_padding_h?: number;
+  content_padding_v?: number;
 }
 
 /** Valores padrão para um novo bubble */
@@ -885,6 +887,9 @@ function BubblesDashboard() {
         text_align: form.textAlign,
         pad_top: form.padTop, pad_bottom: form.padBottom,
         pad_left: form.padLeft, pad_right: form.padRight,
+        // Campos de compatibilidade com o app Flutter (EdgeInsets.symmetric)
+        content_padding_h: Math.round((form.padLeft + form.padRight) / 2),
+        content_padding_v: Math.round((form.padTop + form.padBottom) / 2),
       };
 
       const payload = {
