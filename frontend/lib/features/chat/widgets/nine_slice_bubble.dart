@@ -5,6 +5,15 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/utils/responsive.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
+/// Offset fixo (em pixels lógicos) que o [NineSliceBubble] aplica ao
+/// [Positioned] para expandir a imagem além das bordas do container.
+///
+/// O [contentPadding] fornecido ao widget já deve incluir esse offset
+/// (i.e., `contentPadding = kNineSliceOffset + pad_*`) para que o texto
+/// não fique sobre a borda visual do bubble. O [_extractNineSliceParams]
+/// em `cosmetics_provider.dart` realiza esse cálculo automaticamente.
+const double kNineSliceOffset = 12.0;
+
 /// NineSliceBubble — Motor de renderização 9-slice para Chat Bubbles.
 ///
 /// Usa [Canvas.drawImageNine] diretamente via [CustomPainter], que é a
@@ -37,9 +46,13 @@ class NineSliceBubble extends StatelessWidget {
     this.maxWidth = 280,
     this.sliceInsets = const EdgeInsets.all(38),
     this.imageSize = const Size(128, 128),
+    // Padrão já inclui o offset de kNineSliceOffset (12 px) para compensar
+    // o Positioned negativo: 12 + 20 = 32 horizontal, 12 + 14 = 26 vertical.
+    // Quando os parâmetros vierem do asset_config via _extractNineSliceParams,
+    // o offset já terá sido somado lá e esse padrão só é usado como fallback.
     this.contentPadding = const EdgeInsets.symmetric(
-      horizontal: 20,
-      vertical: 14,
+      horizontal: 32,
+      vertical: 26,
     ),
     this.textColor,
   });
@@ -61,12 +74,15 @@ class NineSliceBubble extends StatelessWidget {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              // Frame decorativo 9-slice via drawImageNine
+              // Frame decorativo 9-slice via drawImageNine.
+              // O offset negativo expande a imagem kNineSliceOffset px além
+              // das bordas do container. O contentPadding já deve compensar
+              // esse offset (ver _extractNineSliceParams em cosmetics_provider).
               Positioned(
-                top: -12,
-                bottom: -12,
-                left: -12,
-                right: -12,
+                top: -kNineSliceOffset,
+                bottom: -kNineSliceOffset,
+                left: -kNineSliceOffset,
+                right: -kNineSliceOffset,
                 child: _NineSliceImage(
                   imageUrl: imageUrl,
                   sliceInsets: sliceInsets,

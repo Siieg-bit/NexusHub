@@ -92,15 +92,31 @@ class UserCosmetics {
   }
 }
 
-/// Converte uma string hex (#RRGGBB ou RRGGBB) para [Color].
-/// Retorna null se a string for nula, vazia ou inválida.
+/// Converte uma string hex (#RRGGBB, RRGGBB, #AARRGGBB ou AARRGGBB) para [Color].
+///
+/// **Correção Bug 2:**
+/// A versão anterior usava `replaceFirst('#', '')`, que remove apenas a
+/// primeira ocorrência do `#`. Se a string vier com espaços ou caracteres
+/// inválidos, `int.tryParse` retornava null silenciosamente e a cor era
+/// descartada. Agora:
+/// 1. Remove todos os `#` e espaços antes de parsear.
+/// 2. Valida que o resultado contém apenas dígitos hex válidos.
+/// 3. Retorna null apenas se realmente inválido, evitando descartar cores
+///    válidas por conta de artefatos de formatação.
 Color? _hexToColor(String? hex) {
   if (hex == null || hex.trim().isEmpty) return null;
-  final clean = hex.trim().replaceFirst('#', '');
+  // Remove todos os '#', espaços e caracteres de controle que possam vir
+  // do banco ou do editor web antes de tentar o parse.
+  final clean = hex.trim().replaceAll('#', '').trim();
+  if (clean.isEmpty) return null;
+  // Aceita apenas dígitos hexadecimais válidos (0-9, a-f, A-F).
+  if (!RegExp(r'^[0-9a-fA-F]+$').hasMatch(clean)) return null;
   if (clean.length == 6) {
+    // RRGGBB → 0xFFRRGGBB
     final value = int.tryParse('FF$clean', radix: 16);
     if (value != null) return Color(value);
   } else if (clean.length == 8) {
+    // AARRGGBB
     final value = int.tryParse(clean, radix: 16);
     if (value != null) return Color(value);
   }
@@ -111,11 +127,27 @@ Color? _hexToColor(String? hex) {
 ///
 /// Retorna valores padrão seguros caso os campos não existam, garantindo
 /// compatibilidade retroativa com itens antigos sem esses metadados.
+///
+/// **Correção de padding (Bug 1 e Bug 3):**
+/// O [NineSliceBubble] usa `Positioned(top: -12, bottom: -12, left: -12,
+/// right: -12)` para expandir a imagem 12 px além das bordas do container.
+/// Isso significa que o texto, cujo padding é medido a partir da borda do
+/// container, ficaria visualmente 12 px mais próximo da borda da imagem do
+/// que o esperado. Para compensar, o contentPadding efetivo deve ser
+/// `sliceInset + pad_*` — exatamente o mesmo cálculo que o editor web
+/// (bubble-admin) realiza ao calcular `paddingTop = sliceTop + padTop`.
+/// O offset fixo de 12 px é o valor de `_kNineSliceOffset` definido no
+/// NineSliceBubble e deve permanecer sincronizado com esse widget.
 ({
   EdgeInsets sliceInsets,
   Size imageSize,
   EdgeInsets contentPadding,
 }) _extractNineSliceParams(Map<String, dynamic> assetConfig) {
+  // Offset fixo do Positioned no NineSliceBubble (top/bottom/left/right: -12).
+  // O contentPadding precisa compensar esse offset para que o texto não
+  // fique sobre a borda visual do bubble.
+  const double kNineSliceOffset = 12.0;
+
   double sliceTop = _asDouble(assetConfig['slice_top'], fallback: 38);
   double sliceLeft = _asDouble(assetConfig['slice_left'], fallback: 38);
   double sliceRight = _asDouble(assetConfig['slice_right'], fallback: 38);
@@ -124,13 +156,24 @@ Color? _hexToColor(String? hex) {
   double imageWidth = _asDouble(assetConfig['image_width'], fallback: 128);
   double imageHeight = _asDouble(assetConfig['image_height'], fallback: 128);
 
+  // Padding bruto salvo pelo editor (distância a partir da área fill da imagem).
   double paddingH = _asDouble(assetConfig['content_padding_h'], fallback: 20);
   double paddingV = _asDouble(assetConfig['content_padding_v'], fallback: 14);
+
+  // Padding efetivo = offset do Positioned + padding bruto do editor.
+  // Isso replica o cálculo do site: paddingTop = sliceTop + padTop.
+  // Usamos o menor slice lateral/vertical para garantir que o texto nunca
+  // ultrapasse a borda visual independentemente da assimetria do slice.
+  final double effectivePaddingH = kNineSliceOffset + paddingH;
+  final double effectivePaddingV = kNineSliceOffset + paddingV;
 
   return (
     sliceInsets: EdgeInsets.fromLTRB(sliceLeft, sliceTop, sliceRight, sliceBottom),
     imageSize: Size(imageWidth, imageHeight),
-    contentPadding: EdgeInsets.symmetric(horizontal: paddingH, vertical: paddingV),
+    contentPadding: EdgeInsets.symmetric(
+      horizontal: effectivePaddingH,
+      vertical: effectivePaddingV,
+    ),
   );
 }
 

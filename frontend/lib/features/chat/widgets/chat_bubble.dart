@@ -172,8 +172,10 @@ class ChatBubble extends ConsumerWidget {
   /// [maxWidth] e padding do conteúdo são preservados.
   Widget _buildAnimatedBubble(BuildContext context) {
     final r = context.r;
+    // Padrão inclui o offset de kNineSliceOffset (12 px) para manter
+    // consistência visual com o NineSliceBubble estático.
     final effectivePadding = contentPadding ??
-        const EdgeInsets.symmetric(horizontal: 20, vertical: 14);
+        const EdgeInsets.symmetric(horizontal: 32, vertical: 26);
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
       child: Padding(
@@ -268,8 +270,9 @@ class ChatBubble extends ConsumerWidget {
       maxWidth: maxWidth,
       sliceInsets: sliceInsets ?? const EdgeInsets.all(38),
       imageSize: imageSize ?? const Size(128, 128),
+      // Padrão já inclui o offset de 12 px do Positioned do NineSliceBubble.
       contentPadding: contentPadding ??
-          const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          const EdgeInsets.symmetric(horizontal: 32, vertical: 26),
       // Passa a cor do texto para o NineSliceBubble aplicar no DefaultTextStyle
       textColor: bubbleTextColor,
       child: child,
