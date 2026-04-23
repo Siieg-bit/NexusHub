@@ -1025,7 +1025,7 @@ function BubblesDashboard() {
                             <Upload size={20} className="mx-auto mb-2" style={{ color: "rgba(255,255,255,0.2)" }} />
                             <p className="text-[12px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>Arraste ou clique para selecionar</p>
                             <p className="text-[10px] font-mono mt-1" style={{ color: "rgba(255,255,255,0.15)" }}>PNG · GIF · WebP · APNG</p>
-                            <p className="text-[10px] font-mono mt-0.5" style={{ color: "rgba(124,58,237,0.5)" }}>Recomendado: 512×512px · fundo transparente</p>
+                            <p className="text-[10px] font-mono mt-0.5" style={{ color: "rgba(124,58,237,0.5)" }}>Recomendado: 256×256px mín. · PNG/WebP · fundo transparente</p>
                           </div>
                         )}
                       </div>

@@ -1030,7 +1030,7 @@ export default function FramesDashboard() {
                   <Frame className="w-8 h-8 text-[#4B5563] mx-auto mb-2" />
                   <p className="text-[#9CA3AF] text-sm">Arraste ou clique para enviar</p>
                   <p className="text-[#4B5563] text-xs mt-1" style={{ fontFamily: "'DM Mono', monospace" }}>PNG estático · GIF animado · WebP animado</p>
-                  <p className="text-[#6B21A8] text-xs mt-0.5" style={{ fontFamily: "'DM Mono', monospace" }}>Recomendado: 512×512px · fundo transparente</p>
+                  <p className="text-[#6B21A8] text-xs mt-0.5" style={{ fontFamily: "'DM Mono', monospace" }}>Recomendado: 256×256px · quadrado · fundo transparente</p>
                 </div>
               )}
             </div>
