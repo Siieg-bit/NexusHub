@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseAdmin } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
   Search, Users, ShoppingBag, ArrowLeft, ChevronRight, Crown, Shield,
@@ -90,14 +90,14 @@ function ActionModal({
     try {
       const delta = coinsOp === "add" ? coinsAmount : -coinsAmount;
       const newBalance = Math.max(0, (user.coins || 0) + delta);
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("profiles")
         .update({ coins: newBalance })
         .eq("id", user.id);
       if (error) throw error;
 
       // Registrar transação
-      await supabase.from("coin_transactions").insert({
+      await supabaseAdmin.from("coin_transactions").insert({
         user_id: user.id,
         amount: delta,
         balance_after: newBalance,
@@ -123,7 +123,7 @@ function ActionModal({
 
       if (!isBanned) {
         // Banir: inserir em bans
-        const { error } = await supabase.from("bans").insert({
+        const { error } = await supabaseAdmin.from("bans").insert({
           user_id: user.id,
           banned_by: adminUser?.id,
           reason: banReason.trim(),
@@ -132,7 +132,7 @@ function ActionModal({
         if (error) throw error;
       } else {
         // Desbanir: desativar ban ativo
-        const { error } = await supabase.from("bans").update({ is_active: false }).eq("user_id", user.id).eq("is_active", true);
+        const { error } = await supabaseAdmin.from("bans").update({ is_active: false }).eq("user_id", user.id).eq("is_active", true);
         if (error) throw error;
       }
 
@@ -151,7 +151,7 @@ function ActionModal({
         is_team_admin: roleTarget === "admin",
         is_team_moderator: roleTarget === "mod" || roleTarget === "admin",
       };
-      const { error } = await supabase.from("profiles").update(update).eq("id", user.id);
+      const { error } = await supabaseAdmin.from("profiles").update(update).eq("id", user.id);
       if (error) throw error;
       toast.success(`Cargo de ${displayName} atualizado.`);
       onSuccess(update);
@@ -166,7 +166,7 @@ function ActionModal({
     setLoading(true);
     try {
       const { data: { user: adminUser } } = await supabase.auth.getUser();
-      const { error } = await supabase.from("strikes").insert({
+      const { error } = await supabaseAdmin.from("strikes").insert({
         user_id: user.id,
         issued_by: adminUser?.id,
         reason: strikeReason.trim(),
@@ -422,9 +422,9 @@ export default function UsersPage() {
     setLoadingDetail(true);
     try {
       const [{ data: pData }, { data: tData }, { data: banData }] = await Promise.all([
-        supabase.from("user_purchases").select("id, item_id, price_paid, is_equipped, purchased_at").eq("user_id", user.id).order("purchased_at", { ascending: false }).limit(20),
-        supabase.from("coin_transactions").select("id, amount, balance_after, source, description, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
-        supabase.from("bans").select("id").eq("user_id", user.id).eq("is_active", true).limit(1),
+        supabaseAdmin.from("user_purchases").select("id, item_id, price_paid, is_equipped, purchased_at").eq("user_id", user.id).order("purchased_at", { ascending: false }).limit(20),
+        supabaseAdmin.from("coin_transactions").select("id, amount, balance_after, source, description, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
+        supabaseAdmin.from("bans").select("id").eq("user_id", user.id).eq("is_active", true).limit(1),
       ]);
       if (pData) setPurchases(pData as Purchase[]);
       if (tData) setTransactions(tData as Transaction[]);

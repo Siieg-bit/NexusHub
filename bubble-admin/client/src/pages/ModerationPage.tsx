@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseAdmin } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
   Shield, Flag, AlertTriangle, CheckCircle2, XCircle, Clock,
@@ -125,7 +125,7 @@ function ResolveModal({
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const { error } = await supabase.from("flags").update({
+      const { error } = await supabaseAdmin.from("flags").update({
         status: action,
         resolved_by: user?.id ?? null,
         resolution_note: note.trim() || null,
@@ -135,7 +135,7 @@ function ResolveModal({
 
       // Log da ação (community_id é obrigatório)
       if (flag.community_id) {
-        await supabase.from("moderation_logs").insert({
+        await supabaseAdmin.from("moderation_logs").insert({
           community_id: flag.community_id,
           moderator_id: user?.id,
           action: action === "approved" ? "flag_approved" : "flag_rejected",
@@ -245,8 +245,8 @@ export default function ModerationPage() {
     setLoading(true);
     setError(null);
     try {
-      // Join com profiles usando nickname (campo real)
-      let query = supabase
+      // Join com profiles usando nickname (campo real) — supabaseAdmin bypassa RLS
+      let query = supabaseAdmin
         .from("flags")
         .select("id, community_id, reporter_id, target_user_id, target_post_id, target_wiki_id, target_comment_id, target_chat_message_id, target_chat_thread_id, flag_type, reason, evidence_urls, status, resolved_by, resolution_note, resolved_at, created_at, bot_analyzed, bot_verdict, auto_actioned, reporter:profiles!reporter_id(nickname, amino_id)")
         .order("created_at", { ascending: false })
@@ -266,7 +266,7 @@ export default function ModerationPage() {
     setLoading(true);
     setError(null);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("strikes")
         .select("id, community_id, user_id, issued_by, reason, is_active, created_at, expires_at, user:profiles!user_id(nickname, amino_id)")
         .order("created_at", { ascending: false })
@@ -284,7 +284,7 @@ export default function ModerationPage() {
     setLoading(true);
     setError(null);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("moderation_logs")
         .select("id, community_id, moderator_id, action, severity, target_user_id, reason, details, created_at, moderator:profiles!moderator_id(nickname, amino_id)")
         .order("created_at", { ascending: false })
@@ -308,7 +308,7 @@ export default function ModerationPage() {
     const name = displayUser(strike.user, strike.user_id);
     if (!confirm(`Revogar strike de ${name}?`)) return;
     const { data: { user } } = await supabase.auth.getUser();
-    const { error } = await supabase.from("strikes").update({
+    const { error } = await supabaseAdmin.from("strikes").update({
       is_active: false,
       revoked_by: user?.id ?? null,
       revoked_at: new Date().toISOString(),
