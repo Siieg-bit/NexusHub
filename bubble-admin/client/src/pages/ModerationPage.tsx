@@ -4,54 +4,69 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
   Shield, Flag, AlertTriangle, CheckCircle2, XCircle, Clock,
-  RefreshCw, ChevronDown, User, MessageSquare, FileText,
-  Ban, Eye, Hash, Calendar, Filter,
+  RefreshCw, ChevronDown, FileText, Eye, Hash, Calendar, Filter,
 } from "lucide-react";
 
-// ─── Tipos ────────────────────────────────────────────────────────────────────
+// ─── Tipos (schema real do banco) ─────────────────────────────────────────────
+// flags: id, community_id, reporter_id, target_type, target_id, target_community_id,
+//        target_user_id, target_post_id, target_comment_id, flag_type, reason,
+//        evidence_urls, status, resolved_by, resolution_note, resolution_action,
+//        created_at, is_auto_flagged, is_reviewed, reviewer_id, reviewed_at, is_escalated
+//
+// strikes: id, community_id, user_id, issued_by, reason, evidence_urls,
+//          is_active, revoked_by, revoked_at, created_at, expires_at
+//
+// moderation_logs: id, community_id, moderator_id, action, severity,
+//                  target_user_id, target_post_id, target_wiki_id, target_comment_id,
+//                  target_chat_thread_id, reason, details, duration_hours, expires_at, created_at
 
 type FlagStatus = "pending" | "approved" | "rejected" | "all";
 type FlagType = "spam" | "harassment" | "hate_speech" | "nsfw" | "misinformation" | "other";
 
 type Flag = {
   id: string;
-  reporter_id: string;
+  community_id: string;
+  reporter_id: string | null;
   target_type: string;
-  target_id: string;
+  target_id: string | null;
   flag_type: FlagType;
   reason: string | null;
-  status: FlagStatus;
+  status: string;
   resolved_by: string | null;
-  resolved_at: string | null;
   resolution_note: string | null;
+  resolution_action: string | null;
   created_at: string;
-  community_id: string | null;
-  reporter?: { username: string; display_name: string | null };
+  is_reviewed: boolean;
+  is_escalated: boolean;
+  reporter?: { nickname: string | null; amino_id: string | null };
 };
 
 type Strike = {
   id: string;
+  community_id: string;
   user_id: string;
   issued_by: string | null;
   reason: string;
   is_active: boolean;
   created_at: string;
   expires_at: string | null;
-  user?: { username: string; display_name: string | null };
+  user?: { nickname: string | null; amino_id: string | null };
 };
 
 type ModerationLog = {
   id: string;
+  community_id: string | null;
+  moderator_id: string | null;
   action: string;
-  target_type: string;
-  target_id: string;
   severity: string | null;
+  target_user_id: string | null;
+  reason: string | null;
   details: Record<string, unknown> | null;
   created_at: string;
-  moderator?: { username: string };
+  moderator?: { nickname: string | null; amino_id: string | null };
 };
 
-const FLAG_TYPE_LABELS: Record<FlagType, string> = {
+const FLAG_TYPE_LABELS: Record<string, string> = {
   spam: "Spam",
   harassment: "Assédio",
   hate_speech: "Discurso de Ódio",
@@ -60,7 +75,7 @@ const FLAG_TYPE_LABELS: Record<FlagType, string> = {
   other: "Outro",
 };
 
-const FLAG_TYPE_COLORS: Record<FlagType, string> = {
+const FLAG_TYPE_COLORS: Record<string, string> = {
   spam: "#F59E0B",
   harassment: "#EF4444",
   hate_speech: "#DC2626",
@@ -70,10 +85,10 @@ const FLAG_TYPE_COLORS: Record<FlagType, string> = {
 };
 
 const STATUS_CONFIG = {
-  pending: { label: "Pendente", color: "#F59E0B", bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.2)", icon: Clock },
-  approved: { label: "Aprovada", color: "#34D399", bg: "rgba(52,211,153,0.1)", border: "rgba(52,211,153,0.2)", icon: CheckCircle2 },
+  pending:  { label: "Pendente",  color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.2)",  icon: Clock },
+  approved: { label: "Aprovada",  color: "#34D399", bg: "rgba(52,211,153,0.1)",  border: "rgba(52,211,153,0.2)",  icon: CheckCircle2 },
   rejected: { label: "Rejeitada", color: "#6B7280", bg: "rgba(107,114,128,0.1)", border: "rgba(107,114,128,0.2)", icon: XCircle },
-  all: { label: "Todas", color: "#A78BFA", bg: "rgba(167,139,250,0.1)", border: "rgba(167,139,250,0.2)", icon: Filter },
+  all:      { label: "Todas",     color: "#A78BFA", bg: "rgba(167,139,250,0.1)", border: "rgba(167,139,250,0.2)", icon: Filter },
 };
 
 const fadeUp = {
@@ -81,8 +96,12 @@ const fadeUp = {
   show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.04, duration: 0.25, ease: "easeOut" } }),
 };
 
-// ─── Modal de resolução de flag ───────────────────────────────────────────────
+function displayUser(u: { nickname: string | null; amino_id: string | null } | undefined, fallback: string) {
+  if (!u) return fallback.slice(0, 8);
+  return u.nickname || u.amino_id || fallback.slice(0, 8);
+}
 
+// ─── Modal de resolução de flag ───────────────────────────────────────────────
 function ResolveModal({
   flag,
   onClose,
@@ -103,20 +122,24 @@ function ResolveModal({
       const { error } = await supabase.from("flags").update({
         status: action,
         resolved_by: user?.id ?? null,
-        resolved_at: new Date().toISOString(),
         resolution_note: note.trim() || null,
+        is_reviewed: true,
+        reviewer_id: user?.id ?? null,
+        reviewed_at: new Date().toISOString(),
       }).eq("id", flag.id);
       if (error) throw error;
 
-      // Log da ação
-      await supabase.from("moderation_logs").insert({
-        moderator_id: user?.id,
-        action: action === "approved" ? "flag_approved" : "flag_rejected",
-        target_type: "flag",
-        target_id: flag.id,
-        severity: "low",
-        details: { flag_type: flag.flag_type, note: note.trim() || null },
-      });
+      // Log da ação (community_id é obrigatório)
+      if (flag.community_id) {
+        await supabase.from("moderation_logs").insert({
+          community_id: flag.community_id,
+          moderator_id: user?.id,
+          action: action === "approved" ? "flag_approved" : "flag_rejected",
+          severity: "low",
+          reason: note.trim() || null,
+          details: { flag_type: flag.flag_type, flag_id: flag.id },
+        });
+      }
 
       toast.success(`Denúncia ${action === "approved" ? "aprovada" : "rejeitada"} com sucesso.`);
       onResolved(flag.id, action, note);
@@ -138,6 +161,7 @@ function ResolveModal({
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         className="w-full max-w-md rounded-2xl p-6 space-y-5"
         style={{ background: "#1C1E22", border: "1px solid rgba(239,68,68,0.2)" }}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(239,68,68,0.1)" }}>
@@ -145,11 +169,12 @@ function ResolveModal({
           </div>
           <div>
             <h3 className="text-[15px] font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif", color: "rgba(255,255,255,0.95)" }}>Resolver Denúncia</h3>
-            <p className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>{FLAG_TYPE_LABELS[flag.flag_type]} · {flag.target_type}</p>
+            <p className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
+              {FLAG_TYPE_LABELS[flag.flag_type] ?? flag.flag_type} · {flag.target_type}
+            </p>
           </div>
         </div>
 
-        {/* Detalhes da flag */}
         {flag.reason && (
           <div className="p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
             <p className="text-[10px] font-mono tracking-widest uppercase mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Motivo do Denunciante</p>
@@ -157,7 +182,6 @@ function ResolveModal({
           </div>
         )}
 
-        {/* Ação */}
         <div className="flex gap-2">
           {(["approved", "rejected"] as const).map((opt) => (
             <button key={opt} onClick={() => setAction(opt)}
@@ -173,7 +197,6 @@ function ResolveModal({
           ))}
         </div>
 
-        {/* Nota */}
         <div>
           <label className="text-[10px] font-mono tracking-widest uppercase mb-1.5 block" style={{ color: "rgba(255,255,255,0.3)" }}>Nota de Resolução (opcional)</label>
           <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Descreva a decisão tomada..." rows={3}
@@ -202,7 +225,6 @@ function ResolveModal({
 }
 
 // ─── Página principal ─────────────────────────────────────────────────────────
-
 export default function ModerationPage() {
   const [tab, setTab] = useState<"flags" | "strikes" | "logs">("flags");
   const [flagFilter, setFlagFilter] = useState<FlagStatus>("pending");
@@ -212,40 +234,63 @@ export default function ModerationPage() {
   const [loading, setLoading] = useState(true);
   const [resolveModal, setResolveModal] = useState<Flag | null>(null);
   const [expandedFlag, setExpandedFlag] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function loadFlags() {
     setLoading(true);
-    let query = supabase
-      .from("flags")
-      .select("*, reporter:profiles!reporter_id(username, display_name)")
-      .order("created_at", { ascending: false })
-      .limit(50);
-    if (flagFilter !== "all") query = query.eq("status", flagFilter);
-    const { data, error } = await query;
-    if (!error && data) setFlags(data as Flag[]);
-    setLoading(false);
+    setError(null);
+    try {
+      // Join com profiles usando nickname (campo real)
+      let query = supabase
+        .from("flags")
+        .select("id, community_id, reporter_id, target_type, target_id, flag_type, reason, status, resolved_by, resolution_note, resolution_action, created_at, is_reviewed, is_escalated, reporter:profiles!reporter_id(nickname, amino_id)")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (flagFilter !== "all") query = query.eq("status", flagFilter);
+      const { data, error } = await query;
+      if (error) throw error;
+      setFlags((data as Flag[]) ?? []);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao carregar denúncias.";
+      setError(msg);
+      toast.error(msg);
+    } finally { setLoading(false); }
   }
 
   async function loadStrikes() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("strikes")
-      .select("*, user:profiles!user_id(username, display_name)")
-      .order("created_at", { ascending: false })
-      .limit(50);
-    if (!error && data) setStrikes(data as Strike[]);
-    setLoading(false);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from("strikes")
+        .select("id, community_id, user_id, issued_by, reason, is_active, created_at, expires_at, user:profiles!user_id(nickname, amino_id)")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      setStrikes((data as Strike[]) ?? []);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao carregar strikes.";
+      setError(msg);
+      toast.error(msg);
+    } finally { setLoading(false); }
   }
 
   async function loadLogs() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("moderation_logs")
-      .select("*, moderator:profiles!moderator_id(username)")
-      .order("created_at", { ascending: false })
-      .limit(50);
-    if (!error && data) setLogs(data as ModerationLog[]);
-    setLoading(false);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from("moderation_logs")
+        .select("id, community_id, moderator_id, action, severity, target_user_id, reason, details, created_at, moderator:profiles!moderator_id(nickname, amino_id)")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      setLogs((data as ModerationLog[]) ?? []);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao carregar logs.";
+      setError(msg);
+      toast.error(msg);
+    } finally { setLoading(false); }
   }
 
   useEffect(() => {
@@ -255,8 +300,14 @@ export default function ModerationPage() {
   }, [tab, flagFilter]);
 
   async function revokeStrike(strike: Strike) {
-    if (!confirm(`Revogar strike de @${strike.user?.username}?`)) return;
-    const { error } = await supabase.from("strikes").update({ is_active: false }).eq("id", strike.id);
+    const name = displayUser(strike.user, strike.user_id);
+    if (!confirm(`Revogar strike de ${name}?`)) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase.from("strikes").update({
+      is_active: false,
+      revoked_by: user?.id ?? null,
+      revoked_at: new Date().toISOString(),
+    }).eq("id", strike.id);
     if (error) { toast.error("Erro ao revogar strike."); return; }
     setStrikes((prev) => prev.map((s) => s.id === strike.id ? { ...s, is_active: false } : s));
     toast.success("Strike revogado.");
@@ -338,10 +389,16 @@ export default function ModerationPage() {
           ))}
         </motion.div>
 
+        {/* Error */}
+        {error && (
+          <div className="p-3 rounded-xl" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+            <p className="text-[12px] font-mono" style={{ color: "#FCA5A5" }}>Erro: {error}</p>
+          </div>
+        )}
+
         {/* ── Flags Tab ── */}
         {tab === "flags" && (
           <motion.div key="flags" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-            {/* Filter */}
             <div className="flex gap-2 flex-wrap">
               {(["pending", "approved", "rejected", "all"] as FlagStatus[]).map((s) => {
                 const cfg = STATUS_CONFIG[s];
@@ -363,7 +420,7 @@ export default function ModerationPage() {
             </div>
 
             {loading ? (
-              <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-16 rounded-xl" style={{ background: "rgba(255,255,255,0.03)" }} />)}</div>
+              <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.03)" }} />)}</div>
             ) : flags.length === 0 ? (
               <div className="rounded-2xl p-10 text-center" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
                 <CheckCircle2 className="w-10 h-10 text-[#34D399] mx-auto mb-3 opacity-40" />
@@ -372,37 +429,40 @@ export default function ModerationPage() {
             ) : (
               <div className="space-y-2">
                 {flags.map((flag, i) => {
-                  const cfg = STATUS_CONFIG[flag.status as FlagStatus] ?? STATUS_CONFIG.pending;
+                  const statusKey = (flag.status as FlagStatus) in STATUS_CONFIG ? (flag.status as FlagStatus) : "pending";
+                  const cfg = STATUS_CONFIG[statusKey];
                   const StatusIcon = cfg.icon;
                   const isExpanded = expandedFlag === flag.id;
+                  const typeColor = FLAG_TYPE_COLORS[flag.flag_type] ?? "#6B7280";
+                  const typeLabel = FLAG_TYPE_LABELS[flag.flag_type] ?? flag.flag_type;
+                  const reporterName = displayUser(flag.reporter, flag.reporter_id ?? "anônimo");
                   return (
                     <motion.div key={flag.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}
                       className="rounded-xl overflow-hidden"
                       style={{ background: "rgba(255,255,255,0.025)", border: `1px solid ${isExpanded ? cfg.border : "rgba(255,255,255,0.07)"}` }}>
-                      {/* Row */}
                       <div className="flex items-center gap-3 px-4 py-3 cursor-pointer"
                         onClick={() => setExpandedFlag(isExpanded ? null : flag.id)}>
-                        {/* Type badge */}
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                          style={{ background: `${FLAG_TYPE_COLORS[flag.flag_type]}15` }}>
-                          <Flag size={14} style={{ color: FLAG_TYPE_COLORS[flag.flag_type] }} />
+                          style={{ background: `${typeColor}15` }}>
+                          <Flag size={14} style={{ color: typeColor }} />
                         </div>
-
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-[13px] font-semibold" style={{ color: "rgba(255,255,255,0.9)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                              {FLAG_TYPE_LABELS[flag.flag_type]}
+                              {typeLabel}
                             </span>
                             <span className="text-[10px] px-1.5 py-0.5 rounded font-mono"
-                              style={{ background: `${FLAG_TYPE_COLORS[flag.flag_type]}15`, color: FLAG_TYPE_COLORS[flag.flag_type] }}>
+                              style={{ background: `${typeColor}15`, color: typeColor }}>
                               {flag.target_type}
                             </span>
+                            {flag.is_escalated && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded font-mono" style={{ background: "rgba(239,68,68,0.1)", color: "#FCA5A5" }}>ESCALADO</span>
+                            )}
                           </div>
                           <p className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
-                            por @{flag.reporter?.username ?? "anônimo"} · {new Date(flag.created_at).toLocaleDateString("pt-BR")}
+                            por {reporterName} · {new Date(flag.created_at).toLocaleDateString("pt-BR")}
                           </p>
                         </div>
-
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <span className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-mono"
                             style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
@@ -413,7 +473,6 @@ export default function ModerationPage() {
                         </div>
                       </div>
 
-                      {/* Expanded */}
                       <AnimatePresence>
                         {isExpanded && (
                           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
@@ -424,7 +483,7 @@ export default function ModerationPage() {
                                   <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>Target ID</p>
                                   <div className="flex items-center gap-1.5">
                                     <Hash size={11} style={{ color: "rgba(255,255,255,0.3)" }} />
-                                    <p className="text-[11px] font-mono truncate" style={{ color: "rgba(255,255,255,0.5)" }}>{flag.target_id}</p>
+                                    <p className="text-[11px] font-mono truncate" style={{ color: "rgba(255,255,255,0.5)" }}>{flag.target_id ?? "—"}</p>
                                   </div>
                                 </div>
                                 <div className="space-y-1">
@@ -444,7 +503,7 @@ export default function ModerationPage() {
                               )}
 
                               {flag.resolution_note && (
-                                <div className="p-3 rounded-xl" style={{ background: `${cfg.bg}`, border: `1px solid ${cfg.border}` }}>
+                                <div className="p-3 rounded-xl" style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}>
                                   <p className="text-[10px] font-mono tracking-widest uppercase mb-1" style={{ color: cfg.color }}>Nota de Resolução</p>
                                   <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.7)", fontFamily: "'Space Grotesk', sans-serif" }}>{flag.resolution_note}</p>
                                 </div>
@@ -474,48 +533,54 @@ export default function ModerationPage() {
         {tab === "strikes" && (
           <motion.div key="strikes" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
             {loading ? (
-              <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-16 rounded-xl" style={{ background: "rgba(255,255,255,0.03)" }} />)}</div>
+              <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.03)" }} />)}</div>
             ) : strikes.length === 0 ? (
               <div className="rounded-2xl p-10 text-center" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                <Shield className="w-10 h-10 text-[#34D399] mx-auto mb-3 opacity-40" />
+                <AlertTriangle className="w-10 h-10 text-[#4B5563] mx-auto mb-3 opacity-40" />
                 <p className="text-[#4B5563] text-sm">Nenhum strike registrado</p>
               </div>
             ) : (
-              strikes.map((strike, i) => (
-                <motion.div key={strike.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl"
-                  style={{
-                    background: "rgba(255,255,255,0.025)",
-                    border: `1px solid ${strike.is_active ? "rgba(249,115,22,0.2)" : "rgba(255,255,255,0.07)"}`,
-                    opacity: strike.is_active ? 1 : 0.5,
-                  }}>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: strike.is_active ? "rgba(249,115,22,0.1)" : "rgba(255,255,255,0.05)" }}>
-                    <AlertTriangle size={14} style={{ color: strike.is_active ? "#F97316" : "#6B7280" }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[13px] font-semibold" style={{ color: "rgba(255,255,255,0.9)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                        @{strike.user?.username ?? strike.user_id.slice(0, 8)}
-                      </span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${strike.is_active ? "text-[#F97316]" : "text-[#6B7280]"}`}
-                        style={{ background: strike.is_active ? "rgba(249,115,22,0.1)" : "rgba(107,114,128,0.1)" }}>
-                        {strike.is_active ? "ATIVO" : "REVOGADO"}
-                      </span>
+              strikes.map((strike, i) => {
+                const name = displayUser(strike.user, strike.user_id);
+                return (
+                  <motion.div key={strike.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl"
+                    style={{
+                      background: "rgba(255,255,255,0.025)",
+                      border: `1px solid ${strike.is_active ? "rgba(249,115,22,0.2)" : "rgba(255,255,255,0.07)"}`,
+                      opacity: strike.is_active ? 1 : 0.5,
+                    }}>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ background: strike.is_active ? "rgba(249,115,22,0.1)" : "rgba(255,255,255,0.05)" }}>
+                      <AlertTriangle size={14} style={{ color: strike.is_active ? "#F97316" : "#6B7280" }} />
                     </div>
-                    <p className="text-[11px] font-mono truncate" style={{ color: "rgba(255,255,255,0.4)" }}>{strike.reason}</p>
-                    <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>{new Date(strike.created_at).toLocaleDateString("pt-BR")}</p>
-                  </div>
-                  {strike.is_active && (
-                    <button onClick={() => revokeStrike(strike)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-all"
-                      style={{ background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.2)", color: "#34D399", fontFamily: "'DM Mono', monospace" }}>
-                      <XCircle size={12} />
-                      Revogar
-                    </button>
-                  )}
-                </motion.div>
-              ))
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[13px] font-semibold" style={{ color: "rgba(255,255,255,0.9)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                          {name}
+                        </span>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${strike.is_active ? "text-[#F97316]" : "text-[#6B7280]"}`}
+                          style={{ background: strike.is_active ? "rgba(249,115,22,0.1)" : "rgba(107,114,128,0.1)" }}>
+                          {strike.is_active ? "ATIVO" : "REVOGADO"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-mono truncate" style={{ color: "rgba(255,255,255,0.4)" }}>{strike.reason}</p>
+                      <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>
+                        {new Date(strike.created_at).toLocaleDateString("pt-BR")}
+                        {strike.expires_at ? ` · Expira: ${new Date(strike.expires_at).toLocaleDateString("pt-BR")}` : ""}
+                      </p>
+                    </div>
+                    {strike.is_active && (
+                      <button onClick={() => revokeStrike(strike)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-all"
+                        style={{ background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.2)", color: "#34D399", fontFamily: "'DM Mono', monospace" }}>
+                        <XCircle size={12} />
+                        Revogar
+                      </button>
+                    )}
+                  </motion.div>
+                );
+              })
             )}
           </motion.div>
         )}
@@ -524,7 +589,7 @@ export default function ModerationPage() {
         {tab === "logs" && (
           <motion.div key="logs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
             {loading ? (
-              <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-14 rounded-xl" style={{ background: "rgba(255,255,255,0.03)" }} />)}</div>
+              <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-14 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.03)" }} />)}</div>
             ) : logs.length === 0 ? (
               <div className="rounded-2xl p-10 text-center" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
                 <FileText className="w-10 h-10 text-[#4B5563] mx-auto mb-3 opacity-40" />
@@ -532,30 +597,35 @@ export default function ModerationPage() {
               </div>
             ) : (
               <div className="rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                {logs.map((log, i) => (
-                  <div key={log.id} className="flex items-center gap-3 px-4 py-3"
-                    style={{ borderBottom: i < logs.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
-                    <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ background: "rgba(167,139,250,0.1)" }}>
-                      <Shield size={12} style={{ color: "#A78BFA" }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[12px] font-mono" style={{ color: "#A78BFA" }}>{log.action}</span>
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)" }}>{log.target_type}</span>
+                {logs.map((log, i) => {
+                  const modName = displayUser(log.moderator, log.moderator_id ?? "sistema");
+                  return (
+                    <div key={log.id} className="flex items-center gap-3 px-4 py-3"
+                      style={{ borderBottom: i < logs.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ background: "rgba(167,139,250,0.1)" }}>
+                        <Shield size={12} style={{ color: "#A78BFA" }} />
                       </div>
-                      <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
-                        por @{log.moderator?.username ?? "sistema"} · {new Date(log.created_at).toLocaleString("pt-BR")}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[12px] font-mono" style={{ color: "#A78BFA" }}>{log.action}</span>
+                        </div>
+                        <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
+                          por {modName} · {new Date(log.created_at).toLocaleString("pt-BR")}
+                        </p>
+                        {log.reason && (
+                          <p className="text-[11px] truncate" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>{log.reason}</p>
+                        )}
+                      </div>
+                      {log.severity && (
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{
+                          background: log.severity === "high" ? "rgba(239,68,68,0.1)" : log.severity === "medium" ? "rgba(245,158,11,0.1)" : "rgba(52,211,153,0.1)",
+                          color: log.severity === "high" ? "#FCA5A5" : log.severity === "medium" ? "#FCD34D" : "#6EE7B7",
+                        }}>{log.severity}</span>
+                      )}
                     </div>
-                    {log.severity && (
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{
-                        background: log.severity === "high" ? "rgba(239,68,68,0.1)" : log.severity === "medium" ? "rgba(245,158,11,0.1)" : "rgba(52,211,153,0.1)",
-                        color: log.severity === "high" ? "#FCA5A5" : log.severity === "medium" ? "#FCD34D" : "#6EE7B7",
-                      }}>{log.severity}</span>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </motion.div>
