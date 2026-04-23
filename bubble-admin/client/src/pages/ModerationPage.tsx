@@ -256,7 +256,8 @@ export default function ModerationPage() {
       if (error) throw error;
       setFlags((data as Flag[]) ?? []);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Erro ao carregar denúncias.";
+      console.error('[ModerationPage] loadFlags error:', err);
+      const msg = err instanceof Error ? err.message : (typeof err === 'object' && err !== null ? JSON.stringify(err) : "Erro ao carregar denúncias.");
       setError(msg);
       toast.error(msg);
     } finally { setLoading(false); }
