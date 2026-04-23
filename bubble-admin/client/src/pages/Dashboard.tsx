@@ -12,6 +12,10 @@ import StickersPage from "./StickersPage";
 import UsersPage from "./UsersPage";
 import TransactionsPage from "./TransactionsPage";
 import SettingsPage from "./SettingsPage";
+import ModerationPage from "./ModerationPage";
+import CommunitiesPage from "./CommunitiesPage";
+import AchievementsPage from "./AchievementsPage";
+import BroadcastPage from "./BroadcastPage";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 type BubbleForm = {
@@ -502,6 +506,10 @@ export default function Dashboard() {
       case "stickers":       return <StickersPage />;
       case "themes":         return <ThemesDashboard />;
       case "users":          return <UsersPage />;
+      case "moderation":     return <ModerationPage />;
+      case "communities":    return <CommunitiesPage />;
+      case "achievements":   return <AchievementsPage />;
+      case "broadcast":      return <BroadcastPage />;
       case "transactions":   return <TransactionsPage />;
       case "settings":       return <SettingsPage />;
       default:               return <OverviewPage />;
