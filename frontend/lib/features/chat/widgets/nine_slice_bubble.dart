@@ -95,6 +95,9 @@ class NineSliceBubble extends StatelessWidget {
             minWidth: minW,
             minHeight: minH,
           ),
+          // O Stack precisa de pelo menos um filho não-posicionado para
+          // calcular seu próprio tamanho. Por isso o conteúdo é um filho
+          // normal (Padding) e apenas a imagem usa Positioned.
           child: Stack(
             clipBehavior: Clip.none,
             children: [
@@ -112,23 +115,19 @@ class NineSliceBubble extends StatelessWidget {
                   sliceInsets: sliceInsets,
                 ),
               ),
-              // Conteúdo da mensagem — centralizado verticalmente quando o
-              // container for maior que o conteúdo (minHeight garante isso).
-              Positioned.fill(
-                child: Padding(
-                  padding: contentPadding,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: DefaultTextStyle(
-                      style: TextStyle(
-                        // textColor tem prioridade; fallback: branco (padrão para frames)
-                        color: textColor ?? Colors.white,
-                        fontSize: r.fs(14),
-                        height: 1.4,
-                      ),
-                      child: child,
-                    ),
+              // Conteúdo da mensagem — filho não-posicionado que define o
+              // tamanho do Stack. O Container com minHeight já garante que
+              // o bubble não fique menor que a imagem original.
+              Padding(
+                padding: contentPadding,
+                child: DefaultTextStyle(
+                  style: TextStyle(
+                    // textColor tem prioridade; fallback: branco (padrão para frames)
+                    color: textColor ?? Colors.white,
+                    fontSize: r.fs(14),
+                    height: 1.4,
                   ),
+                  child: child,
                 ),
               ),
             ],
