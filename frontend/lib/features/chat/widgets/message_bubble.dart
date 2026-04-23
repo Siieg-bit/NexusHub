@@ -46,7 +46,7 @@ bool _isMediaOnlyType(MessageModel message) {
   return false;
 }
 
-class MessageBubble extends ConsumerWidget {
+class MessageBubble extends ConsumerStatefulWidget {
   final MessageModel message;
   final bool isMe;
   final bool showAvatar;
@@ -70,6 +70,23 @@ class MessageBubble extends ConsumerWidget {
     this.repliedMessage,
     this.onReplyTap,
   });
+
+  @override
+  ConsumerState<MessageBubble> createState() => _MessageBubbleState();
+}
+
+class _MessageBubbleState extends ConsumerState<MessageBubble> {
+  bool _showTime = false;
+
+  // Atalhos para acessar os campos do widget sem repetir widget. em todo lugar
+  MessageModel get message => widget.message;
+  bool get isMe => widget.isMe;
+  bool get showAvatar => widget.showAvatar;
+  void Function(String emoji)? get onReactionTap => widget.onReactionTap;
+  bool get showAuthorName => widget.showAuthorName;
+  String? get communityId => widget.communityId;
+  MessageModel? get repliedMessage => widget.repliedMessage;
+  VoidCallback? get onReplyTap => widget.onReplyTap;
 
   String _truncatePreview(String value) {
     final sanitized = value.replaceAll(RegExp(r'\s+'), ' ').trim();
@@ -185,7 +202,7 @@ class MessageBubble extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final r = context.r;
     final _specialType = message.type;
 
@@ -487,7 +504,50 @@ class MessageBubble extends ConsumerWidget {
       );
     }
 
-    return Padding(
+    // Widget do horário exibido abaixo do bubble ao clicar
+    Widget timeWidget = AnimatedSize(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeInOut,
+      child: _showTime
+          ? Padding(
+              padding: EdgeInsets.only(
+                top: r.s(2),
+                left: isMe ? 0 : r.s(40),
+              ),
+              child: Align(
+                alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _formatTime(message.createdAt),
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: r.fs(10),
+                      ),
+                    ),
+                    if (message.isEdited) ...[  
+                      SizedBox(width: r.s(4)),
+                      Text(
+                        'editado',
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: r.fs(9),
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            )
+          : const SizedBox.shrink(),
+    );
+
+    return GestureDetector(
+      onTap: () => setState(() => _showTime = !_showTime),
+      behavior: HitTestBehavior.translucent,
+      child: Padding(
       padding: EdgeInsets.only(
         bottom: showAvatar ? 8 : 2,
         left: isMe ? 60 : 0,
@@ -537,33 +597,6 @@ class MessageBubble extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(r.s(12)),
                             child: _buildContent(context),
                           ),
-                          // Hora sobreposta abaixo da mídia
-                          Padding(
-                            padding: EdgeInsets.only(top: r.s(2)),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  _formatTime(message.createdAt),
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: r.fs(10),
-                                  ),
-                                ),
-                                if (message.isEdited) ...[
-                                  SizedBox(width: r.s(4)),
-                                  Text(
-                                    'editado',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: r.fs(9),
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
                         ],
                       )
                     // ── Mensagem com bubble cosmético (texto, áudio, etc.) ──
@@ -609,36 +642,6 @@ class MessageBubble extends ConsumerWidget {
                                   context,
                                   bubbleTextColor: activeCosmetics?.chatBubbleTextColor,
                                 ),
-                                Padding(
-                                  padding: EdgeInsets.only(top: r.s(isAudioType ? 2 : 4)),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        _formatTime(message.createdAt),
-                                        style: TextStyle(
-                                          color: activeCosmetics?.chatBubbleTextColor
-                                                  ?.withValues(alpha: 0.6) ??
-                                              Colors.white.withValues(alpha: 0.6),
-                                          fontSize: r.fs(10),
-                                        ),
-                                      ),
-                                      if (message.isEdited) ...[
-                                        SizedBox(width: r.s(4)),
-                                        Text(
-                                          'editado',
-                                          style: TextStyle(
-                                            color: activeCosmetics?.chatBubbleTextColor
-                                                    ?.withValues(alpha: 0.45) ??
-                                                Colors.white.withValues(alpha: 0.45),
-                                            fontSize: r.fs(9),
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
                               ],
                             ),
                           )
@@ -683,37 +686,6 @@ class MessageBubble extends ConsumerWidget {
                                     ),
                                   ),
                                 _buildContent(context),
-                                Padding(
-                                  padding: EdgeInsets.only(top: r.s(isAudioType ? 2 : 4)),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        _formatTime(message.createdAt),
-                                        style: TextStyle(
-                                          color: isMe
-                                              ? Colors.white.withValues(alpha: 0.6)
-                                              : Colors.grey[600],
-                                          fontSize: r.fs(10),
-                                        ),
-                                      ),
-                                      if (message.isEdited) ...[
-                                        SizedBox(width: r.s(4)),
-                                        Text(
-                                          'editado',
-                                          style: TextStyle(
-                                            color: isMe
-                                                ? Colors.white
-                                                    .withValues(alpha: 0.45)
-                                                : Colors.grey[600],
-                                            fontSize: r.fs(9),
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
                               ],
                             ),
                           ),
@@ -724,11 +696,14 @@ class MessageBubble extends ConsumerWidget {
               ],
             ],
           ),
+          // ── Horário abaixo do bubble (visível ao clicar) ──
+          timeWidget,
           // ── Reações abaixo do bubble ──
           if (message.reactions.isNotEmpty) _buildReactionsRow(context),
         ],
       ),
-    );
+    ), // Padding
+    ); // GestureDetector
   }
 
   Widget _buildReactionsRow(BuildContext context) {
