@@ -22,6 +22,9 @@ import BroadcastPage from "./BroadcastPage";
 type Rarity = "common" | "rare" | "epic" | "legendary";
 type TextAlign = "left" | "center" | "right";
 
+/** Ponto normalizado (0–1) para o polígono de fill */
+interface PolyPoint { x: number; y: number; }
+
 /** Configuração tipada do asset_config para bubbles */
 interface BubbleAssetConfig {
   bubble_style: "nine_slice" | "animated";
@@ -47,6 +50,8 @@ interface BubbleAssetConfig {
   pad_right: number;
   content_padding_h?: number;
   content_padding_v?: number;
+  /** Polígono opcional de fill (8 pontos normalizados 0–1). Quando presente, o Flutter aplica ClipPath. */
+  poly_points?: PolyPoint[];
 }
 
 /** Valores padrão para um novo bubble */
@@ -72,6 +77,8 @@ interface BubbleForm {
   fontSize: number;
   textAlign: TextAlign;
   padTop: number; padBottom: number; padLeft: number; padRight: number;
+  usePolyFill: boolean;
+  polyPoints: PolyPoint[];
 }
 
 const EMPTY_FORM: BubbleForm = {
@@ -80,6 +87,8 @@ const EMPTY_FORM: BubbleForm = {
   sliceTop: 38, sliceBottom: 38, sliceLeft: 38, sliceRight: 38,
   fontSize: 13, textAlign: "left",
   padTop: 8, padBottom: 8, padLeft: 8, padRight: 8,
+  usePolyFill: false,
+  polyPoints: [],
 };
 
 type SliceValues = { top: number; bottom: number; left: number; right: number };
@@ -128,6 +137,7 @@ function parseBubbleConfig(raw: Record<string, unknown>): BubbleAssetConfig {
     pad_bottom: (raw.pad_bottom as number) ?? 8,
     pad_left: (raw.pad_left as number) ?? 8,
     pad_right: (raw.pad_right as number) ?? 8,
+    poly_points: Array.isArray(raw.poly_points) ? (raw.poly_points as PolyPoint[]) : undefined,
   };
 }
 
@@ -671,6 +681,231 @@ function NineSliceEditor({
   );
 }
 
+
+// ─── PolyFillEditor ───────────────────────────────────────────────────────────
+// Editor poligonal opcional com 8 handles arrastáveis (TL, T, TR, R, BR, B, BL, L).
+// Os pontos são normalizados (0–1) em relação às dimensões da imagem original.
+// Quando ativo, o Flutter usa ClipPath com esses pontos; caso contrário, usa o
+// padding normal (slice + pad) — comportamento padrão preservado.
+interface PolyFillEditorProps {
+  imageUrl: string;
+  imageDimensions: { w: number; h: number } | null;
+  points: PolyPoint[];          // 8 pontos normalizados: TL,T,TR,R,BR,B,BL,L
+  onChange: (pts: PolyPoint[]) => void;
+  sliceValues: SliceValues;
+  padTop: number; padBottom: number; padLeft: number; padRight: number;
+}
+
+/** Gera 8 pontos iniciais a partir dos valores de slice+pad (normalizados 0–1) */
+function defaultPolyPoints(
+  imgW: number, imgH: number,
+  slice: SliceValues,
+  padTop: number, padBottom: number, padLeft: number, padRight: number,
+): PolyPoint[] {
+  const l = (slice.left  + padLeft)   / imgW;
+  const r = (imgW - slice.right  - padRight)  / imgW;
+  const t = (slice.top   + padTop)    / imgH;
+  const b = (imgH - slice.bottom - padBottom) / imgH;
+  const cx = (l + r) / 2;
+  const cy = (t + b) / 2;
+  // Ordem: TL, T, TR, R, BR, B, BL, L
+  return [
+    { x: l,  y: t  },  // TL
+    { x: cx, y: t  },  // T
+    { x: r,  y: t  },  // TR
+    { x: r,  y: cy },  // R
+    { x: r,  y: b  },  // BR
+    { x: cx, y: b  },  // B
+    { x: l,  y: b  },  // BL
+    { x: l,  y: cy },  // L
+  ];
+}
+
+const HANDLE_LABELS = ["TL", "T", "TR", "R", "BR", "B", "BL", "L"];
+const HANDLE_COLOR  = "#A78BFA";
+const HANDLE_RADIUS = 7;
+
+function PolyFillEditor({
+  imageUrl, imageDimensions, points, onChange,
+  sliceValues, padTop, padBottom, padLeft, padRight,
+}: PolyFillEditorProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState<number | null>(null);
+  const dragStart = useRef<{ mx: number; my: number; ox: number; oy: number } | null>(null);
+
+  const imgW = imageDimensions?.w ?? 128;
+  const imgH = imageDimensions?.h ?? 128;
+
+  // Tamanho do canvas em px (igual ao NineSliceEditor)
+  const [canvasSize, setCanvasSize] = useState({ w: 300, h: 300 });
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(() => {
+      const w = el.clientWidth;
+      const h = Math.round(w * (imgH / imgW));
+      setCanvasSize({ w, h });
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [imgW, imgH]);
+
+  // Inicializa pontos se ainda estiver vazio
+  useEffect(() => {
+    if (points.length === 0) {
+      onChange(defaultPolyPoints(imgW, imgH, sliceValues, padTop, padBottom, padLeft, padRight));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const scaleX = canvasSize.w / imgW;
+  const scaleY = canvasSize.h / imgH;
+
+  // Converte ponto normalizado → px no canvas
+  const toPx = (p: PolyPoint) => ({ x: p.x * imgW * scaleX, y: p.y * imgH * scaleY });
+  // Converte px no canvas → normalizado
+  const toNorm = (px: number, py: number): PolyPoint => ({
+    x: Math.max(0, Math.min(1, px / (imgW * scaleX))),
+    y: Math.max(0, Math.min(1, py / (imgH * scaleY))),
+  });
+
+  const pts = points.length === 8 ? points
+    : defaultPolyPoints(imgW, imgH, sliceValues, padTop, padBottom, padLeft, padRight);
+
+  // SVG polygon string
+  const polyStr = pts.map(p => {
+    const { x, y } = toPx(p);
+    return `${x},${y}`;
+  }).join(" ");
+
+  function getHandleAt(mx: number, my: number): number | null {
+    for (let i = 0; i < pts.length; i++) {
+      const { x, y } = toPx(pts[i]);
+      if (Math.hypot(mx - x, my - y) < HANDLE_RADIUS + 4) return i;
+    }
+    return null;
+  }
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    const rect = containerRef.current!.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const idx = getHandleAt(mx, my);
+    if (idx === null) return;
+    e.preventDefault();
+    setDragging(idx);
+    const { x, y } = toPx(pts[idx]);
+    dragStart.current = { mx, my, ox: x, oy: y };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pts, canvasSize]);
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    if (dragging === null || !dragStart.current) return;
+    const rect = containerRef.current!.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const dx = mx - dragStart.current.mx;
+    const dy = my - dragStart.current.my;
+    const newPx = dragStart.current.ox + dx;
+    const newPy = dragStart.current.oy + dy;
+    const norm = toNorm(newPx, newPy);
+    const next = pts.map((p, i) => i === dragging ? norm : p);
+    onChange(next);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dragging, pts, canvasSize]);
+
+  const onMouseUp = useCallback(() => {
+    setDragging(null);
+    dragStart.current = null;
+  }, []);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[9px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.25)" }}>
+          Área de Texto Poligonal
+        </p>
+        <button
+          type="button"
+          onClick={() => onChange(defaultPolyPoints(imgW, imgH, sliceValues, padTop, padBottom, padLeft, padRight))}
+          className="text-[9px] font-mono px-2 py-1 rounded-lg transition-all"
+          style={{ background: "rgba(167,139,250,0.08)", border: "1px solid rgba(167,139,250,0.2)", color: "#A78BFA" }}
+        >
+          Resetar
+        </button>
+      </div>
+      <div
+        ref={containerRef}
+        className="relative rounded-xl overflow-hidden select-none"
+        style={{
+          width: "100%",
+          paddingBottom: `${(imgH / imgW) * 100}%`,
+          background: "repeating-conic-gradient(rgba(255,255,255,0.04) 0% 25%, transparent 0% 50%) 0 0 / 12px 12px",
+          border: "1px solid rgba(255,255,255,0.08)",
+          cursor: dragging !== null ? "grabbing" : "default",
+          userSelect: "none",
+        }}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseUp}
+      >
+        {/* Imagem de fundo */}
+        <img
+          src={imageUrl}
+          alt="bubble"
+          draggable={false}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "fill", pointerEvents: "none" }}
+        />
+        {/* SVG overlay */}
+        <svg
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}
+          viewBox={`0 0 ${canvasSize.w} ${canvasSize.h}`}
+          preserveAspectRatio="none"
+        >
+          {/* Overlay escuro fora do polígono */}
+          <defs>
+            <mask id="poly-mask">
+              <rect width={canvasSize.w} height={canvasSize.h} fill="white" />
+              <polygon points={polyStr} fill="black" />
+            </mask>
+          </defs>
+          <rect width={canvasSize.w} height={canvasSize.h} fill="rgba(0,0,0,0.45)" mask="url(#poly-mask)" />
+          {/* Borda do polígono */}
+          <polygon points={polyStr} fill="none" stroke={HANDLE_COLOR} strokeWidth="1.5" strokeDasharray="4 3" opacity="0.8" />
+          {/* Handles */}
+          {pts.map((p, i) => {
+            const { x, y } = toPx(p);
+            return (
+              <g key={i} style={{ pointerEvents: "all", cursor: "grab" }}>
+                <circle cx={x} cy={y} r={HANDLE_RADIUS + 3} fill="transparent" />
+                <circle
+                  cx={x} cy={y} r={HANDLE_RADIUS}
+                  fill={dragging === i ? HANDLE_COLOR : "rgba(167,139,250,0.25)"}
+                  stroke={HANDLE_COLOR}
+                  strokeWidth={dragging === i ? 2 : 1.5}
+                />
+                <text
+                  x={x} y={y + 1}
+                  textAnchor="middle" dominantBaseline="middle"
+                  fontSize="6" fontFamily="'DM Mono', monospace"
+                  fill="white" opacity="0.8"
+                  style={{ pointerEvents: "none" }}
+                >
+                  {HANDLE_LABELS[i]}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+      <p className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>
+        Arraste os 8 pontos para definir o polígono de fill. O texto ficará confinado a essa área no app.
+      </p>
+    </div>
+  );
+}
+
 // ─── NineSlicePreviewPanel ────────────────────────────────────────────────────
 // Painel de preview com texto editável e 3 tamanhos de balão.
 // Compartilhado entre a aba "Ajustar Bordas" e a aba "Preview Final".
@@ -835,6 +1070,10 @@ function BubblesDashboard() {
       textAlign: cfg.text_align,
       padTop: cfg.pad_top, padBottom: cfg.pad_bottom,
       padLeft: cfg.pad_left, padRight: cfg.pad_right,
+      usePolyFill: Array.isArray(cfg.poly_points) && cfg.poly_points.length === 8,
+      polyPoints: Array.isArray(cfg.poly_points) && cfg.poly_points.length === 8
+        ? cfg.poly_points
+        : [],
     });
     setImageUrl(item.preview_url);
     setImageDimensions(cfg.image_width && cfg.image_height ? { w: cfg.image_width, h: cfg.image_height } : null);
@@ -890,6 +1129,10 @@ function BubblesDashboard() {
         // Campos de compatibilidade com o app Flutter (EdgeInsets.symmetric)
         content_padding_h: Math.round((form.padLeft + form.padRight) / 2),
         content_padding_v: Math.round((form.padTop + form.padBottom) / 2),
+        // Polígono opcional — só salvo quando o admin ativou o modo poligonal
+        ...(form.usePolyFill && form.polyPoints.length === 8
+          ? { poly_points: form.polyPoints }
+          : {}),
       };
 
       const payload = {
@@ -1215,6 +1458,18 @@ function BubblesDashboard() {
                         }}>
                         Preview Final
                       </button>
+                      {!form.isAnimated && (
+                        <button onClick={() => setPreviewTab("poly" as "slice")}
+                          className="flex-1 py-2 rounded-xl text-[12px] font-semibold transition-all"
+                          style={{
+                            background: previewTab === ("poly" as string) ? "rgba(167,139,250,0.15)" : "rgba(255,255,255,0.03)",
+                            border: `1px solid ${previewTab === ("poly" as string) ? "rgba(167,139,250,0.3)" : "rgba(255,255,255,0.07)"}`,
+                            color: previewTab === ("poly" as string) ? "#A78BFA" : "rgba(255,255,255,0.35)",
+                            fontFamily: "'Space Grotesk', sans-serif",
+                          }}>
+                          {form.usePolyFill ? "✦ Polígono" : "Polígono"}
+                        </button>
+                      )}
                     </div>
 
                     {imageUrl ? (
@@ -1233,6 +1488,42 @@ function BubblesDashboard() {
                           />
                         )}
 
+                        {previewTab === ("poly" as string) && !form.isAnimated && (
+                          <div className="space-y-3">
+                            {/* Toggle de ativação */}
+                            <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl"
+                              style={{ background: form.usePolyFill ? "rgba(167,139,250,0.08)" : "rgba(255,255,255,0.02)", border: `1px solid ${form.usePolyFill ? "rgba(167,139,250,0.25)" : "rgba(255,255,255,0.06)"}` }}>
+                              <div
+                                onClick={() => setForm(f => ({ ...f, usePolyFill: !f.usePolyFill }))}
+                                className="w-9 h-5 rounded-full relative transition-all duration-200 flex-shrink-0"
+                                style={{ background: form.usePolyFill ? "#A78BFA" : "rgba(255,255,255,0.1)", cursor: "pointer" }}
+                              >
+                                <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200"
+                                  style={{ left: form.usePolyFill ? "calc(100% - 18px)" : "2px" }} />
+                              </div>
+                              <div>
+                                <span className="text-[12px] font-mono block" style={{ color: form.usePolyFill ? "#A78BFA" : "rgba(255,255,255,0.5)" }}>
+                                  Área de Texto Poligonal
+                                </span>
+                                <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                                  {form.usePolyFill ? "Ativo — poly_points será salvo no asset_config" : "Inativo — usa padding normal (slice + pad)"}
+                                </span>
+                              </div>
+                            </label>
+                            {/* Editor poligonal */}
+                            {imageUrl && (
+                              <PolyFillEditor
+                                imageUrl={imageUrl}
+                                imageDimensions={imageDimensions}
+                                points={form.polyPoints}
+                                onChange={(pts) => setForm(f => ({ ...f, polyPoints: pts, usePolyFill: true }))}
+                                sliceValues={sliceValues}
+                                padTop={form.padTop} padBottom={form.padBottom}
+                                padLeft={form.padLeft} padRight={form.padRight}
+                              />
+                            )}
+                          </div>
+                        )}
                         {previewTab === "slice" && form.isAnimated && (
                           <div className="rounded-xl p-4 text-center space-y-2"
                             style={{ background: "rgba(167,139,250,0.06)", border: "1px solid rgba(167,139,250,0.15)" }}>

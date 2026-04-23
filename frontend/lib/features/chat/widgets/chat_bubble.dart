@@ -62,6 +62,11 @@ class ChatBubble extends ConsumerWidget {
   /// [UserCosmetics.chatBubbleTextColor].
   /// Suporta formato hex com ou sem `#` (ex: `#FFFFFF` ou `FFFFFF`).
   final Color? bubbleTextColor;
+  /// Polígono opcional de fill (8 pontos normalizados 0–1).
+  ///
+  /// Passado diretamente ao [NineSliceBubble] para aplicar [ClipPath].
+  /// Quando nulo, usa o [contentPadding] normal.
+  final List<Offset>? polyPoints;
 
   const ChatBubble({
     super.key,
@@ -77,6 +82,7 @@ class ChatBubble extends ConsumerWidget {
     this.contentPadding,
     this.isBubbleAnimated = false,
     this.bubbleTextColor,
+    this.polyPoints,
   });
 
   /// Cor do bubble baseada no role do usuário — estilo Amino
@@ -276,6 +282,8 @@ class ChatBubble extends ConsumerWidget {
           const EdgeInsets.symmetric(horizontal: 46, vertical: 40),
       // Passa a cor do texto para o NineSliceBubble aplicar no DefaultTextStyle
       textColor: bubbleTextColor,
+      // Polígono opcional de fill — passado direto do UserCosmetics
+      polyPoints: polyPoints,
       child: child,
     );
   }

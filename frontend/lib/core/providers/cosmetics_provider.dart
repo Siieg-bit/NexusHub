@@ -54,6 +54,10 @@ class UserCosmetics {
   /// Formato hex armazenado como string (ex: `#FFFFFF`), convertido aqui
   /// para [Color] via [_hexToColor].
   final Color? chatBubbleTextColor;
+  /// Polígono opcional de fill (8 pontos normalizados 0–1).
+  /// Quando não nulo, o [NineSliceBubble] aplica [ClipPath] com esse polígono.
+  /// Quando nulo, usa o [chatBubbleContentPadding] normal.
+  final List<Offset>? chatBubblePolyPoints;
 
   const UserCosmetics({
     required this.userId,
@@ -75,6 +79,7 @@ class UserCosmetics {
       vertical: 40,
     ),
     this.chatBubbleTextColor,
+    this.chatBubblePolyPoints,
   });
 
   factory UserCosmetics.empty(String userId) => UserCosmetics(userId: userId);
@@ -145,6 +150,7 @@ Color? _hexToColor(String? hex) {
   EdgeInsets sliceInsets,
   Size imageSize,
   EdgeInsets contentPadding,
+  List<Offset>? polyPoints,
 }) _extractNineSliceParams(Map<String, dynamic> assetConfig) {
   // Offset fixo do Positioned no NineSliceBubble (top/bottom/left/right: -12).
   // O contentPadding precisa compensar esse offset para que o texto não
@@ -159,50 +165,41 @@ Color? _hexToColor(String? hex) {
   double imageWidth = _asDouble(assetConfig['image_width'], fallback: 128);
   double imageHeight = _asDouble(assetConfig['image_height'], fallback: 128);
 
-  // Padding bruto salvo pelo editor.
-  // O novo editor poligonal salva pad_top/right/bottom/left individualmente.
-  // Para compatibilidade com itens antigos, usa content_padding_h/v como fallback.
+  // Padding bruto salvo pelo editor — lê os 4 lados individualmente.
+  // Fallback para content_padding_h/v (compatibilidade com itens antigos).
   final double fallbackH = _asDouble(assetConfig['content_padding_h'], fallback: 20);
   final double fallbackV = _asDouble(assetConfig['content_padding_v'], fallback: 14);
-
   final double padTop    = _asDouble(assetConfig['pad_top'],    fallback: fallbackV);
-  final double padRight  = _asDouble(assetConfig['pad_right'],  fallback: fallbackH);
   final double padBottom = _asDouble(assetConfig['pad_bottom'], fallback: fallbackV);
   final double padLeft   = _asDouble(assetConfig['pad_left'],   fallback: fallbackH);
+  final double padRight  = _asDouble(assetConfig['pad_right'],  fallback: fallbackH);
 
-  // O contentPadding efetivo deve posicionar o texto dentro da fill zone.
-  //
-  // A imagem nine-slice tem:
-  //   - cantos decorativos: sliceInset px de cada lado
-  //   - fill zone (centro): o restante
-  //
-  // O container no NineSliceBubble tem minWidth/minHeight baseados em
-  // (imageSize - 2*kNineSliceOffset), e a imagem é expandida kNineSliceOffset
-  // px além das bordas via Positioned negativo. Portanto, a borda visual da
-  // imagem coincide com a borda do container.
-  //
-  // Para que o texto fique dentro da fill zone (e não sobre os cantos
-  // decorativos), o padding deve ser:
-  //   effectivePadding = sliceInset - kNineSliceOffset + padBruto
-  //
-  // Onde:
-  //   sliceInset        = distância do canto decorativo na imagem original
-  //   kNineSliceOffset  = quanto a imagem já "avança" além do container
-  //   padBruto          = margem extra configurada no editor
-  final double effectivePadTop    = (sliceTop    - kNineSliceOffset + padTop).clamp(4.0, double.infinity);
-  final double effectivePadRight  = (sliceRight  - kNineSliceOffset + padRight).clamp(4.0, double.infinity);
-  final double effectivePadBottom = (sliceBottom - kNineSliceOffset + padBottom).clamp(4.0, double.infinity);
-  final double effectivePadLeft   = (sliceLeft   - kNineSliceOffset + padLeft).clamp(4.0, double.infinity);
-
+  // Lê poly_points opcionais (lista de {x, y} normalizados 0–1)
+  List<Offset>? polyPoints;
+  final rawPoly = assetConfig['poly_points'];
+  if (rawPoly is List && rawPoly.length == 8) {
+    try {
+      polyPoints = rawPoly.map((p) {
+        final map = p as Map<String, dynamic>;
+        return Offset(
+          (map['x'] as num).toDouble(),
+          (map['y'] as num).toDouble(),
+        );
+      }).toList();
+    } catch (_) {
+      polyPoints = null;
+    }
+  }
   return (
     sliceInsets: EdgeInsets.fromLTRB(sliceLeft, sliceTop, sliceRight, sliceBottom),
     imageSize: Size(imageWidth, imageHeight),
     contentPadding: EdgeInsets.fromLTRB(
-      effectivePadLeft,
-      effectivePadTop,
-      effectivePadRight,
-      effectivePadBottom,
+      (padLeft   - kNineSliceOffset + sliceLeft  ).clamp(4.0, double.infinity),
+      (padTop    - kNineSliceOffset + sliceTop   ).clamp(4.0, double.infinity),
+      (padRight  - kNineSliceOffset + sliceRight ).clamp(4.0, double.infinity),
+      (padBottom - kNineSliceOffset + sliceBottom).clamp(4.0, double.infinity),
     ),
+    polyPoints: polyPoints,
   );
 }
 
@@ -300,6 +297,7 @@ final userCosmeticsProvider =
       chatBubbleSliceInsets: sliceParams.sliceInsets,
       chatBubbleImageSize: sliceParams.imageSize,
       chatBubbleContentPadding: sliceParams.contentPadding,
+      chatBubblePolyPoints: sliceParams.polyPoints,
       chatBubbleTextColor: _hexToColor(chatBubbleTextColorHex),
     );
   } catch (e, st) {
@@ -397,6 +395,7 @@ final batchCosmeticsProvider =
         chatBubbleSliceInsets: sliceParams.sliceInsets,
         chatBubbleImageSize: sliceParams.imageSize,
         chatBubbleContentPadding: sliceParams.contentPadding,
+        chatBubblePolyPoints: sliceParams.polyPoints,
         chatBubbleTextColor: _hexToColor(chatBubbleTextColorHex),
       );
     }

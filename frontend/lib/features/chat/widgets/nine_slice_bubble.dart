@@ -37,6 +37,11 @@ class NineSliceBubble extends StatelessWidget {
   /// Quando fornecida, sobrescreve o branco padrão do [DefaultTextStyle].
   /// Lida de [asset_config.text_color] via [UserCosmetics.chatBubbleTextColor].
   final Color? textColor;
+  /// Polígono opcional de fill (8 pontos normalizados 0–1).
+  ///
+  /// Quando fornecido, aplica [ClipPath] com o polígono para confinar o texto.
+  /// Quando nulo, usa o [contentPadding] normal — comportamento padrão.
+  final List<Offset>? polyPoints;
 
   const NineSliceBubble({
     super.key,
@@ -56,6 +61,7 @@ class NineSliceBubble extends StatelessWidget {
       vertical: 40,
     ),
     this.textColor,
+    this.polyPoints,
   });
 
   @override
@@ -118,9 +124,8 @@ class NineSliceBubble extends StatelessWidget {
               // Conteúdo da mensagem — filho não-posicionado que define o
               // tamanho do Stack. O Container com minHeight já garante que
               // o bubble não fique menor que a imagem original.
-              Padding(
-                padding: contentPadding,
-                child: DefaultTextStyle(
+              Builder(builder: (context) {
+                final textWidget = DefaultTextStyle(
                   style: TextStyle(
                     // textColor tem prioridade; fallback: branco (padrão para frames)
                     color: textColor ?? Colors.white,
@@ -128,14 +133,68 @@ class NineSliceBubble extends StatelessWidget {
                     height: 1.4,
                   ),
                   child: child,
-                ),
-              ),
+                );
+                // Se polyPoints estiver disponível, aplica ClipPath poligonal.
+                // O padding ainda é aplicado para garantir espaço mínimo.
+                if (polyPoints != null && polyPoints!.length == 8) {
+                  return Padding(
+                    padding: contentPadding,
+                    child: ClipPath(
+                      clipper: _PolyClipper(polyPoints!, imageSize, contentPadding),
+                      child: textWidget,
+                    ),
+                  );
+                }
+                return Padding(
+                  padding: contentPadding,
+                  child: textWidget,
+                );
+              }),
             ],
           ),
         ),
       ),
     );
   }
+}
+
+
+/// CustomClipper que aplica um polígono de fill ao conteúdo do [NineSliceBubble].
+///
+/// Os [points] são normalizados (0–1) em relação ao tamanho da imagem original.
+/// O clipper converte esses pontos para coordenadas de tela usando o tamanho
+/// real do widget em tempo de layout.
+class _PolyClipper extends CustomClipper<Path> {
+  final List<Offset> points;
+  final Size imageSize;
+  final EdgeInsets padding;
+  const _PolyClipper(this.points, this.imageSize, this.padding);
+  @override
+  Path getClip(Size size) {
+    // O conteúdo já tem o padding aplicado, então o tamanho aqui é o do
+    // conteúdo interno. Precisamos mapear os pontos normalizados (relativos
+    // à imagem original) para o espaço do conteúdo.
+    //
+    // O conteúdo começa em (padding.left, padding.top) relativo ao container,
+    // então subtraímos o padding ao converter.
+    final double scaleX = (size.width  + padding.horizontal) / imageSize.width;
+    final double scaleY = (size.height + padding.vertical)   / imageSize.height;
+    final path = Path();
+    for (int i = 0; i < points.length; i++) {
+      final px = points[i].dx * imageSize.width  * scaleX - padding.left;
+      final py = points[i].dy * imageSize.height * scaleY - padding.top;
+      if (i == 0) {
+        path.moveTo(px, py);
+      } else {
+        path.lineTo(px, py);
+      }
+    }
+    path.close();
+    return path;
+  }
+  @override
+  bool shouldReclip(_PolyClipper old) =>
+      old.points != points || old.imageSize != imageSize || old.padding != padding;
 }
 
 /// Carrega a imagem como [ui.Image] e renderiza via [CustomPainter] com

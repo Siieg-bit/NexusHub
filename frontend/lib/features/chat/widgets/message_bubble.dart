@@ -613,6 +613,8 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                             contentPadding: bubbleContentPadding,
                             // Cor customizada do texto lida do asset_config.text_color
                             bubbleTextColor: activeCosmetics?.chatBubbleTextColor,
+                            // Polígono opcional de fill lido do asset_config.poly_points
+                            polyPoints: activeCosmetics?.chatBubblePolyPoints,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
