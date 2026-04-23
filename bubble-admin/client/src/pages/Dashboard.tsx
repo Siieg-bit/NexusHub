@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase, StoreItem } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -17,49 +17,195 @@ import CommunitiesPage from "./CommunitiesPage";
 import AchievementsPage from "./AchievementsPage";
 import BroadcastPage from "./BroadcastPage";
 
-// ─── Tipos ────────────────────────────────────────────────────────────────────
-type BubbleForm = {
-  name: string; description: string; priceCoins: number;
-  rarity: "common" | "rare" | "epic" | "legendary";
-  isActive: boolean; isAnimated: boolean;
-  sliceTop: number; sliceLeft: number; sliceRight: number; sliceBottom: number;
-  textColor: string;
-  // Tipografia e layout do texto
-  fontSize: number;
-  textAlign: "left" | "center" | "right";
-  padTop: number; padRight: number; padBottom: number; padLeft: number;
-};
+// ─── Tipos e Constantes ───────────────────────────────────────────────────────
 
-function detectBubbleIsAnimated(file: File): boolean {
-  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-  if (file.type === "image/gif" || ext === "gif") return true;
-  if (ext === "apng") return true;
-  return false;
+type Rarity = "common" | "rare" | "epic" | "legendary";
+type TextAlign = "left" | "center" | "right";
+
+/** Configuração tipada do asset_config para bubbles */
+interface BubbleAssetConfig {
+  bubble_style: "nine_slice" | "animated";
+  image_url: string | null;
+  bubble_url: string | null;
+  image_width: number;
+  image_height: number;
+  is_animated: boolean;
+  rarity: Rarity;
+  // Nine-slice
+  slice_top: number;
+  slice_bottom: number;
+  slice_left: number;
+  slice_right: number;
+  // Tipografia
+  text_color?: string;
+  font_size: number;
+  text_align: TextAlign;
+  // Padding interno (independente das bordas de slice)
+  pad_top: number;
+  pad_bottom: number;
+  pad_left: number;
+  pad_right: number;
 }
 
-const RARITY_COLORS: Record<string, { color: string; rgb: string }> = {
+/** Valores padrão para um novo bubble */
+const DEFAULT_ASSET_CONFIG: Omit<BubbleAssetConfig, "image_url" | "bubble_url" | "image_width" | "image_height"> = {
+  bubble_style: "nine_slice",
+  is_animated: false,
+  rarity: "common",
+  slice_top: 38, slice_bottom: 38, slice_left: 38, slice_right: 38,
+  font_size: 13, text_align: "left",
+  pad_top: 8, pad_bottom: 8, pad_left: 8, pad_right: 8,
+};
+
+/** Formulário do modal de criação/edição */
+interface BubbleForm {
+  name: string;
+  description: string;
+  priceCoins: number;
+  rarity: Rarity;
+  isActive: boolean;
+  isAnimated: boolean;
+  textColor: string;
+  sliceTop: number; sliceBottom: number; sliceLeft: number; sliceRight: number;
+  fontSize: number;
+  textAlign: TextAlign;
+  padTop: number; padBottom: number; padLeft: number; padRight: number;
+}
+
+const EMPTY_FORM: BubbleForm = {
+  name: "", description: "", priceCoins: 150, rarity: "common",
+  isActive: true, isAnimated: false, textColor: "",
+  sliceTop: 38, sliceBottom: 38, sliceLeft: 38, sliceRight: 38,
+  fontSize: 13, textAlign: "left",
+  padTop: 8, padBottom: 8, padLeft: 8, padRight: 8,
+};
+
+type SliceValues = { top: number; bottom: number; left: number; right: number };
+
+const RARITY_COLORS: Record<Rarity, { color: string; rgb: string }> = {
   common:    { color: "#94A3B8", rgb: "148,163,184" },
   rare:      { color: "#60A5FA", rgb: "96,165,250" },
   epic:      { color: "#A78BFA", rgb: "167,139,250" },
   legendary: { color: "#FBBF24", rgb: "251,191,36" },
 };
 
-const RARITY_LABELS: Record<string, string> = {
+const RARITY_LABELS: Record<Rarity, string> = {
   common: "Comum", rare: "Raro", epic: "Épico", legendary: "Lendário",
 };
 
 const fadeUp = {
   hidden: { opacity: 0, y: 10 },
-  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.04, duration: 0.25, ease: "easeOut" } }),
+  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.04, duration: 0.25, ease: "easeOut" as const } }),
 };
 
-// ─── Chat Preview (cards da lista) ───────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function detectBubbleIsAnimated(file: File): boolean {
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  return file.type === "image/gif" || ext === "gif" || ext === "apng";
+}
+
+/** Parseia o asset_config do banco com defaults seguros */
+function parseBubbleConfig(raw: Record<string, unknown>): BubbleAssetConfig {
+  return {
+    bubble_style: (raw.bubble_style as BubbleAssetConfig["bubble_style"]) ?? "nine_slice",
+    image_url: (raw.image_url as string) ?? null,
+    bubble_url: (raw.bubble_url as string) ?? null,
+    image_width: (raw.image_width as number) ?? 128,
+    image_height: (raw.image_height as number) ?? 128,
+    is_animated: (raw.is_animated as boolean) ?? false,
+    rarity: (raw.rarity as Rarity) ?? "common",
+    slice_top: (raw.slice_top as number) ?? 38,
+    slice_bottom: (raw.slice_bottom as number) ?? 38,
+    slice_left: (raw.slice_left as number) ?? 38,
+    slice_right: (raw.slice_right as number) ?? 38,
+    text_color: (raw.text_color as string) ?? undefined,
+    font_size: (raw.font_size as number) ?? 13,
+    text_align: (raw.text_align as TextAlign) ?? "left",
+    pad_top: (raw.pad_top as number) ?? 8,
+    pad_bottom: (raw.pad_bottom as number) ?? 8,
+    pad_left: (raw.pad_left as number) ?? 8,
+    pad_right: (raw.pad_right as number) ?? 8,
+  };
+}
+
+// ─── Hook: useImageLoader ─────────────────────────────────────────────────────
+// Carrega uma imagem de forma segura, com suporte a Object URLs (revoga no cleanup),
+// URLs remotas (via fetch para evitar CORS no canvas) e estado reativo.
+
+type ImageState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "ready"; img: HTMLImageElement }
+  | { status: "error"; message: string };
+
+// Cache de sessão: evita múltiplos fetches da mesma URL remota
+const _sessionCache = new Map<string, HTMLImageElement>();
+
+function useImageLoader(url: string | null): ImageState {
+  const [state, setState] = useState<ImageState>(() => {
+    if (!url) return { status: "idle" };
+    const cached = _sessionCache.get(url);
+    if (cached) return { status: "ready", img: cached };
+    return { status: "loading" };
+  });
+
+  useEffect(() => {
+    if (!url) { setState({ status: "idle" }); return; }
+
+    // Já no cache — usa imediatamente sem async
+    const cached = _sessionCache.get(url);
+    if (cached) { setState({ status: "ready", img: cached }); return; }
+
+    setState({ status: "loading" });
+    let cancelled = false;
+    let blobUrl: string | null = null;
+
+    (async () => {
+      try {
+        let src = url;
+        // Para URLs remotas: fetch como blob para evitar taint no canvas (CORS)
+        if (!url.startsWith("blob:") && !url.startsWith("data:")) {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const blob = await res.blob();
+          blobUrl = URL.createObjectURL(blob);
+          src = blobUrl;
+        }
+        const img = new window.Image();
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error("Falha ao decodificar imagem"));
+          img.src = src;
+        });
+        if (cancelled) return;
+        _sessionCache.set(url, img);
+        setState({ status: "ready", img });
+      } catch (err) {
+        if (cancelled) return;
+        setState({ status: "error", message: err instanceof Error ? err.message : "Erro desconhecido" });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      // Revoga blob URLs criados para arquivos locais (evita memory leak)
+      if (blobUrl && url.startsWith("blob:")) {
+        URL.revokeObjectURL(blobUrl);
+      }
+    };
+  }, [url]);
+
+  return state;
+}
+
+// ─── Chat Preview (cards da lista — usa CSS border-image) ─────────────────────
 function ChatPreview({ imageUrl, name }: { imageUrl: string | null; name: string }) {
   const messages = [
     { id: 1, mine: false, text: "Que bubble incrível 👀" },
-    { id: 2, mine: true, text: name || "Novo bubble" },
+    { id: 2, mine: true,  text: name || "Novo bubble" },
     { id: 3, mine: false, text: "Adorei! Quanto custa?" },
-    { id: 4, mine: true, text: "Tá na loja! 🎉" },
+    { id: 4, mine: true,  text: "Tá na loja! 🎉" },
   ];
   return (
     <div className="flex flex-col gap-2 p-4">
@@ -101,139 +247,246 @@ function ChatPreview({ imageUrl, name }: { imageUrl: string | null; name: string
   );
 }
 
-// ─── Cache global de imagens (evita múltiplos fetches da mesma URL) ─────────────
-const _imgCache = new Map<string, HTMLImageElement>();
-const _imgLoading = new Map<string, Promise<HTMLImageElement>>();
+// ─── NineSliceCanvas ──────────────────────────────────────────────────────────
+// Renderiza um balão nine-slice via canvas com suporte a High-DPI (Retina).
+// Recebe a imagem já carregada (HTMLImageElement) para evitar recarregamentos.
 
-function loadImageCached(url: string): Promise<HTMLImageElement> {
-  if (_imgCache.has(url)) return Promise.resolve(_imgCache.get(url)!);
-  if (_imgLoading.has(url)) return _imgLoading.get(url)!;
-
-  const p = (async () => {
-    try {
-      // Tenta via fetch (blob) para evitar CORS no canvas
-      if (!url.startsWith("blob:") && !url.startsWith("data:")) {
-        const res = await fetch(url);
-        if (res.ok) {
-          const blob = await res.blob();
-          const blobUrl = URL.createObjectURL(blob);
-          const img = new window.Image();
-          await new Promise<void>((resolve, reject) => {
-            img.onload = () => resolve();
-            img.onerror = reject;
-            img.src = blobUrl;
-          });
-          _imgCache.set(url, img);
-          _imgLoading.delete(url);
-          return img;
-        }
-      }
-    } catch { /* fallback abaixo */ }
-    // Fallback: carrega diretamente
-    const img = new window.Image();
-    await new Promise<void>((resolve, reject) => {
-      img.onload = () => resolve();
-      img.onerror = reject;
-      img.src = url;
-    });
-    _imgCache.set(url, img);
-    _imgLoading.delete(url);
-    return img;
-  })();
-
-  _imgLoading.set(url, p);
-  return p;
+interface NineSliceCanvasProps {
+  img: HTMLImageElement;
+  slice: SliceValues;
+  text: string;
+  maxWidth?: number;
+  textColor?: string;
+  fontSize?: number;
+  textAlign?: TextAlign;
+  padTop?: number; padBottom?: number; padLeft?: number; padRight?: number;
 }
 
-// ─── Nine-Slice Editor ────────────────────────────────────────────────────────
-// Visualizador interativo: 4 linhas arrastáveis sobre a imagem + preview em tempo real
+function NineSliceCanvas({
+  img, slice, text,
+  maxWidth = 220,
+  textColor = "rgba(255,255,255,0.9)",
+  fontSize = 13,
+  textAlign = "left",
+  padTop = 8, padBottom = 8, padLeft = 8, padRight = 8,
+}: NineSliceCanvasProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [logicalSize, setLogicalSize] = useState({ w: maxWidth, h: 60 });
 
-type SliceValues = { top: number; left: number; right: number; bottom: number };
-type DragHandle = "top" | "left" | "right" | "bottom" | null;
+  const draw = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-function NineSliceEditor({
-  imageUrl,
-  imageDimensions,
-  slice,
-  onChange,
-  textColor,
-  fontSize,
-  textAlign,
-  padTop,
-  padRight,
-  padBottom,
-  padLeft,
-}: {
+    const dpr = window.devicePixelRatio || 1;
+    const { top: st, bottom: sb, left: sl, right: sr } = slice;
+    const lineHeight = Math.round(fontSize * 1.45);
+    const msgColor = textColor.trim() || "rgba(255,255,255,0.9)";
+
+    // Padding total = borda de slice + padding interno extra
+    const innerLeft  = sl + padLeft;
+    const innerRight = sr + padRight;
+    const innerTop   = st + padTop;
+    const innerBot   = sb + padBottom;
+    const maxContentW = maxWidth - innerLeft - innerRight;
+
+    // Quebra de texto em linhas
+    ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
+    const words = text.split(" ");
+    const lines: string[] = [];
+    let cur = "";
+    for (const word of words) {
+      const test = cur ? `${cur} ${word}` : word;
+      if (ctx.measureText(test).width > maxContentW && cur) {
+        lines.push(cur);
+        cur = word;
+      } else {
+        cur = test;
+      }
+    }
+    if (cur) lines.push(cur);
+    if (lines.length === 0) lines.push("");
+
+    // Largura lógica: ajusta ao texto, respeita mínimo e máximo
+    const maxLineW = Math.max(...lines.map(l => ctx.measureText(l).width));
+    const logW = Math.min(maxWidth, Math.max(
+      Math.ceil(maxLineW) + innerLeft + innerRight,
+      sl + sr + 24
+    ));
+    const textH = lines.length * lineHeight;
+    const logH = Math.max(textH + innerTop + innerBot, st + sb + 8);
+
+    // Atualiza tamanho lógico do canvas (CSS)
+    setLogicalSize({ w: logW, h: logH });
+
+    // Aplica High-DPI: canvas interno maior, CSS menor
+    canvas.width  = Math.round(logW * dpr);
+    canvas.height = Math.round(logH * dpr);
+    canvas.style.width  = `${logW}px`;
+    canvas.style.height = `${logH}px`;
+    ctx.scale(dpr, dpr);
+
+    // Desenha nine-slice (9 regiões)
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const mw = logW - sl - sr;
+    const mh = logH - st - sb;
+
+    const regions: [number, number, number, number, number, number, number, number][] = [
+      [0,      0,      sl,        st,        0,       0,       sl,  st  ],
+      [sl,     0,      iw-sl-sr,  st,        sl,      0,       mw,  st  ],
+      [iw-sr,  0,      sr,        st,        sl+mw,   0,       sr,  st  ],
+      [0,      st,     sl,        ih-st-sb,  0,       st,      sl,  mh  ],
+      [sl,     st,     iw-sl-sr,  ih-st-sb,  sl,      st,      mw,  mh  ],
+      [iw-sr,  st,     sr,        ih-st-sb,  sl+mw,   st,      sr,  mh  ],
+      [0,      ih-sb,  sl,        sb,        0,       st+mh,   sl,  sb  ],
+      [sl,     ih-sb,  iw-sl-sr,  sb,        sl,      st+mh,   mw,  sb  ],
+      [iw-sr,  ih-sb,  sr,        sb,        sl+mw,   st+mh,   sr,  sb  ],
+    ];
+
+    ctx.clearRect(0, 0, logW, logH);
+    for (const [sx, sy, sw, sh, dx, dy, dw, dh] of regions) {
+      if (sw > 0 && sh > 0 && dw > 0 && dh > 0) {
+        ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+      }
+    }
+
+    // Texto: centralizado verticalmente na área FILL
+    const fillH = logH - st - sb;
+    const textStartY = st + Math.max(0, (fillH - textH) / 2);
+    const fillW = logW - innerLeft - innerRight;
+
+    ctx.fillStyle = msgColor;
+    ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
+    ctx.textBaseline = "top";
+    ctx.textAlign = textAlign;
+
+    lines.forEach((line, i) => {
+      let x: number;
+      if (textAlign === "center") x = innerLeft + fillW / 2;
+      else if (textAlign === "right") x = logW - innerRight;
+      else x = innerLeft;
+      ctx.fillText(line, x, textStartY + i * lineHeight);
+    });
+  }, [img, slice, text, maxWidth, textColor, fontSize, textAlign, padTop, padBottom, padLeft, padRight]);
+
+  useEffect(() => {
+    draw();
+  }, [draw]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={logicalSize.w}
+      height={logicalSize.h}
+      style={{ display: "block", maxWidth: "100%" }}
+    />
+  );
+}
+
+// ─── NineSliceBubble ──────────────────────────────────────────────────────────
+// Wrapper que gerencia o carregamento da imagem e delega o desenho ao NineSliceCanvas.
+
+interface NineSliceBubbleProps extends Omit<NineSliceCanvasProps, "img"> {
+  imageUrl: string;
+}
+
+function NineSliceBubble({ imageUrl, ...rest }: NineSliceBubbleProps) {
+  const imgState = useImageLoader(imageUrl);
+
+  if (imgState.status === "loading") {
+    return (
+      <div className="flex items-center justify-center rounded-xl"
+        style={{ width: rest.maxWidth ?? 220, height: 60, background: "rgba(255,255,255,0.03)" }}>
+        <Loader2 size={12} className="animate-spin" style={{ color: "rgba(255,255,255,0.15)" }} />
+      </div>
+    );
+  }
+  if (imgState.status === "error" || imgState.status === "idle") {
+    return null;
+  }
+  return <NineSliceCanvas img={imgState.img} {...rest} />;
+}
+
+// ─── NineSliceEditor ──────────────────────────────────────────────────────────
+// Editor interativo com handles arrastáveis + inputs numéricos + preview de texto.
+
+type DragHandle = "top" | "bottom" | "left" | "right" | null;
+
+const MIN_CENTER = 4; // pixels mínimos para a área central do nine-slice
+
+interface NineSliceEditorProps {
   imageUrl: string;
   imageDimensions: { w: number; h: number } | null;
   slice: SliceValues;
   onChange: (s: SliceValues) => void;
   textColor: string;
   fontSize: number;
-  textAlign: "left" | "center" | "right";
-  padTop: number;
-  padRight: number;
-  padBottom: number;
-  padLeft: number;
-}) {
-  const canvasRef = useRef<HTMLDivElement>(null);
+  textAlign: TextAlign;
+  padTop: number; padBottom: number; padLeft: number; padRight: number;
+}
+
+function NineSliceEditor({
+  imageUrl, imageDimensions, slice, onChange,
+  textColor, fontSize, textAlign,
+  padTop, padBottom, padLeft, padRight,
+}: NineSliceEditorProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState({ w: 240, h: 240 });
   const [dragging, setDragging] = useState<DragHandle>(null);
   const [hovering, setHovering] = useState<DragHandle>(null);
   const dragStart = useRef<{ x: number; y: number; value: number } | null>(null);
 
-  // Atualiza tamanho do canvas ao montar e ao redimensionar
+  // Observa redimensionamento do container
   useEffect(() => {
     function update() {
-      if (!canvasRef.current) return;
-      const rect = canvasRef.current.getBoundingClientRect();
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
       setCanvasSize({ w: rect.width, h: rect.height });
     }
     update();
     const ro = new ResizeObserver(update);
-    if (canvasRef.current) ro.observe(canvasRef.current);
+    if (containerRef.current) ro.observe(containerRef.current);
     return () => ro.disconnect();
   }, []);
 
-  // Dimensões reais da imagem (para calcular proporção)
   const imgW = imageDimensions?.w ?? 128;
   const imgH = imageDimensions?.h ?? 128;
-
-  // Posição das linhas em pixels no canvas (proporcional)
   const scaleX = canvasSize.w / imgW;
   const scaleY = canvasSize.h / imgH;
 
-  // Posição das linhas em px no canvas
+  // Posição das linhas em pixels no canvas
   const topPx    = slice.top    * scaleY;
   const bottomPx = canvasSize.h - slice.bottom * scaleY;
   const leftPx   = slice.left   * scaleX;
   const rightPx  = canvasSize.w - slice.right  * scaleX;
 
-  // Área de hit das linhas (px de tolerância)
-  const HIT = 8;
+  const HIT = 10; // tolerância de hit em px
 
-  function getHandleAt(x: number, y: number): DragHandle {
+  const getHandleAt = useCallback((x: number, y: number): DragHandle => {
+    // Prioridade: linhas horizontais antes das verticais
     if (Math.abs(y - topPx)    < HIT) return "top";
     if (Math.abs(y - bottomPx) < HIT) return "bottom";
     if (Math.abs(x - leftPx)   < HIT) return "left";
     if (Math.abs(x - rightPx)  < HIT) return "right";
     return null;
-  }
+  }, [topPx, bottomPx, leftPx, rightPx]);
 
-  function onMouseDown(e: React.MouseEvent) {
-    const rect = canvasRef.current!.getBoundingClientRect();
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    const rect = containerRef.current!.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const handle = getHandleAt(x, y);
     if (!handle) return;
     e.preventDefault();
     setDragging(handle);
-    const currentVal = handle === "top" ? slice.top : handle === "bottom" ? slice.bottom : handle === "left" ? slice.left : slice.right;
+    const currentVal = slice[handle];
     dragStart.current = { x, y, value: currentVal };
-  }
+  }, [getHandleAt, slice]);
 
-  function onMouseMove(e: React.MouseEvent) {
-    const rect = canvasRef.current!.getBoundingClientRect();
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    const rect = containerRef.current!.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
@@ -245,35 +498,38 @@ function NineSliceEditor({
     const dx = x - dragStart.current.x;
     const dy = y - dragStart.current.y;
 
+    // Constraints estritas: impede que linhas se cruzem
     let newVal: number;
     if (dragging === "top") {
-      newVal = Math.max(0, Math.min(Math.round(dragStart.current.value + dy / scaleY), imgH - slice.bottom - 4));
+      const maxTop = imgH - slice.bottom - MIN_CENTER;
+      newVal = Math.max(0, Math.min(Math.round(dragStart.current.value + dy / scaleY), maxTop));
       onChange({ ...slice, top: newVal });
     } else if (dragging === "bottom") {
-      newVal = Math.max(0, Math.min(Math.round(dragStart.current.value - dy / scaleY), imgH - slice.top - 4));
+      const maxBot = imgH - slice.top - MIN_CENTER;
+      newVal = Math.max(0, Math.min(Math.round(dragStart.current.value - dy / scaleY), maxBot));
       onChange({ ...slice, bottom: newVal });
     } else if (dragging === "left") {
-      newVal = Math.max(0, Math.min(Math.round(dragStart.current.value + dx / scaleX), imgW - slice.right - 4));
+      const maxLeft = imgW - slice.right - MIN_CENTER;
+      newVal = Math.max(0, Math.min(Math.round(dragStart.current.value + dx / scaleX), maxLeft));
       onChange({ ...slice, left: newVal });
     } else {
-      newVal = Math.max(0, Math.min(Math.round(dragStart.current.value - dx / scaleX), imgW - slice.left - 4));
+      const maxRight = imgW - slice.left - MIN_CENTER;
+      newVal = Math.max(0, Math.min(Math.round(dragStart.current.value - dx / scaleX), maxRight));
       onChange({ ...slice, right: newVal });
     }
-  }
+  }, [dragging, getHandleAt, slice, onChange, imgW, imgH, scaleX, scaleY]);
 
-  function onMouseUp() {
+  const onMouseUp = useCallback(() => {
     setDragging(null);
     dragStart.current = null;
-  }
+  }, []);
 
-  // Cursor dinâmico
   const cursor = dragging
     ? (dragging === "top" || dragging === "bottom" ? "ns-resize" : "ew-resize")
     : hovering
     ? (hovering === "top" || hovering === "bottom" ? "ns-resize" : "ew-resize")
     : "default";
 
-  // Cores das linhas
   const LINE_COLORS: Record<string, string> = {
     top: "#F59E0B", bottom: "#F59E0B",
     left: "#34D399", right: "#34D399",
@@ -293,21 +549,30 @@ function NineSliceEditor({
     };
   }
 
-  // Labels das regiões nine-slice
-  const regions = [
-    // Cantos
-    { label: "TL", x: leftPx / 2, y: topPx / 2 },
-    { label: "TR", x: (rightPx + canvasSize.w) / 2, y: topPx / 2 },
-    { label: "BL", x: leftPx / 2, y: (bottomPx + canvasSize.h) / 2 },
-    { label: "BR", x: (rightPx + canvasSize.w) / 2, y: (bottomPx + canvasSize.h) / 2 },
-    // Bordas
-    { label: "T", x: (leftPx + rightPx) / 2, y: topPx / 2 },
-    { label: "B", x: (leftPx + rightPx) / 2, y: (bottomPx + canvasSize.h) / 2 },
-    { label: "L", x: leftPx / 2, y: (topPx + bottomPx) / 2 },
-    { label: "R", x: (rightPx + canvasSize.w) / 2, y: (topPx + bottomPx) / 2 },
-    // Centro
-    { label: "FILL", x: (leftPx + rightPx) / 2, y: (topPx + bottomPx) / 2 },
-  ];
+  // Labels das 9 regiões
+  const regions = useMemo(() => [
+    { label: "TL",   x: leftPx / 2,                          y: topPx / 2 },
+    { label: "TR",   x: (rightPx + canvasSize.w) / 2,        y: topPx / 2 },
+    { label: "BL",   x: leftPx / 2,                          y: (bottomPx + canvasSize.h) / 2 },
+    { label: "BR",   x: (rightPx + canvasSize.w) / 2,        y: (bottomPx + canvasSize.h) / 2 },
+    { label: "T",    x: (leftPx + rightPx) / 2,              y: topPx / 2 },
+    { label: "B",    x: (leftPx + rightPx) / 2,              y: (bottomPx + canvasSize.h) / 2 },
+    { label: "L",    x: leftPx / 2,                          y: (topPx + bottomPx) / 2 },
+    { label: "R",    x: (rightPx + canvasSize.w) / 2,        y: (topPx + bottomPx) / 2 },
+    { label: "FILL", x: (leftPx + rightPx) / 2,              y: (topPx + bottomPx) / 2 },
+  ], [leftPx, rightPx, topPx, bottomPx, canvasSize]);
+
+  // Validação dos inputs numéricos com constraints
+  function handleInputChange(key: keyof SliceValues, raw: string) {
+    const val = Math.max(0, parseInt(raw) || 0);
+    const next = { ...slice, [key]: val };
+    // Aplica constraints
+    if (key === "top")    next.top    = Math.min(val, imgH - next.bottom - MIN_CENTER);
+    if (key === "bottom") next.bottom = Math.min(val, imgH - next.top    - MIN_CENTER);
+    if (key === "left")   next.left   = Math.min(val, imgW - next.right  - MIN_CENTER);
+    if (key === "right")  next.right  = Math.min(val, imgW - next.left   - MIN_CENTER);
+    onChange(next);
+  }
 
   return (
     <div className="space-y-3">
@@ -327,9 +592,9 @@ function NineSliceEditor({
         </div>
       </div>
 
-      {/* Canvas */}
+      {/* Canvas interativo */}
       <div
-        ref={canvasRef}
+        ref={containerRef}
         className="relative rounded-xl overflow-hidden select-none"
         style={{
           width: "100%",
@@ -349,73 +614,41 @@ function NineSliceEditor({
           src={imageUrl}
           alt="bubble"
           draggable={false}
-          style={{
-            position: "absolute", inset: 0,
-            width: "100%", height: "100%",
-            objectFit: "fill",
-            pointerEvents: "none",
-            userSelect: "none",
-          }}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "fill", pointerEvents: "none" }}
         />
 
-        {/* Overlay escurecido nas regiões de borda (para destacar o centro) */}
+        {/* Overlay nas regiões de borda */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-          {/* Topo */}
           <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: topPx, background: "rgba(0,0,0,0.25)" }} />
-          {/* Base */}
           <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: canvasSize.h - bottomPx, background: "rgba(0,0,0,0.25)" }} />
-          {/* Esquerda (centro) */}
           <div style={{ position: "absolute", left: 0, width: leftPx, top: topPx, height: bottomPx - topPx, background: "rgba(0,0,0,0.25)" }} />
-          {/* Direita (centro) */}
           <div style={{ position: "absolute", right: 0, width: canvasSize.w - rightPx, top: topPx, height: bottomPx - topPx, background: "rgba(0,0,0,0.25)" }} />
         </div>
 
         {/* Linha Topo */}
         <div style={{ ...lineStyle("top", true), top: topPx - 0.75 }}>
-          <div style={{
-            position: "absolute", right: 4, top: -9,
-            fontSize: 9, fontFamily: "'DM Mono', monospace",
-            color: "#F59E0B", background: "rgba(0,0,0,0.7)",
-            padding: "1px 4px", borderRadius: 4, whiteSpace: "nowrap",
-          }}>
+          <div style={{ position: "absolute", right: 4, top: -9, fontSize: 9, fontFamily: "'DM Mono', monospace", color: "#F59E0B", background: "rgba(0,0,0,0.7)", padding: "1px 4px", borderRadius: 4, whiteSpace: "nowrap" }}>
             T: {slice.top}px
           </div>
         </div>
 
         {/* Linha Base */}
         <div style={{ ...lineStyle("bottom", true), top: bottomPx - 0.75 }}>
-          <div style={{
-            position: "absolute", right: 4, bottom: -9,
-            fontSize: 9, fontFamily: "'DM Mono', monospace",
-            color: "#F59E0B", background: "rgba(0,0,0,0.7)",
-            padding: "1px 4px", borderRadius: 4, whiteSpace: "nowrap",
-          }}>
+          <div style={{ position: "absolute", right: 4, bottom: -9, fontSize: 9, fontFamily: "'DM Mono', monospace", color: "#F59E0B", background: "rgba(0,0,0,0.7)", padding: "1px 4px", borderRadius: 4, whiteSpace: "nowrap" }}>
             B: {slice.bottom}px
           </div>
         </div>
 
         {/* Linha Esquerda */}
         <div style={{ ...lineStyle("left", false), left: leftPx - 0.75 }}>
-          <div style={{
-            position: "absolute", left: 4, top: 4,
-            fontSize: 9, fontFamily: "'DM Mono', monospace",
-            color: "#34D399", background: "rgba(0,0,0,0.7)",
-            padding: "1px 4px", borderRadius: 4, whiteSpace: "nowrap",
-            writingMode: "vertical-rl", transform: "rotate(180deg)",
-          }}>
+          <div style={{ position: "absolute", left: 4, top: 4, fontSize: 9, fontFamily: "'DM Mono', monospace", color: "#34D399", background: "rgba(0,0,0,0.7)", padding: "1px 4px", borderRadius: 4, whiteSpace: "nowrap", writingMode: "vertical-rl", transform: "rotate(180deg)" }}>
             L: {slice.left}px
           </div>
         </div>
 
         {/* Linha Direita */}
         <div style={{ ...lineStyle("right", false), left: rightPx - 0.75 }}>
-          <div style={{
-            position: "absolute", right: 4, top: 4,
-            fontSize: 9, fontFamily: "'DM Mono', monospace",
-            color: "#34D399", background: "rgba(0,0,0,0.7)",
-            padding: "1px 4px", borderRadius: 4, whiteSpace: "nowrap",
-            writingMode: "vertical-rl",
-          }}>
+          <div style={{ position: "absolute", right: 4, top: 4, fontSize: 9, fontFamily: "'DM Mono', monospace", color: "#34D399", background: "rgba(0,0,0,0.7)", padding: "1px 4px", borderRadius: 4, whiteSpace: "nowrap", writingMode: "vertical-rl" }}>
             R: {slice.right}px
           </div>
         </div>
@@ -423,94 +656,82 @@ function NineSliceEditor({
         {/* Labels das regiões */}
         {regions.map(({ label, x, y }) => (
           <div key={label} style={{
-            position: "absolute",
-            left: x, top: y,
+            position: "absolute", left: x, top: y,
             transform: "translate(-50%, -50%)",
             fontSize: 8, fontFamily: "'DM Mono', monospace",
-            color: "rgba(255,255,255,0.35)",
-            background: "rgba(0,0,0,0.5)",
-            padding: "1px 3px", borderRadius: 3,
-            pointerEvents: "none",
-            whiteSpace: "nowrap",
+            color: "rgba(255,255,255,0.35)", background: "rgba(0,0,0,0.5)",
+            padding: "1px 3px", borderRadius: 3, pointerEvents: "none", whiteSpace: "nowrap",
           }}>
             {label}
           </div>
         ))}
       </div>
 
-      {/* Texto de exemplo em tempo real sobre a área FILL */}
-      <NineSliceTextPreview
-        imageUrl={imageUrl}
-        slice={slice}
-        textColor={textColor}
-        fontSize={fontSize}
-        textAlign={textAlign}
-        padTop={padTop}
-        padRight={padRight}
-        padBottom={padBottom}
-        padLeft={padLeft}
-      />
-
-      {/* Inputs numéricos sincronizados */}
+      {/* Inputs numéricos sincronizados com os handles */}
       <div className="grid grid-cols-4 gap-2">
         {([
-          { label: "Topo", key: "top" as const, color: "#F59E0B" },
-          { label: "Base", key: "bottom" as const, color: "#F59E0B" },
-          { label: "Esq.", key: "left" as const, color: "#34D399" },
-          { label: "Dir.", key: "right" as const, color: "#34D399" },
-        ] as const).map(({ label, key, color }) => (
+          { label: "Topo",  key: "top"    as const, color: "#F59E0B" },
+          { label: "Base",  key: "bottom" as const, color: "#F59E0B" },
+          { label: "Esq.",  key: "left"   as const, color: "#34D399" },
+          { label: "Dir.",  key: "right"  as const, color: "#34D399" },
+        ]).map(({ label, key, color }) => (
           <div key={key}>
             <label className="text-[9px] font-mono block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>{label}</label>
             <input
               type="number" min={0}
               value={slice[key]}
-              onChange={(e) => onChange({ ...slice, [key]: Math.max(0, parseInt(e.target.value) || 0) })}
+              onChange={(e) => handleInputChange(key, e.target.value)}
               className="w-full px-2 py-1.5 rounded-lg text-[12px] outline-none font-mono text-center"
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: `1px solid ${color}30`,
-                color,
-              }}
+              style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${color}30`, color }}
             />
           </div>
         ))}
       </div>
+
+      {/* Preview de texto em tempo real */}
+      <NineSlicePreviewPanel
+        imageUrl={imageUrl}
+        slice={slice}
+        textColor={textColor}
+        fontSize={fontSize}
+        textAlign={textAlign}
+        padTop={padTop} padBottom={padBottom} padLeft={padLeft} padRight={padRight}
+      />
     </div>
   );
 }
 
-// ─── NineSliceTextPreview ───────────────────────────────────────────────────────────────────────────
-// Preview de texto em tempo real no editor de bordas (aba Ajustar Bordas)
-function NineSliceTextPreview({
-  imageUrl, slice, textColor, fontSize, textAlign, padTop, padRight, padBottom, padLeft,
-}: {
-  imageUrl: string; slice: SliceValues; textColor: string;
-  fontSize: number; textAlign: "left" | "center" | "right";
-  padTop: number; padRight: number; padBottom: number; padLeft: number;
-}) {
+// ─── NineSlicePreviewPanel ────────────────────────────────────────────────────
+// Painel de preview com texto editável e 3 tamanhos de balão.
+// Compartilhado entre a aba "Ajustar Bordas" e a aba "Preview Final".
+
+interface NineSlicePreviewPanelProps {
+  imageUrl: string;
+  slice: SliceValues;
+  textColor: string;
+  fontSize: number;
+  textAlign: TextAlign;
+  padTop: number; padBottom: number; padLeft: number; padRight: number;
+}
+
+const PREVIEW_SAMPLES = [
+  { id: "short",  label: "Curto",  text: "Oi!",                                        maxWidth: 140, mine: true  },
+  { id: "medium", label: "Médio",  text: "Esse bubble ficou incrível 🔥",               maxWidth: 200, mine: false },
+  { id: "long",   label: "Longo",  text: "Concordo! Muito estiloso mesmo, adorei o design!", maxWidth: 260, mine: true  },
+];
+
+function NineSlicePreviewPanel({
+  imageUrl, slice, textColor, fontSize, textAlign,
+  padTop, padBottom, padLeft, padRight,
+}: NineSlicePreviewPanelProps) {
   const [customText, setCustomText] = useState("");
-  // Aguarda a imagem estar no cache antes de renderizar os NineSliceBubble
-  const [imgCached, setImgCached] = useState(() => _imgCache.has(imageUrl));
+  const imgState = useImageLoader(imageUrl);
 
-  useEffect(() => {
-    if (_imgCache.has(imageUrl)) { setImgCached(true); return; }
-    setImgCached(false);
-    let cancelled = false;
-    loadImageCached(imageUrl)
-      .then(() => { if (!cancelled) setImgCached(true); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [imageUrl]);
-
-  const samples = [
-    { id: "short", label: "Curto", text: customText || "Oi!" },
-    { id: "medium", label: "Médio", text: customText || "Esse bubble é incrivel 🔥" },
-    { id: "long", label: "Longo", text: customText || "Concordo! Muito estiloso mesmo, adorei o design!" },
-  ];
   return (
-    <div className="rounded-xl overflow-hidden space-y-2" style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.06)", padding: "10px 12px" }}>
+    <div className="rounded-xl space-y-2" style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.06)", padding: "10px 12px" }}>
+      {/* Campo de texto editável */}
       <div className="flex items-center gap-2">
-        <p className="text-[9px] font-mono tracking-widest uppercase flex-1" style={{ color: "rgba(255,255,255,0.25)" }}>TEXTO DE EXEMPLO</p>
+        <p className="text-[9px] font-mono tracking-widest uppercase flex-shrink-0" style={{ color: "rgba(255,255,255,0.25)" }}>TESTAR TEXTO</p>
         <input
           value={customText}
           onChange={(e) => setCustomText(e.target.value)}
@@ -519,246 +740,44 @@ function NineSliceTextPreview({
           style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)", fontFamily: "'Space Grotesk', sans-serif" }}
         />
       </div>
-      {!imgCached ? (
+
+      {/* Estado de carregamento */}
+      {imgState.status === "loading" && (
         <div className="flex items-center justify-center py-4 gap-2">
           <Loader2 size={14} className="animate-spin" style={{ color: "rgba(255,255,255,0.2)" }} />
           <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>Carregando imagem...</span>
         </div>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {samples.map((s) => (
+      )}
+
+      {imgState.status === "error" && (
+        <div className="flex items-center justify-center py-4 gap-2">
+          <AlertCircle size={14} style={{ color: "rgba(239,68,68,0.6)" }} />
+          <span className="text-[10px] font-mono" style={{ color: "rgba(239,68,68,0.6)" }}>Erro ao carregar imagem</span>
+        </div>
+      )}
+
+      {/* Previews — só renderiza quando a imagem está pronta */}
+      {imgState.status === "ready" && (
+        <div className="flex flex-col gap-2 pt-1">
+          {PREVIEW_SAMPLES.map((s) => (
             <div key={s.id} className="flex items-center gap-2">
-              <span className="text-[8px] font-mono w-10 flex-shrink-0" style={{ color: "rgba(255,255,255,0.2)" }}>{s.label}</span>
-              <NineSliceBubble
-                imageUrl={imageUrl}
-                slice={slice}
-                textColor={textColor}
-                text={s.text}
-                maxWidth={s.id === "short" ? 120 : s.id === "medium" ? 180 : 240}
-                fontSize={fontSize}
-                textAlign={textAlign}
-                padTop={padTop}
-                padRight={padRight}
-                padBottom={padBottom}
-                padLeft={padLeft}
-              />
+              <span className="text-[8px] font-mono w-10 flex-shrink-0 text-right" style={{ color: "rgba(255,255,255,0.2)" }}>{s.label}</span>
+              <div className={`flex flex-1 ${s.mine ? "justify-end" : "justify-start"}`}>
+                <NineSliceCanvas
+                  img={imgState.img}
+                  slice={slice}
+                  text={customText || s.text}
+                  maxWidth={s.maxWidth}
+                  textColor={textColor}
+                  fontSize={fontSize}
+                  textAlign={textAlign}
+                  padTop={padTop} padBottom={padBottom} padLeft={padLeft} padRight={padRight}
+                />
+              </div>
             </div>
           ))}
         </div>
       )}
-    </div>
-  );
-}
-
-// ─── Nine-Slice Bubble (canvas) ──────────────────────────────────────────────
-// Renderiza o nine-slice com texto usando canvas. Suporta fontSize, textAlign e padding independente.
-function NineSliceBubble({
-  imageUrl,
-  slice,
-  textColor,
-  text,
-  maxWidth = 220,
-  fontSize = 13,
-  textAlign = "left",
-  padTop = 8,
-  padRight = 8,
-  padBottom = 8,
-  padLeft = 8,
-}: {
-  imageUrl: string;
-  slice: SliceValues;
-  textColor: string;
-  text: string;
-  maxWidth?: number;
-  fontSize?: number;
-  textAlign?: "left" | "center" | "right";
-  padTop?: number;
-  padRight?: number;
-  padBottom?: number;
-  padLeft?: number;
-}) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [size, setSize] = useState({ w: maxWidth, h: 60 });
-  // Inicializa o cache de forma síncrona: se a imagem já está no cache global, usa imediatamente
-  const imgCacheRef = useRef<HTMLImageElement | null>(
-    imageUrl && _imgCache.has(imageUrl) ? _imgCache.get(imageUrl)! : null
-  );
-  const [imgReady, setImgReady] = useState<boolean>(
-    !!(imageUrl && _imgCache.has(imageUrl))
-  );
-  const msgColor = textColor.trim() ? textColor : "rgba(255,255,255,0.9)";
-
-  // Carrega a imagem usando o cache global (uma só vez por URL, compartilhado entre instâncias)
-  useEffect(() => {
-    if (!imageUrl) return;
-
-    // Se já está no cache, garante que o ref e o estado estão corretos
-    if (_imgCache.has(imageUrl)) {
-      if (!imgCacheRef.current) imgCacheRef.current = _imgCache.get(imageUrl)!;
-      if (!imgReady) setImgReady(true);
-      return;
-    }
-
-    // Caso contrário, carrega e aguarda
-    let cancelled = false;
-    setImgReady(false);
-    imgCacheRef.current = null;
-    loadImageCached(imageUrl)
-      .then((img) => { if (!cancelled) { imgCacheRef.current = img; setImgReady(true); } })
-      .catch(() => { /* imagem não carregou */ });
-    return () => { cancelled = true; };
-  }, [imageUrl]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Redesenha o canvas sempre que a imagem estiver pronta ou slice/texto mudar
-  useEffect(() => {
-    if (!imgReady || !imgCacheRef.current) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const img = imgCacheRef.current;
-    const lineHeight = Math.round(fontSize * 1.4);
-    // Padding interno independente das bordas de slice
-    const innerPadLeft  = slice.left  + padLeft;
-    const innerPadRight = slice.right + padRight;
-    const innerPadTop   = slice.top   + padTop;
-    const innerPadBot   = slice.bottom + padBottom;
-    const maxContentW = maxWidth - innerPadLeft - innerPadRight;
-
-    // Quebra o texto em linhas
-    ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
-    const words = text.split(" ");
-    const lines: string[] = [];
-    let cur = "";
-    for (const w of words) {
-      const test = cur ? `${cur} ${w}` : w;
-      if (ctx.measureText(test).width > maxContentW && cur) {
-        lines.push(cur);
-        cur = w;
-      } else {
-        cur = test;
-      }
-    }
-    if (cur) lines.push(cur);
-
-    // Largura real do conteúdo (linha mais larga)
-    const maxLineW = Math.max(...lines.map(l => ctx.measureText(l).width));
-    const textH = lines.length * lineHeight;
-    // Largura do canvas: ajusta ao texto mas respeita mínimo e máximo
-    const totalW = Math.min(maxWidth, Math.max(maxLineW + innerPadLeft + innerPadRight, slice.left + slice.right + 24));
-    const totalH = Math.max(textH + innerPadTop + innerPadBot, slice.top + slice.bottom + 8);
-
-    canvas.width = totalW;
-    canvas.height = totalH;
-    setSize({ w: totalW, h: totalH });
-
-    // Desenha nine-slice
-    const iw = img.naturalWidth;
-    const ih = img.naturalHeight;
-    const sl = slice.left, sr = slice.right, st = slice.top, sb = slice.bottom;
-    const mw = totalW - sl - sr;
-    const mh = totalH - st - sb;
-
-    // 9 regiões: [srcX, srcY, srcW, srcH, dstX, dstY, dstW, dstH]
-    const regions9 = [
-      [0,      0,      sl,        st,        0,       0,       sl,  st  ],
-      [sl,     0,      iw-sl-sr,  st,        sl,      0,       mw,  st  ],
-      [iw-sr,  0,      sr,        st,        sl+mw,   0,       sr,  st  ],
-      [0,      st,     sl,        ih-st-sb,  0,       st,      sl,  mh  ],
-      [sl,     st,     iw-sl-sr,  ih-st-sb,  sl,      st,      mw,  mh  ],
-      [iw-sr,  st,     sr,        ih-st-sb,  sl+mw,   st,      sr,  mh  ],
-      [0,      ih-sb,  sl,        sb,        0,       st+mh,   sl,  sb  ],
-      [sl,     ih-sb,  iw-sl-sr,  sb,        sl,      st+mh,   mw,  sb  ],
-      [iw-sr,  ih-sb,  sr,        sb,        sl+mw,   st+mh,   sr,  sb  ],
-    ];
-
-    ctx.clearRect(0, 0, totalW, totalH);
-    for (const [sx, sy, sw, sh, dx, dy, dw, dh] of regions9) {
-      if (sw > 0 && sh > 0 && dw > 0 && dh > 0) {
-        ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
-      }
-    }
-
-    // Posicionamento vertical: centralizado na área FILL
-    const fillH = totalH - st - sb;
-    const textStartY = st + Math.max(0, (fillH - textH) / 2);
-
-    // Posicionamento horizontal por alinhamento
-    const fillW = totalW - innerPadLeft - innerPadRight;
-    ctx.fillStyle = msgColor;
-    ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
-    ctx.textBaseline = "top";
-    ctx.textAlign = textAlign;
-    lines.forEach((line, i) => {
-      let x: number;
-      if (textAlign === "center") x = innerPadLeft + fillW / 2;
-      else if (textAlign === "right") x = totalW - innerPadRight;
-      else x = innerPadLeft;
-      ctx.fillText(line, x, textStartY + i * lineHeight);
-    });
-  }, [imgReady, slice, textColor, text, maxWidth, msgColor, fontSize, textAlign, padTop, padRight, padBottom, padLeft]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      width={size.w}
-      height={size.h}
-      style={{ display: "block", maxWidth: "100%" }}
-    />
-  );
-}
-
-function NineSliceChatPreview({
-  imageUrl, slice, textColor, fontSize, textAlign, padTop, padRight, padBottom, padLeft,
-}: {
-  imageUrl: string; slice: SliceValues; textColor: string;
-  fontSize: number; textAlign: "left" | "center" | "right";
-  padTop: number; padRight: number; padBottom: number; padLeft: number;
-}) {
-  const [customText, setCustomText] = useState("");
-  const samples = [
-    { id: 1, mine: true,  label: "Curto",  text: customText || "Oi!" },
-    { id: 2, mine: false, label: "Médio",  text: customText || "Esse bubble ficou incrível 🔥" },
-    { id: 3, mine: true,  label: "Longo",  text: customText || "Concordo! Muito estiloso mesmo, adorei o design!" },
-  ];
-
-  return (
-    <div className="space-y-3">
-      {/* Campo de texto editável */}
-      <div className="flex items-center gap-2">
-        <p className="text-[9px] font-mono tracking-widest uppercase flex-shrink-0" style={{ color: "rgba(255,255,255,0.25)" }}>TESTAR TEXTO</p>
-        <input
-          value={customText}
-          onChange={(e) => setCustomText(e.target.value)}
-          placeholder="Digite para testar (deixe vazio para exemplos padrão)"
-          className="flex-1 px-3 py-1.5 rounded-xl text-[12px] outline-none"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)", fontFamily: "'Space Grotesk', sans-serif" }}
-        />
-      </div>
-      {/* Previews */}
-      <div className="flex flex-col gap-3 p-3 rounded-xl" style={{ background: "rgba(0,0,0,0.2)" }}>
-        {samples.map((msg) => (
-          <div key={msg.id}>
-            <p className="text-[8px] font-mono mb-1" style={{ color: "rgba(255,255,255,0.2)" }}>{msg.label}</p>
-            <div className={`flex ${msg.mine ? "justify-end" : "justify-start"}`}>
-              <NineSliceBubble
-                imageUrl={imageUrl}
-                slice={slice}
-                textColor={textColor}
-                text={msg.text}
-                maxWidth={msg.id === 1 ? 140 : msg.id === 2 ? 200 : 260}
-                fontSize={fontSize}
-                textAlign={textAlign}
-                padTop={padTop}
-                padRight={padRight}
-                padBottom={padBottom}
-                padLeft={padLeft}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -771,18 +790,15 @@ function BubblesDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [editingBubble, setEditingBubble] = useState<StoreItem | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageDimensions, setImageDimensions] = useState<{ w: number; h: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [previewTab, setPreviewTab] = useState<"slice" | "result">("slice");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [form, setForm] = useState<BubbleForm>({
-    name: "", description: "", priceCoins: 150, rarity: "common",
-    isActive: true, isAnimated: false,
-    sliceTop: 38, sliceLeft: 38, sliceRight: 38, sliceBottom: 38, textColor: "",
-    fontSize: 13, textAlign: "left",
-    padTop: 8, padRight: 8, padBottom: 8, padLeft: 8,
-  });
+  const [form, setForm] = useState<BubbleForm>(EMPTY_FORM);
+
+  // Mantém referência para revogar Object URLs ao trocar de imagem
+  const objectUrlRef = useRef<string | null>(null);
 
   async function loadBubbles() {
     setLoading(true);
@@ -794,19 +810,36 @@ function BubblesDashboard() {
 
   useEffect(() => { loadBubbles(); }, []);
 
+  // Revoga Object URL ao desmontar o componente
+  useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    };
+  }, []);
+
   const handleFile = useCallback((file: File) => {
     if (!file.type.startsWith("image/")) { toast.error("Selecione uma imagem."); return; }
+
+    // Revoga o Object URL anterior para evitar memory leak
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+
     setImageFile(file);
-    const isAnim = detectBubbleIsAnimated(file);
-    setForm(f => ({ ...f, isAnimated: isAnim }));
+    setForm(f => ({ ...f, isAnimated: detectBubbleIsAnimated(file) }));
+
     const url = URL.createObjectURL(file);
-    // Carrega no cache global e só então define o preview (garante que NineSliceBubble monta com cache pronto)
-    loadImageCached(url)
-      .then((img) => {
-        setImageDimensions({ w: img.naturalWidth, h: img.naturalHeight });
-        setImagePreview(url);
-      })
-      .catch(() => { setImagePreview(url); }); // fallback: mostra mesmo sem cache
+    objectUrlRef.current = url;
+
+    // Lê dimensões e define URL (o hook useImageLoader cuidará do carregamento)
+    const img = new window.Image();
+    img.onload = () => {
+      setImageDimensions({ w: img.naturalWidth, h: img.naturalHeight });
+      URL.revokeObjectURL(img.src); // revoga o blob temporário usado só para medir
+    };
+    img.src = URL.createObjectURL(file); // segundo blob apenas para medir
+    setImageUrl(url);
   }, []);
 
   const onDrop = useCallback((e: React.DragEvent) => {
@@ -816,34 +849,35 @@ function BubblesDashboard() {
   }, [handleFile]);
 
   async function openEdit(item: StoreItem) {
-    const cfg = (item.asset_config as Record<string, unknown>) ?? {};
+    const cfg = parseBubbleConfig((item.asset_config as Record<string, unknown>) ?? {});
     setEditingBubble(item);
     setForm({
-      name: item.name, description: item.description ?? "",
-      priceCoins: item.price_coins, rarity: (cfg.rarity as BubbleForm["rarity"]) ?? "common",
-      isActive: item.is_active, isAnimated: (cfg.is_animated as boolean) ?? false,
-      sliceTop: (cfg.slice_top as number) ?? 38, sliceLeft: (cfg.slice_left as number) ?? 38,
-      sliceRight: (cfg.slice_right as number) ?? 38, sliceBottom: (cfg.slice_bottom as number) ?? 38,
-      textColor: (cfg.text_color as string) ?? "",
-      fontSize: (cfg.font_size as number) ?? 13,
-      textAlign: (cfg.text_align as BubbleForm["textAlign"]) ?? "left",
-      padTop: (cfg.pad_top as number) ?? 8,
-      padRight: (cfg.pad_right as number) ?? 8,
-      padBottom: (cfg.pad_bottom as number) ?? 8,
-      padLeft: (cfg.pad_left as number) ?? 8,
+      name: item.name,
+      description: item.description ?? "",
+      priceCoins: item.price_coins,
+      rarity: cfg.rarity,
+      isActive: item.is_active,
+      isAnimated: cfg.is_animated,
+      textColor: cfg.text_color ?? "",
+      sliceTop: cfg.slice_top, sliceBottom: cfg.slice_bottom,
+      sliceLeft: cfg.slice_left, sliceRight: cfg.slice_right,
+      fontSize: cfg.font_size,
+      textAlign: cfg.text_align,
+      padTop: cfg.pad_top, padBottom: cfg.pad_bottom,
+      padLeft: cfg.pad_left, padRight: cfg.pad_right,
     });
-    setImagePreview(item.preview_url);
-    // Garante que a imagem está no cache ANTES de abrir o modal
-    if (item.preview_url) {
-      try { await loadImageCached(item.preview_url); } catch { /* ignora */ }
-    }
+    setImageUrl(item.preview_url);
+    setImageDimensions(cfg.image_width && cfg.image_height ? { w: cfg.image_width, h: cfg.image_height } : null);
     setShowForm(true);
   }
 
   function cancelEdit() {
-    setEditingBubble(null); setShowForm(false);
-    setForm({ name: "", description: "", priceCoins: 150, rarity: "common", isActive: true, isAnimated: false, sliceTop: 38, sliceLeft: 38, sliceRight: 38, sliceBottom: 38, textColor: "", fontSize: 13, textAlign: "left", padTop: 8, padRight: 8, padBottom: 8, padLeft: 8 });
-    setImageFile(null); setImagePreview(null); setImageDimensions(null);
+    setEditingBubble(null);
+    setShowForm(false);
+    setForm(EMPTY_FORM);
+    setImageFile(null);
+    setImageUrl(null);
+    setImageDimensions(null);
     setPreviewTab("slice");
   }
 
@@ -858,24 +892,48 @@ function BubblesDashboard() {
         const ext = imageFile.name.split(".").pop() ?? "png";
         const slug = form.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
         const path = `bubbles/${slug}_${Date.now()}.${ext}`;
-        const { error: uploadError } = await supabase.storage.from("store-assets").upload(path, imageFile, { contentType: imageFile.type, upsert: false });
+        const { error: uploadError } = await supabase.storage
+          .from("store-assets").upload(path, imageFile, { contentType: imageFile.type, upsert: false });
         if (uploadError) throw new Error(`Upload falhou: ${uploadError.message}`);
         const { data: urlData } = supabase.storage.from("store-assets").getPublicUrl(path);
         publicUrl = urlData.publicUrl;
       }
+
       const imgW = imageDimensions?.w ?? 128;
       const imgH = imageDimensions?.h ?? 128;
-      const textConfig = {
+
+      const assetConfig: BubbleAssetConfig = {
+        bubble_style: form.isAnimated ? "animated" : "nine_slice",
+        image_url: publicUrl,
+        bubble_url: publicUrl,
+        image_width: imgW,
+        image_height: imgH,
+        is_animated: form.isAnimated,
+        rarity: form.rarity,
+        slice_top: form.sliceTop, slice_bottom: form.sliceBottom,
+        slice_left: form.sliceLeft, slice_right: form.sliceRight,
         ...(form.textColor.trim() ? { text_color: form.textColor.trim() } : {}),
         font_size: form.fontSize,
         text_align: form.textAlign,
-        pad_top: form.padTop, pad_right: form.padRight,
-        pad_bottom: form.padBottom, pad_left: form.padLeft,
+        pad_top: form.padTop, pad_bottom: form.padBottom,
+        pad_left: form.padLeft, pad_right: form.padRight,
       };
-      const assetConfig = form.isAnimated
-        ? { image_url: publicUrl, bubble_url: publicUrl, bubble_style: "animated", image_width: imgW, image_height: imgH, is_animated: true, rarity: form.rarity, ...textConfig }
-        : { image_url: publicUrl, bubble_url: publicUrl, bubble_style: "nine_slice", image_width: imgW, image_height: imgH, slice_top: form.sliceTop, slice_left: form.sliceLeft, slice_right: form.sliceRight, slice_bottom: form.sliceBottom, is_animated: false, rarity: form.rarity, ...textConfig };
-      const payload = { type: "chat_bubble", name: form.name.trim(), description: form.description.trim() || null, preview_url: publicUrl, asset_url: publicUrl, asset_config: assetConfig, price_coins: form.priceCoins, price_real_cents: 0, is_premium_only: false, is_limited_edition: false, is_active: form.isActive, sort_order: 0 };
+
+      const payload = {
+        type: "chat_bubble",
+        name: form.name.trim(),
+        description: form.description.trim() || null,
+        preview_url: publicUrl,
+        asset_url: publicUrl,
+        asset_config: assetConfig,
+        price_coins: form.priceCoins,
+        price_real_cents: 0,
+        is_premium_only: false,
+        is_limited_edition: false,
+        is_active: form.isActive,
+        sort_order: 0,
+      };
+
       if (editingBubble) {
         const { error } = await supabase.from("store_items").update(payload).eq("id", editingBubble.id);
         if (error) throw new Error(`DB error: ${error.message}`);
@@ -907,12 +965,12 @@ function BubblesDashboard() {
   }
 
   const sliceValues: SliceValues = {
-    top: form.sliceTop, left: form.sliceLeft,
-    right: form.sliceRight, bottom: form.sliceBottom,
+    top: form.sliceTop, bottom: form.sliceBottom,
+    left: form.sliceLeft, right: form.sliceRight,
   };
 
   function handleSliceChange(s: SliceValues) {
-    setForm(f => ({ ...f, sliceTop: s.top, sliceLeft: s.left, sliceRight: s.right, sliceBottom: s.bottom }));
+    setForm(f => ({ ...f, sliceTop: s.top, sliceBottom: s.bottom, sliceLeft: s.left, sliceRight: s.right }));
   }
 
   return (
@@ -965,9 +1023,7 @@ function BubblesDashboard() {
                     style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)" }}>×</button>
                 </div>
 
-                {/* Layout: formulário à esquerda, visualizador à direita */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
                   {/* ── Coluna Esquerda: Formulário ── */}
                   <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Upload */}
@@ -981,10 +1037,10 @@ function BubblesDashboard() {
                         className="cursor-pointer rounded-xl transition-all duration-200"
                         style={{ border: `1px dashed ${isDragging ? "rgba(124,58,237,0.6)" : "rgba(255,255,255,0.1)"}`, background: isDragging ? "rgba(124,58,237,0.05)" : "rgba(255,255,255,0.02)" }}
                       >
-                        {imagePreview ? (
+                        {imageUrl ? (
                           <div className="flex items-center gap-4 p-4">
                             <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0" style={{ background: "rgba(255,255,255,0.05)" }}>
-                              <img src={imagePreview} alt="preview" className="w-full h-full object-contain" />
+                              <img src={imageUrl} alt="preview" className="w-full h-full object-contain" />
                             </div>
                             <div>
                               <p className="text-[12px] font-semibold" style={{ color: "rgba(255,255,255,0.8)", fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -1004,7 +1060,8 @@ function BubblesDashboard() {
                           </div>
                         )}
                       </div>
-                      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+                      <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
                     </div>
 
                     {/* Nome + Preço */}
@@ -1034,10 +1091,10 @@ function BubblesDashboard() {
                     {/* Raridade */}
                     <div>
                       <label className="text-[10px] font-mono tracking-widest uppercase block mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>Raridade</label>
-                      <select value={form.rarity} onChange={(e) => setForm(f => ({ ...f, rarity: e.target.value as BubbleForm["rarity"] }))}
+                      <select value={form.rarity} onChange={(e) => setForm(f => ({ ...f, rarity: e.target.value as Rarity }))}
                         className="w-full px-3 py-2 rounded-xl text-[13px] outline-none"
-                        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: RARITY_COLORS[form.rarity]?.color ?? "white", fontFamily: "'Space Mono', monospace" }}>
-                        {Object.entries(RARITY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: RARITY_COLORS[form.rarity].color, fontFamily: "'Space Mono', monospace" }}>
+                        {(Object.entries(RARITY_LABELS) as [Rarity, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                       </select>
                     </div>
 
@@ -1066,7 +1123,6 @@ function BubblesDashboard() {
                       <div className="space-y-3 rounded-xl p-3" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
                         <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.25)" }}>Tipografia e Posicionamento</p>
 
-                        {/* Tamanho da fonte + Alinhamento */}
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="text-[9px] font-mono block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Tamanho da Fonte (px)</label>
@@ -1099,15 +1155,14 @@ function BubblesDashboard() {
                           </div>
                         </div>
 
-                        {/* Padding interno (4 lados) */}
                         <div>
                           <label className="text-[9px] font-mono block mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>Padding Interno (px) — independente das bordas de slice</label>
                           <div className="grid grid-cols-4 gap-2">
                             {([
-                              { label: "Topo", key: "padTop" as const, color: "#F59E0B" },
-                              { label: "Base", key: "padBottom" as const, color: "#F59E0B" },
-                              { label: "Esq.", key: "padLeft" as const, color: "#34D399" },
-                              { label: "Dir.", key: "padRight" as const, color: "#34D399" },
+                              { label: "Topo",  key: "padTop"    as const, color: "#F59E0B" },
+                              { label: "Base",  key: "padBottom" as const, color: "#F59E0B" },
+                              { label: "Esq.",  key: "padLeft"   as const, color: "#34D399" },
+                              { label: "Dir.",  key: "padRight"  as const, color: "#34D399" },
                             ]).map(({ label, key, color }) => (
                               <div key={key}>
                                 <label className="text-[8px] font-mono block mb-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>{label}</label>
@@ -1127,19 +1182,19 @@ function BubblesDashboard() {
 
                     {/* Toggles */}
                     <div className="flex flex-col sm:flex-row gap-3">
-                      {[
-                        { label: "Bubble Animado (GIF/APNG)", key: "isAnimated", color: "#A78BFA" },
-                        { label: "Ativo na Loja", key: "isActive", color: "#34D399" },
-                      ].map(({ label, key, color }) => (
+                      {([
+                        { label: "Bubble Animado (GIF/APNG)", key: "isAnimated" as const, color: "#A78BFA" },
+                        { label: "Ativo na Loja",              key: "isActive"   as const, color: "#34D399" },
+                      ]).map(({ label, key, color }) => (
                         <label key={key} className="flex items-center gap-3 cursor-pointer flex-1 p-3 rounded-xl"
                           style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
                           <div
-                            onClick={() => setForm(f => ({ ...f, [key]: !(f as any)[key] }))}
+                            onClick={() => setForm(f => ({ ...f, [key]: !f[key] }))}
                             className="w-9 h-5 rounded-full relative transition-all duration-200 flex-shrink-0"
-                            style={{ background: (form as any)[key] ? color : "rgba(255,255,255,0.1)", cursor: "pointer" }}
+                            style={{ background: form[key] ? color : "rgba(255,255,255,0.1)", cursor: "pointer" }}
                           >
                             <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200"
-                              style={{ left: (form as any)[key] ? "calc(100% - 18px)" : "2px" }} />
+                              style={{ left: form[key] ? "calc(100% - 18px)" : "2px" }} />
                           </div>
                           <span className="text-[12px] font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</span>
                         </label>
@@ -1164,7 +1219,7 @@ function BubblesDashboard() {
 
                   {/* ── Coluna Direita: Visualizador Nine-Slice ── */}
                   <div className="space-y-4">
-                    {/* Tabs do visualizador */}
+                    {/* Tabs */}
                     <div className="flex gap-2">
                       <button onClick={() => setPreviewTab("slice")}
                         className="flex-1 py-2 rounded-xl text-[12px] font-semibold transition-all"
@@ -1188,21 +1243,19 @@ function BubblesDashboard() {
                       </button>
                     </div>
 
-                    {imagePreview ? (
+                    {imageUrl ? (
                       <>
                         {previewTab === "slice" && !form.isAnimated && (
                           <NineSliceEditor
-                            imageUrl={imagePreview}
+                            imageUrl={imageUrl}
                             imageDimensions={imageDimensions}
                             slice={sliceValues}
                             onChange={handleSliceChange}
                             textColor={form.textColor}
                             fontSize={form.fontSize}
                             textAlign={form.textAlign}
-                            padTop={form.padTop}
-                            padRight={form.padRight}
-                            padBottom={form.padBottom}
-                            padLeft={form.padLeft}
+                            padTop={form.padTop} padBottom={form.padBottom}
+                            padLeft={form.padLeft} padRight={form.padRight}
                           />
                         )}
 
@@ -1213,41 +1266,37 @@ function BubblesDashboard() {
                             <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>
                               Bubbles animados não usam nine-slice. O ajuste de bordas não se aplica.
                             </p>
-                            <img src={imagePreview} alt="animated" className="mx-auto max-h-32 rounded-lg object-contain" />
+                            <img src={imageUrl} alt="animated" className="mx-auto max-h-32 rounded-lg object-contain" />
                           </div>
                         )}
 
                         {previewTab === "result" && (
                           <div className="space-y-2">
-                            <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>
-                              Como ficará no chat
-                            </p>
+                            <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>Como ficará no chat</p>
                             <div className="rounded-xl overflow-hidden" style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.07)" }}>
                               {form.isAnimated ? (
-                                <ChatPreview imageUrl={imagePreview} name={form.name || "Bubble"} />
+                                <ChatPreview imageUrl={imageUrl} name={form.name || "Bubble"} />
                               ) : (
-                                <NineSliceChatPreview
-                                  imageUrl={imagePreview}
+                                <NineSlicePreviewPanel
+                                  imageUrl={imageUrl}
                                   slice={sliceValues}
                                   textColor={form.textColor}
                                   fontSize={form.fontSize}
                                   textAlign={form.textAlign}
-                                  padTop={form.padTop}
-                                  padRight={form.padRight}
-                                  padBottom={form.padBottom}
-                                  padLeft={form.padLeft}
+                                  padTop={form.padTop} padBottom={form.padBottom}
+                                  padLeft={form.padLeft} padRight={form.padRight}
                                 />
                               )}
                             </div>
-                            {/* Resumo dos valores */}
+                            {/* Resumo dos valores de slice */}
                             {!form.isAnimated && (
                               <div className="grid grid-cols-4 gap-1.5 mt-2">
-                                {[
-                                  { label: "T", value: form.sliceTop, color: "#F59E0B" },
+                                {([
+                                  { label: "T", value: form.sliceTop,    color: "#F59E0B" },
                                   { label: "B", value: form.sliceBottom, color: "#F59E0B" },
-                                  { label: "L", value: form.sliceLeft, color: "#34D399" },
-                                  { label: "R", value: form.sliceRight, color: "#34D399" },
-                                ].map(({ label, value, color }) => (
+                                  { label: "L", value: form.sliceLeft,   color: "#34D399" },
+                                  { label: "R", value: form.sliceRight,  color: "#34D399" },
+                                ]).map(({ label, value, color }) => (
                                   <div key={label} className="rounded-lg px-2 py-1.5 text-center"
                                     style={{ background: `${color}10`, border: `1px solid ${color}20` }}>
                                     <p className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>{label}</p>
@@ -1279,7 +1328,7 @@ function BubblesDashboard() {
       {/* Bubbles Grid */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => <div key={i} className="h-52 rounded-2xl nx-shimmer" style={{ background: "rgba(255,255,255,0.03)" }} />)}
+          {[...Array(6)].map((_, i) => <div key={i} className="h-52 rounded-2xl" style={{ background: "rgba(255,255,255,0.03)" }} />)}
         </div>
       ) : bubbles.length === 0 ? (
         <motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}
@@ -1296,24 +1345,22 @@ function BubblesDashboard() {
       ) : (
         <motion.div variants={fadeUp} initial="hidden" animate="show" custom={1} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {bubbles.map((bubble, i) => {
-            const rarity = (bubble.asset_config as Record<string, string>)?.rarity ?? "common";
-            const rc = RARITY_COLORS[rarity] ?? RARITY_COLORS.common;
+            const cfg = parseBubbleConfig((bubble.asset_config as Record<string, unknown>) ?? {});
+            const rc = RARITY_COLORS[cfg.rarity];
             return (
               <motion.div key={bubble.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                 className="rounded-2xl overflow-hidden"
                 style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}
               >
-                {/* Preview */}
                 <div className="relative" style={{ background: "rgba(0,0,0,0.3)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                   <ChatPreview imageUrl={bubble.preview_url} name={bubble.name} />
                   <div className="absolute top-2 right-2">
                     <span className="text-[9px] font-mono px-2 py-0.5 rounded-full"
                       style={{ background: `rgba(${rc.rgb},0.12)`, color: rc.color, border: `1px solid rgba(${rc.rgb},0.25)` }}>
-                      {RARITY_LABELS[rarity] ?? rarity}
+                      {RARITY_LABELS[cfg.rarity]}
                     </span>
                   </div>
                 </div>
-                {/* Info */}
                 <div className="p-3">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="min-w-0">
