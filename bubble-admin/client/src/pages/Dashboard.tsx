@@ -497,9 +497,18 @@ function NineSliceBubble({
   // Carrega a imagem usando o cache global (uma só vez por URL, compartilhado entre instâncias)
   useEffect(() => {
     if (!imageUrl) return;
+    let cancelled = false;
+
+    // Se já está no cache, usa imediatamente sem async
+    if (_imgCache.has(imageUrl)) {
+      imgCacheRef.current = _imgCache.get(imageUrl)!;
+      setImgReady(true);
+      return;
+    }
+
+    // Caso contrário, carrega e aguarda
     setImgReady(false);
     imgCacheRef.current = null;
-    let cancelled = false;
     loadImageCached(imageUrl)
       .then((img) => { if (!cancelled) { imgCacheRef.current = img; setImgReady(true); } })
       .catch(() => { /* imagem não carregou */ });
@@ -659,9 +668,10 @@ function BubblesDashboard() {
     setImageFile(file);
     const url = URL.createObjectURL(file);
     setImagePreview(url);
-    const img = new Image();
-    img.onload = () => setImageDimensions({ w: img.naturalWidth, h: img.naturalHeight });
-    img.src = url;
+    // Pré-carrega no cache global (blob: já está local, sem CORS)
+    loadImageCached(url)
+      .then((img) => setImageDimensions({ w: img.naturalWidth, h: img.naturalHeight }))
+      .catch(() => {});
     const isAnim = detectBubbleIsAnimated(file);
     setForm(f => ({ ...f, isAnimated: isAnim }));
   }, []);
@@ -684,6 +694,8 @@ function BubblesDashboard() {
       textColor: (cfg.text_color as string) ?? "",
     });
     setImagePreview(item.preview_url);
+    // Pré-carrega a imagem no cache global assim que o formulário abre
+    if (item.preview_url) loadImageCached(item.preview_url).catch(() => {});
     setShowForm(true);
   }
 
