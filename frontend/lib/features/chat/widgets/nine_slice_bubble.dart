@@ -46,13 +46,14 @@ class NineSliceBubble extends StatelessWidget {
     this.maxWidth = 280,
     this.sliceInsets = const EdgeInsets.all(38),
     this.imageSize = const Size(128, 128),
-    // Padrão já inclui o offset de kNineSliceOffset (12 px) para compensar
-    // o Positioned negativo: 12 + 20 = 32 horizontal, 12 + 14 = 26 vertical.
-    // Quando os parâmetros vierem do asset_config via _extractNineSliceParams,
-    // o offset já terá sido somado lá e esse padrão só é usado como fallback.
+    // Padding padrão (fallback quando não há asset_config).
+    // Fórmula: sliceInset(38) - kNineSliceOffset(12) + padBruto(20/14)
+    //   horizontal: 38 - 12 + 20 = 46
+    //   vertical:   38 - 12 + 14 = 40
+    // Isso garante que o texto fique dentro da fill zone da imagem.
     this.contentPadding = const EdgeInsets.symmetric(
-      horizontal: 32,
-      vertical: 26,
+      horizontal: 46,
+      vertical: 40,
     ),
     this.textColor,
   });
@@ -60,6 +61,25 @@ class NineSliceBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = context.r;
+
+    // Dimensões mínimas do container baseadas na imagem original.
+    //
+    // O nine-slice funciona corretamente apenas quando o container tem pelo
+    // menos o tamanho da "fill zone" (área central da imagem):
+    //   fillW = imageSize.width  - sliceInsets.left - sliceInsets.right
+    //   fillH = imageSize.height - sliceInsets.top  - sliceInsets.bottom
+    //
+    // Se o container for menor que isso, o drawImageNine comprime os cantos
+    // e deforma a imagem. Usamos a imagem original como mínimo para garantir
+    // que os cantos nunca sejam comprimidos.
+    //
+    // O kNineSliceOffset (12 px) é subtraído porque o Positioned já expande
+    // a imagem 12 px além das bordas do container em cada lado — portanto o
+    // container precisa ser (imageSize - 2*offset) para que a imagem renderize
+    // com seu tamanho original.
+    final double minW = (imageSize.width  - 2 * kNineSliceOffset).clamp(48.0, maxWidth);
+    final double minH = (imageSize.height - 2 * kNineSliceOffset).clamp(48.0, double.infinity);
+
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
       child: Padding(
@@ -70,7 +90,11 @@ class NineSliceBubble extends StatelessWidget {
           bottom: r.s(3),
         ),
         child: Container(
-          constraints: BoxConstraints(maxWidth: maxWidth, minHeight: 48),
+          constraints: BoxConstraints(
+            maxWidth: maxWidth,
+            minWidth: minW,
+            minHeight: minH,
+          ),
           child: Stack(
             clipBehavior: Clip.none,
             children: [
@@ -88,17 +112,23 @@ class NineSliceBubble extends StatelessWidget {
                   sliceInsets: sliceInsets,
                 ),
               ),
-              // Conteúdo da mensagem
-              Padding(
-                padding: contentPadding,
-                child: DefaultTextStyle(
-                  style: TextStyle(
-                    // textColor tem prioridade; fallback: branco (padrão para frames)
-                    color: textColor ?? Colors.white,
-                    fontSize: r.fs(14),
-                    height: 1.4,
+              // Conteúdo da mensagem — centralizado verticalmente quando o
+              // container for maior que o conteúdo (minHeight garante isso).
+              Positioned.fill(
+                child: Padding(
+                  padding: contentPadding,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: DefaultTextStyle(
+                      style: TextStyle(
+                        // textColor tem prioridade; fallback: branco (padrão para frames)
+                        color: textColor ?? Colors.white,
+                        fontSize: r.fs(14),
+                        height: 1.4,
+                      ),
+                      child: child,
+                    ),
                   ),
-                  child: child,
                 ),
               ),
             ],

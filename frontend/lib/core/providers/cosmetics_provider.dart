@@ -67,9 +67,12 @@ class UserCosmetics {
     this.isAminoPlus = false,
     this.chatBubbleSliceInsets = const EdgeInsets.all(38),
     this.chatBubbleImageSize = const Size(128, 128),
+    // Padding padrão: sliceInset(38) - kNineSliceOffset(12) + padBruto(20/14)
+    //   horizontal: 38 - 12 + 20 = 46
+    //   vertical:   38 - 12 + 14 = 40
     this.chatBubbleContentPadding = const EdgeInsets.symmetric(
-      horizontal: 20,
-      vertical: 14,
+      horizontal: 46,
+      vertical: 40,
     ),
     this.chatBubbleTextColor,
   });
@@ -156,16 +159,36 @@ Color? _hexToColor(String? hex) {
   double imageWidth = _asDouble(assetConfig['image_width'], fallback: 128);
   double imageHeight = _asDouble(assetConfig['image_height'], fallback: 128);
 
-  // Padding bruto salvo pelo editor (distância a partir da área fill da imagem).
+  // Padding bruto salvo pelo editor (distância a partir da borda da fill zone).
   double paddingH = _asDouble(assetConfig['content_padding_h'], fallback: 20);
   double paddingV = _asDouble(assetConfig['content_padding_v'], fallback: 14);
 
-  // Padding efetivo = offset do Positioned + padding bruto do editor.
-  // Isso replica o cálculo do site: paddingTop = sliceTop + padTop.
-  // Usamos o menor slice lateral/vertical para garantir que o texto nunca
-  // ultrapasse a borda visual independentemente da assimetria do slice.
-  final double effectivePaddingH = kNineSliceOffset + paddingH;
-  final double effectivePaddingV = kNineSliceOffset + paddingV;
+  // O contentPadding efetivo deve posicionar o texto dentro da fill zone.
+  //
+  // A imagem nine-slice tem:
+  //   - cantos decorativos: sliceInset px de cada lado
+  //   - fill zone (centro): o restante
+  //
+  // O container no NineSliceBubble tem minWidth/minHeight baseados em
+  // (imageSize - 2*kNineSliceOffset), e a imagem é expandida kNineSliceOffset
+  // px além das bordas via Positioned negativo. Portanto, a borda visual da
+  // imagem coincide com a borda do container.
+  //
+  // Para que o texto fique dentro da fill zone (e não sobre os cantos
+  // decorativos), o padding deve ser:
+  //   effectivePadding = sliceInset - kNineSliceOffset + padBruto
+  //
+  // Onde:
+  //   sliceInset        = distância do canto decorativo na imagem original
+  //   kNineSliceOffset  = quanto a imagem já "avana" além do container
+  //   padBruto          = margem extra configurada no editor
+  //
+  // Isso replica exatamente o cálculo do editor bubble-admin:
+  //   paddingTop = sliceTop - offset + padTop
+  final double effectivePaddingH =
+      (sliceLeft - kNineSliceOffset + paddingH).clamp(4.0, double.infinity);
+  final double effectivePaddingV =
+      (sliceTop - kNineSliceOffset + paddingV).clamp(4.0, double.infinity);
 
   return (
     sliceInsets: EdgeInsets.fromLTRB(sliceLeft, sliceTop, sliceRight, sliceBottom),
