@@ -4239,6 +4239,27 @@ class _BubblePickerSheetState extends ConsumerState<_BubblePickerSheet> {
                   final purchaseId = bubble['purchase_id'] as String? ?? '';
                   final isBusy = _busyPurchaseId == purchaseId;
 
+                  // Extrai parâmetros do asset_config para o preview
+                  // replicar fielmente o que o editor bubble-admin exibe.
+                  final double sliceTop = (assetConfig['slice_top'] as num?)?.toDouble() ?? 38;
+                  final double sliceLeft = (assetConfig['slice_left'] as num?)?.toDouble() ?? 38;
+                  final double sliceRight = (assetConfig['slice_right'] as num?)?.toDouble() ?? 38;
+                  final double sliceBottom = (assetConfig['slice_bottom'] as num?)?.toDouble() ?? 38;
+                  final EdgeInsets previewSliceInsets = EdgeInsets.fromLTRB(
+                    sliceLeft, sliceTop, sliceRight, sliceBottom);
+                  Color? previewTextColor;
+                  final textColorHex = assetConfig['text_color'] as String? ?? '';
+                  if (textColorHex.isNotEmpty) {
+                    final clean = textColorHex.replaceAll('#', '').trim();
+                    if (clean.length == 6) {
+                      final val = int.tryParse('FF$clean', radix: 16);
+                      if (val != null) previewTextColor = Color(val);
+                    } else if (clean.length == 8) {
+                      final val = int.tryParse(clean, radix: 16);
+                      if (val != null) previewTextColor = Color(val);
+                    }
+                  }
+
                   return _BubblePickerItem(
                     r: r,
                     name: bubble['name'] as String? ?? 'Bubble',
@@ -4249,6 +4270,8 @@ class _BubblePickerSheetState extends ConsumerState<_BubblePickerSheet> {
                       r: r,
                       imageUrl: imageUrl,
                       bubbleColor: bubbleColor,
+                      sliceInsets: previewSliceInsets,
+                      textColor: previewTextColor,
                     ),
                     onTap: () => _onTap(bubble),
                   );
@@ -4394,49 +4417,53 @@ class _DefaultBubblePreview extends StatelessWidget {
 }
 
 // ─── Preview de bubble com imagem ou cor ─────────────────────────────────────
+//
+// Usa [NineSliceBubble] real para garantir que o preview no app seja
+// idêntico ao que o editor bubble-admin exibe no site.
+// Os parâmetros [sliceInsets] e [textColor] são lidos diretamente do
+// [asset_config] do store_item, replicando o mesmo fluxo do provider.
 
 class _BubblePreview extends StatelessWidget {
   final Responsive r;
   final String? imageUrl;
   final Color? bubbleColor;
+  final EdgeInsets sliceInsets;
+  final Color? textColor;
 
   const _BubblePreview({
     required this.r,
     this.imageUrl,
     this.bubbleColor,
+    this.sliceInsets = const EdgeInsets.all(38),
+    this.textColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Cor do texto: usa a do asset_config se disponível, senão branco.
+    final effectiveTextColor = textColor ?? Colors.white;
+
     if (imageUrl != null && imageUrl!.isNotEmpty) {
-      // Preview nine-slice via CustomPainter+drawImageNine.
-      // Image/DecorationImage+centerSlice lançam assertion no Flutter moderno.
-      return Stack(
-        children: [
-          Positioned.fill(
-            child: NineSlicePreview(
-              imageUrl: imageUrl!,
-              sliceInsets: const EdgeInsets.all(38),
-            ),
+      // Preview nine-slice usando NineSliceBubble real — mesmo motor que
+      // renderiza as mensagens no chat, garantindo fidelidade ao editor.
+      // O contentPadding já inclui o offset de kNineSliceOffset (12 px)
+      // para compensar o Positioned negativo do NineSliceBubble.
+      return NineSliceBubble(
+        imageUrl: imageUrl!,
+        isMine: true,
+        maxWidth: double.infinity,
+        sliceInsets: sliceInsets,
+        // Padding padrão de preview: offset (12) + margem interna (8)
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        textColor: effectiveTextColor,
+        child: Text(
+          'Olá!',
+          style: TextStyle(
+            color: effectiveTextColor,
+            fontSize: r.fs(13),
+            fontWeight: FontWeight.w500,
           ),
-          Center(
-            child: Text(
-              'Olá!',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: r.fs(13),
-                fontWeight: FontWeight.w500,
-                shadows: const [
-                  Shadow(
-                    color: Colors.black54,
-                    blurRadius: 4,
-                    offset: Offset(0, 1),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       );
     }
 
@@ -4455,7 +4482,7 @@ class _BubblePreview extends StatelessWidget {
       child: Text(
         'Olá!',
         style: TextStyle(
-          color: Colors.white,
+          color: effectiveTextColor,
           fontSize: r.fs(13),
           fontWeight: FontWeight.w500,
         ),

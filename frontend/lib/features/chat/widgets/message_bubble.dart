@@ -592,14 +592,23 @@ class MessageBubble extends ConsumerWidget {
                                       child: Text(
                                         authorName,
                                         style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.9),
+                                          // Usa a cor customizada do bubble se disponível,
+                                          // senão branco semitransparente como fallback.
+                                          color: activeCosmetics?.chatBubbleTextColor
+                                                  ?.withValues(alpha: 0.9) ??
+                                              Colors.white.withValues(alpha: 0.9),
                                           fontSize: r.fs(11),
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
                                     ),
                                   ),
-                                _buildContent(context),
+                                // Passa bubbleTextColor para que LinkifiedText e outros
+                                // widgets filhos usem a cor correta do asset_config.
+                                _buildContent(
+                                  context,
+                                  bubbleTextColor: activeCosmetics?.chatBubbleTextColor,
+                                ),
                                 Padding(
                                   padding: EdgeInsets.only(top: r.s(isAudioType ? 2 : 4)),
                                   child: Row(
@@ -608,7 +617,9 @@ class MessageBubble extends ConsumerWidget {
                                       Text(
                                         _formatTime(message.createdAt),
                                         style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.6),
+                                          color: activeCosmetics?.chatBubbleTextColor
+                                                  ?.withValues(alpha: 0.6) ??
+                                              Colors.white.withValues(alpha: 0.6),
                                           fontSize: r.fs(10),
                                         ),
                                       ),
@@ -617,7 +628,9 @@ class MessageBubble extends ConsumerWidget {
                                         Text(
                                           'editado',
                                           style: TextStyle(
-                                            color: Colors.white.withValues(alpha: 0.45),
+                                            color: activeCosmetics?.chatBubbleTextColor
+                                                    ?.withValues(alpha: 0.45) ??
+                                                Colors.white.withValues(alpha: 0.45),
                                             fontSize: r.fs(9),
                                             fontStyle: FontStyle.italic,
                                           ),
@@ -788,11 +801,14 @@ class MessageBubble extends ConsumerWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context) {
+  Widget _buildContent(BuildContext context, {Color? bubbleTextColor}) {
     final s = getStrings();
     final r = context.r;
     final type = message.type;
-    final textColor = isMe ? Colors.white : context.nexusTheme.textPrimary;
+    // Se o bubble tem cor customizada (asset_config.text_color), usa ela.
+    // Caso contrário, usa a cor padrão baseada em isMe.
+    final textColor = bubbleTextColor ??
+        (isMe ? Colors.white : context.nexusTheme.textPrimary);
 
     // Imagem: tipo 'image' (nativo) OU tipo 'text' com media_type == 'image' (legado)
     if ((type == 'image' && message.mediaUrl != null) ||
