@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   Shield, Flag, AlertTriangle, CheckCircle2, XCircle, Clock,
   RefreshCw, ChevronDown, FileText, Eye, Hash, Calendar, Filter,
+  User, ArrowRight, Swords,
 } from "lucide-react";
 
 // ─── Tipos (schema real do banco) ─────────────────────────────────────────────
@@ -66,10 +67,16 @@ type ModerationLog = {
   action: string;
   severity: string | null;
   target_user_id: string | null;
+  target_post_id: string | null;
+  target_wiki_id: string | null;
+  target_comment_id: string | null;
+  target_chat_thread_id: string | null;
   reason: string | null;
   details: Record<string, unknown> | null;
+  duration_hours: number | null;
   created_at: string;
   moderator?: { nickname: string | null; amino_id: string | null };
+  target_user?: { nickname: string | null; amino_id: string | null };
 };
 
 const FLAG_TYPE_LABELS: Record<string, string> = {
@@ -287,7 +294,7 @@ export default function ModerationPage() {
     try {
       const { data, error } = await supabaseAdmin
         .from("moderation_logs")
-        .select("id, community_id, moderator_id, action, severity, target_user_id, reason, details, created_at, moderator:profiles!moderator_id(nickname, amino_id)")
+        .select("id, community_id, moderator_id, action, severity, target_user_id, target_post_id, target_wiki_id, target_comment_id, target_chat_thread_id, reason, details, duration_hours, created_at, moderator:profiles!moderator_id(nickname, amino_id), target_user:profiles!target_user_id(nickname, amino_id)")
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
@@ -611,29 +618,60 @@ export default function ModerationPage() {
               <div className="rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
                 {logs.map((log, i) => {
                   const modName = displayUser(log.moderator, log.moderator_id ?? "sistema");
+                  const targetName = log.target_user_id
+                    ? displayUser(log.target_user, log.target_user_id)
+                    : log.target_post_id ? `post:${log.target_post_id.slice(0,8)}`
+                    : log.target_wiki_id ? `wiki:${log.target_wiki_id.slice(0,8)}`
+                    : log.target_comment_id ? `comentário:${log.target_comment_id.slice(0,8)}`
+                    : log.target_chat_thread_id ? `thread:${log.target_chat_thread_id.slice(0,8)}`
+                    : null;
+                  const severityColor = log.severity === "high" ? "#FCA5A5" : log.severity === "medium" ? "#FCD34D" : "#6EE7B7";
+                  const severityBg   = log.severity === "high" ? "rgba(239,68,68,0.1)" : log.severity === "medium" ? "rgba(245,158,11,0.1)" : "rgba(52,211,153,0.1)";
                   return (
-                    <div key={log.id} className="flex items-center gap-3 px-4 py-3"
+                    <div key={log.id} className="px-4 py-3 space-y-1.5"
                       style={{ borderBottom: i < logs.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ background: "rgba(167,139,250,0.1)" }}>
-                        <Shield size={12} style={{ color: "#A78BFA" }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[12px] font-mono" style={{ color: "#A78BFA" }}>{log.action}</span>
+                      {/* Linha 1: ação + severity */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
+                          style={{ background: "rgba(167,139,250,0.12)" }}>
+                          <Shield size={10} style={{ color: "#A78BFA" }} />
                         </div>
-                        <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
-                          por {modName} · {new Date(log.created_at).toLocaleString("pt-BR")}
-                        </p>
-                        {log.reason && (
-                          <p className="text-[11px] truncate" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>{log.reason}</p>
+                        <span className="text-[12px] font-mono font-semibold" style={{ color: "#A78BFA" }}>{log.action}</span>
+                        {log.severity && (
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full" style={{ background: severityBg, color: severityColor }}>
+                            {log.severity}
+                          </span>
+                        )}
+                        {log.duration_hours != null && (
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full" style={{ background: "rgba(99,102,241,0.1)", color: "#818CF8" }}>
+                            {log.duration_hours}h
+                          </span>
+                        )}
+                        <span className="ml-auto text-[9px] font-mono flex-shrink-0" style={{ color: "rgba(255,255,255,0.2)" }}>
+                          {new Date(log.created_at).toLocaleString("pt-BR")}
+                        </span>
+                      </div>
+                      {/* Linha 2: executor → vítima */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <div className="flex items-center gap-1">
+                          <Shield size={9} style={{ color: "rgba(167,139,250,0.6)" }} />
+                          <span className="text-[10px] font-mono" style={{ color: "rgba(167,139,250,0.8)" }}>{modName}</span>
+                        </div>
+                        {targetName && (
+                          <>
+                            <ArrowRight size={9} style={{ color: "rgba(255,255,255,0.2)" }} />
+                            <div className="flex items-center gap-1">
+                              <User size={9} style={{ color: "rgba(251,191,36,0.6)" }} />
+                              <span className="text-[10px] font-mono" style={{ color: "rgba(251,191,36,0.8)" }}>{targetName}</span>
+                            </div>
+                          </>
                         )}
                       </div>
-                      {log.severity && (
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{
-                          background: log.severity === "high" ? "rgba(239,68,68,0.1)" : log.severity === "medium" ? "rgba(245,158,11,0.1)" : "rgba(52,211,153,0.1)",
-                          color: log.severity === "high" ? "#FCA5A5" : log.severity === "medium" ? "#FCD34D" : "#6EE7B7",
-                        }}>{log.severity}</span>
+                      {/* Linha 3: motivo */}
+                      {log.reason && (
+                        <p className="text-[10px] pl-1 truncate" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif", borderLeft: "2px solid rgba(255,255,255,0.08)", paddingLeft: "6px" }}>
+                          {log.reason}
+                        </p>
                       )}
                     </div>
                   );
