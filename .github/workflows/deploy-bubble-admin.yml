@@ -59,6 +59,7 @@ jobs:
         working-directory: bubble-admin
         env:
           GITHUB_PAGES: "true"
+          VITE_SUPABASE_SECRET_KEY: ${{ secrets.VITE_SUPABASE_SECRET_KEY }}
         run: pnpm run build
 
       - name: Setup Pages
