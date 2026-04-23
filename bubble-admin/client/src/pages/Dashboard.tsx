@@ -97,6 +97,50 @@ function ChatPreview({ imageUrl, name }: { imageUrl: string | null; name: string
   );
 }
 
+// ─── Cache global de imagens (evita múltiplos fetches da mesma URL) ─────────────
+const _imgCache = new Map<string, HTMLImageElement>();
+const _imgLoading = new Map<string, Promise<HTMLImageElement>>();
+
+function loadImageCached(url: string): Promise<HTMLImageElement> {
+  if (_imgCache.has(url)) return Promise.resolve(_imgCache.get(url)!);
+  if (_imgLoading.has(url)) return _imgLoading.get(url)!;
+
+  const p = (async () => {
+    try {
+      // Tenta via fetch (blob) para evitar CORS no canvas
+      if (!url.startsWith("blob:") && !url.startsWith("data:")) {
+        const res = await fetch(url);
+        if (res.ok) {
+          const blob = await res.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const img = new window.Image();
+          await new Promise<void>((resolve, reject) => {
+            img.onload = () => resolve();
+            img.onerror = reject;
+            img.src = blobUrl;
+          });
+          _imgCache.set(url, img);
+          _imgLoading.delete(url);
+          return img;
+        }
+      }
+    } catch { /* fallback abaixo */ }
+    // Fallback: carrega diretamente
+    const img = new window.Image();
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = reject;
+      img.src = url;
+    });
+    _imgCache.set(url, img);
+    _imgLoading.delete(url);
+    return img;
+  })();
+
+  _imgLoading.set(url, p);
+  return p;
+}
+
 // ─── Nine-Slice Editor ────────────────────────────────────────────────────────
 // Visualizador interativo: 4 linhas arrastáveis sobre a imagem + preview em tempo real
 
@@ -450,23 +494,16 @@ function NineSliceBubble({
   const [imgReady, setImgReady] = useState(false);
   const msgColor = textColor.trim() ? textColor : "rgba(255,255,255,0.9)";
 
-  // Carrega a imagem apenas quando a URL muda
+  // Carrega a imagem usando o cache global (uma só vez por URL, compartilhado entre instâncias)
   useEffect(() => {
+    if (!imageUrl) return;
     setImgReady(false);
     imgCacheRef.current = null;
-    const img = new window.Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      imgCacheRef.current = img;
-      setImgReady(true);
-    };
-    img.onerror = () => {
-      // Tenta sem crossOrigin (para URLs de blob local)
-      const img2 = new window.Image();
-      img2.onload = () => { imgCacheRef.current = img2; setImgReady(true); };
-      img2.src = imageUrl;
-    };
-    img.src = imageUrl;
+    let cancelled = false;
+    loadImageCached(imageUrl)
+      .then((img) => { if (!cancelled) { imgCacheRef.current = img; setImgReady(true); } })
+      .catch(() => { /* imagem não carregou */ });
+    return () => { cancelled = true; };
   }, [imageUrl]);
 
   // Redesenha o canvas sempre que a imagem estiver pronta ou slice/texto mudar
