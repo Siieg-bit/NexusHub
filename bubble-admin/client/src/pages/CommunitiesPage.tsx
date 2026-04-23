@@ -62,7 +62,7 @@ const LISTED_LABELS: Record<ListedStatus, string> = {
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
-  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.04, duration: 0.25, ease: "easeOut" } }),
+  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.04, duration: 0.25, ease: "easeOut" as const } }),
 };
 
 // ─── Upload de imagem helper ──────────────────────────────────────────────────

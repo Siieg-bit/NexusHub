@@ -206,13 +206,13 @@ export default function AdminLayout({ activeSection, onSectionChange, children }
               fontFamily: "'Space Grotesk', sans-serif",
             }}
           >
-            {auth.user?.email?.charAt(0).toUpperCase() ?? "A"}
+            {("user" in auth ? auth.user : undefined)?.email?.charAt(0).toUpperCase() ?? "A"}
           </div>
           {!collapsed && (
             <>
               <div className="flex-1 min-w-0">
                 <div className="text-[11.5px] font-medium truncate" style={{ color: "rgba(255,255,255,0.75)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                  {auth.user?.email?.split("@")[0] ?? "Admin"}
+                  {("user" in auth ? auth.user : undefined)?.email?.split("@")[0] ?? "Admin"}
                 </div>
                 <div className="text-[9px] font-mono tracking-wider" style={{ color: "rgba(255,255,255,0.22)" }}>TEAM ADMIN</div>
               </div>

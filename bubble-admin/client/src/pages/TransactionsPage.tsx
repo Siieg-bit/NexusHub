@@ -20,7 +20,7 @@ const SOURCE_COLORS: Record<string, { color: string; rgb: string }> = {
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
-  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.04, duration: 0.25, ease: "easeOut" } }),
+  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.04, duration: 0.25, ease: "easeOut" as const } }),
 };
 
 const PAGE_SIZE = 25;
@@ -49,7 +49,7 @@ export default function TransactionsPage() {
     if (filterType === "debit") query = query.lt("amount", 0);
 
     const { data, error, count } = await query;
-    if (!error && data) setTransactions(data as Transaction[]);
+    if (!error && data) setTransactions(data as unknown as Transaction[]);
     if (count !== null) setTotal(count);
     setLoading(false);
   }

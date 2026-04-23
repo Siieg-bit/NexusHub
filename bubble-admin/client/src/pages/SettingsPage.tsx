@@ -6,7 +6,7 @@ import { Database, HardDrive, Shield, Zap, CheckCircle2, XCircle, Loader2, Exter
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
-  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.06, duration: 0.3, ease: "easeOut" } }),
+  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.06, duration: 0.3, ease: "easeOut" as const } }),
 };
 
 export default function SettingsPage() {

@@ -38,7 +38,7 @@ const ROLE_CONFIG: Record<TargetRole, { label: string; color: string; rgb: strin
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
-  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.04, duration: 0.25, ease: "easeOut" } }),
+  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.04, duration: 0.25, ease: "easeOut" as const } }),
 };
 
 // ─── Preview ──────────────────────────────────────────────────────────────────

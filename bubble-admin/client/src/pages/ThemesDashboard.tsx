@@ -1116,10 +1116,10 @@ export default function ThemesDashboard() {
                       {theme.name}
                     </span>
                     {theme.is_builtin && (
-                      <Lock className="w-3 h-3 text-[#6B7280]" title="Built-in" />
+                      <span title="Built-in"><Lock className="w-3 h-3 text-[#6B7280]" /></span>
                     )}
                     {!theme.is_active && (
-                      <EyeOff className="w-3 h-3 text-[#6B7280]" title="Inativo" />
+                      <span title="Inativo"><EyeOff className="w-3 h-3 text-[#6B7280]" /></span>
                     )}
                   </div>
                   <ThemePalette colors={theme.colors} />

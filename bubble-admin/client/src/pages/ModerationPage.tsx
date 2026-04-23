@@ -99,7 +99,7 @@ const STATUS_CONFIG = {
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
-  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.04, duration: 0.25, ease: "easeOut" } }),
+  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.04, duration: 0.25, ease: "easeOut" as const } }),
 };
 
 function displayUser(u: { nickname: string | null; amino_id: string | null } | undefined, fallback: string) {
@@ -175,7 +175,7 @@ function ResolveModal({
           <div>
             <h3 className="text-[15px] font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif", color: "rgba(255,255,255,0.95)" }}>Resolver Denúncia</h3>
             <p className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
-              {FLAG_TYPE_LABELS[flag.flag_type] ?? flag.flag_type} · {flag.target_type}
+              {FLAG_TYPE_LABELS[flag.flag_type] ?? flag.flag_type} · {flag.target_user_id ? 'usuário' : flag.target_post_id ? 'post' : flag.target_wiki_id ? 'wiki' : flag.target_comment_id ? 'comentário' : flag.target_chat_message_id ? 'mensagem' : flag.target_chat_thread_id ? 'thread' : 'desconhecido'}
             </p>
           </div>
         </div>
@@ -254,7 +254,7 @@ export default function ModerationPage() {
       if (flagFilter !== "all") query = query.eq("status", flagFilter);
       const { data, error } = await query;
       if (error) throw error;
-      setFlags((data as Flag[]) ?? []);
+      setFlags((data as unknown as Flag[]) ?? []);
     } catch (err: unknown) {
       console.error('[ModerationPage] loadFlags error:', err);
       const msg = err instanceof Error ? err.message : (typeof err === 'object' && err !== null ? JSON.stringify(err) : "Erro ao carregar denúncias.");
@@ -273,7 +273,7 @@ export default function ModerationPage() {
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
-      setStrikes((data as Strike[]) ?? []);
+      setStrikes((data as unknown as Strike[]) ?? []);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Erro ao carregar strikes.";
       setError(msg);
@@ -291,7 +291,7 @@ export default function ModerationPage() {
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
-      setLogs((data as ModerationLog[]) ?? []);
+      setLogs((data as unknown as ModerationLog[]) ?? []);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Erro ao carregar logs.";
       setError(msg);
