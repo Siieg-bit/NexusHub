@@ -224,8 +224,9 @@ function ChatPreview({ imageUrl, name }: { imageUrl: string | null; name: string
 }
 
 // ─── NineSliceCanvas ──────────────────────────────────────────────────────────
-// Renderiza um balão nine-slice via canvas com suporte a High-DPI (Retina).
-// Recebe a imagem já carregada (HTMLImageElement) para evitar recarregamentos.
+// Renderiza um balao nine-slice via canvas com suporte a High-DPI (Retina).
+// Recebe a imagem ja carregada (HTMLImageElement) para evitar recarregamentos.
+// Usa canvas temporario para medicao de texto — evita re-render durante draw.
 
 interface NineSliceCanvasProps {
   img: HTMLImageElement;
@@ -247,9 +248,8 @@ function NineSliceCanvas({
   padTop = 8, padBottom = 8, padLeft = 8, padRight = 8,
 }: NineSliceCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [logicalSize, setLogicalSize] = useState({ w: maxWidth, h: 60 });
 
-  const draw = useCallback(() => {
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -260,21 +260,22 @@ function NineSliceCanvas({
     const lineHeight = Math.round(fontSize * 1.45);
     const msgColor = textColor.trim() || "rgba(255,255,255,0.9)";
 
-    // Padding total = borda de slice + padding interno extra
     const innerLeft  = sl + padLeft;
     const innerRight = sr + padRight;
     const innerTop   = st + padTop;
     const innerBot   = sb + padBottom;
-    const maxContentW = maxWidth - innerLeft - innerRight;
+    const maxContentW = Math.max(1, maxWidth - innerLeft - innerRight);
 
-    // Quebra de texto em linhas
-    ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
+    // Usa canvas temporario para medir texto sem causar re-render
+    const measureCtx = document.createElement("canvas").getContext("2d")!;
+    measureCtx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
+
     const words = text.split(" ");
     const lines: string[] = [];
     let cur = "";
     for (const word of words) {
-      const test = cur ? `${cur} ${word}` : word;
-      if (ctx.measureText(test).width > maxContentW && cur) {
+      const test = cur ? cur + " " + word : word;
+      if (measureCtx.measureText(test).width > maxContentW && cur) {
         lines.push(cur);
         cur = word;
       } else {
@@ -284,8 +285,7 @@ function NineSliceCanvas({
     if (cur) lines.push(cur);
     if (lines.length === 0) lines.push("");
 
-    // Largura lógica: ajusta ao texto, respeita mínimo e máximo
-    const maxLineW = Math.max(...lines.map(l => ctx.measureText(l).width));
+    const maxLineW = Math.max(...lines.map(l => measureCtx.measureText(l).width));
     const logW = Math.min(maxWidth, Math.max(
       Math.ceil(maxLineW) + innerLeft + innerRight,
       sl + sr + 24
@@ -293,17 +293,14 @@ function NineSliceCanvas({
     const textH = lines.length * lineHeight;
     const logH = Math.max(textH + innerTop + innerBot, st + sb + 8);
 
-    // Atualiza tamanho lógico do canvas (CSS)
-    setLogicalSize({ w: logW, h: logH });
-
-    // Aplica High-DPI: canvas interno maior, CSS menor
+    // Redimensiona canvas (isso limpa o conteudo — intencional)
     canvas.width  = Math.round(logW * dpr);
     canvas.height = Math.round(logH * dpr);
-    canvas.style.width  = `${logW}px`;
-    canvas.style.height = `${logH}px`;
+    canvas.style.width  = logW + "px";
+    canvas.style.height = logH + "px";
     ctx.scale(dpr, dpr);
 
-    // Desenha nine-slice (9 regiões)
+    // Desenha nine-slice (9 regioes)
     const iw = img.naturalWidth;
     const ih = img.naturalHeight;
     const mw = logW - sl - sr;
@@ -328,7 +325,7 @@ function NineSliceCanvas({
       }
     }
 
-    // Texto: centralizado verticalmente na área FILL
+    // Texto centralizado verticalmente na area FILL
     const fillH = logH - st - sb;
     const textStartY = st + Math.max(0, (fillH - textH) / 2);
     const fillW = logW - innerLeft - innerRight;
@@ -347,18 +344,7 @@ function NineSliceCanvas({
     });
   }, [img, slice, text, maxWidth, textColor, fontSize, textAlign, padTop, padBottom, padLeft, padRight]);
 
-  useEffect(() => {
-    draw();
-  }, [draw]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      width={logicalSize.w}
-      height={logicalSize.h}
-      style={{ display: "block", maxWidth: "100%" }}
-    />
-  );
+  return <canvas ref={canvasRef} style={{ display: "block", maxWidth: "100%" }} />;
 }
 
 // ─── NineSliceBubble ──────────────────────────────────────────────────────────
