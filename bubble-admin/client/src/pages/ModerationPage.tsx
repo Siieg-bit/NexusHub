@@ -20,7 +20,7 @@ import {
 //                  target_user_id, target_post_id, target_wiki_id, target_comment_id,
 //                  target_chat_thread_id, reason, details, duration_hours, expires_at, created_at
 
-type FlagStatus = "pending" | "approved" | "rejected" | "all";
+type FlagStatus = "pending" | "resolved" | "dismissed" | "all";
 type FlagType = "spam" | "harassment" | "hate_speech" | "nsfw" | "misinformation" | "other";
 
 type Flag = {
@@ -91,10 +91,10 @@ const FLAG_TYPE_COLORS: Record<string, string> = {
 };
 
 const STATUS_CONFIG = {
-  pending:  { label: "Pendente",  color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.2)",  icon: Clock },
-  approved: { label: "Aprovada",  color: "#34D399", bg: "rgba(52,211,153,0.1)",  border: "rgba(52,211,153,0.2)",  icon: CheckCircle2 },
-  rejected: { label: "Rejeitada", color: "#6B7280", bg: "rgba(107,114,128,0.1)", border: "rgba(107,114,128,0.2)", icon: XCircle },
-  all:      { label: "Todas",     color: "#A78BFA", bg: "rgba(167,139,250,0.1)", border: "rgba(167,139,250,0.2)", icon: Filter },
+  pending:   { label: "Pendente",   color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.2)",  icon: Clock },
+  resolved:  { label: "Resolvida",  color: "#34D399", bg: "rgba(52,211,153,0.1)",  border: "rgba(52,211,153,0.2)",  icon: CheckCircle2 },
+  dismissed: { label: "Descartada", color: "#6B7280", bg: "rgba(107,114,128,0.1)", border: "rgba(107,114,128,0.2)", icon: XCircle },
+  all:       { label: "Todas",      color: "#A78BFA", bg: "rgba(167,139,250,0.1)", border: "rgba(167,139,250,0.2)", icon: Filter },
 };
 
 const fadeUp = {
@@ -115,9 +115,9 @@ function ResolveModal({
 }: {
   flag: Flag;
   onClose: () => void;
-  onResolved: (id: string, status: "approved" | "rejected", note: string) => void;
+  onResolved: (id: string, status: "resolved" | "dismissed", note: string) => void;
 }) {
-  const [action, setAction] = useState<"approved" | "rejected">("approved");
+  const [action, setAction] = useState<"resolved" | "dismissed">("resolved");
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -138,7 +138,7 @@ function ResolveModal({
         await supabaseAdmin.from("moderation_logs").insert({
           community_id: flag.community_id,
           moderator_id: user?.id,
-          action: action === "approved" ? "flag_approved" : "flag_rejected",
+          action: action === "resolved" ? "flag_resolved" : "flag_dismissed",
           severity: "low",
           target_user_id: flag.target_user_id ?? null,
           reason: note.trim() || null,
@@ -146,7 +146,7 @@ function ResolveModal({
         });
       }
 
-      toast.success(`Denúncia ${action === "approved" ? "aprovada" : "rejeitada"} com sucesso.`);
+      toast.success(`Denúncia ${action === "resolved" ? "resolvida" : "descartada"} com sucesso.`);
       onResolved(flag.id, action, note);
       onClose();
     } catch (err: unknown) {
@@ -188,16 +188,16 @@ function ResolveModal({
         )}
 
         <div className="flex gap-2">
-          {(["approved", "rejected"] as const).map((opt) => (
+              {(["resolved", "dismissed"] as const).map((opt) => (
             <button key={opt} onClick={() => setAction(opt)}
               className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold transition-all flex items-center justify-center gap-2"
               style={{
-                background: action === opt ? (opt === "approved" ? "rgba(52,211,153,0.15)" : "rgba(107,114,128,0.15)") : "rgba(255,255,255,0.04)",
-                border: `1px solid ${action === opt ? (opt === "approved" ? "rgba(52,211,153,0.3)" : "rgba(107,114,128,0.3)") : "rgba(255,255,255,0.07)"}`,
-                color: action === opt ? (opt === "approved" ? "#34D399" : "#9CA3AF") : "rgba(255,255,255,0.3)",
+                background: action === opt ? (opt === "resolved" ? "rgba(52,211,153,0.15)" : "rgba(107,114,128,0.15)") : "rgba(255,255,255,0.04)",
+                border: `1px solid ${action === opt ? (opt === "resolved" ? "rgba(52,211,153,0.3)" : "rgba(107,114,128,0.3)") : "rgba(255,255,255,0.07)"}`,
+                color: action === opt ? (opt === "resolved" ? "#34D399" : "#9CA3AF") : "rgba(255,255,255,0.3)",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}>
-              {opt === "approved" ? <><CheckCircle2 size={14} />Aprovar</> : <><XCircle size={14} />Rejeitar</>}
+              {opt === "resolved" ? <><CheckCircle2 size={14} />Resolver</> : <><XCircle size={14} />Descartar</>}
             </button>
           ))}
         </div>
@@ -212,12 +212,12 @@ function ResolveModal({
         <button onClick={handleResolve} disabled={loading}
           className="w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all disabled:opacity-50"
           style={{
-            background: action === "approved" ? "rgba(52,211,153,0.15)" : "rgba(107,114,128,0.15)",
-            border: `1px solid ${action === "approved" ? "rgba(52,211,153,0.3)" : "rgba(107,114,128,0.3)"}`,
-            color: action === "approved" ? "#34D399" : "#9CA3AF",
+            background: action === "resolved" ? "rgba(52,211,153,0.15)" : "rgba(107,114,128,0.15)",
+            border: `1px solid ${action === "resolved" ? "rgba(52,211,153,0.3)" : "rgba(107,114,128,0.3)"}`,
+            color: action === "resolved" ? "#34D399" : "#9CA3AF",
             fontFamily: "'Space Grotesk', sans-serif",
           }}>
-          {loading ? "Processando..." : `Confirmar — ${action === "approved" ? "Aprovar" : "Rejeitar"}`}
+          {loading ? "Processando..." : `Confirmar — ${action === "resolved" ? "Resolver" : "Descartar"}`}
         </button>
 
         <button onClick={onClose} className="w-full py-2 rounded-xl text-[12px] font-mono transition-all"
@@ -319,7 +319,7 @@ export default function ModerationPage() {
     toast.success("Strike revogado.");
   }
 
-  function handleFlagResolved(id: string, status: "approved" | "rejected", note: string) {
+  function handleFlagResolved(id: string, status: "resolved" | "dismissed", note: string) {
     setFlags((prev) => prev.map((f) => f.id === id ? { ...f, status, resolution_note: note } : f));
   }
 
@@ -406,7 +406,7 @@ export default function ModerationPage() {
         {tab === "flags" && (
           <motion.div key="flags" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
             <div className="flex gap-2 flex-wrap">
-              {(["pending", "approved", "rejected", "all"] as FlagStatus[]).map((s) => {
+              {(["pending", "resolved", "dismissed", "all"] as FlagStatus[]).map((s) => {
                 const cfg = STATUS_CONFIG[s];
                 const Icon = cfg.icon;
                 return (
