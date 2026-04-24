@@ -51,16 +51,10 @@ class _QuickPollVoterState extends ConsumerState<QuickPollVoter> {
       final optionId = widget.options[optionIndex]['id'] as String?;
       if (optionId == null) throw Exception('Option ID not found');
 
-      // Votar na enquete
-      await SupabaseService.table('poll_votes').insert({
-        'option_id': optionId,
-        'user_id': SupabaseService.currentUserId,
+      // Votar na enquete via RPC (atômico: insert + incremento de contador)
+      await SupabaseService.rpc('vote_on_poll', params: {
+        'p_option_id': optionId,
       });
-
-      // Incrementar contador
-      await SupabaseService.table('poll_options')
-          .update({'votes_count': (widget.options[optionIndex]['votes_count'] as int? ?? 0) + 1})
-          .eq('id', optionId);
 
       if (mounted) {
         setState(() => _selectedIndex = optionIndex);

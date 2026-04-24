@@ -344,7 +344,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     if (confirm != true) return;
 
     try {
-      await SupabaseService.table('comments').delete().eq('id', comment.id);
+      await SupabaseService.rpc('delete_comment', params: {
+        'p_comment_id': comment.id,
+      });
       if (_replyingToComment?.id == comment.id) {
         _commentController.clear();
         _clearReplyTarget();
@@ -856,8 +858,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   );
                   if (confirm == true && mounted) {
                     try {
-                      await SupabaseService.table('posts').update(
-                          {'status': 'deleted'}).eq('id', widget.postId);
+                      await SupabaseService.rpc('moderate_post', params: {
+                        'p_post_id': widget.postId,
+                        'p_action':  'delete_post',
+                      });
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                            SnackBar(
@@ -914,11 +918,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   try {
                     final userId = SupabaseService.currentUserId;
                     if (userId != null) {
-                      await SupabaseService.table('hidden_posts').upsert({
-                        'user_id': userId,
-                        'post_id': widget.postId,
-                        'hidden_at': DateTime.now().toIso8601String(),
-                      }, onConflict: 'user_id,post_id');
+                      await SupabaseService.rpc('hide_post_from_feed', params: {
+                        'p_post_id': widget.postId,
+                      });
                       if (mounted) {
                         ScaffoldMessenger.of(context)
                             .showSnackBar( SnackBar(

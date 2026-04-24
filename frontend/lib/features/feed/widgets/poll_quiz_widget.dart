@@ -444,11 +444,10 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
 
   Future<void> _saveAttempt() async {
     try {
-      await SupabaseService.table('quiz_attempts').upsert({
-        'post_id': widget.post.id,
-        'user_id': SupabaseService.currentUserId,
-        'score': _score,
-        'total_questions': _questions.length,
+      await SupabaseService.rpc('answer_quiz', params: {
+        'p_post_id': widget.post.id,
+        'p_score': _score,
+        'p_total': _questions.length,
       });
     } catch (e) {
       debugPrint('[poll_quiz_widget] Erro: $e');

@@ -511,7 +511,10 @@ class CommunityFeedNotifier
 
   Future<bool> deletePost(String postId) async {
     try {
-      await SupabaseService.table('posts').delete().eq('id', postId);
+      await SupabaseService.rpc('moderate_post', params: {
+        'p_post_id': postId,
+        'p_action':  'delete_post',
+      });
       final current = state.valueOrNull ?? [];
       state = AsyncData(current.where((p) => p.id != postId).toList());
       return true;
