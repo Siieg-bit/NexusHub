@@ -1031,10 +1031,14 @@ function NineSliceEditor({
 
         {/* Overlay nas regiões de borda */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+          {/* Topo: de 0 até topPx */}
           <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: topPx, background: "rgba(0,0,0,0.25)" }} />
-          <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: canvasSize.h - bottomPx, background: "rgba(0,0,0,0.25)" }} />
-          <div style={{ position: "absolute", left: 0, width: leftPx, top: topPx, height: bottomPx - topPx, background: "rgba(0,0,0,0.25)" }} />
-          <div style={{ position: "absolute", right: 0, width: canvasSize.w - rightPx, top: topPx, height: bottomPx - topPx, background: "rgba(0,0,0,0.25)" }} />
+          {/* Base: de bottomPx até o fim — usa top+bottom=0 para não depender de canvasSize.h */}
+          <div style={{ position: "absolute", left: 0, right: 0, top: bottomPx, bottom: 0, background: "rgba(0,0,0,0.25)" }} />
+          {/* Esquerda: faixa vertical entre topPx e bottomPx */}
+          <div style={{ position: "absolute", left: 0, width: leftPx, top: topPx, bottom: `calc(100% - ${bottomPx}px)`, background: "rgba(0,0,0,0.25)" }} />
+          {/* Direita: faixa vertical entre topPx e bottomPx — usa right+left para não depender de canvasSize.w */}
+          <div style={{ position: "absolute", left: rightPx, right: 0, top: topPx, bottom: `calc(100% - ${bottomPx}px)`, background: "rgba(0,0,0,0.25)" }} />
         </div>
 
         {/* Linha Topo */}
