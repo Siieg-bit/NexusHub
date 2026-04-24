@@ -163,140 +163,89 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
         'p_duration_hours': _selectedAction == 'ban' ? _banDurationHours : null,
       });
 
-      // Executar ação específica
+      // Executar ação específica via RPCs corretos
       final targetUid = widget.targetUserId;
+      final reason    = _reasonController.text.trim();
       switch (_selectedAction) {
+        // ─ Ações sobre usuários ─
         case 'ban':
-          if (targetUid == null) break;
-          await SupabaseService.table('community_members')
-              .update({
-                'is_banned': true,
-                'ban_expires_at': DateTime.now()
-                    .add(Duration(hours: _banDurationHours))
-                    .toUtc()
-                    .toIso8601String(),
-              })
-              .eq('community_id', widget.communityId)
-              .eq('user_id', targetUid);
-          break;
-
         case 'unban':
           if (targetUid == null) break;
-          await SupabaseService.table('community_members')
-              .update({
-                'is_banned': false,
-                'ban_expires_at': null,
-              })
-              .eq('community_id', widget.communityId)
-              .eq('user_id', targetUid);
+          await SupabaseService.rpc('ban_community_member', params: {
+            'p_community_id':   widget.communityId,
+            'p_target_user_id': targetUid,
+            'p_duration':       _selectedAction == 'ban'
+                                    ? '${_banDurationHours}h'
+                                    : null,
+            'p_reason':         reason,
+          });
           break;
 
         case 'mute':
           if (targetUid == null) break;
-          await SupabaseService.table('community_members')
-              .update({
-                'is_muted': true,
-                'mute_expires_at': DateTime.now()
-                    .add(Duration(hours: _banDurationHours))
-                    .toUtc()
-                    .toIso8601String(),
-              })
-              .eq('community_id', widget.communityId)
-              .eq('user_id', targetUid);
+          await SupabaseService.rpc('silence_community_member', params: {
+            'p_community_id':   widget.communityId,
+            'p_target_id':      targetUid,
+            'p_duration_hours': _banDurationHours,
+            'p_reason':         reason,
+          });
           break;
 
-        case 'hide_post':
-          if (widget.targetPostId != null) {
-            await SupabaseService.table('posts')
-                .update({'status': 'disabled'}).eq('id', widget.targetPostId!);
-          }
-          break;
-
-        case 'delete_post':
-          if (widget.targetPostId != null) {
-            await SupabaseService.table('posts')
-                .delete()
-                .eq('id', widget.targetPostId!);
-          }
+        case 'kick':
+          if (targetUid == null) break;
+          // Usar moderate_user para kick (remove membro + log)
+          await SupabaseService.rpc('moderate_user', params: {
+            'p_community_id':   widget.communityId,
+            'p_target_user_id': targetUid,
+            'p_action':         'kick',
+            'p_reason':         reason,
+          });
+          // Notificar via RPC centralizado
+          await SupabaseService.rpc('send_moderation_notification', params: {
+            'p_community_id': widget.communityId,
+            'p_user_id':      targetUid,
+            'p_type':         'moderation',
+            'p_title':        s.moderationActionLabel,
+            'p_body':         s.removedFromCommunity(reason),
+          });
           break;
 
         case 'strike':
-          // Usar RPC moderate_user para incrementar strikes
+          if (targetUid == null) break;
           await SupabaseService.rpc('moderate_user', params: {
-            'p_community_id': widget.communityId,
-            'p_target_user_id': widget.targetUserId,
-            'p_action': 'strike',
-            'p_reason': _reasonController.text.trim(),
+            'p_community_id':   widget.communityId,
+            'p_target_user_id': targetUid,
+            'p_action':         'strike',
+            'p_reason':         reason,
           });
           break;
 
         case 'warn':
-          // Enviar notificação de aviso
-          await SupabaseService.table('notifications').insert({
-            'user_id': widget.targetUserId,
-            'actor_id': SupabaseService.currentUserId,
-            'type': 'moderation',
-            'title': s.moderationWarning,
-            'body': s.receivedWarning(_reasonController.text.trim()),
-            'community_id': widget.communityId,
+          if (targetUid == null) break;
+          // Notificação de aviso via RPC centralizado
+          await SupabaseService.rpc('send_moderation_notification', params: {
+            'p_community_id': widget.communityId,
+            'p_user_id':      targetUid,
+            'p_type':         'moderation',
+            'p_title':        s.moderationWarning,
+            'p_body':         s.receivedWarning(reason),
           });
           break;
 
+        // ─ Ações sobre posts ─
+        case 'hide_post':
+        case 'unhide_post':
+        case 'delete_post':
         case 'feature_post':
-          if (widget.targetPostId != null) {
-            final now = DateTime.now().toUtc();
-            await SupabaseService.table('posts').update({
-              'is_featured': true,
-              'featured_at': now.toIso8601String(),
-              'featured_by': SupabaseService.currentUserId,
-              'featured_until': null,
-            }).eq('id', widget.targetPostId!);
-          }
-          break;
-
         case 'unfeature_post':
-          if (widget.targetPostId != null) {
-            await SupabaseService.table('posts').update({
-              'is_featured': false,
-              'featured_at': null,
-              'featured_until': null,
-              'featured_by': null,
-            }).eq('id', widget.targetPostId!);
-          }
-          break;
-
         case 'pin_post':
-          if (widget.targetPostId != null) {
-            await SupabaseService.table('posts').update({
-              'is_pinned': true,
-              'pinned_at': DateTime.now().toUtc().toIso8601String()
-            }).eq('id', widget.targetPostId!);
-          }
-          break;
-
         case 'unpin_post':
           if (widget.targetPostId != null) {
-            await SupabaseService.table('posts')
-                .update({'is_pinned': false, 'pinned_at': null}).eq(
-                    'id', widget.targetPostId!);
-          }
-          break;
-
-        case 'kick':
-          if (widget.targetUserId != null) {
-            await SupabaseService.table('community_members')
-                .delete()
-                .eq('community_id', widget.communityId)
-                .eq('user_id', targetUid!);
-            // Notificar o usuário
-            await SupabaseService.table('notifications').insert({
-              'user_id': widget.targetUserId,
-              'actor_id': SupabaseService.currentUserId,
-              'type': 'moderation',
-              'title': s.moderationActionLabel,
-              'body':
-                  s.removedFromCommunity(_reasonController.text.trim()),
-              'community_id': widget.communityId,
+            await SupabaseService.rpc('moderate_post', params: {
+              'p_post_id':      widget.targetPostId!,
+              'p_action':       _selectedAction,
+              'p_community_id': widget.communityId,
+              'p_reason':       reason,
             });
           }
           break;

@@ -246,13 +246,12 @@ class _MemberRoleManagerSheetState
         if (!_isSelf) {
           try {
             final roleLabel = _roleLabel(widget.callerRole);
-            await SupabaseService.table('notifications').insert({
-              'user_id': widget.targetUserId,
-              'actor_id': SupabaseService.currentUserId,
-              'type': 'moderation',
-              'title': 'Novo título recebido',
-              'body': '$roleLabel te deu o título "$title" nesta comunidade.',
-              'community_id': widget.communityId,
+            await SupabaseService.rpc('send_moderation_notification', params: {
+              'p_community_id': widget.communityId,
+              'p_user_id':      widget.targetUserId,
+              'p_type':         'moderation',
+              'p_title':        'Novo título recebido',
+              'p_body':         '$roleLabel te deu o título "$title" nesta comunidade.',
             });
           } catch (_) {
             // Notificação não é crítica — ignorar falha silenciosamente
@@ -577,31 +576,34 @@ class _MemberRoleManagerSheetState
             .add(Duration(hours: durationHours))
             .toIso8601String();
 
-        await SupabaseService.table('community_members').update({
-          'is_silenced': true,
-          'silenced_until': silencedUntil,
-        }).eq('community_id', widget.communityId).eq('user_id', widget.targetUserId);
-
-        await SupabaseService.rpc('log_moderation_action', params: {
-          'p_community_id': widget.communityId,
-          'p_action': 'mute',
-          'p_target_user_id': widget.targetUserId,
-          'p_reason': 'Silenciamento aplicado por $roleLabel ($silenceOption)',
+        // RPC silence_community_member: update + log atomicamente
+        await SupabaseService.rpc('silence_community_member', params: {
+          'p_community_id':   widget.communityId,
+          'p_target_id':      widget.targetUserId,
           'p_duration_hours': durationHours,
+          'p_reason':         'Silenciamento aplicado por $roleLabel ($silenceOption)',
         });
 
         notificationRows.add({
-          'user_id': widget.targetUserId,
-          'actor_id': SupabaseService.currentUserId,
-          'type': 'moderation',
-          'title': 'Silenciamento aplicado',
-          'body': 'Você foi silenciado por $silenceOption nesta comunidade.',
           'community_id': widget.communityId,
+          'user_id':      widget.targetUserId,
+          'type':         'moderation',
+          'title':        'Silenciamento aplicado',
+          'body':         'Você foi silenciado por $silenceOption nesta comunidade.',
         });
       }
 
-      if (notificationRows.isNotEmpty) {
-        await SupabaseService.table('notifications').insert(notificationRows);
+      // Enviar notificações via RPC centralizado
+      for (final row in notificationRows) {
+        try {
+          await SupabaseService.rpc('send_moderation_notification', params: {
+            'p_community_id': row['community_id'],
+            'p_user_id':      row['user_id'],
+            'p_type':         row['type'],
+            'p_title':        row['title'],
+            'p_body':         row['body'],
+          });
+        } catch (_) {} // Notificação não é crítica
       }
 
       if (mounted) {
@@ -635,11 +637,12 @@ class _MemberRoleManagerSheetState
 
     setState(() => _isLoading = true);
     try {
-      await SupabaseService.table('community_members').update({
-        'is_hidden': nextHiddenState,
-      })
-          .eq('community_id', widget.communityId)
-          .eq('user_id', widget.targetUserId);
+      // RPC toggle_member_visibility: update + log atomicamente
+      await SupabaseService.rpc('toggle_member_visibility', params: {
+        'p_community_id': widget.communityId,
+        'p_target_id':    widget.targetUserId,
+        'p_hide':         nextHiddenState,
+      });
 
       if (mounted) {
         final message = nextHiddenState

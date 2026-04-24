@@ -125,19 +125,12 @@ class _PostModerationMenuSheetState
     setState(() => _isLoading = true);
     try {
       final featuredAt = DateTime.now().toUtc().toIso8601String();
-      await SupabaseService.table('posts').update({
-        'is_featured': true,
-        'featured_at': featuredAt,
-        'featured_until': null,
-        'featured_by': SupabaseService.currentUserId,
-      }).eq('id', widget.postId);
-
-      // Registrar no log de moderação
-      await SupabaseService.rpc('log_moderation_action', params: {
+      // RPC moderate_post: atualiza is_featured e registra log atomicamente
+      await SupabaseService.rpc('moderate_post', params: {
+        'p_post_id':      widget.postId,
+        'p_action':       'feature_post',
         'p_community_id': widget.communityId,
-        'p_action': 'feature_post',
-        'p_target_post_id': widget.postId,
-        'p_reason': 'Adicionado à vitrine de destaques por ordem de entrada',
+        'p_reason':       'Adicionado à vitrine de destaques por ordem de entrada',
         'p_duration_hours': null,
       });
 
@@ -161,12 +154,11 @@ class _PostModerationMenuSheetState
   Future<void> _unfeaturePost() async {
     setState(() => _isLoading = true);
     try {
-      await SupabaseService.table('posts').update({
-        'is_featured': false,
-        'featured_at': null,
-        'featured_until': null,
-        'featured_by': null,
-      }).eq('id', widget.postId);
+      await SupabaseService.rpc('moderate_post', params: {
+        'p_post_id':      widget.postId,
+        'p_action':       'unfeature_post',
+        'p_community_id': widget.communityId,
+      });
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -310,29 +302,16 @@ class _PostModerationMenuSheetState
         return;
       }
 
-      // Criar notificações em lote
-      final notifications = memberIds
-          .map((userId) => {
-                'user_id': userId,
-                'actor_id': SupabaseService.currentUserId,
-                'type': 'broadcast',
-                'title': 'Nova publicação em destaque',
-                'body': widget.postTitle.isNotEmpty
-                    ? widget.postTitle
-                    : 'Confira esta publicação da comunidade!',
-                'community_id': widget.communityId,
-                'post_id': widget.postId,
-              })
-          .toList();
-
-      // Inserir em lotes de 100
-      for (var i = 0; i < notifications.length; i += 100) {
-        final batch = notifications.sublist(
-          i,
-          i + 100 > notifications.length ? notifications.length : i + 100,
-        );
-        await SupabaseService.table('notifications').insert(batch);
-      }
+      // Broadcast via RPC centralizado (send_broadcast — migration 046)
+      await SupabaseService.rpc('send_broadcast', params: {
+        'p_title':        'Nova publicação em destaque',
+        'p_content':      widget.postTitle.isNotEmpty
+                              ? widget.postTitle
+                              : 'Confira esta publicação da comunidade!',
+        'p_scope':        'community',
+        'p_community_id': widget.communityId,
+        'p_action_url':   '/post/${widget.postId}',
+      });
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

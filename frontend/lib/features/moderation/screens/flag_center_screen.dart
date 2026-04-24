@@ -57,11 +57,10 @@ class _FlagCenterScreenState extends ConsumerState<FlagCenterScreen>
   Future<void> _resolveFlag(String flagId, String action) async {
     final s = getStrings();
     try {
-      await SupabaseService.table('flags').update({
-        'status': action,
-        'resolved_by': SupabaseService.currentUserId,
-        'resolved_at': DateTime.now().toUtc().toIso8601String(),
-      }).eq('id', flagId);
+      await SupabaseService.rpc('resolve_flag', params: {
+        'p_flag_id': flagId,
+        'p_action':  action,
+      });
       await _loadFlags();
     } catch (e) {
       if (mounted) {
