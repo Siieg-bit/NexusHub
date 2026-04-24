@@ -174,9 +174,51 @@ serve(async (req) => {
       .single();
 
     if (settings) {
-      const typeKey = `push_${notification_type}`;
-      if (settings[typeKey] === false) {
-        console.log(`[push-notification] Notificação desabilitada: ${notification_type}`);
+      // Verificar se push está globalmente desabilitado
+      if (settings.push_enabled === false) {
+        console.log(`[push-notification] Push globalmente desabilitado para ${user_id}`);
+        return new Response(
+          JSON.stringify({ message: "Push notifications disabled by user" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Verificar pause_all_until
+      if (settings.pause_all_until && new Date(settings.pause_all_until) > new Date()) {
+        console.log(`[push-notification] Push pausado até ${settings.pause_all_until}`);
+        return new Response(
+          JSON.stringify({ message: "Push notifications paused" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Mapeamento correto: tipo de notificação → coluna em notification_settings
+      // As colunas usam nomes plurais/específicos, não o padrão push_{type}
+      const typeToSettingKey: Record<string, string> = {
+        like:              "push_likes",
+        comment:           "push_comments",
+        follow:            "push_follows",
+        mention:           "push_mentions",
+        wall_post:         "push_mentions",
+        chat:              "push_chat_messages",
+        chat_message:      "push_chat_messages",
+        chat_mention:      "push_chat_messages",
+        community_invite:  "push_community_invites",
+        community_update:  "push_community_invites",
+        join_request:      "push_community_invites",
+        role_change:       "push_community_invites",
+        achievement:       "push_achievements",
+        level_up:          "push_level_up",
+        moderation:        "push_moderation",
+        strike:            "push_moderation",
+        ban:               "push_moderation",
+        economy:           "push_economy",
+        story:             "push_stories",
+      };
+
+      const settingKey = typeToSettingKey[notification_type];
+      if (settingKey && settings[settingKey] === false) {
+        console.log(`[push-notification] Notificação desabilitada: ${notification_type} (${settingKey})`);
         return new Response(
           JSON.stringify({ message: "Notification type disabled by user" }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
