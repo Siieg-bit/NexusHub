@@ -508,19 +508,26 @@ function DynamicNineSliceOverlay({
           <rect x={leftPx} y={bottomPx - tzH} width={centerW} height={tzH} fill="rgba(167,139,250,0.2)" />
           <rect x={leftPx} y={topPx + tzH} width={tzW} height={Math.max(0, centerH - tzH * 2)} fill="rgba(167,139,250,0.2)" />
           <rect x={rightPx - tzW} y={topPx + tzH} width={tzW} height={Math.max(0, centerH - tzH * 2)} fill="rgba(167,139,250,0.2)" />
-          {/* Centro stretch — verde */}
+          {/* Centro stretch + handles das arestas — tudo dentro do SVG para alinhamento perfeito */}
           {(() => {
             const stretchActive = dragging?.startsWith("stretch") || hovering?.startsWith("stretch");
             const sw = Math.max(0, centerW - tzW * 2);
             const sh = Math.max(0, centerH - tzH * 2);
             const sx = leftPx + tzW;
             const sy = topPx + tzH;
+            // Comprimento dos handles: 60% da aresta, centrado
+            const hLenH = sw * 0.6;  // comprimento horizontal (topo/base)
+            const hLenV = sh * 0.6;  // comprimento vertical (esq/dir)
+            const hThick = 2.5;      // espessura visual
+            const isActive = (id: string) => dragging === id || hovering === id;
+            const hColor = (id: string) => isActive(id) ? "#34D399" : "rgba(52,211,153,0.7)";
             return (
               <>
+                {/* Retângulo STRETCH */}
                 <rect
                   x={sx} y={sy} width={sw} height={sh}
-                  fill={stretchActive ? "rgba(52,211,153,0.25)" : "rgba(52,211,153,0.15)"}
-                  stroke={stretchActive ? "#34D399" : "#34D39966"}
+                  fill={stretchActive ? "rgba(52,211,153,0.22)" : "rgba(52,211,153,0.12)"}
+                  stroke={stretchActive ? "#34D399" : "#34D39944"}
                   strokeWidth={stretchActive ? 1.5 : 0.75}
                 />
                 {sw > 40 && sh > 20 && (
@@ -528,40 +535,41 @@ function DynamicNineSliceOverlay({
                     x={sx + sw / 2} y={sy + sh / 2}
                     textAnchor="middle" dominantBaseline="middle"
                     fontSize="8" fontFamily="'DM Mono', monospace"
-                    fill="#34D399" opacity="0.8"
+                    fill="#34D399" opacity="0.7"
                   >STRETCH</text>
                 )}
+                {/* Handle aresta TOPO — linha horizontal centrada na borda superior do STRETCH */}
+                <rect
+                  x={sx + (sw - hLenH) / 2} y={sy - hThick / 2}
+                  width={hLenH} height={hThick}
+                  fill={hColor("stretch-top")} rx={1}
+                  style={{ filter: isActive("stretch-top") ? "drop-shadow(0 0 4px #34D399)" : "none" }}
+                />
+                {/* Handle aresta BASE */}
+                <rect
+                  x={sx + (sw - hLenH) / 2} y={sy + sh - hThick / 2}
+                  width={hLenH} height={hThick}
+                  fill={hColor("stretch-bottom")} rx={1}
+                  style={{ filter: isActive("stretch-bottom") ? "drop-shadow(0 0 4px #34D399)" : "none" }}
+                />
+                {/* Handle aresta ESQUERDA */}
+                <rect
+                  x={sx - hThick / 2} y={sy + (sh - hLenV) / 2}
+                  width={hThick} height={hLenV}
+                  fill={hColor("stretch-left")} rx={1}
+                  style={{ filter: isActive("stretch-left") ? "drop-shadow(0 0 4px #34D399)" : "none" }}
+                />
+                {/* Handle aresta DIREITA */}
+                <rect
+                  x={sx + sw - hThick / 2} y={sy + (sh - hLenV) / 2}
+                  width={hThick} height={hLenV}
+                  fill={hColor("stretch-right")} rx={1}
+                  style={{ filter: isActive("stretch-right") ? "drop-shadow(0 0 4px #34D399)" : "none" }}
+                />
               </>
             );
           })()}
         </svg>
-        {/* Handles das arestas do retângulo STRETCH */}
-        {centerW > 20 && centerH > 20 && (() => {
-          const sw = Math.max(0, centerW - tzW * 2);
-          const sh = Math.max(0, centerH - tzH * 2);
-          const sx = leftPx + tzW;
-          const sy = topPx + tzH;
-          const handles: { id: OverlayHandle; style: React.CSSProperties }[] = [
-            { id: "stretch-top",    style: { left: sx + sw * 0.2, width: sw * 0.6, top: sy - 1,      height: 2 } },
-            { id: "stretch-bottom", style: { left: sx + sw * 0.2, width: sw * 0.6, top: sy + sh - 1, height: 2 } },
-            { id: "stretch-left",   style: { top: sy + sh * 0.2, height: sh * 0.6, left: sx - 1,      width: 2 } },
-            { id: "stretch-right",  style: { top: sy + sh * 0.2, height: sh * 0.6, left: sx + sw - 1, width: 2 } },
-          ];
-          return handles.map(({ id, style }) => {
-            const active = dragging === id || hovering === id;
-            return (
-              <div key={id} style={{
-                position: "absolute",
-                background: active ? "#34D399" : "rgba(52,211,153,0.6)",
-                boxShadow: active ? "0 0 8px #34D399" : "none",
-                borderRadius: 2,
-                pointerEvents: "none",
-                transition: active ? "none" : "background 0.15s",
-                ...style,
-              }} />
-            );
-          });
-        })()}
 
         {/* Linha Topo */}
         <div style={{ ...lineBase(dragging === "top" || hovering === "top", "#F59E0B"), left: 0, right: 0, top: topPx - 1, height: 2 }}>
