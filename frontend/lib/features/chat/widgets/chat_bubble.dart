@@ -332,18 +332,38 @@ class ChatBubble extends ConsumerWidget {
         ),
         mode: bubbleMode,
         builder: (context, result) {
+          // Quando renderScale < 1.0, escalar o sliceInsets e o fontSize
+          // para que o NineSliceBubble renderize proporcionalmente menor.
+          final scale = result?.renderScale ?? 1.0;
+          final scaledSlice = scale < 1.0
+              ? EdgeInsets.fromLTRB(
+                  (effectiveSlice.left   * scale).roundToDouble(),
+                  (effectiveSlice.top    * scale).roundToDouble(),
+                  (effectiveSlice.right  * scale).roundToDouble(),
+                  (effectiveSlice.bottom * scale).roundToDouble(),
+                )
+              : effectiveSlice;
+          // Escalar o fontSize do filho quando renderScale < 1.0
+          final scaledChild = scale < 1.0
+              ? DefaultTextStyle.merge(
+                  style: TextStyle(
+                    fontSize: (textStyle.fontSize ?? 14.0) * scale,
+                  ),
+                  child: child,
+                )
+              : child;
           return NineSliceBubble(
             imageUrl: bubbleFrameUrl!,
             isMine: isMine,
             maxWidth: result != null ? result.width : maxWidth,
-            sliceInsets: effectiveSlice,
+            sliceInsets: scaledSlice,
             imageSize: imageSize ?? const Size(128, 128),
             contentPadding: result?.contentPadding ??
                 contentPadding ??
                 const EdgeInsets.symmetric(horizontal: 46, vertical: 40),
             textColor: bubbleTextColor,
             polyPoints: polyPoints,
-            child: child,
+            child: scaledChild,
           );
         },
       );

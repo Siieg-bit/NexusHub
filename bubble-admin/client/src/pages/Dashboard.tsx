@@ -690,32 +690,64 @@ function DynamicNineSliceCanvas({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const dpr = window.devicePixelRatio || 1;
-    const { top: st, bottom: sb, left: sl, right: sr } = slice;
-    const lineHeight = Math.round(fontSize * 1.45);
     const msgColor = textColor.trim() || "rgba(255,255,255,0.9)";
 
-    // Padding total = slice + padding de conteúdo
-    const innerLeft  = sl + paddingX;
-    const innerRight = sr + paddingX;
-    const innerTop   = st + paddingY;
-    const innerBot   = sb + paddingY;
-
-    // ── Medição de texto ─────────────────────────────────────────────────────
+    // ── Fase 1: medir texto na escala 1:1 para calcular o renderScale ────────────
+    // Usamos os slices originais para calcular o layout ideal sem escala.
+    // Depois calculamos um fator de escala para que o balão fique proporcional
+    // ao conteúdo, sem distorcer os cantos do asset.
+    const { top: st0, bottom: sb0, left: sl0, right: sr0 } = slice;
     const measureCtx = document.createElement("canvas").getContext("2d")!;
     measureCtx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
+    const rawTextWidth0 = Math.ceil(measureCtx.measureText(text).width);
+    // Padding efetivo na escala 1:1 (max 40% do slice)
+    const effPadX0 = Math.min(paddingX, Math.max(4, Math.round(sl0 * 0.4)));
+    // Largura ideal sem escala
+    const idealW0 = rawTextWidth0 + sl0 + sr0 + effPadX0 * 2;
+    const safeMin0 = sl0 + sr0 + 20;
+    const effMin0  = Math.max(minWidth, safeMin0);
+    const effMax0  = horizontalPriority ? maxWidth : Math.round(maxWidth * 0.7);
+    const logW0    = Math.max(effMin0, Math.min(effMax0, idealW0));
 
-    // Medir texto sem quebra de linha para calcular largura ideal
-    const rawTextWidth = measureCtx.measureText(text).width;
-    const idealWidth   = Math.ceil(rawTextWidth) + innerLeft + innerRight;
+    // ── Fase 2: calcular renderScale ─────────────────────────────────────────────
+    // Se o conteúdo de texto é pequeno em relação aos slices, reduzir a escala
+    // de renderização para que o balão fique proporcional.
+    // Regra: o conteúdo de texto deve ocupar pelo menos 25% da largura total.
+    // Se não ocupar, reduzimos a escala até que ocupe.
+    const textFraction = rawTextWidth0 / logW0;
+    // renderScale: 1.0 quando textFraction >= 0.25, reduz linearmente até 0.55
+    // quando textFraction -> 0. Isso evita balões minúsculos para textos vazios.
+    const renderScale = Math.max(0.55, Math.min(1.0, textFraction / 0.25));
 
-    // ── Cálculo de largura (clamp) ───────────────────────────────────────────
-    // horizontalPriority = true → expande até maxWidth antes de quebrar linha
-    // horizontalPriority = false → quebra linha mais cedo (usa 70% do maxWidth)
-    const effectiveMax = horizontalPriority ? maxWidth : Math.round(maxWidth * 0.7);
-    const logW = Math.max(minWidth, Math.min(effectiveMax, idealWidth));
+    // ── Fase 3: recalcular tudo na escala final ──────────────────────────────────
+    // Escalar os slices e o fontSize pelo renderScale
+    const sl = Math.round(sl0 * renderScale);
+    const sr = Math.round(sr0 * renderScale);
+    const st = Math.round(st0 * renderScale);
+    const sb = Math.round(sb0 * renderScale);
+    const scaledFontSize = Math.max(8, Math.round(fontSize * renderScale));
+    const lineHeight = Math.round(scaledFontSize * 1.45);
+    // Padding efetivo na escala final
+    const safeMaxPadH = Math.max(4, Math.round(sl * 0.4));
+    const safeMaxPadV = Math.max(4, Math.round(st * 0.4));
+    const effectivePadX = Math.min(Math.round(paddingX * renderScale), safeMaxPadH);
+    const effectivePadY = Math.min(Math.round(paddingY * renderScale), safeMaxPadV);
+    const innerLeft  = sl + effectivePadX;
+    const innerRight = sr + effectivePadX;
+    const innerTop   = st + effectivePadY;
+    const innerBot   = sb + effectivePadY;
+    // Remedir texto na escala final
+    measureCtx.font = `${scaledFontSize}px 'Space Grotesk', sans-serif`;
+    const rawTextWidth = Math.ceil(measureCtx.measureText(text).width);
+    const idealWidth   = rawTextWidth + innerLeft + innerRight;
+    const safeMinWidth = sl + sr + 20;
+    const effectiveMin = Math.max(Math.round(minWidth * renderScale), safeMinWidth);
+    const effectiveMax = horizontalPriority
+      ? Math.round(maxWidth * renderScale)
+      : Math.round(maxWidth * renderScale * 0.7);
+    const logW = Math.max(effectiveMin, Math.min(effectiveMax, idealWidth));
     const maxContentW = Math.max(1, logW - innerLeft - innerRight);
-
-    // ── Quebra de linha ──────────────────────────────────────────────────────
+    // ── Quebra de linha ──────────────────────────────────────────────────────────
     const words = text.split(" ");
     const lines: string[] = [];
     let cur = "";
@@ -730,19 +762,16 @@ function DynamicNineSliceCanvas({
     }
     if (cur) lines.push(cur);
     if (lines.length === 0) lines.push("");
-
-    // ── Cálculo de altura ────────────────────────────────────────────────────
+    // ── Cálculo de altura ────────────────────────────────────────────────────────
     const textH = lines.length * lineHeight;
     const logH  = Math.max(textH + innerTop + innerBot, st + sb + 8);
-
-    // ── Redimensiona canvas ──────────────────────────────────────────────────
+    // ── Redimensiona canvas ──────────────────────────────────────────────────────
     canvas.width  = Math.round(logW * dpr);
     canvas.height = Math.round(logH * dpr);
     canvas.style.width  = logW + "px";
     canvas.style.height = logH + "px";
     ctx.scale(dpr, dpr);
-
-    // ── Desenha nine-slice (9 regiões) ───────────────────────────────────────
+    // ── Desenha nine-slice (9 regiões) com slices escalados ──────────────────────
     const iw = img.naturalWidth;
     const ih = img.naturalHeight;
     const mw = logW - sl - sr;
@@ -770,7 +799,7 @@ function DynamicNineSliceCanvas({
     const textStartY = innerTop + Math.max(0, (contentH - textH) / 2);
     const fillW      = logW - innerLeft - innerRight;
     ctx.fillStyle   = msgColor;
-    ctx.font        = `${fontSize}px 'Space Grotesk', sans-serif`;
+    ctx.font        = `${scaledFontSize}px 'Space Grotesk', sans-serif`;
     ctx.textBaseline = "top";
     ctx.textAlign   = textAlign;
     lines.forEach((line, i) => {

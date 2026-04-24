@@ -28,12 +28,20 @@ class DynamicNineSliceResult {
   /// Linhas de texto quebradas (para debug / testes).
   final List<String> lines;
 
+  /// Fator de escala de renderização aplicado (0.55 a 1.0).
+  ///
+  /// Quando o texto é pequeno em relação ao tamanho do balão (slices grandes),
+  /// o renderScale reduz proporcionalmente todos os elementos visuais para
+  /// evitar espaço em branco excessivo, preservando o design dos cantos.
+  final double renderScale;
+
   const DynamicNineSliceResult({
     required this.width,
     required this.height,
     required this.contentPadding,
     required this.lineCount,
     required this.lines,
+    this.renderScale = 1.0,
   });
 }
 
@@ -119,10 +127,14 @@ class DynamicBehaviorConfig {
 ///
 /// No modo dinâmico, o layout é calculado ANTES de construir o widget:
 /// 1. [TextPainter] mede o texto com a fonte e tamanho corretos.
-/// 2. A largura é calculada com `clamp(textWidth + 2*paddingX, minWidth, maxWidth)`.
-/// 3. A quebra de linha é aplicada dentro dessa largura.
-/// 4. A altura é calculada com base no número de linhas.
-/// 5. O widget recebe o tamanho final e apenas desenha — não decide mais.
+/// 2. O [renderScale] é calculado para que o balão fique proporcional ao
+///    conteúdo — quando o texto ocupa menos de 25% da largura total, a escala
+///    é reduzida linearmente até o mínimo de 0.55.
+/// 3. Os slices, fontSize e padding são escalados pelo [renderScale].
+/// 4. A largura é calculada com `clamp(textWidth + 2*paddingX, minWidth, maxWidth)`.
+/// 5. A quebra de linha é aplicada dentro dessa largura.
+/// 6. A altura é calculada com base no número de linhas.
+/// 7. O widget recebe o tamanho final e apenas desenha — não decide mais.
 ///
 /// ## Compatibilidade retroativa
 ///
@@ -134,6 +146,15 @@ class DynamicNineSliceLayout {
   ///
   /// Deve permanecer sincronizado com [kNineSliceOffset] em nine_slice_bubble.dart.
   static const double kNineSliceOffset = 12.0;
+
+  /// Escala mínima de renderização (evita balões muito pequenos).
+  static const double kMinRenderScale = 0.55;
+
+  /// Fração mínima do texto em relação à largura total para escala 1:1.
+  ///
+  /// Se o texto ocupa menos de [kTextFractionThreshold] da largura total,
+  /// o renderScale é reduzido proporcionalmente.
+  static const double kTextFractionThreshold = 0.25;
 
   /// Calcula o layout pré-determinado para o modo dynamic_nineslice.
   ///
@@ -158,13 +179,70 @@ class DynamicNineSliceLayout {
     // Compatibilidade: se não for dynamic_nineslice, retorna null
     if (mode != 'dynamic_nineslice') return null;
 
-    // ── Padding total = slice + padding de conteúdo ──────────────────────────
+    final double baseFontSize = textStyle.fontSize ?? 14.0;
+
+    // ── Fase 1: medir texto na escala 1:1 para calcular o renderScale ────────
+    // Usamos os slices originais para calcular o layout ideal sem escala.
+    final double sl0 = sliceInsets.left;
+    final double sr0 = sliceInsets.right;
+    final double st0 = sliceInsets.top;
+    final double sb0 = sliceInsets.bottom;
+
+    // Padding efetivo na escala 1:1 (max 40% do slice)
+    final double effPadX0 = content.paddingX.clamp(0.0, (sl0 * 0.4).clamp(4.0, double.infinity));
+
+    // Medir texto na escala 1:1
+    final painter0 = TextPainter(
+      text: TextSpan(text: text, style: textStyle),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout(maxWidth: double.infinity);
+    final double rawTextWidth0 = painter0.width;
+
+    // Largura ideal sem escala
+    final double idealW0 = rawTextWidth0 + sl0 + sr0 + effPadX0 * 2;
+    final double safeMin0 = sl0 + sr0 + 20.0;
+    final double effMin0 = content.minWidth.clamp(safeMin0, double.infinity);
+    final double effMax0 = behavior.horizontalPriority
+        ? content.maxWidth
+        : content.maxWidth * 0.7;
+    final double logW0 = idealW0.clamp(effMin0, effMax0);
+
+    // ── Fase 2: calcular renderScale ─────────────────────────────────────────
+    // Se o conteúdo de texto é pequeno em relação aos slices, reduzir a escala
+    // de renderização para que o balão fique proporcional.
+    // Regra: o conteúdo de texto deve ocupar pelo menos 25% da largura total.
+    // Se não ocupar, reduzimos a escala até que ocupe.
+    final double textFraction = rawTextWidth0 / logW0;
+    // renderScale: 1.0 quando textFraction >= 0.25, reduz linearmente até 0.55
+    // quando textFraction -> 0. Isso evita balões minúsculos para textos vazios.
+    final double renderScale = (textFraction / kTextFractionThreshold)
+        .clamp(kMinRenderScale, 1.0);
+
+    // ── Fase 3: recalcular tudo na escala final ───────────────────────────────
+    // Escalar os slices e o fontSize pelo renderScale
+    final double sl = (sl0 * renderScale).roundToDouble();
+    final double sr = (sr0 * renderScale).roundToDouble();
+    final double st = (st0 * renderScale).roundToDouble();
+    final double sb = (sb0 * renderScale).roundToDouble();
+    final double scaledFontSize = (baseFontSize * renderScale).clamp(8.0, double.infinity);
+
+    // TextStyle escalado
+    final TextStyle scaledStyle = textStyle.copyWith(fontSize: scaledFontSize);
+
+    // Padding efetivo na escala final (max 40% do slice escalado)
+    final double safeMaxPadH = (sl * 0.4).clamp(4.0, double.infinity);
+    final double safeMaxPadV = (st * 0.4).clamp(4.0, double.infinity);
+    final double effPadX = (content.paddingX * renderScale).clamp(0.0, safeMaxPadH);
+    final double effPadY = (content.paddingY * renderScale).clamp(0.0, safeMaxPadV);
+
+    // ── Padding total = slice escalado + padding escalado ────────────────────
     // O contentPadding efetivo deve compensar o kNineSliceOffset do Positioned,
     // exatamente como _extractNineSliceParams faz para o modo clássico.
-    final double innerLeft   = sliceInsets.left   + content.paddingX - kNineSliceOffset;
-    final double innerRight  = sliceInsets.right  + content.paddingX - kNineSliceOffset;
-    final double innerTop    = sliceInsets.top    + content.paddingY - kNineSliceOffset;
-    final double innerBottom = sliceInsets.bottom + content.paddingY - kNineSliceOffset;
+    final double innerLeft   = sl + effPadX - kNineSliceOffset;
+    final double innerRight  = sr + effPadX - kNineSliceOffset;
+    final double innerTop    = st + effPadY - kNineSliceOffset;
+    final double innerBottom = sb + effPadY - kNineSliceOffset;
 
     // Garante padding mínimo de 4 px (proteção contra distorção)
     final double safeLeft   = innerLeft.clamp(4.0, double.infinity);
@@ -172,29 +250,31 @@ class DynamicNineSliceLayout {
     final double safeTop    = innerTop.clamp(4.0, double.infinity);
     final double safeBottom = innerBottom.clamp(4.0, double.infinity);
 
-    // ── Medir texto com TextPainter ──────────────────────────────────────────
+    // ── Medir texto com TextPainter na escala final ───────────────────────────
     final painter = TextPainter(
-      text: TextSpan(text: text, style: textStyle),
+      text: TextSpan(text: text, style: scaledStyle),
       textDirection: TextDirection.ltr,
       maxLines: 1,
     )..layout(maxWidth: double.infinity);
 
     final double rawTextWidth = painter.width;
 
-    // ── Cálculo de largura (clamp) ───────────────────────────────────────────
+    // ── Cálculo de largura (clamp) ────────────────────────────────────────────
     // horizontalPriority = true  → expande até maxWidth antes de quebrar linha
     // horizontalPriority = false → quebra linha mais cedo (usa 70% do maxWidth)
     final double effectiveMax = behavior.horizontalPriority
-        ? content.maxWidth
-        : content.maxWidth * 0.7;
+        ? content.maxWidth * renderScale
+        : content.maxWidth * renderScale * 0.7;
+    final double effectiveMin = (content.minWidth * renderScale)
+        .clamp(sl + sr + 20.0, double.infinity);
 
     final double idealWidth = rawTextWidth + safeLeft + safeRight;
-    final double logW = idealWidth.clamp(content.minWidth, effectiveMax);
+    final double logW = idealWidth.clamp(effectiveMin, effectiveMax);
     final double maxContentW = (logW - safeLeft - safeRight).clamp(1.0, double.infinity);
 
-    // ── Quebra de linha ──────────────────────────────────────────────────────
+    // ── Quebra de linha ───────────────────────────────────────────────────────
     final breakPainter = TextPainter(
-      text: TextSpan(text: text, style: textStyle),
+      text: TextSpan(text: text, style: scaledStyle),
       textDirection: TextDirection.ltr,
     )..layout(maxWidth: maxContentW);
 
@@ -203,12 +283,12 @@ class DynamicNineSliceLayout {
     final int lineCount = lineMetrics.isEmpty ? 1 : lineMetrics.length;
 
     // Gera lista de linhas para debug (usando wrapping manual)
-    final List<String> lines = _wrapText(text, textStyle, maxContentW);
+    final List<String> lines = _wrapText(text, scaledStyle, maxContentW);
 
-    // ── Cálculo de altura ────────────────────────────────────────────────────
-    final double lineHeight = (textStyle.fontSize ?? 14.0) * (textStyle.height ?? 1.45);
+    // ── Cálculo de altura ─────────────────────────────────────────────────────
+    final double lineHeight = scaledFontSize * (textStyle.height ?? 1.45);
     final double textHeight = lineCount * lineHeight;
-    final double minContainerH = sliceInsets.top + sliceInsets.bottom + 8.0;
+    final double minContainerH = st + sb + 8.0;
     final double logH = (textHeight + safeTop + safeBottom).clamp(minContainerH, double.infinity);
 
     return DynamicNineSliceResult(
@@ -217,6 +297,7 @@ class DynamicNineSliceLayout {
       contentPadding: EdgeInsets.fromLTRB(safeLeft, safeTop, safeRight, safeBottom),
       lineCount: lineCount,
       lines: lines,
+      renderScale: renderScale,
     );
   }
 
