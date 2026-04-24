@@ -36,6 +36,17 @@ final userCommunitiesProvider =
 /// Usa o horário do servidor (via RPC ou now() do Supabase) para determinar
 /// se o check-in de hoje já foi feito, garantindo que o reset ocorra
 /// exatamente à 00:00 UTC do servidor, independente do fuso do dispositivo.
+///
+/// Bug corrigido: o campo [consecutive_checkin_days] no banco só é atualizado
+/// quando o usuário faz check-in. Se o usuário ficou dias sem entrar, o valor
+/// armazenado ainda reflete o streak anterior — que tecnicamente está quebrado.
+/// A correção calcula o "streak efetivo" no cliente:
+///   - Se o último check-in foi hoje → streak = valor do banco (válido).
+///   - Se o último check-in foi ontem → streak = valor do banco (ainda válido,
+///     o usuário pode fazer check-in hoje para continuar).
+///   - Se o último check-in foi há 2+ dias → streak = 0 (quebrado).
+/// Isso garante que a barra de streak exiba 0 imediatamente ao abrir o app
+/// após dias de ausência, sem precisar esperar o próximo check-in.
 final checkInStatusProvider =
     FutureProvider<Map<String, Map<String, dynamic>>>((ref) async {
   final userId = SupabaseService.currentUserId;
@@ -54,23 +65,54 @@ final checkInStatusProvider =
 
   final rows = results[0] as List? ?? [];
   final serverNow = results[1] as DateTime;
+  // Data de hoje no fuso de Brasília (UTC-3), que é o fuso operacional do app
+  final brasiliaOffset = const Duration(hours: -3);
+  final serverBrasilia = serverNow.toUtc().add(brasiliaOffset);
+  final todayBrasilia = DateTime(
+    serverBrasilia.year,
+    serverBrasilia.month,
+    serverBrasilia.day,
+  );
 
   final Map<String, Map<String, dynamic>> result = {};
   for (final row in rows) {
     final communityId = (row['community_id'] as String?) ?? '';
-    final lastCheckin = row['last_checkin_at'] as String?;
+    final lastCheckinRaw = row['last_checkin_at'] as String?;
+    final storedStreak = row['consecutive_checkin_days'] as int? ?? 0;
 
-    // Comparar last_checkin_at com a data do servidor (não do cliente)
     bool checkedInToday = false;
-    if (lastCheckin != null) {
-      final lastDate = DateTime.parse(lastCheckin).toUtc();
-      checkedInToday = lastDate.year == serverNow.year &&
-          lastDate.month == serverNow.month &&
-          lastDate.day == serverNow.day;
+    int effectiveStreak = storedStreak;
+
+    if (lastCheckinRaw != null) {
+      // Converter last_checkin_at para o fuso de Brasília para comparação
+      final lastCheckinUtc = DateTime.parse(lastCheckinRaw).toUtc();
+      final lastCheckinBrasilia = lastCheckinUtc.add(brasiliaOffset);
+      final lastCheckinDay = DateTime(
+        lastCheckinBrasilia.year,
+        lastCheckinBrasilia.month,
+        lastCheckinBrasilia.day,
+      );
+
+      final daysDiff = todayBrasilia.difference(lastCheckinDay).inDays;
+
+      // Check-in feito hoje
+      checkedInToday = daysDiff == 0;
+
+      // Calcular streak efetivo:
+      // - daysDiff == 0: check-in hoje → streak válido (banco está correto)
+      // - daysDiff == 1: check-in ontem → streak ainda válido (pode continuar hoje)
+      // - daysDiff >= 2: ficou 2+ dias sem entrar → streak quebrado, exibir 0
+      if (daysDiff >= 2) {
+        effectiveStreak = 0;
+      }
+    } else {
+      // Nunca fez check-in nesta comunidade
+      effectiveStreak = 0;
     }
+
     result[communityId] = {
       'has_checkin_today': checkedInToday,
-      'consecutive_checkin_days': row['consecutive_checkin_days'] as int? ?? 0,
+      'consecutive_checkin_days': effectiveStreak,
     };
   }
   return result;
