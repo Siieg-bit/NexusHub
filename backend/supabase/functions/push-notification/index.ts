@@ -22,48 +22,72 @@ const corsHeaders = {
 
 // Mapeamento tipo de notificação → coluna em notification_settings
 const TYPE_TO_SETTINGS_COL: Record<string, string> = {
+  // Likes
   like: "push_likes",
+  // Comentários e menções
   comment: "push_comments",
-  follow: "push_follows",
   mention: "push_mentions",
   wall_post: "push_mentions",
+  // Follows
+  follow: "push_follows",
+  repost: "push_mentions",
+  // Chat
   chat: "push_chat_messages",
   chat_message: "push_chat_messages",
   chat_mention: "push_chat_messages",
+  chat_invite: "push_chat_messages",
+  dm_invite: "push_chat_messages",
+  // Comunidade
   community_invite: "push_community_invites",
   community_update: "push_community_invites",
   join_request: "push_community_invites",
   role_change: "push_community_invites",
+  // Conquistas
   achievement: "push_achievements",
   level_up: "push_level_up",
+  // Moderação
   moderation: "push_moderation",
   strike: "push_moderation",
   ban: "push_moderation",
+  // Economia
   economy: "push_economy",
+  // Histórias
   story: "push_stories",
+  // Wiki
+  wiki_approved: "push_achievements",
+  // Broadcast (sem filtro de settings)
+  broadcast: "",
 };
 
 // Mapeamento tipo → canal Android
 const TYPE_TO_CHANNEL: Record<string, string> = {
+  // Chat
   chat: "nexushub_chat",
   chat_message: "nexushub_chat",
   chat_mention: "nexushub_chat",
+  chat_invite: "nexushub_chat",
+  dm_invite: "nexushub_chat",
+  // Social
   like: "nexushub_social",
   comment: "nexushub_social",
   follow: "nexushub_social",
   mention: "nexushub_social",
   wall_post: "nexushub_social",
+  repost: "nexushub_social",
+  wiki_approved: "nexushub_social",
+  // Comunidade
   community_invite: "nexushub_community",
   community_update: "nexushub_community",
   join_request: "nexushub_community",
   role_change: "nexushub_community",
+  // Moderação
   moderation: "nexushub_moderation",
   strike: "nexushub_moderation",
   ban: "nexushub_moderation",
 };
 
 const HIGH_PRIORITY_TYPES = new Set([
-  "chat", "chat_message", "chat_mention",
+  "chat", "chat_message", "chat_mention", "chat_invite", "dm_invite",
   "moderation", "strike", "ban", "community_invite",
 ]);
 
@@ -143,6 +167,7 @@ Deno.serve(async (req: Request) => {
       }
 
       const col = TYPE_TO_SETTINGS_COL[notification_type];
+      // col vazio = broadcast, sem filtro de settings
       if (col && settings[col] === false) {
         console.log(`[push] Tipo ${notification_type} desabilitado pelo usuário`);
         return new Response(
