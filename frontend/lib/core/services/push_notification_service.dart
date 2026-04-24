@@ -10,7 +10,10 @@ import '../../firebase_options.dart';
 import '../l10n/locale_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show CountOption;
 
-/// Handler para mensagens em background (deve ser top-level function)
+/// Handler para mensagens em background (deve ser top-level function).
+/// Chamado quando o app está em background ou terminado e chega uma mensagem FCM.
+/// Para mensagens com payload 'notification', o FCM exibe automaticamente na bandeja.
+/// Para mensagens 'data-only', precisamos exibir a notificação manualmente.
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (Firebase.apps.isEmpty) {
@@ -19,6 +22,86 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     );
   }
   debugPrint('[Push] Background message: ${message.messageId}');
+
+  // Se a mensagem não tem payload 'notification' (data-only),
+  // precisamos exibir a notificação local manualmente.
+  if (message.notification == null && message.data.isNotEmpty) {
+    final plugin = FlutterLocalNotificationsPlugin();
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const darwinSettings = DarwinInitializationSettings();
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: darwinSettings,
+    );
+    await plugin.initialize(initSettings);
+
+    final title = message.data['title'] as String? ?? 'NexusHub';
+    final body = message.data['content'] as String? ??
+        message.data['body'] as String? ?? '';
+    final type = message.data['type'] as String? ?? 'default';
+
+    String channelId;
+    switch (type) {
+      case 'chat':
+      case 'chat_message':
+      case 'chat_mention':
+        channelId = 'nexushub_chat';
+        break;
+      case 'like':
+      case 'comment':
+      case 'follow':
+      case 'mention':
+      case 'wall_post':
+        channelId = 'nexushub_social';
+        break;
+      case 'community_invite':
+      case 'community_update':
+      case 'join_request':
+      case 'role_change':
+        channelId = 'nexushub_community';
+        break;
+      case 'moderation':
+      case 'strike':
+      case 'ban':
+        channelId = 'nexushub_moderation';
+        break;
+      default:
+        channelId = 'nexushub_default';
+    }
+
+    await plugin.show(
+      message.hashCode,
+      title,
+      body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          channelId,
+          channelId.replaceAll('nexushub_', '').toUpperCase(),
+          icon: '@mipmap/ic_launcher',
+          importance: Importance.high,
+          priority: Priority.high,
+          enableVibration: true,
+          playSound: true,
+        ),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
+      payload: jsonEncode(message.data),
+    );
+  }
+}
+
+/// Handler top-level para toque em notificação local quando o app estava terminado.
+/// Deve ser top-level function (não pode ser método estático) para funcionar
+/// com flutter_local_notifications em background.
+@pragma('vm:entry-point')
+void _onBackgroundNotificationResponse(NotificationResponse details) {
+  // Não há como navegar aqui pois o app pode não estar inicializado.
+  // O payload é processado pelo onDidReceiveNotificationResponse quando o app abre.
+  debugPrint('[Push] Background notification response: ${details.payload}');
 }
 
 /// Serviço de Push Notifications via Firebase Cloud Messaging.
@@ -161,7 +244,17 @@ class PushNotificationService {
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const initSettings = InitializationSettings(android: androidSettings);
+    // iOS: solicitar permissões de exibição de notificações locais
+    const darwinSettings = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: darwinSettings,
+    );
 
     await _localNotifications.initialize(
       initSettings,
@@ -176,6 +269,15 @@ class PushNotificationService {
           }
         }
       },
+      // Quando o app estava terminado e o usuário tocou na notificação local
+      onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationResponse,
+    );
+
+    // iOS: configurar apresentação de notificações em foreground
+    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
     );
   }
 
