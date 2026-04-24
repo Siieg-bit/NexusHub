@@ -813,6 +813,140 @@ function DynamicNineSliceCanvas({
   return <canvas ref={canvasRef} style={{ display: "block", maxWidth: "100%" }} />;
 }
 
+// ─── NineSliceCanvasCompact ───────────────────────────────────────────────────
+// Variante experimental: cantos FIXOS no tamanho original do asset,
+// fill zone (região central) se ajusta ao conteúdo — expande do meio para os
+// lados, como o Amino fazia. Sem renderScale: os slices nunca são escalados.
+// A largura mínima é sl+sr+8 (cantos + fill zone mínima de 8px), permitindo
+// balões compactos para textos curtos sem distorcer os cantos decorativos.
+interface NineSliceCanvasCompactProps {
+  img: HTMLImageElement;
+  slice: SliceValues;
+  text: string;
+  maxWidth?: number;
+  minWidth?: number;
+  paddingX?: number;
+  paddingY?: number;
+  horizontalPriority?: boolean;
+  textColor?: string;
+  fontSize?: number;
+  textAlign?: TextAlign;
+}
+function NineSliceCanvasCompact({
+  img, slice, text,
+  maxWidth = 260,
+  minWidth = 60,
+  paddingX = 16,
+  paddingY = 12,
+  horizontalPriority = true,
+  textColor = "rgba(255,255,255,0.9)",
+  fontSize = 13,
+  textAlign = "left",
+}: NineSliceCanvasCompactProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const dpr = window.devicePixelRatio || 1;
+    const { top: st, bottom: sb, left: sl, right: sr } = slice;
+    const lineHeight = Math.round(fontSize * 1.45);
+    const msgColor = textColor.trim() || "rgba(255,255,255,0.9)";
+
+    // ── Cantos FIXOS: padding limitado a 40% do slice ────────────────────────
+    const safeMaxPadH = Math.max(4, Math.round(sl * 0.4));
+    const safeMaxPadV = Math.max(4, Math.round(st * 0.4));
+    const effectivePadX = Math.min(paddingX, safeMaxPadH);
+    const effectivePadY = Math.min(paddingY, safeMaxPadV);
+    const innerLeft  = sl + effectivePadX;
+    const innerRight = sr + effectivePadX;
+    const innerTop   = st + effectivePadY;
+    const innerBot   = sb + effectivePadY;
+
+    // ── Medição de texto ─────────────────────────────────────────────────────
+    const measureCtx = document.createElement("canvas").getContext("2d")!;
+    measureCtx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
+    const rawTextWidth = measureCtx.measureText(text).width;
+    const idealWidth   = Math.ceil(rawTextWidth) + innerLeft + innerRight;
+
+    // ── Largura: fill zone mínima de 8px (cantos nunca se sobrepõem) ─────────
+    // hardMin = sl + sr + 8  → mínimo absoluto (cantos + fill zone mínima)
+    // O minWidth do usuário é ignorado para textos curtos — o balão fica
+    // tão estreito quanto o conteúdo exige.
+    const hardMin      = sl + sr + 8;
+    const effectiveMax = horizontalPriority ? maxWidth : Math.round(maxWidth * 0.7);
+    const logW = Math.max(hardMin, Math.min(effectiveMax, idealWidth));
+    const maxContentW = Math.max(1, logW - innerLeft - innerRight);
+
+    // ── Quebra de linha ──────────────────────────────────────────────────────
+    const words = text.split(" ");
+    const lines: string[] = [];
+    let cur = "";
+    for (const word of words) {
+      const test = cur ? cur + " " + word : word;
+      if (measureCtx.measureText(test).width > maxContentW && cur) {
+        lines.push(cur);
+        cur = word;
+      } else {
+        cur = test;
+      }
+    }
+    if (cur) lines.push(cur);
+    if (lines.length === 0) lines.push("");
+
+    // ── Cálculo de altura ────────────────────────────────────────────────────
+    const textH = lines.length * lineHeight;
+    const logH  = Math.max(textH + innerTop + innerBot, st + sb + 8);
+
+    // ── Redimensiona canvas ──────────────────────────────────────────────────
+    canvas.width  = Math.round(logW * dpr);
+    canvas.height = Math.round(logH * dpr);
+    canvas.style.width  = logW + "px";
+    canvas.style.height = logH + "px";
+    ctx.scale(dpr, dpr);
+
+    // ── Desenha nine-slice (9 regiões) — cantos fixos, fill zone variável ────
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const mw = logW - sl - sr;
+    const mh = logH - st - sb;
+    const regions: [number, number, number, number, number, number, number, number][] = [
+      [0,      0,      sl,        st,        0,       0,       sl,  st  ],
+      [sl,     0,      iw-sl-sr,  st,        sl,      0,       mw,  st  ],
+      [iw-sr,  0,      sr,        st,        sl+mw,   0,       sr,  st  ],
+      [0,      st,     sl,        ih-st-sb,  0,       st,      sl,  mh  ],
+      [sl,     st,     iw-sl-sr,  ih-st-sb,  sl,      st,      mw,  mh  ],
+      [iw-sr,  st,     sr,        ih-st-sb,  sl+mw,   st,      sr,  mh  ],
+      [0,      ih-sb,  sl,        sb,        0,       st+mh,   sl,  sb  ],
+      [sl,     ih-sb,  iw-sl-sr,  sb,        sl,      st+mh,   mw,  sb  ],
+      [iw-sr,  ih-sb,  sr,        sb,        sl+mw,   st+mh,   sr,  sb  ],
+    ];
+    ctx.clearRect(0, 0, logW, logH);
+    for (const [sx, sy, sw, sh, dx, dy, dw, dh] of regions) {
+      if (sw > 0 && sh > 0 && dw > 0 && dh > 0) {
+        ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+      }
+    }
+    // ── Renderiza texto ──────────────────────────────────────────────────────
+    const contentH   = logH - innerTop - innerBot;
+    const textStartY = innerTop + Math.max(0, (contentH - textH) / 2);
+    const fillW      = logW - innerLeft - innerRight;
+    ctx.fillStyle   = msgColor;
+    ctx.font        = `${fontSize}px 'Space Grotesk', sans-serif`;
+    ctx.textBaseline = "top";
+    ctx.textAlign   = textAlign;
+    lines.forEach((line, i) => {
+      let x: number;
+      if (textAlign === "center") x = innerLeft + fillW / 2;
+      else if (textAlign === "right") x = logW - innerRight;
+      else x = innerLeft;
+      ctx.fillText(line, x, textStartY + i * lineHeight);
+    });
+  }, [img, slice, text, maxWidth, minWidth, paddingX, paddingY, horizontalPriority, textColor, fontSize, textAlign]);
+  return <canvas ref={canvasRef} style={{ display: "block", maxWidth: "100%" }} />;
+}
+
 // ─── NineSliceCanvas ──────────────────────────────────────────────────────────
 // Renderiza um balão nine-slice clássico via canvas com suporte a High-DPI (Retina).
 interface NineSliceCanvasProps {
@@ -1580,19 +1714,37 @@ function NineSlicePreviewPanel({
               <span className="text-[8px] font-mono w-10 flex-shrink-0 text-right" style={{ color: "rgba(255,255,255,0.2)" }}>{s.label}</span>
               <div className={`flex flex-1 ${s.mine ? "justify-end" : "justify-start"}`}>
                 {isDynamic ? (
-                  <DynamicNineSliceCanvas
-                    img={imgState.img}
-                    slice={slice}
-                    text={customText || s.text}
-                    maxWidth={dynMaxWidth}
-                    minWidth={dynMinWidth}
-                    paddingX={dynPaddingX}
-                    paddingY={dynPaddingY}
-                    horizontalPriority={dynHorizontalPriority}
-                    textColor={textColor}
-                    fontSize={fontSize}
-                    textAlign={textAlign}
-                  />
+                  <div className="flex flex-col gap-1 items-inherit">
+                    <DynamicNineSliceCanvas
+                      img={imgState.img}
+                      slice={slice}
+                      text={customText || s.text}
+                      maxWidth={dynMaxWidth}
+                      minWidth={dynMinWidth}
+                      paddingX={dynPaddingX}
+                      paddingY={dynPaddingY}
+                      horizontalPriority={dynHorizontalPriority}
+                      textColor={textColor}
+                      fontSize={fontSize}
+                      textAlign={textAlign}
+                    />
+                    <div className="flex items-center gap-1">
+                      <span className="text-[7px] font-mono" style={{ color: "rgba(251,191,36,0.5)" }}>▸ compact</span>
+                      <NineSliceCanvasCompact
+                        img={imgState.img}
+                        slice={slice}
+                        text={customText || s.text}
+                        maxWidth={dynMaxWidth}
+                        minWidth={dynMinWidth}
+                        paddingX={dynPaddingX}
+                        paddingY={dynPaddingY}
+                        horizontalPriority={dynHorizontalPriority}
+                        textColor={textColor}
+                        fontSize={fontSize}
+                        textAlign={textAlign}
+                      />
+                    </div>
+                  </div>
                 ) : (
                   <NineSliceCanvas
                     img={imgState.img}
