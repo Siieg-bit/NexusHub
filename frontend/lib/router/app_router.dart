@@ -476,14 +476,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           wikiId: state.pathParameters['id']!,
         ),
       ),
-      // Rota com contexto de comunidade — usada pela WikiListScreen
-      GoRoute(
-        path: '/community/:communityId/wiki/:wikiId',
-        name: 'community-wiki-detail',
-        builder: (context, state) => WikiDetailScreen(
-          wikiId: state.pathParameters['wikiId']!,
-        ),
-      ),
+      // Rotas estáticas de wiki ANTES da rota dinâmica para evitar conflito
       GoRoute(
         path: '/community/:communityId/wiki/create',
         name: 'create-wiki',
@@ -501,6 +494,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'wiki-curator-review',
         builder: (context, state) => WikiCuratorReviewScreen(
           communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      // Rota dinâmica com contexto de comunidade — usada pela WikiListScreen
+      // Declarada DEPOIS das rotas estáticas para evitar que 'create'/'review'
+      // sejam interpretados como :wikiId
+      GoRoute(
+        path: '/community/:communityId/wiki/:wikiId',
+        name: 'community-wiki-detail',
+        builder: (context, state) => WikiDetailScreen(
+          wikiId: state.pathParameters['wikiId']!,
         ),
       ),
 

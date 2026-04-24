@@ -20,6 +20,7 @@ import '../../communities/providers/community_detail_providers.dart'
     as community_providers;
 import '../../moderation/widgets/report_dialog.dart';
 import '../../stickers/stickers.dart';
+import '../../../core/widgets/image_viewer.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 // ============================================================================
@@ -743,16 +744,31 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
     setState(() => _isSendingComment = true);
     try {
       if (isSticker) {
-        // Sticker: RPC dedicado (mesmo do blog)
-        await SupabaseService.rpc('send_comment_with_sticker', params: {
-          'p_wiki_id': widget.wikiId,
-          'p_content': textContent.isNotEmpty ? textContent : '',
-          'p_parent_id': _replyingToComment?.id,
-          'p_sticker_id': stickerId,
-          'p_sticker_url': stickerUrl,
-          'p_sticker_name': stickerName,
-          'p_pack_id': packId,
-        });
+        // Sticker: insert direto com wiki_id (o RPC send_comment_with_sticker
+        // só aceita post_id, por isso usamos insert manual)
+        final row = <String, dynamic>{
+          'wiki_id': widget.wikiId,
+          'author_id': userId,
+          'content': textContent.isNotEmpty ? textContent : '[sticker]',
+          'parent_id': _replyingToComment?.id,
+          'sticker_url': stickerUrl,
+        };
+        if (stickerId != null) row['sticker_id'] = stickerId;
+        if (stickerName != null) row['sticker_name'] = stickerName;
+        if (packId != null) row['pack_id'] = packId;
+        await SupabaseService.table('comments').insert(row);
+        // Registrar uso recente do sticker
+        if (stickerId != null && stickerUrl != null) {
+          try {
+            await SupabaseService.table('recently_used_stickers').upsert({
+              'user_id': userId,
+              'sticker_id': stickerId,
+              'sticker_url': stickerUrl,
+              'sticker_name': stickerName ?? '',
+              'used_at': DateTime.now().toIso8601String(),
+            });
+          } catch (_) {}
+        }
       } else if (mediaUrl != null) {
         // Imagem ou vídeo
         final isVideo = _pendingVideoUrl != null;
@@ -844,7 +860,9 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
         );
       },
     );
-  }leteComment(CommentModel comment) async {
+  }
+
+  Future<void> _deleteComment(CommentModel comment) async {
     final s = getStrings();
     final r = context.r;
     final confirmed = await showDialog<bool>(
@@ -2299,14 +2317,96 @@ class _WikiCommentTileState extends ConsumerState<_WikiCommentTile> {
                       ],
                     ),
                     SizedBox(height: r.s(4)),
-                    Text(
-                      comment.content,
-                      style: TextStyle(
-                        fontSize: r.fs(14),
-                        height: 1.4,
-                        color: context.nexusTheme.textPrimary,
+                    // Renderização rica: sticker, imagem, vídeo ou texto
+                    if (comment.content != '[sticker]' &&
+                        comment.content != '[image]' &&
+                        comment.content != '[video]' &&
+                        !comment.isSticker)
+                      Text(
+                        comment.content,
+                        style: TextStyle(
+                          fontSize: r.fs(14),
+                          height: 1.4,
+                          color: context.nexusTheme.textPrimary,
+                        ),
                       ),
-                    ),
+                    // Sticker
+                    if (comment.isSticker &&
+                        (comment.stickerUrl ?? comment.mediaUrl) != null)
+                      Padding(
+                        padding: EdgeInsets.only(top: r.s(6)),
+                        child: StickerMessageBubble(
+                          stickerId: comment.stickerId ??
+                              (comment.stickerUrl ?? comment.mediaUrl)!,
+                          stickerUrl:
+                              comment.stickerUrl ?? comment.mediaUrl!,
+                          stickerName: comment.stickerName ?? '',
+                          packId: comment.packId,
+                          isSentByMe: comment.authorId ==
+                              SupabaseService.currentUserId,
+                          size: r.s(100),
+                        ),
+                      )
+                    // Vídeo
+                    else if (!comment.isSticker &&
+                        comment.mediaUrl != null &&
+                        (comment.mediaUrl!.contains('.mp4') ||
+                            comment.mediaUrl!.contains('.mov') ||
+                            comment.mediaUrl!.contains('.webm')))
+                      Padding(
+                        padding: EdgeInsets.only(top: r.s(6)),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(r.s(10)),
+                          child: Container(
+                            width: r.s(200),
+                            height: r.s(120),
+                            color: Colors.black,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Icon(
+                                  Icons.play_circle_fill_rounded,
+                                  color:
+                                      Colors.white.withValues(alpha: 0.9),
+                                  size: r.s(48),
+                                ),
+                                Positioned(
+                                  bottom: r.s(6),
+                                  left: r.s(6),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(6),
+                                        vertical: r.s(2)),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black54,
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(4)),
+                                    ),
+                                    child: Text('Vídeo',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: r.fs(10))),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    // Imagem genérica
+                    else if (!comment.isSticker &&
+                        comment.mediaUrl != null &&
+                        comment.mediaUrl!.isNotEmpty)
+                      Padding(
+                        padding: EdgeInsets.only(top: r.s(6)),
+                        child: TappableImage(
+                          url: comment.mediaUrl!,
+                          width: r.s(200),
+                          height: r.s(200),
+                          fit: BoxFit.cover,
+                          borderRadius: BorderRadius.circular(r.s(10)),
+                        ),
+                      ),
                     SizedBox(height: r.s(8)),
                     Row(
                       children: [
