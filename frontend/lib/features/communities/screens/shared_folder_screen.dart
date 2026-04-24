@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -552,7 +553,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
                               Text(
                                 _showPending
                                     ? 'Nenhuma imagem pendente!'
-                                    : s.noFilesYet,
+                                    : s.noFiles,
                                 style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: r.fs(15)),
@@ -567,7 +568,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
     );
   }
 
-  Widget _buildFileList(List<Map<String, dynamic>> files, ResponsiveHelper r) {
+  Widget _buildFileList(List<Map<String, dynamic>> files, Responsive r) {
     // Imagens em grid, outros em lista
     final tabIndex = _tabController.index;
     final isImageTab = tabIndex == 1 ||
@@ -616,7 +617,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
     );
   }
 
-  void _showFolderSettings(BuildContext context, ResponsiveHelper r) {
+  void _showFolderSettings(BuildContext context, Responsive r) {
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
@@ -765,7 +766,7 @@ class _ImageGridTile extends StatelessWidget {
     );
   }
 
-  void _showOptions(BuildContext context, ResponsiveHelper r) {
+  void _showOptions(BuildContext context, Responsive r) {
     final currentUserId = SupabaseService.currentUserId;
     final uploaderId = file['uploader_id'] as String?;
     final canDelete = currentUserId == uploaderId || isStaff;
@@ -950,7 +951,7 @@ class _FileTile extends ConsumerWidget {
     );
   }
 
-  void _showOptions(BuildContext context, ResponsiveHelper r) {
+  void _showOptions(BuildContext context, Responsive r) {
     final s = getStrings();
     final currentUserId = SupabaseService.currentUserId;
     final uploaderId = file['uploader_id'] as String?;
