@@ -2213,23 +2213,14 @@ function BubblesDashboard() {
                           {form.usePolyFill ? "✦ Polígono" : "Polígono"}
                         </button>
                       )}
-                      {!form.isAnimated && form.isDynamic && (
-                        <button onClick={() => setPreviewTab("zones" as "slice")}
-                          className="flex-1 py-2 rounded-xl text-[12px] font-semibold transition-all"
-                          style={{
-                            background: previewTab === ("zones" as string) ? "rgba(52,211,153,0.15)" : "rgba(255,255,255,0.03)",
-                            border: `1px solid ${previewTab === ("zones" as string) ? "rgba(52,211,153,0.3)" : "rgba(255,255,255,0.07)"}`,
-                            color: previewTab === ("zones" as string) ? "#34D399" : "rgba(255,255,255,0.35)",
-                            fontFamily: "'Space Grotesk', sans-serif",
-                          }}>
-                          Zonas
-                        </button>
-                      )}
+                      {/* Aba Zonas removida: quando isDynamic=true, o DynamicNineSliceOverlay
+                           já aparece diretamente na aba Ajustar Bordas. */}
                     </div>
 
                     {imageUrl ? (
                       <>
-                        {previewTab === "slice" && !form.isAnimated && (
+                        {previewTab === "slice" && !form.isAnimated && !form.isDynamic && (
+                          // Modo clássico: editor de bordas com overlay de escurecimento
                           <NineSliceEditor
                             imageUrl={imageUrl}
                             imageDimensions={imageDimensions}
@@ -2240,7 +2231,7 @@ function BubblesDashboard() {
                             textAlign={form.textAlign}
                             padTop={form.padTop} padBottom={form.padBottom}
                             padLeft={form.padLeft} padRight={form.padRight}
-                            isDynamic={form.isDynamic}
+                            isDynamic={false}
                             dynMaxWidth={form.dynMaxWidth}
                             dynMinWidth={form.dynMinWidth}
                             dynPaddingX={form.dynPaddingX}
@@ -2249,6 +2240,35 @@ function BubblesDashboard() {
                             dynTransitionZone={form.dynTransitionZone}
                             onTransitionChange={(t) => setForm(f => ({ ...f, dynTransitionZone: t }))}
                           />
+                        )}
+                        {previewTab === "slice" && !form.isAnimated && form.isDynamic && (
+                          // Modo dinâmico: overlay de zonas + preview de texto na mesma aba
+                          <div className="space-y-3">
+                            <DynamicNineSliceOverlay
+                              imageUrl={imageUrl}
+                              imageDimensions={imageDimensions}
+                              slice={sliceValues}
+                              transitionZone={form.dynTransitionZone}
+                              onSliceChange={handleSliceChange}
+                              onTransitionChange={(t) => setForm(f => ({ ...f, dynTransitionZone: t }))}
+                            />
+                            <NineSlicePreviewPanel
+                              imageUrl={imageUrl}
+                              slice={sliceValues}
+                              textColor={form.textColor}
+                              fontSize={form.fontSize}
+                              textAlign={form.textAlign}
+                              padTop={form.padTop} padBottom={form.padBottom}
+                              padLeft={form.padLeft} padRight={form.padRight}
+                              isDynamic={true}
+                              dynMaxWidth={form.dynMaxWidth}
+                              dynMinWidth={form.dynMinWidth}
+                              dynPaddingX={form.dynPaddingX}
+                              dynPaddingY={form.dynPaddingY}
+                              dynHorizontalPriority={form.dynHorizontalPriority}
+                              dynTransitionZone={form.dynTransitionZone}
+                            />
+                          </div>
                         )}
 
                         {previewTab === ("poly" as string) && !form.isAnimated && (
