@@ -37,8 +37,8 @@ class FramePickerResult {
 /// Comportamento:
 /// - Mostra todas as molduras da loja (store_items com type='avatar_frame')
 /// - Molduras que o usuário possui aparecem primeiro e são selecionáveis
-/// - Molduras não possuídas aparecem depois, bloqueadas (overlay escuro + cadeado)
-/// - Preview do avatar com a moldura selecionada no topo do painel
+/// - Molduras não possuídas aparecem depois com cadeado + preço + botão de compra rápida
+/// - Preview do avatar com a moldura selecionada no topo do painel (alinhado corretamente)
 /// - Botão ✓ confirma a seleção (retorna [FramePickerResult])
 /// - Botão ✗ cancela e retorna null
 /// - A escolha NÃO é persistida aqui — só quando o usuário salvar o perfil
@@ -92,6 +92,9 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
 
   // Se a seleção atual é "sem moldura"
   bool _selectedNone = false;
+
+  // Controle de compra em andamento
+  bool _isPurchasing = false;
 
   @override
   void initState() {
@@ -176,7 +179,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
   /// Extrai a URL real do frame de um store_item.
   ///
   /// Priorizamos asset_config.frame_url / image_url para mostrar somente a
-  /// moldura transparente no seletor, evitando thumbs promocionais tortas.
+  /// moldura transparente no seletor, evitando thumbs promocionais tortos.
   String? _extractFrameUrl(Map<String, dynamic> item) {
     final config = item['asset_config'];
     if (config is Map) {
@@ -222,6 +225,133 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
   }
 
   void _cancel() => Navigator.of(context).pop(null);
+
+  /// Exibe diálogo de confirmação de compra rápida para molduras bloqueadas.
+  Future<void> _quickPurchase(_FrameGridItem item) async {
+    if (_isPurchasing) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Comprar moldura'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if ((item.frameUrl ?? item.previewUrl) != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: CachedNetworkImage(
+                    imageUrl: item.frameUrl ?? item.previewUrl!,
+                    height: 80,
+                    fit: BoxFit.contain,
+                    errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+            Text(
+              item.name,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.monetization_on_rounded,
+                    color: Colors.amber[600], size: 18),
+                const SizedBox(width: 4),
+                Text(
+                  '${item.priceCoins ?? 0} moedas',
+                  style: TextStyle(
+                    color: Colors.amber[700],
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Comprar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isPurchasing = true);
+    try {
+      final result = await SupabaseService.rpc(
+        'purchase_store_item',
+        params: {'p_item_id': item.storeItemId},
+      );
+
+      if (!mounted) return;
+
+      final resultMap = result is Map<String, dynamic>
+          ? result
+          : (result is Map ? Map<String, dynamic>.from(result) : <String, dynamic>{});
+
+      final error = resultMap['error'] as String?;
+      if (error != null) {
+        final msg = switch (error) {
+          'insufficient_coins' => 'Moedas insuficientes.',
+          'already_purchased' => 'Você já possui esta moldura.',
+          'sold_out' => 'Item esgotado.',
+          'item_not_found' => 'Item não encontrado.',
+          _ => 'Erro ao comprar: $error',
+        };
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: Colors.red[700]),
+        );
+        return;
+      }
+
+      // Compra bem-sucedida: recarregar lista e selecionar a moldura recém-comprada
+      await _loadFrames();
+      if (!mounted) return;
+
+      // Encontrar a moldura recém-comprada na lista atualizada
+      final newFrame = _ownedFrames.firstWhere(
+        (f) => f['store_item_id'] == item.storeItemId,
+        orElse: () => <String, dynamic>{},
+      );
+      if (newFrame.isNotEmpty) {
+        _selectFrame(
+          frameUrl: newFrame['frame_url'] as String?,
+          purchaseId: newFrame['purchase_id'] as String?,
+          storeItemId: newFrame['store_item_id'] as String?,
+          isAnimated: newFrame['is_animated'] as bool? ?? false,
+        );
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${item.name} comprada com sucesso!'),
+          backgroundColor: Colors.green[700],
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao comprar: $e'),
+          backgroundColor: Colors.red[700],
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isPurchasing = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -344,7 +474,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
       ));
     }
 
-    // Molduras não possuídas (da loja)
+    // Molduras não possuídas (da loja) — com compra rápida
     for (final si in _allFrames) {
       final id = si['id'] as String?;
       if (id == null || _ownedStoreItemIds.contains(id)) continue;
@@ -360,8 +490,6 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
         isAnimated: isAnimated,
       ));
     }
-
-    // Sempre mostrar o grid — molduras bloqueadas aparecem com cadeado
 
     return GridView.builder(
       padding: EdgeInsets.all(r.s(12)),
@@ -384,8 +512,9 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
             !_selectedNone);
 
     return GestureDetector(
+      // Molduras possuídas: selecionar. Bloqueadas: compra rápida.
       onTap: item.isLocked
-          ? null
+          ? () => _quickPurchase(item)
           : () => _selectFrame(
                 frameUrl: item.frameUrl,
                 purchaseId: item.purchaseId,
@@ -421,6 +550,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
                   ),
 
                   // Overlay de cadeado para molduras bloqueadas
+                  // Toque abre compra rápida (onTap no GestureDetector pai)
                   if (item.isLocked)
                     Container(
                       decoration: BoxDecoration(
@@ -431,17 +561,25 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.lock_rounded,
-                                color: Colors.white, size: r.s(20)),
+                            Icon(Icons.shopping_cart_rounded,
+                                color: Colors.white, size: r.s(18)),
                             if (item.priceCoins != null) ...[
                               SizedBox(height: r.s(2)),
-                              Text(
-                                '${item.priceCoins}',
-                                style: TextStyle(
-                                  color: Colors.amber[300],
-                                  fontSize: r.fs(10),
-                                  fontWeight: FontWeight.w700,
-                                ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.monetization_on_rounded,
+                                      color: Colors.amber[300], size: r.s(10)),
+                                  SizedBox(width: r.s(2)),
+                                  Text(
+                                    '${item.priceCoins}',
+                                    style: TextStyle(
+                                      color: Colors.amber[300],
+                                      fontSize: r.fs(9),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ],
@@ -562,6 +700,16 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
 }
 
 // ─── Preview do avatar com moldura ───────────────────────────────────────────
+//
+// Bug fix: o widget anterior usava Positioned com offsets negativos calculados
+// manualmente (top: -(frameSize - size) / 2, left: -(frameSize - size) / 2)
+// para sobrepor a moldura ao avatar. Isso causava desalinhamento porque a
+// moldura saía dos limites do Stack e o clipBehavior: Clip.none não era
+// suficiente para garantir o alinhamento perfeito em todos os tamanhos de tela.
+//
+// Solução: usar um Stack com tamanho fixo = frameSize (moldura), centralizar
+// o avatar com Positioned.fill + Center, e a moldura ocupa Positioned.fill
+// diretamente. Isso garante alinhamento perfeito independente do tamanho.
 
 class _AvatarPreview extends StatelessWidget {
   final String? avatarUrl;
@@ -578,63 +726,69 @@ class _AvatarPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // frameSize = tamanho total do widget (moldura + margem)
+    // avatarSize = tamanho do círculo do avatar dentro da moldura
+    // A moldura ocupa frameSize x frameSize; o avatar fica centralizado
+    // com tamanho = size (passado pelo caller).
     final frameSize = size * 1.4;
+    final hasFrame = (frameUrl ?? '').isNotEmpty;
+
     return SizedBox(
       width: frameSize,
       height: frameSize,
       child: Stack(
         clipBehavior: Clip.none,
-        alignment: Alignment.center,
         children: [
-          // Avatar
-          Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey[300],
-              border: frameUrl == null || frameUrl!.isEmpty
-                  ? Border.all(color: Colors.grey[400]!, width: 1.5)
-                  : null,
-            ),
-            child: ClipOval(
-              child: (avatarUrl ?? '').isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: avatarUrl!,
-                      fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) =>
-                          Icon(Icons.person_rounded, size: size * 0.55),
-                    )
-                  : Icon(Icons.person_rounded,
-                      color: Colors.grey[600], size: size * 0.55),
+          // Avatar centralizado no Stack
+          Positioned.fill(
+            child: Center(
+              child: SizedBox(
+                width: size,
+                height: size,
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.grey[300],
+                    border: hasFrame
+                        ? null
+                        : Border.all(color: Colors.grey[400]!, width: 1.5),
+                  ),
+                  child: ClipOval(
+                    child: (avatarUrl ?? '').isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: avatarUrl!,
+                            fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) =>
+                                Icon(Icons.person_rounded, size: size * 0.55),
+                          )
+                        : Icon(Icons.person_rounded,
+                            color: Colors.grey[600], size: size * 0.55),
+                  ),
+                ),
+              ),
             ),
           ),
-          // Frame overlay — usa Image.network para GIF/WebP animado
-          if ((frameUrl ?? '').isNotEmpty)
-            Positioned(
-              top: -(frameSize - size) / 2,
-              left: -(frameSize - size) / 2,
-              child: SizedBox(
-                width: frameSize,
-                height: frameSize,
-                child: isFrameAnimated
-                    ? Image.network(
-                        frameUrl!,
-                        fit: BoxFit.contain,
-                        gaplessPlayback: true,
-                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                        loadingBuilder: (_, child, progress) {
-                          if (progress == null) return child;
-                          return const SizedBox.shrink();
-                        },
-                      )
-                    : CachedNetworkImage(
-                        imageUrl: frameUrl!,
-                        fit: BoxFit.contain,
-                        errorWidget: (_, __, ___) => const SizedBox.shrink(),
-                        placeholder: (_, __) => const SizedBox.shrink(),
-                      ),
-              ),
+
+          // Moldura sobreposta — ocupa todo o Stack (frameSize x frameSize)
+          if (hasFrame)
+            Positioned.fill(
+              child: isFrameAnimated
+                  ? Image.network(
+                      frameUrl!,
+                      fit: BoxFit.contain,
+                      gaplessPlayback: true,
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                      loadingBuilder: (_, child, progress) {
+                        if (progress == null) return child;
+                        return const SizedBox.shrink();
+                      },
+                    )
+                  : CachedNetworkImage(
+                      imageUrl: frameUrl!,
+                      fit: BoxFit.contain,
+                      errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                      placeholder: (_, __) => const SizedBox.shrink(),
+                    ),
             ),
         ],
       ),
