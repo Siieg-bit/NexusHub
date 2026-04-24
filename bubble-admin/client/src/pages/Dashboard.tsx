@@ -4,6 +4,19 @@ import { supabase, StoreItem } from "@/lib/supabase";
 import { toast } from "sonner";
 import { Upload, Trash2, AlertCircle, CheckCircle2, Loader2, RefreshCw, Pencil, Move } from "lucide-react";
 import AdminLayout, { AdminSection } from "@/components/AdminLayout";
+import {
+  getBubbleMode,
+  getSliceConfig,
+  getDynamicContent,
+  getDynamicBehavior,
+  serializeDynamicConfig,
+  calculateNineSliceZones,
+  DYNAMIC_CONTENT_DEFAULTS,
+  DYNAMIC_BEHAVIOR_DEFAULTS,
+  type BubbleMode,
+  type DynamicContentConfig,
+  type DynamicBehaviorConfig,
+} from "@/lib/dynamicNineSlice";
 import OverviewPage from "./OverviewPage";
 import StoreItemsPage from "./StoreItemsPage";
 import FramesDashboard from "./FramesDashboard";
@@ -27,6 +40,7 @@ interface PolyPoint { x: number; y: number; }
 
 /** Configuração tipada do asset_config para bubbles */
 interface BubbleAssetConfig {
+  mode?: BubbleMode;
   bubble_style: "nine_slice" | "animated";
   image_url: string | null;
   bubble_url: string | null;
@@ -52,6 +66,10 @@ interface BubbleAssetConfig {
   content_padding_v?: number;
   /** Polígono opcional de fill (8 pontos normalizados 0–1). Quando presente, o Flutter aplica ClipPath. */
   poly_points?: PolyPoint[];
+  // ── NOVOS: campos do modo dynamic_nineslice ─────────────────────────────
+  slice?: { left: number; right: number; top: number; bottom: number };
+  content?: { padding?: { x: number; y: number }; maxWidth?: number; minWidth?: number };
+  behavior?: { horizontalPriority?: boolean; maxHeightRatio?: number; transitionZone?: number };
 }
 
 /** Valores padrão para um novo bubble */
@@ -79,6 +97,14 @@ interface BubbleForm {
   padTop: number; padBottom: number; padLeft: number; padRight: number;
   usePolyFill: boolean;
   polyPoints: PolyPoint[];
+  // ── Modo dinâmico ────────────────────────────────────────────────────────
+  isDynamic: boolean;
+  dynMaxWidth: number;
+  dynMinWidth: number;
+  dynPaddingX: number;
+  dynPaddingY: number;
+  dynHorizontalPriority: boolean;
+  dynTransitionZone: number;
 }
 
 const EMPTY_FORM: BubbleForm = {
@@ -89,6 +115,13 @@ const EMPTY_FORM: BubbleForm = {
   padTop: 8, padBottom: 8, padLeft: 8, padRight: 8,
   usePolyFill: false,
   polyPoints: [],
+  isDynamic: false,
+  dynMaxWidth: 260,
+  dynMinWidth: 60,
+  dynPaddingX: 16,
+  dynPaddingY: 12,
+  dynHorizontalPriority: true,
+  dynTransitionZone: 0.15,
 };
 
 type SliceValues = { top: number; bottom: number; left: number; right: number };
@@ -138,6 +171,10 @@ function parseBubbleConfig(raw: Record<string, unknown>): BubbleAssetConfig {
     pad_left: (raw.pad_left as number) ?? 8,
     pad_right: (raw.pad_right as number) ?? 8,
     poly_points: Array.isArray(raw.poly_points) ? (raw.poly_points as PolyPoint[]) : undefined,
+    mode: (raw.mode as BubbleMode) ?? undefined,
+    slice: raw.slice as BubbleAssetConfig["slice"],
+    content: raw.content as BubbleAssetConfig["content"],
+    behavior: raw.behavior as BubbleAssetConfig["behavior"],
   };
 }
 
@@ -237,6 +274,136 @@ function ChatPreview({ imageUrl, name, cfg }: { imageUrl: string | null; name: s
           )}
         </div>
       ))}
+    </div>
+  );
+}
+
+
+// ─── DynamicNineSliceOverlay ──────────────────────────────────────────────────
+// Overlay visual com 3 zonas: bordas (fixas), transição (suavização), centro (stretch).
+// Renderizado sobre o NineSliceEditor quando o modo dynamic_nineslice está ativo.
+interface DynamicNineSliceOverlayProps {
+  imageUrl: string;
+  imageDimensions: { w: number; h: number } | null;
+  slice: SliceValues;
+  transitionZone: number;
+}
+function DynamicNineSliceOverlay({
+  imageUrl, imageDimensions, slice, transitionZone,
+}: DynamicNineSliceOverlayProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [canvasSize, setCanvasSize] = useState({ w: 240, h: 240 });
+  const imgW = imageDimensions?.w ?? 128;
+  const imgH = imageDimensions?.h ?? 128;
+
+  useEffect(() => {
+    function update() {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      setCanvasSize({ w: rect.width, h: rect.height });
+    }
+    update();
+    const ro = new ResizeObserver(update);
+    if (containerRef.current) ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  const scaleX = canvasSize.w / imgW;
+  const scaleY = canvasSize.h / imgH;
+
+  // Posições em px no canvas visual
+  const topPx    = slice.top    * scaleY;
+  const bottomPx = canvasSize.h - slice.bottom * scaleY;
+  const leftPx   = slice.left   * scaleX;
+  const rightPx  = canvasSize.w - slice.right  * scaleX;
+  const centerW  = rightPx - leftPx;
+  const centerH  = bottomPx - topPx;
+  const tzW = centerW * transitionZone;
+  const tzH = centerH * transitionZone;
+
+  return (
+    <div className="space-y-3">
+      {/* Legenda das zonas */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-sm" style={{ background: "rgba(245,158,11,0.4)", border: "1px solid #F59E0B" }} />
+          <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>Bordas fixas</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-sm" style={{ background: "rgba(167,139,250,0.3)", border: "1px solid #A78BFA" }} />
+          <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>Transição</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-sm" style={{ background: "rgba(52,211,153,0.3)", border: "1px solid #34D399" }} />
+          <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>Centro (stretch)</span>
+        </div>
+      </div>
+      {/* Canvas do overlay */}
+      <div
+        ref={containerRef}
+        className="relative rounded-xl overflow-hidden select-none"
+        style={{
+          width: "100%",
+          paddingBottom: `${(imgH / imgW) * 100}%`,
+          background: "repeating-conic-gradient(rgba(255,255,255,0.04) 0% 25%, transparent 0% 50%) 0 0 / 12px 12px",
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
+        {/* Imagem de fundo */}
+        <img
+          src={imageUrl}
+          alt="bubble"
+          draggable={false}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "fill", pointerEvents: "none" }}
+        />
+        {/* SVG overlay das zonas */}
+        <svg
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}
+          viewBox={`0 0 ${canvasSize.w} ${canvasSize.h}`}
+          preserveAspectRatio="none"
+        >
+          {/* Zona de bordas fixas — overlay âmbar */}
+          {/* Topo */}
+          <rect x={0} y={0} width={canvasSize.w} height={topPx} fill="rgba(245,158,11,0.18)" stroke="#F59E0B" strokeWidth="0.5" />
+          {/* Base */}
+          <rect x={0} y={bottomPx} width={canvasSize.w} height={canvasSize.h - bottomPx} fill="rgba(245,158,11,0.18)" stroke="#F59E0B" strokeWidth="0.5" />
+          {/* Esquerda */}
+          <rect x={0} y={topPx} width={leftPx} height={centerH} fill="rgba(245,158,11,0.18)" stroke="#F59E0B" strokeWidth="0.5" />
+          {/* Direita */}
+          <rect x={rightPx} y={topPx} width={canvasSize.w - rightPx} height={centerH} fill="rgba(245,158,11,0.18)" stroke="#F59E0B" strokeWidth="0.5" />
+
+          {/* Zona de transição — overlay violeta */}
+          {/* Topo */}
+          <rect x={leftPx} y={topPx} width={centerW} height={tzH} fill="rgba(167,139,250,0.2)" stroke="#A78BFA" strokeWidth="0.5" strokeDasharray="3 2" />
+          {/* Base */}
+          <rect x={leftPx} y={bottomPx - tzH} width={centerW} height={tzH} fill="rgba(167,139,250,0.2)" stroke="#A78BFA" strokeWidth="0.5" strokeDasharray="3 2" />
+          {/* Esquerda */}
+          <rect x={leftPx} y={topPx + tzH} width={tzW} height={Math.max(0, centerH - tzH * 2)} fill="rgba(167,139,250,0.2)" stroke="#A78BFA" strokeWidth="0.5" strokeDasharray="3 2" />
+          {/* Direita */}
+          <rect x={rightPx - tzW} y={topPx + tzH} width={tzW} height={Math.max(0, centerH - tzH * 2)} fill="rgba(167,139,250,0.2)" stroke="#A78BFA" strokeWidth="0.5" strokeDasharray="3 2" />
+
+          {/* Centro (stretch principal) — overlay verde */}
+          <rect
+            x={leftPx + tzW} y={topPx + tzH}
+            width={Math.max(0, centerW - tzW * 2)} height={Math.max(0, centerH - tzH * 2)}
+            fill="rgba(52,211,153,0.15)" stroke="#34D399" strokeWidth="0.75"
+          />
+          {/* Label centro */}
+          {centerW > 40 && centerH > 20 && (
+            <text
+              x={leftPx + centerW / 2} y={topPx + centerH / 2}
+              textAnchor="middle" dominantBaseline="middle"
+              fontSize="8" fontFamily="'DM Mono', monospace"
+              fill="#34D399" opacity="0.8"
+            >
+              STRETCH
+            </text>
+          )}
+        </svg>
+      </div>
+      <p className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>
+        Verde = área de expansão principal · Violeta = suavização · Âmbar = bordas preservadas
+      </p>
     </div>
   );
 }
@@ -362,6 +529,139 @@ function NineSliceCanvas({
     });
   }, [img, slice, text, maxWidth, textColor, fontSize, textAlign, padTop, padBottom, padLeft, padRight]);
 
+  return <canvas ref={canvasRef} style={{ display: "block", maxWidth: "100%" }} />;
+}
+
+
+// ─── DynamicNineSliceCanvas ───────────────────────────────────────────────────
+// Renderiza um balão no modo dynamic_nineslice.
+// Diferença do NineSliceCanvas clássico:
+//   - Usa padding do content (paddingX/paddingY) em vez de pad_top/pad_left etc.
+//   - Calcula largura com clamp(textWidth + 2*paddingX, minWidth, maxWidth)
+//   - Cresce horizontalmente primeiro; quebra linha apenas quando necessário
+//   - Centro absorve a deformação; bordas permanecem estáveis
+interface DynamicNineSliceCanvasProps {
+  img: HTMLImageElement;
+  slice: SliceValues;
+  text: string;
+  maxWidth?: number;
+  minWidth?: number;
+  paddingX?: number;
+  paddingY?: number;
+  horizontalPriority?: boolean;
+  textColor?: string;
+  fontSize?: number;
+  textAlign?: TextAlign;
+}
+function DynamicNineSliceCanvas({
+  img, slice, text,
+  maxWidth = 260,
+  minWidth = 60,
+  paddingX = 16,
+  paddingY = 12,
+  horizontalPriority = true,
+  textColor = "rgba(255,255,255,0.9)",
+  fontSize = 13,
+  textAlign = "left",
+}: DynamicNineSliceCanvasProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const dpr = window.devicePixelRatio || 1;
+    const { top: st, bottom: sb, left: sl, right: sr } = slice;
+    const lineHeight = Math.round(fontSize * 1.45);
+    const msgColor = textColor.trim() || "rgba(255,255,255,0.9)";
+
+    // Padding total = slice + padding de conteúdo
+    const innerLeft  = sl + paddingX;
+    const innerRight = sr + paddingX;
+    const innerTop   = st + paddingY;
+    const innerBot   = sb + paddingY;
+
+    // ── Medição de texto ─────────────────────────────────────────────────────
+    const measureCtx = document.createElement("canvas").getContext("2d")!;
+    measureCtx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
+
+    // Medir texto sem quebra de linha para calcular largura ideal
+    const rawTextWidth = measureCtx.measureText(text).width;
+    const idealWidth   = Math.ceil(rawTextWidth) + innerLeft + innerRight;
+
+    // ── Cálculo de largura (clamp) ───────────────────────────────────────────
+    // horizontalPriority = true → expande até maxWidth antes de quebrar linha
+    // horizontalPriority = false → quebra linha mais cedo (usa 70% do maxWidth)
+    const effectiveMax = horizontalPriority ? maxWidth : Math.round(maxWidth * 0.7);
+    const logW = Math.max(minWidth, Math.min(effectiveMax, idealWidth));
+    const maxContentW = Math.max(1, logW - innerLeft - innerRight);
+
+    // ── Quebra de linha ──────────────────────────────────────────────────────
+    const words = text.split(" ");
+    const lines: string[] = [];
+    let cur = "";
+    for (const word of words) {
+      const test = cur ? cur + " " + word : word;
+      if (measureCtx.measureText(test).width > maxContentW && cur) {
+        lines.push(cur);
+        cur = word;
+      } else {
+        cur = test;
+      }
+    }
+    if (cur) lines.push(cur);
+    if (lines.length === 0) lines.push("");
+
+    // ── Cálculo de altura ────────────────────────────────────────────────────
+    const textH = lines.length * lineHeight;
+    const logH  = Math.max(textH + innerTop + innerBot, st + sb + 8);
+
+    // ── Redimensiona canvas ──────────────────────────────────────────────────
+    canvas.width  = Math.round(logW * dpr);
+    canvas.height = Math.round(logH * dpr);
+    canvas.style.width  = logW + "px";
+    canvas.style.height = logH + "px";
+    ctx.scale(dpr, dpr);
+
+    // ── Desenha nine-slice (9 regiões) ───────────────────────────────────────
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const mw = logW - sl - sr;
+    const mh = logH - st - sb;
+    const regions: [number, number, number, number, number, number, number, number][] = [
+      [0,      0,      sl,        st,        0,       0,       sl,  st  ],
+      [sl,     0,      iw-sl-sr,  st,        sl,      0,       mw,  st  ],
+      [iw-sr,  0,      sr,        st,        sl+mw,   0,       sr,  st  ],
+      [0,      st,     sl,        ih-st-sb,  0,       st,      sl,  mh  ],
+      [sl,     st,     iw-sl-sr,  ih-st-sb,  sl,      st,      mw,  mh  ],
+      [iw-sr,  st,     sr,        ih-st-sb,  sl+mw,   st,      sr,  mh  ],
+      [0,      ih-sb,  sl,        sb,        0,       st+mh,   sl,  sb  ],
+      [sl,     ih-sb,  iw-sl-sr,  sb,        sl,      st+mh,   mw,  sb  ],
+      [iw-sr,  ih-sb,  sr,        sb,        sl+mw,   st+mh,   sr,  sb  ],
+    ];
+    ctx.clearRect(0, 0, logW, logH);
+    for (const [sx, sy, sw, sh, dx, dy, dw, dh] of regions) {
+      if (sw > 0 && sh > 0 && dw > 0 && dh > 0) {
+        ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+      }
+    }
+
+    // ── Renderiza texto ──────────────────────────────────────────────────────
+    const contentH   = logH - innerTop - innerBot;
+    const textStartY = innerTop + Math.max(0, (contentH - textH) / 2);
+    const fillW      = logW - innerLeft - innerRight;
+    ctx.fillStyle   = msgColor;
+    ctx.font        = `${fontSize}px 'Space Grotesk', sans-serif`;
+    ctx.textBaseline = "top";
+    ctx.textAlign   = textAlign;
+    lines.forEach((line, i) => {
+      let x: number;
+      if (textAlign === "center") x = innerLeft + fillW / 2;
+      else if (textAlign === "right") x = logW - innerRight;
+      else x = innerLeft;
+      ctx.fillText(line, x, textStartY + i * lineHeight);
+    });
+  }, [img, slice, text, maxWidth, minWidth, paddingX, paddingY, horizontalPriority, textColor, fontSize, textAlign]);
   return <canvas ref={canvasRef} style={{ display: "block", maxWidth: "100%" }} />;
 }
 
@@ -677,6 +977,7 @@ function NineSliceEditor({
         textAlign={textAlign}
         padTop={padTop} padBottom={padBottom} padLeft={padLeft} padRight={padRight}
       />
+      {/* Nota: o overlay de zonas dinâmicas está disponível na aba "Zonas" */}
     </div>
   );
 }
@@ -928,6 +1229,12 @@ const PREVIEW_SAMPLES = [
 function NineSlicePreviewPanel({
   imageUrl, slice, textColor, fontSize, textAlign,
   padTop, padBottom, padLeft, padRight,
+  isDynamic = false,
+  dynMaxWidth = 260,
+  dynMinWidth = 60,
+  dynPaddingX = 16,
+  dynPaddingY = 12,
+  dynHorizontalPriority = true,
 }: NineSlicePreviewPanelProps) {
   const [customText, setCustomText] = useState("");
   const imgState = useImageLoader(imageUrl);
@@ -964,20 +1271,46 @@ function NineSlicePreviewPanel({
       {/* Previews — só renderiza quando a imagem está pronta */}
       {imgState.status === "ready" && (
         <div className="flex flex-col gap-2 pt-1">
+          {/* Badge de modo */}
+          {isDynamic && (
+            <div className="flex items-center gap-1.5 mb-1">
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#34D399" }} />
+              <span className="text-[9px] font-mono" style={{ color: "#34D399" }}>dynamic_nineslice</span>
+              <span className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>
+                · max {dynMaxWidth}px · min {dynMinWidth}px · pad {dynPaddingX}/{dynPaddingY}
+              </span>
+            </div>
+          )}
           {PREVIEW_SAMPLES.map((s) => (
             <div key={s.id} className="flex items-center gap-2">
               <span className="text-[8px] font-mono w-10 flex-shrink-0 text-right" style={{ color: "rgba(255,255,255,0.2)" }}>{s.label}</span>
               <div className={`flex flex-1 ${s.mine ? "justify-end" : "justify-start"}`}>
-                <NineSliceCanvas
-                  img={imgState.img}
-                  slice={slice}
-                  text={customText || s.text}
-                  maxWidth={s.maxWidth}
-                  textColor={textColor}
-                  fontSize={fontSize}
-                  textAlign={textAlign}
-                  padTop={padTop} padBottom={padBottom} padLeft={padLeft} padRight={padRight}
-                />
+                {isDynamic ? (
+                  <DynamicNineSliceCanvas
+                    img={imgState.img}
+                    slice={slice}
+                    text={customText || s.text}
+                    maxWidth={dynMaxWidth}
+                    minWidth={dynMinWidth}
+                    paddingX={dynPaddingX}
+                    paddingY={dynPaddingY}
+                    horizontalPriority={dynHorizontalPriority}
+                    textColor={textColor}
+                    fontSize={fontSize}
+                    textAlign={textAlign}
+                  />
+                ) : (
+                  <NineSliceCanvas
+                    img={imgState.img}
+                    slice={slice}
+                    text={customText || s.text}
+                    maxWidth={s.maxWidth}
+                    textColor={textColor}
+                    fontSize={fontSize}
+                    textAlign={textAlign}
+                    padTop={padTop} padBottom={padBottom} padLeft={padLeft} padRight={padRight}
+                  />
+                )}
               </div>
             </div>
           ))}
@@ -1074,6 +1407,14 @@ function BubblesDashboard() {
       polyPoints: Array.isArray(cfg.poly_points) && cfg.poly_points.length === 8
         ? cfg.poly_points
         : [],
+      // Campos dinâmicos — lidos do asset_config se existirem
+      isDynamic: cfg.mode === "dynamic_nineslice",
+      dynMaxWidth:  cfg.content?.maxWidth  ?? DYNAMIC_CONTENT_DEFAULTS.maxWidth,
+      dynMinWidth:  cfg.content?.minWidth  ?? DYNAMIC_CONTENT_DEFAULTS.minWidth,
+      dynPaddingX:  cfg.content?.padding?.x ?? cfg.pad_left  ?? DYNAMIC_CONTENT_DEFAULTS.paddingX,
+      dynPaddingY:  cfg.content?.padding?.y ?? cfg.pad_top   ?? DYNAMIC_CONTENT_DEFAULTS.paddingY,
+      dynHorizontalPriority: cfg.behavior?.horizontalPriority ?? DYNAMIC_BEHAVIOR_DEFAULTS.horizontalPriority,
+      dynTransitionZone:     cfg.behavior?.transitionZone     ?? DYNAMIC_BEHAVIOR_DEFAULTS.transitionZone,
     });
     setImageUrl(item.preview_url);
     if (cfg.image_width && cfg.image_height) {
@@ -1120,8 +1461,9 @@ function BubblesDashboard() {
       const imgW = imageDimensions?.w ?? 128;
       const imgH = imageDimensions?.h ?? 128;
 
-      const assetConfig: BubbleAssetConfig = {
-        bubble_style: form.isAnimated ? "animated" : "nine_slice",
+      // Base do asset_config (campos comuns a todos os modos)
+      const baseConfig = {
+        bubble_style: (form.isAnimated ? "animated" : "nine_slice") as BubbleAssetConfig["bubble_style"],
         image_url: publicUrl,
         bubble_url: publicUrl,
         image_width: imgW,
@@ -1135,14 +1477,21 @@ function BubblesDashboard() {
         text_align: form.textAlign,
         pad_top: form.padTop, pad_bottom: form.padBottom,
         pad_left: form.padLeft, pad_right: form.padRight,
-        // Campos de compatibilidade com o app Flutter (EdgeInsets.symmetric)
         content_padding_h: Math.round((form.padLeft + form.padRight) / 2),
         content_padding_v: Math.round((form.padTop + form.padBottom) / 2),
-        // Polígono opcional — só salvo quando o admin ativou o modo poligonal
         ...(form.usePolyFill && form.polyPoints.length === 8
           ? { poly_points: form.polyPoints }
           : {}),
       };
+      // Se o modo dinâmico estiver ativo, serializa com os campos extras
+      const assetConfig: BubbleAssetConfig = form.isDynamic && !form.isAnimated
+        ? serializeDynamicConfig(
+            baseConfig,
+            { left: form.sliceLeft, right: form.sliceRight, top: form.sliceTop, bottom: form.sliceBottom },
+            { paddingX: form.dynPaddingX, paddingY: form.dynPaddingY, maxWidth: form.dynMaxWidth, minWidth: form.dynMinWidth },
+            { horizontalPriority: form.dynHorizontalPriority, maxHeightRatio: 0.6, transitionZone: form.dynTransitionZone },
+          )
+        : baseConfig;
 
       const payload = {
         type: "chat_bubble",
@@ -1406,6 +1755,124 @@ function BubblesDashboard() {
                       </div>
                     )}
 
+
+                    {/* ── Modo Dinâmico (dynamic_nineslice) ── */}
+                    {!form.isAnimated && (
+                      <div className="space-y-3 rounded-xl p-3" style={{ background: form.isDynamic ? "rgba(52,211,153,0.04)" : "rgba(255,255,255,0.02)", border: `1px solid ${form.isDynamic ? "rgba(52,211,153,0.2)" : "rgba(255,255,255,0.06)"}`, transition: "all 0.2s" }}>
+                        {/* Toggle do modo */}
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: form.isDynamic ? "#34D399" : "rgba(255,255,255,0.25)" }}>
+                              Modo Dinâmico
+                            </p>
+                            <p className="text-[9px] mt-0.5" style={{ color: "rgba(255,255,255,0.2)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                              {form.isDynamic ? "dynamic_nineslice — layout calculado pelo conteúdo" : "nine_slice clássico — comportamento padrão"}
+                            </p>
+                          </div>
+                          <div
+                            onClick={() => setForm(f => ({ ...f, isDynamic: !f.isDynamic }))}
+                            className="w-9 h-5 rounded-full relative transition-all duration-200 flex-shrink-0 cursor-pointer"
+                            style={{ background: form.isDynamic ? "#34D399" : "rgba(255,255,255,0.1)" }}
+                          >
+                            <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200"
+                              style={{ left: form.isDynamic ? "calc(100% - 18px)" : "2px" }} />
+                          </div>
+                        </div>
+                        {/* Controles dinâmicos — só visíveis quando ativo */}
+                        {form.isDynamic && (
+                          <div className="space-y-3 pt-1">
+                            {/* Largura */}
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-[9px] font-mono block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Largura Máx. (px)</label>
+                                <input
+                                  type="number" min={80} max={400}
+                                  value={form.dynMaxWidth}
+                                  onChange={(e) => setForm(f => ({ ...f, dynMaxWidth: Math.max(80, parseInt(e.target.value) || 260) }))}
+                                  className="w-full px-2 py-1.5 rounded-lg text-[12px] outline-none font-mono text-center"
+                                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(52,211,153,0.2)", color: "#34D399" }}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] font-mono block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Largura Mín. (px)</label>
+                                <input
+                                  type="number" min={40} max={200}
+                                  value={form.dynMinWidth}
+                                  onChange={(e) => setForm(f => ({ ...f, dynMinWidth: Math.max(40, parseInt(e.target.value) || 60) }))}
+                                  className="w-full px-2 py-1.5 rounded-lg text-[12px] outline-none font-mono text-center"
+                                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(52,211,153,0.2)", color: "#34D399" }}
+                                />
+                              </div>
+                            </div>
+                            {/* Padding dinâmico */}
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-[9px] font-mono block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Padding X (px)</label>
+                                <input
+                                  type="number" min={0} max={60}
+                                  value={form.dynPaddingX}
+                                  onChange={(e) => setForm(f => ({ ...f, dynPaddingX: Math.max(0, parseInt(e.target.value) || 16) }))}
+                                  className="w-full px-2 py-1.5 rounded-lg text-[12px] outline-none font-mono text-center"
+                                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(52,211,153,0.15)", color: "rgba(255,255,255,0.7)" }}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] font-mono block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Padding Y (px)</label>
+                                <input
+                                  type="number" min={0} max={60}
+                                  value={form.dynPaddingY}
+                                  onChange={(e) => setForm(f => ({ ...f, dynPaddingY: Math.max(0, parseInt(e.target.value) || 12) }))}
+                                  className="w-full px-2 py-1.5 rounded-lg text-[12px] outline-none font-mono text-center"
+                                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(52,211,153,0.15)", color: "rgba(255,255,255,0.7)" }}
+                                />
+                              </div>
+                            </div>
+                            {/* Intensidade da transição */}
+                            <div>
+                              <div className="flex items-center justify-between mb-1">
+                                <label className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
+                                  Intensidade da Transição
+                                </label>
+                                <span className="text-[9px] font-mono" style={{ color: "#A78BFA" }}>
+                                  {Math.round(form.dynTransitionZone * 100)}%
+                                </span>
+                              </div>
+                              <input
+                                type="range" min={0} max={40} step={1}
+                                value={Math.round(form.dynTransitionZone * 100)}
+                                onChange={(e) => setForm(f => ({ ...f, dynTransitionZone: parseInt(e.target.value) / 100 }))}
+                                className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                                style={{ accentColor: "#A78BFA" }}
+                              />
+                              <div className="flex justify-between mt-0.5">
+                                <span className="text-[8px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>Nenhuma</span>
+                                <span className="text-[8px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>Máxima</span>
+                              </div>
+                            </div>
+                            {/* Toggle prioridade */}
+                            <label className="flex items-center gap-3 cursor-pointer p-2.5 rounded-xl"
+                              style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                              <div
+                                onClick={() => setForm(f => ({ ...f, dynHorizontalPriority: !f.dynHorizontalPriority }))}
+                                className="w-9 h-5 rounded-full relative transition-all duration-200 flex-shrink-0"
+                                style={{ background: form.dynHorizontalPriority ? "#34D399" : "rgba(255,255,255,0.1)", cursor: "pointer" }}
+                              >
+                                <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200"
+                                  style={{ left: form.dynHorizontalPriority ? "calc(100% - 18px)" : "2px" }} />
+                              </div>
+                              <div>
+                                <span className="text-[11px] font-mono block" style={{ color: "rgba(255,255,255,0.6)" }}>
+                                  {form.dynHorizontalPriority ? "\u2194 Prioridade: Largura" : "\u2195 Prioridade: Altura"}
+                                </span>
+                                <span className="text-[9px]" style={{ color: "rgba(255,255,255,0.25)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                                  {form.dynHorizontalPriority ? "Expande horizontalmente antes de quebrar linha" : "Quebra linha mais cedo, cresce verticalmente"}
+                                </span>
+                              </div>
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    )}
                     {/* Toggles */}
                     <div className="flex flex-col sm:flex-row gap-3">
                       {([
@@ -1479,6 +1946,18 @@ function BubblesDashboard() {
                           {form.usePolyFill ? "✦ Polígono" : "Polígono"}
                         </button>
                       )}
+                      {!form.isAnimated && form.isDynamic && (
+                        <button onClick={() => setPreviewTab("zones" as "slice")}
+                          className="flex-1 py-2 rounded-xl text-[12px] font-semibold transition-all"
+                          style={{
+                            background: previewTab === ("zones" as string) ? "rgba(52,211,153,0.15)" : "rgba(255,255,255,0.03)",
+                            border: `1px solid ${previewTab === ("zones" as string) ? "rgba(52,211,153,0.3)" : "rgba(255,255,255,0.07)"}`,
+                            color: previewTab === ("zones" as string) ? "#34D399" : "rgba(255,255,255,0.35)",
+                            fontFamily: "'Space Grotesk', sans-serif",
+                          }}>
+                          Zonas
+                        </button>
+                      )}
                     </div>
 
                     {imageUrl ? (
@@ -1533,6 +2012,14 @@ function BubblesDashboard() {
                             )}
                           </div>
                         )}
+                        {previewTab === ("zones" as string) && !form.isAnimated && form.isDynamic && (
+                          <DynamicNineSliceOverlay
+                            imageUrl={imageUrl}
+                            imageDimensions={imageDimensions}
+                            slice={sliceValues}
+                            transitionZone={form.dynTransitionZone}
+                          />
+                        )}
                         {previewTab === "slice" && form.isAnimated && (
                           <div className="rounded-xl p-4 text-center space-y-2"
                             style={{ background: "rgba(167,139,250,0.06)", border: "1px solid rgba(167,139,250,0.15)" }}>
@@ -1565,6 +2052,12 @@ function BubblesDashboard() {
                                   textAlign={form.textAlign}
                                   padTop={form.padTop} padBottom={form.padBottom}
                                   padLeft={form.padLeft} padRight={form.padRight}
+                                  isDynamic={form.isDynamic}
+                                  dynMaxWidth={form.dynMaxWidth}
+                                  dynMinWidth={form.dynMinWidth}
+                                  dynPaddingX={form.dynPaddingX}
+                                  dynPaddingY={form.dynPaddingY}
+                                  dynHorizontalPriority={form.dynHorizontalPriority}
                                 />
                               )}
                             </div>

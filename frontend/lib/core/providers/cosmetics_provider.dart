@@ -59,6 +59,29 @@ class UserCosmetics {
   /// Quando nulo, usa o [chatBubbleContentPadding] normal.
   final List<Offset>? chatBubblePolyPoints;
 
+  // ── Campos do modo dynamic_nineslice ──────────────────────────────────────
+  /// Modo do balão. "dynamic_nineslice" ativa o layout pré-calculado.
+  /// Quando nulo ou diferente, usa o comportamento clássico (nine_slice).
+  final String? chatBubbleMode;
+
+  /// Largura máxima do balão no modo dinâmico (em pixels lógicos).
+  final double chatBubbleDynMaxWidth;
+
+  /// Largura mínima do balão no modo dinâmico (em pixels lógicos).
+  final double chatBubbleDynMinWidth;
+
+  /// Padding horizontal interno no modo dinâmico (em pixels lógicos).
+  final double chatBubbleDynPaddingX;
+
+  /// Padding vertical interno no modo dinâmico (em pixels lógicos).
+  final double chatBubbleDynPaddingY;
+
+  /// Quando true, o balão expande horizontalmente antes de quebrar linha.
+  final bool chatBubbleDynHorizontalPriority;
+
+  /// Zona de transição (0.0–1.0) para suavização das bordas no modo dinâmico.
+  final double chatBubbleDynTransitionZone;
+
   const UserCosmetics({
     required this.userId,
     this.avatarFrameUrl,
@@ -80,6 +103,14 @@ class UserCosmetics {
     ),
     this.chatBubbleTextColor,
     this.chatBubblePolyPoints,
+    // Campos dinâmicos — padrões compatíveis com o modo clássico
+    this.chatBubbleMode,
+    this.chatBubbleDynMaxWidth = 260.0,
+    this.chatBubbleDynMinWidth = 60.0,
+    this.chatBubbleDynPaddingX = 16.0,
+    this.chatBubbleDynPaddingY = 12.0,
+    this.chatBubbleDynHorizontalPriority = true,
+    this.chatBubbleDynTransitionZone = 0.15,
   });
 
   factory UserCosmetics.empty(String userId) => UserCosmetics(userId: userId);
@@ -151,6 +182,14 @@ Color? _hexToColor(String? hex) {
   Size imageSize,
   EdgeInsets contentPadding,
   List<Offset>? polyPoints,
+  // Campos dinâmicos
+  String? mode,
+  double dynMaxWidth,
+  double dynMinWidth,
+  double dynPaddingX,
+  double dynPaddingY,
+  bool dynHorizontalPriority,
+  double dynTransitionZone,
 }) _extractNineSliceParams(Map<String, dynamic> assetConfig) {
   // Offset fixo do Positioned no NineSliceBubble (top/bottom/left/right: -12).
   // O contentPadding precisa compensar esse offset para que o texto não
@@ -190,6 +229,19 @@ Color? _hexToColor(String? hex) {
       polyPoints = null;
     }
   }
+  // ── Leitura dos campos do modo dynamic_nineslice ────────────────────────
+  final String? mode = assetConfig['mode'] as String?;
+  final contentMap = assetConfig['content'] as Map<String, dynamic>?;
+  final behaviorMap = assetConfig['behavior'] as Map<String, dynamic>?;
+  final paddingMap = contentMap?['padding'] as Map<String, dynamic>?;
+
+  final double dynMaxWidth  = _asDouble(contentMap?['maxWidth'],  fallback: 260.0);
+  final double dynMinWidth  = _asDouble(contentMap?['minWidth'],  fallback: 60.0);
+  final double dynPaddingX  = _asDouble(paddingMap?['x'],         fallback: 16.0);
+  final double dynPaddingY  = _asDouble(paddingMap?['y'],         fallback: 12.0);
+  final bool dynHorizontalPriority = behaviorMap?['horizontalPriority'] as bool? ?? true;
+  final double dynTransitionZone   = _asDouble(behaviorMap?['transitionZone'], fallback: 0.15);
+
   return (
     sliceInsets: EdgeInsets.fromLTRB(sliceLeft, sliceTop, sliceRight, sliceBottom),
     imageSize: Size(imageWidth, imageHeight),
@@ -200,6 +252,14 @@ Color? _hexToColor(String? hex) {
       (padBottom - kNineSliceOffset + sliceBottom).clamp(4.0, double.infinity),
     ),
     polyPoints: polyPoints,
+    // Campos dinâmicos
+    mode: mode,
+    dynMaxWidth: dynMaxWidth,
+    dynMinWidth: dynMinWidth,
+    dynPaddingX: dynPaddingX,
+    dynPaddingY: dynPaddingY,
+    dynHorizontalPriority: dynHorizontalPriority,
+    dynTransitionZone: dynTransitionZone,
   );
 }
 
@@ -299,6 +359,14 @@ final userCosmeticsProvider =
       chatBubbleContentPadding: sliceParams.contentPadding,
       chatBubblePolyPoints: sliceParams.polyPoints,
       chatBubbleTextColor: _hexToColor(chatBubbleTextColorHex),
+      // Campos do modo dynamic_nineslice
+      chatBubbleMode: sliceParams.mode,
+      chatBubbleDynMaxWidth: sliceParams.dynMaxWidth,
+      chatBubbleDynMinWidth: sliceParams.dynMinWidth,
+      chatBubbleDynPaddingX: sliceParams.dynPaddingX,
+      chatBubbleDynPaddingY: sliceParams.dynPaddingY,
+      chatBubbleDynHorizontalPriority: sliceParams.dynHorizontalPriority,
+      chatBubbleDynTransitionZone: sliceParams.dynTransitionZone,
     );
   } catch (e, st) {
     debugPrint('[CosmeticsProvider] ERRO userId=$userId: $e\n$st');
@@ -397,6 +465,14 @@ final batchCosmeticsProvider =
         chatBubbleContentPadding: sliceParams.contentPadding,
         chatBubblePolyPoints: sliceParams.polyPoints,
         chatBubbleTextColor: _hexToColor(chatBubbleTextColorHex),
+        // Campos do modo dynamic_nineslice
+        chatBubbleMode: sliceParams.mode,
+        chatBubbleDynMaxWidth: sliceParams.dynMaxWidth,
+        chatBubbleDynMinWidth: sliceParams.dynMinWidth,
+        chatBubbleDynPaddingX: sliceParams.dynPaddingX,
+        chatBubbleDynPaddingY: sliceParams.dynPaddingY,
+        chatBubbleDynHorizontalPriority: sliceParams.dynHorizontalPriority,
+        chatBubbleDynTransitionZone: sliceParams.dynTransitionZone,
       );
     }
   } catch (e) {

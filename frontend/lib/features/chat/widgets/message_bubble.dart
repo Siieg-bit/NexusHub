@@ -451,6 +451,14 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
     final bubbleSliceInsets = activeCosmetics?.chatBubbleSliceInsets;
     final bubbleImageSize = activeCosmetics?.chatBubbleImageSize;
     final bubbleContentPadding = activeCosmetics?.chatBubbleContentPadding;
+    // Parâmetros do modo dynamic_nineslice (retrocompatíveis — null = modo clássico)
+    final bubbleMode = activeCosmetics?.chatBubbleMode;
+    final bubbleDynMaxWidth = activeCosmetics?.chatBubbleDynMaxWidth ?? 260.0;
+    final bubbleDynMinWidth = activeCosmetics?.chatBubbleDynMinWidth ?? 60.0;
+    final bubbleDynPaddingX = activeCosmetics?.chatBubbleDynPaddingX ?? 16.0;
+    final bubbleDynPaddingY = activeCosmetics?.chatBubbleDynPaddingY ?? 12.0;
+    final bubbleDynHorizontalPriority = activeCosmetics?.chatBubbleDynHorizontalPriority ?? true;
+    final bubbleDynTransitionZone = activeCosmetics?.chatBubbleDynTransitionZone ?? 0.15;
     // Indica se o bubble equipado é animado (GIF/WebP).
     // Quando true, ChatBubble usa Image.network com gaplessPlayback
     // em vez de NineSliceBubble (que só suporta frames estáticos).
@@ -615,6 +623,14 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                             bubbleTextColor: activeCosmetics?.chatBubbleTextColor,
                             // Polígono opcional de fill lido do asset_config.poly_points
                             polyPoints: activeCosmetics?.chatBubblePolyPoints,
+                            // Parâmetros do modo dynamic_nineslice
+                            bubbleMode: bubbleMode,
+                            dynMaxWidth: bubbleDynMaxWidth,
+                            dynMinWidth: bubbleDynMinWidth,
+                            dynPaddingX: bubbleDynPaddingX,
+                            dynPaddingY: bubbleDynPaddingY,
+                            dynHorizontalPriority: bubbleDynHorizontalPriority,
+                            dynTransitionZone: bubbleDynTransitionZone,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,

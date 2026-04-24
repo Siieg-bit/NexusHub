@@ -6,6 +6,7 @@ import '../../../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'dynamic_nineslice_layout.dart';
 export '../../../core/widgets/avatar_with_frame.dart';
 
 /// Custom Chat Bubble com suporte a frames equipáveis — estilo Amino Apps.
@@ -68,6 +69,29 @@ class ChatBubble extends ConsumerWidget {
   /// Quando nulo, usa o [contentPadding] normal.
   final List<Offset>? polyPoints;
 
+  // ── Campos do modo dynamic_nineslice ──────────────────────────────────────
+  /// Modo do balão. "dynamic_nineslice" ativa o layout pré-calculado.
+  /// Quando nulo ou diferente, usa o comportamento clássico.
+  final String? bubbleMode;
+
+  /// Largura máxima no modo dinâmico (pixels lógicos).
+  final double dynMaxWidth;
+
+  /// Largura mínima no modo dinâmico (pixels lógicos).
+  final double dynMinWidth;
+
+  /// Padding horizontal interno no modo dinâmico (pixels lógicos).
+  final double dynPaddingX;
+
+  /// Padding vertical interno no modo dinâmico (pixels lógicos).
+  final double dynPaddingY;
+
+  /// Quando true, expande horizontalmente antes de quebrar linha.
+  final bool dynHorizontalPriority;
+
+  /// Zona de transição para suavização das bordas (0.0–1.0).
+  final double dynTransitionZone;
+
   const ChatBubble({
     super.key,
     required this.child,
@@ -83,6 +107,14 @@ class ChatBubble extends ConsumerWidget {
     this.isBubbleAnimated = false,
     this.bubbleTextColor,
     this.polyPoints,
+    // Campos dinâmicos — padrões compatíveis com o modo clássico
+    this.bubbleMode,
+    this.dynMaxWidth = 260.0,
+    this.dynMinWidth = 60.0,
+    this.dynPaddingX = 16.0,
+    this.dynPaddingY = 12.0,
+    this.dynHorizontalPriority = true,
+    this.dynTransitionZone = 0.15,
   });
 
   /// Cor do bubble baseada no role do usuário — estilo Amino
@@ -269,7 +301,56 @@ class ChatBubble extends ConsumerWidget {
       );
     }
 
-    // Frame de imagem real — 9-slice scaling com parâmetros do asset_config
+    // ── Modo dynamic_nineslice ────────────────────────────────────────────────
+    // Quando o asset_config define mode = "dynamic_nineslice", pré-calcula
+    // as dimensões com TextPainter antes de construir o NineSliceBubble.
+    // O widget filho recebe o tamanho exato e apenas desenha — não decide mais.
+    //
+    // Compatibilidade: quando bubbleMode != "dynamic_nineslice" (ou null),
+    // o DynamicNineSliceWrapper passa null ao builder e o NineSliceBubble
+    // usa o comportamento clássico sem qualquer alteração.
+    if (bubbleMode == 'dynamic_nineslice') {
+      final baseStyle = DefaultTextStyle.of(context).style;
+      final textStyle = baseStyle.copyWith(
+        fontSize: baseStyle.fontSize ?? 14.0,
+        height: baseStyle.height ?? 1.45,
+      );
+      final effectiveSlice = sliceInsets ?? const EdgeInsets.all(38);
+      return DynamicNineSliceWrapper(
+        text: _extractText(child),
+        textStyle: textStyle,
+        sliceInsets: effectiveSlice,
+        content: DynamicContentConfig(
+          paddingX: dynPaddingX,
+          paddingY: dynPaddingY,
+          maxWidth: dynMaxWidth,
+          minWidth: dynMinWidth,
+        ),
+        behavior: DynamicBehaviorConfig(
+          horizontalPriority: dynHorizontalPriority,
+          transitionZone: dynTransitionZone,
+        ),
+        mode: bubbleMode,
+        builder: (context, result) {
+          return NineSliceBubble(
+            imageUrl: bubbleFrameUrl!,
+            isMine: isMine,
+            maxWidth: result != null ? result.width : maxWidth,
+            sliceInsets: effectiveSlice,
+            imageSize: imageSize ?? const Size(128, 128),
+            contentPadding: result?.contentPadding ??
+                contentPadding ??
+                const EdgeInsets.symmetric(horizontal: 46, vertical: 40),
+            textColor: bubbleTextColor,
+            polyPoints: polyPoints,
+            child: child,
+          );
+        },
+      );
+    }
+
+    // ── Modo clássico (nine_slice) ────────────────────────────────────────────
+    // Comportamento original preservado integralmente.
     return NineSliceBubble(
       imageUrl: bubbleFrameUrl!,
       isMine: isMine,
@@ -286,6 +367,31 @@ class ChatBubble extends ConsumerWidget {
       polyPoints: polyPoints,
       child: child,
     );
+  }
+
+  /// Extrai o texto de um widget filho para medição com TextPainter.
+  ///
+  /// Suporta [Text], [RichText] e widgets com texto aninhado.
+  /// Retorna string vazia se o texto não puder ser extraído — o layout
+  /// dinâmico degrada graciosamente para o tamanho mínimo.
+  static String _extractText(Widget child) {
+    if (child is Text) return child.data ?? child.textSpan?.toPlainText() ?? '';
+    if (child is RichText) return child.text.toPlainText();
+    if (child is Column) {
+      for (final c in child.children) {
+        final t = _extractText(c);
+        if (t.isNotEmpty) return t;
+      }
+    }
+    if (child is Row) {
+      for (final c in child.children) {
+        final t = _extractText(c);
+        if (t.isNotEmpty) return t;
+      }
+    }
+    if (child is Padding) return _extractText(child.child ?? const SizedBox());
+    if (child is DefaultTextStyle) return _extractText(child.child);
+    return '';
   }
 }
 
