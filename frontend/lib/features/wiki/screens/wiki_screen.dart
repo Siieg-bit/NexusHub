@@ -4,17 +4,22 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/utils/media_utils.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/comment_model.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/deep_link_service.dart';
+import '../../../core/widgets/comment_media_menu_button.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../communities/providers/community_detail_providers.dart'
     as community_providers;
 import '../../moderation/widgets/report_dialog.dart';
+import '../../stickers/stickers.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 // ============================================================================
@@ -484,6 +489,11 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
   bool _isSendingComment = false;
   CommentModel? _replyingToComment;
   _CommentSortOrder _commentSortOrder = _CommentSortOrder.oldest;
+  // Composer rico (emoji / mídia / sticker) — igual ao blog
+  String? _pendingStickerUrl;
+  String? _pendingMediaUrl;
+  String? _pendingVideoUrl;
+  bool _showEmojiPicker = false;
 
   String get _communityId =>
       (_entry?['community_id'] as String?) ?? '';
@@ -706,27 +716,75 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
     }
   }
 
-  // ── Comentários ──────────────────────────────────────────────────────────
+  // ── Comentários ────────────────────────────────────────────────────────────────────────────────────────
 
-  Future<void> _sendComment() async {
-    final text = _commentController.text.trim();
-    if (text.isEmpty) return;
+  /// Composer rico — igual ao blog: suporta texto, sticker, imagem e vídeo.
+  Future<void> _sendComment({
+    String? stickerUrl,
+    String? stickerId,
+    String? stickerName,
+    String? packId,
+  }) async {
+    final s = getStrings();
+    final textContent = _commentController.text.trim();
+    final mediaUrl = stickerUrl ?? _pendingStickerUrl ?? _pendingMediaUrl;
+    final isSticker = stickerId != null || stickerUrl != null;
+
+    if (textContent.isEmpty && mediaUrl == null) return;
     final userId = SupabaseService.currentUserId;
-    if (userId == null) return;
+    if (userId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s.needLoginToComment)),
+        );
+      }
+      return;
+    }
     setState(() => _isSendingComment = true);
     try {
-      await SupabaseService.rpc('create_comment_with_reputation', params: {
-        'p_community_id': _communityId,
-        'p_author_id': userId,
-        'p_content': text,
-        'p_wiki_id': widget.wikiId,
-        'p_parent_id': _replyingToComment?.id,
-      });
+      if (isSticker) {
+        // Sticker: RPC dedicado (mesmo do blog)
+        await SupabaseService.rpc('send_comment_with_sticker', params: {
+          'p_wiki_id': widget.wikiId,
+          'p_content': textContent.isNotEmpty ? textContent : '',
+          'p_parent_id': _replyingToComment?.id,
+          'p_sticker_id': stickerId,
+          'p_sticker_url': stickerUrl,
+          'p_sticker_name': stickerName,
+          'p_pack_id': packId,
+        });
+      } else if (mediaUrl != null) {
+        // Imagem ou vídeo
+        final isVideo = _pendingVideoUrl != null;
+        await SupabaseService.table('comments').insert({
+          'wiki_id': widget.wikiId,
+          'author_id': userId,
+          'content': textContent.isNotEmpty
+              ? textContent
+              : (isVideo ? '[video]' : '[image]'),
+          'media_url': mediaUrl,
+          'media_type': isVideo ? 'video' : 'image',
+          'parent_id': _replyingToComment?.id,
+        });
+      } else {
+        // Texto puro
+        await SupabaseService.rpc('create_comment_with_reputation', params: {
+          'p_community_id': _communityId,
+          'p_author_id': userId,
+          'p_content': textContent,
+          'p_wiki_id': widget.wikiId,
+          'p_parent_id': _replyingToComment?.id,
+        });
+      }
       _commentController.clear();
       if (mounted) {
         setState(() {
           _replyingToComment = null;
           _isSendingComment = false;
+          _pendingStickerUrl = null;
+          _pendingMediaUrl = null;
+          _pendingVideoUrl = null;
+          _showEmojiPicker = false;
         });
         ref.invalidate(wikiCommentsProvider((widget.wikiId, _communityId)));
       }
@@ -736,7 +794,57 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
     }
   }
 
-  Future<void> _deleteComment(CommentModel comment) async {
+  Future<void> _pickCommentImage() async {
+    final s = getStrings();
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+    try {
+      final userId = SupabaseService.currentUserId ?? 'unknown';
+      final path =
+          'comments/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final rawBytes = await image.readAsBytes();
+      final bytes = await MediaUtils.compressImage(rawBytes);
+      await SupabaseService.storage.from('post_media').uploadBinary(path, bytes);
+      if (!mounted) return;
+      final url =
+          SupabaseService.storage.from('post_media').getPublicUrl(path);
+      if (!mounted) return;
+      setState(() => _pendingMediaUrl = url);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(s.errorUploadTryAgain),
+            backgroundColor: context.nexusTheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  void _toggleEmojiPicker() {
+    setState(() {
+      _showEmojiPicker = !_showEmojiPicker;
+      if (_showEmojiPicker) _commentFocusNode.unfocus();
+    });
+  }
+
+  Future<void> _openStickerPicker() async {
+    if (!mounted) return;
+    setState(() => _showEmojiPicker = false);
+    await StickerPickerV2.show(
+      context,
+      onStickerSelected: (sticker) {
+        _sendComment(
+          stickerUrl: sticker.imageUrl,
+          stickerId: sticker.id,
+          stickerName: sticker.name,
+          packId: sticker.packId.isNotEmpty ? sticker.packId : null,
+        );
+      },
+    );
+  }leteComment(CommentModel comment) async {
     final s = getStrings();
     final r = context.r;
     final confirmed = await showDialog<bool>(
@@ -793,18 +901,25 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
     final r = context.r;
     final newStatus = currentlyHidden ? 'ok' : 'disabled';
     try {
-      await SupabaseService.rpc('log_moderation_action', params: {
-        'p_community_id': _communityId,
-        'p_action': currentlyHidden ? 'unhide_wiki' : 'hide_wiki',
-        'p_target_wiki_id': widget.wikiId,
-        'p_reason': currentlyHidden ? 'Moderação: desocultar wiki' : 'Moderação: ocultar wiki',
-      });
+      // Log de moderação apenas quando communityId está disponível
+      if (_communityId.isNotEmpty) {
+        try {
+          await SupabaseService.rpc('log_moderation_action', params: {
+            'p_community_id': _communityId,
+            'p_action': currentlyHidden ? 'unhide_wiki' : 'hide_wiki',
+            'p_target_wiki_id': widget.wikiId,
+            'p_reason': currentlyHidden
+                ? 'Moderação: desocultar wiki'
+                : 'Moderação: ocultar wiki',
+          });
+        } catch (logErr) {
+          debugPrint('[wiki_screen] log_moderation_action: $logErr');
+        }
+      }
       await SupabaseService.table('wiki_entries')
           .update({'status': newStatus}).eq('id', widget.wikiId);
       if (mounted) {
-        setState(() {
-          _entry?['status'] = newStatus;
-        });
+        setState(() => _entry?['status'] = newStatus);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(currentlyHidden ? s.wikiUnhidden : s.wikiHidden),
           backgroundColor: context.nexusTheme.accentPrimary,
@@ -815,6 +930,13 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
       }
     } catch (e) {
       debugPrint('[wiki_screen] Erro ao ocultar/desocultar wiki: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(s.anErrorOccurredTryAgain),
+          backgroundColor: context.nexusTheme.error,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
     }
   }
 
@@ -824,20 +946,26 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
     final s = getStrings();
     final r = context.r;
     try {
-      await SupabaseService.rpc('log_moderation_action', params: {
-        'p_community_id': _communityId,
-        'p_action': currentlyCanonical ? 'decanonize_wiki' : 'canonize_wiki',
-        'p_target_wiki_id': widget.wikiId,
-        'p_reason': currentlyCanonical
-            ? 'Moderação: remover canonização'
-            : 'Moderação: canonizar wiki',
-      });
+      // Log de moderação apenas quando communityId está disponível
+      if (_communityId.isNotEmpty) {
+        try {
+          await SupabaseService.rpc('log_moderation_action', params: {
+            'p_community_id': _communityId,
+            'p_action':
+                currentlyCanonical ? 'decanonize_wiki' : 'canonize_wiki',
+            'p_target_wiki_id': widget.wikiId,
+            'p_reason': currentlyCanonical
+                ? 'Moderação: remover canonização'
+                : 'Moderação: canonizar wiki',
+          });
+        } catch (logErr) {
+          debugPrint('[wiki_screen] log_moderation_action: $logErr');
+        }
+      }
       await SupabaseService.table('wiki_entries')
           .update({'is_canonical': !currentlyCanonical}).eq('id', widget.wikiId);
       if (mounted) {
-        setState(() {
-          _entry?['is_canonical'] = !currentlyCanonical;
-        });
+        setState(() => _entry?['is_canonical'] = !currentlyCanonical);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               currentlyCanonical ? s.wikiDecanonized : s.wikiCanonized),
@@ -851,6 +979,13 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
       }
     } catch (e) {
       debugPrint('[wiki_screen] Erro ao canonizar/descanonizar wiki: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(s.anErrorOccurredTryAgain),
+          backgroundColor: context.nexusTheme.error,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
     }
   }
 
@@ -1015,6 +1150,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
             },
           ),
         ),
+        // ── Composer rico (igual ao blog) ──
         Container(
           decoration: BoxDecoration(
             color: context.nexusTheme.backgroundPrimary,
@@ -1031,28 +1167,26 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Indicador de resposta
               if (_replyingToComment != null)
                 Container(
-                  margin: EdgeInsets.only(bottom: r.s(6)),
+                  margin: EdgeInsets.only(bottom: r.s(8)),
                   padding: EdgeInsets.symmetric(
-                      horizontal: r.s(12), vertical: r.s(6)),
+                      horizontal: r.s(12), vertical: r.s(8)),
                   decoration: BoxDecoration(
                     color: context.nexusTheme.accentPrimary
-                        .withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(r.s(8)),
+                        .withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(r.s(12)),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.reply_rounded,
-                          color: context.nexusTheme.accentPrimary,
-                          size: r.s(16)),
-                      SizedBox(width: r.s(6)),
                       Expanded(
                         child: Text(
-                          '${s.reply}: ${_replyingToComment!.effectiveNickname(s.user)}',
+                          'Respondendo a @${_replyingToComment!.effectiveNickname(s.user)}',
                           style: TextStyle(
                             color: context.nexusTheme.accentPrimary,
                             fontSize: r.fs(12),
+                            fontWeight: FontWeight.w700,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -1068,85 +1202,165 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                     ],
                   ),
                 ),
+              // Preview de mídia pendente
+              if (_pendingMediaUrl != null || _pendingStickerUrl != null)
+                Container(
+                  margin: EdgeInsets.only(bottom: r.s(8)),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(r.s(8)),
+                        child: Image.network(
+                          _pendingStickerUrl ?? _pendingMediaUrl!,
+                          width: r.s(60),
+                          height: r.s(60),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      SizedBox(width: r.s(8)),
+                      Expanded(
+                        child: Text(
+                          _pendingStickerUrl != null
+                              ? 'Sticker'
+                              : 'Imagem anexada',
+                          style: TextStyle(
+                              color: Colors.grey[500], fontSize: r.fs(12)),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          _pendingMediaUrl = null;
+                          _pendingStickerUrl = null;
+                        }),
+                        child: Icon(Icons.close_rounded,
+                            color: Colors.grey[600], size: r.s(18)),
+                      ),
+                    ],
+                  ),
+                ),
+              // Emoji Picker
+              if (_showEmojiPicker)
+                SizedBox(
+                  height: 250,
+                  child: EmojiPicker(
+                    onEmojiSelected: (_, emoji) {
+                      _commentController.text += emoji.emoji;
+                      _commentController.selection =
+                          TextSelection.fromPosition(
+                        TextPosition(
+                            offset: _commentController.text.length),
+                      );
+                      setModalState(() {});
+                    },
+                    config: Config(
+                      columns: 8,
+                      emojiSizeMax: 28,
+                      bgColor: context.surfaceColor,
+                      indicatorColor: context.nexusTheme.accentPrimary,
+                      iconColorSelected: context.nexusTheme.accentPrimary,
+                      iconColor: Colors.grey[600] ?? Colors.grey,
+                      checkPlatformCompatibility: true,
+                      recentTabBehavior: RecentTabBehavior.RECENT,
+                      recentsLimit: 20,
+                      noRecents: Text(
+                        'Sem recentes',
+                        style: TextStyle(
+                            color: Colors.grey[500], fontSize: 12),
+                      ),
+                    ),
+                  ),
+                ),
+              // Input row: avatar + campo + botões + enviar
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   CosmeticAvatar(
-                    userId: currentUser?.id ?? SupabaseService.currentUserId ?? '',
+                    userId: currentUser?.id ??
+                        SupabaseService.currentUserId ?? '',
                     avatarUrl: currentUserAvatar ?? currentUser?.iconUrl,
                     size: r.s(32),
                   ),
                   SizedBox(width: r.s(8)),
                   Expanded(
-                    child: TextField(
-                      controller: _commentController,
-                      focusNode: _commentFocusNode,
-                      style: TextStyle(
-                          color: context.nexusTheme.textPrimary,
-                          fontSize: r.fs(14)),
-                      maxLines: null,
-                      textInputAction: TextInputAction.newline,
-                      decoration: InputDecoration(
-                        hintText: SupabaseService.currentUserId != null
-                            ? s.saySomethingHint
-                            : s.needLoginToComment,
-                        hintStyle: TextStyle(
-                            color: context.nexusTheme.textSecondary,
-                            fontSize: r.fs(14)),
-                        filled: true,
-                        fillColor: context.surfaceColor,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(r.s(20)),
-                          borderSide: BorderSide.none,
-                        ),
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                            horizontal: r.s(16), vertical: r.s(10)),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(r.s(20)),
                       ),
-                      enabled: SupabaseService.currentUserId != null,
+                      child: TextField(
+                        controller: _commentController,
+                        focusNode: _commentFocusNode,
+                        style: TextStyle(
+                            color: context.nexusTheme.textPrimary,
+                            fontSize: r.fs(14)),
+                        maxLines: 4,
+                        minLines: 1,
+                        decoration: InputDecoration(
+                          hintText: _replyingToComment == null
+                              ? s.saySomethingHint
+                              : 'Escreva uma resposta...',
+                          hintStyle:
+                              TextStyle(color: Colors.grey[500]),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: r.s(14), vertical: r.s(10)),
+                        ),
+                        enabled: SupabaseService.currentUserId != null,
+                      ),
                     ),
                   ),
-                  SizedBox(width: r.s(8)),
-                  GestureDetector(
-                    onTap: _isSendingComment
-                        ? null
-                        : () async {
-                            await _sendComment();
-                            setModalState(() {});
-                          },
-                    child: Container(
-                      padding: EdgeInsets.all(r.s(10)),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            context.nexusTheme.accentPrimary,
-                            context.nexusTheme.accentSecondary,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                  SizedBox(width: r.s(4)),
+                  // Botão unificado: emoji + figurinha + mídia
+                  Padding(
+                    padding: EdgeInsets.only(right: r.s(4)),
+                    child: CommentMediaMenuButton(
+                      isUploadingMedia: _pendingMediaUrl != null,
+                      showEmojiPicker: _showEmojiPicker,
+                      onToggleEmoji: () {
+                        _toggleEmojiPicker();
+                        setModalState(() {});
+                      },
+                      onOpenSticker: () async {
+                        _commentFocusNode.unfocus();
+                        await _openStickerPicker();
+                        setModalState(() {});
+                      },
+                      onPickMedia: () async {
+                        await _pickCommentImage();
+                        setModalState(() {});
+                      },
+                    ),
+                  ),
+                  // Botão enviar
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(r.s(22)),
+                      onTap: _isSendingComment
+                          ? null
+                          : () async {
+                              await _sendComment();
+                              setModalState(() {});
+                            },
+                      child: Container(
+                        padding: EdgeInsets.all(r.s(9)),
+                        decoration: BoxDecoration(
+                          color: context.nexusTheme.accentPrimary,
+                          shape: BoxShape.circle,
                         ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: context.nexusTheme.accentPrimary
-                                .withValues(alpha: 0.4),
-                            blurRadius: 8,
-                            spreadRadius: 1,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        child: _isSendingComment
+                            ? SizedBox(
+                                width: r.s(16),
+                                height: r.s(16),
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              )
+                            : Icon(Icons.send_rounded,
+                                color: Colors.white, size: r.s(16)),
                       ),
-                      child: _isSendingComment
-                          ? SizedBox(
-                              width: r.s(18),
-                              height: r.s(18),
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Icon(Icons.send_rounded,
-                              color: Colors.white, size: r.s(18)),
                     ),
                   ),
                 ],
