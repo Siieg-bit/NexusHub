@@ -23,6 +23,14 @@ class PresenceService {
   String? _currentUserId;
   DateTime? _lastHeartbeatAt;
 
+  /// Comunidade ativa para sincronizar minutos online.
+  String? _activeCommunityId;
+
+  /// Define a comunidade ativa (chamado ao entrar em uma comunidade).
+  void setActiveCommunity(String? communityId) {
+    _activeCommunityId = communityId;
+  }
+
   Future<void> initialize() async {
     _currentUserId = SupabaseService.currentUserId;
     if (_currentUserId == null) return;
@@ -70,8 +78,22 @@ class PresenceService {
         'online_status': (forceOnline || !isGhostMode) ? 1 : 2,
       };
 
+      // O trigger trg_accumulate_online_minutes acumula os minutos
+      // automaticamente quando last_seen_at é atualizado.
       await SupabaseService.table('profiles').update(payload).eq('id', uid);
       _lastHeartbeatAt = nowUtc;
+
+      // Sincronizar minutos com a comunidade ativa (se houver)
+      if (_activeCommunityId != null && !isGhostMode) {
+        try {
+          await SupabaseService.rpc(
+            'sync_online_minutes_to_community',
+            params: {'p_community_id': _activeCommunityId},
+          );
+        } catch (e) {
+          debugPrint('[PresenceService] Erro ao sincronizar minutos: $e');
+        }
+      }
     } catch (e) {
       debugPrint('[PresenceService] Erro ao atualizar presença: $e');
     }

@@ -12,6 +12,7 @@ import '../../../core/widgets/amino_drawer.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/providers/presence_provider.dart';
+import '../../../core/services/presence_service.dart';
 import '../../../core/providers/chat_provider.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/widgets/nexus_badge.dart';
@@ -71,6 +72,9 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     // (joinChannel no build, leaveChannel no ref.onDispose).
     // NÃO chamar PresenceService manualmente aqui — causa double-dispose
     // e assertion '_dependents.isEmpty'.
+
+    // Registrar comunidade ativa para acúmulo de minutos online.
+    PresenceService.instance.setActiveCommunity(widget.communityId);
   }
 
   @override
@@ -79,6 +83,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     _tabController.dispose();
     // Presença é limpa automaticamente pelo ref.onDispose do
     // communityPresenceProvider — NÃO chamar leaveChannel aqui.
+    // Limpar comunidade ativa ao sair.
+    PresenceService.instance.setActiveCommunity(null);
     super.dispose();
   }
 
