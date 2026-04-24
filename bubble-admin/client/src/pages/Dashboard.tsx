@@ -705,12 +705,27 @@ interface NineSliceEditorProps {
   fontSize: number;
   textAlign: TextAlign;
   padTop: number; padBottom: number; padLeft: number; padRight: number;
+  // Campos do modo dynamic_nineslice (opcionais)
+  isDynamic?: boolean;
+  dynMaxWidth?: number;
+  dynMinWidth?: number;
+  dynPaddingX?: number;
+  dynPaddingY?: number;
+  dynHorizontalPriority?: boolean;
+  dynTransitionZone?: number;
 }
 
 function NineSliceEditor({
   imageUrl, imageDimensions, slice, onChange,
   textColor, fontSize, textAlign,
   padTop, padBottom, padLeft, padRight,
+  isDynamic = false,
+  dynMaxWidth = 260,
+  dynMinWidth = 60,
+  dynPaddingX = 16,
+  dynPaddingY = 12,
+  dynHorizontalPriority = true,
+  dynTransitionZone = 0.15,
 }: NineSliceEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState({ w: 240, h: 240 });
@@ -968,7 +983,7 @@ function NineSliceEditor({
         ))}
       </div>
 
-      {/* Preview de texto em tempo real */}
+      {/* Preview de texto em tempo real — modo dinâmico ou clássico conforme isDynamic */}
       <NineSlicePreviewPanel
         imageUrl={imageUrl}
         slice={slice}
@@ -976,8 +991,23 @@ function NineSliceEditor({
         fontSize={fontSize}
         textAlign={textAlign}
         padTop={padTop} padBottom={padBottom} padLeft={padLeft} padRight={padRight}
+        isDynamic={isDynamic}
+        dynMaxWidth={dynMaxWidth}
+        dynMinWidth={dynMinWidth}
+        dynPaddingX={dynPaddingX}
+        dynPaddingY={dynPaddingY}
+        dynHorizontalPriority={dynHorizontalPriority}
+        dynTransitionZone={dynTransitionZone}
       />
-      {/* Nota: o overlay de zonas dinâmicas está disponível na aba "Zonas" */}
+      {/* Overlay de zonas dinâmicas — visível inline quando isDynamic está ativo */}
+      {isDynamic && (
+        <DynamicNineSliceOverlay
+          imageUrl={imageUrl}
+          imageDimensions={imageDimensions}
+          slice={slice}
+          transitionZone={dynTransitionZone}
+        />
+      )}
     </div>
   );
 }
@@ -1243,6 +1273,7 @@ function NineSlicePreviewPanel({
   dynPaddingX = 16,
   dynPaddingY = 12,
   dynHorizontalPriority = true,
+  dynTransitionZone = 0.15,
 }: NineSlicePreviewPanelProps) {
   const [customText, setCustomText] = useState("");
   const imgState = useImageLoader(imageUrl);
@@ -1983,6 +2014,13 @@ function BubblesDashboard() {
                             textAlign={form.textAlign}
                             padTop={form.padTop} padBottom={form.padBottom}
                             padLeft={form.padLeft} padRight={form.padRight}
+                            isDynamic={form.isDynamic}
+                            dynMaxWidth={form.dynMaxWidth}
+                            dynMinWidth={form.dynMinWidth}
+                            dynPaddingX={form.dynPaddingX}
+                            dynPaddingY={form.dynPaddingY}
+                            dynHorizontalPriority={form.dynHorizontalPriority}
+                            dynTransitionZone={form.dynTransitionZone}
                           />
                         )}
 
@@ -2068,6 +2106,7 @@ function BubblesDashboard() {
                                   dynPaddingX={form.dynPaddingX}
                                   dynPaddingY={form.dynPaddingY}
                                   dynHorizontalPriority={form.dynHorizontalPriority}
+                                  dynTransitionZone={form.dynTransitionZone}
                                 />
                               )}
                             </div>
