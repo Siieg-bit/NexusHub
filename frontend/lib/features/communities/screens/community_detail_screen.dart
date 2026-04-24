@@ -13,6 +13,8 @@ import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/providers/presence_provider.dart';
 import '../../../core/providers/chat_provider.dart';
+import '../../../core/providers/notification_provider.dart';
+import '../../../core/widgets/nexus_badge.dart';
 
 // Extracted providers & widgets
 import '../providers/community_detail_providers.dart';
@@ -503,20 +505,36 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               ),
             ),
             SizedBox(width: r.s(6)),
-            // Notifications
-            GestureDetector(
-              onTap: () => context.push('/community/${widget.communityId}/notifications'),
-              child: Container(
-                width: r.s(34),
-                height: r.s(34),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  shape: BoxShape.circle,
+            // Notifications — badge de não lidas da comunidade
+            Builder(builder: (ctx) {
+              final communityUnread = ref.watch(
+                unreadCommunityNotificationCountProvider(widget.communityId),
+              );
+              return GestureDetector(
+                onTap: () => context.push('/community/${widget.communityId}/notifications'),
+                child: Container(
+                  width: r.s(34),
+                  height: r.s(34),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: NexusBadge(
+                      count: communityUnread,
+                      offset: const Offset(3, -3),
+                      child: Icon(
+                        communityUnread > 0
+                            ? Icons.notifications_rounded
+                            : Icons.notifications_outlined,
+                        color: Colors.white,
+                        size: r.s(18),
+                      ),
+                    ),
+                  ),
                 ),
-                child: Icon(Icons.notifications_outlined,
-                    color: Colors.white, size: r.s(18)),
-              ),
-            ),
+              );
+            }),
             SizedBox(width: r.s(12)),
           ],
           flexibleSpace: FlexibleSpaceBar(

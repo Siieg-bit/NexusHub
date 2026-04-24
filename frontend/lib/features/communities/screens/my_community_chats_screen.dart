@@ -15,6 +15,7 @@ import '../../../core/providers/chat_provider.dart'
 import '../widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/nexus_badge.dart';
 
 Map<String, dynamic>? _extractProfile(dynamic rawProfile) {
   if (rawProfile is Map<String, dynamic>) return rawProfile;
@@ -1183,30 +1184,49 @@ class _CommunityChatTile extends ConsumerWidget {
                     fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
-                if (hasUnread && chatRoom.unreadCount > 1) ...[
+                if (hasUnread) ...[
                   SizedBox(height: r.s(4)),
-                  Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: r.s(6), vertical: 2),
-                    decoration: BoxDecoration(
-                      color: context.nexusTheme.accentSecondary,
-                      borderRadius: BorderRadius.circular(r.s(10)),
-                    ),
-                    child: Text(
-                      chatRoom.unreadCount > 99
-                          ? '99+'
-                          : chatRoom.unreadCount.toString(),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: r.fs(10),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
+                  _CommunityChatUnreadBadge(count: chatRoom.unreadCount),
                 ],
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// _CommunityChatUnreadBadge — Badge moderno de mensagens não lidas (9+)
+// =============================================================================
+class _CommunityChatUnreadBadge extends StatelessWidget {
+  final int count;
+  const _CommunityChatUnreadBadge({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    final label = count > 9 ? '9+' : '$count';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: context.nexusTheme.accentPrimary,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.35),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.2,
         ),
       ),
     );

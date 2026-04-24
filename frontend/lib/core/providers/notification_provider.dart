@@ -954,6 +954,34 @@ final unreadNotificationCountProvider = Provider<int>((ref) {
   return count;
 });
 
+/// Badge count de notificações não lidas de uma comunidade específica.
+/// Derivado do communityNotificationProvider (sem rebuild desnecessário).
+final unreadCommunityNotificationCountProvider =
+    Provider.family<int, String>((ref, communityId) {
+  final state = ref.watch(communityNotificationProvider(communityId));
+  return state.valueOrNull?.unreadCount ?? 0;
+});
+
+/// Total de notificações não lidas em TODAS as comunidades do usuário.
+/// Usado para o badge na aba "Comunidades" da bottom nav.
+final totalUnreadCommunityNotificationsProvider = StreamProvider<int>((ref) {
+  final userId = SupabaseService.currentUserId;
+  if (userId == null) return Stream.value(0);
+
+  return SupabaseService.client
+      .from('notifications')
+      .stream(primaryKey: ['id'])
+      .eq('user_id', userId)
+      .map((rows) {
+        return rows
+            .where((r) =>
+                r['is_read'] == false &&
+                r['community_id'] != null &&
+                (r['community_id'] as String).isNotEmpty)
+            .length;
+      });
+});
+
 /// Categoria selecionada atual
 final notificationCategoryProvider = Provider<NotificationCategory>((ref) {
   final notifState = ref.watch(notificationProvider);

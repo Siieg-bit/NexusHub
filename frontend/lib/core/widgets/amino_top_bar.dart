@@ -6,6 +6,7 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../l10n/locale_provider.dart';
 import '../utils/responsive.dart';
 import '../l10n/app_strings.dart';
+import 'nexus_badge.dart';
 
 /// Top Bar do Amino original — réplica pixel-perfect.
 ///
@@ -361,70 +362,28 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
     return coins.toString();
   }
 
-  /// Sino de notificações — branco, badge vermelho com número ou dot.
+  /// Sino de notificações — badge com número (9+), design limpo.
   Widget _buildNotificationBell(BuildContext context) {
     final r = context.r;
     return GestureDetector(
       onTap: onNotificationTap ?? () => context.push('/notifications'),
       child: SizedBox(
-        width: r.s(30),
-        height: r.s(30),
-        child: Stack(
-          children: [
-            Center(
-              child: Icon(
-                Icons.notifications_none_rounded,
-                color: context.nexusTheme.appBarForeground.withValues(alpha: 0.85),
-                size: r.s(22),
-              ),
+        width: r.s(34),
+        height: r.s(34),
+        child: Center(
+          child: NexusBadge(
+            count: notificationCount,
+            offset: const Offset(2, -2),
+            child: Icon(
+              notificationCount > 0
+                  ? Icons.notifications_rounded
+                  : Icons.notifications_none_rounded,
+              color: notificationCount > 0
+                  ? context.nexusTheme.appBarForeground
+                  : context.nexusTheme.appBarForeground.withValues(alpha: 0.70),
+              size: r.s(22),
             ),
-            if (notificationCount > 0)
-              Positioned(
-                right: 0,
-                top: 0,
-                child: notificationCount > 9
-                    // Badge com número para 10+
-                    ? Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: r.s(4), vertical: r.s(1)),
-                        decoration: BoxDecoration(
-                          color: context.nexusTheme.error,
-                          borderRadius: BorderRadius.circular(r.s(8)),
-                          border: Border.all(
-                            color: context.nexusTheme.backgroundPrimary,
-                            width: 1.5,
-                          ),
-                        ),
-                        constraints: BoxConstraints(
-                          minWidth: r.s(16),
-                          minHeight: r.s(14),
-                        ),
-                          child: Text(
-                          notificationCount > 99 ? '99+' : '$notificationCount',
-                          style: TextStyle(
-                            color: context.nexusTheme.buttonDestructiveForeground,
-                            fontSize: r.fs(8),
-                            fontWeight: FontWeight.w800,
-                            height: 1.1,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      )
-                    // Dot simples para 1-9
-                    : Container(
-                        width: r.s(8),
-                        height: r.s(8),
-                        decoration: BoxDecoration(
-                          color: context.nexusTheme.error,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: context.nexusTheme.backgroundPrimary,
-                            width: 1,
-                          ),
-                        ),
-                      ),
-              ),
-          ],
+          ),
         ),
       ),
     );

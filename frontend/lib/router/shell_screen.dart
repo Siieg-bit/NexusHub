@@ -1,45 +1,36 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:badges/badges.dart' as badges;
 import '../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../core/providers/chat_provider.dart';
+import '../core/providers/notification_provider.dart';
+import '../core/widgets/nexus_badge.dart';
 
 /// Bottom Navigation Bar Global — réplica pixel-perfect do Amino Apps.
 ///
 /// 4 Tabs globais:
 ///   1. Discover  (ícone pena/feather)
-///   2. Communities (ícone grid 2x2)
-///   3. Chats (ícone balão de chat)
+///   2. Communities (ícone grid 2x2) — badge de notificações não lidas de comunidades
+///   3. Chats (ícone balão de chat) — badge de mensagens não lidas
 ///   4. Store (ícone prédio/loja)
-///
-/// Alertas permanecem acessíveis apenas dentro das comunidades e por entradas contextuais,
-/// não pela navegação global inferior.
 ///
 /// Cor ativa: ciano (#00BCD4) — NÃO branco.
 /// Cor inativa: cinza translúcido.
-/// Fundo: azul-marinho escuro com blur, sem borda branca visível.
-/// O ícone ativo tem um leve glow ciano por trás.
+/// Fundo: azul-marinho escuro com blur.
 class ShellScreen extends ConsumerWidget {
   final Widget child;
   const ShellScreen({super.key, required this.child});
 
-  /// Determina a aba ativa com base na rota atual usando correspondência por prefixo.
-  ///
-  /// Retorna -1 para rotas que não pertencem a nenhuma aba (ex: /notifications),
-  /// evitando que "Discover" apareça ativo em contextos incorretos.
   int _getSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
 
-    // Rotas que não pertencem a nenhuma aba da navegação global
     if (location.startsWith('/notifications')) return -1;
     if (location.startsWith('/settings')) return -1;
     if (location.startsWith('/search')) return -1;
     if (location.startsWith('/admin')) return -1;
 
-    // Aba 2 — Chats: prefixos de chat e thread
     if (location == '/chats' ||
         location.startsWith('/chats/') ||
         location.startsWith('/chat/') ||
@@ -50,14 +41,12 @@ class ShellScreen extends ConsumerWidget {
       return 2;
     }
 
-    // Aba 1 — Communities: prefixos de comunidade
     if (location == '/communities' ||
         location.startsWith('/communities/') ||
         location.startsWith('/community/')) {
       return 1;
     }
 
-    // Aba 3 — Store: prefixos de loja, stickers e moedas
     if (location == '/store' ||
         location.startsWith('/store/') ||
         location.startsWith('/stickers') ||
@@ -68,7 +57,6 @@ class ShellScreen extends ConsumerWidget {
       return 3;
     }
 
-    // Aba 0 — Discover: raiz, explore, feed e demais rotas não mapeadas
     if (location == '/' ||
         location == '/explore' ||
         location.startsWith('/explore/') ||
@@ -86,7 +74,6 @@ class ShellScreen extends ConsumerWidget {
       return 0;
     }
 
-    // Fallback: nenhuma aba ativa para rotas não reconhecidas
     return -1;
   }
 
@@ -112,9 +99,12 @@ class ShellScreen extends ConsumerWidget {
     final s = ref.watch(stringsProvider);
     final selectedIndex = _getSelectedIndex(context);
 
-    // Badge real de chats não lidos via unreadCountProvider
-    final unreadAsync = ref.watch(unreadCountProvider);
-    final unreadCount = unreadAsync.valueOrNull ?? 0;
+    // Badge de chats não lidos
+    final chatUnread = ref.watch(unreadCountProvider).valueOrNull ?? 0;
+
+    // Badge de notificações não lidas de comunidades
+    final communityNotifUnread =
+        ref.watch(totalUnreadCommunityNotificationsProvider).valueOrNull ?? 0;
 
     return Scaffold(
       body: child,
@@ -146,22 +136,23 @@ class ShellScreen extends ConsumerWidget {
                       isSelected: selectedIndex == 0,
                       onTap: () => _onItemTapped(context, 0),
                     ),
-                    // ── Communities
+                    // ── Communities — badge de notificações de comunidade
                     _AminoNavItem(
                       icon: Icons.grid_view_outlined,
                       activeIcon: Icons.grid_view_rounded,
                       label: 'Comunidades',
                       isSelected: selectedIndex == 1,
                       onTap: () => _onItemTapped(context, 1),
+                      badgeCount: communityNotifUnread,
                     ),
-                    // ── Chats (com badge real de não lidas)
+                    // ── Chats — badge de mensagens não lidas
                     _AminoNavItem(
                       icon: Icons.chat_bubble_outline_rounded,
                       activeIcon: Icons.chat_bubble_rounded,
                       label: s.chats2,
                       isSelected: selectedIndex == 2,
                       onTap: () => _onItemTapped(context, 2),
-                      badgeCount: unreadCount,
+                      badgeCount: chatUnread,
                     ),
                     // ── Store
                     _AminoNavItem(
@@ -183,7 +174,7 @@ class ShellScreen extends ConsumerWidget {
 }
 
 // ==============================================================================
-// NAV ITEM — Estilo Amino: ativo = ciano (#00BCD4) com glow, inativo = cinza
+// NAV ITEM — Estilo Amino com NexusBadge moderno
 // ==============================================================================
 class _AminoNavItem extends ConsumerWidget {
   final IconData icon;
@@ -204,15 +195,14 @@ class _AminoNavItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Amino: ativo = ciano brilhante, inativo = cinza claro translúcido
     final color = isSelected
-        ? context.nexusTheme.accentSecondary // #00BCD4 ciano
+        ? context.nexusTheme.accentSecondary
         : Colors.white.withValues(alpha: 0.40);
     final displayIcon = isSelected ? activeIcon : icon;
 
     Widget iconWidget = Icon(displayIcon, color: color, size: 24);
 
-    // Glow sutil por trás do ícone ativo (estilo Amino)
+    // Glow sutil por trás do ícone ativo
     if (isSelected) {
       iconWidget = Container(
         decoration: BoxDecoration(
@@ -229,16 +219,11 @@ class _AminoNavItem extends ConsumerWidget {
       );
     }
 
+    // Badge com NexusBadge moderno
     if (badgeCount > 0) {
-      iconWidget = badges.Badge(
-        badgeContent: Text(
-          badgeCount > 99 ? '99+' : badgeCount.toString(),
-          style: const TextStyle(color: Colors.white, fontSize: 9),
-        ),
-        badgeStyle: badges.BadgeStyle(
-          badgeColor: context.nexusTheme.error,
-          padding: const EdgeInsets.all(4),
-        ),
+      iconWidget = NexusBadge(
+        count: badgeCount,
+        offset: const Offset(3, -3),
         child: iconWidget,
       );
     }

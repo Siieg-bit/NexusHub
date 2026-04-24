@@ -16,6 +16,8 @@ import '../../profile/providers/profile_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/level_up_dialog.dart';
 import '../../../core/providers/chat_provider.dart';
+import '../../../core/providers/notification_provider.dart';
+import '../../../core/widgets/nexus_badge.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 // =============================================================================
@@ -319,38 +321,15 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                     )
                   : null,
             ),
-            // Badge de não lidas
+            // Badge de não lidas — NexusBadge moderno
             if (unreadCount > 0)
               Positioned(
-                top: -r.s(3),
-                right: -r.s(3),
-                child: Container(
-                  constraints: BoxConstraints(
-                    minWidth: r.s(16),
-                    minHeight: r.s(16),
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: r.s(4),
-                    vertical: r.s(1),
-                  ),
-                  decoration: BoxDecoration(
-                    color: theme.error,
-                    borderRadius: BorderRadius.circular(r.s(10)),
-                    border: Border.all(
-                      color: theme.drawerSidebarBackground,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Text(
-                    unreadCount > 99 ? '99+' : '$unreadCount',
-                    style: TextStyle(
-                      color: theme.buttonDestructiveForeground,
-                      fontSize: r.fs(9),
-                      fontWeight: FontWeight.w700,
-                      height: 1,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                top: -4,
+                right: -4,
+                child: NexusBadge(
+                  count: unreadCount,
+                  color: theme.error,
+                  child: const SizedBox.shrink(),
                 ),
               ),
           ],
@@ -1010,14 +989,22 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           color: theme.divider,
         ),
         // Configurações gerais do app acessíveis pelo drawer
-        _AminoDrawerTile(
-          icon: Icons.notifications_outlined,
-          iconColor: theme.textSecondary,
-          label: s.notifications,
-          onTap: () => _closeAndNavigate(() {
-            context.push('/community/${widget.community.id}/notifications');
-          }),
-        ),
+        Consumer(builder: (ctx, cref, _) {
+          final communityUnread = cref.watch(
+            unreadCommunityNotificationCountProvider(widget.community.id),
+          );
+          return _AminoDrawerTile(
+            icon: communityUnread > 0
+                ? Icons.notifications_rounded
+                : Icons.notifications_outlined,
+            iconColor: communityUnread > 0 ? theme.error : theme.textSecondary,
+            label: s.notifications,
+            onTap: () => _closeAndNavigate(() {
+              context.push('/community/${widget.community.id}/notifications');
+            }),
+            badgeCount: communityUnread,
+          );
+        }),
         _AminoDrawerTile(
           icon: Icons.block_rounded,
           iconColor: theme.textSecondary,
@@ -1098,23 +1085,31 @@ class _AminoDrawerTile extends ConsumerWidget {
                 ),
               ),
             ),
-            // Badge de notificação
+            // Badge de notificação — NexusBadge moderno com 9+
             if (badgeCount != null && badgeCount! > 0)
               Container(
                 padding: EdgeInsets.symmetric(
-                  horizontal: r.s(6),
-                  vertical: r.s(2),
+                  horizontal: r.s(7),
+                  vertical: r.s(3),
                 ),
                 decoration: BoxDecoration(
-                  color: iconColor,
+                  color: theme.error,
                   borderRadius: BorderRadius.circular(r.s(10)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.error.withValues(alpha: 0.35),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Text(
-                  '$badgeCount',
-                  style: TextStyle(
-                    color: theme.buttonPrimaryForeground,
-                    fontSize: r.fs(11),
-                    fontWeight: FontWeight.w700,
+                  badgeCount! > 9 ? '9+' : '$badgeCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ),
