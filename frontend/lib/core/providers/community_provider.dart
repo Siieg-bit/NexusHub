@@ -47,10 +47,8 @@ class MyCommunitiesNotifier extends AsyncNotifier<List<CommunityModel>> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return false;
 
-      await SupabaseService.table('community_members').insert({
-        'community_id': communityId,
-        'user_id': userId,
-        'role': 'member',
+      await SupabaseService.rpc('join_community', params: {
+        'p_community_id': communityId,
       });
 
       await refresh();
@@ -65,10 +63,9 @@ class MyCommunitiesNotifier extends AsyncNotifier<List<CommunityModel>> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return false;
 
-      await SupabaseService.table('community_members')
-          .delete()
-          .eq('community_id', communityId)
-          .eq('user_id', userId);
+      await SupabaseService.rpc('leave_community', params: {
+        'p_community_id': communityId,
+      });
 
       await refresh();
       return true;

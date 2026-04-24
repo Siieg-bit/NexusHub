@@ -188,20 +188,14 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
       // Usa currentUserProvider (já em memória) como ponto de partida do perfil local.
       // Após o join, o usuário edita livremente o perfil da comunidade sem sincronização.
       final currentUser = ref.read(currentUserProvider);
-      await SupabaseService.table('community_members').insert({
-        'community_id': widget.communityId,
-        'user_id': userId,
-        'role': 'member',
-        'local_nickname': currentUser?.nickname,
-        'local_bio': currentUser?.bio,
-        'local_icon_url': currentUser?.iconUrl,
-        'local_banner_url': currentUser?.bannerUrl,
-      });
+      final result = await SupabaseService.rpc('join_community', params: {
+        'p_community_id': widget.communityId,
+      }) as Map<String, dynamic>?;
       ref.invalidate(communityMembershipProvider(widget.communityId));
       ref.invalidate(communityDetailProvider(widget.communityId));
       if (mounted) {
-        final displayMsg = (welcomeMsg != null && welcomeMsg.trim().isNotEmpty)
-            ? welcomeMsg.trim()
+        final displayMsg = (result?['welcome_message'] as String?)?.trim().isNotEmpty == true
+            ? result!['welcome_message'] as String
             : s.joinedCommunity;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

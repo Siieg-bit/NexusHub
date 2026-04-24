@@ -124,7 +124,9 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
       if (blockedUserId != null) {
         await ref.read(blockedIdsProvider.notifier).unblock(blockedUserId);
       } else {
-        await SupabaseService.table('blocks').delete().eq('id', blockId);
+        await SupabaseService.rpc('unblock_user', params: {
+          'p_blocked_id': blockedUserId,
+        });
       }
       if (!mounted) return;
       setState(() {

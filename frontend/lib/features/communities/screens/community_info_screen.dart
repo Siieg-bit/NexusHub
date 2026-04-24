@@ -106,14 +106,8 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
       // Usa currentUserProvider (já em memória) como ponto de partida do perfil local.
       // Após o join, o usuário edita livremente o perfil da comunidade sem sincronização.
       final currentUser = ref.read(currentUserProvider);
-      await SupabaseService.table('community_members').insert({
-        'community_id': widget.communityId,
-        'user_id': userId,
-        'role': 'member',
-        'local_nickname': currentUser?.nickname,
-        'local_bio': currentUser?.bio,
-        'local_icon_url': currentUser?.iconUrl,
-        'local_banner_url': currentUser?.bannerUrl,
+      await SupabaseService.rpc('join_community', params: {
+        'p_community_id': widget.communityId,
       });
       if (mounted) {
         setState(() {
