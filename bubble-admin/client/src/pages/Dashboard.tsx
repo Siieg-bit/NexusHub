@@ -280,22 +280,28 @@ function ChatPreview({ imageUrl, name, cfg }: { imageUrl: string | null; name: s
 
 
 // ─── DynamicNineSliceOverlay ──────────────────────────────────────────────────
-// Overlay visual com 3 zonas: bordas (fixas), transição (suavização), centro (stretch).
-// Renderizado sobre o NineSliceEditor quando o modo dynamic_nineslice está ativo.
+// Overlay visual INTERATIVO com 3 zonas: bordas (fixas), transição (suavização), centro (stretch).
+// Handles arrastáveis para ajustar os 4 slices e a zona de transição diretamente no overlay.
+type OverlayHandle = "top" | "bottom" | "left" | "right" | "transition" | null;
 interface DynamicNineSliceOverlayProps {
   imageUrl: string;
   imageDimensions: { w: number; h: number } | null;
   slice: SliceValues;
   transitionZone: number;
+  onSliceChange?: (s: SliceValues) => void;
+  onTransitionChange?: (t: number) => void;
 }
 function DynamicNineSliceOverlay({
   imageUrl, imageDimensions, slice, transitionZone,
+  onSliceChange, onTransitionChange,
 }: DynamicNineSliceOverlayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState({ w: 240, h: 240 });
+  const [dragging, setDragging] = useState<OverlayHandle>(null);
+  const [hovering, setHovering] = useState<OverlayHandle>(null);
+  const dragStart = useRef<{ x: number; y: number; value: number } | null>(null);
   const imgW = imageDimensions?.w ?? 128;
   const imgH = imageDimensions?.h ?? 128;
-
   useEffect(() => {
     function update() {
       if (!containerRef.current) return;
@@ -307,11 +313,8 @@ function DynamicNineSliceOverlay({
     if (containerRef.current) ro.observe(containerRef.current);
     return () => ro.disconnect();
   }, []);
-
   const scaleX = canvasSize.w / imgW;
   const scaleY = canvasSize.h / imgH;
-
-  // Posições em px no canvas visual
   const topPx    = slice.top    * scaleY;
   const bottomPx = canvasSize.h - slice.bottom * scaleY;
   const leftPx   = slice.left   * scaleX;
@@ -320,10 +323,83 @@ function DynamicNineSliceOverlay({
   const centerH  = bottomPx - topPx;
   const tzW = centerW * transitionZone;
   const tzH = centerH * transitionZone;
+  const HIT = 10;
+  // Handle de transição: canto inferior direito da zona de transição
+  const tzHandleX = rightPx - tzW;
+  const tzHandleY = bottomPx - tzH;
+
+  const getHandleAt = useCallback((x: number, y: number): OverlayHandle => {
+    if (Math.abs(x - tzHandleX) < HIT + 4 && Math.abs(y - tzHandleY) < HIT + 4) return "transition";
+    if (Math.abs(y - topPx)    < HIT) return "top";
+    if (Math.abs(y - bottomPx) < HIT) return "bottom";
+    if (Math.abs(x - leftPx)   < HIT) return "left";
+    if (Math.abs(x - rightPx)  < HIT) return "right";
+    return null;
+  }, [topPx, bottomPx, leftPx, rightPx, tzHandleX, tzHandleY]);
+
+  const getCursor = (h: OverlayHandle) => {
+    if (h === "top" || h === "bottom") return "ns-resize";
+    if (h === "left" || h === "right") return "ew-resize";
+    if (h === "transition") return "nwse-resize";
+    return "default";
+  };
+  const cursor = getCursor(dragging ?? hovering);
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    const rect = containerRef.current!.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const handle = getHandleAt(x, y);
+    if (!handle) return;
+    e.preventDefault();
+    setDragging(handle);
+    dragStart.current = {
+      x, y,
+      value: handle === "transition" ? transitionZone : slice[handle as keyof SliceValues],
+    };
+  }, [getHandleAt, slice, transitionZone]);
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    const rect = containerRef.current!.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    if (!dragging || !dragStart.current) {
+      setHovering(getHandleAt(x, y));
+      return;
+    }
+    const dx = x - dragStart.current.x;
+    const dy = y - dragStart.current.y;
+    if (dragging === "transition") {
+      // Arrastar para cima/esquerda = menos transição; baixo/direita = mais
+      const delta = (dx - dy) / (canvasSize.w * 0.5);
+      const newTz = Math.max(0, Math.min(0.5, dragStart.current.value - delta));
+      onTransitionChange?.(Math.round(newTz * 100) / 100);
+    } else {
+      const isVertical = dragging === "top" || dragging === "bottom";
+      const delta = isVertical ? dy : dx;
+      const scale = isVertical ? scaleY : scaleX;
+      const sign  = (dragging === "bottom" || dragging === "right") ? -1 : 1;
+      const newVal = Math.max(0, Math.round(dragStart.current.value + sign * delta / scale));
+      onSliceChange?.({ ...slice, [dragging]: newVal });
+    }
+  }, [dragging, getHandleAt, slice, scaleX, scaleY, canvasSize, onSliceChange, onTransitionChange]);
+
+  const onMouseUp = useCallback(() => {
+    setDragging(null);
+    dragStart.current = null;
+  }, []);
+
+  const lineBase = (active: boolean, color: string): React.CSSProperties => ({
+    position: "absolute",
+    background: active ? color : color + "99",
+    boxShadow: active ? `0 0 6px ${color}` : "none",
+    transition: active ? "none" : "background 0.15s",
+    pointerEvents: "none",
+  });
 
   return (
     <div className="space-y-3">
-      {/* Legenda das zonas */}
+      {/* Legenda */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-sm" style={{ background: "rgba(245,158,11,0.4)", border: "1px solid #F59E0B" }} />
@@ -337,8 +413,10 @@ function DynamicNineSliceOverlay({
           <div className="w-3 h-3 rounded-sm" style={{ background: "rgba(52,211,153,0.3)", border: "1px solid #34D399" }} />
           <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>Centro (stretch)</span>
         </div>
+        <span className="text-[9px] font-mono ml-auto" style={{ color: "rgba(255,255,255,0.2)" }}>Arraste as linhas</span>
       </div>
-      {/* Canvas do overlay */}
+
+      {/* Container interativo */}
       <div
         ref={containerRef}
         className="relative rounded-xl overflow-hidden select-none"
@@ -346,8 +424,14 @@ function DynamicNineSliceOverlay({
           width: "100%",
           paddingBottom: `${(imgH / imgW) * 100}%`,
           background: "repeating-conic-gradient(rgba(255,255,255,0.04) 0% 25%, transparent 0% 50%) 0 0 / 12px 12px",
-          border: "1px solid rgba(255,255,255,0.08)",
+          border: `1px solid ${dragging ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.08)"}`,
+          cursor,
+          userSelect: "none",
         }}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseUp}
       >
         {/* Imagem de fundo */}
         <img
@@ -356,190 +440,127 @@ function DynamicNineSliceOverlay({
           draggable={false}
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "fill", pointerEvents: "none" }}
         />
-        {/* SVG overlay das zonas */}
+
+        {/* SVG — zonas coloridas */}
         <svg
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}
           viewBox={`0 0 ${canvasSize.w} ${canvasSize.h}`}
           preserveAspectRatio="none"
         >
-          {/* Zona de bordas fixas — overlay âmbar */}
-          {/* Topo */}
-          <rect x={0} y={0} width={canvasSize.w} height={topPx} fill="rgba(245,158,11,0.18)" stroke="#F59E0B" strokeWidth="0.5" />
-          {/* Base */}
-          <rect x={0} y={bottomPx} width={canvasSize.w} height={canvasSize.h - bottomPx} fill="rgba(245,158,11,0.18)" stroke="#F59E0B" strokeWidth="0.5" />
-          {/* Esquerda */}
-          <rect x={0} y={topPx} width={leftPx} height={centerH} fill="rgba(245,158,11,0.18)" stroke="#F59E0B" strokeWidth="0.5" />
-          {/* Direita */}
-          <rect x={rightPx} y={topPx} width={canvasSize.w - rightPx} height={centerH} fill="rgba(245,158,11,0.18)" stroke="#F59E0B" strokeWidth="0.5" />
-
-          {/* Zona de transição — overlay violeta */}
-          {/* Topo */}
-          <rect x={leftPx} y={topPx} width={centerW} height={tzH} fill="rgba(167,139,250,0.2)" stroke="#A78BFA" strokeWidth="0.5" strokeDasharray="3 2" />
-          {/* Base */}
-          <rect x={leftPx} y={bottomPx - tzH} width={centerW} height={tzH} fill="rgba(167,139,250,0.2)" stroke="#A78BFA" strokeWidth="0.5" strokeDasharray="3 2" />
-          {/* Esquerda */}
-          <rect x={leftPx} y={topPx + tzH} width={tzW} height={Math.max(0, centerH - tzH * 2)} fill="rgba(167,139,250,0.2)" stroke="#A78BFA" strokeWidth="0.5" strokeDasharray="3 2" />
-          {/* Direita */}
-          <rect x={rightPx - tzW} y={topPx + tzH} width={tzW} height={Math.max(0, centerH - tzH * 2)} fill="rgba(167,139,250,0.2)" stroke="#A78BFA" strokeWidth="0.5" strokeDasharray="3 2" />
-
-          {/* Centro (stretch principal) — overlay verde */}
+          {/* Bordas fixas — âmbar */}
+          <rect x={0} y={0} width={canvasSize.w} height={topPx} fill="rgba(245,158,11,0.18)" />
+          <rect x={0} y={bottomPx} width={canvasSize.w} height={canvasSize.h - bottomPx} fill="rgba(245,158,11,0.18)" />
+          <rect x={0} y={topPx} width={leftPx} height={centerH} fill="rgba(245,158,11,0.18)" />
+          <rect x={rightPx} y={topPx} width={canvasSize.w - rightPx} height={centerH} fill="rgba(245,158,11,0.18)" />
+          {/* Transição — violeta */}
+          <rect x={leftPx} y={topPx} width={centerW} height={tzH} fill="rgba(167,139,250,0.2)" />
+          <rect x={leftPx} y={bottomPx - tzH} width={centerW} height={tzH} fill="rgba(167,139,250,0.2)" />
+          <rect x={leftPx} y={topPx + tzH} width={tzW} height={Math.max(0, centerH - tzH * 2)} fill="rgba(167,139,250,0.2)" />
+          <rect x={rightPx - tzW} y={topPx + tzH} width={tzW} height={Math.max(0, centerH - tzH * 2)} fill="rgba(167,139,250,0.2)" />
+          {/* Centro stretch — verde */}
           <rect
             x={leftPx + tzW} y={topPx + tzH}
             width={Math.max(0, centerW - tzW * 2)} height={Math.max(0, centerH - tzH * 2)}
             fill="rgba(52,211,153,0.15)" stroke="#34D399" strokeWidth="0.75"
           />
-          {/* Label centro */}
           {centerW > 40 && centerH > 20 && (
             <text
               x={leftPx + centerW / 2} y={topPx + centerH / 2}
               textAnchor="middle" dominantBaseline="middle"
               fontSize="8" fontFamily="'DM Mono', monospace"
               fill="#34D399" opacity="0.8"
-            >
-              STRETCH
-            </text>
+            >STRETCH</text>
           )}
         </svg>
+
+        {/* Linha Topo */}
+        <div style={{ ...lineBase(dragging === "top" || hovering === "top", "#F59E0B"), left: 0, right: 0, top: topPx - 1, height: 2 }}>
+          <div style={{ position: "absolute", right: 4, top: -11, fontSize: 9, fontFamily: "'DM Mono', monospace", color: "#F59E0B", background: "rgba(0,0,0,0.75)", padding: "1px 4px", borderRadius: 4, whiteSpace: "nowrap" }}>
+            T: {slice.top}px
+          </div>
+        </div>
+        {/* Linha Base */}
+        <div style={{ ...lineBase(dragging === "bottom" || hovering === "bottom", "#F59E0B"), left: 0, right: 0, top: bottomPx - 1, height: 2 }}>
+          <div style={{ position: "absolute", right: 4, bottom: -11, fontSize: 9, fontFamily: "'DM Mono', monospace", color: "#F59E0B", background: "rgba(0,0,0,0.75)", padding: "1px 4px", borderRadius: 4, whiteSpace: "nowrap" }}>
+            B: {slice.bottom}px
+          </div>
+        </div>
+        {/* Linha Esquerda */}
+        <div style={{ ...lineBase(dragging === "left" || hovering === "left", "#34D399"), top: 0, bottom: 0, left: leftPx - 1, width: 2 }}>
+          <div style={{ position: "absolute", left: 4, top: 4, fontSize: 9, fontFamily: "'DM Mono', monospace", color: "#34D399", background: "rgba(0,0,0,0.75)", padding: "1px 4px", borderRadius: 4, whiteSpace: "nowrap", writingMode: "vertical-rl", transform: "rotate(180deg)" }}>
+            L: {slice.left}px
+          </div>
+        </div>
+        {/* Linha Direita */}
+        <div style={{ ...lineBase(dragging === "right" || hovering === "right", "#34D399"), top: 0, bottom: 0, left: rightPx - 1, width: 2 }}>
+          <div style={{ position: "absolute", right: 4, top: 4, fontSize: 9, fontFamily: "'DM Mono', monospace", color: "#34D399", background: "rgba(0,0,0,0.75)", padding: "1px 4px", borderRadius: 4, whiteSpace: "nowrap", writingMode: "vertical-rl" }}>
+            R: {slice.right}px
+          </div>
+        </div>
+
+        {/* Handle de transição — quadrado TZ arrastável */}
+        {centerW > 20 && centerH > 20 && (
+          <div
+            style={{
+              position: "absolute",
+              left: tzHandleX - 7,
+              top: tzHandleY - 7,
+              width: 14,
+              height: 14,
+              borderRadius: 3,
+              background: dragging === "transition" || hovering === "transition" ? "#A78BFA" : "rgba(167,139,250,0.7)",
+              border: "1.5px solid #A78BFA",
+              boxShadow: dragging === "transition" ? "0 0 8px #A78BFA" : "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              pointerEvents: "none",
+              transition: "background 0.15s",
+            }}
+          >
+            <span style={{ fontSize: 6, color: "white", fontFamily: "monospace", lineHeight: 1 }}>TZ</span>
+          </div>
+        )}
+      </div>
+
+      {/* Inputs numéricos */}
+      <div className="grid grid-cols-5 gap-1.5">
+        {([
+          { label: "Topo",  key: "top"    as const, color: "#F59E0B" },
+          { label: "Base",  key: "bottom" as const, color: "#F59E0B" },
+          { label: "Esq.",  key: "left"   as const, color: "#34D399" },
+          { label: "Dir.",  key: "right"  as const, color: "#34D399" },
+        ]).map(({ label, key, color }) => (
+          <div key={key}>
+            <label className="text-[9px] font-mono block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>{label}</label>
+            <input
+              type="number" min={0}
+              value={slice[key]}
+              onChange={(e) => onSliceChange?.({ ...slice, [key]: Math.max(0, parseInt(e.target.value) || 0) })}
+              className="w-full px-1.5 py-1 rounded-lg text-[11px] outline-none font-mono text-center"
+              style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${color}30`, color }}
+            />
+          </div>
+        ))}
+        <div>
+          <label className="text-[9px] font-mono block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Trans.%</label>
+          <input
+            type="number" min={0} max={50} step={1}
+            value={Math.round(transitionZone * 100)}
+            onChange={(e) => onTransitionChange?.(Math.max(0, Math.min(50, parseInt(e.target.value) || 0)) / 100)}
+            className="w-full px-1.5 py-1 rounded-lg text-[11px] outline-none font-mono text-center"
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(167,139,250,0.3)", color: "#A78BFA" }}
+          />
+        </div>
       </div>
       <p className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>
-        Verde = área de expansão principal · Violeta = suavização · Âmbar = bordas preservadas
+        Arraste as linhas coloridas · Quadrado TZ = zona de transição
       </p>
     </div>
   );
 }
-
-// ─── NineSliceCanvas ──────────────────────────────────────────────────────────
-// Renderiza um balao nine-slice via canvas com suporte a High-DPI (Retina).
-// Recebe a imagem ja carregada (HTMLImageElement) para evitar recarregamentos.
-// Usa canvas temporario para medicao de texto — evita re-render durante draw.
-
-interface NineSliceCanvasProps {
-  img: HTMLImageElement;
-  slice: SliceValues;
-  text: string;
-  maxWidth?: number;
-  textColor?: string;
-  fontSize?: number;
-  textAlign?: TextAlign;
-  padTop?: number; padBottom?: number; padLeft?: number; padRight?: number;
-}
-
-function NineSliceCanvas({
-  img, slice, text,
-  maxWidth = 220,
-  textColor = "rgba(255,255,255,0.9)",
-  fontSize = 13,
-  textAlign = "left",
-  padTop = 8, padBottom = 8, padLeft = 8, padRight = 8,
-}: NineSliceCanvasProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const dpr = window.devicePixelRatio || 1;
-    const { top: st, bottom: sb, left: sl, right: sr } = slice;
-    const lineHeight = Math.round(fontSize * 1.45);
-    const msgColor = textColor.trim() || "rgba(255,255,255,0.9)";
-
-    const innerLeft  = sl + padLeft;
-    const innerRight = sr + padRight;
-    const innerTop   = st + padTop;
-    const innerBot   = sb + padBottom;
-    const maxContentW = Math.max(1, maxWidth - innerLeft - innerRight);
-
-    // Usa canvas temporario para medir texto sem causar re-render
-    const measureCtx = document.createElement("canvas").getContext("2d")!;
-    measureCtx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
-
-    const words = text.split(" ");
-    const lines: string[] = [];
-    let cur = "";
-    for (const word of words) {
-      const test = cur ? cur + " " + word : word;
-      if (measureCtx.measureText(test).width > maxContentW && cur) {
-        lines.push(cur);
-        cur = word;
-      } else {
-        cur = test;
-      }
-    }
-    if (cur) lines.push(cur);
-    if (lines.length === 0) lines.push("");
-
-    const maxLineW = Math.max(...lines.map(l => measureCtx.measureText(l).width));
-    const logW = Math.min(maxWidth, Math.max(
-      Math.ceil(maxLineW) + innerLeft + innerRight,
-      sl + sr + 24
-    ));
-    const textH = lines.length * lineHeight;
-    const logH = Math.max(textH + innerTop + innerBot, st + sb + 8);
-
-    // Redimensiona canvas (isso limpa o conteudo — intencional)
-    canvas.width  = Math.round(logW * dpr);
-    canvas.height = Math.round(logH * dpr);
-    canvas.style.width  = logW + "px";
-    canvas.style.height = logH + "px";
-    ctx.scale(dpr, dpr);
-
-    // Desenha nine-slice (9 regioes)
-    const iw = img.naturalWidth;
-    const ih = img.naturalHeight;
-    const mw = logW - sl - sr;
-    const mh = logH - st - sb;
-
-    const regions: [number, number, number, number, number, number, number, number][] = [
-      [0,      0,      sl,        st,        0,       0,       sl,  st  ],
-      [sl,     0,      iw-sl-sr,  st,        sl,      0,       mw,  st  ],
-      [iw-sr,  0,      sr,        st,        sl+mw,   0,       sr,  st  ],
-      [0,      st,     sl,        ih-st-sb,  0,       st,      sl,  mh  ],
-      [sl,     st,     iw-sl-sr,  ih-st-sb,  sl,      st,      mw,  mh  ],
-      [iw-sr,  st,     sr,        ih-st-sb,  sl+mw,   st,      sr,  mh  ],
-      [0,      ih-sb,  sl,        sb,        0,       st+mh,   sl,  sb  ],
-      [sl,     ih-sb,  iw-sl-sr,  sb,        sl,      st+mh,   mw,  sb  ],
-      [iw-sr,  ih-sb,  sr,        sb,        sl+mw,   st+mh,   sr,  sb  ],
-    ];
-
-    ctx.clearRect(0, 0, logW, logH);
-    for (const [sx, sy, sw, sh, dx, dy, dw, dh] of regions) {
-      if (sw > 0 && sh > 0 && dw > 0 && dh > 0) {
-        ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
-      }
-    }
-
-    // Texto centralizado verticalmente na area de conteudo (entre innerTop e logH-innerBot)
-    const contentH = logH - innerTop - innerBot;
-    const textStartY = innerTop + Math.max(0, (contentH - textH) / 2);
-    const fillW = logW - innerLeft - innerRight;
-
-    ctx.fillStyle = msgColor;
-    ctx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
-    ctx.textBaseline = "top";
-    ctx.textAlign = textAlign;
-
-    lines.forEach((line, i) => {
-      let x: number;
-      if (textAlign === "center") x = innerLeft + fillW / 2;
-      else if (textAlign === "right") x = logW - innerRight;
-      else x = innerLeft;
-      ctx.fillText(line, x, textStartY + i * lineHeight);
-    });
-  }, [img, slice, text, maxWidth, textColor, fontSize, textAlign, padTop, padBottom, padLeft, padRight]);
-
-  return <canvas ref={canvasRef} style={{ display: "block", maxWidth: "100%" }} />;
-}
-
-
-// ─── DynamicNineSliceCanvas ───────────────────────────────────────────────────
-// Renderiza um balão no modo dynamic_nineslice.
-// Diferença do NineSliceCanvas clássico:
-//   - Usa padding do content (paddingX/paddingY) em vez de pad_top/pad_left etc.
-//   - Calcula largura com clamp(textWidth + 2*paddingX, minWidth, maxWidth)
-//   - Cresce horizontalmente primeiro; quebra linha apenas quando necessário
-//   - Centro absorve a deformação; bordas permanecem estáveis
+// ─── DynamicNineSliceCanvas ──────────────────────────────────────────────────
+// Renderiza um balão nine-slice dinâmico via canvas, medindo o texto antes de desenhar.
 interface DynamicNineSliceCanvasProps {
   img: HTMLImageElement;
   slice: SliceValues;
@@ -665,9 +686,103 @@ function DynamicNineSliceCanvas({
   return <canvas ref={canvasRef} style={{ display: "block", maxWidth: "100%" }} />;
 }
 
+// ─── NineSliceCanvas ──────────────────────────────────────────────────────────
+// Renderiza um balão nine-slice clássico via canvas com suporte a High-DPI (Retina).
+interface NineSliceCanvasProps {
+  img: HTMLImageElement;
+  slice: SliceValues;
+  text: string;
+  maxWidth?: number;
+  textColor?: string;
+  fontSize?: number;
+  textAlign?: TextAlign;
+  padTop?: number; padBottom?: number; padLeft?: number; padRight?: number;
+}
+function NineSliceCanvas({
+  img, slice, text,
+  maxWidth = 220,
+  textColor = "rgba(255,255,255,0.9)",
+  fontSize = 13,
+  textAlign = "left",
+  padTop = 12, padBottom = 12, padLeft = 16, padRight = 16,
+}: NineSliceCanvasProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const dpr = window.devicePixelRatio || 1;
+    const { top: st, bottom: sb, left: sl, right: sr } = slice;
+    const lineHeight = Math.round(fontSize * 1.45);
+    const msgColor = textColor.trim() || "rgba(255,255,255,0.9)";
+    const innerLeft  = sl + padLeft;
+    const innerRight = sr + padRight;
+    const innerTop   = st + padTop;
+    const innerBot   = sb + padBottom;
+    const measureCtx = document.createElement("canvas").getContext("2d")!;
+    measureCtx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
+    const maxContentW = Math.max(1, maxWidth - innerLeft - innerRight);
+    const words = text.split(" ");
+    const lines: string[] = [];
+    let cur = "";
+    for (const word of words) {
+      const test = cur ? cur + " " + word : word;
+      if (measureCtx.measureText(test).width > maxContentW && cur) {
+        lines.push(cur);
+        cur = word;
+      } else {
+        cur = test;
+      }
+    }
+    if (cur) lines.push(cur);
+    if (lines.length === 0) lines.push("");
+    const textH = lines.length * lineHeight;
+    const logW  = maxWidth;
+    const logH  = Math.max(textH + innerTop + innerBot, st + sb + 8);
+    canvas.width  = Math.round(logW * dpr);
+    canvas.height = Math.round(logH * dpr);
+    canvas.style.width  = logW + "px";
+    canvas.style.height = logH + "px";
+    ctx.scale(dpr, dpr);
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const mw = logW - sl - sr;
+    const mh = logH - st - sb;
+    const regions: [number, number, number, number, number, number, number, number][] = [
+      [0,      0,      sl,        st,        0,       0,       sl,  st  ],
+      [sl,     0,      iw-sl-sr,  st,        sl,      0,       mw,  st  ],
+      [iw-sr,  0,      sr,        st,        sl+mw,   0,       sr,  st  ],
+      [0,      st,     sl,        ih-st-sb,  0,       st,      sl,  mh  ],
+      [sl,     st,     iw-sl-sr,  ih-st-sb,  sl,      st,      mw,  mh  ],
+      [iw-sr,  st,     sr,        ih-st-sb,  sl+mw,   st,      sr,  mh  ],
+      [0,      ih-sb,  sl,        sb,        0,       st+mh,   sl,  sb  ],
+      [sl,     ih-sb,  iw-sl-sr,  sb,        sl,      st+mh,   mw,  sb  ],
+      [iw-sr,  ih-sb,  sr,        sb,        sl+mw,   st+mh,   sr,  sb  ],
+    ];
+    ctx.clearRect(0, 0, logW, logH);
+    for (const [sx, sy, sw, sh, dx, dy, dw, dh] of regions) {
+      if (sw > 0 && sh > 0 && dw > 0 && dh > 0) ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+    }
+    const contentH   = logH - innerTop - innerBot;
+    const textStartY = innerTop + Math.max(0, (contentH - textH) / 2);
+    const fillW      = logW - innerLeft - innerRight;
+    ctx.fillStyle    = msgColor;
+    ctx.font         = `${fontSize}px 'Space Grotesk', sans-serif`;
+    ctx.textBaseline = "top";
+    ctx.textAlign    = textAlign;
+    lines.forEach((line, i) => {
+      let x: number;
+      if (textAlign === "center") x = innerLeft + fillW / 2;
+      else if (textAlign === "right") x = logW - innerRight;
+      else x = innerLeft;
+      ctx.fillText(line, x, textStartY + i * lineHeight);
+    });
+  }, [img, slice, text, maxWidth, textColor, fontSize, textAlign, padTop, padBottom, padLeft, padRight]);
+  return <canvas ref={canvasRef} style={{ display: "block", maxWidth: "100%" }} />;
+}
 // ─── NineSliceBubble ──────────────────────────────────────────────────────────
 // Wrapper que gerencia o carregamento da imagem e delega o desenho ao NineSliceCanvas.
-
 interface NineSliceBubbleProps extends Omit<NineSliceCanvasProps, "img"> {
   imageUrl: string;
 }
@@ -713,6 +828,7 @@ interface NineSliceEditorProps {
   dynPaddingY?: number;
   dynHorizontalPriority?: boolean;
   dynTransitionZone?: number;
+  onTransitionChange?: (t: number) => void;
 }
 
 function NineSliceEditor({
@@ -726,6 +842,7 @@ function NineSliceEditor({
   dynPaddingY = 12,
   dynHorizontalPriority = true,
   dynTransitionZone = 0.15,
+  onTransitionChange,
 }: NineSliceEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState({ w: 240, h: 240 });
@@ -1006,6 +1123,8 @@ function NineSliceEditor({
           imageDimensions={imageDimensions}
           slice={slice}
           transitionZone={dynTransitionZone}
+          onSliceChange={onChange}
+          onTransitionChange={onTransitionChange}
         />
       )}
     </div>
@@ -2021,6 +2140,7 @@ function BubblesDashboard() {
                             dynPaddingY={form.dynPaddingY}
                             dynHorizontalPriority={form.dynHorizontalPriority}
                             dynTransitionZone={form.dynTransitionZone}
+                            onTransitionChange={(t) => setForm(f => ({ ...f, dynTransitionZone: t }))}
                           />
                         )}
 
@@ -2066,6 +2186,8 @@ function BubblesDashboard() {
                             imageDimensions={imageDimensions}
                             slice={sliceValues}
                             transitionZone={form.dynTransitionZone}
+                            onSliceChange={handleSliceChange}
+                            onTransitionChange={(t) => setForm(f => ({ ...f, dynTransitionZone: t }))}
                           />
                         )}
                         {previewTab === "slice" && form.isAnimated && (
