@@ -219,10 +219,13 @@ Deno.serve(async (req: Request) => {
       display_name: displayName,
       click_action: "FLUTTER_NOTIFICATION_CLICK",
     };
-
+    // Incluir apenas campos com valor real (ignorar strings vazias e 'null')
     if (extraData) {
       for (const [k, v] of Object.entries(extraData)) {
-        messageData[k] = String(v);
+        const strVal = String(v ?? "");
+        if (strVal && strVal !== "null" && strVal !== "undefined") {
+          messageData[k] = strVal;
+        }
       }
     }
 

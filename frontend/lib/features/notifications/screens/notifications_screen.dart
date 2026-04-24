@@ -282,13 +282,17 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     // Monta o payload no formato esperado pelo helper.
     final router = GoRouter.of(context);
     final normalizedPayload = <String, dynamic>{
-      'type': type,
-      'post_id': notification['post_id'] ?? payload['post_id'],
-      'community_id': notification['community_id'] ?? payload['community_id'],
-      'actor_id': notification['actor_id'] ?? payload['actor_id'],
-      'user_id': payload['user_id'],
-      'chat_id': payload['chat_id'],
-      'thread_id': payload['thread_id'],
+      'type':           type,
+      'post_id':        notification['post_id']        ?? payload['post_id'],
+      'comment_id':     notification['comment_id']     ?? payload['comment_id'],
+      'wiki_id':        notification['wiki_id']        ?? payload['wiki_id'],
+      'community_id':   notification['community_id']   ?? payload['community_id'],
+      'actor_id':       notification['actor_id']       ?? payload['actor_id'],
+      'chat_thread_id': notification['chat_thread_id'] ??
+                        payload['chat_thread_id']      ??
+                        payload['thread_id']           ??
+                        payload['chat_id'],
+      'action_url':     notification['action_url']     ?? payload['action_url'],
     };
     AppNavigationHelper.navigateFromNotificationPayload(router, normalizedPayload);
   }
