@@ -98,26 +98,28 @@ class _NotificationSettingsScreenState
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
 
-      await SupabaseService.table('notification_settings').upsert({
-        'user_id': userId,
-        'push_enabled': _pushEnabled,
-        'push_likes': _pushLikes,
-        'push_comments': _pushComments,
-        'push_follows': _pushFollows,
-        'push_mentions': _pushMentions,
-        'push_chat_messages': _pushChatMessages,
-        'push_community_invites': _pushCommunityInvites,
-        'push_achievements': _pushAchievements,
-        'push_level_up': _pushLevelUp,
-        'push_moderation': _pushModeration,
-        'in_app_sounds': _inAppSounds,
-        'in_app_vibration': _inAppVibration,
-        'only_friends_likes': _onlyFriendsLikes,
-        'only_friends_comments': _onlyFriendsComments,
-        'only_friends_messages': _onlyFriendsMessages,
-        'pause_all_until': _pauseAllUntil && _pauseUntilDate != null
-            ? _pauseUntilDate!.toIso8601String()
-            : null,
+      await SupabaseService.rpc('update_notification_settings', params: {
+        'p_settings': {
+          'user_id':                  userId,
+          'push_enabled':             _pushEnabled,
+          'push_likes':               _pushLikes,
+          'push_comments':            _pushComments,
+          'push_follows':             _pushFollows,
+          'push_mentions':            _pushMentions,
+          'push_chat_messages':       _pushChatMessages,
+          'push_community_invites':   _pushCommunityInvites,
+          'push_achievements':        _pushAchievements,
+          'push_level_up':            _pushLevelUp,
+          'push_moderation':          _pushModeration,
+          'in_app_sounds':            _inAppSounds,
+          'in_app_vibration':         _inAppVibration,
+          'only_friends_likes':       _onlyFriendsLikes,
+          'only_friends_comments':    _onlyFriendsComments,
+          'only_friends_messages':    _onlyFriendsMessages,
+          'pause_all_until':          _pauseAllUntil && _pauseUntilDate != null
+              ? _pauseUntilDate!.toIso8601String()
+              : null,
+        },
       });
 
       if (mounted) {

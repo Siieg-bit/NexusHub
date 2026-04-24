@@ -75,10 +75,8 @@ class PrivacyService {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
 
-      await SupabaseService.table('user_settings').upsert({
-        'user_id': userId,
-        field: level,
-        'updated_at': DateTime.now().toIso8601String(),
+      await SupabaseService.rpc('update_user_settings', params: {
+        'p_settings': {field: level},
       });
     } catch (e) {
       rethrow;

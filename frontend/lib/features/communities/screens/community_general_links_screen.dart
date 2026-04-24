@@ -178,13 +178,14 @@ class _CommunityGeneralLinksScreenState
         'sort_order': existing?['sort_order'] as int? ?? _links.length,
       };
 
-      if (existing == null) {
-        await SupabaseService.table('community_general_links').insert(data);
-      } else {
-        await SupabaseService.table('community_general_links')
-            .update(data)
-            .eq('id', existing['id'] as String? ?? '');
-      }
+      // RPC upsert_community_link: valida permissão de líder e cria/atualiza
+      await SupabaseService.rpc('upsert_community_link', params: {
+        'p_community_id': widget.communityId,
+        'p_link_id':      existing?['id'] as String?,
+        'p_title':        data['title'],
+        'p_url':          data['url'],
+        'p_sort_order':   data['sort_order'],
+      });
       await _loadLinks();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

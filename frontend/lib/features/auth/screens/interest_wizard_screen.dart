@@ -228,9 +228,10 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
                 })
             .toList();
 
-        // Deletar interesses antigos e inserir novos
-        await SupabaseService.table('interests').delete().eq('user_id', userId);
-        await SupabaseService.table('interests').insert(interests);
+        // Substituir interesses atomicamente via RPC
+        await SupabaseService.rpc('set_user_interests', params: {
+          'p_interests': interests,
+        });
       }
 
       if (mounted) context.go('/');

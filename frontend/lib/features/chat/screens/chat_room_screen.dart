@@ -3629,19 +3629,15 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
     setState(() => _busyUserId = userId);
     final isCurrentlyCoHost = _coHostIds.contains(userId);
     try {
-      List<String> updated;
-      if (isCurrentlyCoHost) {
-        updated = _coHostIds.where((id) => id != userId).toList();
-      } else {
-        updated = [..._coHostIds, userId];
-      }
-
-      await SupabaseService.table('chat_threads').update({
-        'co_hosts': updated,
-      }).eq('id', widget.threadId);
+      final result = await SupabaseService.rpc('toggle_chat_co_host', params: {
+        'p_thread_id': widget.threadId,
+        'p_user_id':   userId,
+      }) as Map<String, dynamic>?;
+      final newCoHosts = (result?['co_hosts'] as List<dynamic>? ?? [])
+          .map((e) => e.toString()).toList();
 
       if (mounted) {
-        setState(() => _coHostIds = updated);
+        setState(() => _coHostIds = newCoHosts);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(isCurrentlyCoHost

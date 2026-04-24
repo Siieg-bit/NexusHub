@@ -686,14 +686,16 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
     try {
-      await SupabaseService.table('wiki_ratings').upsert({
-        'wiki_entry_id': widget.wikiId,
-        'user_id': userId,
-        'rating': rating,
-      });
+      final result = await SupabaseService.rpc('rate_wiki_entry', params: {
+        'p_wiki_id': widget.wikiId,
+        'p_rating':  rating,
+      }) as Map<String, dynamic>?;
       if (!mounted) return;
-      setState(() => _userRating = rating);
-      _loadEntry();
+      setState(() {
+        _userRating    = rating;
+        _avgRating     = (result?['average_rating'] as num?)?.toDouble() ?? _avgRating;
+        _totalRatings  = (result?['total_ratings']  as int?)             ?? _totalRatings;
+      });
     } catch (e) {
       debugPrint('[wiki_screen] Erro: $e');
     }
@@ -705,10 +707,9 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
     try {
-      await SupabaseService.table('wiki_what_i_like').insert({
-        'wiki_entry_id': widget.wikiId,
-        'user_id': userId,
-        'content': text,
+      await SupabaseService.rpc('add_wiki_what_i_like', params: {
+        'p_wiki_id': widget.wikiId,
+        'p_content': text,
       });
       _whatILikeController.clear();
       _loadEntry();
@@ -875,9 +876,9 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
     );
     if (confirmed != true) return;
     try {
-      await SupabaseService.table('comments')
-          .delete()
-          .eq('id', comment.id);
+      await SupabaseService.rpc('delete_comment', params: {
+        'p_comment_id': comment.id,
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s.wikiCommentDeleted),

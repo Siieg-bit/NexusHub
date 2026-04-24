@@ -163,19 +163,20 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
         'disable_profile_comments': _disableProfileComments,
       }).eq('id', userId);
 
-      await SupabaseService.table('user_settings').upsert({
-        'user_id': userId,
-        'profile_public': _profilePublic,
-        'show_online_status': _showOnlineStatus,
-        'allow_dms': _allowDMs,
-        'allow_chat_invites': _allowChatInvites,
-        'show_communities_list': _showCommunitiesList,
-        'show_followers_list': _showFollowersList,
-        'allow_mentions': _allowMentions,
-        'show_recent_posts': _showRecentPosts,
-        'allow_search_by_name': _allowSearchByName,
-        'show_wall': _showWall,
-        'who_can_follow': _whoCanFollow,
+      await SupabaseService.rpc('update_user_settings', params: {
+        'p_settings': {
+          'profile_public':        _profilePublic,
+          'show_online_status':    _showOnlineStatus,
+          'allow_dms':             _allowDMs,
+          'allow_chat_invites':    _allowChatInvites,
+          'show_communities_list': _showCommunitiesList,
+          'show_followers_list':   _showFollowersList,
+          'allow_mentions':        _allowMentions,
+          'show_recent_posts':     _showRecentPosts,
+          'allow_search_by_name':  _allowSearchByName,
+          'show_wall':             _showWall,
+          'who_can_follow':        _whoCanFollow,
+        },
       });
 
       if (mounted) {

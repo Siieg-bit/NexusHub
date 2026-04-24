@@ -239,15 +239,16 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
         }
 
         try {
-          await SupabaseService.table('stories').update({
-            'media_url': _mediaUrl ?? '',
-            'media_type': _type,
-            'caption': _textController.text.trim().isNotEmpty
-                ? _textController.text.trim()
-                : null,
-            'background_color': bgColor,
-            'duration_seconds': _durationSeconds,
-          }).eq('id', widget.editingPost!.id);
+          await SupabaseService.rpc('update_story', params: {
+            'p_story_id':         widget.editingPost!.id,
+            'p_media_url':        _mediaUrl ?? '',
+            'p_media_type':       _type,
+            'p_caption':          _textController.text.trim().isNotEmpty
+                                      ? _textController.text.trim()
+                                      : null,
+            'p_background_color': bgColor,
+            'p_duration_seconds': _durationSeconds,
+          });
 
           if (mounted) {
             Navigator.of(context).pop();
