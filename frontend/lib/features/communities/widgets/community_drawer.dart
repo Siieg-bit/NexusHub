@@ -20,6 +20,20 @@ import '../../../core/providers/notification_provider.dart';
 import '../../../core/widgets/nexus_badge.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
+// Provider de flags pendentes por comunidade (visível apenas para moderadores)
+final _pendingFlagsCountProvider =
+    FutureProvider.family<int, String>((ref, communityId) async {
+  try {
+    final res = await SupabaseService.table('flags')
+        .select('id')
+        .eq('community_id', communityId)
+        .eq('status', 'pending');
+    return (res as List?)?.length ?? 0;
+  } catch (_) {
+    return 0;
+  }
+});
+
 // =============================================================================
 // COMMUNITY DRAWER — Réplica fiel do painel lateral do Amino Apps
 // Totalmente tematizado via NexusThemeData
@@ -966,14 +980,31 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               context.push('/community/${widget.community.id}/acm');
             }),
           ),
-        _AminoDrawerTile(
-          icon: Icons.flag_rounded,
-          iconColor: theme.error,
-          label: s.drawerFlagCenter,
-          onTap: () => _closeAndNavigate(() {
-            context.push('/community/${widget.community.id}/flags');
-          }),
-        ),
+        if (_isStaff)
+          Consumer(builder: (ctx, cref, _) {
+            final pendingFlags = cref.watch(
+              _pendingFlagsCountProvider(widget.community.id),
+            );
+            final count = pendingFlags.valueOrNull ?? 0;
+            return _AminoDrawerTile(
+              icon: Icons.flag_rounded,
+              iconColor: count > 0 ? theme.error : theme.error.withValues(alpha: 0.70),
+              label: s.drawerFlagCenter,
+              onTap: () => _closeAndNavigate(() {
+                context.push('/community/${widget.community.id}/flags');
+              }),
+              badgeCount: count > 0 ? count : null,
+            );
+          })
+        else
+          _AminoDrawerTile(
+            icon: Icons.flag_rounded,
+            iconColor: theme.error,
+            label: s.drawerFlagCenter,
+            onTap: () => _closeAndNavigate(() {
+              context.push('/community/${widget.community.id}/flags');
+            }),
+          ),
         _AminoDrawerTile(
           icon: Icons.analytics_rounded,
           iconColor: theme.accentPrimary,

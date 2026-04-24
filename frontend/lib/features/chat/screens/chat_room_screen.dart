@@ -334,6 +334,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       await SupabaseService.rpc('mark_chat_read', params: {
         'p_thread_id': widget.threadId,
       });
+      // Invalida os providers de badge para atualizar imediatamente na bottom nav e tiles
+      if (mounted) {
+        ref.invalidate(chatListProvider);
+        ref.invalidate(chatCommunitiesProvider);
+      }
       debugPrint('[ChatRoom] ✅ mark_chat_read OK (thread: ${widget.threadId})');
     } catch (e) {
       debugPrint('[ChatRoom] ⚠️ mark_chat_read falhou: $e');

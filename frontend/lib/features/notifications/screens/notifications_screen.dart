@@ -37,6 +37,17 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    // Marcar todas como lidas automaticamente ao abrir a tela — zera o badge
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (widget.isCommunityScoped) {
+        ref
+            .read(communityNotificationProvider(widget.communityId!).notifier)
+            .markAllAsRead();
+      } else {
+        ref.read(notificationProvider.notifier).markAllAsRead();
+      }
+    });
   }
 
   @override

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../core/providers/chat_provider.dart';
 import '../core/providers/notification_provider.dart';
+import '../core/providers/dm_invite_provider.dart';
 import '../core/widgets/nexus_badge.dart';
 
 /// Bottom Navigation Bar Global — réplica pixel-perfect do Amino Apps.
@@ -99,8 +100,10 @@ class ShellScreen extends ConsumerWidget {
     final s = ref.watch(stringsProvider);
     final selectedIndex = _getSelectedIndex(context);
 
-    // Badge de chats não lidos
+    // Badge de chats não lidos + DM invites pendentes
     final chatUnread = ref.watch(unreadCountProvider).valueOrNull ?? 0;
+    final dmInviteCount = ref.watch(pendingDmInvitesProvider).valueOrNull?.length ?? 0;
+    final totalChatBadge = chatUnread + dmInviteCount;
 
     // Badge de notificações não lidas de comunidades
     final communityNotifUnread =
@@ -145,14 +148,14 @@ class ShellScreen extends ConsumerWidget {
                       onTap: () => _onItemTapped(context, 1),
                       badgeCount: communityNotifUnread,
                     ),
-                    // ── Chats — badge de mensagens não lidas
+                    // ── Chats — badge de mensagens não lidas + DM invites pendentes
                     _AminoNavItem(
                       icon: Icons.chat_bubble_outline_rounded,
                       activeIcon: Icons.chat_bubble_rounded,
                       label: s.chats2,
                       isSelected: selectedIndex == 2,
                       onTap: () => _onItemTapped(context, 2),
-                      badgeCount: chatUnread,
+                      badgeCount: totalChatBadge,
                     ),
                     // ── Store
                     _AminoNavItem(
