@@ -6,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../moderation/widgets/report_dialog.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Story Viewer — Visualizador fullscreen de stories estilo Instagram/Amino.
@@ -21,11 +22,14 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 class StoryViewerScreen extends ConsumerStatefulWidget {
   final List<Map<String, dynamic>> stories;
   final Map<String, dynamic> authorProfile;
+  /// ID da comunidade — usado para denúncias e moderação.
+  final String? communityId;
 
   const StoryViewerScreen({
     super.key,
     required this.stories,
     required this.authorProfile,
+    this.communityId,
   });
 
   @override
@@ -247,6 +251,28 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
     }
   }
 
+  /// Moderação: excluir/desativar story (apenas para staff ou autor)
+  Future<void> _deleteStory() async {
+    final story = widget.stories[_currentIndex];
+    final storyId = story['id'] as String? ?? '';
+    if (storyId.isEmpty) return;
+    try {
+      await SupabaseService.table('stories')
+          .update({'is_active': false}).eq('id', storyId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Story removido.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      debugPrint('[story_viewer_screen] _deleteStory: $e');
+    }
+  }
+
   String _timeAgo(String? dateStr) {
     final s = getStrings();
     if (dateStr == null) return '';
@@ -441,7 +467,7 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
               ),
             ),
 
-            // ── Header: avatar + username + time + close ──
+            // ── Header: avatar + username + time + denúncia/moderação + close ──
             Positioned(
               top: MediaQuery.of(context).padding.top + 20,
               left: 12,
@@ -485,11 +511,76 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
                   // Ícone de "já visualizado" quando aplicável
                   if (isAlreadyViewed)
                     Padding(
-                      padding: EdgeInsets.only(right: r.s(8)),
+                      padding: EdgeInsets.only(right: r.s(4)),
                       child: Icon(
                         Icons.check_circle_rounded,
                         color: Colors.white.withValues(alpha: 0.7),
                         size: r.s(16),
+                      ),
+                    ),
+                  // Botão de denúncia (para não-autores)
+                  if (widget.authorProfile['id'] != SupabaseService.currentUserId &&
+                      widget.communityId != null)
+                    GestureDetector(
+                      onTap: () {
+                        _pauseStory();
+                        ReportDialog.show(
+                          context,
+                          communityId: widget.communityId!,
+                          targetPostId: story['id'] as String?,
+                        ).then((_) => _resumeStory());
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.only(right: r.s(4)),
+                        child: Icon(Icons.flag_outlined,
+                            color: Colors.white70, size: r.s(20)),
+                      ),
+                    ),
+                  // Menu de moderação (para o autor ou staff)
+                  if (widget.authorProfile['id'] == SupabaseService.currentUserId)
+                    GestureDetector(
+                      onTap: () {
+                        _pauseStory();
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: context.nexusTheme.backgroundPrimary,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(20)),
+                          ),
+                          builder: (_) => SafeArea(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(height: r.s(8)),
+                                Container(
+                                  width: r.s(40),
+                                  height: r.s(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[600],
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                                SizedBox(height: r.s(16)),
+                                ListTile(
+                                  leading: const Icon(Icons.delete_outline_rounded,
+                                      color: Colors.red),
+                                  title: const Text('Remover story'),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    _deleteStory();
+                                  },
+                                ),
+                                SizedBox(height: r.s(8)),
+                              ],
+                            ),
+                          ),
+                        ).then((_) => _resumeStory());
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.only(right: r.s(4)),
+                        child: Icon(Icons.more_vert_rounded,
+                            color: Colors.white, size: r.s(22)),
                       ),
                     ),
                   GestureDetector(
@@ -501,60 +592,14 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
               ),
             ),
 
-            // ── Text overlay para stories de imagem ──
-            if (type == 'image' && textContent != null && textContent.isNotEmpty)
-              Positioned(
-                bottom: r.s(100),
-                left: r.s(16),
-                right: r.s(16),
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: r.s(12), vertical: r.s(8)),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(r.s(8)),
-                  ),
-                  child: Text(
-                    textContent,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: r.fs(14),
-                      fontWeight: FontWeight.w600,
-                      height: 1.4,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-
-            // ── Reações ──
-            Positioned(
-              bottom: MediaQuery.of(context).padding.bottom + 16,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: _reactions.map((emoji) {
-                  return GestureDetector(
-                    onTap: () => _sendReaction(emoji),
-                    child: Container(
-                      margin: EdgeInsets.symmetric(horizontal: r.s(6)),
-                      padding: EdgeInsets.all(r.s(8)),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(emoji, style: TextStyle(fontSize: r.fs(20))),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-
-            // ── Contador de views (apenas para o autor) ──
+            // ── Contador de views (apenas para o autor) — acima da legenda ──
             if (widget.authorProfile['id'] == SupabaseService.currentUserId)
               Positioned(
-                bottom: MediaQuery.of(context).padding.bottom + 60,
+                bottom: MediaQuery.of(context).padding.bottom +
+                    r.s(72) + // altura das reações
+                    (textContent != null && textContent.isNotEmpty
+                        ? r.s(60)
+                        : 0), // espaço extra se houver legenda
                 left: 0,
                 right: 0,
                 child: Center(
@@ -584,6 +629,56 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
                   ),
                 ),
               ),
+
+            // ── Text overlay (legenda) para stories de imagem — acima das reações ──
+            if (type == 'image' && textContent != null && textContent.isNotEmpty)
+              Positioned(
+                bottom: MediaQuery.of(context).padding.bottom + r.s(72),
+                left: r.s(16),
+                right: r.s(16),
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(12), vertical: r.s(8)),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(r.s(8)),
+                  ),
+                  child: Text(
+                    textContent,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: r.fs(14),
+                      fontWeight: FontWeight.w600,
+                      height: 1.4,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+
+            // ── Reações ──
+            Positioned(
+              bottom: MediaQuery.of(context).padding.bottom + r.s(16),
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: _reactions.map((emoji) {
+                  return GestureDetector(
+                    onTap: () => _sendReaction(emoji),
+                    child: Container(
+                      margin: EdgeInsets.symmetric(horizontal: r.s(6)),
+                      padding: EdgeInsets.all(r.s(8)),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(emoji, style: TextStyle(fontSize: r.fs(20))),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
           ],
         ),
       ),

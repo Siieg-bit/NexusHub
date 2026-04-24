@@ -873,8 +873,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           iconColor: theme.accentSecondary,
           label: s.stories,
           onTap: () => _closeAndNavigate(() {
-            // Navega para o perfil do usuário DENTRO da comunidade
-            context.push('/community/${widget.community.id}/my-profile');
+            context.push('/community/${widget.community.id}/stories');
           }),
         ),
       ],
