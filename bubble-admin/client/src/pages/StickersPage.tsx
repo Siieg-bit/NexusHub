@@ -849,32 +849,108 @@ export default function StickersPage() {
                 />
               </div>
 
-              <div className="flex flex-wrap gap-4">
-                {/* is_active sempre visível */}
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={packForm.is_active}
-                    onChange={(e) => setPackForm({ ...packForm, is_active: e.target.checked })}
-                    className="w-4 h-4 rounded border-[#2A2D34] bg-[#111214] accent-[#E040FB]"
-                  />
-                  <span className="text-[#9CA3AF] text-sm">Ativo</span>
-                </label>
-                {/* Gratuito e Apenas Premium apenas no modo loja */}
-                {packForm.pack_mode === "store" && [
-                  { key: "is_free", label: "Gratuito" },
-                  { key: "is_premium_only", label: "Apenas Premium" },
-                ].map(({ key, label }) => (
-                  <label key={key} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={packForm[key as keyof PackForm] as boolean}
-                      onChange={(e) => setPackForm({ ...packForm, [key]: e.target.checked })}
-                      className="w-4 h-4 rounded border-[#2A2D34] bg-[#111214] accent-[#E040FB]"
-                    />
-                    <span className="text-[#9CA3AF] text-sm">{label}</span>
-                  </label>
-                ))}
+              {/* Cards de configuração de visibilidade/acesso */}
+              <div className="space-y-2">
+                <p className="text-[#6B7280] text-xs uppercase tracking-wider font-medium">Configurações de acesso</p>
+
+                {/* Card: Ativo */}
+                <button
+                  type="button"
+                  onClick={() => setPackForm({ ...packForm, is_active: !packForm.is_active })}
+                  className={`w-full flex items-start gap-3 p-3 rounded-lg border transition-all text-left ${
+                    packForm.is_active
+                      ? "border-[#22C55E]/50 bg-[#22C55E]/10"
+                      : "border-[#2A2D34] bg-[#111214] opacity-60"
+                  }`}
+                >
+                  <div className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    packForm.is_active ? "bg-[#22C55E]/20 text-[#22C55E]" : "bg-[#2A2D34] text-[#6B7280]"
+                  }`}>
+                    {packForm.is_active ? "✓" : "○"}
+                  </div>
+                  <div>
+                    <p className={`text-sm font-medium ${packForm.is_active ? "text-white" : "text-[#6B7280]"}`}>
+                      {packForm.is_active ? "Pack publicado" : "Pack oculto"}
+                    </p>
+                    <p className="text-[#6B7280] text-xs mt-0.5">
+                      {packForm.is_active
+                        ? "Visível para os usuários no app"
+                        : "Não aparece para ninguém — útil para rascunhos"}
+                    </p>
+                  </div>
+                </button>
+
+                {/* Cards de preço — apenas no modo loja */}
+                {packForm.pack_mode === "store" && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Card: Gratuito */}
+                    <button
+                      type="button"
+                      onClick={() => setPackForm({ ...packForm, is_free: true, is_premium_only: false })}
+                      className={`flex items-start gap-3 p-3 rounded-lg border transition-all text-left ${
+                        packForm.is_free && !packForm.is_premium_only
+                          ? "border-[#60A5FA]/50 bg-[#60A5FA]/10"
+                          : "border-[#2A2D34] bg-[#111214]"
+                      }`}
+                    >
+                      <div className={`mt-0.5 w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-sm ${
+                        packForm.is_free && !packForm.is_premium_only ? "bg-[#60A5FA]/20 text-[#60A5FA]" : "bg-[#2A2D34] text-[#6B7280]"
+                      }`}>
+                        🆓
+                      </div>
+                      <div>
+                        <p className={`text-sm font-medium ${
+                          packForm.is_free && !packForm.is_premium_only ? "text-white" : "text-[#6B7280]"
+                        }`}>Gratuito</p>
+                        <p className="text-[#6B7280] text-xs mt-0.5">Qualquer usuário pode pegar sem gastar coins</p>
+                      </div>
+                    </button>
+
+                    {/* Card: Pago */}
+                    <button
+                      type="button"
+                      onClick={() => setPackForm({ ...packForm, is_free: false, is_premium_only: false })}
+                      className={`flex items-start gap-3 p-3 rounded-lg border transition-all text-left ${
+                        !packForm.is_free && !packForm.is_premium_only
+                          ? "border-[#FBBF24]/50 bg-[#FBBF24]/10"
+                          : "border-[#2A2D34] bg-[#111214]"
+                      }`}
+                    >
+                      <div className={`mt-0.5 w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-sm ${
+                        !packForm.is_free && !packForm.is_premium_only ? "bg-[#FBBF24]/20 text-[#FBBF24]" : "bg-[#2A2D34] text-[#6B7280]"
+                      }`}>
+                        🪙
+                      </div>
+                      <div>
+                        <p className={`text-sm font-medium ${
+                          !packForm.is_free && !packForm.is_premium_only ? "text-white" : "text-[#6B7280]"
+                        }`}>Pago ({packForm.price_coins} coins)</p>
+                        <p className="text-[#6B7280] text-xs mt-0.5">Usuário precisa ter coins suficientes para comprar</p>
+                      </div>
+                    </button>
+
+                    {/* Card: Apenas Premium */}
+                    <button
+                      type="button"
+                      onClick={() => setPackForm({ ...packForm, is_premium_only: true, is_free: false })}
+                      className={`col-span-2 flex items-start gap-3 p-3 rounded-lg border transition-all text-left ${
+                        packForm.is_premium_only
+                          ? "border-[#E040FB]/50 bg-[#E040FB]/10"
+                          : "border-[#2A2D34] bg-[#111214]"
+                      }`}
+                    >
+                      <div className={`mt-0.5 w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-sm ${
+                        packForm.is_premium_only ? "bg-[#E040FB]/20 text-[#E040FB]" : "bg-[#2A2D34] text-[#6B7280]"
+                      }`}>
+                        👑
+                      </div>
+                      <div>
+                        <p className={`text-sm font-medium ${packForm.is_premium_only ? "text-white" : "text-[#6B7280]"}`}>Exclusivo Premium</p>
+                        <p className="text-[#6B7280] text-xs mt-0.5">Apenas assinantes premium têm acesso — não aparece para usuários comuns</p>
+                      </div>
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3 pt-2">
