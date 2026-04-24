@@ -167,7 +167,7 @@ export function getSliceConfig(cfg: Partial<BubbleAssetConfig>): SliceConfig {
 /** Extrai a configuração de conteúdo dinâmico com defaults. */
 export function getDynamicContent(cfg: Partial<BubbleAssetConfig>): DynamicContentConfig {
   const c = cfg.content ?? {};
-  const p = c.padding ?? {};
+  const p: Partial<{ x: number; y: number }> = c.padding ?? {};
   return {
     paddingX:  p.x        ?? cfg.pad_left  ?? DYNAMIC_CONTENT_DEFAULTS.paddingX,
     paddingY:  p.y        ?? cfg.pad_top   ?? DYNAMIC_CONTENT_DEFAULTS.paddingY,

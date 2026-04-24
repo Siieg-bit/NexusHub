@@ -1218,6 +1218,14 @@ interface NineSlicePreviewPanelProps {
   fontSize: number;
   textAlign: TextAlign;
   padTop: number; padBottom: number; padLeft: number; padRight: number;
+  // Campos do modo dynamic_nineslice (opcionais — padrões compatíveis com modo clássico)
+  isDynamic?: boolean;
+  dynMaxWidth?: number;
+  dynMinWidth?: number;
+  dynPaddingX?: number;
+  dynPaddingY?: number;
+  dynHorizontalPriority?: boolean;
+  dynTransitionZone?: number;
 }
 
 const PREVIEW_SAMPLES = [
@@ -1483,15 +1491,17 @@ function BubblesDashboard() {
           ? { poly_points: form.polyPoints }
           : {}),
       };
-      // Se o modo dinâmico estiver ativo, serializa com os campos extras
-      const assetConfig: BubbleAssetConfig = form.isDynamic && !form.isAnimated
+      // Se o modo dinâmico estiver ativo, serializa com os campos extras.
+      // O cast `as BubbleAssetConfig` é seguro: serializeDynamicConfig sempre
+      // inclui bubble_style (via base) e os campos obrigatórios do tipo local.
+      const assetConfig = (form.isDynamic && !form.isAnimated
         ? serializeDynamicConfig(
             baseConfig,
             { left: form.sliceLeft, right: form.sliceRight, top: form.sliceTop, bottom: form.sliceBottom },
             { paddingX: form.dynPaddingX, paddingY: form.dynPaddingY, maxWidth: form.dynMaxWidth, minWidth: form.dynMinWidth },
             { horizontalPriority: form.dynHorizontalPriority, maxHeightRatio: 0.6, transitionZone: form.dynTransitionZone },
           )
-        : baseConfig;
+        : baseConfig) as BubbleAssetConfig;
 
       const payload = {
         type: "chat_bubble",
