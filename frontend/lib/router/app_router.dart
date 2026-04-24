@@ -74,6 +74,7 @@ import '../features/moderation/screens/admin_reports_screen.dart';
 import '../features/moderation/screens/moderation_center_screen.dart';
 import '../features/moderation/screens/flag_detail_screen.dart';
 import '../features/stories/screens/create_story_screen.dart';
+import '../features/stories/screens/community_stories_screen.dart';
 import '../features/live/screens/screening_room_screen.dart';
 import '../features/feed/screens/drafts_screen.dart';
 import '../features/stickers/screens/sticker_gallery_screen.dart';
@@ -190,6 +191,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     .cast<Map<String, dynamic>>(),
                 authorProfile:
                     extra['authorProfile'] as Map<String, dynamic>? ?? {},
+                communityId: extra['communityId'] as String?,
               );
             },
           ),
@@ -472,6 +474,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'wiki-detail',
         builder: (context, state) => WikiDetailScreen(
           wikiId: state.pathParameters['id']!,
+        ),
+      ),
+      // Rota com contexto de comunidade — usada pela WikiListScreen
+      GoRoute(
+        path: '/community/:communityId/wiki/:wikiId',
+        name: 'community-wiki-detail',
+        builder: (context, state) => WikiDetailScreen(
+          wikiId: state.pathParameters['wikiId']!,
         ),
       ),
       GoRoute(
@@ -788,6 +798,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // ====================================================================
       // STORIES
       // ====================================================================
+      GoRoute(
+        path: '/community/:id/stories',
+        name: 'community-stories',
+        builder: (context, state) => CommunityStoriesScreen(
+          communityId: state.pathParameters['id']!,
+        ),
+      ),
       GoRoute(
         path: '/community/:id/create-story',
         name: 'create-story',
