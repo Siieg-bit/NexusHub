@@ -282,7 +282,8 @@ function ChatPreview({ imageUrl, name, cfg }: { imageUrl: string | null; name: s
 // ─── DynamicNineSliceOverlay ──────────────────────────────────────────────────
 // Overlay visual INTERATIVO com 3 zonas: bordas (fixas), transição (suavização), centro (stretch).
 // Handles arrastáveis para ajustar os 4 slices e a zona de transição diretamente no overlay.
-type OverlayHandle = "top" | "bottom" | "left" | "right" | "transition" | null;
+type OverlayHandle = "top" | "bottom" | "left" | "right" | "transition"
+  | "stretch-top" | "stretch-bottom" | "stretch-left" | "stretch-right" | null;
 interface DynamicNineSliceOverlayProps {
   imageUrl: string;
   imageDimensions: { w: number; h: number } | null;
@@ -328,18 +329,32 @@ function DynamicNineSliceOverlay({
   const tzHandleX = rightPx - tzW;
   const tzHandleY = bottomPx - tzH;
 
+  // Posição das arestas do retângulo STRETCH (interior do nine-slice)
+  const stretchTop    = topPx + tzH;
+  const stretchBottom = bottomPx - tzH;
+  const stretchLeft   = leftPx + tzW;
+  const stretchRight  = rightPx - tzW;
   const getHandleAt = useCallback((x: number, y: number): OverlayHandle => {
+    // Handle TZ tem prioridade máxima
     if (Math.abs(x - tzHandleX) < HIT + 4 && Math.abs(y - tzHandleY) < HIT + 4) return "transition";
+    // Linhas externas de slice
     if (Math.abs(y - topPx)    < HIT) return "top";
     if (Math.abs(y - bottomPx) < HIT) return "bottom";
     if (Math.abs(x - leftPx)   < HIT) return "left";
     if (Math.abs(x - rightPx)  < HIT) return "right";
+    // Arestas do retângulo STRETCH (só dentro da zona de transição)
+    const inStretchX = x >= stretchLeft - HIT && x <= stretchRight + HIT;
+    const inStretchY = y >= stretchTop  - HIT && y <= stretchBottom + HIT;
+    if (Math.abs(y - stretchTop)    < HIT && inStretchX) return "stretch-top";
+    if (Math.abs(y - stretchBottom) < HIT && inStretchX) return "stretch-bottom";
+    if (Math.abs(x - stretchLeft)   < HIT && inStretchY) return "stretch-left";
+    if (Math.abs(x - stretchRight)  < HIT && inStretchY) return "stretch-right";
     return null;
-  }, [topPx, bottomPx, leftPx, rightPx, tzHandleX, tzHandleY]);
+  }, [topPx, bottomPx, leftPx, rightPx, tzHandleX, tzHandleY, stretchTop, stretchBottom, stretchLeft, stretchRight]);
 
   const getCursor = (h: OverlayHandle) => {
-    if (h === "top" || h === "bottom") return "ns-resize";
-    if (h === "left" || h === "right") return "ew-resize";
+    if (h === "top" || h === "bottom" || h === "stretch-top" || h === "stretch-bottom") return "ns-resize";
+    if (h === "left" || h === "right" || h === "stretch-left" || h === "stretch-right") return "ew-resize";
     if (h === "transition") return "nwse-resize";
     return "default";
   };
@@ -353,9 +368,19 @@ function DynamicNineSliceOverlay({
     if (!handle) return;
     e.preventDefault();
     setDragging(handle);
+    // Mapeia handle do stretch para o slice correspondente
+    const stretchToSlice: Partial<Record<NonNullable<OverlayHandle>, keyof SliceValues>> = {
+      "stretch-top": "top", "stretch-bottom": "bottom",
+      "stretch-left": "left", "stretch-right": "right",
+    };
+    const sliceKey = stretchToSlice[handle];
     dragStart.current = {
       x, y,
-      value: handle === "transition" ? transitionZone : slice[handle as keyof SliceValues],
+      value: handle === "transition"
+        ? transitionZone
+        : sliceKey
+          ? slice[sliceKey]
+          : slice[handle as keyof SliceValues],
     };
   }, [getHandleAt, slice, transitionZone]);
 
@@ -374,6 +399,29 @@ function DynamicNineSliceOverlay({
       const delta = (dx - dy) / (canvasSize.w * 0.5);
       const newTz = Math.max(0, Math.min(0.5, dragStart.current.value - delta));
       onTransitionChange?.(Math.round(newTz * 100) / 100);
+    } else if (dragging === "stretch-top" || dragging === "stretch-bottom" ||
+               dragging === "stretch-left" || dragging === "stretch-right") {
+      // Handles do STRETCH: arrastar a aresta para dentro aumenta o slice correspondente
+      // stretch-top para baixo  = aumenta slice.top  (borda maior, stretch menor)
+      // stretch-top para cima   = diminui slice.top  (borda menor, stretch maior)
+      // stretch-bottom para cima = aumenta slice.bottom
+      // stretch-left para direita = aumenta slice.left
+      // stretch-right para esquerda = aumenta slice.right
+      const sliceMap: Record<string, keyof SliceValues> = {
+        "stretch-top": "top", "stretch-bottom": "bottom",
+        "stretch-left": "left", "stretch-right": "right",
+      };
+      const sliceKey = sliceMap[dragging];
+      const isVertical = dragging === "stretch-top" || dragging === "stretch-bottom";
+      const delta = isVertical ? dy : dx;
+      const scale = isVertical ? scaleY : scaleX;
+      // stretch-top: arrastar para baixo (+dy) aumenta slice.top (+)
+      // stretch-bottom: arrastar para cima (-dy) aumenta slice.bottom (+)
+      // stretch-left: arrastar para direita (+dx) aumenta slice.left (+)
+      // stretch-right: arrastar para esquerda (-dx) aumenta slice.right (+)
+      const sign = (dragging === "stretch-bottom" || dragging === "stretch-right") ? -1 : 1;
+      const newVal = Math.max(0, Math.round(dragStart.current.value + sign * delta / scale));
+      onSliceChange?.({ ...slice, [sliceKey]: newVal });
     } else {
       const isVertical = dragging === "top" || dragging === "bottom";
       const delta = isVertical ? dy : dx;
@@ -458,20 +506,59 @@ function DynamicNineSliceOverlay({
           <rect x={leftPx} y={topPx + tzH} width={tzW} height={Math.max(0, centerH - tzH * 2)} fill="rgba(167,139,250,0.2)" />
           <rect x={rightPx - tzW} y={topPx + tzH} width={tzW} height={Math.max(0, centerH - tzH * 2)} fill="rgba(167,139,250,0.2)" />
           {/* Centro stretch — verde */}
-          <rect
-            x={leftPx + tzW} y={topPx + tzH}
-            width={Math.max(0, centerW - tzW * 2)} height={Math.max(0, centerH - tzH * 2)}
-            fill="rgba(52,211,153,0.15)" stroke="#34D399" strokeWidth="0.75"
-          />
-          {centerW > 40 && centerH > 20 && (
-            <text
-              x={leftPx + centerW / 2} y={topPx + centerH / 2}
-              textAnchor="middle" dominantBaseline="middle"
-              fontSize="8" fontFamily="'DM Mono', monospace"
-              fill="#34D399" opacity="0.8"
-            >STRETCH</text>
-          )}
+          {(() => {
+            const stretchActive = dragging?.startsWith("stretch") || hovering?.startsWith("stretch");
+            const sw = Math.max(0, centerW - tzW * 2);
+            const sh = Math.max(0, centerH - tzH * 2);
+            const sx = leftPx + tzW;
+            const sy = topPx + tzH;
+            return (
+              <>
+                <rect
+                  x={sx} y={sy} width={sw} height={sh}
+                  fill={stretchActive ? "rgba(52,211,153,0.25)" : "rgba(52,211,153,0.15)"}
+                  stroke={stretchActive ? "#34D399" : "#34D39966"}
+                  strokeWidth={stretchActive ? 1.5 : 0.75}
+                />
+                {sw > 40 && sh > 20 && (
+                  <text
+                    x={sx + sw / 2} y={sy + sh / 2}
+                    textAnchor="middle" dominantBaseline="middle"
+                    fontSize="8" fontFamily="'DM Mono', monospace"
+                    fill="#34D399" opacity="0.8"
+                  >STRETCH</text>
+                )}
+              </>
+            );
+          })()}
         </svg>
+        {/* Handles das arestas do retângulo STRETCH */}
+        {centerW > 20 && centerH > 20 && (() => {
+          const sw = Math.max(0, centerW - tzW * 2);
+          const sh = Math.max(0, centerH - tzH * 2);
+          const sx = leftPx + tzW;
+          const sy = topPx + tzH;
+          const handles: { id: OverlayHandle; style: React.CSSProperties }[] = [
+            { id: "stretch-top",    style: { left: sx + sw * 0.2, width: sw * 0.6, top: sy - 1,      height: 2 } },
+            { id: "stretch-bottom", style: { left: sx + sw * 0.2, width: sw * 0.6, top: sy + sh - 1, height: 2 } },
+            { id: "stretch-left",   style: { top: sy + sh * 0.2, height: sh * 0.6, left: sx - 1,      width: 2 } },
+            { id: "stretch-right",  style: { top: sy + sh * 0.2, height: sh * 0.6, left: sx + sw - 1, width: 2 } },
+          ];
+          return handles.map(({ id, style }) => {
+            const active = dragging === id || hovering === id;
+            return (
+              <div key={id} style={{
+                position: "absolute",
+                background: active ? "#34D399" : "rgba(52,211,153,0.6)",
+                boxShadow: active ? "0 0 8px #34D399" : "none",
+                borderRadius: 2,
+                pointerEvents: "none",
+                transition: active ? "none" : "background 0.15s",
+                ...style,
+              }} />
+            );
+          });
+        })()}
 
         {/* Linha Topo */}
         <div style={{ ...lineBase(dragging === "top" || hovering === "top", "#F59E0B"), left: 0, right: 0, top: topPx - 1, height: 2 }}>
