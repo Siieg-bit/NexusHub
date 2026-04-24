@@ -701,7 +701,7 @@ function DynamicNineSliceCanvas({
     measureCtx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
     const rawTextWidth0 = Math.ceil(measureCtx.measureText(text).width);
     // Padding efetivo na escala 1:1 (max 40% do slice)
-    const effPadX0 = Math.min(paddingX, Math.max(4, Math.round(sl0 * 0.4)));
+    const effPadX0 = Math.min(paddingX, Math.max(2, Math.round(sl0 * 0.08)));
     // Largura ideal sem escala
     const idealW0 = rawTextWidth0 + sl0 + sr0 + effPadX0 * 2;
     const safeMin0 = sl0 + sr0 + 20;
@@ -728,8 +728,8 @@ function DynamicNineSliceCanvas({
     const scaledFontSize = Math.max(8, Math.round(fontSize * renderScale));
     const lineHeight = Math.round(scaledFontSize * 1.45);
     // Padding efetivo na escala final
-    const safeMaxPadH = Math.max(4, Math.round(sl * 0.4));
-    const safeMaxPadV = Math.max(4, Math.round(st * 0.4));
+    const safeMaxPadH = Math.max(2, Math.round(sl * 0.08));
+    const safeMaxPadV = Math.max(2, Math.round(st * 0.08));
     const effectivePadX = Math.min(Math.round(paddingX * renderScale), safeMaxPadH);
     const effectivePadY = Math.min(Math.round(paddingY * renderScale), safeMaxPadV);
     const innerLeft  = sl + effectivePadX;
@@ -854,9 +854,12 @@ function NineSliceCanvasCompact({
     const lineHeight = Math.round(fontSize * 1.45);
     const msgColor = textColor.trim() || "rgba(255,255,255,0.9)";
 
-    // ── Cantos FIXOS: padding limitado a 40% do slice ────────────────────────
-    const safeMaxPadH = Math.max(4, Math.round(sl * 0.4));
-    const safeMaxPadV = Math.max(4, Math.round(st * 0.4));
+    // ── Cantos FIXOS: padding adicional mínimo (8% do slice, máx 2px) ─────────
+    // Para slices grandes (ex: 38px), o texto já está bem posicionado dentro
+    // da borda decorativa. Padding adicional deve ser mínimo para evitar
+    // espaço em branco excessivo.
+    const safeMaxPadH = Math.max(2, Math.round(sl * 0.08));
+    const safeMaxPadV = Math.max(2, Math.round(st * 0.08));
     const effectivePadX = Math.min(paddingX, safeMaxPadH);
     const effectivePadY = Math.min(paddingY, safeMaxPadV);
     const innerLeft  = sl + effectivePadX;
