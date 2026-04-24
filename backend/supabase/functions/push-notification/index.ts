@@ -9,9 +9,12 @@
 // - Retry automático em caso de falha
 // - Logging melhorado para debugging
 // - Validação de FCM token antes de enviar
+// - Suporte à nova secret key do Supabase (pós 30/03/2026)
 //
 // Env vars necessárias:
 // - FCM_SERVICE_ACCOUNT_JSON: JSON completo da Service Account do Firebase
+// - APP_SERVICE_KEY: nova secret key do Supabase (sb_secret_...)
+//   Fallback: SUPABASE_SERVICE_ROLE_KEY (injetado automaticamente pelo runtime)
 // ============================================================================
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
@@ -137,9 +140,15 @@ serve(async (req) => {
     console.log(`[push-notification] Enviando notificação para ${user_id}: ${notification_type}`);
 
     // Criar cliente Supabase com service role
+    // APP_SERVICE_KEY = nova secret key (pós 30/03/2026, formato sb_secret_...)
+    // SUPABASE_SERVICE_ROLE_KEY = injetado automaticamente pelo runtime do Supabase
+    const serviceKey =
+      Deno.env.get("APP_SERVICE_KEY") ??
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
+      "";
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      serviceKey
     );
 
     // Buscar FCM token do usuário
