@@ -10,9 +10,19 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   },
 });
 
-// supabaseAdmin é alias do supabase — as tabelas admin têm políticas RLS
-// que permitem acesso para a role anon (publishable key) diretamente
-export const supabaseAdmin = supabase;
+// Secret key — usada apenas no painel admin para bypass de RLS.
+// Definida em .env como VITE_SUPABASE_SECRET_KEY (nunca commitada).
+// NUNCA expor esta chave no app mobile/frontend público.
+const SUPABASE_SECRET_KEY = import.meta.env.VITE_SUPABASE_SECRET_KEY as string;
+// supabaseAdmin usa secret key para bypass de RLS no painel admin
+export const supabaseAdmin = SUPABASE_SECRET_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    })
+  : supabase; // fallback para publishable key se secret não estiver configurada
 
 // ─── Tipos da Loja ─────────────────────────────────────────────────────────────
 
