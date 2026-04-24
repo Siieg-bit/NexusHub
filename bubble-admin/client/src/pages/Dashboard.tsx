@@ -392,6 +392,7 @@ function DynamicNineSliceOverlay({
       setHovering(getHandleAt(x, y));
       return;
     }
+    e.preventDefault(); // bloqueia scroll/seleção de texto durante drag
     const dx = x - dragStart.current.x;
     const dy = y - dragStart.current.y;
     if (dragging === "transition") {
@@ -475,6 +476,8 @@ function DynamicNineSliceOverlay({
           border: `1px solid ${dragging ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.08)"}`,
           cursor,
           userSelect: "none",
+          touchAction: "none",       // bloqueia scroll touch durante drag
+          overflowAnchor: "none",    // impede que o browser reposicione a página
         }}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
@@ -984,18 +987,17 @@ function NineSliceEditor({
     dragStart.current = { x, y, value: currentVal };
   }, [getHandleAt, slice]);
 
-  const onMouseMove = useCallback((e: React.MouseEvent) => {
+   const onMouseMove = useCallback((e: React.MouseEvent) => {
     const rect = containerRef.current!.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-
     if (!dragging || !dragStart.current) {
       setHovering(getHandleAt(x, y));
       return;
     }
-
+    e.preventDefault(); // bloqueia scroll/seleção de texto durante drag
     const dx = x - dragStart.current.x;
-    const dy = y - dragStart.current.y;
+    const dy = y - dragStart.current.y;;
 
     // Constraints estritas: impede que linhas se cruzem
     let newVal: number;
@@ -1102,6 +1104,8 @@ function NineSliceEditor({
           border: "1px solid rgba(255,255,255,0.08)",
           cursor,
           userSelect: "none",
+          touchAction: "none",
+          overflowAnchor: "none",
         }}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
@@ -1191,6 +1195,18 @@ function NineSliceEditor({
         ))}
       </div>
 
+      {/* Overlay de zonas dinâmicas — PRIMEIRO no DOM para não ser empurrado pelo preview */}
+      {/* O preview fica abaixo e pode crescer livremente sem deslocar o overlay durante o drag */}
+      {isDynamic && (
+        <DynamicNineSliceOverlay
+          imageUrl={imageUrl}
+          imageDimensions={imageDimensions}
+          slice={slice}
+          transitionZone={dynTransitionZone}
+          onSliceChange={onChange}
+          onTransitionChange={onTransitionChange}
+        />
+      )}
       {/* Preview de texto em tempo real — modo dinâmico ou clássico conforme isDynamic */}
       <NineSlicePreviewPanel
         imageUrl={imageUrl}
@@ -1207,17 +1223,6 @@ function NineSliceEditor({
         dynHorizontalPriority={dynHorizontalPriority}
         dynTransitionZone={dynTransitionZone}
       />
-      {/* Overlay de zonas dinâmicas — visível inline quando isDynamic está ativo */}
-      {isDynamic && (
-        <DynamicNineSliceOverlay
-          imageUrl={imageUrl}
-          imageDimensions={imageDimensions}
-          slice={slice}
-          transitionZone={dynTransitionZone}
-          onSliceChange={onChange}
-          onTransitionChange={onTransitionChange}
-        />
-      )}
     </div>
   );
 }
@@ -1342,6 +1347,7 @@ function PolyFillEditor({
 
   const onMouseMove = useCallback((e: React.MouseEvent) => {
     if (dragging === null || !dragStart.current) return;
+    e.preventDefault(); // bloqueia scroll/seleção de texto durante drag
     const rect = containerRef.current!.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
@@ -1518,8 +1524,10 @@ function NineSlicePreviewPanel({
       )}
 
       {/* Previews — só renderiza quando a imagem está pronta */}
+      {/* min-height fixo: evita que mudanças de tamanho dos canvases dinâmicos
+           empurrem o layout durante o drag no overlay acima */}
       {imgState.status === "ready" && (
-        <div className="flex flex-col gap-2 pt-1">
+        <div className="flex flex-col gap-2 pt-1" style={{ minHeight: 120, overflow: "hidden" }}>
           {/* Badge de modo */}
           {isDynamic && (
             <div className="flex items-center gap-1.5 mb-1">
