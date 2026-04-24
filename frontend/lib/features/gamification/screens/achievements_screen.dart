@@ -161,14 +161,16 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
   }
 
   /// Carrega o histórico de check-ins para o heatmap.
+  /// A tabela `checkins` usa `checked_in_at` (timestamp), não `checkin_date`.
+  /// Convertemos para date no cliente para popular o mapa do heatmap.
   Future<void> _loadCheckinHeatmap(String userId) async {
     try {
       final oneYearAgo = DateTime.now().subtract(const Duration(days: 365));
       final checkins = await SupabaseService.table('checkins')
-          .select('checkin_date')
+          .select('checked_in_at')
           .eq('user_id', userId)
-          .gte('checkin_date', oneYearAgo.toIso8601String().split('T')[0])
-          .order('checkin_date');
+          .gte('checked_in_at', oneYearAgo.toIso8601String())
+          .order('checked_in_at');
 
       final data = <String, int>{};
       int streak = 0;
@@ -177,12 +179,22 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
 
       for (final row
           in List<Map<String, dynamic>>.from(checkins as List? ?? [])) {
-        final dateStr = (row['checkin_date'] as String?) ?? '';
+        // checked_in_at é timestamp — converter para date (yyyy-MM-dd)
+        final rawTs = row['checked_in_at'] as String?;
+        if (rawTs == null) continue;
+        final ts = DateTime.tryParse(rawTs);
+        if (ts == null) continue;
+        final dateOnly = DateTime(ts.year, ts.month, ts.day);
+        final dateStr =
+            '${dateOnly.year}-${dateOnly.month.toString().padLeft(2, '0')}-${dateOnly.day.toString().padLeft(2, '0')}';
+
+        // Evitar duplicatas (múltiplos check-ins no mesmo dia)
+        if (data.containsKey(dateStr)) continue;
+
         data[dateStr] = 1;
 
-        final date = DateTime.parse(dateStr);
         if (lastDate != null) {
-          final diff = date.difference(lastDate).inDays;
+          final diff = dateOnly.difference(lastDate).inDays;
           if (diff == 1) {
             streak++;
             if (streak >= 30) {
@@ -199,27 +211,48 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
           streak = 1;
         }
         if (streak > maxStreak) maxStreak = streak;
-        lastDate = date;
+        lastDate = dateOnly;
       }
 
       _checkinData = data;
       _totalCheckins = data.length;
       _currentStreak = streak;
       _longestStreak = maxStreak;
-    } catch (_) {
-      // Silenciar erro — heatmap é opcional
+    } catch (e) {
+      debugPrint('[achievements] Erro ao carregar heatmap: $e');
     }
   }
 
-  /// Carrega minutos online nas últimas 24h.
+  /// Carrega minutos online do usuário.
+  /// Usa `online_minutes_today` de `profiles` (coluna existente).
+  /// Se o usuário estiver em contexto de comunidade, usa `online_minutes_total`
+  /// de `community_members` como fallback.
   Future<void> _loadOnlineMinutes(String userId) async {
     try {
-      final res = await SupabaseService.table('profiles')
-          .select('online_minutes_today')
+      // Tentar primeiro o perfil global
+      final profileRes = await SupabaseService.table('profiles')
+          .select('online_minutes_today, online_minutes_total')
           .eq('id', userId)
           .maybeSingle();
-      _onlineMinutes = (res?['online_minutes_today'] as int?) ?? 0;
-    } catch (_) {
+
+      if (profileRes != null) {
+        // Resetar daily se necessário (verificação no cliente)
+        _onlineMinutes = (profileRes['online_minutes_today'] as int?) ?? 0;
+
+        // Se hoje está zerado mas temos total, mostrar total como fallback
+        if (_onlineMinutes == 0 && widget.communityId != null) {
+          final memberRes = await SupabaseService.table('community_members')
+              .select('online_minutes_total')
+              .eq('user_id', userId)
+              .eq('community_id', widget.communityId!)
+              .maybeSingle();
+          // Mostrar minutos da semana se disponível
+          _onlineMinutes =
+              (memberRes?['online_minutes_total'] as int?) ?? 0;
+        }
+      }
+    } catch (e) {
+      debugPrint('[achievements] Erro ao carregar minutos online: $e');
       _onlineMinutes = 0;
     }
   }
