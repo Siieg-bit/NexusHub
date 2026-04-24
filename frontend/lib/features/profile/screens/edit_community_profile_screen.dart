@@ -10,6 +10,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import '../../communities/providers/community_detail_providers.dart';
+import '../providers/profile_providers.dart';
 import '../widgets/rich_bio.dart';
 import '../widgets/frame_picker_sheet.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
@@ -520,6 +521,17 @@ class _EditCommunityProfileScreenState
       // O invalidate abaixo serve apenas para atualizar a community_detail_screen
       // caso ela esteja na pilha de navegação.
       ref.invalidate(communityMembershipProvider(widget.communityId));
+
+      // Invalida os providers de moldura para que a tela de perfil reflita
+      // a nova moldura imediatamente ao voltar, sem precisar reiniciar o app.
+      // communityFrameProvider: moldura local da comunidade (active_avatar_frame_id)
+      // equippedItemsProvider: moldura global (is_equipped) — invalida por precaução
+      // caso a compra rápida no frame_picker_sheet tenha alterado is_equipped.
+      ref.invalidate(communityFrameProvider((
+        userId: userId,
+        communityId: widget.communityId,
+      )));
+      ref.invalidate(equippedItemsProvider(userId));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
