@@ -79,11 +79,21 @@ class StickerPickerNotifier extends StateNotifier<StickerPickerState> {
         _repo.getSavedPacks(),
         _repo.getFavorites(),
         _repo.getRecents(),
+        _repo.getPurchasedStorePacks(), // packs comprados na loja principal
       ]);
+
+      // Mesclar packs salvos manualmente + packs comprados (sem duplicatas)
+      final savedPacks = results[1] as List<StickerPackModel>;
+      final purchasedPacks = results[4] as List<StickerPackModel>;
+      final savedIds = savedPacks.map((p) => p.id).toSet();
+      final mergedSaved = [
+        ...savedPacks,
+        ...purchasedPacks.where((p) => !savedIds.contains(p.id)),
+      ];
 
       state = StickerPickerState(
         myPacks: results[0] as List<StickerPackModel>,
-        savedPacks: results[1] as List<StickerPackModel>,
+        savedPacks: mergedSaved,
         storePacks: const [], // aba Loja removida do picker — packs da loja ficam em /store
         favorites: results[2] as List<StickerModel>,
         recents: results[3] as List<StickerModel>,

@@ -176,13 +176,56 @@ export default function StickersPage() {
           .update(payload)
           .eq("id", editingPack.id);
         if (error) throw error;
+
+        // Sincronizar store_item correspondente (se existir)
+        await supabaseAdmin
+          .from("store_items")
+          .update({
+            name: packForm.name.trim(),
+            description: packForm.description.trim() || null,
+            preview_url: finalIconUrl,
+            price_coins: packForm.price_coins,
+            is_active: packForm.is_active,
+            sort_order: packForm.sort_order,
+            tags: packForm.tags.split(",").map((t: string) => t.trim()).filter(Boolean),
+          })
+          .eq("type", "sticker_pack")
+          .contains("asset_config", { pack_id: editingPack.id });
+
         toast.success("Pack atualizado!");
       } else {
-        const { error } = await supabaseAdmin
+        const { data: newPack, error } = await supabaseAdmin
           .from("sticker_packs")
-          .insert(payload);
+          .insert(payload)
+          .select("id")
+          .single();
         if (error) throw error;
-        toast.success("Pack criado!");
+
+        // Criar store_item correspondente automaticamente
+        const storePayload = {
+          type: "sticker_pack",
+          name: packForm.name.trim(),
+          description: packForm.description.trim() || null,
+          preview_url: finalIconUrl,
+          asset_url: null as string | null,
+          price_coins: packForm.price_coins,
+          is_active: packForm.is_active,
+          is_premium_only: packForm.is_premium_only,
+          is_limited_edition: false,
+          sort_order: packForm.sort_order,
+          rarity: "common",
+          tags: packForm.tags.split(",").map((t: string) => t.trim()).filter(Boolean),
+          asset_config: { pack_id: newPack.id },
+        };
+        const { error: storeError } = await supabaseAdmin
+          .from("store_items")
+          .insert(storePayload);
+        if (storeError) {
+          console.error("[StickersPage] Erro ao criar store_item:", storeError);
+          toast.warning("Pack criado, mas falhou ao adicionar \u00e0 loja. Verifique em Loja.");
+        } else {
+          toast.success("Pack criado e adicionado \u00e0 loja!");
+        }
       }
 
       setShowPackForm(false);
@@ -205,6 +248,12 @@ export default function StickersPage() {
     if (error) {
       toast.error("Erro ao excluir pack.");
     } else {
+      // Remover store_item correspondente também
+      await supabaseAdmin
+        .from("store_items")
+        .delete()
+        .eq("type", "sticker_pack")
+        .contains("asset_config", { pack_id: pack.id });
       toast.success("Pack excluído.");
       if (selectedPack?.id === pack.id) setSelectedPack(null);
       loadPacks();
@@ -212,13 +261,20 @@ export default function StickersPage() {
   }
 
   async function togglePackActive(pack: StickerPack) {
+    const newActive = !pack.is_active;
     const { error } = await supabaseAdmin
       .from("sticker_packs")
-      .update({ is_active: !pack.is_active })
+      .update({ is_active: newActive })
       .eq("id", pack.id);
     if (error) {
       toast.error("Erro ao alterar status.");
     } else {
+      // Sincronizar is_active no store_item correspondente
+      await supabaseAdmin
+        .from("store_items")
+        .update({ is_active: newActive })
+        .eq("type", "sticker_pack")
+        .contains("asset_config", { pack_id: pack.id });
       toast.success(pack.is_active ? "Pack desativado." : "Pack ativado!");
       loadPacks();
     }
