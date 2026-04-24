@@ -32,6 +32,9 @@ type PackForm = {
   is_active: boolean;
   sort_order: number;
   tags: string;
+  /** "store" = loja do app (is_user_created=false, cria store_item)
+   *  "library" = biblioteca pública (is_user_created=true, is_public=true, sem store_item) */
+  pack_mode: "store" | "library";
 };
 
 const DEFAULT_PACK_FORM: PackForm = {
@@ -44,6 +47,7 @@ const DEFAULT_PACK_FORM: PackForm = {
   is_active: true,
   sort_order: 0,
   tags: "",
+  pack_mode: "store",
 };
 
 export default function StickersPage() {
@@ -71,11 +75,15 @@ export default function StickersPage() {
 
   async function loadPacks() {
     setLoading(true);
-    const { data, error } = await supabase
+    // Carregar packs de loja (is_user_created=false) E packs de biblioteca criados pelo admin
+    // Para distinguir packs de biblioteca de usuários comuns, filtramos author_name != null
+    // ou simplesmente carregamos todos os is_user_created=true que não têm creator_id de usuário
+    // Na prática: o admin cria packs via supabaseAdmin (service role), então creator_id pode ser null
+    const { data, error } = await supabaseAdmin
       .from("sticker_packs")
       .select("*")
-      .eq("is_user_created", false)
-      .order("sort_order", { ascending: true });
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
     if (!error && data) setPacks(data as StickerPack[]);
     setLoading(false);
   }
@@ -115,6 +123,7 @@ export default function StickersPage() {
       is_active: pack.is_active,
       sort_order: pack.sort_order,
       tags: (pack.tags ?? []).join(", "),
+      pack_mode: (pack as StickerPack & { is_user_created?: boolean }).is_user_created ? "library" : "store",
     });
     setIconPreview(pack.icon_url);
     setIconFile(null);
@@ -152,13 +161,15 @@ export default function StickersPage() {
         if (!finalIconUrl) return;
       }
 
+      const isLibrary = packForm.pack_mode === "library";
+
       const payload = {
         name: packForm.name.trim(),
         description: packForm.description.trim(),
         author_name: packForm.author_name.trim(),
-        price_coins: packForm.price_coins,
-        is_free: packForm.is_free,
-        is_premium_only: packForm.is_premium_only,
+        price_coins: isLibrary ? 0 : packForm.price_coins,
+        is_free: isLibrary ? true : packForm.is_free,
+        is_premium_only: isLibrary ? false : packForm.is_premium_only,
         is_active: packForm.is_active,
         sort_order: packForm.sort_order,
         tags: packForm.tags
@@ -166,7 +177,9 @@ export default function StickersPage() {
           .map((t) => t.trim())
           .filter(Boolean),
         icon_url: finalIconUrl,
-        is_user_created: false,
+        // Biblioteca pública: is_user_created=true para aparecer no Explorar
+        // Loja: is_user_created=false para aparecer nos packs do picker automaticamente
+        is_user_created: isLibrary,
         is_public: true,
       };
 
@@ -177,22 +190,31 @@ export default function StickersPage() {
           .eq("id", editingPack.id);
         if (error) throw error;
 
-        // Sincronizar store_item correspondente (se existir)
-        await supabaseAdmin
-          .from("store_items")
-          .update({
-            name: packForm.name.trim(),
-            description: packForm.description.trim() || null,
-            preview_url: finalIconUrl,
-            price_coins: packForm.price_coins,
-            is_active: packForm.is_active,
-            sort_order: packForm.sort_order,
-            tags: packForm.tags.split(",").map((t: string) => t.trim()).filter(Boolean),
-          })
-          .eq("type", "sticker_pack")
-          .contains("asset_config", { pack_id: editingPack.id });
+        if (!isLibrary) {
+          // Sincronizar store_item correspondente (se existir)
+          await supabaseAdmin
+            .from("store_items")
+            .update({
+              name: packForm.name.trim(),
+              description: packForm.description.trim() || null,
+              preview_url: finalIconUrl,
+              price_coins: packForm.price_coins,
+              is_active: packForm.is_active,
+              sort_order: packForm.sort_order,
+              tags: packForm.tags.split(",").map((t: string) => t.trim()).filter(Boolean),
+            })
+            .eq("type", "sticker_pack")
+            .contains("asset_config", { pack_id: editingPack.id });
+        } else {
+          // Se mudou para biblioteca, remover store_item existente
+          await supabaseAdmin
+            .from("store_items")
+            .delete()
+            .eq("type", "sticker_pack")
+            .contains("asset_config", { pack_id: editingPack.id });
+        }
 
-        toast.success("Pack atualizado!");
+        toast.success(isLibrary ? "Pack atualizado na biblioteca pública!" : "Pack atualizado na loja!");
       } else {
         const { data: newPack, error } = await supabaseAdmin
           .from("sticker_packs")
@@ -201,30 +223,34 @@ export default function StickersPage() {
           .single();
         if (error) throw error;
 
-        // Criar store_item correspondente automaticamente
-        const storePayload = {
-          type: "sticker_pack",
-          name: packForm.name.trim(),
-          description: packForm.description.trim() || null,
-          preview_url: finalIconUrl,
-          asset_url: null as string | null,
-          price_coins: packForm.price_coins,
-          is_active: packForm.is_active,
-          is_premium_only: packForm.is_premium_only,
-          is_limited_edition: false,
-          sort_order: packForm.sort_order,
-          rarity: "common",
-          tags: packForm.tags.split(",").map((t: string) => t.trim()).filter(Boolean),
-          asset_config: { pack_id: newPack.id },
-        };
-        const { error: storeError } = await supabaseAdmin
-          .from("store_items")
-          .insert(storePayload);
-        if (storeError) {
-          console.error("[StickersPage] Erro ao criar store_item:", storeError);
-          toast.warning("Pack criado, mas falhou ao adicionar \u00e0 loja. Verifique em Loja.");
+        if (!isLibrary) {
+          // Criar store_item correspondente automaticamente
+          const storePayload = {
+            type: "sticker_pack",
+            name: packForm.name.trim(),
+            description: packForm.description.trim() || null,
+            preview_url: finalIconUrl,
+            asset_url: null as string | null,
+            price_coins: packForm.price_coins,
+            is_active: packForm.is_active,
+            is_premium_only: packForm.is_premium_only,
+            is_limited_edition: false,
+            sort_order: packForm.sort_order,
+            rarity: "common",
+            tags: packForm.tags.split(",").map((t: string) => t.trim()).filter(Boolean),
+            asset_config: { pack_id: newPack.id },
+          };
+          const { error: storeError } = await supabaseAdmin
+            .from("store_items")
+            .insert(storePayload);
+          if (storeError) {
+            console.error("[StickersPage] Erro ao criar store_item:", storeError);
+            toast.warning("Pack criado, mas falhou ao adicionar \u00e0 loja. Verifique em Loja.");
+          } else {
+            toast.success("Pack criado e adicionado \u00e0 loja!");
+          }
         } else {
-          toast.success("Pack criado e adicionado \u00e0 loja!");
+          toast.success("Pack criado na biblioteca pública! Aparecerá em \"Explorar Figurinhas\".");
         }
       }
 
@@ -554,10 +580,15 @@ export default function StickersPage() {
                   <p className="text-[#6B7280] text-xs truncate">
                     {pack.description || "Sem descrição"}
                   </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[#FBBF24] text-xs">
-                      {pack.price_coins} coins
-                    </span>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    {(pack as StickerPack & { is_user_created?: boolean }).is_user_created ? (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#60A5FA]/20 text-[#60A5FA] font-medium">Biblioteca</span>
+                    ) : (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#E040FB]/20 text-[#E040FB] font-medium">Loja</span>
+                    )}
+                    {!(pack as StickerPack & { is_user_created?: boolean }).is_user_created && (
+                      <span className="text-[#FBBF24] text-xs">{pack.price_coins} coins</span>
+                    )}
                     <span className="text-[#4B5563] text-xs">·</span>
                     <span className="text-[#6B7280] text-xs">
                       {pack.sticker_count} stickers
@@ -645,6 +676,48 @@ export default function StickersPage() {
             </div>
 
             <form onSubmit={handleSubmitPack} className="p-4 md:p-6 space-y-4">
+              {/* Seletor de modo */}
+              <div className="space-y-1.5">
+                <Label className="text-[#9CA3AF] text-xs">Destino do Pack</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPackForm({ ...packForm, pack_mode: "store" })}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${
+                      packForm.pack_mode === "store"
+                        ? "border-[#E040FB] bg-[#E040FB]/10 text-white"
+                        : "border-[#2A2D34] bg-[#111214] text-[#9CA3AF] hover:border-[#E040FB]/40"
+                    }`}
+                  >
+                    <Package className="w-5 h-5" />
+                    <span className="text-xs font-semibold">Loja</span>
+                    <span className="text-[10px] opacity-70 text-center leading-tight">Venda / distribuição</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPackForm({ ...packForm, pack_mode: "library" })}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${
+                      packForm.pack_mode === "library"
+                        ? "border-[#60A5FA] bg-[#60A5FA]/10 text-white"
+                        : "border-[#2A2D34] bg-[#111214] text-[#9CA3AF] hover:border-[#60A5FA]/40"
+                    }`}
+                  >
+                    <Image className="w-5 h-5" />
+                    <span className="text-xs font-semibold">Biblioteca Pública</span>
+                    <span className="text-[10px] opacity-70 text-center leading-tight">Explorar Figurinhas</span>
+                  </button>
+                </div>
+                {packForm.pack_mode === "library" && (
+                  <p className="text-[10px] text-[#60A5FA] mt-1">
+                    ℹ️ Pack grátis, visível em "Explorar Figurinhas". Qualquer usuário pode salvar.
+                  </p>
+                )}
+                {packForm.pack_mode === "store" && (
+                  <p className="text-[10px] text-[#E040FB] mt-1">
+                    🛒 Pack na loja do app. Configure preço e disponibilidade abaixo.
+                  </p>
+                )}
+              </div>
               {/* Icon upload */}
               <div className="space-y-1.5">
                 <Label className="text-[#9CA3AF] text-xs">Ícone do Pack</Label>
@@ -729,7 +802,8 @@ export default function StickersPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2 md:gap-4">
+              {/* Campos de preço e configurações da loja — ocultos no modo biblioteca */}
+              {packForm.pack_mode === "store" && (<div className="grid grid-cols-2 gap-2 md:gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-[#9CA3AF] text-xs">
                     Preço (Coins)
@@ -761,7 +835,7 @@ export default function StickersPage() {
                     className="bg-[#111214] border-[#2A2D34] text-white h-9"
                   />
                 </div>
-              </div>
+              </div>)}
 
               <div className="space-y-1.5">
                 <Label className="text-[#9CA3AF] text-xs">Tags</Label>
@@ -776,21 +850,26 @@ export default function StickersPage() {
               </div>
 
               <div className="flex flex-wrap gap-4">
-                {[
-                  { key: "is_active", label: "Ativo" },
+                {/* is_active sempre visível */}
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={packForm.is_active}
+                    onChange={(e) => setPackForm({ ...packForm, is_active: e.target.checked })}
+                    className="w-4 h-4 rounded border-[#2A2D34] bg-[#111214] accent-[#E040FB]"
+                  />
+                  <span className="text-[#9CA3AF] text-sm">Ativo</span>
+                </label>
+                {/* Gratuito e Apenas Premium apenas no modo loja */}
+                {packForm.pack_mode === "store" && [
                   { key: "is_free", label: "Gratuito" },
                   { key: "is_premium_only", label: "Apenas Premium" },
                 ].map(({ key, label }) => (
-                  <label
-                    key={key}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
+                  <label key={key} className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={packForm[key as keyof PackForm] as boolean}
-                      onChange={(e) =>
-                        setPackForm({ ...packForm, [key]: e.target.checked })
-                      }
+                      onChange={(e) => setPackForm({ ...packForm, [key]: e.target.checked })}
                       className="w-4 h-4 rounded border-[#2A2D34] bg-[#111214] accent-[#E040FB]"
                     />
                     <span className="text-[#9CA3AF] text-sm">{label}</span>
