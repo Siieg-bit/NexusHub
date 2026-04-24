@@ -974,18 +974,35 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               // Avatar centralizado
+                              // Bug fix: prioriza a moldura local da comunidade
+                              // (active_avatar_frame_id em community_members);
+                              // usa a moldura global (is_equipped) como fallback.
                               AvatarWithFrame(
                                 avatarUrl: displayAvatar,
                                 frameUrl: (ref
-                                        .watch(equippedItemsProvider(
-                                            widget.userId))
-                                        .valueOrNull ??
-                                    {})['frame_url'] as String?,
-                                isFrameAnimated: (ref
+                                            .watch(communityFrameProvider((
+                                              userId: widget.userId,
+                                              communityId: widget.communityId,
+                                            )))
+                                            .valueOrNull ??
+                                        ref
                                             .watch(equippedItemsProvider(
                                                 widget.userId))
                                             .valueOrNull ??
-                                        {})['frame_is_animated'] as bool? ??
+                                        {})['frame_url'] as String?,
+                                isFrameAnimated: (ref
+                                                .watch(communityFrameProvider((
+                                                  userId: widget.userId,
+                                                  communityId:
+                                                      widget.communityId,
+                                                )))
+                                                .valueOrNull ??
+                                            ref
+                                                .watch(equippedItemsProvider(
+                                                    widget.userId))
+                                                .valueOrNull ??
+                                            {})['frame_is_animated']
+                                        as bool? ??
                                     false,
                                 size: r.s(96),
                                 showAminoPlus: isPremium,
