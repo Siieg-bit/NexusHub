@@ -14,6 +14,7 @@ class ReportDialog extends ConsumerStatefulWidget {
   final String? targetMessageId;
   final String? targetUserId;
   final String? targetWikiId;
+  final String? targetStoryId;
 
   const ReportDialog({
     super.key,
@@ -23,6 +24,7 @@ class ReportDialog extends ConsumerStatefulWidget {
     this.targetMessageId,
     this.targetUserId,
     this.targetWikiId,
+    this.targetStoryId,
   });
 
   /// Mostrar o diálogo de denúncia.
@@ -34,6 +36,7 @@ class ReportDialog extends ConsumerStatefulWidget {
     String? targetMessageId,
     String? targetUserId,
     String? targetWikiId,
+    String? targetStoryId,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -48,6 +51,7 @@ class ReportDialog extends ConsumerStatefulWidget {
         targetMessageId: targetMessageId,
         targetUserId: targetUserId,
         targetWikiId: targetWikiId,
+        targetStoryId: targetStoryId,
       ),
     );
   }
@@ -139,6 +143,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
         'p_target_chat_message_id': widget.targetMessageId,
         'p_target_user_id': widget.targetUserId,
         'p_target_wiki_id': widget.targetWikiId,
+        'p_target_story_id': widget.targetStoryId,
       });
 
       if (mounted) {

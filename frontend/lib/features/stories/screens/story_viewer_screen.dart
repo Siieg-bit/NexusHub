@@ -217,10 +217,15 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
 
   void _pauseStory() {
     _progressController.stop();
+    _videoController?.pause();
   }
 
   void _resumeStory() {
-    _progressController.forward();
+    if (_videoController != null && _videoController!.value.isInitialized) {
+      _videoController!.play();
+    } else {
+      _progressController.forward();
+    }
   }
 
   Future<void> _sendReaction(String reaction) async {
@@ -527,7 +532,7 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
                         ReportDialog.show(
                           context,
                           communityId: widget.communityId!,
-                          targetPostId: story['id'] as String?,
+                          targetStoryId: story['id'] as String?,
                         ).then((_) => _resumeStory());
                       },
                       child: Padding(
