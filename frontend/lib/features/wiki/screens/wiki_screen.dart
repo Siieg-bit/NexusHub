@@ -744,52 +744,35 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
     setState(() => _isSendingComment = true);
     try {
       if (isSticker) {
-        // Sticker: insert direto com wiki_id (o RPC send_comment_with_sticker
-        // só aceita post_id, por isso usamos insert manual)
-        final row = <String, dynamic>{
-          'wiki_id': widget.wikiId,
-          'author_id': userId,
-          'content': textContent.isNotEmpty ? textContent : '[sticker]',
-          'parent_id': _replyingToComment?.id,
-          'sticker_url': stickerUrl,
-        };
-        if (stickerId != null) row['sticker_id'] = stickerId;
-        if (stickerName != null) row['sticker_name'] = stickerName;
-        if (packId != null) row['pack_id'] = packId;
-        await SupabaseService.table('comments').insert(row);
-        // Registrar uso recente do sticker
-        if (stickerId != null && stickerUrl != null) {
-          try {
-            await SupabaseService.table('recently_used_stickers').upsert({
-              'user_id': userId,
-              'sticker_id': stickerId,
-              'sticker_url': stickerUrl,
-              'sticker_name': stickerName ?? '',
-              'used_at': DateTime.now().toIso8601String(),
-            });
-          } catch (_) {}
-        }
+        // Sticker: RPC dedicado que valida membro, insere o comentário,
+        // registra uso recente e incrementa uses_count (migration 131)
+        await SupabaseService.rpc('send_wiki_comment_with_sticker', params: {
+          'p_wiki_id':      widget.wikiId,
+          'p_content':      textContent.isNotEmpty ? textContent : '',
+          'p_parent_id':    _replyingToComment?.id,
+          'p_sticker_id':   stickerId,
+          'p_sticker_url':  stickerUrl,
+          'p_sticker_name': stickerName,
+          'p_pack_id':      packId,
+        });
       } else if (mediaUrl != null) {
-        // Imagem ou vídeo
+        // Imagem ou vídeo: RPC dedicado que valida wiki e tipo de mídia
         final isVideo = _pendingVideoUrl != null;
-        await SupabaseService.table('comments').insert({
-          'wiki_id': widget.wikiId,
-          'author_id': userId,
-          'content': textContent.isNotEmpty
-              ? textContent
-              : (isVideo ? '[video]' : '[image]'),
-          'media_url': mediaUrl,
-          'media_type': isVideo ? 'video' : 'image',
-          'parent_id': _replyingToComment?.id,
+        await SupabaseService.rpc('send_wiki_media_comment', params: {
+          'p_wiki_id':    widget.wikiId,
+          'p_media_url':  mediaUrl,
+          'p_media_type': isVideo ? 'video' : 'image',
+          'p_content':    textContent.isNotEmpty ? textContent : null,
+          'p_parent_id':  _replyingToComment?.id,
         });
       } else {
-        // Texto puro
+        // Texto puro: RPC existente com reputação
         await SupabaseService.rpc('create_comment_with_reputation', params: {
           'p_community_id': _communityId,
-          'p_author_id': userId,
-          'p_content': textContent,
-          'p_wiki_id': widget.wikiId,
-          'p_parent_id': _replyingToComment?.id,
+          'p_author_id':    userId,
+          'p_content':      textContent,
+          'p_wiki_id':      widget.wikiId,
+          'p_parent_id':    _replyingToComment?.id,
         });
       }
       _commentController.clear();
@@ -914,30 +897,19 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
 
   // ── Moderação: ocultar/desocultar wiki ──────────────────────────────────
 
+  /// Usa o RPC hide_wiki_entry (migration 131) que valida permissão,
+  /// atualiza o status e registra log de moderação atomicamente.
   Future<void> _toggleHideWiki({required bool currentlyHidden}) async {
     final s = getStrings();
     final r = context.r;
-    final newStatus = currentlyHidden ? 'ok' : 'disabled';
     try {
-      // Log de moderação apenas quando communityId está disponível
-      if (_communityId.isNotEmpty) {
-        try {
-          await SupabaseService.rpc('log_moderation_action', params: {
-            'p_community_id': _communityId,
-            'p_action': currentlyHidden ? 'unhide_wiki' : 'hide_wiki',
-            'p_target_wiki_id': widget.wikiId,
-            'p_reason': currentlyHidden
-                ? 'Moderação: desocultar wiki'
-                : 'Moderação: ocultar wiki',
-          });
-        } catch (logErr) {
-          debugPrint('[wiki_screen] log_moderation_action: $logErr');
-        }
-      }
-      await SupabaseService.table('wiki_entries')
-          .update({'status': newStatus}).eq('id', widget.wikiId);
+      await SupabaseService.rpc('hide_wiki_entry', params: {
+        'p_wiki_id': widget.wikiId,
+        'p_hide':    !currentlyHidden,
+      });
       if (mounted) {
-        setState(() => _entry?['status'] = newStatus);
+        setState(() => _entry?['status'] =
+            currentlyHidden ? 'ok' : 'disabled');
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(currentlyHidden ? s.wikiUnhidden : s.wikiHidden),
           backgroundColor: context.nexusTheme.accentPrimary,
@@ -947,7 +919,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
         ));
       }
     } catch (e) {
-      debugPrint('[wiki_screen] Erro ao ocultar/desocultar wiki: $e');
+      debugPrint('[wiki_screen] _toggleHideWiki: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s.anErrorOccurredTryAgain),
@@ -960,28 +932,16 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
 
   // ── Moderação: canonizar/descanonizar wiki ───────────────────────────────
 
+  /// Usa o RPC toggle_wiki_canonical (migration 131) que valida permissão,
+  /// atualiza is_canonical e registra log de moderação atomicamente.
   Future<void> _toggleCanonical({required bool currentlyCanonical}) async {
     final s = getStrings();
     final r = context.r;
     try {
-      // Log de moderação apenas quando communityId está disponível
-      if (_communityId.isNotEmpty) {
-        try {
-          await SupabaseService.rpc('log_moderation_action', params: {
-            'p_community_id': _communityId,
-            'p_action':
-                currentlyCanonical ? 'decanonize_wiki' : 'canonize_wiki',
-            'p_target_wiki_id': widget.wikiId,
-            'p_reason': currentlyCanonical
-                ? 'Moderação: remover canonização'
-                : 'Moderação: canonizar wiki',
-          });
-        } catch (logErr) {
-          debugPrint('[wiki_screen] log_moderation_action: $logErr');
-        }
-      }
-      await SupabaseService.table('wiki_entries')
-          .update({'is_canonical': !currentlyCanonical}).eq('id', widget.wikiId);
+      await SupabaseService.rpc('toggle_wiki_canonical', params: {
+        'p_wiki_id':   widget.wikiId,
+        'p_canonical': !currentlyCanonical,
+      });
       if (mounted) {
         setState(() => _entry?['is_canonical'] = !currentlyCanonical);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -996,7 +956,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
         ));
       }
     } catch (e) {
-      debugPrint('[wiki_screen] Erro ao canonizar/descanonizar wiki: $e');
+      debugPrint('[wiki_screen] _toggleCanonical: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s.anErrorOccurredTryAgain),

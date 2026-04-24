@@ -256,25 +256,40 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
     }
   }
 
-  /// Moderação: excluir/desativar story (apenas para staff ou autor)
-  Future<void> _deleteStory() async {
+  /// Remove o story via RPC delete_story (migration 131).
+  /// O RPC valida permissão (autor ou moderador), desativa o story
+  /// e registra log de moderação quando feito por staff.
+  Future<void> _deleteStory({String? reason}) async {
+    final s = getStrings();
     final story = widget.stories[_currentIndex];
     final storyId = story['id'] as String? ?? '';
     if (storyId.isEmpty) return;
     try {
-      await SupabaseService.table('stories')
-          .update({'is_active': false}).eq('id', storyId);
+      await SupabaseService.rpc('delete_story', params: {
+        'p_story_id': storyId,
+        if (reason != null && reason.isNotEmpty) 'p_reason': reason,
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Story removido.'),
+          SnackBar(
+            content: const Text('Story removido.'),
             behavior: SnackBarBehavior.floating,
+            backgroundColor: context.nexusTheme.accentPrimary,
           ),
         );
         Navigator.of(context).pop();
       }
     } catch (e) {
       debugPrint('[story_viewer_screen] _deleteStory: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(s.anErrorOccurredTryAgain),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: context.nexusTheme.error,
+          ),
+        );
+      }
     }
   }
 
@@ -541,7 +556,7 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
                             color: Colors.white70, size: r.s(20)),
                       ),
                     ),
-                  // Menu de moderação (para o autor ou staff)
+                  // Menu de moderação (para o autor do story)
                   if (widget.authorProfile['id'] == SupabaseService.currentUserId)
                     GestureDetector(
                       onTap: () {
@@ -568,9 +583,11 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
                                 ),
                                 SizedBox(height: r.s(16)),
                                 ListTile(
-                                  leading: const Icon(Icons.delete_outline_rounded,
-                                      color: Colors.red),
-                                  title: const Text('Remover story'),
+                                  leading: Icon(
+                                    Icons.delete_outline_rounded,
+                                    color: context.nexusTheme.error,
+                                  ),
+                                  title: const Text('Remover meu story'),
                                   onTap: () {
                                     Navigator.pop(context);
                                     _deleteStory();
