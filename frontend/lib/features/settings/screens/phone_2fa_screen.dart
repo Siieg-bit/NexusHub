@@ -36,8 +36,7 @@ class _Phone2faScreenState extends ConsumerState<Phone2faScreen> {
     super.dispose();
   }
 
-  /// Envia o OTP via RPC (que retorna o código para o app em dev;
-  /// em produção, o backend usa Twilio/etc. via Edge Function).
+  /// Envia o OTP via Edge Function send-sms-otp (Twilio).
   Future<void> _sendOtp() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() { _isSending = true; _phoneError = null; });
@@ -45,7 +44,14 @@ class _Phone2faScreenState extends ConsumerState<Phone2faScreen> {
     final phone = _phoneCtrl.text.trim();
 
     try {
-      await SupabaseService.rpc('request_sms_otp', params: {'p_phone': phone});
+      final res = await SupabaseService.client.functions.invoke(
+        'send-sms-otp',
+        body: {'phone': phone},
+      );
+      final data = res.data as Map<String, dynamic>?;
+      if (data != null && data['error'] != null) {
+        throw Exception(data['error']);
+      }
       setState(() {
         _phone = phone;
         _step  = 2;
@@ -54,12 +60,8 @@ class _Phone2faScreenState extends ConsumerState<Phone2faScreen> {
       });
       _startCountdown();
     } catch (e) {
-      String msg = 'Erro ao enviar SMS. Tente novamente.';
-      if (e.toString().contains('rate_limit_sms')) {
-        msg = 'Aguarde 1 minuto antes de solicitar outro código.';
-      } else if (e.toString().contains('invalid_phone_format')) {
-        msg = 'Formato de telefone inválido. Use +5511999999999.';
-      }
+      String msg = e.toString().replaceAll('Exception: ', '');
+      if (msg.length > 120) msg = 'Erro ao enviar SMS. Tente novamente.';
       setState(() { _isSending = false; _phoneError = msg; });
     }
   }
@@ -72,24 +74,28 @@ class _Phone2faScreenState extends ConsumerState<Phone2faScreen> {
     });
   }
 
-  /// Verifica o OTP inserido.
+  /// Verifica o OTP via Edge Function verify-sms-otp.
   Future<void> _verifyOtp() async {
     if (_otpCtrl.text.length != 6) return;
     setState(() { _isVerifying = true; _otpError = null; });
 
     try {
-      await SupabaseService.rpc('verify_sms_otp', params: {
-        'p_phone': _phone,
-        'p_code':  _otpCtrl.text.trim(),
-      });
+      final res = await SupabaseService.client.functions.invoke(
+        'verify-sms-otp',
+        body: {
+          'phone':  _phone,
+          'code':   _otpCtrl.text.trim(),
+          'action': 'setup',
+        },
+      );
+      final data = res.data as Map<String, dynamic>?;
+      if (data != null && data['error'] != null) {
+        throw Exception(data['error']);
+      }
       setState(() { _step = 3; _isVerifying = false; });
     } catch (e) {
-      String msg = 'Código inválido. Tente novamente.';
-      if (e.toString().contains('otp_expired')) {
-        msg = 'Código expirado. Solicite um novo.';
-      } else if (e.toString().contains('too_many_attempts')) {
-        msg = 'Muitas tentativas. Solicite um novo código.';
-      }
+      String msg = e.toString().replaceAll('Exception: ', '');
+      if (msg.length > 120) msg = 'Código inválido. Tente novamente.';
       setState(() { _isVerifying = false; _otpError = msg; });
     }
   }

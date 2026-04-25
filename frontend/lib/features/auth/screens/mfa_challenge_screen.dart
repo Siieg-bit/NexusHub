@@ -35,6 +35,7 @@ class _MfaChallengeScreenState extends ConsumerState<MfaChallengeScreen> {
 
   // Para SMS
   String? _challengeId;
+  String? _phone;       // telefone cadastrado para SMS 2FA
   bool _smsSent = false;
   int _resendCountdown = 0;
 
@@ -50,21 +51,36 @@ class _MfaChallengeScreenState extends ConsumerState<MfaChallengeScreen> {
     super.dispose();
   }
 
-  /// Cria o challenge SMS e envia o código.
+  /// Envia o OTP SMS via Edge Function send-sms-otp (Twilio).
   Future<void> _createSmsChallenge() async {
     setState(() { _smsSent = false; _error = null; });
     try {
-      final res = await SupabaseService.client.auth.mfa.challenge(
-        params: MFAChallengeParams(factorId: widget.factorId),
+      // Buscar o telefone cadastrado do usuário
+      final settings = await SupabaseService.rpc('get_2fa_status');
+      final phone = (settings as Map<String, dynamic>?)?['phone_number'] as String?;
+      if (phone == null || phone.isEmpty) {
+        setState(() => _error = 'Nenhum telefone cadastrado para 2FA.');
+        return;
+      }
+      _phone = phone;
+
+      final res = await SupabaseService.client.functions.invoke(
+        'send-sms-otp',
+        body: {'phone': phone},
       );
+      final data = res.data as Map<String, dynamic>?;
+      if (data != null && data['error'] != null) {
+        throw Exception(data['error']);
+      }
       setState(() {
-        _challengeId = res.id;
         _smsSent = true;
         _resendCountdown = 60;
       });
       _startCountdown();
     } catch (e) {
-      setState(() => _error = 'Erro ao enviar SMS. Tente novamente.');
+      String msg = e.toString().replaceAll('Exception: ', '');
+      if (msg.length > 120) msg = 'Erro ao enviar SMS. Tente novamente.';
+      setState(() => _error = msg);
     }
   }
 
@@ -92,26 +108,35 @@ class _MfaChallengeScreenState extends ConsumerState<MfaChallengeScreen> {
         return;
       }
 
-      // Verificação TOTP ou SMS via Supabase MFA
-      String challengeId;
       if (widget.method == 'totp') {
-        final res = await SupabaseService.client.auth.mfa.challenge(
+        // Verificação TOTP via Supabase MFA nativo
+        final challengeRes = await SupabaseService.client.auth.mfa.challenge(
           params: MFAChallengeParams(factorId: widget.factorId),
         );
-        challengeId = res.id;
+        await SupabaseService.client.auth.mfa.verify(
+          params: MFAVerifyParams(
+            factorId:    widget.factorId,
+            challengeId: challengeRes.id,
+            code:        code,
+          ),
+        );
       } else {
-        challengeId = _challengeId!;
+        // Verificação SMS via Edge Function verify-sms-otp
+        final res = await SupabaseService.client.functions.invoke(
+          'verify-sms-otp',
+          body: {
+            'phone':  _phone,
+            'code':   code,
+            'action': 'login',
+          },
+        );
+        final data = res.data as Map<String, dynamic>?;
+        if (data != null && data['error'] != null) {
+          throw Exception(data['error']);
+        }
       }
 
-      await SupabaseService.client.auth.mfa.verify(
-        params: MFAVerifyParams(
-          factorId:    widget.factorId,
-          challengeId: challengeId,
-          code:        code,
-        ),
-      );
-
-      // Sessão agora em AAL2 — carregar perfil e navegar
+      // Sessão confirmada — carregar perfil e navegar
       await ref.read(authProvider.notifier).loadUserProfile();
       if (mounted) context.go('/');
     } catch (e) {
