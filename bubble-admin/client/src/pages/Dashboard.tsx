@@ -66,10 +66,12 @@ interface BubbleAssetConfig {
   content_padding_v?: number;
   /** Polígono opcional de fill (8 pontos normalizados 0–1). Quando presente, o Flutter aplica ClipPath. */
   poly_points?: PolyPoint[];
-  // ── NOVOS: campos do modo dynamic_nineslice ─────────────────────────────
+  // ── NOVOS: campos do modo dynamic_nineslice ──────────────────────────────────────
   slice?: { left: number; right: number; top: number; bottom: number };
   content?: { padding?: { x: number; y: number }; maxWidth?: number; minWidth?: number };
   behavior?: { horizontalPriority?: boolean; maxHeightRatio?: number; transitionZone?: number };
+  // ── Campos do modo horizontal_stretch ──────────────────────────────────────
+  horizontal_stretch?: { maxWidth?: number; minWidth?: number; paddingX?: number; paddingY?: number };
 }
 
 /** Valores padrão para um novo bubble */
@@ -1209,6 +1211,12 @@ interface NineSliceEditorProps {
   dynHorizontalPriority?: boolean;
   dynTransitionZone?: number;
   onTransitionChange?: (t: number) => void;
+  // Campos do modo horizontal_stretch (opcionais)
+  isHorizontalStretch?: boolean;
+  hsMaxWidth?: number;
+  hsMinWidth?: number;
+  hsPaddingX?: number;
+  hsPaddingY?: number;
 }
 
 function NineSliceEditor({
@@ -1223,6 +1231,11 @@ function NineSliceEditor({
   dynHorizontalPriority = true,
   dynTransitionZone = 0.15,
   onTransitionChange,
+  isHorizontalStretch = false,
+  hsMaxWidth = 280,
+  hsMinWidth = 60,
+  hsPaddingX = 4,
+  hsPaddingY = 4,
 }: NineSliceEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState({ w: 240, h: 240 });
@@ -1512,6 +1525,11 @@ function NineSliceEditor({
         dynPaddingY={dynPaddingY}
         dynHorizontalPriority={dynHorizontalPriority}
         dynTransitionZone={dynTransitionZone}
+        isHorizontalStretch={isHorizontalStretch}
+        hsMaxWidth={hsMaxWidth}
+        hsMinWidth={hsMinWidth}
+        hsPaddingX={hsPaddingX}
+        hsPaddingY={hsPaddingY}
       />
     </div>
   );
@@ -2015,18 +2033,10 @@ function BubblesDashboard() {
       dynTransitionZone:     cfg.behavior?.transitionZone     ?? DYNAMIC_BEHAVIOR_DEFAULTS.transitionZone,
       // Campos horizontal_stretch
       isHorizontalStretch: cfg.mode === "horizontal_stretch",
-      hsMaxWidth: (cfg as Record<string,unknown>).horizontal_stretch
-        ? ((cfg as Record<string,unknown>).horizontal_stretch as Record<string,unknown>).maxWidth as number ?? 280
-        : 280,
-      hsMinWidth: (cfg as Record<string,unknown>).horizontal_stretch
-        ? ((cfg as Record<string,unknown>).horizontal_stretch as Record<string,unknown>).minWidth as number ?? 60
-        : 60,
-      hsPaddingX: (cfg as Record<string,unknown>).horizontal_stretch
-        ? ((cfg as Record<string,unknown>).horizontal_stretch as Record<string,unknown>).paddingX as number ?? 4
-        : cfg.pad_left ?? 4,
-      hsPaddingY: (cfg as Record<string,unknown>).horizontal_stretch
-        ? ((cfg as Record<string,unknown>).horizontal_stretch as Record<string,unknown>).paddingY as number ?? 4
-        : cfg.pad_top ?? 4,
+      hsMaxWidth: cfg.horizontal_stretch?.maxWidth ?? 280,
+      hsMinWidth: cfg.horizontal_stretch?.minWidth ?? 60,
+      hsPaddingX: cfg.horizontal_stretch?.paddingX ?? cfg.pad_left ?? 4,
+      hsPaddingY: cfg.horizontal_stretch?.paddingY ?? cfg.pad_top ?? 4,
     });
     setImageUrl(item.preview_url);
     if (cfg.image_width && cfg.image_height) {
@@ -2653,7 +2663,7 @@ function BubblesDashboard() {
 
                     {imageUrl ? (
                       <>
-                        {previewTab === "slice" && !form.isAnimated && !form.isDynamic && (
+                        {previewTab === "slice" && !form.isAnimated && !form.isDynamic && !form.isHorizontalStretch && (
                           // Modo clássico: editor de bordas com overlay de escurecimento
                           <NineSliceEditor
                             imageUrl={imageUrl}
@@ -2673,6 +2683,11 @@ function BubblesDashboard() {
                             dynHorizontalPriority={form.dynHorizontalPriority}
                             dynTransitionZone={form.dynTransitionZone}
                             onTransitionChange={(t) => setForm(f => ({ ...f, dynTransitionZone: t }))}
+                            isHorizontalStretch={false}
+                            hsMaxWidth={form.hsMaxWidth}
+                            hsMinWidth={form.hsMinWidth}
+                            hsPaddingX={form.hsPaddingX}
+                            hsPaddingY={form.hsPaddingY}
                           />
                         )}
                         {previewTab === "slice" && !form.isAnimated && form.isDynamic && (
@@ -2701,8 +2716,40 @@ function BubblesDashboard() {
                               dynPaddingY={form.dynPaddingY}
                               dynHorizontalPriority={form.dynHorizontalPriority}
                               dynTransitionZone={form.dynTransitionZone}
+                              isHorizontalStretch={false}
+                              hsMaxWidth={form.hsMaxWidth}
+                              hsMinWidth={form.hsMinWidth}
+                              hsPaddingX={form.hsPaddingX}
+                              hsPaddingY={form.hsPaddingY}
                             />
                           </div>
+                        )}
+                        {previewTab === "slice" && !form.isAnimated && form.isHorizontalStretch && (
+                          // Modo horizontal_stretch: editor de bordas + preview com cantos fixos
+                          <NineSliceEditor
+                            imageUrl={imageUrl}
+                            imageDimensions={imageDimensions}
+                            slice={sliceValues}
+                            onChange={handleSliceChange}
+                            textColor={form.textColor}
+                            fontSize={form.fontSize}
+                            textAlign={form.textAlign}
+                            padTop={form.padTop} padBottom={form.padBottom}
+                            padLeft={form.padLeft} padRight={form.padRight}
+                            isDynamic={false}
+                            dynMaxWidth={form.dynMaxWidth}
+                            dynMinWidth={form.dynMinWidth}
+                            dynPaddingX={form.dynPaddingX}
+                            dynPaddingY={form.dynPaddingY}
+                            dynHorizontalPriority={form.dynHorizontalPriority}
+                            dynTransitionZone={form.dynTransitionZone}
+                            onTransitionChange={(t) => setForm(f => ({ ...f, dynTransitionZone: t }))}
+                            isHorizontalStretch={true}
+                            hsMaxWidth={form.hsMaxWidth}
+                            hsMinWidth={form.hsMinWidth}
+                            hsPaddingX={form.hsPaddingX}
+                            hsPaddingY={form.hsPaddingY}
+                          />
                         )}
 
                         {previewTab === ("poly" as string) && !form.isAnimated && (
