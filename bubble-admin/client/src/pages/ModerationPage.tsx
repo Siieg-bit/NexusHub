@@ -5,22 +5,11 @@ import { toast } from "sonner";
 import {
   Shield, Flag, AlertTriangle, CheckCircle2, XCircle, Clock,
   RefreshCw, ChevronDown, FileText, Eye, Hash, Calendar, Filter,
-  User, ArrowRight, Swords,
+  User, ArrowRight, Swords, Camera, Bot, Image as ImageIcon,
+  MessageSquare, X, ChevronRight, Loader2,
 } from "lucide-react";
 
-// ─── Tipos (schema real do banco) ─────────────────────────────────────────────
-// flags: id, community_id, reporter_id, target_type, target_id, target_community_id,
-//        target_user_id, target_post_id, target_comment_id, flag_type, reason,
-//        evidence_urls, status, resolved_by, resolution_note, resolution_action,
-//        created_at, is_auto_flagged, is_reviewed, reviewer_id, reviewed_at, is_escalated
-//
-// strikes: id, community_id, user_id, issued_by, reason, evidence_urls,
-//          is_active, revoked_by, revoked_at, created_at, expires_at
-//
-// moderation_logs: id, community_id, moderator_id, action, severity,
-//                  target_user_id, target_post_id, target_wiki_id, target_comment_id,
-//                  target_chat_thread_id, reason, details, duration_hours, expires_at, created_at
-
+// ─── Tipos ────────────────────────────────────────────────────────────────────
 type FlagStatus = "pending" | "resolved" | "dismissed" | "all";
 type FlagType = "spam" | "harassment" | "hate_speech" | "nsfw" | "misinformation" | "other";
 
@@ -34,6 +23,7 @@ type Flag = {
   target_comment_id: string | null;
   target_chat_message_id: string | null;
   target_chat_thread_id: string | null;
+  target_story_id: string | null;
   flag_type: FlagType;
   reason: string | null;
   evidence_urls: string[];
@@ -79,6 +69,21 @@ type ModerationLog = {
   target_user?: { nickname: string | null; amino_id: string | null };
 };
 
+// Snapshot retornado pelo RPC get_flag_detail
+type FlagDetail = {
+  flag: Record<string, unknown>;
+  snapshot: {
+    id: string;
+    content_type: string;
+    captured_at: string;
+    bot_verdict: string | null;
+    bot_score: number | null;
+    snapshot_data: Record<string, unknown>;
+  } | null;
+  bot_actions: Record<string, unknown>[];
+};
+
+// ─── Constantes ───────────────────────────────────────────────────────────────
 const FLAG_TYPE_LABELS: Record<string, string> = {
   spam: "Spam",
   harassment: "Assédio",
@@ -97,11 +102,27 @@ const FLAG_TYPE_COLORS: Record<string, string> = {
   other: "#6B7280",
 };
 
+const CONTENT_TYPE_LABELS: Record<string, string> = {
+  post: "Post",
+  comment: "Comentário",
+  chat_message: "Mensagem de Chat",
+  profile: "Perfil",
+  wiki: "Wiki",
+  story: "Story",
+};
+
 const STATUS_CONFIG = {
   pending:   { label: "Pendente",   color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.2)",  icon: Clock },
   resolved:  { label: "Resolvida",  color: "#34D399", bg: "rgba(52,211,153,0.1)",  border: "rgba(52,211,153,0.2)",  icon: CheckCircle2 },
   dismissed: { label: "Descartada", color: "#6B7280", bg: "rgba(107,114,128,0.1)", border: "rgba(107,114,128,0.2)", icon: XCircle },
   all:       { label: "Todas",      color: "#A78BFA", bg: "rgba(167,139,250,0.1)", border: "rgba(167,139,250,0.2)", icon: Filter },
+};
+
+const BOT_VERDICT_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  clean:        { label: "Limpo",        color: "#34D399", bg: "rgba(52,211,153,0.1)" },
+  suspicious:   { label: "Suspeito",     color: "#F59E0B", bg: "rgba(245,158,11,0.1)" },
+  auto_removed: { label: "Auto-removido",color: "#EF4444", bg: "rgba(239,68,68,0.1)" },
+  escalated:    { label: "Escalado",     color: "#A78BFA", bg: "rgba(167,139,250,0.1)" },
 };
 
 const fadeUp = {
@@ -114,7 +135,431 @@ function displayUser(u: { nickname: string | null; amino_id: string | null } | u
   return u.nickname || u.amino_id || fallback.slice(0, 8);
 }
 
-// ─── Modal de resolução de flag ───────────────────────────────────────────────
+function fmtDate(iso: string | null | undefined) {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleString("pt-BR");
+  } catch { return iso; }
+}
+
+// ─── Drawer de detalhes da denúncia (snapshot) ───────────────────────────────
+function FlagDetailDrawer({
+  flagId,
+  flag,
+  onClose,
+  onResolved,
+}: {
+  flagId: string;
+  flag: Flag;
+  onClose: () => void;
+  onResolved: (id: string, status: "resolved" | "dismissed", note: string) => void;
+}) {
+  const [detail, setDetail] = useState<FlagDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [resolveAction, setResolveAction] = useState<"resolved" | "dismissed">("resolved");
+  const [note, setNote] = useState("");
+  const [resolving, setResolving] = useState(false);
+  const [showResolveForm, setShowResolveForm] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      try {
+        const { data, error } = await supabaseAdmin.rpc("get_flag_detail", { p_flag_id: flagId });
+        if (error) throw error;
+        setDetail(data as FlagDetail);
+      } catch (err) {
+        toast.error("Erro ao carregar detalhes da denúncia.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [flagId]);
+
+  async function handleResolve() {
+    setResolving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabaseAdmin.from("flags").update({
+        status: resolveAction,
+        resolved_by: user?.id ?? null,
+        resolution_note: note.trim() || null,
+        resolved_at: new Date().toISOString(),
+      }).eq("id", flagId);
+      if (error) throw error;
+
+      if (flag.community_id) {
+        await supabaseAdmin.from("moderation_logs").insert({
+          community_id: flag.community_id,
+          moderator_id: user?.id,
+          action: resolveAction === "resolved" ? "flag_resolved" : "flag_dismissed",
+          severity: "low",
+          target_user_id: flag.target_user_id ?? null,
+          reason: note.trim() || null,
+          details: { flag_type: flag.flag_type, flag_id: flagId },
+        });
+      }
+
+      toast.success(`Denúncia ${resolveAction === "resolved" ? "resolvida" : "descartada"} com sucesso.`);
+      onResolved(flagId, resolveAction, note);
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao resolver denúncia.");
+    } finally {
+      setResolving(false);
+    }
+  }
+
+  const snapshot = detail?.snapshot;
+  const data = snapshot?.snapshot_data ?? {};
+  const contentType = snapshot?.content_type ?? "";
+  const hasError = data && typeof data === "object" && "error" in data;
+  const botVerdict = snapshot?.bot_verdict;
+  const botCfg = botVerdict ? BOT_VERDICT_CONFIG[botVerdict] : null;
+  const isPending = flag.status === "pending";
+
+  return (
+    // Overlay
+    <div
+      className="fixed inset-0 z-50 flex"
+      style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      {/* Drawer lateral */}
+      <motion.div
+        initial={{ x: "100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "100%" }}
+        transition={{ type: "spring", damping: 28, stiffness: 280 }}
+        className="ml-auto h-full w-full max-w-xl flex flex-col overflow-hidden"
+        style={{ background: "#13151A", borderLeft: "1px solid rgba(255,255,255,0.07)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header do drawer */}
+        <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: `${FLAG_TYPE_COLORS[flag.flag_type] ?? "#6B7280"}18` }}>
+            <Flag size={16} style={{ color: FLAG_TYPE_COLORS[flag.flag_type] ?? "#6B7280" }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-[15px] font-bold truncate" style={{ fontFamily: "'Space Grotesk', sans-serif", color: "rgba(255,255,255,0.95)" }}>
+              {FLAG_TYPE_LABELS[flag.flag_type] ?? flag.flag_type}
+            </h2>
+            <p className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
+              {fmtDate(flag.created_at)} · por {displayUser(flag.reporter, flag.reporter_id ?? "anônimo")}
+            </p>
+          </div>
+          <button onClick={onClose}
+            className="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}>
+            <X size={14} />
+          </button>
+        </div>
+
+        {/* Conteúdo rolável */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <Loader2 size={24} className="animate-spin" style={{ color: "#A78BFA" }} />
+              <p className="text-[12px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>Carregando snapshot...</p>
+            </div>
+          ) : (
+            <>
+              {/* ── Informações da denúncia ── */}
+              <section className="rounded-xl p-4 space-y-3" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>Informações da Denúncia</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>Tipo</p>
+                    <p className="text-[13px] font-semibold mt-0.5" style={{ color: FLAG_TYPE_COLORS[flag.flag_type] ?? "#fff", fontFamily: "'Space Grotesk', sans-serif" }}>
+                      {FLAG_TYPE_LABELS[flag.flag_type] ?? flag.flag_type}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>Status</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      {(() => {
+                        const sk = (flag.status as FlagStatus) in STATUS_CONFIG ? (flag.status as FlagStatus) : "pending";
+                        const cfg = STATUS_CONFIG[sk];
+                        const Icon = cfg.icon;
+                        return (
+                          <span className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-mono"
+                            style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
+                            <Icon size={10} />{cfg.label}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>Tipo de Conteúdo</p>
+                    <p className="text-[12px] font-mono mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>
+                      {contentType ? (CONTENT_TYPE_LABELS[contentType] ?? contentType) : (
+                        flag.target_post_id ? "Post" :
+                        flag.target_comment_id ? "Comentário" :
+                        flag.target_chat_message_id ? "Mensagem" :
+                        flag.target_wiki_id ? "Wiki" :
+                        flag.target_story_id ? "Story" :
+                        flag.target_user_id ? "Perfil" : "—"
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>Bot</p>
+                    <div className="mt-0.5">
+                      {botCfg ? (
+                        <span className="text-[11px] px-2 py-0.5 rounded-full font-mono"
+                          style={{ background: botCfg.bg, color: botCfg.color }}>
+                          {botCfg.label}
+                          {snapshot?.bot_score != null ? ` · ${Math.round(snapshot.bot_score * 100)}%` : ""}
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.25)" }}>Não analisado</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {flag.reason && (
+                  <div className="pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                    <p className="text-[10px] font-mono tracking-widest uppercase mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Motivo do Denunciante</p>
+                    <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.75)", fontFamily: "'Space Grotesk', sans-serif", lineHeight: 1.5 }}>{flag.reason}</p>
+                  </div>
+                )}
+              </section>
+
+              {/* ── Snapshot do conteúdo ── */}
+              {snapshot ? (
+                <section className="rounded-xl overflow-hidden" style={{ border: hasError ? "1px solid rgba(245,158,11,0.3)" : "1px solid rgba(167,139,250,0.2)" }}>
+                  {/* Header do snapshot */}
+                  <div className="flex items-center gap-2 px-4 py-2.5"
+                    style={{ background: hasError ? "rgba(245,158,11,0.08)" : "rgba(167,139,250,0.08)" }}>
+                    <Camera size={13} style={{ color: hasError ? "#F59E0B" : "#A78BFA" }} />
+                    <p className="text-[11px] font-semibold tracking-wide uppercase"
+                      style={{ color: hasError ? "#F59E0B" : "#A78BFA", fontFamily: "'DM Mono', monospace" }}>
+                      {hasError
+                        ? "Snapshot Parcial — conteúdo excluído antes da captura"
+                        : `Snapshot do Conteúdo (${CONTENT_TYPE_LABELS[contentType] ?? contentType})`}
+                    </p>
+                    {botCfg && (
+                      <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full font-mono flex items-center gap-1"
+                        style={{ background: botCfg.bg, color: botCfg.color }}>
+                        <Bot size={9} />
+                        {botCfg.label}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="p-4 space-y-3" style={{ background: "rgba(255,255,255,0.015)" }}>
+                    {hasError ? (
+                      <p className="text-[13px]" style={{ color: "#F59E0B", fontFamily: "'Space Grotesk', sans-serif" }}>
+                        {(data as Record<string, unknown>)["note"] as string ?? "O conteúdo foi excluído antes do snapshot ser capturado."}
+                      </p>
+                    ) : (
+                      <>
+                        {/* Autor */}
+                        {((data["author_nickname"] ?? data["sender_nickname"]) as string | undefined) && (
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                              style={{ background: "rgba(167,139,250,0.15)" }}>
+                              <User size={12} style={{ color: "#A78BFA" }} />
+                            </div>
+                            <div>
+                              <p className="text-[13px] font-semibold" style={{ color: "rgba(255,255,255,0.9)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                                {(data["author_nickname"] ?? data["sender_nickname"]) as string}
+                              </p>
+                              {data["created_at"] && (
+                                <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
+                                  {fmtDate(data["created_at"] as string)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Título */}
+                        {(data["title"] as string | undefined) && (
+                          <p className="text-[15px] font-bold" style={{ color: "rgba(255,255,255,0.95)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                            {data["title"] as string}
+                          </p>
+                        )}
+
+                        {/* Corpo / conteúdo / texto de story */}
+                        {((data["body"] ?? data["content"] ?? data["text_content"]) as string | undefined) && (
+                          <p className="text-[13px] leading-relaxed" style={{ color: "rgba(255,255,255,0.75)", fontFamily: "'Space Grotesk', sans-serif", whiteSpace: "pre-wrap" }}>
+                            {(data["body"] ?? data["content"] ?? data["text_content"]) as string}
+                          </p>
+                        )}
+
+                        {/* Imagem de capa (wiki) */}
+                        {(data["cover_image_url"] as string | undefined) && (
+                          <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.07)" }}>
+                            <img src={data["cover_image_url"] as string} alt="Capa" className="w-full object-cover" style={{ maxHeight: 200 }} />
+                          </div>
+                        )}
+
+                        {/* Mídia de story */}
+                        {contentType === "story" && (data["media_url"] as string | undefined) && (
+                          <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.07)" }}>
+                            <img src={data["media_url"] as string} alt="Mídia do Story" className="w-full object-cover" style={{ maxHeight: 280 }}
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                          </div>
+                        )}
+
+                        {/* Imagens do post */}
+                        {Array.isArray(data["image_urls"]) && (data["image_urls"] as string[]).length > 0 && (
+                          <div className="flex gap-2 flex-wrap">
+                            {(data["image_urls"] as string[]).map((url, i) => (
+                              <a key={i} href={url} target="_blank" rel="noopener noreferrer"
+                                className="rounded-xl overflow-hidden flex-shrink-0 group relative"
+                                style={{ border: "1px solid rgba(255,255,255,0.07)" }}>
+                                <img src={url} alt={`Imagem ${i + 1}`} className="w-28 h-28 object-cover" />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                  style={{ background: "rgba(0,0,0,0.5)" }}>
+                                  <ImageIcon size={16} style={{ color: "#fff" }} />
+                                </div>
+                              </a>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Tags (wiki) */}
+                        {Array.isArray(data["tags"]) && (data["tags"] as string[]).length > 0 && (
+                          <div className="flex gap-1.5 flex-wrap">
+                            {(data["tags"] as string[]).map((tag) => (
+                              <span key={tag} className="text-[10px] font-mono px-2 py-0.5 rounded-full"
+                                style={{ background: "rgba(167,139,250,0.1)", color: "#A78BFA", border: "1px solid rgba(167,139,250,0.2)" }}>
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* Data de captura */}
+                    <p className="text-[10px] font-mono pt-2" style={{ color: "rgba(255,255,255,0.2)", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                      Capturado em: {fmtDate(snapshot.captured_at)}
+                    </p>
+                  </div>
+                </section>
+              ) : (
+                <section className="rounded-xl p-5 text-center" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <Camera size={24} className="mx-auto mb-2 opacity-30" style={{ color: "rgba(255,255,255,0.4)" }} />
+                  <p className="text-[12px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
+                    Nenhum snapshot disponível para esta denúncia.
+                  </p>
+                  <p className="text-[11px] font-mono mt-1" style={{ color: "rgba(255,255,255,0.2)" }}>
+                    O conteúdo pode ter sido excluído antes da captura.
+                  </p>
+                </section>
+              )}
+
+              {/* ── Ações do bot ── */}
+              {detail?.bot_actions && detail.bot_actions.length > 0 && (
+                <section className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.07)" }}>
+                  <div className="flex items-center gap-2 px-4 py-2.5" style={{ background: "rgba(255,255,255,0.03)" }}>
+                    <Bot size={13} style={{ color: "#A78BFA" }} />
+                    <p className="text-[11px] font-semibold tracking-wide uppercase font-mono" style={{ color: "#A78BFA" }}>
+                      Ações do Bot ({detail.bot_actions.length})
+                    </p>
+                  </div>
+                  <div style={{ background: "rgba(255,255,255,0.015)" }}>
+                    {detail.bot_actions.map((action, i) => (
+                      <div key={i} className="px-4 py-2.5 flex items-center gap-2"
+                        style={{ borderBottom: i < detail.bot_actions.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#A78BFA" }} />
+                        <span className="text-[12px] font-mono" style={{ color: "rgba(255,255,255,0.6)" }}>
+                          {action["action"] as string ?? "—"}
+                        </span>
+                        <span className="ml-auto text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>
+                          {fmtDate(action["created_at"] as string)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* ── Nota de resolução (se já resolvida) ── */}
+              {flag.resolution_note && (
+                <section className="rounded-xl p-4" style={{
+                  background: STATUS_CONFIG[(flag.status as FlagStatus) in STATUS_CONFIG ? (flag.status as FlagStatus) : "pending"].bg,
+                  border: `1px solid ${STATUS_CONFIG[(flag.status as FlagStatus) in STATUS_CONFIG ? (flag.status as FlagStatus) : "pending"].border}`,
+                }}>
+                  <p className="text-[10px] font-mono tracking-widest uppercase mb-1.5"
+                    style={{ color: STATUS_CONFIG[(flag.status as FlagStatus) in STATUS_CONFIG ? (flag.status as FlagStatus) : "pending"].color }}>
+                    Nota de Resolução
+                  </p>
+                  <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.8)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {flag.resolution_note}
+                  </p>
+                </section>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Footer com ações */}
+        {isPending && !loading && (
+          <div className="p-5 space-y-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            {!showResolveForm ? (
+              <button onClick={() => setShowResolveForm(true)}
+                className="w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all flex items-center justify-center gap-2"
+                style={{ background: "rgba(167,139,250,0.12)", border: "1px solid rgba(167,139,250,0.25)", color: "#A78BFA", fontFamily: "'Space Grotesk', sans-serif" }}>
+                <Swords size={14} />
+                Tomar Ação sobre esta Denúncia
+                <ChevronRight size={14} />
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  {(["resolved", "dismissed"] as const).map((opt) => (
+                    <button key={opt} onClick={() => setResolveAction(opt)}
+                      className="flex-1 py-2 rounded-xl text-[13px] font-semibold transition-all flex items-center justify-center gap-1.5"
+                      style={{
+                        background: resolveAction === opt ? (opt === "resolved" ? "rgba(52,211,153,0.15)" : "rgba(107,114,128,0.15)") : "rgba(255,255,255,0.04)",
+                        border: `1px solid ${resolveAction === opt ? (opt === "resolved" ? "rgba(52,211,153,0.3)" : "rgba(107,114,128,0.3)") : "rgba(255,255,255,0.07)"}`,
+                        color: resolveAction === opt ? (opt === "resolved" ? "#34D399" : "#9CA3AF") : "rgba(255,255,255,0.3)",
+                        fontFamily: "'Space Grotesk', sans-serif",
+                      }}>
+                      {opt === "resolved" ? <><CheckCircle2 size={13} />Resolver</> : <><XCircle size={13} />Descartar</>}
+                    </button>
+                  ))}
+                </div>
+                <textarea value={note} onChange={(e) => setNote(e.target.value)}
+                  placeholder="Nota de resolução (opcional)..." rows={2}
+                  className="w-full px-3 py-2 rounded-xl text-[13px] outline-none resize-none"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)", fontFamily: "'Space Grotesk', sans-serif" }} />
+                <div className="flex gap-2">
+                  <button onClick={() => setShowResolveForm(false)}
+                    className="flex-1 py-2 rounded-xl text-[12px] font-mono transition-all"
+                    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.3)" }}>
+                    Cancelar
+                  </button>
+                  <button onClick={handleResolve} disabled={resolving}
+                    className="flex-1 py-2 rounded-xl text-[13px] font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    style={{
+                      background: resolveAction === "resolved" ? "rgba(52,211,153,0.15)" : "rgba(107,114,128,0.15)",
+                      border: `1px solid ${resolveAction === "resolved" ? "rgba(52,211,153,0.3)" : "rgba(107,114,128,0.3)"}`,
+                      color: resolveAction === "resolved" ? "#34D399" : "#9CA3AF",
+                      fontFamily: "'Space Grotesk', sans-serif",
+                    }}>
+                    {resolving ? <Loader2 size={13} className="animate-spin" /> : null}
+                    {resolving ? "Processando..." : `Confirmar — ${resolveAction === "resolved" ? "Resolver" : "Descartar"}`}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Modal legado de resolução (mantido para compatibilidade) ─────────────────
 function ResolveModal({
   flag,
   onClose,
@@ -140,7 +585,6 @@ function ResolveModal({
       }).eq("id", flag.id);
       if (error) throw error;
 
-      // Log da ação (community_id é obrigatório)
       if (flag.community_id) {
         await supabaseAdmin.from("moderation_logs").insert({
           community_id: flag.community_id,
@@ -195,7 +639,7 @@ function ResolveModal({
         )}
 
         <div className="flex gap-2">
-              {(["resolved", "dismissed"] as const).map((opt) => (
+          {(["resolved", "dismissed"] as const).map((opt) => (
             <button key={opt} onClick={() => setAction(opt)}
               className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold transition-all flex items-center justify-center gap-2"
               style={{
@@ -245,6 +689,7 @@ export default function ModerationPage() {
   const [logs, setLogs] = useState<ModerationLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [resolveModal, setResolveModal] = useState<Flag | null>(null);
+  const [detailDrawer, setDetailDrawer] = useState<Flag | null>(null);
   const [expandedFlag, setExpandedFlag] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -252,10 +697,9 @@ export default function ModerationPage() {
     setLoading(true);
     setError(null);
     try {
-      // Join com profiles usando nickname (campo real) — supabaseAdmin bypassa RLS
       let query = supabaseAdmin
         .from("flags")
-        .select("id, community_id, reporter_id, target_user_id, target_post_id, target_wiki_id, target_comment_id, target_chat_message_id, target_chat_thread_id, flag_type, reason, evidence_urls, status, resolved_by, resolution_note, resolved_at, created_at, bot_analyzed, bot_verdict, auto_actioned, reporter:profiles!reporter_id(nickname, amino_id)")
+        .select("id, community_id, reporter_id, target_user_id, target_post_id, target_wiki_id, target_comment_id, target_chat_message_id, target_chat_thread_id, target_story_id, flag_type, reason, evidence_urls, status, resolved_by, resolution_note, resolved_at, created_at, bot_analyzed, bot_verdict, auto_actioned, reporter:profiles!reporter_id(nickname, amino_id)")
         .order("created_at", { ascending: false })
         .limit(50);
       if (flagFilter !== "all") query = query.eq("status", flagFilter);
@@ -338,6 +782,17 @@ export default function ModerationPage() {
       <AnimatePresence>
         {resolveModal && (
           <ResolveModal flag={resolveModal} onClose={() => setResolveModal(null)} onResolved={handleFlagResolved} />
+        )}
+        {detailDrawer && (
+          <FlagDetailDrawer
+            flagId={detailDrawer.id}
+            flag={detailDrawer}
+            onClose={() => setDetailDrawer(null)}
+            onResolved={(id, status, note) => {
+              handleFlagResolved(id, status, note);
+              setDetailDrawer(null);
+            }}
+          />
         )}
       </AnimatePresence>
 
@@ -449,9 +904,9 @@ export default function ModerationPage() {
                   const typeColor = FLAG_TYPE_COLORS[flag.flag_type] ?? "#6B7280";
                   const typeLabel = FLAG_TYPE_LABELS[flag.flag_type] ?? flag.flag_type;
                   const reporterName = displayUser(flag.reporter, flag.reporter_id ?? "anônimo");
-                  // Determinar qual target está preenchido
-                  const targetId = flag.target_user_id ?? flag.target_post_id ?? flag.target_comment_id ?? flag.target_wiki_id ?? flag.target_chat_message_id ?? flag.target_chat_thread_id;
-                  const targetType = flag.target_user_id ? "usuário" : flag.target_post_id ? "post" : flag.target_comment_id ? "comentário" : flag.target_wiki_id ? "wiki" : flag.target_chat_message_id ? "mensagem" : flag.target_chat_thread_id ? "chat" : "desconhecido";
+                  const targetId = flag.target_user_id ?? flag.target_post_id ?? flag.target_comment_id ?? flag.target_wiki_id ?? flag.target_chat_message_id ?? flag.target_chat_thread_id ?? flag.target_story_id;
+                  const targetType = flag.target_user_id ? "usuário" : flag.target_post_id ? "post" : flag.target_comment_id ? "comentário" : flag.target_wiki_id ? "wiki" : flag.target_chat_message_id ? "mensagem" : flag.target_chat_thread_id ? "thread" : flag.target_story_id ? "story" : "desconhecido";
+
                   return (
                     <motion.div key={flag.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}
                       className="rounded-xl overflow-hidden"
@@ -528,10 +983,19 @@ export default function ModerationPage() {
                                 </div>
                               )}
 
+                              {/* Botão principal: Ver conteúdo original */}
+                              <button onClick={() => setDetailDrawer(flag)}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-semibold transition-all"
+                                style={{ background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.2)", color: "#A78BFA", fontFamily: "'Space Grotesk', sans-serif" }}>
+                                <Camera size={14} />
+                                Ver Conteúdo Original (Snapshot)
+                                <ChevronRight size={13} />
+                              </button>
+
                               {flag.status === "pending" && (
                                 <button onClick={() => setResolveModal(flag)}
                                   className="flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-semibold transition-all"
-                                  style={{ background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.2)", color: "#A78BFA", fontFamily: "'Space Grotesk', sans-serif" }}>
+                                  style={{ background: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.2)", color: "#34D399", fontFamily: "'Space Grotesk', sans-serif" }}>
                                   <Eye size={14} />
                                   Resolver Denúncia
                                 </button>
@@ -630,7 +1094,6 @@ export default function ModerationPage() {
                   return (
                     <div key={log.id} className="px-4 py-3 space-y-1.5"
                       style={{ borderBottom: i < logs.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
-                      {/* Linha 1: ação + severity */}
                       <div className="flex items-center gap-2 flex-wrap">
                         <div className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
                           style={{ background: "rgba(167,139,250,0.12)" }}>
@@ -651,7 +1114,6 @@ export default function ModerationPage() {
                           {new Date(log.created_at).toLocaleString("pt-BR")}
                         </span>
                       </div>
-                      {/* Linha 2: executor → vítima */}
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <div className="flex items-center gap-1">
                           <Shield size={9} style={{ color: "rgba(167,139,250,0.6)" }} />
@@ -667,7 +1129,6 @@ export default function ModerationPage() {
                           </>
                         )}
                       </div>
-                      {/* Linha 3: motivo */}
                       {log.reason && (
                         <p className="text-[10px] pl-1 truncate" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'Space Grotesk', sans-serif", borderLeft: "2px solid rgba(255,255,255,0.08)", paddingLeft: "6px" }}>
                           {log.reason}
