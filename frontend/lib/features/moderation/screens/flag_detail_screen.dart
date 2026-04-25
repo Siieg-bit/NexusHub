@@ -719,6 +719,54 @@ class _SnapshotCard extends StatelessWidget {
                       ),
                     ),
 
+                  // Conteúdo de texto de story
+                  if (type == 'story' &&
+                      (data['text_content'] as String?)?.isNotEmpty == true) ...[  
+                    SizedBox(height: r.s(6)),
+                    Text(
+                      data['text_content'] as String,
+                      style: TextStyle(
+                        color: context.nexusTheme.textPrimary,
+                        fontSize: r.fs(14),
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                  // Imagem de capa (wiki)
+                  if ((data['cover_image_url'] as String?)?.isNotEmpty == true) ...[  
+                    SizedBox(height: r.s(10)),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(r.s(8)),
+                      child: CachedNetworkImage(
+                        imageUrl: data['cover_image_url'] as String,
+                        width: double.infinity,
+                        height: r.s(140),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ],
+                  // Mídia de story
+                  if (type == 'story' &&
+                      (data['media_url'] as String?)?.isNotEmpty == true) ...[  
+                    SizedBox(height: r.s(10)),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(r.s(8)),
+                      child: CachedNetworkImage(
+                        imageUrl: data['media_url'] as String,
+                        width: double.infinity,
+                        height: r.s(200),
+                        fit: BoxFit.cover,
+                        errorWidget: (ctx, url, err) => Container(
+                          height: r.s(200),
+                          color: Colors.black26,
+                          child: const Center(
+                            child: Icon(Icons.broken_image_rounded,
+                                color: Colors.white54),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                   // Imagens
                   if ((data['image_urls'] as List?)?.isNotEmpty == true) ...[
                     SizedBox(height: r.s(10)),
@@ -774,6 +822,7 @@ class _SnapshotCard extends StatelessWidget {
       'chat_message': 'Mensagem de Chat',
       'profile': 'Perfil',
       'wiki': 'Wiki',
+      'story': 'Story',
     };
     return m[type] ?? type;
   }
