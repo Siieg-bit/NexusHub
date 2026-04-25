@@ -9,7 +9,65 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
-/// Tela de cadastro — visual Amino Apps (fundo escuro, inputs arredondados, verde).
+// ── Utilitário de força de senha ─────────────────────────────────────────────
+
+class _PasswordStrength {
+  final int score; // 0-4
+  final List<String> missing;
+
+  const _PasswordStrength(this.score, this.missing);
+
+  static _PasswordStrength evaluate(String password) {
+    final missing = <String>[];
+    int score = 0;
+
+    if (password.length >= 8) {
+      score++;
+    } else {
+      missing.add('Mínimo 8 caracteres');
+    }
+    if (password.contains(RegExp(r'[A-Z]'))) {
+      score++;
+    } else {
+      missing.add('Uma letra maiúscula');
+    }
+    if (password.contains(RegExp(r'[a-z]'))) {
+      score++;
+    } else {
+      missing.add('Uma letra minúscula');
+    }
+    if (password.contains(RegExp(r'[0-9]'))) {
+      score++;
+    } else {
+      missing.add('Um número');
+    }
+    if (password.contains(RegExp(r'[^a-zA-Z0-9]'))) {
+      score++;
+    } else {
+      missing.add('Um caractere especial (!@#\$...)');
+    }
+
+    return _PasswordStrength(score, missing);
+  }
+
+  String get label {
+    if (score <= 1) return 'Muito fraca';
+    if (score == 2) return 'Fraca';
+    if (score == 3) return 'Média';
+    if (score == 4) return 'Forte';
+    return 'Muito forte';
+  }
+
+  Color get color {
+    if (score <= 1) return const Color(0xFFE53935);
+    if (score == 2) return const Color(0xFFFF7043);
+    if (score == 3) return const Color(0xFFFFB300);
+    if (score == 4) return const Color(0xFF66BB6A);
+    return const Color(0xFF00C853);
+  }
+}
+
+/// Tela de cadastro — visual Amino Apps com validações de segurança robustas.
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
 
@@ -23,11 +81,28 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
   bool _obscurePassword = true;
+  bool _obscureConfirm = true;
   bool _acceptedTerms = false;
+  _PasswordStrength _strength = const _PasswordStrength(0, []);
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(_onPasswordChanged);
+  }
+
+  void _onPasswordChanged() {
+    final s = _PasswordStrength.evaluate(_passwordController.text);
+    if (s.score != _strength.score) {
+      setState(() => _strength = s);
+    }
+  }
 
   @override
   void dispose() {
+    _passwordController.removeListener(_onPasswordChanged);
     _nicknameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -45,6 +120,18 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       return;
     }
 
+    // Bloquear senhas muito fracas
+    if (_strength.score < 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Sua senha é muito fraca. Melhore-a antes de continuar.'),
+          backgroundColor: const Color(0xFFE53935),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     final email = _emailController.text.trim();
     final success = await ref.read(authProvider.notifier).signUp(
           email,
@@ -55,26 +142,37 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     if (!mounted) return;
 
     if (success) {
-      // Confirmação automática — entrar direto
       context.go('/');
     } else {
-      // Verificar se foi erro real ou apenas aguardo de confirmação
       final authState = ref.read(authProvider);
       if (authState.error == null) {
-        // Nenhum erro — email de confirmação enviado com sucesso
+        // E-mail de confirmação enviado
         await showDialog(
           context: context,
           barrierDismissible: false,
           builder: (ctx) => AlertDialog(
             backgroundColor: Theme.of(ctx).cardColor,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16)),
-            title:  Text(
-              s.checkYourEmail,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            content: Text(
-              '${s.confirmationEmailSent} $email\nAbra o email e clique no link para ativar sua conta.',
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text('Verifique seu e-mail',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Enviamos um link de confirmação para:\n',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                ),
+                Text(
+                  email,
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Abra o e-mail e clique no link para ativar sua conta. Verifique também a caixa de spam.',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                ),
+              ],
             ),
             actions: [
               TextButton(
@@ -82,19 +180,18 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   Navigator.of(ctx).pop();
                   context.go('/login');
                 },
-                child: const Text('OK'),
+                child: const Text('Entendi'),
               ),
             ],
           ),
         );
       }
-      // Se houver erro, o widget já exibe via authState.error
     }
   }
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     final authState = ref.watch(authProvider);
 
@@ -165,8 +262,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     hint: s.nicknameHint,
                     icon: Icons.person_outline_rounded,
                     validator: (value) {
-                      if (value == null || value.isEmpty)
-                        return s.chooseANickname;
+                      if (value == null || value.isEmpty) return s.chooseANickname;
                       if (value.length < 3) return s.min3Chars;
                       if (value.length > 30) return s.max30Chars;
                       return null;
@@ -184,9 +280,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
-                      if (value == null || value.isEmpty)
-                        return s.enterYourEmail;
-                      if (!value.contains('@')) return s.invalidEmail;
+                      if (value == null || value.isEmpty) return s.enterYourEmail;
+                      final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                      if (!emailRegex.hasMatch(value.trim())) return s.invalidEmail;
                       return null;
                     },
                   ),
@@ -213,13 +309,26 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       ),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty)
-                        return s.createAPassword;
-                      if (value.length < 6) return s.minimum6Characters;
+                      if (value == null || value.isEmpty) return s.createAPassword;
+                      if (value.length < 8) return 'Mínimo 8 caracteres';
+                      if (!value.contains(RegExp(r'[A-Z]')))
+                        return 'Inclua pelo menos uma letra maiúscula';
+                      if (!value.contains(RegExp(r'[0-9]')))
+                        return 'Inclua pelo menos um número';
                       return null;
                     },
                   ),
                 ),
+
+                // Indicador de força de senha
+                if (_passwordController.text.isNotEmpty) ...[
+                  SizedBox(height: r.s(8)),
+                  _PasswordStrengthIndicator(
+                    strength: _strength,
+                    r: r,
+                  ),
+                ],
+
                 SizedBox(height: r.s(14)),
 
                 // Confirmar Senha
@@ -229,8 +338,21 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     controller: _confirmPasswordController,
                     hint: 'Confirmar Senha',
                     icon: Icons.lock_outline_rounded,
-                    obscureText: true,
+                    obscureText: _obscureConfirm,
+                    suffixIcon: GestureDetector(
+                      onTap: () =>
+                          setState(() => _obscureConfirm = !_obscureConfirm),
+                      child: Icon(
+                        _obscureConfirm
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: context.nexusTheme.textHint,
+                        size: r.s(20),
+                      ),
+                    ),
                     validator: (value) {
+                      if (value == null || value.isEmpty)
+                        return 'Confirme sua senha';
                       if (value != _passwordController.text)
                         return s.passwordsDoNotMatch;
                       return null;
@@ -239,7 +361,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 ),
                 SizedBox(height: r.s(12)),
 
-                // Termos (checkbox estilo Amino)
+                // Termos
                 AminoAnimations.fadeIn(
                   delay: const Duration(milliseconds: 240),
                   child: GestureDetector(
@@ -271,7 +393,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         SizedBox(width: r.s(10)),
                         Expanded(
                           child: Text(
-                            s.acceptTermsAndPrivacy,
+                            s.acceptTermsLabel,
                             style: TextStyle(
                                 color: context.nexusTheme.textSecondary,
                                 fontSize: r.fs(13)),
@@ -354,30 +476,20 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 // Divisor "ou"
                 Row(
                   children: [
-                    Expanded(
-                      child: Container(
-                        height: 0.5,
-                        color: context.dividerClr,
-                      ),
-                    ),
+                    Expanded(child: Container(height: 0.5, color: context.dividerClr)),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                       child: Text(s.orLabel,
                           style: TextStyle(
                               color: context.nexusTheme.textHint, fontSize: r.fs(13))),
                     ),
-                    Expanded(
-                      child: Container(
-                        height: 0.5,
-                        color: context.dividerClr,
-                      ),
-                    ),
+                    Expanded(child: Container(height: 0.5, color: context.dividerClr)),
                   ],
                 ),
 
                 SizedBox(height: r.s(24)),
 
-                // Google Signup (translúcido)
+                // Google Signup
                 AminoAnimations.slideUp(
                   delay: const Duration(milliseconds: 320),
                   child: SizedBox(
@@ -396,9 +508,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                             ),
                           ),
                           child: TextButton.icon(
-                            onPressed: () => ref
-                                .read(authProvider.notifier)
-                                .signInWithGoogle(),
+                            onPressed: () =>
+                                ref.read(authProvider.notifier).signInWithGoogle(),
                             icon: Icon(Icons.g_mobiledata_rounded,
                                 size: r.s(28), color: context.nexusTheme.textPrimary),
                             label: const Text('Continuar com Google'),
@@ -450,9 +561,75 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 }
 
-// ==============================================================================
-// AMINO TEXT FIELD — Input customizado no padrão Amino
-// ==============================================================================
+// ── Indicador visual de força de senha ──────────────────────────────────────
+
+class _PasswordStrengthIndicator extends StatelessWidget {
+  final _PasswordStrength strength;
+  final ResponsiveHelper r;
+
+  const _PasswordStrengthIndicator({required this.strength, required this.r});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Barra de força (5 segmentos)
+        Row(
+          children: List.generate(5, (i) {
+            final filled = i < strength.score;
+            return Expanded(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                height: r.s(4),
+                margin: EdgeInsets.only(right: i < 4 ? r.s(4) : 0),
+                decoration: BoxDecoration(
+                  color: filled
+                      ? strength.color
+                      : context.nexusTheme.surfacePrimary,
+                  borderRadius: BorderRadius.circular(r.s(4)),
+                ),
+              ),
+            );
+          }),
+        ),
+        SizedBox(height: r.s(6)),
+        // Label de força
+        Row(
+          children: [
+            Text(
+              strength.label,
+              style: TextStyle(
+                color: strength.color,
+                fontSize: r.fs(12),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (strength.missing.isNotEmpty) ...[
+              Text(
+                '  •  ',
+                style: TextStyle(
+                    color: context.nexusTheme.textHint, fontSize: r.fs(12)),
+              ),
+              Expanded(
+                child: Text(
+                  'Falta: ${strength.missing.first}',
+                  style: TextStyle(
+                    color: context.nexusTheme.textHint,
+                    fontSize: r.fs(12),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// ── Input customizado ────────────────────────────────────────────────────────
 
 class _AminoTextField extends ConsumerWidget {
   final TextEditingController controller;
@@ -517,6 +694,13 @@ class _AminoTextField extends ConsumerWidget {
           borderSide: BorderSide(
             color: context.nexusTheme.error,
             width: 1,
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(r.s(14)),
+          borderSide: BorderSide(
+            color: context.nexusTheme.error,
+            width: 2,
           ),
         ),
         contentPadding:

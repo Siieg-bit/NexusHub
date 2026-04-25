@@ -606,10 +606,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     _SettingsItem(
                       icon: Icons.email_rounded,
-                      title: s.emailAndPassword,
+                      title: s.changeEmail,
                       subtitle:
                           SupabaseService.client.auth.currentUser?.email ?? '',
-                      onTap: () => _showChangeEmailDialog(context, s, r),
+                      onTap: () => context.push('/settings/change-email'),
+                    ),
+                    _SettingsItem(
+                      icon: Icons.lock_reset_rounded,
+                      title: 'Trocar Senha',
+                      subtitle: 'Altere sua senha de acesso',
+                      onTap: () => context.push('/settings/change-password'),
                     ),
                     _SettingsItem(
                       icon: Icons.link_rounded,
