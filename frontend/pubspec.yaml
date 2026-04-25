@@ -63,6 +63,8 @@ dependencies:
   # Device Info & Security
   device_info_plus: ^11.0.0
   crypto: ^3.0.3
+  qr_flutter: ^4.1.0
+  pinput: ^5.0.0
   flutter_secure_storage: ^9.0.0
   package_info_plus: ^8.2.0
 

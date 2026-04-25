@@ -55,6 +55,10 @@ import '../features/settings/screens/linked_accounts_screen.dart';
 import '../features/settings/screens/theme_selector_screen.dart';
 import '../features/settings/screens/change_email_screen.dart';
 import '../features/settings/screens/change_password_screen.dart';
+import '../features/settings/screens/two_factor_screen.dart';
+import '../features/settings/screens/totp_setup_screen.dart';
+import '../features/settings/screens/phone_2fa_screen.dart';
+import '../features/auth/screens/mfa_challenge_screen.dart';
 import '../features/explore/screens/search_screen.dart';
 import '../features/profile/screens/user_wall_screen.dart';
 import '../features/profile/screens/followers_screen.dart';
@@ -141,6 +145,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/reset-password',
         name: 'reset-password',
         builder: (context, state) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/auth/mfa-challenge',
+        name: 'mfa-challenge',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return MfaChallengeScreen(
+            factorId: extra['factorId'] as String? ?? '',
+            method:   extra['method']   as String? ?? 'totp',
+          );
+        },
       ),
 
       // ====================================================================
@@ -691,6 +706,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/settings/change-password',
         name: 'change-password',
         builder: (context, state) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: '/settings/2fa',
+        name: '2fa',
+        builder: (context, state) => const TwoFactorScreen(),
+      ),
+      GoRoute(
+        path: '/settings/2fa/totp-setup',
+        name: 'totp-setup',
+        builder: (context, state) => const TotpSetupScreen(),
+      ),
+      GoRoute(
+        path: '/settings/2fa/phone-setup',
+        name: 'phone-2fa-setup',
+        builder: (context, state) => const Phone2faScreen(),
       ),
       // ====================================================================
       // BUSCA GLOBAL

@@ -618,6 +618,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       onTap: () => context.push('/settings/change-password'),
                     ),
                     _SettingsItem(
+                      icon: Icons.verified_user_rounded,
+                      title: 'Verificação em 2 Etapas',
+                      subtitle: 'App autenticador ou SMS',
+                      onTap: () => context.push('/settings/2fa'),
+                    ),
+                    _SettingsItem(
                       icon: Icons.link_rounded,
                       title: 'Contas Vinculadas',
                       subtitle: s.googleApple,

@@ -34,14 +34,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _handleLogin() async {
     if ((_formKey.currentState?.validate() != true)) return;
 
-    final success = await ref.read(authProvider.notifier).signInWithEmail(
+    final result = await ref.read(authProvider.notifier).signInWithEmailMfa(
           _emailController.text.trim(),
           _passwordController.text,
         );
 
-    if (success && mounted) {
+    if (!mounted) return;
+
+    if (result.isSuccess) {
       context.go('/');
+    } else if (result.needsMfa) {
+      // Navegar para a tela de desafio MFA
+      context.push(
+        '/auth/mfa-challenge',
+        extra: {
+          'factorId': result.factorId,
+          'method':   result.method,
+        },
+      );
     }
+    // Se erro, o auth_provider já atualiza o state.error
+    // que é exibido pelo Consumer no build
   }
 
   @override

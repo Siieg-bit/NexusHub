@@ -9,6 +9,32 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/services/presence_service.dart';
 import '../../../core/l10n/locale_provider.dart';
 
+/// Resultado do login com suporte a MFA.
+class SignInResult {
+  final bool isSuccess;
+  final bool needsMfa;
+  final String? factorId;
+  final String? method; // 'totp' | 'phone'
+  final String? errorMessage;
+
+  const SignInResult._({
+    required this.isSuccess,
+    required this.needsMfa,
+    this.factorId,
+    this.method,
+    this.errorMessage,
+  });
+
+  factory SignInResult.success() =>
+      const SignInResult._(isSuccess: true, needsMfa: false);
+
+  factory SignInResult.needsMfa({required String factorId, required String method}) =>
+      SignInResult._(isSuccess: false, needsMfa: true, factorId: factorId, method: method);
+
+  factory SignInResult.error(String message) =>
+      SignInResult._(isSuccess: false, needsMfa: false, errorMessage: message);
+}
+
 /// Estado de autenticação do app.
 class AuthState {
   final bool isLoading;
@@ -139,7 +165,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   /// Login com email e senha.
-  Future<bool> signInWithEmail(String email, String password) async {
+  /// Expõe _loadUserProfile publicamente para uso após MFA challenge.
+  Future<void> loadUserProfile() => _loadUserProfile();
+
+  /// Login com e-mail e senha.
+  /// Retorna um [SignInResult] indicando sucesso, necessidade de MFA ou erro.
+  Future<SignInResult> signInWithEmailMfa(String email, String password) async {
     final s = getStrings();
     state = state.copyWith(isLoading: true, error: null);
     try {
@@ -147,18 +178,45 @@ class AuthNotifier extends StateNotifier<AuthState> {
         email: email,
         password: password,
       );
+
+      // Verificar se o usuário tem MFA ativo e se a sessão está em AAL1
+      final aalRes = await SupabaseService.client.auth.mfa.getAuthenticatorAssuranceLevel();
+      final nextLevel = aalRes.nextLevel;
+      final currentLevel = aalRes.currentLevel;
+
+      if (nextLevel == AuthenticatorAssuranceLevelType.aal2 &&
+          currentLevel == AuthenticatorAssuranceLevelType.aal1) {
+        // Precisa de 2FA — buscar o fator ativo
+        final factors = await SupabaseService.client.auth.mfa.listFactors();
+        final totpFactor = factors.totp.where((f) => f.status == FactorStatus.verified).firstOrNull;
+        final phoneFactor = factors.phone.where((f) => f.status == FactorStatus.verified).firstOrNull;
+
+        if (totpFactor != null) {
+          state = state.copyWith(isLoading: false);
+          return SignInResult.needsMfa(factorId: totpFactor.id, method: 'totp');
+        } else if (phoneFactor != null) {
+          state = state.copyWith(isLoading: false);
+          return SignInResult.needsMfa(factorId: phoneFactor.id, method: 'phone');
+        }
+      }
+
+      // Sem MFA ou já em AAL2
       state = state.copyWith(isAuthenticated: true);
       await _loadUserProfile();
-      return true;
+      return SignInResult.success();
     } on AuthException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
-      return false;
+      return SignInResult.error(e.message);
     } catch (e) {
-      state = state.copyWith(
-          isLoading: false,
-          error: s.unexpectedErrorRetry);
-      return false;
+      state = state.copyWith(isLoading: false, error: s.unexpectedErrorRetry);
+      return SignInResult.error(s.unexpectedErrorRetry);
     }
+  }
+
+  /// Login legado (mantido para compatibilidade interna).
+  Future<bool> signInWithEmail(String email, String password) async {
+    final result = await signInWithEmailMfa(email, password);
+    return result.isSuccess;
   }
 
   /// Cadastro com email e senha.
