@@ -28,6 +28,7 @@ import SettingsPage from "./SettingsPage";
 import ModerationPage from "./ModerationPage";
 import CommunitiesPage from "./CommunitiesPage";
 import AchievementsPage from "./AchievementsPage";
+import { HorizontalStretchEditor } from "@/components/HorizontalStretchEditor";
 import BroadcastPage from "./BroadcastPage";
 
 // ─── Tipos e Constantes ───────────────────────────────────────────────────────
@@ -2725,31 +2726,45 @@ function BubblesDashboard() {
                           </div>
                         )}
                         {previewTab === "slice" && !form.isAnimated && form.isHorizontalStretch && (
-                          // Modo horizontal_stretch: editor de bordas + preview com cantos fixos
-                          <NineSliceEditor
-                            imageUrl={imageUrl}
-                            imageDimensions={imageDimensions}
-                            slice={sliceValues}
-                            onChange={handleSliceChange}
-                            textColor={form.textColor}
-                            fontSize={form.fontSize}
-                            textAlign={form.textAlign}
-                            padTop={form.padTop} padBottom={form.padBottom}
-                            padLeft={form.padLeft} padRight={form.padRight}
-                            isDynamic={false}
-                            dynMaxWidth={form.dynMaxWidth}
-                            dynMinWidth={form.dynMinWidth}
-                            dynPaddingX={form.dynPaddingX}
-                            dynPaddingY={form.dynPaddingY}
-                            dynHorizontalPriority={form.dynHorizontalPriority}
-                            dynTransitionZone={form.dynTransitionZone}
-                            onTransitionChange={(t) => setForm(f => ({ ...f, dynTransitionZone: t }))}
-                            isHorizontalStretch={true}
-                            hsMaxWidth={form.hsMaxWidth}
-                            hsMinWidth={form.hsMinWidth}
-                            hsPaddingX={form.hsPaddingX}
-                            hsPaddingY={form.hsPaddingY}
-                          />
+                          // Modo horizontal_stretch: editor dedicado — só linhas verticais (L e R)
+                          <div className="space-y-3">
+                            <HorizontalStretchEditor
+                              imageUrl={imageUrl}
+                              imageDimensions={imageDimensions}
+                              slice={sliceValues}
+                              onChange={handleSliceChange}
+                              textColor={form.textColor}
+                              fontSize={form.fontSize}
+                              padTop={form.padTop} padBottom={form.padBottom}
+                              padLeft={form.padLeft} padRight={form.padRight}
+                              hsMaxWidth={form.hsMaxWidth}
+                              hsMinWidth={form.hsMinWidth}
+                              hsPaddingX={form.hsPaddingX}
+                              hsPaddingY={form.hsPaddingY}
+                            />
+                            {/* Preview de texto em tempo real com o modo horizontal_stretch */}
+                            <NineSlicePreviewPanel
+                              imageUrl={imageUrl}
+                              slice={sliceValues}
+                              textColor={form.textColor}
+                              fontSize={form.fontSize}
+                              textAlign={form.textAlign}
+                              padTop={form.padTop} padBottom={form.padBottom}
+                              padLeft={form.padLeft} padRight={form.padRight}
+                              isDynamic={false}
+                              dynMaxWidth={form.dynMaxWidth}
+                              dynMinWidth={form.dynMinWidth}
+                              dynPaddingX={form.dynPaddingX}
+                              dynPaddingY={form.dynPaddingY}
+                              dynHorizontalPriority={form.dynHorizontalPriority}
+                              dynTransitionZone={form.dynTransitionZone}
+                              isHorizontalStretch={true}
+                              hsMaxWidth={form.hsMaxWidth}
+                              hsMinWidth={form.hsMinWidth}
+                              hsPaddingX={form.hsPaddingX}
+                              hsPaddingY={form.hsPaddingY}
+                            />
+                          </div>
                         )}
 
                         {previewTab === ("poly" as string) && !form.isAnimated && (
