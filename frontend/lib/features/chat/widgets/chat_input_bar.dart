@@ -94,7 +94,7 @@ class ChatInputBar extends ConsumerWidget {
                         maxLines: 4,
                         minLines: 1,
                         textInputAction: TextInputAction.send,
-                        onSubmitted: (_) => onSend(),
+                        onSubmitted: (_) { if (!isSending) onSend(); },
                         onChanged: onTextChanged,
                       ),
                     ),

@@ -379,6 +379,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     String? stickerName,
     String? packId,
   }) async {
+    // Anti-spam: impede envio duplicado enquanto já está enviando.
+    if (_isSending) return;
     final s = getStrings();
     final textContent = _commentController.text.trim();
     final mediaUrl = stickerUrl ?? _pendingStickerUrl ?? _pendingMediaUrl;

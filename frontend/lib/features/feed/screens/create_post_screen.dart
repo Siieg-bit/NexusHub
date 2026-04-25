@@ -552,6 +552,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // ════════════════════════════════════════════════════════════════════════════
 
   Future<void> _submitPost() async {
+    // Anti-spam: impede envio duplicado enquanto já está publicando.
+    if (_isSubmitting) return;
     final s = getStrings();
     if (_titleController.text.trim().isEmpty &&
         _contentController.text.trim().isEmpty &&

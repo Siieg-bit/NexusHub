@@ -112,10 +112,21 @@ class NineSliceBubble extends StatelessWidget {
                 bottom: -kNineSliceOffset,
                 left: -kNineSliceOffset,
                 right: -kNineSliceOffset,
-                child: _NineSliceImage(
-                  imageUrl: imageUrl,
-                  sliceInsets: sliceInsets,
-                ),
+                // Inverte horizontalmente a imagem para outros usuários
+                // (a arte padrão é desenhada para o lado direito/isMine).
+                child: isMine
+                    ? _NineSliceImage(
+                        imageUrl: imageUrl,
+                        sliceInsets: sliceInsets,
+                      )
+                    : Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.diagonal3Values(-1, 1, 1),
+                        child: _NineSliceImage(
+                          imageUrl: imageUrl,
+                          sliceInsets: sliceInsets,
+                        ),
+                      ),
               ),
               // Conteúdo da mensagem — filho não-posicionado que define o
               // tamanho do Stack. O Container com minHeight já garante que

@@ -481,9 +481,6 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
   double _avgRating = 0;
   int _totalRatings = 0;
   bool _isPinnedToProfile = false;
-  final _whatILikeController = TextEditingController();
-  List<Map<String, dynamic>> _whatILikeList = [];
-
   // Comentários
   final _commentController = TextEditingController();
   final _commentFocusNode = FocusNode();
@@ -524,7 +521,6 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
 
   @override
   void dispose() {
-    _whatILikeController.dispose();
     _commentController.dispose();
     _commentFocusNode.dispose();
     super.dispose();
@@ -609,42 +605,6 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
         }
       }
 
-      // Load "What I Like" comments
-      try {
-        final likesRes = await SupabaseService.table('wiki_what_i_like')
-            .select('*')
-            .eq('wiki_entry_id', widget.wikiId)
-            .order('created_at', ascending: false)
-            .limit(20);
-        if (!mounted) return;
-        final likesList =
-            List<Map<String, dynamic>>.from(likesRes as List? ?? []);
-        // Buscar perfis separadamente
-        if (likesList.isNotEmpty) {
-          final userIds =
-              likesList.map((e) => e['user_id'] as String).toList();
-          try {
-            final profilesRes = await SupabaseService.table('profiles')
-                .select('id, nickname, icon_url')
-                .inFilter('id', userIds);
-            final profilesMap = <String, Map<String, dynamic>>{
-              for (final p in (profilesRes as List)
-                  .map((e) => Map<String, dynamic>.from(e as Map)))
-                p['id'] as String: p,
-            };
-            for (final like in likesList) {
-              final uid = like['user_id'] as String?;
-              if (uid != null && profilesMap.containsKey(uid)) {
-                like['profiles'] = profilesMap[uid];
-              }
-            }
-          } catch (_) {}
-        }
-        _whatILikeList = likesList;
-      } catch (e) {
-        debugPrint('[wiki_screen] Erro: $e');
-      }
-
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
@@ -701,37 +661,22 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
     }
   }
 
-  Future<void> _submitWhatILike() async {
-    final text = _whatILikeController.text.trim();
-    if (text.isEmpty) return;
-    final userId = SupabaseService.currentUserId;
-    if (userId == null) return;
-    try {
-      await SupabaseService.rpc('add_wiki_what_i_like', params: {
-        'p_wiki_id': widget.wikiId,
-        'p_content': text,
-      });
-      _whatILikeController.clear();
-      _loadEntry();
-    } catch (e) {
-      debugPrint('[wiki_screen] Erro: $e');
-    }
-  }
 
   // ── Comentários ────────────────────────────────────────────────────────────────────────────────────────
 
-  /// Composer rico — igual ao blog: suporta texto, sticker, imagem e vídeo.
+   /// Composer rico — igual ao blog: suporta texto, sticker, imagem e vídeo.
   Future<void> _sendComment({
     String? stickerUrl,
     String? stickerId,
     String? stickerName,
     String? packId,
   }) async {
+    // Anti-spam: impede envio duplicado enquanto já está enviando.
+    if (_isSendingComment) return;
     final s = getStrings();
     final textContent = _commentController.text.trim();
     final mediaUrl = stickerUrl ?? _pendingStickerUrl ?? _pendingMediaUrl;
     final isSticker = stickerId != null || stickerUrl != null;
-
     if (textContent.isEmpty && mediaUrl == null) return;
     final userId = SupabaseService.currentUserId;
     if (userId == null) {
@@ -971,24 +916,45 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
   // ── Construção de árvore de comentários ─────────────────────────────────
 
   List<CommentModel> _buildCommentTree(List<CommentModel> comments) {
-    final topLevel = <CommentModel>[];
-    final byId = <String, CommentModel>{};
+    // Usa padrão seguro (sem mutacão direta) para evitar UnmodifiableListMixin.
+    final repliesByParent = <String, List<CommentModel>>{};
+    final rootComments = <CommentModel>[];
     for (final c in comments) {
-      byId[c.id] = c;
-    }
-    for (final c in comments) {
-      if (c.parentId == null) {
-        topLevel.add(c);
+      final parentId = c.parentId;
+      if (parentId == null || parentId.isEmpty) {
+        rootComments.add(c);
       } else {
-        final parent = byId[c.parentId!];
-        if (parent != null) {
-          parent.replies.add(c);
-        } else {
-          topLevel.add(c);
-        }
+        repliesByParent.putIfAbsent(parentId, () => []).add(c);
       }
     }
-    return topLevel;
+    CommentModel attachReplies(CommentModel comment) {
+      final replies = [...(repliesByParent[comment.id] ?? const <CommentModel>[])]
+        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      return CommentModel(
+        id: comment.id,
+        authorId: comment.authorId,
+        postId: comment.postId,
+        wikiId: comment.wikiId,
+        profileWallId: comment.profileWallId,
+        parentId: comment.parentId,
+        content: comment.content,
+        mediaUrl: comment.mediaUrl,
+        stickerId: comment.stickerId,
+        stickerUrl: comment.stickerUrl,
+        stickerName: comment.stickerName,
+        packId: comment.packId,
+        likesCount: comment.likesCount,
+        status: comment.status,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        author: comment.author,
+        replies: replies.map(attachReplies).toList(),
+        localNickname: comment.localNickname,
+        localIconUrl: comment.localIconUrl,
+      );
+    }
+    rootComments.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    return rootComments.map(attachReplies).toList();
   }
 
   List<CommentModel> _sortedComments(List<CommentModel> comments) {
@@ -1841,138 +1807,6 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                                   ? FontWeight.w600
                                   : FontWeight.normal),
                         ),
-
-                        // ── What I Like ──
-                        SizedBox(height: r.s(24)),
-                        Divider(
-                            color: Colors.white.withValues(alpha: 0.05)),
-                        SizedBox(height: r.s(12)),
-                        Text(s.whatILike,
-                            style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: r.fs(18),
-                                color: context.nexusTheme.textPrimary)),
-                        SizedBox(height: r.s(8)),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _whatILikeController,
-                                style: TextStyle(
-                                    color: context.nexusTheme.textPrimary),
-                                decoration: InputDecoration(
-                                  hintText: s.writeWhatYouLike,
-                                  hintStyle: TextStyle(
-                                      color:
-                                          context.nexusTheme.textSecondary),
-                                  filled: true,
-                                  fillColor: context.surfaceColor,
-                                  border: OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(r.s(16)),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(
-                                      horizontal: r.s(16),
-                                      vertical: r.s(12)),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: r.s(12)),
-                            GestureDetector(
-                              onTap: _submitWhatILike,
-                              child: Container(
-                                padding: EdgeInsets.all(r.s(12)),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      context.nexusTheme.accentPrimary,
-                                      context.nexusTheme.accentSecondary
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius:
-                                      BorderRadius.circular(r.s(24)),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: context.nexusTheme.accentPrimary
-                                          .withValues(alpha: 0.5),
-                                      blurRadius: 8,
-                                      spreadRadius: 1,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Icon(Icons.send_rounded,
-                                    color: context.nexusTheme.textPrimary,
-                                    size: r.s(24)),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: r.s(16)),
-                        ..._whatILikeList.map((item) {
-                          final profile =
-                              item['profiles'] as Map<String, dynamic>?;
-                          return Container(
-                            margin: EdgeInsets.only(bottom: r.s(12)),
-                            padding: EdgeInsets.all(r.s(14)),
-                            decoration: BoxDecoration(
-                              color: context.surfaceColor,
-                              borderRadius: BorderRadius.circular(r.s(16)),
-                              border: Border.all(
-                                  color:
-                                      Colors.white.withValues(alpha: 0.05)),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: context.nexusTheme.accentPrimary
-                                      .withValues(alpha: 0.05),
-                                  blurRadius: 6,
-                                  spreadRadius: 1,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                CosmeticAvatar(
-                                  userId: profile?['id'] as String?,
-                                  avatarUrl:
-                                      profile?['icon_url'] as String?,
-                                  size: r.s(32),
-                                ),
-                                SizedBox(width: r.s(12)),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        profile?['nickname'] ?? s.anonymous,
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: r.fs(14),
-                                            color: context
-                                                .nexusTheme.textPrimary),
-                                      ),
-                                      SizedBox(height: r.s(4)),
-                                      Text(
-                                        item['content'] as String? ?? '',
-                                        style: TextStyle(
-                                            fontSize: r.fs(14),
-                                            color: context
-                                                .nexusTheme.textPrimary),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
 
                         // ══════════════════════════════════════════════════
                         // COMENTÁRIOS EM MODAL (mesmo padrão de interação do blog)

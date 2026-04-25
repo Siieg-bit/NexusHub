@@ -251,23 +251,41 @@ class ChatBubble extends ConsumerWidget {
           child: Stack(
             children: [
               // Fundo animado: GIF/WebP em loop contínuo
+              // Invertido horizontalmente para outros usuários (arte padrão é para isMine).
               Positioned.fill(
-                child: Image.network(
-                  bubbleFrameUrl!,
-                  fit: BoxFit.fill,
-                  // gaplessPlayback evita piscar entre loops da animação
-                  gaplessPlayback: true,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
-                  ),
-                  loadingBuilder: (_, child, progress) {
-                    if (progress == null) return child;
-                    // Enquanto carrega, mostra fundo semitransparente
-                    return Container(
-                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
-                    );
-                  },
-                ),
+                child: isMine
+                    ? Image.network(
+                        bubbleFrameUrl!,
+                        fit: BoxFit.fill,
+                        gaplessPlayback: true,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
+                        ),
+                        loadingBuilder: (_, child, progress) {
+                          if (progress == null) return child;
+                          return Container(
+                            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
+                          );
+                        },
+                      )
+                    : Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.diagonal3Values(-1, 1, 1),
+                        child: Image.network(
+                          bubbleFrameUrl!,
+                          fit: BoxFit.fill,
+                          gaplessPlayback: true,
+                          errorBuilder: (_, __, ___) => Container(
+                            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
+                          ),
+                          loadingBuilder: (_, child, progress) {
+                            if (progress == null) return child;
+                            return Container(
+                              color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
+                            );
+                          },
+                        ),
+                      ),
               ),
               // Conteúdo da mensagem sobre o GIF
               Padding(

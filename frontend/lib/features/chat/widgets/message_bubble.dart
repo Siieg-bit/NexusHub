@@ -21,6 +21,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/widgets/linkified_text.dart';
 import 'form_message_bubble.dart';
 import '../../../core/widgets/simple_link_preview.dart';
+import '../../../core/widgets/cosmetic_avatar.dart';
 
 /// ============================================================================
 /// MESSAGE BUBBLE (suporta todos os 19+ tipos) — Estilo Amino
@@ -149,7 +150,11 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
         child: Ink(
           padding: EdgeInsets.all(r.s(10)),
           decoration: BoxDecoration(
-            color: textColor.withValues(alpha: isMe ? 0.12 : 0.08),
+            // Usa cor fixa semitransparente para evitar fundo branco/inválido
+            // quando textColor é claro (ex: textPrimary no bubble de outro usuário).
+            color: isMe
+                ? Colors.white.withValues(alpha: 0.12)
+                : context.nexusTheme.surfacePrimary.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(r.s(12)),
             border: Border(
               left: BorderSide(color: accentColor, width: r.s(3)),
@@ -488,7 +493,10 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
     }
 
     Widget buildAuthorAvatar() {
-      return GestureDetector(
+      return CosmeticAvatar(
+        userId: message.authorId.isNotEmpty ? message.authorId : null,
+        avatarUrl: authorIcon,
+        size: r.s(32),
         onTap: () {
           if (communityId != null && communityId!.isNotEmpty) {
             context.push('/community/$communityId/profile/${message.authorId}');
@@ -496,24 +504,6 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
             context.push('/user/${message.authorId}');
           }
         },
-        child: CircleAvatar(
-          radius: 16,
-          backgroundColor: context.surfaceColor,
-          backgroundImage: authorIcon != null && authorIcon.isNotEmpty
-              ? CachedNetworkImageProvider(authorIcon)
-              : null,
-          child: authorIcon == null || authorIcon.isEmpty
-              ? Text(
-                  avatarFallbackLabel.isNotEmpty
-                      ? avatarFallbackLabel[0].toUpperCase()
-                      : '?',
-                  style: TextStyle(
-                    fontSize: r.fs(11),
-                    color: Colors.grey[400],
-                  ),
-                )
-              : null,
-        ),
       );
     }
 
