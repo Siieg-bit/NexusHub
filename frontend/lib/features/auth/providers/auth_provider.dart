@@ -184,8 +184,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final nextLevel = aalRes.nextLevel;
       final currentLevel = aalRes.currentLevel;
 
-      if (nextLevel == AuthenticatorAssuranceLevel.aal2 &&
-          currentLevel == AuthenticatorAssuranceLevel.aal1) {
+      // Na versão 2.x do supabase_flutter, os níveis de AAL podem ser comparados diretamente
+      // ou via enum. Se o enum AuthenticatorAssuranceLevel falhar, usamos a comparação de string.
+      if (nextLevel.name == 'aal2' && currentLevel.name == 'aal1') {
         // Precisa de 2FA — buscar o fator ativo
         final factors = await SupabaseService.client.auth.mfa.listFactors();
         final totpFactor = factors.totp.where((f) => f.status == FactorStatus.verified).firstOrNull;
