@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:pinput/pinput.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_data.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 
@@ -56,8 +58,8 @@ class _TotpSetupScreenState extends ConsumerState<TotpSetupScreen> {
       );
       setState(() {
         _factorId = response.id;
-        _totpUri  = response.totp.qrCode;
-        _secret   = response.totp.secret;
+        _totpUri  = response.totp?.qrCode;
+        _secret   = response.totp?.secret;
         _step     = 1;
       });
     } catch (e) {

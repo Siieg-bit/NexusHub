@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_data.dart';
 
 // ── Utilitário de força de senha ─────────────────────────────────────────────
 

@@ -184,8 +184,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final nextLevel = aalRes.nextLevel;
       final currentLevel = aalRes.currentLevel;
 
-      if (nextLevel == AuthenticatorAssuranceLevelType.aal2 &&
-          currentLevel == AuthenticatorAssuranceLevelType.aal1) {
+      if (nextLevel == AuthenticatorAssuranceLevel.aal2 &&
+          currentLevel == AuthenticatorAssuranceLevel.aal1) {
         // Precisa de 2FA — buscar o fator ativo
         final factors = await SupabaseService.client.auth.mfa.listFactors();
         final totpFactor = factors.totp.where((f) => f.status == FactorStatus.verified).firstOrNull;
