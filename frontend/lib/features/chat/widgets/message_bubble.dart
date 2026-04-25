@@ -459,6 +459,11 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
     final bubbleDynPaddingY = activeCosmetics?.chatBubbleDynPaddingY ?? 12.0;
     final bubbleDynHorizontalPriority = activeCosmetics?.chatBubbleDynHorizontalPriority ?? true;
     final bubbleDynTransitionZone = activeCosmetics?.chatBubbleDynTransitionZone ?? 0.15;
+    // Parâmetros do modo horizontal_stretch
+    final bubbleHsMaxWidth = activeCosmetics?.chatBubbleHsMaxWidth ?? 280.0;
+    final bubbleHsMinWidth = activeCosmetics?.chatBubbleHsMinWidth ?? 60.0;
+    final bubbleHsPaddingX = activeCosmetics?.chatBubbleHsPaddingX ?? 4.0;
+    final bubbleHsPaddingY = activeCosmetics?.chatBubbleHsPaddingY ?? 4.0;
     // Indica se o bubble equipado é animado (GIF/WebP).
     // Quando true, ChatBubble usa Image.network com gaplessPlayback
     // em vez de NineSliceBubble (que só suporta frames estáticos).
@@ -631,6 +636,11 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                             dynPaddingY: bubbleDynPaddingY,
                             dynHorizontalPriority: bubbleDynHorizontalPriority,
                             dynTransitionZone: bubbleDynTransitionZone,
+                            // Parâmetros do modo horizontal_stretch
+                            hsMaxWidth: bubbleHsMaxWidth,
+                            hsMinWidth: bubbleHsMinWidth,
+                            hsPaddingX: bubbleHsPaddingX,
+                            hsPaddingY: bubbleHsPaddingY,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,

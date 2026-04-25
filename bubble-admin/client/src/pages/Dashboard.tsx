@@ -97,7 +97,7 @@ interface BubbleForm {
   padTop: number; padBottom: number; padLeft: number; padRight: number;
   usePolyFill: boolean;
   polyPoints: PolyPoint[];
-  // ── Modo dinâmico ────────────────────────────────────────────────────────
+  // ── Modo dinâmico (dynamic_nineslice) ───────────────────────────────────────────────────────
   isDynamic: boolean;
   dynMaxWidth: number;
   dynMinWidth: number;
@@ -105,6 +105,12 @@ interface BubbleForm {
   dynPaddingY: number;
   dynHorizontalPriority: boolean;
   dynTransitionZone: number;
+  // ── Modo horizontal_stretch ───────────────────────────────────────────────────────────
+  isHorizontalStretch: boolean;
+  hsMaxWidth: number;
+  hsMinWidth: number;
+  hsPaddingX: number;
+  hsPaddingY: number;
 }
 
 const EMPTY_FORM: BubbleForm = {
@@ -122,6 +128,11 @@ const EMPTY_FORM: BubbleForm = {
   dynPaddingY: 12,
   dynHorizontalPriority: true,
   dynTransitionZone: 0.15,
+  isHorizontalStretch: false,
+  hsMaxWidth: 280,
+  hsMinWidth: 60,
+  hsPaddingX: 4,
+  hsPaddingY: 4,
 };
 
 type SliceValues = { top: number; bottom: number; left: number; right: number };
@@ -950,6 +961,111 @@ function NineSliceCanvasCompact({
   return <canvas ref={canvasRef} style={{ display: "block", maxWidth: "100%" }} />;
 }
 
+// ─── HorizontalStretchCanvas ────────────────────────────────────────────────────
+// Modo onde APENAS a faixa central horizontal estica.
+// Top, bottom e laterais são completamente fixos — nunca distorcem.
+interface HorizontalStretchCanvasProps {
+  img: HTMLImageElement;
+  slice: SliceValues;
+  text: string;
+  maxWidth?: number;
+  minWidth?: number;
+  paddingX?: number;
+  paddingY?: number;
+  textColor?: string;
+  fontSize?: number;
+  textAlign?: TextAlign;
+}
+function HorizontalStretchCanvas({
+  img, slice, text,
+  maxWidth = 280,
+  minWidth = 60,
+  paddingX = 4,
+  paddingY = 4,
+  textColor,
+  fontSize = 13,
+  textAlign = "left",
+}: HorizontalStretchCanvasProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const dpr = window.devicePixelRatio || 1;
+    const msgColor = textColor && textColor.trim() ? textColor.trim() : "#1a1a2e";
+    const lineHeight = Math.round(fontSize * 1.45);
+    const { top: st, bottom: sb, left: sl, right: sr } = slice;
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    // ── Medição de texto ─────────────────────────────────────────────────────
+    const measureCtx = document.createElement("canvas").getContext("2d")!;
+    measureCtx.font = `${fontSize}px 'Space Grotesk', sans-serif`;
+    const maxContentW = Math.max(1, maxWidth - sl - sr - paddingX * 2);
+    const words = text.split(" ");
+    const lines: string[] = [];
+    let cur = "";
+    for (const word of words) {
+      const test = cur ? cur + " " + word : word;
+      if (measureCtx.measureText(test).width > maxContentW && cur) {
+        lines.push(cur); cur = word;
+      } else { cur = test; }
+    }
+    if (cur) lines.push(cur);
+    if (lines.length === 0) lines.push("");
+    const maxLineWidth = Math.max(...lines.map(l => measureCtx.measureText(l).width));
+    // ── Largura lógica: sl fixo + stretchZone + sr fixo ───────────────────────
+    const stretchZone = Math.max(4, Math.ceil(maxLineWidth) + paddingX * 2);
+    const rawW = sl + stretchZone + sr;
+    const logW = Math.max(minWidth, Math.min(maxWidth, rawW), sl + sr + 4);
+    // ── Altura lógica: usa altura da imagem como base ────────────────────────
+    const textH = lines.length * lineHeight;
+    const logH = Math.max(ih, textH + paddingY * 2);
+    // ── Redimensiona canvas ──────────────────────────────────────────────────
+    canvas.width  = Math.round(logW * dpr);
+    canvas.height = Math.round(logH * dpr);
+    canvas.style.width  = logW + "px";
+    canvas.style.height = logH + "px";
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, logW, logH);
+    // ── Desenha nine-slice: só o centro horizontal estica ─────────────────────
+    const mw = logW - sl - sr;
+    const mh = logH - st - sb;
+    const srcCW = iw - sl - sr;
+    const srcCH = ih - st - sb;
+    const regions: [number,number,number,number,number,number,number,number][] = [
+      [0,      0,      sl,    st,    0,       0,       sl, st],
+      [iw-sr,  0,      sr,    st,    logW-sr, 0,       sr, st],
+      [0,      ih-sb,  sl,    sb,    0,       logH-sb, sl, sb],
+      [iw-sr,  ih-sb,  sr,    sb,    logW-sr, logH-sb, sr, sb],
+      [sl,     0,      srcCW, st,    sl,      0,       mw, st],
+      [sl,     ih-sb,  srcCW, sb,    sl,      logH-sb, mw, sb],
+      [0,      st,     sl,    srcCH, 0,       st,      sl, mh],
+      [iw-sr,  st,     sr,    srcCH, logW-sr, st,      sr, mh],
+      [sl,     st,     srcCW, srcCH, sl,      st,      mw, mh],
+    ];
+    for (const [sx,sy,sw,sh,dx,dy,dw,dh] of regions) {
+      if (sw>0 && sh>0 && dw>0 && dh>0) ctx.drawImage(img, sx,sy,sw,sh, dx,dy,dw,dh);
+    }
+    // ── Renderiza texto ──────────────────────────────────────────────────────
+    const contentX = sl + paddingX;
+    const contentW = logW - sl - sr - paddingX * 2;
+    const contentH = logH - paddingY * 2;
+    const textStartY = paddingY + Math.max(0, (contentH - textH) / 2);
+    ctx.fillStyle    = msgColor;
+    ctx.font         = `${fontSize}px 'Space Grotesk', sans-serif`;
+    ctx.textBaseline = "top";
+    ctx.textAlign    = textAlign;
+    lines.forEach((line, i) => {
+      const x = textAlign === "center" ? contentX + contentW / 2
+              : textAlign === "right"  ? contentX + contentW
+              : contentX;
+      ctx.fillText(line, x, textStartY + i * lineHeight);
+    });
+  }, [img, slice, text, maxWidth, minWidth, paddingX, paddingY, textColor, fontSize, textAlign]);
+  return <canvas ref={canvasRef} style={{ display: "block", maxWidth: "100%" }} />;
+}
+
 // ─── NineSliceCanvas ──────────────────────────────────────────────────────────
 // Renderiza um balão nine-slice clássico via canvas com suporte a High-DPI (Retina).
 interface NineSliceCanvasProps {
@@ -1646,6 +1762,12 @@ interface NineSlicePreviewPanelProps {
   dynPaddingY?: number;
   dynHorizontalPriority?: boolean;
   dynTransitionZone?: number;
+  // Campos do modo horizontal_stretch
+  isHorizontalStretch?: boolean;
+  hsMaxWidth?: number;
+  hsMinWidth?: number;
+  hsPaddingX?: number;
+  hsPaddingY?: number;
 }
 
 const PREVIEW_SAMPLES = [
@@ -1664,6 +1786,11 @@ function NineSlicePreviewPanel({
   dynPaddingY = 12,
   dynHorizontalPriority = true,
   dynTransitionZone = 0.15,
+  isHorizontalStretch = false,
+  hsMaxWidth = 280,
+  hsMinWidth = 60,
+  hsPaddingX = 4,
+  hsPaddingY = 4,
 }: NineSlicePreviewPanelProps) {
   const [customText, setCustomText] = useState("");
   const imgState = useImageLoader(imageUrl);
@@ -1712,11 +1839,33 @@ function NineSlicePreviewPanel({
               </span>
             </div>
           )}
+          {isHorizontalStretch && (
+            <div className="flex items-center gap-1.5 mb-1">
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#FBBF24" }} />
+              <span className="text-[9px] font-mono" style={{ color: "#FBBF24" }}>horizontal_stretch</span>
+              <span className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>
+                · max {hsMaxWidth}px · min {hsMinWidth}px · pad {hsPaddingX}/{hsPaddingY}
+              </span>
+            </div>
+          )}
           {PREVIEW_SAMPLES.map((s) => (
             <div key={s.id} className="flex items-center gap-2">
               <span className="text-[8px] font-mono w-10 flex-shrink-0 text-right" style={{ color: "rgba(255,255,255,0.2)" }}>{s.label}</span>
               <div className={`flex flex-1 ${s.mine ? "justify-end" : "justify-start"}`}>
-                {isDynamic ? (
+                {isHorizontalStretch ? (
+                  <HorizontalStretchCanvas
+                    img={imgState.img}
+                    slice={slice}
+                    text={customText || s.text}
+                    maxWidth={hsMaxWidth}
+                    minWidth={hsMinWidth}
+                    paddingX={hsPaddingX}
+                    paddingY={hsPaddingY}
+                    textColor={textColor}
+                    fontSize={fontSize}
+                    textAlign={textAlign}
+                  />
+                ) : isDynamic ? (
                   <div className="flex flex-col gap-1 items-inherit">
                     <DynamicNineSliceCanvas
                       img={imgState.img}
@@ -1864,6 +2013,20 @@ function BubblesDashboard() {
       dynPaddingY:  cfg.content?.padding?.y ?? cfg.pad_top   ?? DYNAMIC_CONTENT_DEFAULTS.paddingY,
       dynHorizontalPriority: cfg.behavior?.horizontalPriority ?? DYNAMIC_BEHAVIOR_DEFAULTS.horizontalPriority,
       dynTransitionZone:     cfg.behavior?.transitionZone     ?? DYNAMIC_BEHAVIOR_DEFAULTS.transitionZone,
+      // Campos horizontal_stretch
+      isHorizontalStretch: cfg.mode === "horizontal_stretch",
+      hsMaxWidth: (cfg as Record<string,unknown>).horizontal_stretch
+        ? ((cfg as Record<string,unknown>).horizontal_stretch as Record<string,unknown>).maxWidth as number ?? 280
+        : 280,
+      hsMinWidth: (cfg as Record<string,unknown>).horizontal_stretch
+        ? ((cfg as Record<string,unknown>).horizontal_stretch as Record<string,unknown>).minWidth as number ?? 60
+        : 60,
+      hsPaddingX: (cfg as Record<string,unknown>).horizontal_stretch
+        ? ((cfg as Record<string,unknown>).horizontal_stretch as Record<string,unknown>).paddingX as number ?? 4
+        : cfg.pad_left ?? 4,
+      hsPaddingY: (cfg as Record<string,unknown>).horizontal_stretch
+        ? ((cfg as Record<string,unknown>).horizontal_stretch as Record<string,unknown>).paddingY as number ?? 4
+        : cfg.pad_top ?? 4,
     });
     setImageUrl(item.preview_url);
     if (cfg.image_width && cfg.image_height) {
@@ -1935,14 +2098,26 @@ function BubblesDashboard() {
       // Se o modo dinâmico estiver ativo, serializa com os campos extras.
       // O cast `as BubbleAssetConfig` é seguro: serializeDynamicConfig sempre
       // inclui bubble_style (via base) e os campos obrigatórios do tipo local.
-      const assetConfig = (form.isDynamic && !form.isAnimated
-        ? serializeDynamicConfig(
-            baseConfig,
-            { left: form.sliceLeft, right: form.sliceRight, top: form.sliceTop, bottom: form.sliceBottom },
-            { paddingX: form.dynPaddingX, paddingY: form.dynPaddingY, maxWidth: form.dynMaxWidth, minWidth: form.dynMinWidth },
-            { horizontalPriority: form.dynHorizontalPriority, maxHeightRatio: 0.6, transitionZone: form.dynTransitionZone },
-          )
-        : baseConfig) as BubbleAssetConfig;
+      const assetConfig = (form.isHorizontalStretch && !form.isAnimated
+        ? {
+            ...baseConfig,
+            mode: "horizontal_stretch" as BubbleMode,
+            horizontal_stretch: {
+              maxWidth:  form.hsMaxWidth,
+              minWidth:  form.hsMinWidth,
+              paddingX:  form.hsPaddingX,
+              paddingY:  form.hsPaddingY,
+              stretchZoneMin: 4,
+            },
+          }
+        : form.isDynamic && !form.isAnimated
+          ? serializeDynamicConfig(
+              baseConfig,
+              { left: form.sliceLeft, right: form.sliceRight, top: form.sliceTop, bottom: form.sliceBottom },
+              { paddingX: form.dynPaddingX, paddingY: form.dynPaddingY, maxWidth: form.dynMaxWidth, minWidth: form.dynMinWidth },
+              { horizontalPriority: form.dynHorizontalPriority, maxHeightRatio: 0.6, transitionZone: form.dynTransitionZone },
+            )
+          : baseConfig) as BubbleAssetConfig;
 
       const payload = {
         type: "chat_bubble",
@@ -2221,7 +2396,7 @@ function BubblesDashboard() {
                             </p>
                           </div>
                           <div
-                            onClick={() => setForm(f => ({ ...f, isDynamic: !f.isDynamic }))}
+                            onClick={() => setForm(f => ({ ...f, isDynamic: !f.isDynamic, isHorizontalStretch: f.isDynamic ? f.isHorizontalStretch : false }))}
                             className="w-9 h-5 rounded-full relative transition-all duration-200 flex-shrink-0 cursor-pointer"
                             style={{ background: form.isDynamic ? "#34D399" : "rgba(255,255,255,0.1)" }}
                           >
@@ -2324,6 +2499,81 @@ function BubblesDashboard() {
                         )}
                       </div>
                     )}
+                    {/* ── Modo Horizontal Stretch ── */}
+                    {!form.isAnimated && (
+                      <div className="space-y-3 rounded-xl p-3" style={{ background: form.isHorizontalStretch ? "rgba(251,191,36,0.04)" : "rgba(255,255,255,0.02)", border: `1px solid ${form.isHorizontalStretch ? "rgba(251,191,36,0.2)" : "rgba(255,255,255,0.06)"}`, transition: "all 0.2s" }}>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: form.isHorizontalStretch ? "#FBBF24" : "rgba(255,255,255,0.25)" }}>
+                              Horizontal Stretch
+                            </p>
+                            <p className="text-[9px] mt-0.5" style={{ color: "rgba(255,255,255,0.2)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                              {form.isHorizontalStretch ? "horizontal_stretch — só o centro estica, bordas fixas" : "ativar para assets com decoração nas bordas"}
+                            </p>
+                          </div>
+                          <div
+                            onClick={() => setForm(f => ({ ...f, isHorizontalStretch: !f.isHorizontalStretch, isDynamic: f.isHorizontalStretch ? f.isDynamic : false }))}
+                            className="w-9 h-5 rounded-full relative transition-all duration-200 flex-shrink-0 cursor-pointer"
+                            style={{ background: form.isHorizontalStretch ? "#FBBF24" : "rgba(255,255,255,0.1)" }}
+                          >
+                            <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200"
+                              style={{ left: form.isHorizontalStretch ? "calc(100% - 18px)" : "2px" }} />
+                          </div>
+                        </div>
+                        {form.isHorizontalStretch && (
+                          <div className="space-y-3 pt-1">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-[9px] font-mono block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Largura Máx. (px)</label>
+                                <input
+                                  type="number" min={80} max={500}
+                                  value={form.hsMaxWidth}
+                                  onChange={(e) => setForm(f => ({ ...f, hsMaxWidth: Math.max(80, parseInt(e.target.value) || 280) }))}
+                                  className="w-full px-2 py-1.5 rounded-lg text-[12px] outline-none font-mono text-center"
+                                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(251,191,36,0.2)", color: "#FBBF24" }}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] font-mono block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Largura Mín. (px)</label>
+                                <input
+                                  type="number" min={40} max={200}
+                                  value={form.hsMinWidth}
+                                  onChange={(e) => setForm(f => ({ ...f, hsMinWidth: Math.max(40, parseInt(e.target.value) || 60) }))}
+                                  className="w-full px-2 py-1.5 rounded-lg text-[12px] outline-none font-mono text-center"
+                                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(251,191,36,0.2)", color: "#FBBF24" }}
+                                />
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-[9px] font-mono block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Padding X (px)</label>
+                                <input
+                                  type="number" min={0} max={40}
+                                  value={form.hsPaddingX}
+                                  onChange={(e) => setForm(f => ({ ...f, hsPaddingX: Math.max(0, parseInt(e.target.value) || 4) }))}
+                                  className="w-full px-2 py-1.5 rounded-lg text-[12px] outline-none font-mono text-center"
+                                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(251,191,36,0.15)", color: "rgba(255,255,255,0.7)" }}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] font-mono block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Padding Y (px)</label>
+                                <input
+                                  type="number" min={0} max={40}
+                                  value={form.hsPaddingY}
+                                  onChange={(e) => setForm(f => ({ ...f, hsPaddingY: Math.max(0, parseInt(e.target.value) || 4) }))}
+                                  className="w-full px-2 py-1.5 rounded-lg text-[12px] outline-none font-mono text-center"
+                                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(251,191,36,0.15)", color: "rgba(255,255,255,0.7)" }}
+                                />
+                              </div>
+                            </div>
+                            <p className="text-[8px]" style={{ color: "rgba(251,191,36,0.5)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                              ⚠ Configure os slices (esq/dir) para cobrir toda a decoração lateral. Só a faixa central (4px) vai esticar.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* Toggles */}
                     <div className="flex flex-col sm:flex-row gap-3">
                       {([
@@ -2540,6 +2790,11 @@ function BubblesDashboard() {
                                   dynPaddingY={form.dynPaddingY}
                                   dynHorizontalPriority={form.dynHorizontalPriority}
                                   dynTransitionZone={form.dynTransitionZone}
+                                  isHorizontalStretch={form.isHorizontalStretch}
+                                  hsMaxWidth={form.hsMaxWidth}
+                                  hsMinWidth={form.hsMinWidth}
+                                  hsPaddingX={form.hsPaddingX}
+                                  hsPaddingY={form.hsPaddingY}
                                 />
                               )}
                             </div>

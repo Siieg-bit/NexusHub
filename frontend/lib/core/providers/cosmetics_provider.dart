@@ -82,6 +82,12 @@ class UserCosmetics {
   /// Zona de transição (0.0–1.0) para suavização das bordas no modo dinâmico.
   final double chatBubbleDynTransitionZone;
 
+  // ── Campos do modo horizontal_stretch ───────────────────────────────────────────────
+  final double chatBubbleHsMaxWidth;
+  final double chatBubbleHsMinWidth;
+  final double chatBubbleHsPaddingX;
+  final double chatBubbleHsPaddingY;
+
   const UserCosmetics({
     required this.userId,
     this.avatarFrameUrl,
@@ -111,6 +117,11 @@ class UserCosmetics {
     this.chatBubbleDynPaddingY = 12.0,
     this.chatBubbleDynHorizontalPriority = true,
     this.chatBubbleDynTransitionZone = 0.15,
+    // Campos horizontal_stretch
+    this.chatBubbleHsMaxWidth = 280.0,
+    this.chatBubbleHsMinWidth = 60.0,
+    this.chatBubbleHsPaddingX = 4.0,
+    this.chatBubbleHsPaddingY = 4.0,
   });
 
   factory UserCosmetics.empty(String userId) => UserCosmetics(userId: userId);
@@ -190,6 +201,11 @@ Color? _hexToColor(String? hex) {
   double dynPaddingY,
   bool dynHorizontalPriority,
   double dynTransitionZone,
+  // Campos horizontal_stretch
+  double hsMaxWidth,
+  double hsMinWidth,
+  double hsPaddingX,
+  double hsPaddingY,
 }) _extractNineSliceParams(Map<String, dynamic> assetConfig) {
   // Offset fixo do Positioned no NineSliceBubble (top/bottom/left/right: -12).
   // O contentPadding precisa compensar esse offset para que o texto não
@@ -242,6 +258,13 @@ Color? _hexToColor(String? hex) {
   final bool dynHorizontalPriority = behaviorMap?['horizontalPriority'] as bool? ?? true;
   final double dynTransitionZone   = _asDouble(behaviorMap?['transitionZone'], fallback: 0.15);
 
+  // ── Leitura dos campos do modo horizontal_stretch ──────────────────────────────
+  final hsMap = assetConfig['horizontal_stretch'] as Map<String, dynamic>?;
+  final double hsMaxWidth  = _asDouble(hsMap?['maxWidth'],  fallback: 280.0);
+  final double hsMinWidth  = _asDouble(hsMap?['minWidth'],  fallback: 60.0);
+  final double hsPaddingX  = _asDouble(hsMap?['paddingX'],  fallback: 4.0);
+  final double hsPaddingY  = _asDouble(hsMap?['paddingY'],  fallback: 4.0);
+
   return (
     sliceInsets: EdgeInsets.fromLTRB(sliceLeft, sliceTop, sliceRight, sliceBottom),
     imageSize: Size(imageWidth, imageHeight),
@@ -260,6 +283,11 @@ Color? _hexToColor(String? hex) {
     dynPaddingY: dynPaddingY,
     dynHorizontalPriority: dynHorizontalPriority,
     dynTransitionZone: dynTransitionZone,
+    // Campos horizontal_stretch
+    hsMaxWidth: hsMaxWidth,
+    hsMinWidth: hsMinWidth,
+    hsPaddingX: hsPaddingX,
+    hsPaddingY: hsPaddingY,
   );
 }
 
@@ -367,6 +395,10 @@ final userCosmeticsProvider =
       chatBubbleDynPaddingY: sliceParams.dynPaddingY,
       chatBubbleDynHorizontalPriority: sliceParams.dynHorizontalPriority,
       chatBubbleDynTransitionZone: sliceParams.dynTransitionZone,
+      chatBubbleHsMaxWidth: sliceParams.hsMaxWidth,
+      chatBubbleHsMinWidth: sliceParams.hsMinWidth,
+      chatBubbleHsPaddingX: sliceParams.hsPaddingX,
+      chatBubbleHsPaddingY: sliceParams.hsPaddingY,
     );
   } catch (e, st) {
     debugPrint('[CosmeticsProvider] ERRO userId=$userId: $e\n$st');
@@ -473,6 +505,10 @@ final batchCosmeticsProvider =
         chatBubbleDynPaddingY: sliceParams.dynPaddingY,
         chatBubbleDynHorizontalPriority: sliceParams.dynHorizontalPriority,
         chatBubbleDynTransitionZone: sliceParams.dynTransitionZone,
+        chatBubbleHsMaxWidth: sliceParams.hsMaxWidth,
+        chatBubbleHsMinWidth: sliceParams.hsMinWidth,
+        chatBubbleHsPaddingX: sliceParams.hsPaddingX,
+        chatBubbleHsPaddingY: sliceParams.hsPaddingY,
       );
     }
   } catch (e) {

@@ -22,7 +22,38 @@
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
 /** Modo de renderização do balão. */
-export type BubbleMode = "nine_slice" | "dynamic_nineslice" | "animated";
+export type BubbleMode = "nine_slice" | "dynamic_nineslice" | "horizontal_stretch" | "animated";
+
+/**
+ * Configuração do modo horizontal_stretch.
+ * Neste modo, APENAS a faixa central (sl..imgW-sr) estica horizontalmente.
+ * Top, bottom e laterais são completamente fixos — nunca distorcem.
+ * Ideal para assets com decoração rica em toda a borda.
+ */
+export interface HorizontalStretchConfig {
+  /** Largura máxima do balão renderizado (px). */
+  maxWidth: number;
+  /** Largura mínima — nunca menor que sl + sr + stretchZoneMin. */
+  minWidth: number;
+  /** Padding horizontal interno (dentro da fill zone, px). */
+  paddingX: number;
+  /** Padding vertical interno (px). */
+  paddingY: number;
+  /**
+   * Largura mínima da faixa central que estica (px).
+   * Deve ser 1–8px para que a faixa seja quase invisível.
+   * @default 4
+   */
+  stretchZoneMin: number;
+}
+
+export const HORIZONTAL_STRETCH_DEFAULTS: HorizontalStretchConfig = {
+  maxWidth: 280,
+  minWidth: 60,
+  paddingX: 4,
+  paddingY: 4,
+  stretchZoneMin: 4,
+};
 
 /** Configuração de slice (pontos de corte). */
 export interface SliceConfig {
@@ -142,8 +173,88 @@ export const DYNAMIC_BEHAVIOR_DEFAULTS: DynamicBehaviorConfig = {
 /** Retorna o modo efetivo do bubble (compatível com campo legado bubble_style). */
 export function getBubbleMode(cfg: Partial<BubbleAssetConfig>): BubbleMode {
   if (cfg.mode === "dynamic_nineslice") return "dynamic_nineslice";
+  if (cfg.mode === "horizontal_stretch") return "horizontal_stretch";
   if (cfg.mode === "animated" || cfg.bubble_style === "animated" || cfg.is_animated) return "animated";
   return "nine_slice";
+}
+
+/** Extrai a configuração do modo horizontal_stretch com defaults. */
+export function getHorizontalStretchConfig(cfg: Partial<BubbleAssetConfig>): HorizontalStretchConfig {
+  const hs = (cfg as Record<string, unknown>).horizontal_stretch as Partial<HorizontalStretchConfig> | undefined ?? {};
+  return {
+    maxWidth:       (hs.maxWidth       ?? cfg.content?.maxWidth)  ?? HORIZONTAL_STRETCH_DEFAULTS.maxWidth,
+    minWidth:       (hs.minWidth       ?? cfg.content?.minWidth)  ?? HORIZONTAL_STRETCH_DEFAULTS.minWidth,
+    paddingX:       hs.paddingX        ?? cfg.pad_left            ?? HORIZONTAL_STRETCH_DEFAULTS.paddingX,
+    paddingY:       hs.paddingY        ?? cfg.pad_top             ?? HORIZONTAL_STRETCH_DEFAULTS.paddingY,
+    stretchZoneMin: hs.stretchZoneMin                             ?? HORIZONTAL_STRETCH_DEFAULTS.stretchZoneMin,
+  };
+}
+
+/**
+ * Calcula o layout do balão no modo horizontal_stretch.
+ *
+ * Regras:
+ *  - sl e sr são FIXOS — nunca mudam.
+ *  - A faixa central (stretchZone) estica até acomodar o texto.
+ *  - A altura é fixa: imgH (a imagem não cresce verticalmente).
+ *  - O texto é centralizado dentro de (sl + paddingX .. imgW - sr - paddingX).
+ *  - Se o texto não cabe em uma linha, quebra linha (o balão cresce verticalmente
+ *    apenas se allowVerticalGrowth = true, caso contrário trunca).
+ */
+export function calculateHorizontalStretchLayout(
+  text: string,
+  measureFn: (str: string) => number,
+  slice: SliceConfig,
+  cfg: HorizontalStretchConfig,
+  imgH: number,
+  fontSize: number,
+): BubbleLayout {
+  const lineHeight = Math.round(fontSize * 1.45);
+  const { left: sl, right: sr } = slice;
+
+  // Largura máxima do conteúdo de texto
+  const maxContentWidth = Math.max(1, cfg.maxWidth - sl - sr - cfg.paddingX * 2);
+
+  // Quebra de linha
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let currentLine = "";
+  for (const word of words) {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    if (measureFn(testLine) > maxContentWidth && currentLine) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  }
+  if (currentLine) lines.push(currentLine);
+  if (lines.length === 0) lines.push("");
+
+  const maxLineWidth = Math.max(...lines.map((l) => measureFn(l)));
+
+  // Largura do balão: sl + paddingX + texto + paddingX + stretchZone + sr
+  // A stretchZone é o que sobra entre o texto e sr
+  const textAreaWidth = maxLineWidth + cfg.paddingX * 2;
+  const rawWidth = sl + Math.max(textAreaWidth, cfg.stretchZoneMin) + sr;
+  const width = Math.max(
+    cfg.minWidth,
+    Math.min(cfg.maxWidth, Math.ceil(rawWidth)),
+    sl + sr + cfg.stretchZoneMin,
+  );
+
+  // Altura: usa a altura da imagem como base, cresce se texto não cabe
+  const textHeight = lines.length * lineHeight;
+  const minHeightForText = textHeight + cfg.paddingY * 2;
+  const height = Math.max(imgH, minHeightForText);
+
+  // Posição do conteúdo: dentro dos slices + padding
+  const contentX = sl + cfg.paddingX;
+  const contentY = cfg.paddingY;
+  const contentWidth = width - sl - sr - cfg.paddingX * 2;
+  const contentHeight = height - cfg.paddingY * 2;
+
+  return { width, height, contentX, contentY, contentWidth, contentHeight, lineHeight, lines };
 }
 
 /** Extrai o SliceConfig normalizado, preferindo o objeto `slice` se presente. */

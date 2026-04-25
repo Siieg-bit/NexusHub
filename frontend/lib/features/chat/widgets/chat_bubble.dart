@@ -69,9 +69,8 @@ class ChatBubble extends ConsumerWidget {
   /// Quando nulo, usa o [contentPadding] normal.
   final List<Offset>? polyPoints;
 
-  // ── Campos do modo dynamic_nineslice ──────────────────────────────────────
-  /// Modo do balão. "dynamic_nineslice" ativa o layout pré-calculado.
-  /// Quando nulo ou diferente, usa o comportamento clássico.
+  // ── Campos do modo dynamic_nineslice ────────────────────────────────────────────────
+  /// Modo do balão: "dynamic_nineslice", "horizontal_stretch" ou null (clássico).
   final String? bubbleMode;
 
   /// Largura máxima no modo dinâmico (pixels lógicos).
@@ -91,6 +90,19 @@ class ChatBubble extends ConsumerWidget {
 
   /// Zona de transição para suavização das bordas (0.0–1.0).
   final double dynTransitionZone;
+
+  // ── Campos do modo horizontal_stretch ───────────────────────────────────────────────
+  /// Largura máxima no modo horizontal_stretch (pixels lógicos).
+  final double hsMaxWidth;
+
+  /// Largura mínima no modo horizontal_stretch (pixels lógicos).
+  final double hsMinWidth;
+
+  /// Padding horizontal interno no modo horizontal_stretch (pixels lógicos).
+  final double hsPaddingX;
+
+  /// Padding vertical interno no modo horizontal_stretch (pixels lógicos).
+  final double hsPaddingY;
 
   const ChatBubble({
     super.key,
@@ -115,6 +127,11 @@ class ChatBubble extends ConsumerWidget {
     this.dynPaddingY = 12.0,
     this.dynHorizontalPriority = true,
     this.dynTransitionZone = 0.15,
+    // Campos horizontal_stretch
+    this.hsMaxWidth = 280.0,
+    this.hsMinWidth = 60.0,
+    this.hsPaddingX = 4.0,
+    this.hsPaddingY = 4.0,
   });
 
   /// Cor do bubble baseada no role do usuário — estilo Amino
@@ -301,7 +318,53 @@ class ChatBubble extends ConsumerWidget {
       );
     }
 
-    // ── Modo dynamic_nineslice ────────────────────────────────────────────────
+    // ── Modo horizontal_stretch ────────────────────────────────────────────────────────────────
+    // Apenas a faixa central horizontal estica.
+    // Top, bottom e laterais são completamente fixos — nunca distorcem.
+    if (bubbleMode == 'horizontal_stretch') {
+      final effectiveSlice = sliceInsets ?? const EdgeInsets.all(38);
+      final imgSize = imageSize ?? const Size(128, 128);
+      // Medir o texto para calcular a largura ideal
+      final baseStyle = DefaultTextStyle.of(context).style;
+      final textStyle = baseStyle.copyWith(
+        fontSize: baseStyle.fontSize ?? 14.0,
+        height: baseStyle.height ?? 1.45,
+      );
+      final text = _extractText(child);
+      final tp = TextPainter(
+        text: TextSpan(text: text, style: textStyle),
+        textDirection: TextDirection.ltr,
+        maxLines: null,
+      );
+      final maxContentW = hsMaxWidth - effectiveSlice.left - effectiveSlice.right - hsPaddingX * 2;
+      tp.layout(maxWidth: maxContentW > 0 ? maxContentW : 1);
+      final textW = tp.width;
+      // Largura: sl fixo + stretchZone + sr fixo
+      final stretchZone = (textW + hsPaddingX * 2).ceilToDouble().clamp(4.0, double.infinity);
+      final rawW = effectiveSlice.left + stretchZone + effectiveSlice.right;
+      final logW = rawW.clamp(hsMinWidth, hsMaxWidth);
+      // Altura: sempre pelo menos a altura da imagem
+      final textH = tp.height;
+      final logH = (imgSize.height).clamp(textH + hsPaddingY * 2, double.infinity);
+      // contentPadding: posiciona o texto dentro da fill zone
+      final cp = EdgeInsets.symmetric(
+        horizontal: effectiveSlice.left + hsPaddingX,
+        vertical: ((logH - textH) / 2).clamp(hsPaddingY, double.infinity),
+      );
+      return NineSliceBubble(
+        imageUrl: bubbleFrameUrl!,
+        isMine: isMine,
+        maxWidth: logW,
+        sliceInsets: effectiveSlice,
+        imageSize: imgSize,
+        contentPadding: cp,
+        textColor: bubbleTextColor,
+        polyPoints: polyPoints,
+        child: child,
+      );
+    }
+
+    // ── Modo dynamic_nineslice ────────────────────────────────────────────────────────────────
     // Quando o asset_config define mode = "dynamic_nineslice", pré-calcula
     // as dimensões com TextPainter antes de construir o NineSliceBubble.
     // O widget filho recebe o tamanho exato e apenas desenha — não decide mais.
