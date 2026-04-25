@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
@@ -250,7 +251,7 @@ class _ChangePasswordScreenState
   }
 
   // ── UI: Etapa 1 — Confirmar senha atual ────────────────────────────────────
-  Widget _buildStep1(BuildContext context, ResponsiveHelper r, NexusThemeExtension theme) {
+  Widget _buildStep1(BuildContext context, Responsive r, NexusThemeData theme) {
     return Form(
       key: _reauthFormKey,
       child: Column(
@@ -334,7 +335,7 @@ class _ChangePasswordScreenState
   }
 
   // ── UI: Etapa 2 — Nova senha ───────────────────────────────────────────────
-  Widget _buildStep2(BuildContext context, ResponsiveHelper r, NexusThemeExtension theme) {
+  Widget _buildStep2(BuildContext context, Responsive r, NexusThemeData theme) {
     return Form(
       key: _newPasswordFormKey,
       child: Column(
@@ -440,7 +441,7 @@ class _ChangePasswordScreenState
   }
 
   // ── UI: Etapa 3 — Sucesso ─────────────────────────────────────────────────
-  Widget _buildStep3(BuildContext context, ResponsiveHelper r, NexusThemeExtension theme) {
+  Widget _buildStep3(BuildContext context, Responsive r, NexusThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -487,8 +488,8 @@ class _ChangePasswordScreenState
   InputDecoration _inputDecoration({
     required String hint,
     required IconData icon,
-    required NexusThemeExtension theme,
-    required ResponsiveHelper r,
+    required NexusThemeData theme,
+    required Responsive r,
     Widget? suffix,
   }) {
     return InputDecoration(
@@ -524,8 +525,8 @@ class _ChangePasswordScreenState
 
 class _PasswordStrengthIndicator extends StatelessWidget {
   final _PasswordStrength strength;
-  final ResponsiveHelper r;
-  final NexusThemeExtension theme;
+  final Responsive r;
+  final NexusThemeData theme;
 
   const _PasswordStrengthIndicator(
       {required this.strength, required this.r, required this.theme});
@@ -582,8 +583,8 @@ class _PasswordStrengthIndicator extends StatelessWidget {
 class _StepIndicator extends StatelessWidget {
   final int current;
   final int total;
-  final ResponsiveHelper r;
-  final NexusThemeExtension theme;
+  final Responsive r;
+  final NexusThemeData theme;
 
   const _StepIndicator(
       {required this.current,
@@ -617,8 +618,8 @@ class _SectionHeader extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final ResponsiveHelper r;
-  final NexusThemeExtension theme;
+  final Responsive r;
+  final NexusThemeData theme;
 
   const _SectionHeader({
     required this.icon,
@@ -656,8 +657,8 @@ class _SectionHeader extends StatelessWidget {
 
 class _ErrorBox extends StatelessWidget {
   final String message;
-  final ResponsiveHelper r;
-  final NexusThemeExtension theme;
+  final Responsive r;
+  final NexusThemeData theme;
 
   const _ErrorBox(
       {required this.message, required this.r, required this.theme});
@@ -689,8 +690,8 @@ class _PrimaryButton extends StatelessWidget {
   final String label;
   final bool isLoading;
   final VoidCallback onPressed;
-  final ResponsiveHelper r;
-  final NexusThemeExtension theme;
+  final Responsive r;
+  final NexusThemeData theme;
 
   const _PrimaryButton({
     required this.label,

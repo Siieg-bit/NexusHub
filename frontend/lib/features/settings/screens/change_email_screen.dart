@@ -175,7 +175,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
   }
 
   // ── UI: Etapa 1 — Confirmar senha ──────────────────────────────────────────
-  Widget _buildStep1(BuildContext context, ResponsiveHelper r, NexusThemeExtension theme) {
+  Widget _buildStep1(BuildContext context, Responsive r, NexusThemeData theme) {
     return Form(
       key: _passwordFormKey,
       child: Column(
@@ -245,7 +245,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
   }
 
   // ── UI: Etapa 2 — Novo e-mail ──────────────────────────────────────────────
-  Widget _buildStep2(BuildContext context, ResponsiveHelper r, NexusThemeExtension theme) {
+  Widget _buildStep2(BuildContext context, Responsive r, NexusThemeData theme) {
     return Form(
       key: _emailFormKey,
       child: Column(
@@ -327,7 +327,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
   }
 
   // ── UI: Etapa 3 — Confirmação enviada ─────────────────────────────────────
-  Widget _buildStep3(BuildContext context, ResponsiveHelper r, NexusThemeExtension theme) {
+  Widget _buildStep3(BuildContext context, Responsive r, NexusThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -377,8 +377,8 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
   InputDecoration _inputDecoration({
     required String hint,
     required IconData icon,
-    required NexusThemeExtension theme,
-    required ResponsiveHelper r,
+    required NexusThemeData theme,
+    required Responsive r,
     Widget? suffix,
   }) {
     return InputDecoration(
@@ -415,8 +415,8 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
 class _StepIndicator extends StatelessWidget {
   final int current;
   final int total;
-  final ResponsiveHelper r;
-  final NexusThemeExtension theme;
+  final Responsive r;
+  final NexusThemeData theme;
 
   const _StepIndicator(
       {required this.current,
@@ -450,8 +450,8 @@ class _SectionHeader extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final ResponsiveHelper r;
-  final NexusThemeExtension theme;
+  final Responsive r;
+  final NexusThemeData theme;
 
   const _SectionHeader({
     required this.icon,
@@ -490,8 +490,8 @@ class _SectionHeader extends StatelessWidget {
 class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
-  final ResponsiveHelper r;
-  final NexusThemeExtension theme;
+  final Responsive r;
+  final NexusThemeData theme;
 
   const _InfoRow(
       {required this.label,
@@ -528,8 +528,8 @@ class _InfoRow extends StatelessWidget {
 
 class _ErrorBox extends StatelessWidget {
   final String message;
-  final ResponsiveHelper r;
-  final NexusThemeExtension theme;
+  final Responsive r;
+  final NexusThemeData theme;
 
   const _ErrorBox(
       {required this.message, required this.r, required this.theme});
@@ -561,8 +561,8 @@ class _PrimaryButton extends StatelessWidget {
   final String label;
   final bool isLoading;
   final VoidCallback onPressed;
-  final ResponsiveHelper r;
-  final NexusThemeExtension theme;
+  final Responsive r;
+  final NexusThemeData theme;
 
   const _PrimaryButton({
     required this.label,

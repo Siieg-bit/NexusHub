@@ -393,7 +393,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         SizedBox(width: r.s(10)),
                         Expanded(
                           child: Text(
-                            s.acceptTermsLabel,
+                            s.acceptTermsAndPrivacy,
                             style: TextStyle(
                                 color: context.nexusTheme.textSecondary,
                                 fontSize: r.fs(13)),
@@ -565,7 +565,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
 class _PasswordStrengthIndicator extends StatelessWidget {
   final _PasswordStrength strength;
-  final ResponsiveHelper r;
+  final Responsive r;
 
   const _PasswordStrengthIndicator({required this.strength, required this.r});
 

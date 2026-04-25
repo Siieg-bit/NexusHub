@@ -111,14 +111,12 @@ class _MfaChallengeScreenState extends ConsumerState<MfaChallengeScreen> {
       if (widget.method == 'totp') {
         // Verificação TOTP via Supabase MFA nativo
         final challengeRes = await SupabaseService.client.auth.mfa.challenge(
-          params: MFAChallengeParams(factorId: widget.factorId),
+          factorId: widget.factorId,
         );
         await SupabaseService.client.auth.mfa.verify(
-          params: MFAVerifyParams(
-            factorId:    widget.factorId,
-            challengeId: challengeRes.id,
-            code:        code,
-          ),
+          factorId:    widget.factorId,
+          challengeId: challengeRes.id,
+          code:        code,
         );
       } else {
         // Verificação SMS via Edge Function verify-sms-otp
@@ -170,7 +168,7 @@ class _MfaChallengeScreenState extends ConsumerState<MfaChallengeScreen> {
     );
 
     return Scaffold(
-      backgroundColor: context.bgColor,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         elevation: 0,

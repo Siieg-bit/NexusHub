@@ -106,7 +106,7 @@ class _Phone2faScreenState extends ConsumerState<Phone2faScreen> {
     final theme = context.nexusTheme;
 
     return Scaffold(
-      backgroundColor: context.bgColor,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         elevation: 0,
@@ -131,7 +131,7 @@ class _Phone2faScreenState extends ConsumerState<Phone2faScreen> {
     );
   }
 
-  Widget _buildStep(BuildContext context, Responsive r, NexusThemeExtension theme) {
+  Widget _buildStep(BuildContext context, Responsive r, NexusThemeData theme) {
     switch (_step) {
       case 1: return _buildPhoneStep(context, r, theme);
       case 2: return _buildOtpStep(context, r, theme);
@@ -141,7 +141,7 @@ class _Phone2faScreenState extends ConsumerState<Phone2faScreen> {
   }
 
   // ── Etapa 1: Inserir telefone ─────────────────────────
-  Widget _buildPhoneStep(BuildContext context, Responsive r, NexusThemeExtension theme) {
+  Widget _buildPhoneStep(BuildContext context, Responsive r, NexusThemeData theme) {
     return SingleChildScrollView(
       key: const ValueKey(1),
       padding: EdgeInsets.all(r.s(24)),
@@ -275,7 +275,7 @@ class _Phone2faScreenState extends ConsumerState<Phone2faScreen> {
   }
 
   // ── Etapa 2: Verificar OTP ────────────────────────────
-  Widget _buildOtpStep(BuildContext context, Responsive r, NexusThemeExtension theme) {
+  Widget _buildOtpStep(BuildContext context, Responsive r, NexusThemeData theme) {
     final pinTheme = PinTheme(
       width: r.s(52),
       height: r.s(60),
@@ -386,7 +386,7 @@ class _Phone2faScreenState extends ConsumerState<Phone2faScreen> {
   }
 
   // ── Etapa 3: Concluído ────────────────────────────────
-  Widget _buildDoneStep(BuildContext context, Responsive r, NexusThemeExtension theme) {
+  Widget _buildDoneStep(BuildContext context, Responsive r, NexusThemeData theme) {
     return Center(
       key: const ValueKey(3),
       child: Padding(

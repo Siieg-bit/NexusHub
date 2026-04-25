@@ -52,7 +52,7 @@ class _TotpSetupScreenState extends ConsumerState<TotpSetupScreen> {
   Future<void> _enrollTotp() async {
     try {
       final response = await SupabaseService.client.auth.mfa.enroll(
-        params: MFAEnrollParams(factorType: FactorType.totp),
+        factorType: FactorType.totp,
       );
       setState(() {
         _factorId = response.id;
@@ -78,16 +78,14 @@ class _TotpSetupScreenState extends ConsumerState<TotpSetupScreen> {
     try {
       // 1. Cria o challenge
       final challengeRes = await SupabaseService.client.auth.mfa.challenge(
-        params: MFAChallengeParams(factorId: _factorId!),
+        factorId: _factorId!,
       );
 
       // 2. Verifica o código
       await SupabaseService.client.auth.mfa.verify(
-        params: MFAVerifyParams(
-          factorId:    _factorId!,
-          challengeId: challengeRes.id,
-          code:        _codeCtrl.text.trim(),
-        ),
+        factorId:    _factorId!,
+        challengeId: challengeRes.id,
+        code:        _codeCtrl.text.trim(),
       );
 
       // 3. Gera backup codes e salva no banco
@@ -122,7 +120,7 @@ class _TotpSetupScreenState extends ConsumerState<TotpSetupScreen> {
     final theme = context.nexusTheme;
 
     return Scaffold(
-      backgroundColor: context.bgColor,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         elevation: 0,
@@ -144,7 +142,7 @@ class _TotpSetupScreenState extends ConsumerState<TotpSetupScreen> {
     );
   }
 
-  Widget _buildStep(BuildContext context, Responsive r, NexusThemeExtension theme) {
+  Widget _buildStep(BuildContext context, Responsive r, NexusThemeData theme) {
     switch (_step) {
       case 0: return const Center(child: CircularProgressIndicator());
       case 1: return _buildQrStep(context, r, theme);
@@ -156,7 +154,7 @@ class _TotpSetupScreenState extends ConsumerState<TotpSetupScreen> {
   }
 
   // ── Etapa 1: QR Code ──────────────────────────────────
-  Widget _buildQrStep(BuildContext context, Responsive r, NexusThemeExtension theme) {
+  Widget _buildQrStep(BuildContext context, Responsive r, NexusThemeData theme) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(r.s(24)),
       child: Column(
@@ -283,7 +281,7 @@ class _TotpSetupScreenState extends ConsumerState<TotpSetupScreen> {
   }
 
   // ── Etapa 2: Verificar código ─────────────────────────
-  Widget _buildVerifyStep(BuildContext context, Responsive r, NexusThemeExtension theme) {
+  Widget _buildVerifyStep(BuildContext context, Responsive r, NexusThemeData theme) {
     final pinTheme = PinTheme(
       width: r.s(52),
       height: r.s(60),
@@ -379,7 +377,7 @@ class _TotpSetupScreenState extends ConsumerState<TotpSetupScreen> {
   }
 
   // ── Etapa 3: Backup codes ─────────────────────────────
-  Widget _buildBackupStep(BuildContext context, Responsive r, NexusThemeExtension theme) {
+  Widget _buildBackupStep(BuildContext context, Responsive r, NexusThemeData theme) {
     return SingleChildScrollView(
       padding: EdgeInsets.all(r.s(24)),
       child: Column(
@@ -544,9 +542,10 @@ class _TotpSetupScreenState extends ConsumerState<TotpSetupScreen> {
   }
 
   // ── Etapa 4: Concluído ────────────────────────────────
-  Widget _buildDoneStep(BuildContext context, Responsive r, NexusThemeExtension theme) {
-    return Center(
+  Widget _buildDoneStep(BuildContext context, Responsive r, NexusThemeData theme) {
+    return Padding(
       padding: EdgeInsets.all(r.s(32)),
+      child: Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -595,7 +594,7 @@ class _TotpSetupScreenState extends ConsumerState<TotpSetupScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 

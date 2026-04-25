@@ -22,7 +22,7 @@ class TwoFactorScreen extends ConsumerWidget {
     final statusAsync = ref.watch(_twoFaStatusProvider);
 
     return Scaffold(
-      backgroundColor: context.bgColor,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         elevation: 0,
