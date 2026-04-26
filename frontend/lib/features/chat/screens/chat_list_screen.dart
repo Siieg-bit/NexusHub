@@ -737,7 +737,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   child: Text(
                     count == 1
                         ? '1 solicitação de chat pendente'
-                        : '\$count solicitações de chat pendentes',
+                        : '$count solicitações de chat pendentes',
                     style: TextStyle(
                       color: context.nexusTheme.accentPrimary,
                       fontSize: r.fs(13),

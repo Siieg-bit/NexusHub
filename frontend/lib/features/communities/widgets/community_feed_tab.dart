@@ -13,6 +13,7 @@ import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/services/supabase_service.dart';
 import 'featured_members_section.dart';
+import '../../../core/widgets/reaction_picker.dart';
 
 // =============================================================================
 // TAB: Feed (Destaque / Recentes)
@@ -573,28 +574,41 @@ class _FeaturedHeroCardState extends ConsumerState<_FeaturedHeroCard> {
     }
   }
 
-  Future<void> _toggleLike() async {
-    final wasLiked = _post.isLiked;
+  Future<void> _toggleReaction(String? reactionType) async {
+    final prevReaction = _post.myReactionType;
+    final prevLikes = _post.likesCount;
+    final isAdding = reactionType != null;
+    final isRemoving = reactionType == null && prevReaction != null;
+    final isChanging = reactionType != null && prevReaction != null && reactionType != prevReaction;
     // Atualização otimista
     setState(() {
       _post = _post.copyWith(
-        isLiked: !wasLiked,
-        likesCount: _post.likesCount + (wasLiked ? -1 : 1),
+        isLiked: isAdding,
+        myReactionType: reactionType,
+        clearReaction: reactionType == null,
+        likesCount: isAdding && !isChanging
+            ? prevLikes + 1
+            : isRemoving
+                ? prevLikes - 1
+                : prevLikes,
       );
     });
     try {
-      await SupabaseService.client.rpc('toggle_like_with_reputation', params: {
+      await SupabaseService.client.rpc('toggle_reaction_with_reputation', params: {
         'p_community_id': _post.communityId,
         'p_user_id': SupabaseService.currentUserId,
         'p_post_id': _post.id,
+        'p_type': reactionType ?? prevReaction ?? 'like',
       });
     } catch (_) {
       // Reverte em caso de erro
       if (mounted) {
         setState(() {
           _post = _post.copyWith(
-            isLiked: wasLiked,
-            likesCount: _post.likesCount + (wasLiked ? 1 : -1),
+            isLiked: prevReaction != null,
+            myReactionType: prevReaction,
+            clearReaction: prevReaction == null,
+            likesCount: prevLikes,
           );
         });
       }
@@ -696,45 +710,16 @@ class _FeaturedHeroCardState extends ConsumerState<_FeaturedHeroCard> {
               // ── Barra de ações ──
               Row(
                 children: [
-                  // Botão de like com atualização otimista
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: _toggleLike,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: r.s(6), horizontal: r.s(2)),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 200),
-                            transitionBuilder: (child, anim) => ScaleTransition(
-                              scale: anim,
-                              child: child,
-                            ),
-                            child: Icon(
-                              _post.isLiked
-                                  ? Icons.favorite_rounded
-                                  : Icons.favorite_border_rounded,
-                              key: ValueKey(_post.isLiked),
-                              size: r.s(21),
-                              color: _post.isLiked
-                                  ? Colors.red[400]
-                                  : Colors.white.withValues(alpha: 0.85),
-                            ),
-                          ),
-                          SizedBox(width: r.s(5)),
-                          Text(
-                            '${_post.likesCount}',
-                            style: TextStyle(
-                              color: _post.isLiked
-                                  ? Colors.red[300]
-                                  : Colors.white.withValues(alpha: 0.85),
-                              fontSize: r.fs(14),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+                  // Botão de reaction com picker
+                  ReactionButton(
+                    currentReaction: _post.myReactionType,
+                    totalCount: _post.likesCount,
+                    onReaction: _toggleReaction,
+                    iconSize: r.s(21),
+                    textStyle: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: r.fs(14),
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   SizedBox(width: r.s(18)),

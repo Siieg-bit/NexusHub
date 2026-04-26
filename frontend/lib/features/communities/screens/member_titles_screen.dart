@@ -37,6 +37,7 @@ class _MemberTitlesScreenState extends ConsumerState<MemberTitlesScreen> {
     final emojiCtrl = TextEditingController(text: existing?['emoji'] as String?);
     String selectedColor = existing?['color'] as String? ?? _colors.first;
     int? autoDays = existing?['auto_assign_after_days'] as int?;
+    bool allowSelfSelect = existing?['allow_self_select'] as bool? ?? true;
     bool isLoading = false;
 
     await showDialog(
@@ -122,6 +123,27 @@ class _MemberTitlesScreenState extends ConsumerState<MemberTitlesScreen> {
                               .withValues(alpha: 0.5)),
                     ),
                   ),
+                  SizedBox(height: r.s(8)),
+                  // Toggle: membros podem escolher este título por conta própria
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Membros podem escolher este título',
+                          style: TextStyle(
+                            color: ctx.nexusTheme.textPrimary,
+                            fontSize: r.fs(13),
+                          ),
+                        ),
+                      ),
+                      Switch(
+                        value: allowSelfSelect,
+                        onChanged: (v) =>
+                            setDialogState(() => allowSelfSelect = v),
+                        activeColor: ctx.nexusTheme.accentPrimary,
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -149,6 +171,7 @@ class _MemberTitlesScreenState extends ConsumerState<MemberTitlesScreen> {
                                 : emojiCtrl.text.trim(),
                             'color': selectedColor,
                             'auto_assign_after_days': autoDays,
+                            'allow_self_select': allowSelfSelect,
                           })
                           .eq('id', existing['id'] as String);
                     } else {
@@ -162,6 +185,7 @@ class _MemberTitlesScreenState extends ConsumerState<MemberTitlesScreen> {
                                 : emojiCtrl.text.trim(),
                             'color': selectedColor,
                             'auto_assign_after_days': autoDays,
+                            'allow_self_select': allowSelfSelect,
                             'created_by': SupabaseService.currentUserId,
                           });
                     }

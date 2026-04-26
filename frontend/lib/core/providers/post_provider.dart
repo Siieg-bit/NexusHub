@@ -151,19 +151,24 @@ Future<List<Map<String, dynamic>>> _injectIsLiked(
   // Injetar likes (apenas se o usuário estiver autenticado)
   if (userId != null) {
     try {
-      final likesRes = await SupabaseService.table('likes')
-          .select('post_id')
+      // Buscar reactions do usuário (substitui tabela 'likes' legada)
+      final reactionsRes = await SupabaseService.table('post_reactions')
+          .select('post_id, type')
           .eq('user_id', userId)
           .inFilter('post_id', postIds);
 
-      final likedPostIds =
-          (likesRes as List).map((e) => e['post_id'] as String).toSet();
+      final reactionsMap = <String, String>{};
+      for (final r in (reactionsRes as List)) {
+        reactionsMap[r['post_id'] as String] = r['type'] as String;
+      }
 
       for (final post in posts) {
-        post['is_liked'] = likedPostIds.contains(post['id']);
+        final reactionType = reactionsMap[post['id'] as String];
+        post['is_liked'] = reactionType != null;
+        post['my_reaction_type'] = reactionType;
       }
     } catch (e) {
-      debugPrint('[post_provider] _injectIsLiked error: \$e');
+      debugPrint('[post_provider] _injectIsLiked error: $e');
     }
   }
 

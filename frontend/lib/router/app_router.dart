@@ -22,6 +22,7 @@ import '../features/communities/screens/create_community_screen.dart';
 import '../features/communities/screens/community_members_screen.dart';
 import '../features/communities/screens/acm_screen.dart';
 import '../features/communities/screens/member_titles_screen.dart';
+import '../features/communities/screens/member_title_picker_screen.dart';
 import '../features/communities/screens/rpg_roles_screen.dart';
 import '../features/explore/screens/explore_screen.dart';
 import '../features/feed/screens/create_blog_screen.dart';
@@ -272,6 +273,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/community/:communityId/acm/member-titles',
         name: 'member-titles',
         builder: (context, state) => MemberTitlesScreen(
+          communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/community/:communityId/my-title',
+        name: 'my-title',
+        builder: (context, state) => MemberTitlePickerScreen(
           communityId: state.pathParameters['communityId']!,
         ),
       ),

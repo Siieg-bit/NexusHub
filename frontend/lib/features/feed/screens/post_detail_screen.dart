@@ -27,6 +27,7 @@ import '../../../core/services/deep_link_service.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/comment_media_menu_button.dart';
 import '../../../core/widgets/mention_overlay.dart';
+import '../../../core/widgets/reaction_picker.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../communities/providers/community_detail_providers.dart'
     as community_providers;
@@ -531,41 +532,44 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen>
     );
   }
 
-  Future<void> _toggleLike() async {
+  Future<void> _toggleReaction(String? reactionType) async {
     final postData = ref.read(postDetailProvider(widget.postId)).valueOrNull;
     final currentUserId = SupabaseService.currentUserId;
+    final prevReaction = postData?.myReactionType;
+    final effectiveType = reactionType ?? prevReaction ?? 'like';
     final params = {
       'p_community_id': postData?.communityId,
       'p_user_id': currentUserId,
       'p_post_id': widget.postId,
+      'p_type': effectiveType,
     };
 
     debugPrint(
-      '[post_detail_screen][like] start postId=${widget.postId} '
-      'communityId=${postData?.communityId} userId=$currentUserId '
-      'isLiked=${postData?.isLiked} likesCount=${postData?.likesCount}',
+      '[post_detail_screen][reaction] start postId=\${widget.postId} '
+      'communityId=\${postData?.communityId} userId=\$currentUserId '
+      'reactionType=\$reactionType prevReaction=\$prevReaction',
     );
 
     try {
       final result = await SupabaseService.rpc(
-        'toggle_like_with_reputation',
+        'toggle_reaction_with_reputation',
         params: params,
       );
       debugPrint(
-        '[post_detail_screen][like] success postId=${widget.postId} '
-        'result=$result',
+        '[post_detail_screen][reaction] success postId=\${widget.postId} '
+        'result=\$result',
       );
       ref.invalidate(postDetailProvider(widget.postId));
       debugPrint(
-        '[post_detail_screen][like] invalidated postDetailProvider '
-        'postId=${widget.postId}',
+        '[post_detail_screen][reaction] invalidated postDetailProvider '
+        'postId=\${widget.postId}',
       );
     } catch (e, stackTrace) {
       debugPrint(
-        '[post_detail_screen][like] error postId=${widget.postId} '
-        'params=$params error=$e',
+        '[post_detail_screen][reaction] error postId=\${widget.postId} '
+        'params=\$params error=\$e',
       );
-      debugPrint('[post_detail_screen][like] stackTrace=$stackTrace');
+      debugPrint('[post_detail_screen][reaction] stackTrace=\$stackTrace');
     }
   }
 
@@ -754,13 +758,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen>
                       label: s.share,
                       onTap: _sharePost,
                     ),
-                    _BottomBarButton(
-                      icon: post.isLiked
-                          ? Icons.favorite_rounded
-                          : Icons.favorite_border_rounded,
-                      label: s.like,
-                      color: post.isLiked ? context.nexusTheme.error : null,
-                      onTap: _toggleLike,
+                    ReactionButton(
+                      currentReaction: post.myReactionType,
+                      totalCount: post.likesCount,
+                      onReaction: _toggleReaction,
                     ),
                     _BottomBarButton(
                       icon: _isBookmarked
@@ -1190,51 +1191,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen>
                                   ],
                                 ),
                               ),
-                              // Botão Like no canto direito do header (estilo Amino)
-                              GestureDetector(
-                                onTap: _toggleLike,
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: r.s(14), vertical: r.s(7)),
-                                  decoration: BoxDecoration(
-                                    color: post.isLiked
-                                        ? context.nexusTheme.error
-                                            .withValues(alpha: 0.12)
-                                        : Colors.grey.withValues(alpha: 0.12),
-                                    borderRadius:
-                                        BorderRadius.circular(r.s(20)),
-                                    border: Border.all(
-                                      color: post.isLiked
-                                          ? context.nexusTheme.error
-                                              .withValues(alpha: 0.4)
-                                          : Colors.grey.withValues(alpha: 0.25),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        post.isLiked
-                                            ? Icons.favorite_rounded
-                                            : Icons.favorite_border_rounded,
-                                        size: r.s(16),
-                                        color: post.isLiked
-                                            ? context.nexusTheme.error
-                                            : Colors.grey[500],
-                                      ),
-                                      SizedBox(width: r.s(5)),
-                                      Text(
-                                        s.like,
-                                        style: TextStyle(
-                                          color: post.isLiked
-                                              ? context.nexusTheme.error
-                                              : Colors.grey[500],
-                                          fontSize: r.fs(13),
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                              // Botão de reaction no canto direito do header (estilo Amino)
+                              ReactionButton(
+                                currentReaction: post.myReactionType,
+                                totalCount: post.likesCount,
+                                onReaction: _toggleReaction,
+                                iconSize: r.s(16),
+                                textStyle: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: r.fs(13),
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],

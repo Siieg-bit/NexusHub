@@ -25,6 +25,7 @@ import '../../../core/widgets/linkified_text.dart';
 import '../../../core/services/haptic_service.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/widgets/reaction_picker.dart';
+import '../../../core/widgets/member_title_badge.dart';
 
 /// Card de post no feed — estilo Amino Apps (web-preview).
 /// Suporta todos os 9 tipos de post com renderização interativa.
@@ -286,9 +287,11 @@ class _PostCardState extends ConsumerState<PostCard>
     });
     if (isAdding) _likeController.forward(from: 0);
     try {
+      // Quando reactionType == null, enviamos o tipo atual (prevReaction) para
+      // acionar o toggle off na RPC (que remove quando o mesmo tipo é enviado)
       await SupabaseService.client.rpc('toggle_post_reaction', params: {
         'p_post_id': _post.id,
-        'p_type': reactionType ?? 'like',
+        'p_type': reactionType ?? prevReaction ?? 'like',
       });
     } catch (_) {
       if (mounted) {
@@ -979,6 +982,15 @@ class _PostCardState extends ConsumerState<PostCard>
                     ],
                   ],
                 ),
+                // Título de membro (apenas em posts de comunidade)
+                if (!isAnonymousQuestion &&
+                    _post.communityId.isNotEmpty &&
+                    _post.authorId.isNotEmpty)
+                  MemberTitleBadge(
+                    userId: _post.authorId,
+                    communityId: _post.communityId,
+                    fontSize: 9,
+                  ),
               ],
             ),
           ),
