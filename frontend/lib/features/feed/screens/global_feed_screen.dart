@@ -232,6 +232,7 @@ class _GlobalFeedScreenState extends ConsumerState<GlobalFeedScreen> {
                         color: context.nexusTheme.textPrimary),
                   ),
                   onPressed: () => context.push('/notifications'),
+                  tooltip: 'Notificações',
                 ),
               ],
             ),

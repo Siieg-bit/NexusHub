@@ -1383,7 +1383,50 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
     final communityAsync =
         ref.watch(community_providers.communityDetailProvider(widget.communityId));
 
-    return Scaffold(
+    return PopScope(
+      canPop: !_hasAnyContent || _isSubmitting,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        // Conteúdo presente e não enviando — pede confirmação
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: context.surfaceColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+            title: Text(
+              'Descartar rascunho?',
+              style: TextStyle(
+                color: context.nexusTheme.textPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            content: Text(
+              'Seu conteúdo será perdido. Deseja salvar como rascunho antes de sair?',
+              style: TextStyle(color: context.nexusTheme.textSecondary),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text('Cancelar',
+                    style: TextStyle(color: context.nexusTheme.textSecondary)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text('Descartar',
+                    style: TextStyle(color: context.nexusTheme.error)),
+              ),
+            ],
+          ),
+        );
+        if (confirm == true && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: context.nexusTheme.backgroundPrimary,
       body: SafeArea(
         bottom: true,
@@ -1817,7 +1860,8 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
           ),
         ],
       ),
-    );
+      ), // Scaffold
+    ); // PopScope
   }
 }
 

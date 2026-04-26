@@ -89,6 +89,7 @@ class AminoBottomNavBar extends ConsumerWidget {
               _CapsuleNavItem(
                 isSelected: currentIndex == 0,
                 onTap: () => onTap(0),
+                semanticsLabel: currentIndex == 0 ? '${s.home2}, selecionado' : s.home2,
                 child: _NavContent(
                   isSelected: currentIndex == 0,
                   icon: Icons.home_rounded,
@@ -100,6 +101,7 @@ class AminoBottomNavBar extends ConsumerWidget {
               if (showOnline)
                 _CapsuleNavItem(
                   isSelected: currentIndex == 1,
+                  semanticsLabel: currentIndex == 1 ? '${s.online}, selecionado' : s.online,
                   onTap: () {
                     if (onOnlineTap != null) {
                       onOnlineTap!();
@@ -135,12 +137,15 @@ class AminoBottomNavBar extends ConsumerWidget {
                       ),
                     ],
                   ),
-                ),
-
-              // ── Botão Central "+" ──────────────────────────────────────────
+                              // ── Botão Central "+" ──────────────────────────────────────────────
               if (showCreate)
                 Expanded(
-                  child: GestureDetector(
+                  child: Semantics(
+                    label: 'Criar post',
+                    button: true,
+                    child: Tooltip(
+                    message: 'Criar post',
+                    child: GestureDetector(
                     onTap: onCreateTap,
                     behavior: HitTestBehavior.opaque,
                     child: Center(
@@ -169,15 +174,18 @@ class AminoBottomNavBar extends ConsumerWidget {
                         ),
                       ),
                     ),
-                  ),
+                  ), // GestureDetector
+                  ), // Tooltip
+                  ), // Semantics
                 )
               else
                 const Expanded(child: SizedBox()),
 
-              // ── Chats ──────────────────────────────────────────────────────
+              // ── Chats ──────────────────────────────────────────────────────────────────
               _CapsuleNavItem(
                 isSelected: currentIndex == 3,
                 onTap: () => onTap(3),
+                semanticsLabel: currentIndex == 3 ? '${s.chats}, selecionado' : s.chats,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
@@ -225,14 +233,12 @@ class AminoBottomNavBar extends ConsumerWidget {
                     ),
                   ],
                 ),
-              ),
-
-              // ── Eu (avatar do usuário) ─────────────────────────────────────
+                            // ── Eu (avatar do usuário) ───────────────────────────────────────────────
               _CapsuleNavItem(
                 isSelected: currentIndex == 4,
                 onTap: () => onTap(4),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                semanticsLabel: currentIndex == 4 ? 'Meu perfil, selecionado' : 'Meu perfil',
+                child: Column(             mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
@@ -340,11 +346,13 @@ class _CapsuleNavItem extends ConsumerWidget {
   final bool isSelected;
   final VoidCallback onTap;
   final Widget child;
+  final String? semanticsLabel;
 
   const _CapsuleNavItem({
     required this.isSelected,
     required this.onTap,
     required this.child,
+    this.semanticsLabel,
   });
 
   @override
@@ -354,7 +362,11 @@ class _CapsuleNavItem extends ConsumerWidget {
     // Isso evita que o AnimatedContainer tente expandir além do espaço disponível.
     final itemHeight = r.s(62) - r.s(12);
     return Expanded(
-      child: GestureDetector(
+      child: Semantics(
+        label: semanticsLabel,
+        button: true,
+        selected: isSelected,
+        child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
@@ -369,12 +381,13 @@ class _CapsuleNavItem extends ConsumerWidget {
           ),
           child: ClipRect(child: child),
         ),
-      ),
+        ), // GestureDetector
+      ), // Semantics
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────────────────────
 // Conteúdo padrão de um item (ícone + label)
 // ─────────────────────────────────────────────────────────────────────────────
 class _NavContent extends ConsumerWidget {

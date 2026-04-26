@@ -22,6 +22,7 @@ import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/user_status_badge.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/shimmer_loading.dart';
+import '../../../core/services/haptic_service.dart';
 
 // =============================================================================
 // PROFILE SCREEN — Layout fiel ao Amino Apps
@@ -37,8 +38,9 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tabController;
+  late AnimationController _followController;
   final _wallController = TextEditingController();
   bool? _followOverride;
   bool _isTogglingFollow = false;
@@ -47,11 +49,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _followController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _followController.dispose();
     _wallController.dispose();
     super.dispose();
   }
@@ -133,6 +140,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 IconButton(
                   icon: const Icon(Icons.more_vert),
                   onPressed: () => _showUserOptions(context, user),
+                  tooltip: 'Opções',
                 ),
               ],
             ),
@@ -223,6 +231,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     IconButton(
                       icon: Icon(Icons.share_outlined,
                           color: Colors.white, size: r.s(22)),
+                      tooltip: 'Compartilhar perfil',
                       onPressed: () => DeepLinkService.shareUrl(
                         type: 'user',
                         targetId: widget.userId,
@@ -312,45 +321,61 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     ),
                                   ),
                                 )
-                              : GestureDetector(
-                                  onTap: _isTogglingFollow
-                                      ? null
-                                      : () => _toggleFollow(ref, user),
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(20), vertical: r.s(8)),
-                                    decoration: BoxDecoration(
-                                      color: displayedIsFollowing
-                                          ? Colors.transparent
-                                          : context.nexusTheme.accentSecondary,
-                                      borderRadius:
-                                          BorderRadius.circular(r.s(8)),
-                                      border: displayedIsFollowing
-                                          ? Border.all(
-                                              color: context.nexusTheme.accentSecondary)
-                                          : null,
+                              : ScaleTransition(
+                                  scale: Tween<double>(begin: 1.0, end: 0.93)
+                                      .chain(CurveTween(curve: Curves.easeInOut))
+                                      .animate(_followController)
+                                      ..addStatusListener((status) {
+                                        if (status == AnimationStatus.completed) {
+                                          _followController.reverse();
+                                        }
+                                      }),
+                                  child: GestureDetector(
+                                    onTap: _isTogglingFollow
+                                        ? null
+                                        : () => _toggleFollow(ref, user),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 250),
+                                      curve: Curves.easeInOut,
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: r.s(20), vertical: r.s(8)),
+                                      decoration: BoxDecoration(
+                                        color: displayedIsFollowing
+                                            ? Colors.transparent
+                                            : context.nexusTheme.accentSecondary,
+                                        borderRadius:
+                                            BorderRadius.circular(r.s(8)),
+                                        border: displayedIsFollowing
+                                            ? Border.all(
+                                                color: context.nexusTheme.accentSecondary)
+                                            : null,
+                                      ),
+                                      child: _isTogglingFollow
+                                          ? SizedBox(
+                                              width: r.s(16),
+                                              height: r.s(16),
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: displayedIsFollowing
+                                                    ? context.nexusTheme.accentSecondary
+                                                    : Colors.white,
+                                              ),
+                                            )
+                                          : AnimatedSwitcher(
+                                              duration: const Duration(milliseconds: 200),
+                                              child: Text(
+                                                displayedIsFollowing
+                                                    ? s.following
+                                                    : s.follow,
+                                                key: ValueKey(displayedIsFollowing),
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: r.fs(13),
+                                                ),
+                                              ),
+                                            ),
                                     ),
-                                    child: _isTogglingFollow
-                                        ? SizedBox(
-                                            width: r.s(16),
-                                            height: r.s(16),
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: displayedIsFollowing
-                                                  ? context.nexusTheme.accentSecondary
-                                                  : Colors.white,
-                                            ),
-                                          )
-                                        : Text(
-                                            displayedIsFollowing
-                                                ? s.following
-                                                : s.follow,
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: r.fs(13),
-                                            ),
-                                          ),
                                   ),
                                 ),
                         ),
@@ -740,6 +765,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     if (_isTogglingFollow) return;
 
     final previous = _followOverride ?? (user.isFollowing == true);
+    // Haptic + animação de fill ao seguir
+    if (!previous) {
+      HapticService.success();
+      _followController.forward(from: 0);
+    } else {
+      HapticService.buttonPress();
+      _followController.reverse();
+    }
 
     setState(() {
       _isTogglingFollow = true;

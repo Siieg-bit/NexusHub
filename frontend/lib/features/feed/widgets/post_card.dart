@@ -57,7 +57,7 @@ class _PostCardState extends ConsumerState<PostCard>
     _post = widget.post;
     _likeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 400),
     );
     // Carregar tentativa anterior de quiz se aplicável
     if (_post.type == 'quiz') {
@@ -1634,9 +1634,23 @@ class _PostCardState extends ConsumerState<PostCard>
                 child: Row(
                   children: [
                     ScaleTransition(
-                      scale: Tween<double>(begin: 1.0, end: 1.3)
-                          .chain(CurveTween(curve: Curves.easeOut))
-                          .animate(_likeController),
+                      scale: TweenSequence<double>([
+                        TweenSequenceItem(
+                          tween: Tween<double>(begin: 1.0, end: 1.35)
+                              .chain(CurveTween(curve: Curves.easeOut)),
+                          weight: 50,
+                        ),
+                        TweenSequenceItem(
+                          tween: Tween<double>(begin: 1.35, end: 0.9)
+                              .chain(CurveTween(curve: Curves.easeIn)),
+                          weight: 25,
+                        ),
+                        TweenSequenceItem(
+                          tween: Tween<double>(begin: 0.9, end: 1.0)
+                              .chain(CurveTween(curve: Curves.elasticOut)),
+                          weight: 25,
+                        ),
+                      ]).animate(_likeController),
                       child: Icon(
                         _post.isLiked
                             ? Icons.favorite_rounded
