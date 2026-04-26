@@ -48,6 +48,12 @@ class PostModel {
   final DateTime updatedAt;
   final UserModel? author;
   final bool isLiked;
+  final String? myReactionType; // 'like', 'love', 'haha', 'wow', 'sad', 'angry' ou null
+  final int loveCount;
+  final int hahaCount;
+  final int wowCount;
+  final int sadCount;
+  final int angryCount;
   /// Autor do post original (para reposts).
   /// Populado via join com profiles quando type = 'repost'.
   final UserModel? originalAuthor;
@@ -107,6 +113,12 @@ class PostModel {
     required this.updatedAt,
     this.author,
     this.isLiked = false,
+    this.myReactionType,
+    this.loveCount = 0,
+    this.hahaCount = 0,
+    this.wowCount = 0,
+    this.sadCount = 0,
+    this.angryCount = 0,
     this.contentBlocks,
     this.authorLocalLevel,
     this.authorLocalNickname,
@@ -181,6 +193,12 @@ class PostModel {
               ? UserModel.fromJson(json['author'] as Map<String, dynamic>)
               : null),
       isLiked: json['is_liked'] as bool? ?? false,
+      myReactionType: json['my_reaction_type'] as String?,
+      loveCount: (json['love_count'] as num?)?.toInt() ?? 0,
+      hahaCount: (json['haha_count'] as num?)?.toInt() ?? 0,
+      wowCount: (json['wow_count'] as num?)?.toInt() ?? 0,
+      sadCount: (json['sad_count'] as num?)?.toInt() ?? 0,
+      angryCount: (json['angry_count'] as num?)?.toInt() ?? 0,
       authorLocalLevel: (json['author_local_level'] as num?)?.toInt(),
       authorLocalNickname: json['author_local_nickname'] as String?,
       authorLocalIconUrl: json['author_local_icon_url'] as String?,
@@ -228,6 +246,13 @@ class PostModel {
     int? likesCount,
     int? commentsCount,
     bool? isLiked,
+    String? myReactionType,
+    bool clearReaction = false,
+    int? loveCount,
+    int? hahaCount,
+    int? wowCount,
+    int? sadCount,
+    int? angryCount,
     bool? isFeatured,
     bool? isPinned,
     bool? isPinnedProfile,
@@ -277,6 +302,12 @@ class PostModel {
       updatedAt: updatedAt,
       author: author,
       isLiked: isLiked ?? this.isLiked,
+      myReactionType: clearReaction ? null : (myReactionType ?? this.myReactionType),
+      loveCount: loveCount ?? this.loveCount,
+      hahaCount: hahaCount ?? this.hahaCount,
+      wowCount: wowCount ?? this.wowCount,
+      sadCount: sadCount ?? this.sadCount,
+      angryCount: angryCount ?? this.angryCount,
       contentBlocks: contentBlocks,
       authorLocalLevel: authorLocalLevel,
       authorLocalNickname: authorLocalNickname,

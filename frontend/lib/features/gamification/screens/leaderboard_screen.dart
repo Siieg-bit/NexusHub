@@ -63,6 +63,42 @@ final onlineTimeLeaderboardProvider =
   return (result as List? ?? []).map((e) => e as Map<String, dynamic>).toList();
 });
 
+/// Provider de ranking por posts mais curtidos.
+final topLikedAuthorsProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, communityId) async {
+  final result = await SupabaseService.rpc(
+    'get_top_liked_authors',
+    params: {'p_community_id': communityId, 'p_limit': 50},
+  );
+  if (result == null) return [];
+  return (result as List? ?? []).map((e) => e as Map<String, dynamic>).toList();
+});
+
+/// Provider de ranking por comentários.
+final topCommentersProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, communityId) async {
+  final result = await SupabaseService.rpc(
+    'get_top_commenters',
+    params: {'p_community_id': communityId, 'p_limit': 50},
+  );
+  if (result == null) return [];
+  return (result as List? ?? []).map((e) => e as Map<String, dynamic>).toList();
+});
+
+/// Provider de ranking por coins doados (tips).
+final topTippersProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, communityId) async {
+  final result = await SupabaseService.rpc(
+    'get_top_tippers',
+    params: {'p_community_id': communityId, 'p_limit': 50},
+  );
+  if (result == null) return [];
+  return (result as List? ?? []).map((e) => e as Map<String, dynamic>).toList();
+});
+
 // =============================================================================
 // TELA PRINCIPAL
 // =============================================================================
@@ -86,8 +122,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   late Animation<double> _podiumAnimation;
   late TabController _tabController;
 
-  // 0 = Reputação, 1 = Tempo Online
-  static const _tabCount = 2;
+  // 0 = Reputação, 1 = Tempo Online, 2 = Curtidas, 3 = Comentários, 4 = Coins
+  static const _tabCount = 5;
 
   List<(String, String)> _getPeriods(AppStrings s) => [
     ('all', s.general),
@@ -144,6 +180,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
     final leaderboardAsync = ref.watch(leaderboardProvider(params));
     final onlineAsync =
         ref.watch(onlineTimeLeaderboardProvider(widget.communityId));
+    final likedAsync = ref.watch(topLikedAuthorsProvider(widget.communityId));
+    final commentersAsync = ref.watch(topCommentersProvider(widget.communityId));
+    final tippersAsync = ref.watch(topTippersProvider(widget.communityId));
 
     return Scaffold(
       backgroundColor: context.nexusTheme.backgroundPrimary,
@@ -225,7 +264,19 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                 ),
                 Tab(
                   icon: Icon(Icons.access_time_rounded, size: 18),
-                  text: 'Tempo Online',
+                  text: 'Online',
+                ),
+                Tab(
+                  icon: Icon(Icons.favorite_rounded, size: 18),
+                  text: 'Curtidas',
+                ),
+                Tab(
+                  icon: Icon(Icons.chat_bubble_rounded, size: 18),
+                  text: 'Comentários',
+                ),
+                Tab(
+                  icon: Icon(Icons.monetization_on_rounded, size: 18),
+                  text: 'Coins',
                 ),
               ],
             ),
@@ -612,16 +663,199 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                 ],
               ),
             ),
+            // ── Aba 3: Curtidas ──
+            _buildSimpleRankingTab(
+              asyncData: likedAsync,
+              emptyIcon: Icons.favorite_rounded,
+              emptyTitle: 'Nenhum post curtido ainda',
+              emptySubtitle: 'Curta posts para aparecer aqui!',
+              scoreIcon: Icons.favorite_rounded,
+              scoreColor: const Color(0xFFEF4444),
+              scoreLabel: (item) => '${item['total_likes'] ?? 0} curtidas',
+              onRefresh: () => ref.invalidate(topLikedAuthorsProvider(widget.communityId)),
+            ),
+            // ── Aba 4: Comentários ──
+            _buildSimpleRankingTab(
+              asyncData: commentersAsync,
+              emptyIcon: Icons.chat_bubble_rounded,
+              emptyTitle: 'Nenhum comentário ainda',
+              emptySubtitle: 'Comente posts para aparecer aqui!',
+              scoreIcon: Icons.chat_bubble_rounded,
+              scoreColor: const Color(0xFF42A5F5),
+              scoreLabel: (item) => '${item['comment_count'] ?? 0} comentários',
+              onRefresh: () => ref.invalidate(topCommentersProvider(widget.communityId)),
+            ),
+            // ── Aba 5: Coins ──
+            _buildSimpleRankingTab(
+              asyncData: tippersAsync,
+              emptyIcon: Icons.monetization_on_rounded,
+              emptyTitle: 'Nenhuma doação de coins ainda',
+              emptySubtitle: 'Doe coins para outros membros para aparecer aqui!',
+              scoreIcon: Icons.monetization_on_rounded,
+              scoreColor: const Color(0xFFFFD700),
+              scoreLabel: (item) => '${item['total_tips'] ?? 0} coins',
+              onRefresh: () => ref.invalidate(topTippersProvider(widget.communityId)),
+            ),
           ],
         ),
       ),
     );
   }
+  // ── Aba genérica para rankings simples (Curtidas, Comentários, Coins) ───
+  Widget _buildSimpleRankingTab({
+    required AsyncValue<List<Map<String, dynamic>>> asyncData,
+    required String emptyTitle,
+    required String emptySubtitle,
+    required IconData emptyIcon,
+    required String Function(Map<String, dynamic>) scoreLabel,
+    required IconData scoreIcon,
+    required Color scoreColor,
+    required VoidCallback onRefresh,
+  }) {
+    final r = context.r;
+    return RefreshIndicator(
+      color: context.nexusTheme.accentPrimary,
+      onRefresh: () async => onRefresh(),
+      child: CustomScrollView(
+        slivers: [
+          asyncData.when(
+            loading: () => const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (_, __) => SliverFillRemaining(
+              child: Center(
+                child: Text('Erro ao carregar ranking',
+                    style: TextStyle(color: Colors.grey[400])),
+              ),
+            ),
+            data: (items) {
+              if (items.isEmpty) {
+                return SliverFillRemaining(
+                  child: NexusEmptyState(
+                    icon: emptyIcon,
+                    title: emptyTitle,
+                    subtitle: emptySubtitle,
+                  ),
+                );
+              }
+              return SliverList(
+                delegate: SliverChildListDelegate([
+                  SizedBox(height: r.s(8)),
+                  ...items.asMap().entries.map((entry) {
+                    final i = entry.key;
+                    final item = entry.value;
+                    final userId = item['user_id'] as String?;
+                    final nickname = item['nickname'] as String? ?? 'Usuário';
+                    final iconUrl = item['icon_url'] as String?;
+                    final isVerified = item['is_verified'] as bool? ?? false;
+                    final rank = i + 1;
+                    final medal = rank == 1 ? '🥇' : rank == 2 ? '🥈' : rank == 3 ? '🥉' : null;
+                    return Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(16), vertical: r.s(4)),
+                      child: GestureDetector(
+                        onTap: userId != null
+                            ? () => context.push('/user/$userId')
+                            : null,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: r.s(14), vertical: r.s(10)),
+                          decoration: BoxDecoration(
+                            color: rank <= 3
+                                ? context.nexusTheme.accentPrimary
+                                    .withValues(alpha: 0.06)
+                                : context.surfaceColor,
+                            borderRadius: BorderRadius.circular(r.s(12)),
+                            border: Border.all(
+                              color: rank <= 3
+                                  ? context.nexusTheme.accentPrimary
+                                      .withValues(alpha: 0.15)
+                                  : Colors.white.withValues(alpha: 0.05),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: r.s(28),
+                                child: medal != null
+                                    ? Text(medal,
+                                        style: TextStyle(fontSize: r.fs(18)))
+                                    : Text(
+                                        '#$rank',
+                                        style: TextStyle(
+                                          color: Colors.grey[500],
+                                          fontSize: r.fs(13),
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                              ),
+                              CosmeticAvatar(
+                                userId: userId,
+                                avatarUrl: iconUrl,
+                                size: r.s(36),
+                              ),
+                              SizedBox(width: r.s(10)),
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        nickname,
+                                        style: TextStyle(
+                                          color:
+                                              context.nexusTheme.textPrimary,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: r.fs(14),
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (isVerified) ...
+                                      [
+                                        SizedBox(width: r.s(4)),
+                                        Icon(Icons.verified_rounded,
+                                            color: context
+                                                .nexusTheme.accentSecondary,
+                                            size: r.s(14)),
+                                      ],
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(scoreIcon,
+                                      color: scoreColor, size: r.s(14)),
+                                  SizedBox(width: r.s(4)),
+                                  Text(
+                                    scoreLabel(item),
+                                    style: TextStyle(
+                                      color: scoreColor,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: r.fs(13),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                  SizedBox(height: r.s(32)),
+                ]),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }
-
 // =============================================================================
 // WIDGET: Item do pódio (Reputação)
-// =============================================================================
+// ==============================================================================
 
 class _PodiumItem extends ConsumerWidget {
   final int rank;

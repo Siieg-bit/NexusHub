@@ -12,6 +12,7 @@ import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/widgets/nexus_empty_state.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../router/shell_screen.dart';
+import '../widgets/announcement_banner.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Provider de feed global com paginação (AsyncNotifier)
@@ -237,6 +238,10 @@ class _GlobalFeedScreenState extends ConsumerState<GlobalFeedScreen> {
               ],
             ),
 
+            // ================================================================
+            // ANNOUNCEMENT BANNER
+            // ================================================================
+            const SliverToBoxAdapter(child: AnnouncementBanner()),
             // ================================================================
             // QUICK ACTIONS
             // ================================================================

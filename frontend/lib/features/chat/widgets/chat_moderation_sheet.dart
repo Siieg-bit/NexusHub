@@ -926,6 +926,17 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
                       },
                     ),
                     SizedBox(height: r.s(8)),
+                    // Big Note (host e co_host)
+                    _ButtonTile(
+                      r: r,
+                      icon: Icons.sticky_note_2_rounded,
+                      label: 'Definir Big Note',
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showBigNoteDialog();
+                      },
+                    ),
+                    SizedBox(height: r.s(8)),
                     // Convidar seguidores (host e co_host, apenas para chats públicos e privados)
                     if (_chatType != 'dm')
                       _ButtonTile(
@@ -1203,6 +1214,101 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
   ),
 );
 }
+
+  void _showBigNoteDialog() {
+    final r = context.r;
+    final ctrl = TextEditingController();
+    // Carregar big_note atual
+    SupabaseService.table('chat_threads')
+        .select('big_note')
+        .eq('id', widget.threadId)
+        .maybeSingle()
+        .then((res) {
+      if (res != null && mounted) {
+        ctrl.text = (res['big_note'] as String?) ?? '';
+      }
+    });
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: ctx.surfaceColor,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(r.s(16))),
+        title: Text('Big Note',
+            style: TextStyle(
+                color: ctx.textPrimary,
+                fontWeight: FontWeight.w700,
+                fontSize: r.fs(16))),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Texto fixado no topo do chat para todos os membros.',
+              style: TextStyle(
+                  color: ctx.textSecondary, fontSize: r.fs(12)),
+            ),
+            SizedBox(height: r.s(10)),
+            TextField(
+              controller: ctrl,
+              autofocus: true,
+              maxLines: 4,
+              maxLength: 500,
+              style: TextStyle(color: ctx.textPrimary, fontSize: r.fs(14)),
+              decoration: InputDecoration(
+                hintText: 'Digite a nota (deixe vazio para remover)...',
+                hintStyle: TextStyle(color: ctx.textHint, fontSize: r.fs(13)),
+                filled: true,
+                fillColor: ctx.cardBg,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(r.s(10)),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancelar',
+                style: TextStyle(color: ctx.textHint, fontSize: r.fs(14))),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.nexusTheme.accentPrimary,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(r.s(10))),
+            ),
+            onPressed: () async {
+              final note = ctrl.text.trim();
+              Navigator.pop(ctx);
+              try {
+                await SupabaseService.client.rpc('set_chat_big_note', params: {
+                  'p_thread_id': widget.threadId,
+                  'p_big_note': note.isEmpty ? null : note,
+                });
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(note.isEmpty
+                        ? 'Big Note removida'
+                        : 'Big Note atualizada'),
+                    backgroundColor: context.nexusTheme.accentPrimary,
+                    behavior: SnackBarBehavior.floating,
+                  ));
+                }
+              } catch (e) {
+                debugPrint('[ChatModeration] BigNote error: $e');
+              }
+            },
+            child: Text('Salvar',
+                style: TextStyle(
+                    color: Colors.white, fontSize: r.fs(14))),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _showRenameDialog() {
     final r = context.r;

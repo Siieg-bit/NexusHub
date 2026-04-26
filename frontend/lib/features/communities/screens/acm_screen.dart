@@ -51,6 +51,8 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
 
   // Home Layout customization
   Map<String, dynamic> _homeLayout = {};
+  // RPG Mode
+  bool _rpgModeEnabled = false;
 
   // Stats (loaded from DB)
   int _newMembers7d = 0;
@@ -95,6 +97,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
       _tagline = res['tagline'] as String? ?? '';
       _homeLayout = Map<String, dynamic>.from(
           res['home_layout'] as Map<String, dynamic>? ?? _defaultHomeLayout());
+      _rpgModeEnabled = res['rpg_mode_enabled'] as bool? ?? false;
 
       // Load real stats
       await _loadStats();
@@ -197,6 +200,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
         'theme_apply_mode': _themeApplyMode,
         'welcome_message': _welcomeMessage,
         'home_layout': _homeLayout,
+        'rpg_mode_enabled': _rpgModeEnabled,
         'description': _description,
         'rules': _rules,
         'about_text': _aboutText,
@@ -343,34 +347,95 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           s.topicCategories),
     ];
 
-    return ListView.builder(
+    return ListView(
       padding: EdgeInsets.all(r.s(16)),
-      itemCount: modules.length,
-      itemBuilder: (context, index) {
-        final mod = modules[index];
-        final isEnabled = _config[mod.key] as bool? ?? false;
-        return Container(
-          margin: EdgeInsets.only(bottom: r.s(8)),
+      children: [
+        ...List.generate(modules.length, (index) {
+          final mod = modules[index];
+          final isEnabled = _config[mod.key] as bool? ?? false;
+          return Container(
+            margin: EdgeInsets.only(bottom: r.s(8)),
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(r.s(12)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+            child: SwitchListTile(
+              secondary: Icon(mod.icon,
+                  color: isEnabled
+                      ? context.nexusTheme.accentPrimary
+                      : Colors.grey[600]),
+              title: Text(mod.label,
+                  style: const TextStyle(fontWeight: FontWeight.w500)),
+              subtitle: Text(mod.description,
+                  style:
+                      TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
+              value: isEnabled,
+              activeColor: context.nexusTheme.accentPrimary,
+              onChanged: (val) {
+                setState(() => _config[mod.key] = val);
+              },
+            ),
+          );
+        }),
+
+        // ── Modo RPG ──
+        SizedBox(height: r.s(8)),
+        Container(
           decoration: BoxDecoration(
             color: context.surfaceColor,
             borderRadius: BorderRadius.circular(r.s(12)),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            border: Border.all(
+              color: _rpgModeEnabled
+                  ? context.nexusTheme.accentPrimary.withValues(alpha: 0.4)
+                  : Colors.white.withValues(alpha: 0.05),
+            ),
           ),
           child: SwitchListTile(
-            secondary: Icon(mod.icon,
-                color: isEnabled ? context.nexusTheme.accentPrimary : Colors.grey[600]),
-            title: Text(mod.label,
-                style: const TextStyle(fontWeight: FontWeight.w500)),
-            subtitle: Text(mod.description,
-                style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
-            value: isEnabled,
+            secondary: Icon(
+              Icons.shield_rounded,
+              color: _rpgModeEnabled
+                  ? context.nexusTheme.accentPrimary
+                  : Colors.grey[600],
+            ),
+            title: const Text('Modo RPG',
+                style: TextStyle(fontWeight: FontWeight.w500)),
+            subtitle: Text(
+              'Ativa roles e classes para os membros da comunidade.',
+              style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
+            ),
+            value: _rpgModeEnabled,
             activeColor: context.nexusTheme.accentPrimary,
-            onChanged: (val) {
-              setState(() => _config[mod.key] = val);
-            },
+            onChanged: (val) => setState(() => _rpgModeEnabled = val),
           ),
-        );
-      },
+        ),
+
+        // Botão de gerenciar roles (só visível quando RPG ativo)
+        if (_rpgModeEnabled) ...
+          [
+            SizedBox(height: r.s(8)),
+            Container(
+              decoration: BoxDecoration(
+                color: context.surfaceColor,
+                borderRadius: BorderRadius.circular(r.s(12)),
+              ),
+              child: ListTile(
+                leading: Icon(Icons.manage_accounts_rounded,
+                    color: context.nexusTheme.accentPrimary),
+                title: const Text('Gerenciar Roles',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                subtitle: Text('Criar, editar e remover roles RPG.',
+                    style: TextStyle(
+                        color: Colors.grey[500], fontSize: r.fs(12))),
+                trailing: Icon(Icons.chevron_right_rounded,
+                    color: context.nexusTheme.textHint),
+                onTap: () => context.push(
+                  '/community/${widget.communityId}/rpg-roles?isHost=true',
+                ),
+              ),
+            ),
+          ],
+      ],
     );
   }
 
@@ -959,6 +1024,10 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
             style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
         SizedBox(height: r.s(16)),
 
+        // ---- ORDEM DAS SEÇÕES (drag-and-drop) ----
+        _buildSectionOrderEditor(),
+        SizedBox(height: r.s(16)),
+
         ..._buildSectionToggles(visible),
 
         SizedBox(height: r.s(24)),
@@ -1182,6 +1251,95 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
     );
   }
 
+
+  // ── Drag-and-drop de ordem das seções ────────────────────────────────────
+  Widget _buildSectionOrderEditor() {
+    final r = context.r;
+    final s = getStrings();
+    final defaultOrder = ['header', 'check_in', 'live_chats', 'tabs'];
+    final rawOrder = _homeLayout['sections_order'];
+    final List<String> order = rawOrder is List
+        ? List<String>.from(rawOrder)
+        : List<String>.from(defaultOrder);
+
+    final labels = {
+      'header': 'Cabeçalho',
+      'check_in': s.checkInLabel,
+      'live_chats': s.liveChats2,
+      'tabs': 'Abas de conteúdo',
+    };
+    final icons = {
+      'header': Icons.image_rounded,
+      'check_in': Icons.check_circle_rounded,
+      'live_chats': Icons.live_tv_rounded,
+      'tabs': Icons.tab_rounded,
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Ordem das Seções',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        SizedBox(height: r.s(4)),
+        Text(
+          'Arraste para reordenar as seções da home da comunidade.',
+          style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
+        ),
+        SizedBox(height: r.s(12)),
+        ReorderableListView(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          onReorder: (oldIndex, newIndex) {
+            setState(() {
+              if (newIndex > oldIndex) newIndex--;
+              final item = order.removeAt(oldIndex);
+              order.insert(newIndex, item);
+              _homeLayout['sections_order'] = order;
+            });
+          },
+          children: order.map((key) {
+            return Container(
+              key: ValueKey(key),
+              margin: EdgeInsets.only(bottom: r.s(6)),
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(14), vertical: r.s(12)),
+              decoration: BoxDecoration(
+                color: context.surfaceColor,
+                borderRadius: BorderRadius.circular(r.s(12)),
+                border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.05)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    icons[key] ?? Icons.widgets_rounded,
+                    color: context.nexusTheme.accentPrimary,
+                    size: r.s(20),
+                  ),
+                  SizedBox(width: r.s(12)),
+                  Expanded(
+                    child: Text(
+                      labels[key] ?? key,
+                      style: TextStyle(
+                        color: context.nexusTheme.textPrimary,
+                        fontWeight: FontWeight.w500,
+                        fontSize: r.fs(14),
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.drag_handle_rounded,
+                      color: Colors.grey[500], size: r.s(20)),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
   List<Widget> _buildSectionToggles(Map<String, dynamic> visible) {
     final s = getStrings();
     final r = context.r;
@@ -1385,6 +1543,60 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                       ),
                     ),
                   SizedBox(width: r.s(8)),
+                  Icon(Icons.arrow_forward_ios_rounded,
+                      size: r.s(14),
+                      color: context.nexusTheme.textSecondary),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: r.s(12)),
+          // Botão de acesso a Títulos de Membros
+          GestureDetector(
+            onTap: () => context.push(
+              '/community/\${widget.communityId}/acm/member-titles',
+            ),
+            child: Container(
+              padding: EdgeInsets.all(r.s(14)),
+              decoration: BoxDecoration(
+                color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(r.s(12)),
+                border: Border.all(
+                    color: context.nexusTheme.accentPrimary.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(r.s(8)),
+                    decoration: BoxDecoration(
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(r.s(8)),
+                    ),
+                    child: Icon(Icons.workspace_premium_rounded,
+                        color: context.nexusTheme.accentPrimary, size: r.s(20)),
+                  ),
+                  SizedBox(width: r.s(12)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Títulos de Membros',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: r.fs(14),
+                          ),
+                        ),
+                        Text(
+                          'Crie e atribua títulos customizados',
+                          style: TextStyle(
+                            color: context.nexusTheme.textSecondary,
+                            fontSize: r.fs(12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   Icon(Icons.arrow_forward_ios_rounded,
                       size: r.s(14),
                       color: context.nexusTheme.textSecondary),

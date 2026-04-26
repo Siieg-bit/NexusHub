@@ -11,6 +11,7 @@ import '../features/auth/screens/signup_screen.dart';
 import '../features/auth/screens/interest_wizard_screen.dart';
 import '../features/auth/screens/reset_password_screen.dart';
 import '../features/chat/screens/chat_list_screen.dart';
+import '../features/chat/screens/chat_requests_screen.dart';
 import '../features/chat/screens/chat_room_screen.dart';
 import '../features/chat/screens/chat_details_screen.dart';
 import '../features/communities/screens/community_detail_screen.dart';
@@ -20,6 +21,8 @@ import '../features/communities/screens/community_list_screen.dart';
 import '../features/communities/screens/create_community_screen.dart';
 import '../features/communities/screens/community_members_screen.dart';
 import '../features/communities/screens/acm_screen.dart';
+import '../features/communities/screens/member_titles_screen.dart';
+import '../features/communities/screens/rpg_roles_screen.dart';
 import '../features/explore/screens/explore_screen.dart';
 import '../features/feed/screens/create_blog_screen.dart';
 import '../features/feed/screens/create_image_post_screen.dart';
@@ -42,6 +45,8 @@ import '../features/moderation/screens/moderation_actions_screen.dart';
 import '../features/notifications/screens/notifications_screen.dart';
 import '../features/profile/screens/community_profile_screen.dart';
 import '../features/profile/screens/edit_profile_screen.dart';
+import '../features/profile/screens/referral_screen.dart';
+import '../features/profile/screens/verified_badge_request_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 import '../features/settings/screens/privacy_settings_screen.dart';
@@ -221,6 +226,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // ROTAS DE COMUNIDADE
       // ====================================================================
       GoRoute(
+        path: '/chat-requests',
+        name: 'chat-requests',
+        builder: (context, state) => const ChatRequestsScreen(),
+      ),
+      GoRoute(
+        path: '/community/:communityId/rpg-roles',
+        name: 'rpg-roles',
+        builder: (context, state) {
+          final communityId = state.pathParameters['communityId']!;
+          final isHost = state.uri.queryParameters['isHost'] == 'true';
+          return RpgRolesScreen(communityId: communityId, isHost: isHost);
+        },
+      ),
+      GoRoute(
         path: '/community/create',
         name: 'create-community',
         builder: (context, state) => const CreateCommunityScreen(),
@@ -246,6 +265,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/community/:communityId/acm',
         name: 'acm',
         builder: (context, state) => AcmScreen(
+          communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/community/:communityId/acm/member-titles',
+        name: 'member-titles',
+        builder: (context, state) => MemberTitlesScreen(
           communityId: state.pathParameters['communityId']!,
         ),
       ),
@@ -461,6 +487,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/profile/edit',
         name: 'edit-profile',
         builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: '/profile/verified-badge',
+        name: 'verified-badge-request',
+        builder: (context, state) => const VerifiedBadgeRequestScreen(),
       ),
       GoRoute(
         path: '/community/:communityId/profile/edit',
@@ -985,3 +1016,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+        GoRoute(
+          path: '/profile/referral',
+          name: 'referral',
+          builder: (context, state) => const ReferralScreen(),
+        ),

@@ -24,6 +24,7 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/linkified_text.dart';
 import '../../../core/services/haptic_service.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../../core/widgets/reaction_picker.dart';
 
 /// Card de post no feed — estilo Amino Apps (web-preview).
 /// Suporta todos os 9 tipos de post com renderização interativa.
@@ -256,6 +257,47 @@ class _PostCardState extends ConsumerState<PostCard>
           _post = _post.copyWith(
             isLiked: wasLiked,
             likesCount: _post.likesCount + (wasLiked ? 1 : -1),
+          );
+        });
+      }
+    }
+    widget.onLike?.call();
+  }
+
+  Future<void> _toggleReaction(String? reactionType) async {
+    final prevReaction = _post.myReactionType;
+    final prevLikes = _post.likesCount;
+    final isAdding = reactionType != null;
+    final isRemoving = reactionType == null && prevReaction != null;
+    final isChanging = reactionType != null && prevReaction != null && reactionType != prevReaction;
+    if (isAdding && !isChanging) HapticService.success();
+    else HapticService.buttonPress();
+    setState(() {
+      _post = _post.copyWith(
+        isLiked: isAdding,
+        myReactionType: reactionType,
+        clearReaction: reactionType == null,
+        likesCount: isAdding && !isChanging
+            ? prevLikes + 1
+            : isRemoving
+                ? prevLikes - 1
+                : prevLikes,
+      );
+    });
+    if (isAdding) _likeController.forward(from: 0);
+    try {
+      await SupabaseService.client.rpc('toggle_post_reaction', params: {
+        'p_post_id': _post.id,
+        'p_type': reactionType ?? 'like',
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _post = _post.copyWith(
+            isLiked: prevReaction != null,
+            myReactionType: prevReaction,
+            clearReaction: prevReaction == null,
+            likesCount: prevLikes,
           );
         });
       }
@@ -1620,60 +1662,18 @@ class _PostCardState extends ConsumerState<PostCard>
       padding: EdgeInsets.fromLTRB(r.s(12), r.s(2), r.s(12), r.s(10)),
       child: Row(
         children: [
-          // Like button (animated heart)
+          // Reaction button (tap = like, long press = picker)
           Semantics(
-            label: _post.isLiked
-                ? 'Descurtir post, ${_post.likesCount} curtidas'
-                : 'Curtir post, ${_post.likesCount} curtidas',
+            label: _post.myReactionType != null
+                ? 'Remover reaction, ${_post.likesCount} reactions'
+                : 'Reagir ao post, ${_post.likesCount} reactions',
             button: true,
-            child: GestureDetector(
-              onTap: _toggleLike,
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: r.s(6), horizontal: r.s(2)),
-                child: Row(
-                  children: [
-                    ScaleTransition(
-                      scale: TweenSequence<double>([
-                        TweenSequenceItem(
-                          tween: Tween<double>(begin: 1.0, end: 1.35)
-                              .chain(CurveTween(curve: Curves.easeOut)),
-                          weight: 50,
-                        ),
-                        TweenSequenceItem(
-                          tween: Tween<double>(begin: 1.35, end: 0.9)
-                              .chain(CurveTween(curve: Curves.easeIn)),
-                          weight: 25,
-                        ),
-                        TweenSequenceItem(
-                          tween: Tween<double>(begin: 0.9, end: 1.0)
-                              .chain(CurveTween(curve: Curves.elasticOut)),
-                          weight: 25,
-                        ),
-                      ]).animate(_likeController),
-                      child: Icon(
-                        _post.isLiked
-                            ? Icons.favorite_rounded
-                            : Icons.favorite_border_rounded,
-                        size: r.s(21),
-                        color: _post.isLiked
-                            ? const Color(0xFFEF4444)
-                            : Colors.grey[600],
-                      ),
-                    ),
-                    SizedBox(width: r.s(5)),
-                    Text(
-                      '${_post.likesCount}',
-                      style: TextStyle(
-                        color: _post.isLiked
-                            ? const Color(0xFFEF4444)
-                            : Colors.grey[600],
-                        fontSize: r.fs(13),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: r.s(6), horizontal: r.s(2)),
+              child: ReactionButton(
+                currentReaction: _post.myReactionType ?? (_post.isLiked ? 'like' : null),
+                totalCount: _post.likesCount,
+                onReaction: _toggleReaction,
               ),
             ),
           ),

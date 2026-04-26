@@ -23,6 +23,7 @@ import '../../../core/widgets/user_status_badge.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/services/haptic_service.dart';
+import '../widgets/profile_visitors_section.dart';
 
 // =============================================================================
 // PROFILE SCREEN — Layout fiel ao Amino Apps
@@ -53,6 +54,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
+    // Registrar visita ao perfil (se não for o próprio perfil)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentUserId = SupabaseService.currentUserId;
+      if (currentUserId != null && currentUserId != widget.userId) {
+        SupabaseService.rpc('record_profile_visit', params: {
+          'p_visited_id': widget.userId,
+        }).catchError((_) {});
+      }
+    });
   }
 
   @override
@@ -606,6 +616,61 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   ),
                 ),
 
+                // ================================================================
+                // VERIFIED BADGE REQUEST (apenas para o próprio perfil não verificado)
+                // ================================================================
+                if (isOwnProfile && !user.isNicknameVerified)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(16), vertical: r.s(4)),
+                      child: GestureDetector(
+                        onTap: () => context.push('/profile/verified-badge'),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: r.s(14), vertical: r.s(10)),
+                          decoration: BoxDecoration(
+                            color: context.nexusTheme.accentSecondary
+                                .withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(r.s(10)),
+                            border: Border.all(
+                              color: context.nexusTheme.accentSecondary
+                                  .withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.verified_outlined,
+                                  color: context.nexusTheme.accentSecondary,
+                                  size: r.s(18)),
+                              SizedBox(width: r.s(10)),
+                              Expanded(
+                                child: Text(
+                                  'Solicitar verificação de nickname',
+                                  style: TextStyle(
+                                    color: context.nexusTheme.accentSecondary,
+                                    fontSize: r.fs(13),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              Icon(Icons.arrow_forward_ios_rounded,
+                                  color: context.nexusTheme.accentSecondary
+                                      .withValues(alpha: 0.6),
+                                  size: r.s(14)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                // ================================================================
+                // VISITANTES RECENTES (apenas para o próprio perfil)
+                // ================================================================
+                if (isOwnProfile)
+                  const SliverToBoxAdapter(
+                    child: ProfileVisitorsSection(),
+                  ),
                 // ================================================================
                 // AMINO+ BANNER
                 // ================================================================

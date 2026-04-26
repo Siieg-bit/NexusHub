@@ -26,6 +26,7 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/deep_link_service.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/comment_media_menu_button.dart';
+import '../../../core/widgets/mention_overlay.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../communities/providers/community_detail_providers.dart'
     as community_providers;
@@ -116,7 +117,8 @@ class PostDetailScreen extends ConsumerStatefulWidget {
   ConsumerState<PostDetailScreen> createState() => _PostDetailScreenState();
 }
 
-class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
+class _PostDetailScreenState extends ConsumerState<PostDetailScreen>
+    with MentionMixin<PostDetailScreen> {
   final _commentController = TextEditingController();
   final _commentFocusNode = FocusNode();
   bool _isSending = false;
@@ -169,6 +171,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   @override
   void initState() {
     super.initState();
+    initMention(_commentController);
     if (widget.scrollToComments) {
       // Aguarda o primeiro frame para que o layout esteja pronto antes de focar
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -180,6 +183,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
   @override
   void dispose() {
+    disposeMention();
     _commentController.dispose();
     _commentFocusNode.dispose();
     super.dispose();
@@ -1572,6 +1576,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                         style: TextStyle(color: Colors.grey[500], fontSize: 12),
                                       ),
                                     ),
+                                  ),
+                                ),
+                              // Autocomplete de menção
+                              if (mentionQuery != null)
+                                Padding(
+                                  padding: EdgeInsets.only(bottom: r.s(6)),
+                                  child: MentionSuggestionList(
+                                    query: mentionQuery!,
+                                    controller: _commentController,
+                                    onMentionInserted: onMentionInserted,
                                   ),
                                 ),
                               // Input row: avatar + botões + campo + enviar
