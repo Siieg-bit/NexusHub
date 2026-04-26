@@ -44,6 +44,7 @@ import 'call_screen.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/emoji_rain_overlay.dart';
 import '../../../core/services/haptic_service.dart';
+import 'roleplay_screen.dart';
 // screening_room_screen.dart — navegação via GoRouter ('/screening-room/:threadId')
 
 /// =============================================================================
@@ -2869,6 +2870,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 case 'bubble':
                   _showBubblePicker();
                   break;
+                case 'roleplay':
+                  RolePlayScreen.show(context, widget.threadId);
+                  break;
                 case 'leave':
                   _leaveChatConfirm();
                   break;
@@ -2884,6 +2888,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   r, 'background', Icons.wallpaper_rounded, s.chatBackground),
               _buildPopupItem(
                   r, 'bubble', Icons.chat_bubble_rounded, 'Meu Bubble'),
+              _buildPopupItem(
+                  r, 'roleplay', Icons.auto_awesome_rounded, 'RolePlay com IA'),
               _buildPopupItem(
                   r, 'leave', Icons.exit_to_app_rounded, s.leaveChatTitle,
                   isDestructive: true),

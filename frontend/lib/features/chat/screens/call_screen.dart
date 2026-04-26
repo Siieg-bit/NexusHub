@@ -59,6 +59,7 @@ class _CallScreenState extends ConsumerState<CallScreen>
   StageRole _myRole = StageRole.speaker;
   Set<String> _handRaisedUsers = {};
   bool _handRaised = false;
+  int _prevHandRaisedCount = 0;
 
   // ── Streams ──
   StreamSubscription? _participantsSub;
@@ -125,7 +126,41 @@ class _CallScreenState extends ConsumerState<CallScreen>
     });
     _handRaisedSub =
         CallService.handRaisedUsersStream.listen((raised) {
-      if (mounted) setState(() => _handRaisedUsers = raised);
+      if (!mounted) return;
+      // Notificar o host quando alguém novo levantar a mão
+      if (_myRole == StageRole.host &&
+          raised.length > _prevHandRaisedCount) {
+        final newCount = raised.length - _prevHandRaisedCount;
+        HapticService.action();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Text('\u270b',
+                    style: TextStyle(fontSize: 18)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    newCount == 1
+                        ? '1 pessoa quer falar — toque no chip para aceitar'
+                        : '$newCount pessoas querem falar',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF9C27B0),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+      _prevHandRaisedCount = raised.length;
+      setState(() => _handRaisedUsers = raised);
     });
 
     // Timer de duração

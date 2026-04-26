@@ -60,6 +60,7 @@ import '../features/settings/screens/totp_setup_screen.dart';
 import '../features/settings/screens/phone_2fa_screen.dart';
 import '../features/auth/screens/mfa_challenge_screen.dart';
 import '../features/explore/screens/search_screen.dart';
+import '../features/explore/screens/interest_match_screen.dart';
 import '../features/profile/screens/user_wall_screen.dart';
 import '../features/profile/screens/followers_screen.dart';
 import '../features/profile/screens/community_followers_screen.dart';
@@ -729,6 +730,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/search',
         name: 'search',
         builder: (context, state) => const SearchScreen(),
+      ),
+      // ====================================================================
+      // MATCHING POR INTERESSES
+      // ====================================================================
+      GoRoute(
+        path: '/interest-match',
+        name: 'interest-match',
+        builder: (context, state) => const InterestMatchScreen(),
       ),
 
       // ====================================================================

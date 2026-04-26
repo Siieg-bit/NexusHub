@@ -13,6 +13,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'interest_match_screen.dart';
 
 /// Provider para busca de comunidades.
 final searchCommunitiesProvider =
@@ -384,6 +385,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         children: [
                           // ── Banner Carousel ──
                           _buildBannerCarousel(),
+                          // ── Encontrar Pessoas ──
+                          _buildFindPeopleCard(),
 
                           // ── Minhas Comunidades ──
                           if (_myCommunities.isNotEmpty) ...[
@@ -640,6 +643,78 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   // ==========================================================================
   // SECTION HEADER — Estilo Amino
   // ==========================================================================
+  Widget _buildFindPeopleCard() {
+    final r = context.r;
+    final theme = context.nexusTheme;
+    return GestureDetector(
+      onTap: () => context.push('/interest-match'),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+        padding: EdgeInsets.all(r.s(16)),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              theme.accentPrimary.withValues(alpha: 0.85),
+              theme.accentSecondary.withValues(alpha: 0.85),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(r.s(16)),
+          boxShadow: [
+            BoxShadow(
+              color: theme.accentPrimary.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: r.s(48),
+              height: r.s(48),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.people_alt_rounded,
+                  color: Colors.white, size: r.s(24)),
+            ),
+            SizedBox(width: r.s(12)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Encontrar Pessoas',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: r.fs(15),
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  SizedBox(height: r.s(2)),
+                  Text(
+                    'Conheça usuários com os mesmos interesses que você',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: r.fs(12),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded,
+                color: Colors.white.withValues(alpha: 0.8), size: r.s(22)),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSectionHeader(String title, {VoidCallback? onSeeAll}) {
     final s = getStrings();
     final r = context.r;

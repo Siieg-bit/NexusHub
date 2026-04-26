@@ -8,6 +8,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/services/realtime_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/mini_room_overlay.dart';
+import '../../../core/widgets/emoji_rain_overlay.dart';
+import '../../../core/services/haptic_service.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Sala de Projeção — sala de exibição coletiva de vídeos/streams.
@@ -54,6 +56,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
   final _scrollController = ScrollController();
   final List<Map<String, dynamic>> _chatMessages = [];
   final List<Map<String, dynamic>> _participants = [];
+  final _emojiRainKey = GlobalKey<EmojiRainOverlayState>();
 
   RealtimeChannel? _channel;
   String? _sessionId;
@@ -861,8 +864,9 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
     if (text.isEmpty || _sessionId == null) return;
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
-    _chatController.clear();
-
+     _chatController.clear();
+    HapticService.action();
+    _emojiRainKey.currentState?.triggerFromText(text);
     final msg = <String, dynamic>{
       'user_id': userId,
       'username': _myUsername ?? 'Usuário',
@@ -1039,23 +1043,27 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: _isLoading
-            ? Center(
-                child: CircularProgressIndicator(color: context.nexusTheme.accentSecondary))
-            : _roomClosed
-                ? _buildRoomClosedState()
-                : Column(
-                    children: [
-                      _buildTopBar(),
-                      _buildVideoArea(),
-                      _buildParticipantsStrip(),
-                      Expanded(child: _buildChatArea()),
-                      _buildChatInput(),
-                    ],
-                  ),
+    return EmojiRainOverlay.withKey(
+      key: _emojiRainKey,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: _isLoading
+              ? Center(
+                  child: CircularProgressIndicator(
+                      color: context.nexusTheme.accentSecondary))
+              : _roomClosed
+                  ? _buildRoomClosedState()
+                  : Column(
+                      children: [
+                        _buildTopBar(),
+                        _buildVideoArea(),
+                        _buildParticipantsStrip(),
+                        Expanded(child: _buildChatArea()),
+                        _buildChatInput(),
+                      ],
+                    ),
+        ),
       ),
     );
   }

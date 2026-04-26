@@ -35,7 +35,7 @@ import 'supabase_service.dart';
 ///              RealtimeService.instance.subscribeWithRetry() (retry automático).
 /// ============================================================================
 
-enum CallType { voice, video, screeningRoom }
+enum CallType { voice, video, screeningRoom, stage }
 
 // ─── Stage Roles ─────────────────────────────────────────────────────────────
 enum StageRole { host, speaker, listener }
@@ -100,6 +100,8 @@ class CallSession {
         return CallType.video;
       case 'screening_room':
         return CallType.screeningRoom;
+      case 'stage':
+        return CallType.stage;
       default:
         return CallType.voice;
     }
@@ -111,6 +113,8 @@ class CallSession {
         return 'video';
       case CallType.screeningRoom:
         return 'screening_room';
+      case CallType.stage:
+        return 'stage';
       case CallType.voice:
         return 'voice';
     }

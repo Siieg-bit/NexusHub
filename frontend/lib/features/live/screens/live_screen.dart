@@ -319,12 +319,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       return;
     }
 
-    if (type == 'voice') {
+    if (type == 'voice' || type == 'stage') {
       setState(() => _isCreating = true);
       try {
+        final callType =
+            type == 'stage' ? CallType.stage : CallType.voice;
         final callResult = await CallService.openThreadCallDetailed(
           threadId: threadId,
-          type: CallType.voice,
+          type: callType,
         );
 
         if (!mounted) return;
@@ -332,7 +334,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         if (callResult == null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Falha ao entrar no Voice Chat.'),
+              content: Text(type == 'stage'
+                  ? 'Falha ao entrar no Palco.'
+                  : 'Falha ao entrar no Voice Chat.'),
               backgroundColor: context.nexusTheme.error,
               behavior: SnackBarBehavior.floating,
             ),
@@ -349,6 +353,113 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   }
 
   // ============================================================
+  // CRIAR PALCO (STAGE)
+  // ============================================================
+  Future<void> _createStageRoom() async {
+    final s = getStrings();
+    final r = context.r;
+    final titleController = TextEditingController(text: 'Palco');
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.surfaceColor,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(r.s(16))),
+        title: Text(
+          'Criar Palco',
+          style: TextStyle(
+              color: context.nexusTheme.textPrimary,
+              fontWeight: FontWeight.w800),
+        ),
+        content: TextField(
+          controller: titleController,
+          style: TextStyle(color: context.nexusTheme.textPrimary),
+          decoration: InputDecoration(
+            hintText: 'Nome do Palco',
+            hintStyle: TextStyle(color: Colors.grey[600]),
+            prefixIcon: const Icon(Icons.mic_external_on_rounded,
+                color: Color(0xFF9C27B0)),
+            filled: true,
+            fillColor: context.nexusTheme.surfacePrimary,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(r.s(12)),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child:
+                Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
+          ),
+          ElevatedButton(
+            onPressed: () =>
+                Navigator.pop(ctx, titleController.text.trim()),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF9C27B0),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(r.s(10))),
+            ),
+            child: Text(s.create,
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    titleController.dispose();
+    if (result == null) return;
+    setState(() => _isCreating = true);
+    try {
+      final thread = await SupabaseService.table('chat_threads')
+          .insert({
+            'community_id': widget.communityId,
+            'type': 'stage',
+            'title': result.isEmpty ? 'Palco' : result,
+            'host_id': SupabaseService.currentUserId,
+          })
+          .select()
+          .single();
+      await SupabaseService.table('chat_members').insert({
+        'thread_id': thread['id'] as String,
+        'user_id': SupabaseService.currentUserId,
+        'status': 'active',
+      });
+      final threadId = thread['id'] as String;
+      final callResult = await CallService.openThreadCallDetailed(
+        threadId: threadId,
+        type: CallType.stage,
+      );
+      if (!mounted) return;
+      if (callResult == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Falha ao criar Palco.'),
+            backgroundColor: context.nexusTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+      await CallScreen.show(context, callResult.session);
+      if (mounted) _loadActiveSessions();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(s.errorCreatingRoom),
+            backgroundColor: context.nexusTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCreating = false);
+    }
+  }
+
+  // ============================================================
   // HELPERS
   // ============================================================
   String _typeLabel(String type) {
@@ -357,6 +468,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         return 'Sala de Projeção';
       case 'voice':
         return 'Voice Chat';
+      case 'stage':
+        return 'Palco';
       default:
         return 'Live';
     }
@@ -368,6 +481,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         return Icons.live_tv_rounded;
       case 'voice':
         return Icons.headset_mic_rounded;
+      case 'stage':
+        return Icons.mic_external_on_rounded;
       default:
         return Icons.live_tv_rounded;
     }
@@ -379,6 +494,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         return const Color(0xFFE91E63);
       case 'voice':
         return const Color(0xFF4CAF50);
+      case 'stage':
+        return const Color(0xFF9C27B0);
       default:
         return context.nexusTheme.accentPrimary;
     }
@@ -532,6 +649,43 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
             ),
           ],
         ),
+        SizedBox(height: r.s(10)),
+        // Mini FAB: Palco
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(12), vertical: r.s(6)),
+              decoration: BoxDecoration(
+                color: context.surfaceColor,
+                borderRadius: BorderRadius.circular(r.s(8)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                'Palco',
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(13),
+                    fontWeight: FontWeight.w600),
+              ),
+            ),
+            SizedBox(width: r.s(8)),
+            FloatingActionButton.small(
+              heroTag: 'fab_stage',
+              onPressed: _createStageRoom,
+              backgroundColor: const Color(0xFF9C27B0),
+              child: const Icon(Icons.mic_external_on_rounded,
+                  color: Colors.white),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -568,7 +722,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
               ),
               SizedBox(height: r.s(8)),
               Text(
-                'Salas de Projeção e Voice Chats\naparecerão aqui quando estiverem ativos.',
+                'Salas de Projeção, Voice Chats e Palcos\naparecerão aqui quando estiverem ativos.',
                 style: TextStyle(color: Colors.grey[500], height: 1.5),
                 textAlign: TextAlign.center,
               ),
