@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -38,6 +39,7 @@ import 'chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/deep_link_service.dart';
+import '../../../core/services/blurhash_service.dart';
 import 'call_screen.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 // screening_room_screen.dart — navegação via GoRouter ('/screening-room/:threadId')
@@ -209,8 +211,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   bool _isDmInviteSender = false;
 
   // ==========================================================================
-  // LIFECYCLE
+  // TYPING INDICATORS (Supabase Realtime Broadcast)
   // ==========================================================================
+  /// Mapa de userId → nickname dos usuários que estão digitando.
+  final Map<String, String> _typingUsers = {};
+  /// Timer para parar de emitir "digitando" após 3s de inatividade.
+  Timer? _typingDebounce;
+  /// Canal de Presence/Broadcast dedicado ao typing do chat.
+  RealtimeChannel? _typingChannel;
+
+  // ==========================================================================
+  // LIFECYCLE
+  // ===========================================================================
 
   @override
   void initState() {
@@ -233,6 +245,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     _loadPinnedMessages();
     if (!mounted || _isDisposed) return;
     _subscribeToRealtime();
+    if (!mounted || _isDisposed) return;
+    _subscribeToTyping();
     if (!mounted || _isDisposed) return;
     _loadChatBackground();
     if (!mounted || _isDisposed) return;
@@ -463,6 +477,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   void dispose() {
     _isDisposed = true;
     _replyHighlightTimer?.cancel();
+    _typingDebounce?.cancel();
+    _typingChannel?.unsubscribe();
     _messageController.dispose();
     _scrollController.removeListener(_handleScrollPositionChange);
     _scrollController.dispose();
@@ -479,6 +495,72 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     if (connected != _realtimeConnected) {
       setState(() => _realtimeConnected = connected);
     }
+  }
+
+  // ==========================================================================
+  // TYPING INDICATORS
+  // ==========================================================================
+
+  /// Inscreve no canal de broadcast de typing para este chat.
+  void _subscribeToTyping() {
+    final currentUserId = SupabaseService.currentUserId;
+    if (currentUserId == null) return;
+
+    _typingChannel = SupabaseService.client
+        .channel('typing:${widget.threadId}')
+        ..onBroadcast(
+          event: 'typing',
+          callback: (payload) {
+            if (_isDisposed || !mounted) return;
+            final userId = payload['user_id'] as String?;
+            final nickname = payload['nickname'] as String? ?? 'Alguém';
+            final isTyping = payload['is_typing'] as bool? ?? false;
+            if (userId == null || userId == currentUserId) return;
+            setState(() {
+              if (isTyping) {
+                _typingUsers[userId] = nickname;
+              } else {
+                _typingUsers.remove(userId);
+              }
+            });
+          },
+        )
+        ..subscribe();
+  }
+
+  /// Emite evento de "digitando" para os outros membros do chat.
+  void _broadcastTyping() {
+    final currentUserId = SupabaseService.currentUserId;
+    if (currentUserId == null || _typingChannel == null) return;
+
+    // Cancelar debounce anterior
+    _typingDebounce?.cancel();
+
+    // Emitir is_typing=true
+    _typingChannel!.sendBroadcastMessage(
+      event: 'typing',
+      payload: {
+        'user_id': currentUserId,
+        'nickname': _threadInfo?['my_nickname'] ?? 'Você',
+        'is_typing': true,
+      },
+    );
+
+    // Parar de emitir após 3s de inatividade
+    _typingDebounce = Timer(const Duration(seconds: 3), _stopTyping);
+  }
+
+  /// Emite evento de parou de digitar.
+  void _stopTyping() {
+    final currentUserId = SupabaseService.currentUserId;
+    if (currentUserId == null || _typingChannel == null) return;
+    _typingChannel!.sendBroadcastMessage(
+      event: 'typing',
+      payload: {
+        'user_id': currentUserId,
+        'is_typing': false,
+      },
+    );
   }
 
   // ==========================================================================
@@ -1037,6 +1119,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     int? mediaDuration,
     String? pollQuestion,
     List<String>? pollOptions,
+    String? mediaBlurhash,
   }) async {
     final s = getStrings();
     final text = _messageController.text.trim();
@@ -1071,6 +1154,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     // enquanto _messageController.clear() permanece no addPostFrameCallback
     // para evitar "Cannot get renderObject of inactive element" ao limpar
     // o campo durante o frame de desmontagem de dialogs (tip, poll, link).
+    HapticFeedback.lightImpact();
+    // Parar de emitir typing ao enviar
+    _typingDebounce?.cancel();
+    _stopTyping();
     setState(() => _isSending = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -1164,6 +1251,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         if (stickerName != null && stickerName.isNotEmpty)
           'p_sticker_name': stickerName,
         if (packId != null && packId.isNotEmpty) 'p_pack_id': packId,
+        if (mediaBlurhash != null && mediaBlurhash.isNotEmpty)
+          'p_media_blurhash': mediaBlurhash,
       };
 
       debugPrint('[ChatRoom] 📤 RPC params: $rpcParams');
@@ -1775,7 +1864,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           fileOptions: const FileOptions(contentType: 'image/jpeg'));
       final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
       debugPrint('[ChatRoom] ✅ Image uploaded: $url');
-      await _sendMessage(type: 'image', mediaUrl: url, mediaType: 'image');
+      // Gerar BlurHash em background (não bloqueia o envio)
+      final blurhash = await BlurHashService.generateForUrl(url);
+      await _sendMessage(type: 'image', mediaUrl: url, mediaType: 'image', mediaBlurhash: blurhash);
     } catch (e, stack) {
       debugPrint('[ChatRoom] ❌ Image upload error: $e');
       debugPrint('[ChatRoom] ❌ Image upload stack: $stack');
@@ -1844,6 +1935,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   Future<void> _addReaction(String messageId, String emoji) async {
+    HapticFeedback.selectionClick();
     try {
       await SupabaseService.rpc('toggle_reaction', params: {
         'p_message_id': messageId,
@@ -2812,6 +2904,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                                   ? null
                                                   : () => _jumpToMessage(
                                                       repliedMessage.id),
+                                              hostId: _threadInfo?['host_id'] as String?,
+                                              coHostIds: (_threadInfo?['co_hosts'] as List<dynamic>?)
+                                                  ?.map((e) => e.toString())
+                                                  .toList() ?? const [],
                                             ),
                                           ),
                                         ),
@@ -3316,6 +3412,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   },
                 ),
               )
+            // Typing Indicator — exibido acima do input quando outros digitam
+            if (_typingUsers.isNotEmpty)
+              _TypingIndicatorWidget(typingUsers: _typingUsers),
+
             else if ((_membershipConfirmed || _isLoading) &&
                 !_isChatDisabled &&
                 !(_isAnnouncementOnly &&
@@ -3412,6 +3512,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   void _onTextChanged(String value) {
+    // Emitir typing indicator ao digitar
+    if (value.isNotEmpty) {
+      _broadcastTyping();
+    } else {
+      _typingDebounce?.cancel();
+      _stopTyping();
+    }
     final s = getStrings();
     final urlRegex = RegExp(
       r'(?<![\[\(])(https?:\/\/[^\s]+)',
@@ -4742,6 +4849,104 @@ class _PollCreatorDialogState extends State<_PollCreatorDialog> {
                   color: Colors.white, fontWeight: FontWeight.w700)),
         ),
       ],
+    );
+  }
+}
+
+// =============================================================================
+// _TypingIndicatorWidget — Exibe quem está digitando no chat.
+// =============================================================================
+class _TypingIndicatorWidget extends StatefulWidget {
+  final Map<String, String> typingUsers;
+  const _TypingIndicatorWidget({required this.typingUsers});
+
+  @override
+  State<_TypingIndicatorWidget> createState() => _TypingIndicatorWidgetState();
+}
+
+class _TypingIndicatorWidgetState extends State<_TypingIndicatorWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _dotController;
+
+  @override
+  void initState() {
+    super.initState();
+    _dotController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _dotController.dispose();
+    super.dispose();
+  }
+
+  String _buildLabel() {
+    final names = widget.typingUsers.values.toList();
+    if (names.isEmpty) return '';
+    if (names.length == 1) return '${names[0]} está digitando';
+    if (names.length == 2) return '${names[0]} e ${names[1]} estão digitando';
+    return '${names[0]} e mais ${names.length - 1} estão digitando';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _dotController,
+      builder: (context, _) {
+        final phase = _dotController.value;
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: Row(
+            children: [
+              // Três pontinhos animados
+              for (int i = 0; i < 3; i++) ...[
+                _AnimatedDot(phase: phase, index: i),
+                if (i < 2) const SizedBox(width: 3),
+              ],
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  _buildLabel(),
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AnimatedDot extends StatelessWidget {
+  final double phase;
+  final int index;
+  const _AnimatedDot({required this.phase, required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    // Cada ponto tem um offset de fase para criar o efeito de onda
+    final offset = (phase + index * 0.33) % 1.0;
+    final scale = 0.6 + 0.4 * (offset < 0.5 ? offset * 2 : (1.0 - offset) * 2);
+    return Transform.scale(
+      scale: scale,
+      child: Container(
+        width: 6,
+        height: 6,
+        decoration: BoxDecoration(
+          color: Colors.grey[500],
+          shape: BoxShape.circle,
+        ),
+      ),
     );
   }
 }

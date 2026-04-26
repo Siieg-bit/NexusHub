@@ -63,6 +63,8 @@ class PostModel {
   final String? authorLocalIconUrl;
   /// Banner LOCAL do autor na comunidade deste post.
   final String? authorLocalBannerUrl;
+  /// BlurHash da imagem principal do post — usado como placeholder visual.
+  final String? mediaBlurhash;
 
   const PostModel({
     required this.id,
@@ -112,6 +114,7 @@ class PostModel {
     this.authorLocalBannerUrl,
     this.originalAuthor,
     this.originalPost,
+    this.mediaBlurhash,
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
@@ -191,6 +194,7 @@ class PostModel {
       contentBlocks: (json['content_blocks'] as List<dynamic>?)
           ?.map((e) => Map<String, dynamic>.from(e as Map))
           .toList(),
+      mediaBlurhash: json['media_blurhash'] as String?,
     );
   }
 
@@ -280,6 +284,7 @@ class PostModel {
       authorLocalBannerUrl: authorLocalBannerUrl,
       originalAuthor: originalAuthor ?? this.originalAuthor,
       originalPost: originalPost ?? this.originalPost,
+      mediaBlurhash: mediaBlurhash,
     );
   }
 

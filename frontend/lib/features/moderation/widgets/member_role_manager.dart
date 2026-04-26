@@ -529,61 +529,66 @@ class _MemberRoleManagerSheetState
     );
 
     if (confirmed != true || (!sendVerbalWarning && silenceOption == 'none')) {
+      warningMessageController.dispose();
       return;
     }
 
     setState(() => _isLoading = true);
     try {
       final roleLabel = _roleLabel(widget.callerRole);
+      final customMsg = warningMessageController.text.trim();
+      warningMessageController.dispose();
       final notificationRows = <Map<String, dynamic>>[];
 
-      if (sendVerbalWarning) {
-        final customMsg = warningMessageController.text.trim();
-        final reasonText = customMsg.isNotEmpty
-            ? 'Advertência verbal por $roleLabel: $customMsg'
-            : 'Advertência verbal aplicada por $roleLabel';
-        await SupabaseService.rpc('log_moderation_action', params: {
-          'p_community_id': widget.communityId,
-          'p_action': 'warn',
-          'p_target_user_id': widget.targetUserId,
-          'p_reason': reasonText,
-        });
+      // ── Strike real via RPC issue_strike ──────────────────────────────────
+      // Sempre registra o strike na tabela `strikes` + incrementa strike_count.
+      // Se atingir 3 strikes, a RPC aplica ban automático de 30 dias.
+      final strikeReason = customMsg.isNotEmpty
+          ? 'Strike por $roleLabel: $customMsg'
+          : 'Strike aplicado por $roleLabel';
 
+      final strikeResult = await SupabaseService.rpc('issue_strike', params: {
+        'p_community_id': widget.communityId,
+        'p_target_id':    widget.targetUserId,
+        'p_reason':       strikeReason,
+      });
+
+      final strikeMap = strikeResult as Map<String, dynamic>? ?? {};
+      final strikeCount = strikeMap['strike_count'] as int? ?? 0;
+      final autoBanned  = strikeMap['auto_banned']  as bool? ?? false;
+
+      // ── Advertência verbal (notificação urgente) ──────────────────────────
+      if (sendVerbalWarning) {
         final notifBody = customMsg.isNotEmpty
             ? customMsg
-            : 'Você recebeu uma advertência verbal da moderação.';
+            : 'Você recebeu um strike da moderação.';
         notificationRows.add({
-          'user_id': widget.targetUserId,
-          'actor_id': SupabaseService.currentUserId,
-          'type': 'moderation',
-          'title': 'Advertência da comunidade',
-          'body': notifBody,
           'community_id': widget.communityId,
+          'user_id':      widget.targetUserId,
+          'type':         'moderation',
+          'title':        autoBanned
+              ? '🚫 Banido automaticamente (3 strikes)'
+              : '⚠️ Strike $strikeCount/3 — ${widget.communityId}',
+          'body': autoBanned
+              ? 'Você acumulou 3 strikes e foi banido por 30 dias.'
+              : notifBody,
         });
       }
-      warningMessageController.dispose();
 
-      if (silenceOption != 'none') {
+      // ── Silenciamento opcional ────────────────────────────────────────────
+      if (silenceOption != 'none' && !autoBanned) {
         final durationHours = switch (silenceOption) {
           '24h' => 24,
-          '7d' => 24 * 7,
+          '7d'  => 24 * 7,
           '30d' => 24 * 30,
-          _ => 0,
+          _     => 0,
         };
-
-        final silencedUntil = DateTime.now()
-            .toUtc()
-            .add(Duration(hours: durationHours))
-            .toIso8601String();
-
-        // RPC silence_community_member: update + log atomicamente
         await SupabaseService.rpc('silence_community_member', params: {
           'p_community_id':   widget.communityId,
           'p_target_id':      widget.targetUserId,
           'p_duration_hours': durationHours,
           'p_reason':         'Silenciamento aplicado por $roleLabel ($silenceOption)',
         });
-
         notificationRows.add({
           'community_id': widget.communityId,
           'user_id':      widget.targetUserId,
@@ -593,7 +598,7 @@ class _MemberRoleManagerSheetState
         });
       }
 
-      // Enviar notificações via RPC centralizado
+      // ── Enviar notificações ───────────────────────────────────────────────
       for (final row in notificationRows) {
         try {
           await SupabaseService.rpc('send_moderation_notification', params: {
@@ -603,19 +608,18 @@ class _MemberRoleManagerSheetState
             'p_title':        row['title'],
             'p_body':         row['body'],
           });
-        } catch (_) {} // Notificação não é crítica
+        } catch (_) {}
       }
 
       if (mounted) {
-        final actionSummary = <String>[];
-        if (sendVerbalWarning) actionSummary.add('advertência verbal');
-        if (silenceOption != 'none') actionSummary.add('silenciamento de $silenceOption');
-
+        final msg = autoBanned
+            ? '🚫 ${widget.targetUserName} acumulou 3 strikes e foi banido por 30 dias.'
+            : '⚠️ Strike $strikeCount/3 aplicado a ${widget.targetUserName}.';
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-            '${widget.targetUserName} recebeu ${actionSummary.join(' + ')}.',
-          ),
-          backgroundColor: context.nexusTheme.warning,
+          content: Text(msg),
+          backgroundColor: autoBanned
+              ? context.nexusTheme.error
+              : context.nexusTheme.warning,
           behavior: SnackBarBehavior.floating,
         ));
         Navigator.of(context).pop(true);
@@ -623,7 +627,7 @@ class _MemberRoleManagerSheetState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao aplicar advertência: $e')),
+          SnackBar(content: Text('Erro ao aplicar strike: $e')),
         );
       }
     } finally {

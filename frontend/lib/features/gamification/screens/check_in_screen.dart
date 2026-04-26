@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -202,6 +203,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Future<void> _doCheckIn() async {
+    HapticFeedback.mediumImpact();
     final r = context.r;
     final s = ref.read(stringsProvider);
     setState(() => _isLoading = true);

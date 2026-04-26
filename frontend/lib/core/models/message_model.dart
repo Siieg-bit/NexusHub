@@ -55,6 +55,8 @@ class MessageModel {
   final DateTime updatedAt;
   final DateTime? editedAt;
   final UserModel? author;
+  /// BlurHash da mídia da mensagem — usado como placeholder visual.
+  final String? mediaBlurhash;
 
   const MessageModel({
     required this.id,
@@ -83,6 +85,7 @@ class MessageModel {
     required this.updatedAt,
     this.editedAt,
     this.author,
+    this.mediaBlurhash,
   });
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
@@ -133,6 +136,7 @@ class MessageModel {
               : (_extractUserMap(json['sender']) != null
                   ? UserModel.fromJson(_extractUserMap(json['sender'])!)
                   : null)),
+      mediaBlurhash: json['media_blurhash'] as String?,
     );
   }
 
@@ -237,6 +241,7 @@ class MessageModel {
       updatedAt: DateTime.now(),
       editedAt: editedAt ?? this.editedAt,
       author: author,
+      mediaBlurhash: mediaBlurhash,
     );
   }
 }

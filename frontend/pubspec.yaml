@@ -45,6 +45,8 @@ dependencies:
   # Chat & Realtime
   timeago: ^3.6.1
   emoji_picker_flutter: ^1.6.4
+  # BlurHash — placeholders visuais para imagens
+  blurhash_dart: ^2.2.0
 
   # Voice/Video Calls (Agora.io RTC)
   # agora_rtc_engine usa SDKs nativos para 4 arquiteturas — use ABI splits no build

@@ -33,6 +33,7 @@
         android:label="NexusHub"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
         android:usesCleartextTraffic="true"
         android:requestLegacyExternalStorage="true"
         android:enableOnBackInvokedCallback="true">

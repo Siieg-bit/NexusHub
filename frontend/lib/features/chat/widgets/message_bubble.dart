@@ -59,6 +59,10 @@ class MessageBubble extends ConsumerStatefulWidget {
   final String? communityId;
   final MessageModel? repliedMessage;
   final VoidCallback? onReplyTap;
+  /// ID do host do chat — usado para exibir badge de cargo no nome do autor.
+  final String? hostId;
+  /// IDs dos co-hosts do chat — usado para exibir badge de cargo no nome do autor.
+  final List<String> coHostIds;
 
   const MessageBubble({
     super.key,
@@ -70,6 +74,8 @@ class MessageBubble extends ConsumerStatefulWidget {
     this.communityId,
     this.repliedMessage,
     this.onReplyTap,
+    this.hostId,
+    this.coHostIds = const [],
   });
 
   @override
@@ -88,6 +94,53 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
   String? get communityId => widget.communityId;
   MessageModel? get repliedMessage => widget.repliedMessage;
   VoidCallback? get onReplyTap => widget.onReplyTap;
+  String? get hostId => widget.hostId;
+  List<String> get coHostIds => widget.coHostIds;
+
+  /// Retorna o badge de cargo do autor da mensagem, se houver.
+  Widget? _buildRoleBadge(BuildContext context, Responsive r) {
+    final authorId = message.authorId;
+    if (authorId.isEmpty) return null;
+    if (authorId == hostId) {
+      return Container(
+        margin: EdgeInsets.only(left: r.s(4)),
+        padding: EdgeInsets.symmetric(horizontal: r.s(5), vertical: r.s(1)),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(r.s(4)),
+          border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5), width: 0.8),
+        ),
+        child: Text(
+          'Host',
+          style: TextStyle(
+            color: const Color(0xFFFFD700),
+            fontSize: r.fs(9),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+    }
+    if (coHostIds.contains(authorId)) {
+      return Container(
+        margin: EdgeInsets.only(left: r.s(4)),
+        padding: EdgeInsets.symmetric(horizontal: r.s(5), vertical: r.s(1)),
+        decoration: BoxDecoration(
+          color: Colors.blueAccent.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(r.s(4)),
+          border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.5), width: 0.8),
+        ),
+        child: Text(
+          'Co-host',
+          style: TextStyle(
+            color: Colors.blueAccent,
+            fontSize: r.fs(9),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+    }
+    return null;
+  }
 
   String _truncatePreview(String value) {
     final sanitized = value.replaceAll(RegExp(r'\s+'), ' ').trim();
@@ -583,15 +636,24 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                               offset: Offset(isMe ? 0 : -r.s(6), 0),
                               child: Padding(
                                 padding: EdgeInsets.only(bottom: r.s(2)),
-                                child: Text(
-                                  authorName,
-                                  style: TextStyle(
-                                    color: context.nexusTheme.accentPrimary,
-                                    fontSize: r.fs(11),
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        authorName,
+                                        style: TextStyle(
+                                          color: context.nexusTheme.accentPrimary,
+                                          fontSize: r.fs(11),
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (_buildRoleBadge(context, r) != null)
+                                      _buildRoleBadge(context, r)!,
+                                  ],
                                 ),
                               ),
                             ),
@@ -640,17 +702,26 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                                     offset: Offset(isMe ? 0 : -r.s(6), 0),
                                     child: Padding(
                                       padding: EdgeInsets.only(bottom: r.s(4)),
-                                      child: Text(
-                                        authorName,
-                                        style: TextStyle(
-                                          // Usa a cor customizada do bubble se disponível,
-                                          // senão branco semitransparente como fallback.
-                                          color: activeCosmetics?.chatBubbleTextColor
-                                                  ?.withValues(alpha: 0.9) ??
-                                              Colors.white.withValues(alpha: 0.9),
-                                          fontSize: r.fs(11),
-                                          fontWeight: FontWeight.w700,
-                                        ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              authorName,
+                                              style: TextStyle(
+                                                color: activeCosmetics?.chatBubbleTextColor
+                                                        ?.withValues(alpha: 0.9) ??
+                                                    Colors.white.withValues(alpha: 0.9),
+                                                fontSize: r.fs(11),
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          if (_buildRoleBadge(context, r) != null)
+                                            _buildRoleBadge(context, r)!,
+                                        ],
                                       ),
                                     ),
                                   ),
@@ -689,17 +760,26 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                                     offset: Offset(isMe ? 0 : -r.s(6), 0),
                                     child: Padding(
                                       padding: EdgeInsets.only(bottom: r.s(4)),
-                                      child: Text(
-                                        authorName,
-                                        style: TextStyle(
-                                          color: isMe
-                                              ? Colors.white.withValues(alpha: 0.9)
-                                              : context.nexusTheme.accentPrimary,
-                                          fontSize: r.fs(11),
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              authorName,
+                                              style: TextStyle(
+                                                color: isMe
+                                                    ? Colors.white.withValues(alpha: 0.9)
+                                                    : context.nexusTheme.accentPrimary,
+                                                fontSize: r.fs(11),
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          if (_buildRoleBadge(context, r) != null)
+                                            _buildRoleBadge(context, r)!,
+                                        ],
                                       ),
                                     ),
                                   ),
