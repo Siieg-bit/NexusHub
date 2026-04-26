@@ -4,6 +4,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/services/call_service.dart';
 import '../../chat/screens/call_screen.dart';
 import 'screening_room_screen.dart';
+import 'free_talk_screen.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../config/nexus_theme_data.dart';
@@ -167,6 +168,110 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(s.errorCreatingRoom),
+            backgroundColor: context.nexusTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCreating = false);
+    }
+  }
+
+  // ============================================================
+  // CRIAR FREE TALK (Sala de Voz estilo palco)
+  // ============================================================
+  Future<void> _createFreeTalk() async {
+    final r = context.r;
+    final titleController = TextEditingController(text: 'Free Talk');
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.surfaceColor,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(r.s(16))),
+        title: Text(
+          'Criar Free Talk',
+          style: TextStyle(
+              color: context.nexusTheme.textPrimary,
+              fontWeight: FontWeight.w800),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              style: TextStyle(color: context.nexusTheme.textPrimary),
+              decoration: InputDecoration(
+                hintText: 'Nome da sala',
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                prefixIcon: const Icon(Icons.record_voice_over_rounded,
+                    color: Color(0xFF7C4DFF)),
+                filled: true,
+                fillColor: context.nexusTheme.surfacePrimary,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(r.s(12)),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            SizedBox(height: r.s(8)),
+            Text(
+              'Sala de voz com palco — listeners podem pedir a palavra',
+              style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+          ),
+          ElevatedButton(
+            onPressed: () =>
+                Navigator.pop(ctx, titleController.text.trim()),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF7C4DFF),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(r.s(10))),
+            ),
+            child: const Text('Criar',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+
+    titleController.dispose();
+    if (result == null) return;
+
+    setState(() => _isCreating = true);
+    try {
+      final data = await SupabaseService.rpc(
+        'create_voice_room',
+        params: {
+          'p_community_id': widget.communityId,
+          'p_title': result.isEmpty ? 'Free Talk' : result,
+        },
+      ) as Map<String, dynamic>;
+
+      if (!mounted) return;
+
+      await FreeTalkScreen.show(
+        context,
+        roomId: data['room_id'] as String,
+        title: data['title'] as String? ?? result,
+        hostId: data['host_id'] as String? ?? '',
+        role: 'host',
+      );
+      if (mounted) _loadActiveSessions();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao criar Free Talk: $e'),
             backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -460,6 +565,43 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
+        // Mini FAB: Free Talk (Sala de Voz estilo palco)
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(12), vertical: r.s(6)),
+              decoration: BoxDecoration(
+                color: context.surfaceColor,
+                borderRadius: BorderRadius.circular(r.s(8)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                'Free Talk',
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(13),
+                    fontWeight: FontWeight.w600),
+              ),
+            ),
+            SizedBox(width: r.s(8)),
+            FloatingActionButton.small(
+              heroTag: 'fab_freetalk',
+              onPressed: _createFreeTalk,
+              backgroundColor: const Color(0xFF7C4DFF),
+              child: const Icon(Icons.record_voice_over_rounded,
+                  color: Colors.white),
+            ),
+          ],
+        ),
+        SizedBox(height: r.s(10)),
         // Mini FAB: Voice Chat
         Row(
           mainAxisSize: MainAxisSize.min,

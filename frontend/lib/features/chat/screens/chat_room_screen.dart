@@ -42,6 +42,8 @@ import '../../../core/services/deep_link_service.dart';
 import '../../../core/services/blurhash_service.dart';
 import 'call_screen.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/emoji_rain_overlay.dart';
+import '../../../core/services/haptic_service.dart';
 // screening_room_screen.dart — navegação via GoRouter ('/screening-room/:threadId')
 
 /// =============================================================================
@@ -1273,7 +1275,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     // enquanto _messageController.clear() permanece no addPostFrameCallback
     // para evitar "Cannot get renderObject of inactive element" ao limpar
     // o campo durante o frame de desmontagem de dialogs (tip, poll, link).
-    HapticFeedback.lightImpact();
+    HapticService.action();
+    // Disparar chuva de emojis semântica se o texto contiver palavras-chave
+    if (content != null && content.isNotEmpty) {
+      EmojiRainOverlay.analyzeAndTrigger(context, content);
+    }
     // Parar de emitir typing ao enviar
     _typingDebounce?.cancel();
     _stopTyping();
@@ -2703,7 +2709,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         0;
     final threadIcon = _threadInfo?['icon_url'] as String?;
 
-    return Scaffold(
+    return EmojiRainOverlay(
+      child: Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
@@ -3752,6 +3759,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 

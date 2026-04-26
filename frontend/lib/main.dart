@@ -27,6 +27,7 @@ import 'core/services/cache_service.dart';
 import 'core/services/analytics_service.dart';
 import 'core/services/error_handler.dart';
 import 'core/widgets/error_boundary.dart';
+import 'core/widgets/mini_room_overlay.dart';
 import 'core/l10n/locale_provider.dart';
 import 'firebase_options.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -284,7 +285,9 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
               behavior: HitTestBehavior.translucent,
               onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
               child: ErrorBoundary(
-                child: child ?? const SizedBox.shrink(),
+                child: MiniRoomOverlayWrapper(
+                  child: child ?? const SizedBox.shrink(),
+                ),
               ),
             ),
           ),
