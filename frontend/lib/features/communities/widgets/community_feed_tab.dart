@@ -12,6 +12,7 @@ import '../providers/community_detail_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/services/supabase_service.dart';
+import 'featured_members_section.dart';
 
 // =============================================================================
 // TAB: Feed (Destaque / Recentes)
@@ -91,6 +92,9 @@ class _FeaturedTab extends ConsumerWidget {
     final featuredPosts = featuredAsync.valueOrNull ?? [];
     final archivedFeaturedPosts = archivedFeaturedAsync.valueOrNull ?? [];
     final latestPosts = latestAsync.valueOrNull ?? [];
+    final membershipAsync = ref.watch(communityMembershipProvider(communityId));
+    final userRole = membershipAsync.valueOrNull?['role'] as String?;
+    final isStaff = ['leader', 'co_leader', 'moderator', 'agent'].contains(userRole);
     final primaryFeatured =
         featuredPosts.isNotEmpty ? featuredPosts.first : null;
     final secondaryFeatured = featuredPosts.length > 1
@@ -128,6 +132,13 @@ class _FeaturedTab extends ConsumerWidget {
         // Pré-renderiza 500px além da área visível para scroll mais suave
         cacheExtent: 500,
         slivers: [
+          // ── Seção 0: Membros em Destaque ────────────────────────────────
+          SliverToBoxAdapter(
+            child: FeaturedMembersSection(
+              communityId: communityId,
+              isStaff: isStaff,
+            ),
+          ),
           // ── Seção 1: Posts Fixados ──────────────────────────────────────
           if (pinnedPosts.isNotEmpty) ...[
             SliverToBoxAdapter(child: SizedBox(height: 4)),

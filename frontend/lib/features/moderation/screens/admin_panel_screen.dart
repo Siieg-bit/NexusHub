@@ -405,6 +405,213 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
     });
   }
 
+  void _showUrgentNoticeDialog(BuildContext context) async {
+    final r = context.r;
+    final titleCtrl = TextEditingController();
+    final bodyCtrl = TextEditingController();
+    final urlCtrl = TextEditingController();
+
+    // Carregar comunidades onde o usuário é líder/moderador
+    final userId = SupabaseService.currentUserId;
+    List<Map<String, dynamic>> communities = [];
+    String? selectedCommunityId;
+    try {
+      final res = await SupabaseService.table('community_members')
+          .select('community_id, communities(id, title)')
+          .eq('user_id', userId ?? '')
+          .inFilter('role', ['leader', 'co_leader', 'moderator', 'agent']);
+      communities = (res as List).cast<Map<String, dynamic>>();
+    } catch (_) {}
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: context.surfaceColor,
+          title: Row(
+            children: [
+              Icon(Icons.campaign_rounded,
+                  color: context.nexusTheme.warning, size: r.s(22)),
+              SizedBox(width: r.s(8)),
+              Text('Aviso Urgente',
+                  style: TextStyle(
+                      color: context.nexusTheme.textPrimary,
+                      fontWeight: FontWeight.w700)),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Envia uma notificação prioritária para TODOS os membros da comunidade selecionada.',
+                  style: TextStyle(
+                      color: context.nexusTheme.warning.withValues(alpha: 0.9),
+                      fontSize: r.fs(12)),
+                ),
+                SizedBox(height: r.s(12)),
+                DropdownButtonFormField<String>(
+                  value: selectedCommunityId,
+                  dropdownColor: context.surfaceColor,
+                  style: TextStyle(color: context.nexusTheme.textPrimary),
+                  decoration: InputDecoration(
+                    labelText: 'Comunidade',
+                    labelStyle: TextStyle(color: Colors.grey[500]),
+                    filled: true,
+                    fillColor: context.nexusTheme.backgroundPrimary,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(r.s(12)),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  items: communities.map((c) {
+                    final comm = c['communities'] as Map<String, dynamic>?;
+                    return DropdownMenuItem<String>(
+                      value: comm?['id'] as String? ?? '',
+                      child: Text(comm?['title'] as String? ?? 'Sem nome',
+                          overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: (v) =>
+                      setDialogState(() => selectedCommunityId = v),
+                ),
+                SizedBox(height: r.s(12)),
+                TextField(
+                  controller: titleCtrl,
+                  style: TextStyle(color: context.nexusTheme.textPrimary),
+                  decoration: InputDecoration(
+                    labelText: 'Título do aviso',
+                    labelStyle: TextStyle(color: Colors.grey[500]),
+                    filled: true,
+                    fillColor: context.nexusTheme.backgroundPrimary,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(r.s(12)),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                SizedBox(height: r.s(12)),
+                TextField(
+                  controller: bodyCtrl,
+                  maxLines: 4,
+                  style: TextStyle(color: context.nexusTheme.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: 'Mensagem do aviso urgente...',
+                    hintStyle: TextStyle(color: Colors.grey[600]),
+                    filled: true,
+                    fillColor: context.nexusTheme.backgroundPrimary,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(r.s(12)),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                SizedBox(height: r.s(12)),
+                TextField(
+                  controller: urlCtrl,
+                  style: TextStyle(color: context.nexusTheme.textPrimary),
+                  decoration: InputDecoration(
+                    labelText: 'URL de ação (opcional)',
+                    labelStyle: TextStyle(color: Colors.grey[500]),
+                    hintText: 'https://...',
+                    hintStyle: TextStyle(color: Colors.grey[600]),
+                    filled: true,
+                    fillColor: context.nexusTheme.backgroundPrimary,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(r.s(12)),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                titleCtrl.dispose();
+                bodyCtrl.dispose();
+                urlCtrl.dispose();
+                Navigator.pop(ctx);
+              },
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton.icon(
+              icon: Icon(Icons.campaign_rounded, size: r.s(16)),
+              label: const Text('Enviar Aviso'),
+              onPressed: () async {
+                if (titleCtrl.text.trim().isEmpty ||
+                    bodyCtrl.text.trim().isEmpty) return;
+                if (selectedCommunityId == null ||
+                    selectedCommunityId!.isEmpty) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    const SnackBar(
+                      content: Text('Selecione uma comunidade.'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  return;
+                }
+                try {
+                  final result = await SupabaseService.rpc(
+                    'broadcast_urgent_notice',
+                    params: {
+                      'p_community_id': selectedCommunityId,
+                      'p_title': titleCtrl.text.trim(),
+                      'p_body': bodyCtrl.text.trim(),
+                      if (urlCtrl.text.trim().isNotEmpty)
+                        'p_action_url': urlCtrl.text.trim(),
+                    },
+                  );
+                  final sentTo = (result as Map?)?['sent_to'] ?? 0;
+                  titleCtrl.dispose();
+                  bodyCtrl.dispose();
+                  urlCtrl.dispose();
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            '✅ Aviso urgente enviado para $sentTo membros.'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: context.nexusTheme.success,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  titleCtrl.dispose();
+                  bodyCtrl.dispose();
+                  urlCtrl.dispose();
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Erro: ${e.toString()}'),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: context.nexusTheme.error,
+                      ),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.nexusTheme.warning,
+                foregroundColor: Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ).then((_) {
+      titleCtrl.dispose();
+      bodyCtrl.dispose();
+      urlCtrl.dispose();
+    });
+  }
+
   Widget _buildToolsTab() {
     final s = getStrings();
     final r = context.r;
@@ -420,9 +627,15 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
           },
         ),
         _ToolItem(
+          icon: Icons.campaign_rounded,
+          label: 'Aviso Urgente',
+          description: 'Notificação prioritária para todos os membros',
+          onTap: () => _showUrgentNoticeDialog(context),
+        ),
+        _ToolItem(
           icon: Icons.person_search_rounded,
-          label: 'Buscar Usu\u00e1rio',
-          description: 'Encontrar e gerenciar usu\u00e1rios',
+          label: 'Buscar Usuário',
+          description: 'Encontrar e gerenciar usuários',
           onTap: () => context.push('/search'),
         ),
         _ToolItem(

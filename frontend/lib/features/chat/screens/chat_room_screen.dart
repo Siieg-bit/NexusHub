@@ -244,6 +244,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   Timer? _linkPreviewDebounce;
 
   // ==========================================================================
+  // SLOW MODE COUNTDOWN
+  // ==========================================================================
+  /// Segundos restantes do cooldown do slow mode (0 = pode enviar).
+  int _slowModeCooldown = 0;
+  /// Timer que decrementa o countdown a cada segundo.
+  Timer? _slowModeTimer;
+
+  // ==========================================================================
   // LIFECYCLE
   // ===========================================================================
 
@@ -588,6 +596,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     _typingDebounce?.cancel();
     _typingChannel?.unsubscribe();
     _linkPreviewDebounce?.cancel();
+    _slowModeTimer?.cancel();
     _messageController.dispose();
     _scrollController.removeListener(_handleScrollPositionChange);
     _scrollController.dispose();
@@ -1384,6 +1393,29 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         params: rpcParams,
       );
       debugPrint('[ChatRoom] ✅ RPC result: $result');
+
+      // Tratar retorno JSONB — verificar slow mode cooldown
+      if (result is Map) {
+        final error = result['error'] as String?;
+        if (error == 'slow_mode_cooldown') {
+          final seconds = (result['seconds_remaining'] as num?)?.toInt() ?? 5;
+          if (mounted) {
+            setState(() => _slowModeCooldown = seconds);
+            _slowModeTimer?.cancel();
+            _slowModeTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+              if (!mounted || _isDisposed) { t.cancel(); return; }
+              setState(() {
+                _slowModeCooldown--;
+                if (_slowModeCooldown <= 0) {
+                  _slowModeCooldown = 0;
+                  t.cancel();
+                }
+              });
+            });
+          }
+          return; // Não limpar o input — usuário pode reenviar após countdown
+        }
+      }
     } catch (e, stack) {
       debugPrint('[ChatRoom] ❌ Send message error: $e');
       debugPrint('[ChatRoom] ❌ Send message stack: $stack');
@@ -1396,8 +1428,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         } else if (errorStr.contains('unauthenticated') ||
             errorStr.contains('session')) {
           errorMsg = s.sessionExpiredPleaseLogInAgain;
+        } else if (errorStr.contains('chat_read_only')) {
+          errorMsg = 'Este chat está em modo somente leitura.';
         } else {
-          // Mostrar erro técnico completo para diagnóstico
           errorMsg = '❌ Erro: $errorStr';
         }
         ScaffoldMessenger.of(context).showSnackBar(
@@ -3683,6 +3716,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     setState(() => _showEmojiPicker = !_showEmojiPicker),
                 onAudioTap: () => setState(() => _isRecordingVoice = true),
                 onTextChanged: _onTextChanged,
+                slowModeCooldown: _slowModeCooldown,
               ),
 
             // ── Emoji picker ──

@@ -979,6 +979,15 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               context.push('/community/${widget.community.id}/acm');
             }),
           ),
+        if (_isLeader)
+          _AminoDrawerTile(
+            icon: Icons.swap_horiz_rounded,
+            iconColor: theme.warning,
+            label: 'Transferir Liderança',
+            onTap: () => _closeAndNavigate(() {
+              _showTransferOwnershipDialog(context);
+            }),
+          ),
         if (_isStaff)
           Consumer(builder: (ctx, cref, _) {
             final pendingFlags = cref.watch(
@@ -1052,6 +1061,199 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           }),
         ),
       ],
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TRANSFER OWNERSHIP DIALOG
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  void _showTransferOwnershipDialog(BuildContext context) async {
+    final r = context.r;
+    final theme = context.nexusTheme;
+
+    // Carregar membros da comunidade (exceto o líder atual)
+    final currentUserId = SupabaseService.currentUserId;
+    List<Map<String, dynamic>> members = [];
+    String? selectedUserId;
+    String? selectedUserName;
+
+    try {
+      final res = await SupabaseService.table('community_members')
+          .select('user_id, role, profiles(id, display_name, username, avatar_url)')
+          .eq('community_id', widget.community.id)
+          .eq('status', 'active')
+          .neq('user_id', currentUserId ?? '');
+      members = (res as List).cast<Map<String, dynamic>>();
+    } catch (_) {}
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: theme.surfaceColor,
+          title: Row(
+            children: [
+              Icon(Icons.swap_horiz_rounded, color: theme.warning, size: r.s(22)),
+              SizedBox(width: r.s(8)),
+              Text('Transferir Liderança',
+                  style: TextStyle(
+                      color: theme.textPrimary, fontWeight: FontWeight.w700)),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Selecione um membro para se tornar o novo líder. Você será rebaixado para Co-Líder.',
+                  style: TextStyle(
+                      color: theme.warning.withValues(alpha: 0.9),
+                      fontSize: r.fs(12)),
+                ),
+                SizedBox(height: r.s(12)),
+                if (members.isEmpty)
+                  Text('Nenhum membro disponível.',
+                      style: TextStyle(color: theme.textSecondary))
+                else
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: r.s(240)),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: members.length,
+                      itemBuilder: (_, i) {
+                        final profile = members[i]['profiles'] as Map<String, dynamic>?;
+                        final uid = profile?['id'] as String? ?? '';
+                        final name = profile?['display_name'] as String? ??
+                            profile?['username'] as String? ?? 'Usuário';
+                        final avatar = profile?['avatar_url'] as String?;
+                        final role = members[i]['role'] as String? ?? 'member';
+                        final isSelected = selectedUserId == uid;
+                        return ListTile(
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: r.s(4), vertical: 0),
+                          leading: CircleAvatar(
+                            radius: r.s(18),
+                            backgroundImage: avatar != null
+                                ? CachedNetworkImageProvider(avatar)
+                                : null,
+                            backgroundColor: theme.accentPrimary.withValues(alpha: 0.3),
+                            child: avatar == null
+                                ? Text(name[0].toUpperCase(),
+                                    style: TextStyle(
+                                        color: theme.textPrimary,
+                                        fontSize: r.fs(14)))
+                                : null,
+                          ),
+                          title: Text(name,
+                              style: TextStyle(
+                                  color: theme.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: r.fs(14))),
+                          subtitle: Text(role,
+                              style: TextStyle(
+                                  color: theme.textSecondary, fontSize: r.fs(11))),
+                          trailing: isSelected
+                              ? Icon(Icons.check_circle_rounded,
+                                  color: theme.accentPrimary, size: r.s(20))
+                              : null,
+                          selected: isSelected,
+                          selectedTileColor:
+                              theme.accentPrimary.withValues(alpha: 0.1),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(r.s(8))),
+                          onTap: () => setDialogState(() {
+                            selectedUserId = uid;
+                            selectedUserName = name;
+                          }),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton.icon(
+              icon: Icon(Icons.swap_horiz_rounded, size: r.s(16)),
+              label: const Text('Transferir'),
+              onPressed: selectedUserId == null
+                  ? null
+                  : () async {
+                      final confirm = await showDialog<bool>(
+                        context: ctx,
+                        builder: (_) => AlertDialog(
+                          backgroundColor: theme.surfaceColor,
+                          title: Text('Confirmar Transferência',
+                              style: TextStyle(color: theme.textPrimary)),
+                          content: Text(
+                            'Tem certeza que deseja transferir a liderança de "${widget.community.title}" para $selectedUserName? Esta ação não pode ser desfeita facilmente.',
+                            style: TextStyle(color: theme.textSecondary),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: const Text('Cancelar'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: theme.warning,
+                                  foregroundColor: Colors.black),
+                              child: const Text('Confirmar'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm != true) return;
+                      try {
+                        await SupabaseService.rpc(
+                          'transfer_community_ownership',
+                          params: {
+                            'p_community_id': widget.community.id,
+                            'p_new_leader_id': selectedUserId,
+                          },
+                        );
+                        if (ctx.mounted) Navigator.pop(ctx);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  '✅ Liderança transferida para $selectedUserName.'),
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: theme.success,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (ctx.mounted) Navigator.pop(ctx);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Erro: ${e.toString()}'),
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: theme.error,
+                            ),
+                          );
+                        }
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.warning,
+                foregroundColor: Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

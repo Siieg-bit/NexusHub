@@ -22,6 +22,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   bool _isLoading = false;
   bool _checkedIn = false;
   int _consecutiveDays = 0;
+  int _bestStreak = 0;
   int _xpEarned = 0;
   int _coinsEarned = 0;
 
@@ -72,10 +73,11 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
       final row = await SupabaseService.table('profiles')
-          .select('consecutive_checkin_days, last_checkin_at')
+          .select('consecutive_checkin_days, last_checkin_at, best_streak_days')
           .eq('id', userId)
           .single();
       final streak = (row['consecutive_checkin_days'] as num?)?.toInt() ?? 0;
+      final best = (row['best_streak_days'] as num?)?.toInt() ?? streak;
       final lastCheckin = row['last_checkin_at'] as String?;
       DateTime serverNow;
       try {
@@ -99,6 +101,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (!mounted) return;
       setState(() {
         _consecutiveDays = streak;
+        _bestStreak = best;
         _checkedIn = alreadyCheckedIn;
       });
       if (alreadyCheckedIn) {
@@ -219,6 +222,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           setState(() {
             _checkedIn = true;
             _consecutiveDays = newStreak;
+            if (newStreak > _bestStreak) _bestStreak = newStreak;
             _xpEarned = (data['xp_earned'] as int?) ??
                 (data['reputation_earned'] as int?) ??
                 0;
@@ -337,7 +341,97 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               style: TextStyle(color: Colors.grey[500], fontSize: r.fs(14)),
             ),
 
-            SizedBox(height: r.s(28)),
+            SizedBox(height: r.s(16)),
+
+            // ================================================================
+            // STREAK BANNER — Contador destacado estilo Kyodo
+            // ================================================================
+            Container(
+              padding: EdgeInsets.symmetric(vertical: r.s(14), horizontal: r.s(20)),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFFFF9800).withValues(alpha: 0.15),
+                    const Color(0xFFFF5722).withValues(alpha: 0.08),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(r.s(16)),
+                border: Border.all(
+                  color: const Color(0xFFFF9800).withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  // Streak atual
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.local_fire_department_rounded,
+                              color: const Color(0xFFFF9800), size: r.s(28)),
+                          SizedBox(width: r.s(4)),
+                          Text(
+                            '$_consecutiveDays',
+                            style: TextStyle(
+                              fontSize: r.fs(32),
+                              fontWeight: FontWeight.w900,
+                              color: const Color(0xFFFF9800),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        'Streak atual',
+                        style: TextStyle(
+                          fontSize: r.fs(11),
+                          color: Colors.grey[500],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Divisor
+                  Container(
+                    width: 1,
+                    height: r.s(48),
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
+                  // Melhor streak
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.emoji_events_rounded,
+                              color: const Color(0xFFFFD700), size: r.s(22)),
+                          SizedBox(width: r.s(4)),
+                          Text(
+                            '$_bestStreak',
+                            style: TextStyle(
+                              fontSize: r.fs(28),
+                              fontWeight: FontWeight.w900,
+                              color: const Color(0xFFFFD700),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        'Melhor streak',
+                        style: TextStyle(
+                          fontSize: r.fs(11),
+                          color: Colors.grey[500],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: r.s(20)),
 
             // ================================================================
             // DIAS DA SEMANA — Estilo Amino

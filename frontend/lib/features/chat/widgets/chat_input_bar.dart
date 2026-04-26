@@ -28,6 +28,8 @@ class ChatInputBar extends ConsumerWidget {
   final VoidCallback onEmojiToggle;
   final VoidCallback onAudioTap;
   final ValueChanged<String>? onTextChanged;
+  /// Segundos restantes do cooldown do slow mode (0 = pode enviar normalmente).
+  final int slowModeCooldown;
 
   const ChatInputBar({
     super.key,
@@ -39,6 +41,7 @@ class ChatInputBar extends ConsumerWidget {
     required this.onEmojiToggle,
     required this.onAudioTap,
     this.onTextChanged,
+    this.slowModeCooldown = 0,
   });
 
   @override
@@ -172,14 +175,16 @@ class ChatInputBar extends ConsumerWidget {
               ),
             ),
             SizedBox(width: r.s(8)),
-            // Botão enviar
+            // Botão enviar (com countdown de slow mode)
             GestureDetector(
-              onTap: isSending ? null : onSend,
+              onTap: (isSending || slowModeCooldown > 0) ? null : onSend,
               child: Container(
                 width: r.s(40),
                 height: r.s(40),
                 decoration: BoxDecoration(
-                  color: context.nexusTheme.accentPrimary,
+                  color: slowModeCooldown > 0
+                      ? context.nexusTheme.accentPrimary.withValues(alpha: 0.4)
+                      : context.nexusTheme.accentPrimary,
                   shape: BoxShape.circle,
                 ),
                 child: isSending
@@ -188,8 +193,19 @@ class ChatInputBar extends ConsumerWidget {
                         child: const CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white),
                       )
-                    : Icon(Icons.send_rounded,
-                        color: Colors.white, size: r.s(18)),
+                    : slowModeCooldown > 0
+                        ? Center(
+                            child: Text(
+                              '$slowModeCooldown',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: r.s(13),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          )
+                        : Icon(Icons.send_rounded,
+                            color: Colors.white, size: r.s(18)),
               ),
             ),
           ],
