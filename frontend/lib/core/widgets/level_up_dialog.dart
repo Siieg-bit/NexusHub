@@ -1,11 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../config/app_theme.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../utils/responsive.dart';
 import '../utils/helpers.dart';
 import '../l10n/locale_provider.dart';
+import 'celebration_overlay.dart';
 
 /// Dialog fullscreen de Level Up estilo Amino Apps.
 ///
@@ -110,6 +112,17 @@ class _LevelUpContentState extends ConsumerState<_LevelUpContent>
       curve: Curves.easeOutBack,
     );
 
+    // Dispara stars celebration após 400ms para coincidir com o slide-in
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (mounted) {
+        CelebrationOverlay.show(
+          context,
+          style: CelebrationStyle.stars,
+          duration: const Duration(seconds: 4),
+        );
+      }
+    });
+
     // Gerar partículas de confetti (use fixed base size, responsive applied in build)
     for (int i = 0; i < 60; i++) {
       _particles.add(_ConfettiParticle(
@@ -188,7 +201,14 @@ class _LevelUpContentState extends ConsumerState<_LevelUpContent>
                       Icons.auto_awesome_rounded,
                       size: r.s(40),
                       color: const Color(0xFFFFD700).withValues(alpha: 0.8),
-                    ),
+                    ).animate()
+                      .scale(
+                        begin: const Offset(0, 0),
+                        end: const Offset(1, 1),
+                        duration: 600.ms,
+                        curve: Curves.elasticOut,
+                      )
+                      .rotate(begin: -0.3, end: 0, duration: 600.ms),
                     SizedBox(height: r.s(8)),
 
                     // "LEVEL UP!"
@@ -200,7 +220,9 @@ class _LevelUpContentState extends ConsumerState<_LevelUpContent>
                         color: context.nexusTheme.textSecondary,
                         letterSpacing: 4,
                       ),
-                    ),
+                    ).animate(delay: 200.ms)
+                      .fadeIn(duration: 400.ms)
+                      .slideY(begin: 0.3, end: 0, duration: 400.ms),
                     SizedBox(height: r.s(20)),
 
                     // Número do nível com glow
@@ -254,9 +276,14 @@ class _LevelUpContentState extends ConsumerState<_LevelUpContent>
                           ),
                         );
                       },
-                    ),
+                      ).animate(delay: 400.ms)
+                      .scale(
+                        begin: const Offset(0.5, 0.5),
+                        end: const Offset(1, 1),
+                        duration: 500.ms,
+                        curve: Curves.elasticOut,
+                      ),
                     SizedBox(height: r.s(24)),
-
                     // Título desbloqueado
                     Container(
                       padding: EdgeInsets.symmetric(
@@ -281,19 +308,20 @@ class _LevelUpContentState extends ConsumerState<_LevelUpContent>
                           color: levelColor,
                         ),
                       ),
-                    ),
+                    ).animate(delay: 700.ms)
+                      .fadeIn(duration: 400.ms)
+                      .slideY(begin: 0.2, end: 0, duration: 400.ms),
                     SizedBox(height: r.s(12)),
-
                     Text(
                       s.newTitleUnlocked,
                       style: TextStyle(
                         fontSize: r.fs(13),
                         color: context.nexusTheme.textSecondary,
                       ),
-                    ),
+                    ).animate(delay: 900.ms)
+                      .fadeIn(duration: 300.ms),
                     SizedBox(height: r.s(40)),
-
-                    // Botão "Incrível!"
+                    // Botão "Incrível!""
                     SizedBox(
                       width: r.s(200),
                       child: ElevatedButton(
@@ -316,7 +344,9 @@ class _LevelUpContentState extends ConsumerState<_LevelUpContent>
                           ),
                         ),
                       ),
-                    ),
+                    ).animate(delay: 1100.ms)
+                      .fadeIn(duration: 400.ms)
+                      .slideY(begin: 0.3, end: 0, duration: 400.ms),
                   ],
                 ),
               ),

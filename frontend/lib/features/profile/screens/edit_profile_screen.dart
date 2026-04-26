@@ -12,6 +12,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../widgets/rich_bio.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/user_status_badge.dart';
 
 /// Tela de edição de perfil do usuário com Rich Bio Editor.
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -41,6 +42,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String? _originalAvatarUrl; // para detectar mudança real
   bool _isUploadingAvatar = false;
 
+  // Status / Mood
+  String? _statusEmoji;
+  String? _statusText;
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +57,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _isAminoIdAvailable = _initialAminoId.isEmpty ? null : true;
     _avatarUrl = user?.iconUrl;
     _originalAvatarUrl = user?.iconUrl;
+    _statusEmoji = user?.statusEmoji;
+    _statusText = user?.statusText;
   }
 
   @override
@@ -217,6 +224,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         'bio': _bioController.text.trim(),
         // amino_id representa o @username global — enviar null se vazio para evitar violação
         'amino_id': normalizedAminoId.isEmpty ? null : normalizedAminoId,
+        'status_emoji': _statusEmoji,
+        'status_text': _statusText,
       };
       // Incluir avatar apenas se foi alterado pelo usuário
       if (_avatarUrl != null && _avatarUrl != _originalAvatarUrl) {
@@ -549,6 +558,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   ),
                 ),
                 SizedBox(height: r.s(16)),
+                // Status / Mood
+                _buildStatusField(r),
+                SizedBox(height: r.s(16)),
                 // Rich Bio Editor
                 _buildRichBioEditor(r),
               ],
@@ -558,6 +570,81 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       ),
     );
   }
+  Widget _buildStatusField(Responsive r) {
+    final hasStatus = (_statusEmoji?.isNotEmpty == true) || (_statusText?.isNotEmpty == true);
+    return GestureDetector(
+      onTap: () async {
+        await showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => EditStatusSheet(
+            initialEmoji: _statusEmoji,
+            initialText: _statusText,
+            onSave: (emoji, text) {
+              setState(() {
+                _statusEmoji = emoji;
+                _statusText = text;
+              });
+            },
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: BorderRadius.circular(r.s(16)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(14)),
+        child: Row(
+          children: [
+            Icon(
+              Icons.mood_rounded,
+              color: context.nexusTheme.accentPrimary,
+              size: r.s(22),
+            ),
+            SizedBox(width: r.s(12)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Status / Mood',
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: r.fs(12),
+                    ),
+                  ),
+                  SizedBox(height: r.s(4)),
+                  if (hasStatus)
+                    UserStatusBadge(
+                      emoji: _statusEmoji,
+                      text: _statusText,
+                      compact: false,
+                    )
+                  else
+                    Text(
+                      'Toque para definir seu status',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: r.fs(14),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.grey[600],
+              size: r.s(20),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildRichBioEditor(Responsive r) {
     final s = getStrings();
     return Container(

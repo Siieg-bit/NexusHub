@@ -20,6 +20,7 @@ import '../../../core/widgets/nexus_badge.dart';
 // Extracted providers & widgets
 import '../providers/community_detail_providers.dart';
 import '../widgets/community_live_projections.dart';
+import '../widgets/community_voice_rooms.dart';
 import '../widgets/community_guidelines_tab.dart';
 import '../widgets/community_feed_tab.dart';
 import '../widgets/community_online_tab.dart';
@@ -865,6 +866,14 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         if (visible['live_chats'] != false)
           SliverToBoxAdapter(
             child: CommunityLiveProjections(
+              communityId: widget.communityId,
+            ),
+          ),
+
+        // VOICE ROOMS (salas de voz e palco ativas)
+        if (visible['live_chats'] != false)
+          SliverToBoxAdapter(
+            child: CommunityVoiceRooms(
               communityId: widget.communityId,
             ),
           ),

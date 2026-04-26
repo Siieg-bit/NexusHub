@@ -28,8 +28,9 @@ const TYPE_TO_SETTINGS_COL: Record<string, string> = {
   comment: "push_comments",
   mention: "push_mentions",
   wall_post: "push_mentions",
-  // Follows
+  // Follows e Match
   follow: "push_follows",
+  match: "push_follows",
   repost: "push_mentions",
   // Chat
   chat: "push_chat_messages",
@@ -71,6 +72,7 @@ const TYPE_TO_CHANNEL: Record<string, string> = {
   like: "nexushub_social",
   comment: "nexushub_social",
   follow: "nexushub_social",
+  match: "nexushub_social",
   mention: "nexushub_social",
   wall_post: "nexushub_social",
   repost: "nexushub_social",

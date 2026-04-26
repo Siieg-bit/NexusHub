@@ -8,6 +8,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/services/haptic_service.dart';
+import '../../../core/widgets/celebration_overlay.dart';
 
 /// Tela de check-in diário com gamificação — Estilo Amino Apps.
 class CheckInScreen extends ConsumerStatefulWidget {
@@ -31,6 +32,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   late Animation<double> _pulseAnimation;
   late Animation<double> _celebrateScale;
   late Animation<double> _celebrateOpacity;
+  bool _showCelebration = false;
 
   @override
   void initState() {
@@ -230,6 +232,15 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           });
           _pulseController.stop();
           _celebrateController.forward();
+          setState(() => _showCelebration = true);
+          // Dispara confetti via CelebrationOverlay
+          CelebrationOverlay.show(
+            context,
+            style: newStreak >= 7
+                ? CelebrationStyle.streakFire
+                : CelebrationStyle.confetti,
+            duration: const Duration(seconds: 3),
+          );
           // Atualiza o cache global do usuário para que outros widgets
           // (ex: badges de streak) reflitam o novo valor imediatamente.
           ref.read(authProvider.notifier).refreshProfile();
@@ -304,12 +315,9 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             // ÍCONE PRINCIPAL — Amino style com glow
             // ================================================================
             _checkedIn
-                ? ScaleTransition(
-                    scale: _celebrateScale,
-                    child: FadeTransition(
-                      opacity: _celebrateOpacity,
-                      child: _buildMainIcon(true),
-                    ),
+                ? CheckInSuccessAnimation(
+                    animate: _showCelebration,
+                    child: _buildMainIcon(true),
                   )
                 : AnimatedBuilder(
                     animation: _pulseAnimation,

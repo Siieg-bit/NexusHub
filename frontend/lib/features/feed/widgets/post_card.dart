@@ -23,6 +23,7 @@ import '../../../core/l10n/app_strings.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/linkified_text.dart';
 import '../../../core/services/haptic_service.dart';
+import 'package:share_plus/share_plus.dart';
 
 /// Card de post no feed — estilo Amino Apps (web-preview).
 /// Suporta todos os 9 tipos de post com renderização interativa.
@@ -1686,6 +1687,38 @@ class _PostCardState extends ConsumerState<PostCard>
             ),
           ),
 
+          // Share button
+          SizedBox(width: r.s(18)),
+          Semantics(
+            label: 'Compartilhar post',
+            button: true,
+            child: GestureDetector(
+              onTap: () {
+                HapticService.action();
+                final author = _post.author?.nickname ?? 'alguém';
+                final title = _post.title?.isNotEmpty == true
+                    ? _post.title!
+                    : (_post.content?.isNotEmpty == true
+                        ? (_post.content!.length > 80
+                            ? '${_post.content!.substring(0, 80)}...'
+                            : _post.content!)
+                        : 'Post');
+                Share.share(
+                  '$author no NexusHub:\n\n$title',
+                  subject: 'Post de $author no NexusHub',
+                );
+              },
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: r.s(6), horizontal: r.s(2)),
+                child: Icon(
+                  Icons.ios_share_rounded,
+                  size: r.s(20),
+                  color: Colors.grey[600],
+                ),
+              ),
+            ),
+          ),
           // Repost button
           if (_post.type != 'repost') ...[
             SizedBox(width: r.s(18)),
