@@ -12,6 +12,7 @@ import '../../../core/models/message_model.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/mini_room_overlay.dart';
 
@@ -419,6 +420,21 @@ class _CallScreenState extends ConsumerState<CallScreen>
     // Esconder PiP se estiver ativo (encerramento definitivo)
     ref.read(miniRoomProvider.notifier).hide();
     await CallService.endCall();
+    // Enviar mensagem de sistema informando o encerramento da chamada
+    try {
+      final nickname =
+          ref.read(currentUserProvider)?.nickname ?? 'Alguém';
+      await SupabaseService.rpc(
+        'send_chat_message_with_reputation',
+        params: {
+          'p_thread_id': widget.session.threadId,
+          'p_content': '$nickname encerrou o Voice Chat',
+          'p_type': 'system_voice_end',
+        },
+      );
+    } catch (e) {
+      debugPrint('[CallScreen] Erro ao enviar system_voice_end: $e');
+    }
     if (!mounted) return;
     Navigator.of(context).pop();
   }

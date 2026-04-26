@@ -1366,11 +1366,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       } else if (type == 'voice_chat' ||
           type == 'video_chat' ||
           type == 'screening_room') {
+        final initiatorNickname =
+            ref.read(currentUserProvider)?.nickname ??
+            _threadInfo?['my_nickname'] ??
+            'Alguém';
         content = type == 'voice_chat'
-            ? 'Iniciou um Voice Chat'
+            ? '$initiatorNickname iniciou um Voice Chat'
             : type == 'video_chat'
-                ? 'Iniciou um Video Chat'
-                : 'Iniciou uma Sala de Projeção';
+                ? '$initiatorNickname iniciou um Video Chat'
+                : '$initiatorNickname iniciou uma Sala de Projeção';
       } else {
         content = text;
       }

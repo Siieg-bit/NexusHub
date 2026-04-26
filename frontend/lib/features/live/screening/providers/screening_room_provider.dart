@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../core/services/realtime_service.dart';
+import '../../../auth/providers/auth_provider.dart';
 import '../models/screening_room_state.dart';
 import '../models/screening_participant.dart';
 
@@ -369,6 +370,21 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         await SupabaseService.client.rpc('end_screening_session', params: {
           'p_session_id': sessionId,
         });
+        // Enviar mensagem de sistema informando o encerramento da sala
+        try {
+          final nickname =
+              ref.read(currentUserProvider)?.nickname ?? 'Alguém';
+          await SupabaseService.rpc(
+            'send_chat_message_with_reputation',
+            params: {
+              'p_thread_id': threadId,
+              'p_content': '$nickname encerrou a Sala de Projeção',
+              'p_type': 'system_screen_end',
+            },
+          );
+        } catch (e) {
+          debugPrint('[ScreeningRoom] Erro ao enviar system_screen_end: $e');
+        }
       } else {
         // Participante sai silenciosamente
         _channel?.sendBroadcastMessage(

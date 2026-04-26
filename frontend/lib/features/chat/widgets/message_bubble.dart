@@ -268,6 +268,9 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
 
     // ── Tipos system especiais com UI própria (devem vir ANTES do isSystemMessage genérico) ──
     if (_specialType == 'system_screen_end') {
+      final endLabel = message.content?.isNotEmpty == true
+          ? message.content!
+          : 'Sala de Projeção encerrada';
       return Padding(
         padding: EdgeInsets.symmetric(vertical: r.s(8)),
         child: Center(
@@ -283,7 +286,35 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                 Icon(Icons.tv_off_rounded, color: Colors.grey[600], size: r.s(16)),
                 SizedBox(width: r.s(8)),
                 Text(
-                  'Sala de Projeção encerrada',
+                  endLabel,
+                  style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    if (_specialType == 'system_voice_end') {
+      final endLabel = message.content?.isNotEmpty == true
+          ? message.content!
+          : 'Voice Chat encerrado';
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: r.s(8)),
+        child: Center(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
+            decoration: BoxDecoration(
+              color: Colors.grey.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(r.s(12)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.mic_off_rounded, color: Colors.grey[600], size: r.s(16)),
+                SizedBox(width: r.s(8)),
+                Text(
+                  endLabel,
                   style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
                 ),
               ],
@@ -299,20 +330,34 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
       final label = isVoice ? 'Voice Chat' : 'Sala de Projeção';
       final accentColor = isVoice ? const Color(0xFF4CAF50) : const Color(0xFFFF5722);
       final threadId = message.threadId;
+      // Exibe o nome do iniciador a partir do conteúdo da mensagem
+      final initiatorText = message.content?.isNotEmpty == true ? message.content! : null;
       final container = Container(
         padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
           color: accentColor.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(r.s(12)),
         ),
-        child: Row(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: accentColor),
-            SizedBox(width: r.s(8)),
-            Text(label,
-                style: TextStyle(fontWeight: FontWeight.w600, color: accentColor)),
-            if (!isVoice) ...[SizedBox(width: r.s(8)), Icon(Icons.arrow_forward_ios_rounded, color: accentColor, size: r.s(12))],
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: accentColor),
+                SizedBox(width: r.s(8)),
+                Text(label,
+                    style: TextStyle(fontWeight: FontWeight.w600, color: accentColor)),
+                if (!isVoice) ...[SizedBox(width: r.s(8)), Icon(Icons.arrow_forward_ios_rounded, color: accentColor, size: r.s(12))],
+              ],
+            ),
+            if (initiatorText != null) ...[  
+              SizedBox(height: r.s(4)),
+              Text(
+                initiatorText,
+                style: TextStyle(color: accentColor.withValues(alpha: 0.75), fontSize: r.fs(11)),
+              ),
+            ],
           ],
         ),
       );
@@ -1074,6 +1119,9 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
 
     // Sala de Projeção encerrada
     if (type == 'system_screen_end') {
+      final endLabel = message.content?.isNotEmpty == true
+          ? message.content!
+          : 'Sala de Projeção encerrada';
       return Container(
         padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
@@ -1086,7 +1134,32 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
             Icon(Icons.tv_off_rounded, color: Colors.grey[600], size: r.s(20)),
             SizedBox(width: r.s(8)),
             Text(
-              'Sala de Projeção encerrada',
+              endLabel,
+              style: TextStyle(
+                  fontWeight: FontWeight.w600, color: Colors.grey[500]),
+            ),
+          ],
+        ),
+      );
+    }
+    // Voice Chat encerrado
+    if (type == 'system_voice_end') {
+      final endLabel = message.content?.isNotEmpty == true
+          ? message.content!
+          : 'Voice Chat encerrado';
+      return Container(
+        padding: EdgeInsets.all(r.s(12)),
+        decoration: BoxDecoration(
+          color: Colors.grey.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(r.s(12)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.mic_off_rounded, color: Colors.grey[600], size: r.s(20)),
+            SizedBox(width: r.s(8)),
+            Text(
+              endLabel,
               style: TextStyle(
                   fontWeight: FontWeight.w600, color: Colors.grey[500]),
             ),
@@ -1102,24 +1175,38 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
       final accentColor =
           isVoice ? const Color(0xFF4CAF50) : const Color(0xFFFF5722);
       final threadId = message.threadId;
+      // Exibe o nome do iniciador a partir do conteúdo da mensagem
+      final initiatorText = message.content?.isNotEmpty == true ? message.content! : null;
       final container = Container(
         padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
           color: accentColor.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(r.s(12)),
         ),
-        child: Row(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: accentColor),
-            SizedBox(width: r.s(8)),
-            Text(label,
-                style:
-                    TextStyle(fontWeight: FontWeight.w600, color: accentColor)),
-            if (!isVoice) ...[
-              SizedBox(width: r.s(8)),
-              Icon(Icons.arrow_forward_ios_rounded,
-                  color: accentColor, size: r.s(12)),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: accentColor),
+                SizedBox(width: r.s(8)),
+                Text(label,
+                    style:
+                        TextStyle(fontWeight: FontWeight.w600, color: accentColor)),
+                if (!isVoice) ...[
+                  SizedBox(width: r.s(8)),
+                  Icon(Icons.arrow_forward_ios_rounded,
+                      color: accentColor, size: r.s(12)),
+                ],
+              ],
+            ),
+            if (initiatorText != null) ...[  
+              SizedBox(height: r.s(4)),
+              Text(
+                initiatorText,
+                style: TextStyle(color: accentColor.withValues(alpha: 0.75), fontSize: r.fs(11)),
+              ),
             ],
           ],
         ),

@@ -1539,55 +1539,65 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                         ),
                         // Seguindo
                         Expanded(
-                          child: GestureDetector(
+                          child: InkWell(
                             onTap: () => context.push(
                                 '/community/${widget.communityId}/profile/${widget.userId}/followers?tab=following'),
-                            child: Column(
-                              children: [
-                                Text(
-                                  formatCount(_followingCount),
-                                  style: TextStyle(
-                                    color: context.nexusTheme.textPrimary,
-                                    fontSize: r.fs(28),
-                                    fontWeight: FontWeight.w900,
+                            borderRadius: BorderRadius.circular(r.s(8)),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: r.s(8), horizontal: r.s(4)),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    formatCount(_followingCount),
+                                    style: TextStyle(
+                                      color: context.nexusTheme.textPrimary,
+                                      fontSize: r.fs(28),
+                                      fontWeight: FontWeight.w900,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  s.following,
-                                  style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontSize: r.fs(12),
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ],
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    s.following,
+                                    style: TextStyle(
+                                        color: Colors.grey[500],
+                                        fontSize: r.fs(12),
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                         // Seguidores
                         Expanded(
-                          child: GestureDetector(
+                          child: InkWell(
                             onTap: () => context
                                 .push('/community/${widget.communityId}/profile/${widget.userId}/followers'),
-                            child: Column(
-                              children: [
-                                Text(
-                                  formatCount(_followersCount),
-                                  style: TextStyle(
-                                    color: context.nexusTheme.textPrimary,
-                                    fontSize: r.fs(28),
-                                    fontWeight: FontWeight.w900,
+                            borderRadius: BorderRadius.circular(r.s(8)),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: r.s(8), horizontal: r.s(4)),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    formatCount(_followersCount),
+                                    style: TextStyle(
+                                      color: context.nexusTheme.textPrimary,
+                                      fontSize: r.fs(28),
+                                      fontWeight: FontWeight.w900,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  s.followers,
-                                  style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontSize: r.fs(12),
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ],
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    s.followers,
+                                    style: TextStyle(
+                                        color: Colors.grey[500],
+                                        fontSize: r.fs(12),
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
