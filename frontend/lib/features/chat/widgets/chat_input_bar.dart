@@ -10,6 +10,9 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 /// Contém o botão de mídia (+), o campo de texto, o botão de emoji,
 /// o botão de microfone (atalho rápido) e o botão de enviar.
 ///
+/// Quando [isReadOnly] é true, exibe um banner informativo e desabilita
+/// todos os controles de envio (modo somente leitura ativado pelo host).
+///
 /// Callbacks:
 /// - [onMediaTap]: abre o painel de opções de mídia
 /// - [onSend]: envia a mensagem de texto
@@ -19,6 +22,7 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 class ChatInputBar extends ConsumerWidget {
   final TextEditingController controller;
   final bool isSending;
+  final bool isReadOnly;
   final VoidCallback onMediaTap;
   final VoidCallback onSend;
   final VoidCallback onEmojiToggle;
@@ -29,6 +33,7 @@ class ChatInputBar extends ConsumerWidget {
     super.key,
     required this.controller,
     required this.isSending,
+    this.isReadOnly = false,
     required this.onMediaTap,
     required this.onSend,
     required this.onEmojiToggle,
@@ -40,6 +45,52 @@ class ChatInputBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(stringsProvider);
     final r = context.r;
+
+    // Modo somente leitura: exibe banner em vez da barra de input
+    if (isReadOnly) {
+      return Container(
+        padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(12)),
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          border: Border(
+            top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Container(
+            padding: EdgeInsets.symmetric(
+                horizontal: r.s(16), vertical: r.s(12)),
+            decoration: BoxDecoration(
+              color: Colors.orange.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(r.s(12)),
+              border: Border.all(
+                  color: Colors.orange.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.lock_outline_rounded,
+                    color: Colors.orange, size: r.s(16)),
+                SizedBox(width: r.s(8)),
+                Flexible(
+                  child: Text(
+                    'O host ativou o modo somente leitura',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: r.fs(13),
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Container(
       padding: EdgeInsets.fromLTRB(r.s(8), r.s(8), r.s(8), r.s(8)),
       decoration: BoxDecoration(

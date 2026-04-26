@@ -203,6 +203,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   String? _chatCoverUrl;
   String? _callerRole; // 'host', 'co_host', 'member'
   bool _isAnnouncementOnly = false;
+  bool _isReadOnly = false;
   bool get _isChatDisabled => (_threadInfo?['status'] as String? ?? 'ok') == 'disabled';
   // Fluxo de DM invite
   // _isDmInvitePending: true quando o usuário atual é o destinatário de um convite pendente (status='invite_sent')
@@ -219,6 +220,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   Timer? _typingDebounce;
   /// Canal de Presence/Broadcast dedicado ao typing do chat.
   RealtimeChannel? _typingChannel;
+
+  // ==========================================================================
+  // LINK PREVIEW AUTOMÁTICO
+  // ==========================================================================
+  /// URL detectada no texto do input (null = nenhuma URL).
+  String? _detectedUrl;
+  /// Dados do preview carregados via Edge Function fetch-og-tags.
+  Map<String, dynamic>? _linkPreviewData;
+  /// Se o usuário fechou o preview manualmente para esta URL.
+  bool _linkPreviewDismissed = false;
+  /// Timer de debounce para não chamar a Edge Function a cada tecla.
+  Timer? _linkPreviewDebounce;
 
   // ==========================================================================
   // LIFECYCLE
@@ -479,6 +492,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     _replyHighlightTimer?.cancel();
     _typingDebounce?.cancel();
     _typingChannel?.unsubscribe();
+    _linkPreviewDebounce?.cancel();
     _messageController.dispose();
     _scrollController.removeListener(_handleScrollPositionChange);
     _scrollController.dispose();
@@ -789,7 +803,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       final userId = SupabaseService.currentUserId;
       // Capa do chat + host_id + co_hosts (tudo em uma query só)
       final threadData = await SupabaseService.table('chat_threads')
-          .select('cover_image_url, is_announcement_only, host_id, co_hosts')
+          .select('cover_image_url, is_announcement_only, is_read_only, host_id, co_hosts')
           .eq('id', widget.threadId)
           .single();
       if (mounted && !_isDisposed) {
@@ -797,6 +811,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           _chatCoverUrl = threadData['cover_image_url'] as String?;
           _isAnnouncementOnly =
               threadData['is_announcement_only'] as bool? ?? false;
+          _isReadOnly = threadData['is_read_only'] as bool? ?? false;
         });
       }
       // Role do usuário atual — usa host_id/co_hosts do banco diretamente
@@ -1158,7 +1173,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     // Parar de emitir typing ao enviar
     _typingDebounce?.cancel();
     _stopTyping();
-    setState(() => _isSending = true);
+    // Limpar link preview ao enviar
+    _linkPreviewDebounce?.cancel();
+    setState(() {
+      _isSending = true;
+      _detectedUrl = null;
+      _linkPreviewData = null;
+      _linkPreviewDismissed = false;
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _messageController.clear();
@@ -1253,6 +1275,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         if (packId != null && packId.isNotEmpty) 'p_pack_id': packId,
         if (mediaBlurhash != null && mediaBlurhash.isNotEmpty)
           'p_media_blurhash': mediaBlurhash,
+        // Incluir link preview data se o usuário não fechou o card
+        if (type == 'text' &&
+            _detectedUrl != null &&
+            _linkPreviewData != null &&
+            !_linkPreviewDismissed)
+          'p_shared_link_summary': _linkPreviewData,
       };
 
       debugPrint('[ChatRoom] 📤 RPC params: $rpcParams');
@@ -1470,6 +1498,42 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           if (mounted) setState(() => _isAnnouncementOnly = newVal);
                         } catch (e) {
                           debugPrint('[ChatRoom] toggle announcement: $e');
+                        }
+                      },
+                    ),
+                    _settingsTile(
+                      r,
+                      _isReadOnly
+                          ? Icons.lock_open_rounded
+                          : Icons.lock_outline_rounded,
+                      _isReadOnly
+                          ? 'Desativar modo somente leitura'
+                          : 'Modo somente leitura',
+                      () async {
+                        Navigator.pop(ctx);
+                        final newVal = !_isReadOnly;
+                        try {
+                          final result = await SupabaseService.rpc(
+                            'toggle_chat_read_only',
+                            params: {
+                              'p_thread_id': widget.threadId,
+                              'p_enabled': newVal,
+                            },
+                          );
+                          final res = result as Map<String, dynamic>?;
+                          if (res?['success'] == true && mounted) {
+                            setState(() => _isReadOnly = newVal);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(newVal
+                                    ? 'Modo somente leitura ativado'
+                                    : 'Modo somente leitura desativado'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          debugPrint('[ChatRoom] toggle read-only: $e');
                         }
                       },
                     ),
@@ -3412,6 +3476,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   },
                 ),
               )
+            // Link Preview Card — exibido acima do input quando URL é detectada
+            if (_detectedUrl != null &&
+                _linkPreviewData != null &&
+                !_linkPreviewDismissed)
+              _LinkPreviewInputCard(
+                data: _linkPreviewData!,
+                url: _detectedUrl!,
+                onDismiss: () => setState(() => _linkPreviewDismissed = true),
+              ),
+
             // Typing Indicator — exibido acima do input quando outros digitam
             if (_typingUsers.isNotEmpty)
               _TypingIndicatorWidget(typingUsers: _typingUsers),
@@ -3424,6 +3498,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               ChatInputBar(
                 controller: _messageController,
                 isSending: _isSending,
+                isReadOnly: _isReadOnly &&
+                    _callerRole != 'host' &&
+                    _callerRole != 'co_host',
                 onMediaTap: () => _showMediaOptions(context),
                 onSend: () => _sendMessage(),
                 onEmojiToggle: () =>
@@ -3519,70 +3596,56 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       _typingDebounce?.cancel();
       _stopTyping();
     }
-    final s = getStrings();
+
+    // ── Link Preview automático ──────────────────────────────────────────────
     final urlRegex = RegExp(
-      r'(?<![\[\(])(https?:\/\/[^\s]+)',
+      r'https?:\/\/[^\s]{10,}',
       caseSensitive: false,
     );
     final match = urlRegex.firstMatch(value);
-    if (match != null) {
-      final url = match.group(0)!;
-      if (url.length > 10 && !value.contains('](')) {
-        final nameCtrl = TextEditingController();
-        showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            backgroundColor: context.surfaceColor,
-            title: Text(s.nameLink,
-                style: TextStyle(
-                    color: context.nexusTheme.textPrimary,
-                    fontWeight: FontWeight.w700)),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(s.nameLinkOptional,
-                    style: TextStyle(
-                        color: context.nexusTheme.textSecondary, fontSize: 13)),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: nameCtrl,
-                  autofocus: true,
-                  style: TextStyle(color: context.nexusTheme.textPrimary),
-                  decoration: InputDecoration(
-                    hintText: s.clickHereExample,
-                    hintStyle: TextStyle(color: Colors.grey[600]),
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child:
-                    Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
-              ),
-              TextButton(
-                onPressed: () {
-                  final name = nameCtrl.text.trim();
-                  final replacement = name.isNotEmpty ? '[$name]($url)' : url;
-                  final newText = value.replaceFirst(url, replacement);
-                  _messageController.text = newText;
-                  _messageController.selection = TextSelection.fromPosition(
-                    TextPosition(offset: newText.length),
-                  );
-                  Navigator.pop(ctx);
-                },
-                child: Text(s.confirm,
-                    style: TextStyle(
-                        color: context.nexusTheme.accentPrimary,
-                        fontWeight: FontWeight.w700)),
-              ),
-            ],
-          ),
-        );
+    final foundUrl = match?.group(0);
+
+    if (foundUrl == null) {
+      // Sem URL no texto — limpar preview
+      if (_detectedUrl != null) {
+        setState(() {
+          _detectedUrl = null;
+          _linkPreviewData = null;
+          _linkPreviewDismissed = false;
+        });
       }
+      return;
     }
+
+    // Mesma URL já detectada (ou usuário fechou) — não recarregar
+    if (foundUrl == _detectedUrl) return;
+
+    // Nova URL detectada
+    setState(() {
+      _detectedUrl = foundUrl;
+      _linkPreviewData = null;
+      _linkPreviewDismissed = false;
+    });
+
+    // Debounce de 600ms para não chamar a Edge Function a cada tecla
+    _linkPreviewDebounce?.cancel();
+    _linkPreviewDebounce = Timer(const Duration(milliseconds: 600), () async {
+      if (!mounted || _isDisposed) return;
+      if (_detectedUrl != foundUrl) return; // URL mudou enquanto esperava
+      try {
+        final result = await SupabaseService.client.functions.invoke(
+          'fetch-og-tags',
+          body: {'url': foundUrl},
+        );
+        if (!mounted || _isDisposed || _detectedUrl != foundUrl) return;
+        final data = result.data as Map<String, dynamic>?;
+        if (data != null && data['title'] != null) {
+          setState(() => _linkPreviewData = data);
+        }
+      } catch (e) {
+        debugPrint('[ChatRoom] link preview fetch error: $e');
+      }
+    });
   }
 
   // ==========================================================================
@@ -4946,6 +5009,131 @@ class _AnimatedDot extends StatelessWidget {
           color: Colors.grey[500],
           shape: BoxShape.circle,
         ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// _LinkPreviewInputCard — Card de preview de link exibido acima do input.
+// Aparece automaticamente quando o usuário digita uma URL no campo de mensagem.
+// =============================================================================
+class _LinkPreviewInputCard extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final String url;
+  final VoidCallback onDismiss;
+
+  const _LinkPreviewInputCard({
+    required this.data,
+    required this.url,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    final title = data['title'] as String? ?? '';
+    final description = data['description'] as String?;
+    final image = data['image'] as String?;
+    final domain = data['domain'] as String? ?? Uri.tryParse(url)?.host ?? url;
+
+    return Container(
+      margin: EdgeInsets.fromLTRB(r.s(8), 0, r.s(8), r.s(4)),
+      padding: EdgeInsets.all(r.s(10)),
+      decoration: BoxDecoration(
+        color: context.nexusTheme.surfacePrimary,
+        borderRadius: BorderRadius.circular(r.s(12)),
+        border: Border.all(
+          color: context.nexusTheme.accentSecondary.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Thumbnail
+          if (image != null && image.isNotEmpty)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(r.s(8)),
+              child: CachedNetworkImage(
+                imageUrl: image,
+                width: r.s(56),
+                height: r.s(56),
+                fit: BoxFit.cover,
+                errorWidget: (_, __, ___) => Container(
+                  width: r.s(56),
+                  height: r.s(56),
+                  color: context.nexusTheme.accentSecondary.withValues(alpha: 0.1),
+                  child: Icon(Icons.link_rounded,
+                      color: context.nexusTheme.accentSecondary, size: r.s(24)),
+                ),
+              ),
+            )
+          else
+            Container(
+              width: r.s(56),
+              height: r.s(56),
+              decoration: BoxDecoration(
+                color: context.nexusTheme.accentSecondary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(r.s(8)),
+              ),
+              child: Icon(Icons.link_rounded,
+                  color: context.nexusTheme.accentSecondary, size: r.s(24)),
+            ),
+          SizedBox(width: r.s(10)),
+          // Texto
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  domain,
+                  style: TextStyle(
+                    color: context.nexusTheme.accentSecondary,
+                    fontSize: r.fs(11),
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (title.isNotEmpty) ...[
+                  SizedBox(height: r.s(2)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: context.nexusTheme.textPrimary,
+                      fontSize: r.fs(13),
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                if (description != null && description.isNotEmpty) ...[
+                  SizedBox(height: r.s(2)),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      color: context.nexusTheme.textSecondary,
+                      fontSize: r.fs(11),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          // Botão fechar
+          GestureDetector(
+            onTap: onDismiss,
+            child: Padding(
+              padding: EdgeInsets.only(left: r.s(4)),
+              child: Icon(Icons.close_rounded,
+                  color: Colors.grey[500], size: r.s(18)),
+            ),
+          ),
+        ],
       ),
     );
   }
