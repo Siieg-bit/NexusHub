@@ -24,6 +24,12 @@ class ChatRoomModel {
   final String? hostId;
   final List<dynamic> coHosts;
   final String? pinnedMessageId;
+
+  /// Nota de texto livre fixada no topo do chat (Big Note).
+  /// Editável apenas por host e co-hosts. NULL = sem nota.
+  final String? bigNote;
+  final DateTime? bigNoteUpdatedAt;
+
   final int membersCount;
   final DateTime? lastMessageAt;
   final String? lastMessagePreview;
@@ -79,6 +85,8 @@ class ChatRoomModel {
     this.hostId,
     this.coHosts = const [],
     this.pinnedMessageId,
+    this.bigNote,
+    this.bigNoteUpdatedAt,
     this.membersCount = 0,
     this.lastMessageAt,
     this.lastMessagePreview,
@@ -159,6 +167,10 @@ class ChatRoomModel {
       hostId: json['host_id'] as String?,
       coHosts: json['co_hosts'] as List<dynamic>? ?? [],
       pinnedMessageId: json['pinned_message_id'] as String?,
+      bigNote: json['big_note'] as String?,
+      bigNoteUpdatedAt: json['big_note_updated_at'] != null
+          ? DateTime.tryParse(json['big_note_updated_at'] as String)
+          : null,
       membersCount: json['members_count'] as int? ?? 0,
       lastMessageAt: json['last_message_at'] != null
           ? DateTime.tryParse(json['last_message_at'] as String)
