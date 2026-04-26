@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
@@ -260,7 +261,7 @@ class ChunkedUploadService {
 
       final response = await request.close();
       if (response.statusCode != 200 && response.statusCode != 206) {
-        final body = await response.transform(const SystemEncoding().decoder).join();
+        final body = await response.transform(utf8.decoder).join();
         throw Exception('Upload chunk falhou: ${response.statusCode} - $body');
       }
     } finally {

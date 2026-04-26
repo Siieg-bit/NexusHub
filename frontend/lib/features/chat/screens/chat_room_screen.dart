@@ -2133,7 +2133,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   Future<void> _addReaction(String messageId, String emoji) async {
-    HapticFeedback.selectionClick();
+    HapticService.tap();
     try {
       await SupabaseService.rpc('toggle_reaction', params: {
         'p_message_id': messageId,
@@ -2709,7 +2709,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         0;
     final threadIcon = _threadInfo?['icon_url'] as String?;
 
-    return EmojiRainOverlay(
+    return EmojiRainOverlay.withKey(
       child: Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: context.nexusTheme.backgroundPrimary,

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+// flutter/services.dart removido — usando HapticService
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/services/supabase_service.dart';
@@ -184,9 +184,26 @@ class FreeTalkNotifier extends StateNotifier<FreeTalkState> {
         .eq('room_id', roomId)
         .listen((rows) {
           final myId = SupabaseService.currentUserId ?? '';
-          final list = rows
-              .map((r) => _memberFromJson(r))
-              .toList();
+          // O stream do Supabase retorna apenas colunas da tabela (sem join).
+          // Preservamos nickname/iconUrl dos membros já carregados via RPC.
+          final list = rows.map((r) {
+            final userId = r['user_id'] as String? ?? '';
+            final existing = state.members.firstWhere(
+              (e) => e.userId == userId,
+              orElse: () => VoiceRoomMember(
+                userId: userId,
+                role: r['role'] as String? ?? 'listener',
+                isMuted: r['is_muted'] as bool? ?? true,
+                handRaised: r['hand_raised'] as bool? ?? false,
+                nickname: '',
+              ),
+            );
+            return existing.copyWith(
+              role: r['role'] as String? ?? existing.role,
+              isMuted: r['is_muted'] as bool? ?? existing.isMuted,
+              handRaised: r['hand_raised'] as bool? ?? existing.handRaised,
+            );
+          }).toList();
           final myMember = list.firstWhere(
             (m) => m.userId == myId,
             orElse: () => VoiceRoomMember(
@@ -199,11 +216,11 @@ class FreeTalkNotifier extends StateNotifier<FreeTalkState> {
           );
           // Preservar isSpeaking dos membros existentes
           final updatedList = list.map((m) {
-            final existing = state.members.firstWhere(
+            final prev = state.members.firstWhere(
               (e) => e.userId == m.userId,
               orElse: () => m,
             );
-            return m.copyWith(isSpeaking: existing.isSpeaking);
+            return m.copyWith(isSpeaking: prev.isSpeaking);
           }).toList();
 
           state = state.copyWith(
@@ -214,7 +231,7 @@ class FreeTalkNotifier extends StateNotifier<FreeTalkState> {
 
           // Haptic feedback quando promovido a speaker
           if (myMember.role == 'speaker' && state.myRole == 'listener') {
-            HapticFeedback.mediumImpact();
+            HapticService.promoted();
           }
         });
   }
@@ -250,7 +267,7 @@ class FreeTalkNotifier extends StateNotifier<FreeTalkState> {
           'p_muted': newMuted,
         },
       );
-      if (!newMuted) HapticFeedback.lightImpact();
+      if (!newMuted) HapticService.tap();
     } catch (_) {
       state = state.copyWith(isMuted: !newMuted);
     }
@@ -259,7 +276,7 @@ class FreeTalkNotifier extends StateNotifier<FreeTalkState> {
   Future<void> raiseHand() async {
     final newRaised = !state.myHandRaised;
     state = state.copyWith(myHandRaised: newRaised);
-    HapticFeedback.selectionClick();
+    HapticService.tap();
     try {
       await SupabaseService.rpc(
         'raise_hand_voice_room',
@@ -271,7 +288,7 @@ class FreeTalkNotifier extends StateNotifier<FreeTalkState> {
   }
 
   Future<void> acceptSpeaker(String targetUserId) async {
-    HapticFeedback.mediumImpact();
+    HapticService.action();
     try {
       await SupabaseService.rpc(
         'accept_speaker_request',

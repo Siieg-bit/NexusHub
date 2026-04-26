@@ -122,16 +122,25 @@ class _EmojiParticle {
 }
 
 // ─── Overlay key global ───────────────────────────────────────────────────────
+// FIX: O GlobalKey deve ser passado ao StatefulWidget, não ao Stack interno.
+// Isso garante que _emojiRainKey.currentState seja populado corretamente.
 final _emojiRainKey = GlobalKey<_EmojiRainOverlayState>();
 
 // ─── Widget principal ─────────────────────────────────────────────────────────
 class EmojiRainOverlay extends StatefulWidget {
   final Widget child;
 
+  // O key é passado explicitamente para que o GlobalKey aponte para este widget.
   const EmojiRainOverlay({
-    super.key,
+    Key? key,
     required this.child,
-  });
+  }) : super(key: key);
+
+  /// Cria uma instância de EmojiRainOverlay já com o GlobalKey configurado.
+  /// Use este factory quando for envolver uma tela de chat.
+  factory EmojiRainOverlay.withKey({required Widget child}) {
+    return EmojiRainOverlay(key: _emojiRainKey, child: child);
+  }
 
   /// Dispara a chuva de emojis a partir de qualquer lugar na árvore de widgets.
   static void trigger(BuildContext context, {required EmojiRainType type}) {
@@ -192,8 +201,9 @@ class _EmojiRainOverlayState extends State<EmojiRainOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    // FIX: O Stack NÃO recebe o _emojiRainKey. O key está no StatefulWidget
+    // (passado via construtor), o que é o comportamento correto no Flutter.
     return Stack(
-      key: _emojiRainKey,
       children: [
         widget.child,
         if (_particles.isNotEmpty)
