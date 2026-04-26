@@ -1100,14 +1100,32 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     }
 
     try {
-      final result = await CallService.openThreadCallDetailed(
+      // Usar createCallOnly: só cria uma nova call.
+      // Se já existe uma call ativa, informa o usuário e não entra automaticamente.
+      // Para entrar em uma call existente, o usuário deve clicar no botão
+      // "Entrar" no bubble da mensagem system_voice_start.
+      final result = await CallService.createCallOnly(
         threadId: widget.threadId,
         type: CallType.voice,
       );
 
       if (!mounted) return;
 
-      if (result == null) {
+      // Já existe uma call ativa iniciada por outro usuário.
+      if (result.callAlreadyActive) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Já existe uma chamada ativa neste chat. Use o botão "Entrar" na mensagem para participar.',
+            ),
+            backgroundColor: context.nexusTheme.accentPrimary,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+
+      if (result.session == null) {
         final report = CallService.buildLastErrorReport(
           title: 'CHAT VOICE CALL FAILURE',
         );
@@ -1136,16 +1154,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         return;
       }
 
-      if (!result.reusedExistingSession) {
-        await _sendMessage(type: 'voice_chat');
-        if (!mounted) return;
-      }
+      // Nova call criada com sucesso: enviar mensagem de rastreamento.
+      await _sendMessage(type: 'voice_chat');
+      if (!mounted) return;
 
       if (mounted) {
         setState(() => _isOpeningVoiceCall = false);
       }
 
-      await CallScreen.show(context, result.session);
+      await CallScreen.show(context, result.session!);
     } catch (e, st) {
       final report = [
         '===== CHAT VOICE CALL UNCAUGHT EXCEPTION =====',

@@ -402,7 +402,10 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                   },
                 ).then((_) => loadingVisible = false);
 
-                final result = await CallService.openThreadCallDetailed(
+                // Usar joinExistingCall: entra apenas em uma call já ativa.
+                // O usuário clicou explicitamente em "Entrar" — esta é a única
+                // forma de participar de uma call iniciada por outro usuário.
+                final session = await CallService.joinExistingCall(
                   threadId: threadId,
                   type: CallType.voice,
                 );
@@ -411,38 +414,19 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                   Navigator.of(context, rootNavigator: true).pop();
                 }
 
-                if (result == null) {
-                  final report = CallService.buildLastErrorReport(
-                    title: 'MESSAGE BUBBLE VOICE CALL FAILURE',
-                  );
-                  debugPrint(report);
-
+                if (session == null) {
                   if (!context.mounted) return;
-                  await showDialog<void>(
-                    context: context,
-                    builder: (dialogContext) {
-                      return AlertDialog(
-                        title: const Text('Falha ao entrar na chamada'),
-                        content: SizedBox(
-                          width: 560,
-                          child: SingleChildScrollView(
-                            child: SelectableText(report),
-                          ),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(dialogContext).pop(),
-                            child: const Text('Fechar'),
-                          ),
-                        ],
-                      );
-                    },
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Esta chamada já foi encerrada.'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
                   );
                   return;
                 }
 
                 if (!context.mounted) return;
-                await CallScreen.show(context, result.session);
+                await CallScreen.show(context, session);
               } catch (e, st) {
                 if (loadingVisible && context.mounted) {
                   Navigator.of(context, rootNavigator: true).pop();

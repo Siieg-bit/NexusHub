@@ -619,6 +619,65 @@ class CallService {
     return result?.session;
   }
 
+  /// =========================================================================
+  /// createCallOnly — Cria uma nova call SEM entrar em uma existente.
+  ///
+  /// Usado pelo botão do AppBar: se já existe uma call ativa no thread,
+  /// retorna `callAlreadyActive` em vez de entrar automaticamente.
+  /// O usuário deve usar o botão "Entrar" no bubble para participar.
+  /// =========================================================================
+  static Future<({CallSession? session, bool callAlreadyActive})>
+      createCallOnly({
+    required String threadId,
+    required CallType type,
+  }) async {
+    clearLastError();
+    final allowedTypes = {type};
+
+    // Verificar se já existe uma call ativa — NÃO entrar, apenas informar.
+    final existing = await getActiveCallForThread(
+      threadId,
+      allowedTypes: allowedTypes,
+    );
+    if (existing != null) {
+      // Se o próprio usuário já está nessa call, retornar a sessão existente.
+      if (activeCall?.id == existing.id) {
+        return (session: activeCall, callAlreadyActive: false);
+      }
+      // Outro usuário iniciou — não entrar automaticamente.
+      return (session: null, callAlreadyActive: true);
+    }
+
+    // Nenhuma call ativa: criar uma nova (e entrar como host).
+    final created = await createCall(threadId: threadId, type: type);
+    return (session: created, callAlreadyActive: false);
+  }
+
+  /// =========================================================================
+  /// joinExistingCall — Entra em uma call existente no thread.
+  ///
+  /// Usado pelo botão "Entrar" no bubble da mensagem system_voice_start.
+  /// Retorna null se não houver call ativa.
+  /// =========================================================================
+  static Future<CallSession?> joinExistingCall({
+    required String threadId,
+    required CallType type,
+  }) async {
+    clearLastError();
+    final allowedTypes = {type};
+
+    final existing = await getActiveCallForThread(
+      threadId,
+      allowedTypes: allowedTypes,
+    );
+    if (existing == null) return null;
+
+    // Se já está na call, retornar a sessão sem re-entrar.
+    if (activeCall?.id == existing.id) return activeCall;
+
+    return joinCallSession(existing.id);
+  }
+
   /// Gera o channelName a partir do ID da sessão.
   static String _channelName(CallSession session) {
     return 'nexushub_${session.id.replaceAll('-', '').substring(0, 16)}';
