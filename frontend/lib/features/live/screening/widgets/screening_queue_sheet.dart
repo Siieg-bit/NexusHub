@@ -99,9 +99,8 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
     HapticFeedback.heavyImpact();
     await ref.read(screeningRoomProvider(widget.threadId).notifier)
         .updateVideo(
-          url: next['url'] ?? '',
-          title: next['title'],
-          thumbnail: next['thumbnail'],
+          videoUrl: next['url'] ?? '',
+          videoTitle: next['title'] ?? '',
         );
     await ref.read(screeningRoomProvider(widget.threadId).notifier)
         .removeFromQueue(0);

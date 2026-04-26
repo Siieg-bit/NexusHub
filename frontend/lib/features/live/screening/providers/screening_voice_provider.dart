@@ -112,7 +112,7 @@ class ScreeningVoiceNotifier extends StateNotifier<ScreeningVoiceState> {
       );
       await _engine!.setAudioProfile(
         profile: AudioProfileType.audioProfileDefault,
-        scenario: AudioScenario.audioScenarioChatRoom,
+        scenario: AudioScenarioType.audioScenarioChatroom,
       );
 
       // Habilitar indicador de volume a cada 200ms

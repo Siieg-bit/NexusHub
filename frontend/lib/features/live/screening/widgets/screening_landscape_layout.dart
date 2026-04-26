@@ -229,7 +229,6 @@ class _PortraitLayout extends StatelessWidget {
           if (!entryAnimationDone)
             Positioned.fill(
               child: ScreeningEntryAnimation(
-                roomName: roomTitle,
                 onComplete: onEntryAnimationComplete,
               ),
             ),
@@ -342,7 +341,6 @@ class _LandscapeLayout extends StatelessWidget {
                 if (!entryAnimationDone)
                   Positioned.fill(
                     child: ScreeningEntryAnimation(
-                      roomName: roomTitle,
                       onComplete: onEntryAnimationComplete,
                     ),
                   ),

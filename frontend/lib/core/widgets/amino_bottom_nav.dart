@@ -137,7 +137,8 @@ class AminoBottomNavBar extends ConsumerWidget {
                       ),
                     ],
                   ),
-                              // ── Botão Central "+" ──────────────────────────────────────────────
+                ),
+              // ── Botão Central "+" ──────────────────────────────────────────────
               if (showCreate)
                 Expanded(
                   child: Semantics(
@@ -233,7 +234,8 @@ class AminoBottomNavBar extends ConsumerWidget {
                     ),
                   ],
                 ),
-                            // ── Eu (avatar do usuário) ───────────────────────────────────────────────
+              ),
+              // ── Eu (avatar do usuário) ───────────────────────────────────────
               _CapsuleNavItem(
                 isSelected: currentIndex == 4,
                 onTap: () => onTap(4),

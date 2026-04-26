@@ -91,7 +91,6 @@ class _ReactionButtonState extends State<ReactionButton>
       ),
     );
     Overlay.of(context).insert(_overlayEntry!);
-    _ = r; // suppress unused warning
   }
 
   void _onTap() {

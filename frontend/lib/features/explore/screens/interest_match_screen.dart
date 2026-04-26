@@ -146,12 +146,12 @@ class _InterestMatchScreenState extends ConsumerState<InterestMatchScreen>
     try {
       if (wasFollowing) {
         await SupabaseService.table('follows').delete().match({
-          'follower_id': SupabaseService.currentUserId,
+          'follower_id': SupabaseService.currentUserId ?? '',
           'following_id': user.userId,
         });
       } else {
         await SupabaseService.table('follows').insert({
-          'follower_id': SupabaseService.currentUserId,
+          'follower_id': SupabaseService.currentUserId ?? '',
           'following_id': user.userId,
         });
       }

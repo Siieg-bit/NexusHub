@@ -107,7 +107,7 @@ class _VerifiedBadgeRequestScreenState
 
   @override
   Widget build(BuildContext context) {
-    final r = Responsive(context);
+    final r = context.r;
     final statusAsync = ref.watch(verifiedBadgeRequestStatusProvider);
 
     return Scaffold(

@@ -267,7 +267,7 @@ class _ScreeningControlsOverlayState
                 icon: Icons.queue_music_rounded,
                 label: 'Fila',
                 color: roomState.videoQueue.isNotEmpty
-                    ? Colors.greenAccent
+                    ? Colors.greenAccent[400]!
                     : null,
                 badge: roomState.videoQueue.isNotEmpty
                     ? '${roomState.videoQueue.length}'

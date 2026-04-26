@@ -66,7 +66,7 @@ class MentionSuggestionList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final r = Responsive(context);
+    final r = context.r;
     final asyncUsers = ref.watch(mentionSearchProvider(query));
 
     return asyncUsers.when(

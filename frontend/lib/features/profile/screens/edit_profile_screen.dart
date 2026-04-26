@@ -618,7 +618,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
           ),
         ),
-      ), // Scaffold
+      ), // body: SafeArea
+    ), // child: Scaffold
     ); // PopScope
   }
   Widget _buildStatusField(Responsive r) {
@@ -630,9 +631,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
           builder: (_) => EditStatusSheet(
-            initialEmoji: _statusEmoji,
-            initialText: _statusText,
-            onSave: (emoji, text) {
+            currentEmoji: _statusEmoji,
+            currentText: _statusText,
+            onSaved: (emoji, text) {
               setState(() {
                 _statusEmoji = emoji;
                 _statusText = text;
