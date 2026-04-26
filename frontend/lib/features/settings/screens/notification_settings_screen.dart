@@ -29,6 +29,8 @@ class _NotificationSettingsScreenState
   bool _pushAchievements = true;
   bool _pushLevelUp = true;
   bool _pushModeration = true;
+  bool _pushEconomy = true;
+  bool _pushStories = true;
 
   // In-app
   bool _inAppSounds = true;
@@ -73,6 +75,8 @@ class _NotificationSettingsScreenState
           _pushAchievements = res['push_achievements'] as bool? ?? true;
           _pushLevelUp = res['push_level_up'] as bool? ?? true;
           _pushModeration = res['push_moderation'] as bool? ?? true;
+          _pushEconomy = res['push_economy'] as bool? ?? true;
+          _pushStories = res['push_stories'] as bool? ?? true;
           _inAppSounds = res['in_app_sounds'] as bool? ?? true;
           _inAppVibration = res['in_app_vibration'] as bool? ?? true;
           _onlyFriendsLikes = res['only_friends_likes'] as bool? ?? false;
@@ -111,6 +115,8 @@ class _NotificationSettingsScreenState
           'push_achievements':        _pushAchievements,
           'push_level_up':            _pushLevelUp,
           'push_moderation':          _pushModeration,
+          'push_economy':             _pushEconomy,
+          'push_stories':             _pushStories,
           'in_app_sounds':            _inAppSounds,
           'in_app_vibration':         _inAppVibration,
           'only_friends_likes':       _onlyFriendsLikes,
@@ -375,6 +381,26 @@ class _NotificationSettingsScreenState
                     value: _pushModeration,
                     color: context.nexusTheme.error,
                     onChanged: (v) => setState(() => _pushModeration = v),
+                  ),
+                  SizedBox(height: r.s(24)),
+                  _SectionTitle(title: s.economy),
+                  _NotifToggle(
+                    icon: Icons.monetization_on_rounded,
+                    title: 'Transações e Moedas',
+                    subtitle: 'Recebimento de moedas, tips e transações',
+                    value: _pushEconomy,
+                    color: const Color(0xFFFFB300),
+                    onChanged: (v) => setState(() => _pushEconomy = v),
+                  ),
+                  SizedBox(height: r.s(24)),
+                  _SectionTitle(title: s.stories),
+                  _NotifToggle(
+                    icon: Icons.auto_stories_rounded,
+                    title: s.stories,
+                    subtitle: 'Novos stories de pessoas que você segue',
+                    value: _pushStories,
+                    color: const Color(0xFFE91E63),
+                    onChanged: (v) => setState(() => _pushStories = v),
                   ),
                 ],
 
