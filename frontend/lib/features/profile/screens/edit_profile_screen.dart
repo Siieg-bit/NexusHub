@@ -33,6 +33,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   bool? _isAminoIdAvailable;
   String? _aminoIdAvailabilityMessage;
   String _initialAminoId = '';
+  String _initialNickname = '';
+  String _initialBio = '';
 
   // FIX Bug #4: FocusNode persistente para o campo de bio
   final FocusNode _bioFocusNode = FocusNode();
@@ -41,6 +43,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String? _avatarUrl;
   String? _originalAvatarUrl; // para detectar mudança real
   bool _isUploadingAvatar = false;
+
+  /// Retorna true se houver alguma mudança não salva.
+  bool get _hasUnsavedChanges =>
+      _nicknameController.text.trim() != _initialNickname ||
+      _bioController.text.trim() != _initialBio ||
+      _avatarUrl != _originalAvatarUrl;
 
   // Status / Mood
   String? _statusEmoji;
@@ -54,6 +62,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _bioController = TextEditingController(text: user?.bio ?? '');
     _aminoIdController = TextEditingController(text: user?.aminoId ?? '');
     _initialAminoId = _normalizeAminoId(user?.aminoId ?? '');
+    _initialNickname = user?.nickname?.trim() ?? '';
+    _initialBio = user?.bio?.trim() ?? '';
     _isAminoIdAvailable = _initialAminoId.isEmpty ? null : true;
     _avatarUrl = user?.iconUrl;
     _originalAvatarUrl = user?.iconUrl;
@@ -369,7 +379,48 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final r = context.r;
     final user = ref.watch(currentUserProvider);
 
-    return Scaffold(
+    return PopScope(
+      canPop: !_hasUnsavedChanges || _isLoading,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: context.surfaceColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+            title: Text(
+              'Descartar alterações?',
+              style: TextStyle(
+                color: context.nexusTheme.textPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            content: Text(
+              'Suas alterações não foram salvas. Deseja descartá-las?',
+              style: TextStyle(color: context.nexusTheme.textSecondary),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text('Continuar editando',
+                    style: TextStyle(color: context.nexusTheme.accentPrimary)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text('Descartar',
+                    style: TextStyle(color: context.nexusTheme.error)),
+              ),
+            ],
+          ),
+        );
+        if (confirm == true && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
@@ -566,9 +617,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ],
             ),
           ),
-        )
-      ),
-    );
+        ),
+      ), // Scaffold
+    ); // PopScope
   }
   Widget _buildStatusField(Responsive r) {
     final hasStatus = (_statusEmoji?.isNotEmpty == true) || (_statusText?.isNotEmpty == true);

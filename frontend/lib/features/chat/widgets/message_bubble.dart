@@ -22,6 +22,7 @@ import '../../../core/widgets/linkified_text.dart';
 import 'form_message_bubble.dart';
 import '../../../core/widgets/simple_link_preview.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
+import '../../../core/widgets/member_title_badge.dart';
 
 /// ============================================================================
 /// MESSAGE BUBBLE (suporta todos os 19+ tipos) — Estilo Amino
@@ -634,27 +635,46 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                           if (shouldShowAuthorName)
                             Transform.translate(
                               offset: Offset(isMe ? 0 : -r.s(6), 0),
-                              child: Padding(
-                                padding: EdgeInsets.only(bottom: r.s(2)),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        authorName,
-                                        style: TextStyle(
-                                          color: context.nexusTheme.accentPrimary,
-                                          fontSize: r.fs(11),
-                                          fontWeight: FontWeight.w700,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.only(bottom: r.s(1)),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            authorName,
+                                            style: TextStyle(
+                                              color: context.nexusTheme.accentPrimary,
+                                              fontSize: r.fs(11),
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                        if (_buildRoleBadge(context, r) != null)
+                                          _buildRoleBadge(context, r)!,
+                                      ],
+                                    ),
+                                  ),
+                                  // Título de membro (apenas em chats de comunidade)
+                                  if (!isMe &&
+                                      communityId != null &&
+                                      communityId!.isNotEmpty &&
+                                      message.authorId.isNotEmpty)
+                                    Padding(
+                                      padding: EdgeInsets.only(bottom: r.s(2)),
+                                      child: MemberTitleBadge(
+                                        userId: message.authorId,
+                                        communityId: communityId!,
+                                        fontSize: 9,
                                       ),
                                     ),
-                                    if (_buildRoleBadge(context, r) != null)
-                                      _buildRoleBadge(context, r)!,
-                                  ],
-                                ),
+                                ],
                               ),
                             ),
                           // Conteúdo de mídia (imagem/gif/vídeo)

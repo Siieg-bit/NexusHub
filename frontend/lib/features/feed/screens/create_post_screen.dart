@@ -11,8 +11,8 @@ import '../../../core/providers/post_provider.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
-import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/mention_overlay.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Editor de criação e edição de posts do tipo **normal** (texto genérico).
 ///
@@ -41,13 +41,13 @@ class CreatePostScreen extends ConsumerStatefulWidget {
   ConsumerState<CreatePostScreen> createState() => _CreatePostScreenState();
 }
 
-class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
+class _CreatePostScreenState extends ConsumerState<CreatePostScreen>
+    with MentionMixin<CreatePostScreen> {
   final _titleController = TextEditingController();
   final _subtitleController = TextEditingController();
   final _contentController = TextEditingController();
   final _backgroundUrlController = TextEditingController();
   final _tagsController = TextEditingController();
-  late final MentionController _mentionController;
   bool _isSubmitting = false;
   final List<String> _mediaUrls = [];
   String? _coverImageUrl;
@@ -103,7 +103,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   @override
   void initState() {
     super.initState();
-    _mentionController = MentionController(textController: _contentController);
+    initMention(_contentController);
     if (_isEditing) {
       _populateFromPost(widget.editingPost!);
     }
@@ -720,7 +720,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
   @override
   void dispose() {
-    _mentionController.dispose();
+    disposeMention();
     _titleController.dispose();
     _subtitleController.dispose();
     _contentController.dispose();
@@ -856,9 +856,6 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   _buildDividerPreview(r),
                   SizedBox(height: r.s(8)),
 
-                  // ── Overlay de menção @usuário ──
-                  MentionOverlay(controller: _mentionController),
-
                   // ── Conteúdo principal ──
                   Container(
                     constraints: BoxConstraints(minHeight: r.s(200)),
@@ -904,9 +901,18 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     ),
                   ),
 
+                  // Autocomplete de menção
+                  if (mentionQuery != null)
+                    Padding(
+                      padding: EdgeInsets.only(top: r.s(6), bottom: r.s(4)),
+                      child: MentionSuggestionList(
+                        query: mentionQuery!,
+                        controller: _contentController,
+                        onMentionInserted: onMentionInserted,
+                      ),
+                    ),
                   SizedBox(height: r.s(12)),
-
-                  // ── Imagens anexadas ──
+                  // ── Imagens anexadas ───
                   if (_mediaUrls.isNotEmpty) ...[
                     Text(s.imagesLabel,
                         style: TextStyle(

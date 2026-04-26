@@ -9,6 +9,9 @@ import '../providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/nexus_loading_button.dart';
+import '../../../core/widgets/shake_widget.dart';
+import '../../../core/services/haptic_service.dart';
 
 /// Tela de login — visual Amino Apps (fundo escuro, inputs arredondados, verde).
 class LoginScreen extends ConsumerStatefulWidget {
@@ -22,7 +25,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _shakeKey = GlobalKey<ShakeWidgetState>();
   bool _obscurePassword = true;
+  String? _previousError;
 
   @override
   void dispose() {
@@ -53,8 +58,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         },
       );
     }
-    // Se erro, o auth_provider já atualiza o state.error
-    // que é exibido pelo Consumer no build
+    // Se erro, acionar shake + haptic
+    if (!mounted) return;
+    final currentError = ref.read(authProvider).error;
+    if (currentError != null && currentError != _previousError) {
+      _previousError = currentError;
+      _shakeKey.currentState?.shake();
+      HapticService.error();
+    }
   }
 
   @override
@@ -206,70 +217,51 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
 
-                // Erro
-                if (authState.error != null)
-                  AminoAnimations.scaleIn(
-                    child: Container(
-                      padding: EdgeInsets.all(r.s(12)),
-                      margin: EdgeInsets.only(bottom: r.s(16)),
-                      decoration: BoxDecoration(
-                        color: context.nexusTheme.error.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(r.s(12)),
-                        border: Border.all(
-                          color: context.nexusTheme.error.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.error_outline,
-                              color: context.nexusTheme.error, size: r.s(20)),
-                          SizedBox(width: r.s(8)),
-                          Expanded(
-                            child: Text(authState.error!,
-                                style: TextStyle(
-                                    color: context.nexusTheme.error,
-                                    fontSize: r.fs(13))),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                SizedBox(height: r.s(8)),
-
-                // Botão Login
-                AminoAnimations.slideUp(
-                  delay: const Duration(milliseconds: 200),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: r.s(52),
-                    child: ElevatedButton(
-                      onPressed: authState.isLoading ? null : _handleLogin,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.nexusTheme.accentPrimary,
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor:
-                            context.nexusTheme.accentPrimary.withValues(alpha: 0.5),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(r.s(14)),
-                        ),
-                        textStyle: TextStyle(
-                          fontSize: r.fs(16),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      child: authState.isLoading
-                          ? SizedBox(
-                              height: r.s(20),
-                              width: r.s(20),
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
+                // Erro + Botão Login — envolvidos no ShakeWidget para feedback visual de erro
+                ShakeWidget(
+                  key: _shakeKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (authState.error != null)
+                        AminoAnimations.scaleIn(
+                          child: Container(
+                            padding: EdgeInsets.all(r.s(12)),
+                            margin: EdgeInsets.only(bottom: r.s(16)),
+                            decoration: BoxDecoration(
+                              color: context.nexusTheme.error.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(r.s(12)),
+                              border: Border.all(
+                                color: context.nexusTheme.error.withValues(alpha: 0.3),
                               ),
-                            )
-                          : Text(s.login),
-                    ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.error_outline,
+                                    color: context.nexusTheme.error, size: r.s(20)),
+                                SizedBox(width: r.s(8)),
+                                Expanded(
+                                  child: Text(authState.error!,
+                                      style: TextStyle(
+                                          color: context.nexusTheme.error,
+                                          fontSize: r.fs(13))),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      SizedBox(height: r.s(8)),
+                      // Botão Login
+                      AminoAnimations.slideUp(
+                        delay: const Duration(milliseconds: 200),
+                        child: NexusLoadingButton(
+                          label: s.login,
+                          isLoading: authState.isLoading,
+                          onPressed: _handleLogin,
+                          backgroundColor: context.nexusTheme.accentPrimary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 

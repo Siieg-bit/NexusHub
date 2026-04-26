@@ -21,6 +21,9 @@ import '../../auth/providers/auth_provider.dart';
 import '../../stories/screens/story_viewer_screen.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/nexus_badge.dart';
+import '../../../core/widgets/shimmer_loading.dart';
+import '../../../core/widgets/nexus_empty_state.dart';
+import 'chat_requests_screen.dart' show chatRequestsProvider;
 
 /// Provider para "Meus chats" — lista pessoal do usuário.
 /// Retorna apenas threads com membership ativo (status != 'left').
@@ -190,6 +193,19 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
         .compareTo(a.lastMessageAt ?? a.createdAt);
   });
   return chats;
+});
+
+/// Provider para contagem de solicitações de chat pendentes.
+final pendingChatRequestsCountProvider =
+    FutureProvider.autoDispose<int>((ref) async {
+  final userId = SupabaseService.currentUserId;
+  if (userId == null) return 0;
+  final result = await SupabaseService.client
+      .from('chat_requests')
+      .select('id', const CountOption(count: CountOption.exact, head: true))
+      .eq('receiver_id', userId)
+      .eq('status', 'pending');
+  return result.count ?? 0;
 });
 
 /// Provider para comunidades do usuário (sidebar).
@@ -554,11 +570,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   // ════════════════════════════════════════════════
                   Expanded(
                     child: chatsAsync.when(
-                      loading: () => Center(
-                        child: CircularProgressIndicator(
-                          color: context.nexusTheme.accentSecondary,
-                          strokeWidth: 2.5,
-                        ),
+                      loading: () => CustomScrollView(
+                        slivers: [const ChatListSkeleton(count: 5)],
                       ),
                       error: (error, _) => Center(
                         child: Column(
@@ -681,6 +694,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               ];
             },
           ),
+          // ── Solicitações de chat pendentes ──
+          _buildChatRequestsBanner(r),
           // ── Stories dos seguidos (tipo Instagram) ──
           _buildFollowingStoriesBar(r),
 
@@ -688,6 +703,55 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
           ...chatRooms.map((chatRoom) => _AminoChatTile(chatRoom: chatRoom)),
         ],
       ),
+    );
+  }
+
+  // ==========================================================================
+  // BANNER DE SOLICITAÇÕES DE CHAT PENDENTES
+  // ==========================================================================
+  Widget _buildChatRequestsBanner(Responsive r) {
+    final countAsync = ref.watch(pendingChatRequestsCountProvider);
+    return countAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (count) {
+        if (count == 0) return const SizedBox.shrink();
+        return GestureDetector(
+          onTap: () => context.push('/chat-requests'),
+          child: Container(
+            margin: EdgeInsets.fromLTRB(r.s(16), r.s(4), r.s(16), r.s(8)),
+            padding: EdgeInsets.symmetric(
+                horizontal: r.s(14), vertical: r.s(10)),
+            decoration: BoxDecoration(
+              color: context.nexusTheme.accentPrimary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(r.s(12)),
+              border: Border.all(
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.mark_chat_unread_rounded,
+                    color: context.nexusTheme.accentPrimary, size: r.s(18)),
+                SizedBox(width: r.s(10)),
+                Expanded(
+                  child: Text(
+                    count == 1
+                        ? '1 solicitação de chat pendente'
+                        : '$count solicitações de chat pendentes',
+                    style: TextStyle(
+                      color: context.nexusTheme.accentPrimary,
+                      fontSize: r.fs(13),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded,
+                    color: context.nexusTheme.accentPrimary, size: r.s(18)),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -991,58 +1055,12 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   // ==========================================================================
   Widget _buildEmptyChats() {
     final s = getStrings();
-    final r = context.r;
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(r.s(32)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: r.s(80),
-              height: r.s(80),
-              decoration: BoxDecoration(
-                color: context.surfaceColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.chat_bubble_outline_rounded,
-                  size: r.s(36), color: context.nexusTheme.textHint),
-            ),
-            SizedBox(height: r.s(16)),
-            Text(s.noChatsYet,
-                style: TextStyle(
-                    color: context.nexusTheme.textPrimary,
-                    fontSize: r.fs(16),
-                    fontWeight: FontWeight.w600)),
-            SizedBox(height: r.s(8)),
-            Text(s.joinCommunityStartChat,
-                style: TextStyle(
-                    color: context.nexusTheme.textSecondary,
-                    fontSize: r.fs(13)),
-                textAlign: TextAlign.center),
-            SizedBox(height: r.s(24)),
-            GestureDetector(
-              onTap: () => context.go('/explore'),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: r.s(20), vertical: r.s(10)),
-                decoration: BoxDecoration(
-                  color: context.nexusTheme.accentSecondary,
-                  borderRadius: BorderRadius.circular(r.s(20)),
-                ),
-                child: Text(
-                  'Explorar Mais Chats',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: r.fs(14),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return NexusEmptyState(
+      icon: Icons.chat_bubble_outline_rounded,
+      title: s.noChatsYet,
+      subtitle: s.joinCommunityStartChat,
+      actionLabel: 'Explorar Mais Chats',
+      onAction: () => context.go('/explore'),
     );
   }
 }

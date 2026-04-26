@@ -13,7 +13,10 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/shimmer_loading.dart';
+import '../../../core/widgets/nexus_empty_state.dart';
 import 'interest_match_screen.dart';
+import '../../../router/shell_screen.dart';
 
 /// Provider para busca de comunidades.
 final searchCommunitiesProvider =
@@ -369,16 +372,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             // ── Conteúdo scrollável ──
             Expanded(
               child: _isLoading
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        color: context.nexusTheme.accentSecondary,
-                        strokeWidth: 2.5,
-                      ),
+                  ? CustomScrollView(
+                      slivers: [const ExploreUserGridSkeleton(count: 6)],
                     )
                   : RefreshIndicator(
                       color: context.nexusTheme.accentPrimary,
                       onRefresh: _loadData,
                       child: ListView(
+                        // Tab 0 = Discover — integra com re-tap para scroll-to-top
+                        controller: ref.read(tabScrollControllerProvider(0)),
                         padding: EdgeInsets.only(
                           bottom: MediaQuery.of(context).padding.bottom + 80,
                         ),

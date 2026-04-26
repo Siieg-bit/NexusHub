@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/nexus_loading_button.dart';
 import 'package:amino_clone/config/nexus_theme_data.dart';
 
 // ── Utilitário de força de senha ─────────────────────────────────────────────
@@ -441,34 +442,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 // Botão Criar Conta
                 AminoAnimations.slideUp(
                   delay: const Duration(milliseconds: 280),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: r.s(52),
-                    child: ElevatedButton(
-                      onPressed: authState.isLoading ? null : _handleSignup,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.nexusTheme.accentPrimary,
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor:
-                            context.nexusTheme.accentPrimary.withValues(alpha: 0.5),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(r.s(14)),
-                        ),
-                        textStyle: TextStyle(
-                          fontSize: r.fs(16),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      child: authState.isLoading
-                          ? SizedBox(
-                              height: r.s(20),
-                              width: r.s(20),
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Text('Criar Conta'),
-                    ),
+                  child: NexusLoadingButton(
+                    label: 'Criar Conta',
+                    isLoading: authState.isLoading,
+                    onPressed: _handleSignup,
+                    backgroundColor: context.nexusTheme.accentPrimary,
                   ),
                 ),
 

@@ -876,12 +876,30 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             context.push('/community/${widget.community.id}/stories');
           }),
         ),
+        // ── Roles RPG (só quando modo RPG ativo) ──
+        if (widget.community.rpgModeEnabled)
+          _AminoDrawerTile(
+            icon: Icons.shield_rounded,
+            iconColor: theme.accentPrimary,
+            label: 'Roles RPG',
+            onTap: () => _closeAndNavigate(() {
+              context.push('/community/${widget.community.id}/rpg-roles');
+            }),
+          ),
+        // ── Meu Título (acessível para todos os membros) ──
+        _AminoDrawerTile(
+          icon: Icons.workspace_premium_rounded,
+          iconColor: theme.accentSecondary,
+          label: 'Meu Título',
+          onTap: () => _closeAndNavigate(() {
+            context.push('/community/${widget.community.id}/my-title');
+          }),
+        ),
       ],
     );
   }
-
   // ═══════════════════════════════════════════════════════════════════════════
-  // SEE MORE...
+  // SEE MORE....
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildSeeMore(Responsive r, dynamic theme) {

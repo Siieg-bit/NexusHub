@@ -16,6 +16,7 @@ import '../../stickers/stickers.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/comment_media_menu_button.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/nexus_empty_state.dart';
 
 // =============================================================================
 // PROVIDER — carregamento de comentários do mural via RPC
@@ -496,23 +497,10 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
       ),
       data: (comments) {
         if (comments.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.chat_bubble_outline_rounded, color: Colors.grey[700], size: r.s(48)),
-                SizedBox(height: r.s(12)),
-                Text(
-                  'Nenhum comentário ainda',
-                  style: TextStyle(color: Colors.grey[500], fontSize: r.fs(14)),
-                ),
-                SizedBox(height: r.s(4)),
-                Text(
-                  'Seja o primeiro a comentar!',
-                  style: TextStyle(color: Colors.grey[600], fontSize: r.fs(12)),
-                ),
-              ],
-            ),
+          return NexusEmptyState(
+            icon: Icons.chat_bubble_outline_rounded,
+            title: 'Nenhum comentário ainda',
+            subtitle: 'Seja o primeiro a deixar uma mensagem no mural!',
           );
         }
 

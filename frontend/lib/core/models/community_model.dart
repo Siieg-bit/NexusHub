@@ -72,6 +72,8 @@ class CommunityModel {
   final int maxPinnedPosts;
   /// Mensagem de boas-vindas exibida para novos membros
   final String welcomeMessage;
+  /// Modo RPG ativado na comunidade
+  final bool rpgModeEnabled;
 
   const CommunityModel({
     required this.id,
@@ -111,6 +113,7 @@ class CommunityModel {
     this.communityTags = const [],
     this.maxPinnedPosts = 5,
     this.welcomeMessage = '',
+    this.rpgModeEnabled = false,
   });
 
   factory CommunityModel.fromJson(Map<String, dynamic> json) {
@@ -159,6 +162,7 @@ class CommunityModel {
       communityTags: parseTags(json['community_tags']),
       maxPinnedPosts: json['max_pinned_posts'] as int? ?? 5,
       welcomeMessage: json['welcome_message'] as String? ?? '',
+      rpgModeEnabled: json['rpg_mode_enabled'] as bool? ?? false,
     );
   }
 

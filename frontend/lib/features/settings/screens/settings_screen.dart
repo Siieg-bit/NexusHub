@@ -806,6 +806,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       title: s.inventory,
                       onTap: () => context.push('/inventory'),
                     ),
+                    _SettingsItem(
+                      icon: Icons.card_giftcard_rounded,
+                      title: 'Programa de Convites',
+                      onTap: () => context.push('/profile/referral'),
+                    ),
                   ]),
                   SizedBox(height: r.s(20)),
   

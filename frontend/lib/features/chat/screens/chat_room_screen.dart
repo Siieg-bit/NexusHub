@@ -207,6 +207,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   String? _callerRole; // 'host', 'co_host', 'member'
   bool _isAnnouncementOnly = false;
   bool _isReadOnly = false;
+  String? _bigNote;
+  String? _bigNoteAuthorId;
+  bool _bigNoteDismissed = false;
   bool get _isChatDisabled => (_threadInfo?['status'] as String? ?? 'ok') == 'disabled';
   // Fluxo de DM invite
   // _isDmInvitePending: true quando o usuário atual é o destinatário de um convite pendente (status='invite_sent')
@@ -910,7 +913,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       final userId = SupabaseService.currentUserId;
       // Capa do chat + host_id + co_hosts (tudo em uma query só)
       final threadData = await SupabaseService.table('chat_threads')
-          .select('cover_image_url, is_announcement_only, is_read_only, host_id, co_hosts')
+          .select('cover_image_url, is_announcement_only, is_read_only, host_id, co_hosts, big_note, big_note_author_id')
           .eq('id', widget.threadId)
           .single();
       if (mounted && !_isDisposed) {
@@ -918,8 +921,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           _chatCoverUrl = threadData['cover_image_url'] as String?;
           _isAnnouncementOnly =
               threadData['is_announcement_only'] as bool? ?? false;
-          _isReadOnly = threadData['is_read_only'] as bool? ?? false;
-        });
+           _isReadOnly = threadData['is_read_only'] as bool? ?? false;
+          _bigNote = threadData['big_note'] as String?;
+          _bigNoteAuthorId = threadData['big_note_author_id'] as String?;
+          _bigNoteDismissed = false;
+        })
       }
       // Role do usuário atual — usa host_id/co_hosts do banco diretamente
       if (userId != null) {
@@ -2982,13 +2988,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               ),
 
             // ── Big Note banner ──
-            Builder(builder: (ctx) {
-              final bigNote = _threadInfo?['big_note'] as String?;
-              final isHostOrCoHost =
-                  _callerRole == 'host' || _callerRole == 'co_host';
-              if (bigNote == null || bigNote.isEmpty) return const SizedBox.shrink();
-              return GestureDetector(
-                onLongPress: isHostOrCoHost ? () => _showBigNoteEditor() : null,
+            if (_bigNote != null && _bigNote!.isNotEmpty && !_bigNoteDismissed)
+              GestureDetector(
+                onLongPress: (_callerRole == 'host' || _callerRole == 'co_host')
+                    ? () => _showBigNoteEditor()
+                    : null,
                 child: Container(
                   width: double.infinity,
                   padding: EdgeInsets.symmetric(
@@ -3015,7 +3019,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       SizedBox(width: r.s(8)),
                       Expanded(
                         child: Text(
-                          bigNote,
+                          _bigNote!,
                           style: TextStyle(
                             fontSize: r.fs(12),
                             color: context.nexusTheme.textPrimary
@@ -3026,17 +3030,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (isHostOrCoHost) ...[  
-                        SizedBox(width: r.s(8)),
+                      if (_callerRole == 'host' || _callerRole == 'co_host') ...[
+                        SizedBox(width: r.s(6)),
                         Icon(Icons.edit_rounded,
                             size: r.s(13), color: Colors.grey[600]),
                       ],
+                      SizedBox(width: r.s(4)),
+                      GestureDetector(
+                        onTap: () => setState(() => _bigNoteDismissed = true),
+                        child: Icon(Icons.close_rounded,
+                            size: r.s(15), color: Colors.grey[500]),
+                      ),
                     ],
                   ),
                 ),
-              );
-            }),
-
+              ),
             // ── Message list ──
             Expanded(
               child: Stack(

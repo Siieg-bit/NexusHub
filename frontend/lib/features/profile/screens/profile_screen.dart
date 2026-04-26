@@ -21,6 +21,9 @@ import '../../../core/services/deep_link_service.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/user_status_badge.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/shimmer_loading.dart';
+import '../../../core/services/haptic_service.dart';
+import '../widgets/profile_visitors_section.dart';
 
 // =============================================================================
 // PROFILE SCREEN — Layout fiel ao Amino Apps
@@ -36,8 +39,9 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tabController;
+  late AnimationController _followController;
   final _wallController = TextEditingController();
   bool? _followOverride;
   bool _isTogglingFollow = false;
@@ -46,11 +50,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _followController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    // Registrar visita ao perfil (se não for o próprio perfil)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentUserId = SupabaseService.currentUserId;
+      if (currentUserId != null && currentUserId != widget.userId) {
+        SupabaseService.rpc('record_profile_visit', params: {
+          'p_visited_id': widget.userId,
+        }).catchError((_) {});
+      }
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _followController.dispose();
     _wallController.dispose();
     super.dispose();
   }
@@ -68,9 +86,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return profileAsync.when(
       loading: () => Scaffold(
         backgroundColor: context.nexusTheme.backgroundPrimary,
-        body: Center(
-          child: CircularProgressIndicator(
-              color: context.nexusTheme.accentSecondary, strokeWidth: 2),
+        body: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: const ProfileScreenSkeleton(),
         ),
       ),
       error: (error, _) => Scaffold(
@@ -132,6 +150,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 IconButton(
                   icon: const Icon(Icons.more_vert),
                   onPressed: () => _showUserOptions(context, user),
+                  tooltip: 'Opções',
                 ),
               ],
             ),
@@ -222,6 +241,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     IconButton(
                       icon: Icon(Icons.share_outlined,
                           color: Colors.white, size: r.s(22)),
+                      tooltip: 'Compartilhar perfil',
                       onPressed: () => DeepLinkService.shareUrl(
                         type: 'user',
                         targetId: widget.userId,
@@ -311,45 +331,61 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     ),
                                   ),
                                 )
-                              : GestureDetector(
-                                  onTap: _isTogglingFollow
-                                      ? null
-                                      : () => _toggleFollow(ref, user),
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(20), vertical: r.s(8)),
-                                    decoration: BoxDecoration(
-                                      color: displayedIsFollowing
-                                          ? Colors.transparent
-                                          : context.nexusTheme.accentSecondary,
-                                      borderRadius:
-                                          BorderRadius.circular(r.s(8)),
-                                      border: displayedIsFollowing
-                                          ? Border.all(
-                                              color: context.nexusTheme.accentSecondary)
-                                          : null,
+                              : ScaleTransition(
+                                  scale: Tween<double>(begin: 1.0, end: 0.93)
+                                      .chain(CurveTween(curve: Curves.easeInOut))
+                                      .animate(_followController)
+                                      ..addStatusListener((status) {
+                                        if (status == AnimationStatus.completed) {
+                                          _followController.reverse();
+                                        }
+                                      }),
+                                  child: GestureDetector(
+                                    onTap: _isTogglingFollow
+                                        ? null
+                                        : () => _toggleFollow(ref, user),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 250),
+                                      curve: Curves.easeInOut,
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: r.s(20), vertical: r.s(8)),
+                                      decoration: BoxDecoration(
+                                        color: displayedIsFollowing
+                                            ? Colors.transparent
+                                            : context.nexusTheme.accentSecondary,
+                                        borderRadius:
+                                            BorderRadius.circular(r.s(8)),
+                                        border: displayedIsFollowing
+                                            ? Border.all(
+                                                color: context.nexusTheme.accentSecondary)
+                                            : null,
+                                      ),
+                                      child: _isTogglingFollow
+                                          ? SizedBox(
+                                              width: r.s(16),
+                                              height: r.s(16),
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: displayedIsFollowing
+                                                    ? context.nexusTheme.accentSecondary
+                                                    : Colors.white,
+                                              ),
+                                            )
+                                          : AnimatedSwitcher(
+                                              duration: const Duration(milliseconds: 200),
+                                              child: Text(
+                                                displayedIsFollowing
+                                                    ? s.following
+                                                    : s.follow,
+                                                key: ValueKey(displayedIsFollowing),
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: r.fs(13),
+                                                ),
+                                              ),
+                                            ),
                                     ),
-                                    child: _isTogglingFollow
-                                        ? SizedBox(
-                                            width: r.s(16),
-                                            height: r.s(16),
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: displayedIsFollowing
-                                                  ? context.nexusTheme.accentSecondary
-                                                  : Colors.white,
-                                            ),
-                                          )
-                                        : Text(
-                                            displayedIsFollowing
-                                                ? s.following
-                                                : s.follow,
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: r.fs(13),
-                                            ),
-                                          ),
                                   ),
                                 ),
                         ),
@@ -581,6 +617,61 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 ),
 
                 // ================================================================
+                // VERIFIED BADGE REQUEST (apenas para o próprio perfil não verificado)
+                // ================================================================
+                if (isOwnProfile && !user.isNicknameVerified)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(16), vertical: r.s(4)),
+                      child: GestureDetector(
+                        onTap: () => context.push('/profile/verified-badge'),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: r.s(14), vertical: r.s(10)),
+                          decoration: BoxDecoration(
+                            color: context.nexusTheme.accentSecondary
+                                .withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(r.s(10)),
+                            border: Border.all(
+                              color: context.nexusTheme.accentSecondary
+                                  .withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.verified_outlined,
+                                  color: context.nexusTheme.accentSecondary,
+                                  size: r.s(18)),
+                              SizedBox(width: r.s(10)),
+                              Expanded(
+                                child: Text(
+                                  'Solicitar verificação de nickname',
+                                  style: TextStyle(
+                                    color: context.nexusTheme.accentSecondary,
+                                    fontSize: r.fs(13),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              Icon(Icons.arrow_forward_ios_rounded,
+                                  color: context.nexusTheme.accentSecondary
+                                      .withValues(alpha: 0.6),
+                                  size: r.s(14)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                // ================================================================
+                // VISITANTES RECENTES (apenas para o próprio perfil)
+                // ================================================================
+                if (isOwnProfile)
+                  const SliverToBoxAdapter(
+                    child: ProfileVisitorsSection(),
+                  ),
+                // ================================================================
                 // AMINO+ BANNER
                 // ================================================================
                 SliverToBoxAdapter(
@@ -739,6 +830,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     if (_isTogglingFollow) return;
 
     final previous = _followOverride ?? (user.isFollowing == true);
+    // Haptic + animação de fill ao seguir
+    if (!previous) {
+      HapticService.success();
+      _followController.forward(from: 0);
+    } else {
+      HapticService.buttonPress();
+      _followController.reverse();
+    }
 
     setState(() {
       _isTogglingFollow = true;
