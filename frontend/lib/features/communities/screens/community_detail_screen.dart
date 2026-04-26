@@ -95,7 +95,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
   Future<void> _handleInvite(String communityName) async {
     try {
-      final response = await SupabaseService.instance.client
+      final response = await SupabaseService.client
           .rpc('get_or_create_community_invite', params: {
         'p_community_id': widget.communityId,
       });
@@ -109,8 +109,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
           type: 'community_invite',
           targetId: widget.communityId,
           title: communityName,
-          text: 'Junte-se à comunidade $communityName no NexusHub!',
-          urlOverride: inviteUrl,
+          text: 'Junte-se à comunidade $communityName no NexusHub!\n$inviteUrl',
         );
       }
     } catch (e) {

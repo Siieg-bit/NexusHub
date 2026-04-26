@@ -7,6 +7,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../../core/models/chat_room_model.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show CountOption;
 import '../../../core/widgets/amino_top_bar.dart';
 import '../../../core/widgets/amino_particles_bg.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
@@ -202,9 +203,10 @@ final pendingChatRequestsCountProvider =
   if (userId == null) return 0;
   final result = await SupabaseService.client
       .from('chat_requests')
-      .select('id', const CountOption(count: CountOption.exact, head: true))
+      .select('id')
       .eq('receiver_id', userId)
-      .eq('status', 'pending');
+      .eq('status', 'pending')
+      .count(CountOption.exact);
   return result.count ?? 0;
 });
 

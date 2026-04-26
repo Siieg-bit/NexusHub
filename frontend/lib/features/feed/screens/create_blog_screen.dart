@@ -1858,13 +1858,11 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
               ),
             ),
           ),
-        ],
+         ],
       ),
-      ), // Scaffold
-    ); // PopScope
+    );
   }
 }
-
 // =============================================================================
 // WIDGETS AUXILIARES
 // =============================================================================

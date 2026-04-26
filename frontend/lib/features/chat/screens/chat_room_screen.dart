@@ -925,7 +925,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           _bigNote = threadData['big_note'] as String?;
           _bigNoteAuthorId = threadData['big_note_author_id'] as String?;
           _bigNoteDismissed = false;
-        })
+        });
       }
       // Role do usuário atual — usa host_id/co_hosts do banco diretamente
       if (userId != null) {
@@ -1284,8 +1284,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     // o campo durante o frame de desmontagem de dialogs (tip, poll, link).
     HapticService.action();
     // Disparar chuva de emojis semântica se o texto contiver palavras-chave
-    if (content != null && content.isNotEmpty) {
-      EmojiRainOverlay.analyzeAndTrigger(context, content);
+    if (text.isNotEmpty) {
+      EmojiRainOverlay.analyzeAndTrigger(context, text);
     }
     // Parar de emitir typing ao enviar
     _typingDebounce?.cancel();
@@ -3761,7 +3761,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     setState(() => _isRecordingVoice = false);
                   },
                 ),
-              )
+              ),
             // Link Preview Card — exibido acima do input quando URL é detectada
             if (_detectedUrl != null &&
                 _linkPreviewData != null &&
@@ -3776,7 +3776,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             if (_typingUsers.isNotEmpty)
               _TypingIndicatorWidget(typingUsers: _typingUsers),
 
-            else if ((_membershipConfirmed || _isLoading) &&
+            // Input bar principal
+            if (!_isRecordingVoice &&
+                (_membershipConfirmed || _isLoading) &&
                 !_isChatDisabled &&
                 !(_isAnnouncementOnly &&
                     _callerRole != 'host' &&
@@ -4006,6 +4008,110 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ],
       ),
     );
+  }
+
+  // ===========================================================================
+  // BIG NOTE EDITOR
+  // ===========================================================================
+  Future<void> _showBigNoteEditor() async {
+    final s = getStrings();
+    final r = context.r;
+    final currentNote = _threadInfo?['big_note'] as String? ?? '';
+    final controller = TextEditingController(text: currentNote);
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.nexusTheme.surfacePrimary,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(r.s(16))),
+        title: Text(
+          'Editar Big Note',
+          style: TextStyle(
+              color: context.nexusTheme.textPrimary,
+              fontWeight: FontWeight.w700,
+              fontSize: r.fs(16)),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Esta nota ficará fixada no topo do chat para todos os membros.',
+              style: TextStyle(
+                  color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
+            ),
+            SizedBox(height: r.s(16)),
+            TextField(
+              controller: controller,
+              maxLines: 5,
+              maxLength: 500,
+              autofocus: true,
+              style: TextStyle(
+                  color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
+              decoration: InputDecoration(
+                hintText: 'Escreva a nota aqui...',
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                filled: true,
+                fillColor: context.nexusTheme.surfaceSecondary,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(r.s(12)),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: EdgeInsets.all(r.s(12)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.nexusTheme.accentPrimary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(r.s(12))),
+            ),
+            child: Text(s.save, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      final newNote = controller.text.trim();
+      try {
+        await SupabaseService.rpc('set_chat_big_note', params: {
+          'p_thread_id': widget.threadId,
+          'p_note': newNote.isEmpty ? null : newNote,
+        });
+        if (mounted) {
+          setState(() {
+            _threadInfo = {
+              ...?_threadInfo,
+              'big_note': newNote.isEmpty ? null : newNote,
+            };
+          });
+          HapticService.buttonPress();
+        }
+      } catch (e) {
+        debugPrint('[ChatRoom] Error saving Big Note: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Erro ao salvar a Big Note.'),
+              backgroundColor: context.nexusTheme.error,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    }
   }
 }
 
@@ -5426,105 +5532,4 @@ class _LinkPreviewInputCard extends StatelessWidget {
     );
   }
 
-  Future<void> _showBigNoteEditor() async {
-    final s = getStrings();
-    final r = context.r;
-    final currentNote = _threadInfo?['big_note'] as String? ?? '';
-    final controller = TextEditingController(text: currentNote);
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: context.nexusTheme.surfacePrimary,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(r.s(16))),
-        title: Text(
-          'Editar Big Note',
-          style: TextStyle(
-              color: context.nexusTheme.textPrimary,
-              fontWeight: FontWeight.w700,
-              fontSize: r.fs(16)),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Esta nota ficará fixada no topo do chat para todos os membros.',
-              style: TextStyle(
-                  color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
-            ),
-            SizedBox(height: r.s(16)),
-            TextField(
-              controller: controller,
-              maxLines: 5,
-              maxLength: 500,
-              autofocus: true,
-              style: TextStyle(
-                  color: context.nexusTheme.textPrimary, fontSize: r.fs(14)),
-              decoration: InputDecoration(
-                hintText: 'Escreva a nota aqui...',
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                filled: true,
-                fillColor: context.nexusTheme.surfaceSecondary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(r.s(12)),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: EdgeInsets.all(r.s(12)),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(s.cancel, style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: context.nexusTheme.accentPrimary,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(r.s(12))),
-            ),
-            child: Text(s.save, style: const TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-
-    if (result == true) {
-      final newNote = controller.text.trim();
-      try {
-        await SupabaseService.rpc('set_chat_big_note', params: {
-          'p_thread_id': widget.threadId,
-          'p_note': newNote.isEmpty ? null : newNote,
-        });
-        // Atualizar UI local
-        if (mounted) {
-          setState(() {
-            _threadInfo = {
-              ...?_threadInfo,
-              'big_note': newNote.isEmpty ? null : newNote,
-            };
-          });
-          HapticService.lightImpact();
-        }
-      } catch (e) {
-        debugPrint('[ChatRoom] Error saving Big Note: $e');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Erro ao salvar a Big Note.'),
-              backgroundColor: context.nexusTheme.error,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      }
-    }
-  }
 }

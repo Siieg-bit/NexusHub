@@ -1213,7 +1213,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           title: Text('Confirmar Transferência',
                               style: TextStyle(color: theme.textPrimary)),
                           content: Text(
-                            'Tem certeza que deseja transferir a liderança de "${widget.community.title}" para $selectedUserName? Esta ação não pode ser desfeita facilmente.',
+                            'Tem certeza que deseja transferir a liderança de "${widget.community.name}" para $selectedUserName? Esta ação não pode ser desfeita facilmente.',
                             style: TextStyle(color: theme.textSecondary),
                           ),
                           actions: [

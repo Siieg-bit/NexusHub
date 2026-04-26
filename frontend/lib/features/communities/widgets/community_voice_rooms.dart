@@ -75,14 +75,7 @@ class _CommunityVoiceRoomsState extends ConsumerState<CommunityVoiceRooms> {
 
     final callType = type == 'stage' ? CallType.stage : CallType.voice;
 
-    await CallService.joinCall(
-      context: context,
-      sessionId: sessionId,
-      threadId: threadId ?? sessionId,
-      channelName: channelName,
-      callType: callType,
-      title: title,
-    );
+    await CallService.joinCall(sessionId);
   }
 
   @override
@@ -92,8 +85,7 @@ class _CommunityVoiceRoomsState extends ConsumerState<CommunityVoiceRooms> {
     final r = context.r;
     final theme = context.nexusTheme;
 
-    return AminoFadeIn(
-      child: Column(
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
@@ -158,7 +150,6 @@ class _CommunityVoiceRoomsState extends ConsumerState<CommunityVoiceRooms> {
           ),
           SizedBox(height: r.s(4)),
         ],
-      ),
     );
   }
 }

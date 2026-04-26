@@ -715,12 +715,6 @@ class _FeaturedHeroCardState extends ConsumerState<_FeaturedHeroCard> {
                     currentReaction: _post.myReactionType,
                     totalCount: _post.likesCount,
                     onReaction: _toggleReaction,
-                    iconSize: r.s(21),
-                    textStyle: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: r.fs(14),
-                      fontWeight: FontWeight.w600,
-                    ),
                   ),
                   SizedBox(width: r.s(18)),
                   // Botão de comentários — abre o post diretamente na seção de comentários

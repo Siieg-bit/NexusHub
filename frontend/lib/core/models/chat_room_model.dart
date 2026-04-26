@@ -47,8 +47,6 @@ class ChatRoomModel {
   /// Chats fixados aparecem no topo da lista pessoal do usuário.
   final bool isPinnedByUser;
 
-  /// Big Note do chat — texto fixado no topo pelo host/moderador.
-  final String? bigNote;
   final String? bigNoteAuthorId;
 
   /// Status de membership do usuário nesta thread (vem de chat_members.status).
@@ -100,7 +98,6 @@ class ChatRoomModel {
     required this.updatedAt,
     this.unreadCount = 0,
     this.isPinnedByUser = false,
-    this.bigNote,
     this.bigNoteAuthorId,
     this.membershipStatus = 'none',
     this.counterpartOnlineStatus = 2,
@@ -190,7 +187,6 @@ class ChatRoomModel {
           DateTime.now(),
       unreadCount: json['unread_count'] as int? ?? 0,
       isPinnedByUser: json['is_pinned_by_user'] as bool? ?? false,
-      bigNote: json['big_note'] as String?,
       bigNoteAuthorId: json['big_note_author_id'] as String?,
       membershipStatus: json['membership_status'] as String? ?? 'none',
       counterpartOnlineStatus: (json['counterpart_online_status'] as num?)?.toInt() ?? 2,

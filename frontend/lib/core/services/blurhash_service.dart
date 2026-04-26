@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'supabase_service.dart';
+import '../../config/app_config.dart';
 
 /// ============================================================================
 /// BlurHashService — Geração e cache de BlurHash para mídias.
@@ -25,8 +26,8 @@ class BlurHashService {
   /// O erro é silencioso — BlurHash é uma feature de polimento, não crítica.
   static Future<String?> generateForUrl(String imageUrl) async {
     try {
-      final supabaseUrl = SupabaseService.client.supabaseUrl;
-      final anonKey = SupabaseService.client.supabaseKey;
+      final supabaseUrl = AppConfig.supabaseUrl;
+      final anonKey = AppConfig.supabaseAnonKey;
       final functionUrl = '$supabaseUrl/functions/v1/$_functionName';
 
       final response = await http.post(

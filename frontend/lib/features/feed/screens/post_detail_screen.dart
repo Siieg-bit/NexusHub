@@ -1197,12 +1197,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen>
                                 currentReaction: post.myReactionType,
                                 totalCount: post.likesCount,
                                 onReaction: _toggleReaction,
-                                iconSize: r.s(16),
-                                textStyle: TextStyle(
-                                  color: Colors.grey[500],
-                                  fontSize: r.fs(13),
-                                  fontWeight: FontWeight.w600,
-                                ),
                               ),
                             ],
                           ),

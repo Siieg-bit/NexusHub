@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_service.dart';
+import '../../config/app_config.dart';
 
 // ============================================================================
 // ChunkedUploadService — Upload em chunks com retomada inspirado no OluOlu
@@ -242,7 +243,7 @@ class ChunkedUploadService {
     required String contentType,
   }) async {
     final client = Supabase.instance.client;
-    final storageUrl = client.storageUrl;
+    final storageUrl = '${AppConfig.supabaseUrl}/storage/v1';
     final token = client.auth.currentSession?.accessToken;
 
     if (token == null) throw Exception('Usuário não autenticado');

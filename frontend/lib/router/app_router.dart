@@ -1022,11 +1022,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
+      GoRoute(
+        path: '/profile/referral',
+        name: 'referral',
+        builder: (context, state) => const ReferralScreen(),
+      ),
     ],
   );
 });
-        GoRoute(
-          path: '/profile/referral',
-          name: 'referral',
-          builder: (context, state) => const ReferralScreen(),
-        ),
