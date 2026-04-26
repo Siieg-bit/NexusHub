@@ -12,6 +12,7 @@ import '../../../core/models/post_model.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/mention_overlay.dart';
 
 /// Editor de criação e edição de posts do tipo **normal** (texto genérico).
 ///
@@ -46,6 +47,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   final _contentController = TextEditingController();
   final _backgroundUrlController = TextEditingController();
   final _tagsController = TextEditingController();
+  late final MentionController _mentionController;
   bool _isSubmitting = false;
   final List<String> _mediaUrls = [];
   String? _coverImageUrl;
@@ -101,6 +103,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   @override
   void initState() {
     super.initState();
+    _mentionController = MentionController(textController: _contentController);
     if (_isEditing) {
       _populateFromPost(widget.editingPost!);
     }
@@ -717,6 +720,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
   @override
   void dispose() {
+    _mentionController.dispose();
     _titleController.dispose();
     _subtitleController.dispose();
     _contentController.dispose();
@@ -851,6 +855,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   // ── Divisor ──
                   _buildDividerPreview(r),
                   SizedBox(height: r.s(8)),
+
+                  // ── Overlay de menção @usuário ──
+                  MentionOverlay(controller: _mentionController),
 
                   // ── Conteúdo principal ──
                   Container(

@@ -30,6 +30,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../communities/providers/community_detail_providers.dart'
     as community_providers;
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/mention_overlay.dart';
 
 enum _CommentSortOrder { mostRecent, oldest, mostPopular }
 
@@ -119,6 +120,7 @@ class PostDetailScreen extends ConsumerStatefulWidget {
 class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   final _commentController = TextEditingController();
   final _commentFocusNode = FocusNode();
+  late final MentionController _mentionController;
   bool _isSending = false;
   bool _viewRecorded = false;
   bool _isBookmarked = false;
@@ -169,6 +171,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _mentionController = MentionController(textController: _commentController);
     if (widget.scrollToComments) {
       // Aguarda o primeiro frame para que o layout esteja pronto antes de focar
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -180,6 +183,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
   @override
   void dispose() {
+    _mentionController.dispose();
     _commentController.dispose();
     _commentFocusNode.dispose();
     super.dispose();
@@ -1461,6 +1465,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         // ================================================================
                         // COMPOSER DE COMENTÁRIO INLINE (unificado)
                         // ================================================================
+                        // ── Overlay de menção @usuário ──
+                        MentionOverlay(controller: _mentionController),
                         Container(
                           padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(8)),
                           decoration: BoxDecoration(
