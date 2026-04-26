@@ -116,7 +116,7 @@ void main() {
       ];
 
       final socialUnread = notifications
-          .where((n) => _categoryFor(n['type']!) == 'social' && n['is_read'] == false)
+          .where((n) => _categoryFor(n['type']! as String) == 'social' && n['is_read'] == false)
           .length;
 
       expect(socialUnread, equals(3)); // 2 match + 1 follow
@@ -198,7 +198,7 @@ void main() {
       ];
 
       final chatUnread = notifications
-          .where((n) => _categoryFor(n['type']!) == 'chat' && n['is_read'] == false)
+          .where((n) => _categoryFor(n['type']! as String) == 'chat' && n['is_read'] == false)
           .length;
 
       expect(chatUnread, equals(2)); // roleplay + chat_message
@@ -238,10 +238,10 @@ void main() {
 
       final totalUnread = notifications.where((n) => n['is_read'] == false).length;
       final socialUnread = notifications
-          .where((n) => _categoryFor(n['type']!) == 'social' && n['is_read'] == false)
+          .where((n) => _categoryFor(n['type']! as String) == 'social' && n['is_read'] == false)
           .length;
       final chatUnread = notifications
-          .where((n) => _categoryFor(n['type']!) == 'chat' && n['is_read'] == false)
+          .where((n) => _categoryFor(n['type']! as String) == 'chat' && n['is_read'] == false)
           .length;
 
       expect(totalUnread, equals(3));

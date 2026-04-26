@@ -2,7 +2,7 @@ import 'dart:html' as html;
 import 'dart:js' as js;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/supabase_provider.dart';
+import 'supabase_service.dart';
 
 /// Serviço para gerenciar Web Push Notifications em navegadores
 /// 
@@ -159,7 +159,7 @@ class WebPushService {
     Map<String, dynamic> subscription,
   ) async {
     try {
-      final supabase = SupabaseProvider.instance;
+      final supabase = SupabaseService.client;
       final userId = supabase.auth.currentUser?.id;
 
       if (userId == null) {
@@ -229,7 +229,7 @@ class WebPushService {
         debugPrint('[WebPush] Subscription removida');
 
         // Remover do Supabase
-        final supabase = SupabaseProvider.instance;
+        final supabase = SupabaseService.client;
         final userId = supabase.auth.currentUser?.id;
 
         if (userId != null) {

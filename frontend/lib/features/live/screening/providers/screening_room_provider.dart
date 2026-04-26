@@ -113,7 +113,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
             'video_thumbnail': initialVideoThumbnail ?? '',
           },
         }).select().single();
-        debugPrint('[ScreeningRoom] Sessão criada: ${session[\'id\']}');
+        debugPrint('[ScreeningRoom] Sessao criada: ${session["id"]}');
 
         sessionId = session['id'] as String;
         isHost = true;

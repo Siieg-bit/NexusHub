@@ -46,6 +46,7 @@ final screeningHistoryProvider = FutureProvider.family<
 
 class ScreeningHistoryEntry {
   final String sessionId;
+  final String threadId;
   final DateTime startedAt;
   final DateTime? endedAt;
   final String? videoUrl;
@@ -55,6 +56,7 @@ class ScreeningHistoryEntry {
 
   const ScreeningHistoryEntry({
     required this.sessionId,
+    required this.threadId,
     required this.startedAt,
     this.endedAt,
     this.videoUrl,
@@ -71,6 +73,7 @@ class ScreeningHistoryEntry {
         : 0;
     return ScreeningHistoryEntry(
       sessionId: json['id'] as String,
+      threadId: json['thread_id'] as String? ?? '',
       startedAt: DateTime.parse(json['created_at'] as String),
       endedAt: json['ended_at'] != null
           ? DateTime.parse(json['ended_at'] as String)
@@ -229,9 +232,10 @@ class ScreeningHistoryScreen extends ConsumerWidget {
       itemCount: entries.length,
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
+        final entry = entries[index];
         return _HistoryCard(
-          entry: entries[index],
-          threadId: threadId,
+          entry: entry,
+          threadId: entry.threadId,
         );
       },
     );

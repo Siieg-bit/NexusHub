@@ -5,7 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../config/nexus_theme_extension.dart';
 import '../../../../core/services/supabase_service.dart';
-import '../../../../l10n/app_localizations.dart';
+// import '../../../../l10n/app_localizations.dart'; // Removido pois não existe e não é usado
 import '../screens/screening_room_screen.dart';
 
 // =============================================================================
@@ -254,7 +254,7 @@ class _ScreeningCreateRoomSheetState
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).extension<NexusThemeExtension>()!;
+    final theme = context.nexusTheme;
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -335,7 +335,7 @@ class _ScreeningCreateRoomSheetState
     );
   }
 
-  Widget _buildUrlField(NexusThemeExtension theme) {
+  Widget _buildUrlField(NexusThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -417,7 +417,7 @@ class _ScreeningCreateRoomSheetState
     );
   }
 
-  Widget _buildVideoPreview(NexusThemeExtension theme) {
+  Widget _buildVideoPreview(NexusThemeData theme) {
     if (_preview == null) return const SizedBox.shrink();
 
     return Padding(
@@ -503,7 +503,7 @@ class _ScreeningCreateRoomSheetState
     );
   }
 
-  Widget _buildThumbnailPlaceholder(NexusThemeExtension theme) {
+  Widget _buildThumbnailPlaceholder(NexusThemeData theme) {
     return Container(
       width: 90,
       height: 60,
@@ -516,7 +516,7 @@ class _ScreeningCreateRoomSheetState
     );
   }
 
-  Widget _buildTitleField(NexusThemeExtension theme) {
+  Widget _buildTitleField(NexusThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -566,7 +566,7 @@ class _ScreeningCreateRoomSheetState
     );
   }
 
-  Widget _buildActionButtons(NexusThemeExtension theme) {
+  Widget _buildActionButtons(NexusThemeData theme) {
     final hasUrl = _urlController.text.trim().isNotEmpty && _urlError == null;
 
     return Column(

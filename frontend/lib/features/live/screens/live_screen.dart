@@ -81,69 +81,15 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   // ============================================================
   Future<void> _createScreeningRoom() async {
     // Abrir o novo ScreeningCreateRoomSheet (moderno, com preview de vídeo)
-    final result = await showModalBottomSheet<Map<String, String>>(
+    // O próprio sheet já gerencia a criação do thread e a navegação
+    await showScreeningCreateRoomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => ScreeningCreateRoomSheet(
-        communityId: widget.communityId ?? '',
-      ),
+      communityId: widget.communityId ?? '',
+      threadId: '', // O sheet cria um novo thread se threadId for vazio
+      onRoomCreated: () {
+        if (mounted) _loadActiveSessions();
+      },
     );
-    if (result == null) return;
-
-    setState(() => _isCreating = true);
-    try {
-      final thread = await SupabaseService.table('chat_threads')
-          .insert({
-            'community_id': widget.communityId,
-            'type': 'screening_room',
-            'title': result['title'] ?? 'Sala de Projeção',
-            'host_id': SupabaseService.currentUserId,
-          })
-          .select()
-          .single();
-
-      await SupabaseService.table('chat_members').insert({
-        'thread_id': thread['id'] as String,
-        'user_id': SupabaseService.currentUserId,
-        'status': 'active',
-      });
-
-      // Notificar membros da comunidade sobre a nova sala (fire-and-forget)
-      if (widget.communityId != null) {
-        ScreeningNotificationService.notifyRoomCreated(
-          communityId: widget.communityId!,
-          sessionId: thread['id'] as String,
-          hostUserId: SupabaseService.currentUserId ?? '',
-          videoTitle: result['video_title'],
-          roomTitle: result['title'],
-        );
-      }
-
-      if (mounted) {
-        await Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => ScreeningRoomScreen(
-            threadId: thread['id'] as String? ?? '',
-            initialVideoUrl: result['video_url'],
-            initialVideoTitle: result['video_title'],
-            initialVideoThumbnail: result['video_thumbnail'],
-          ),
-        ));
-        _loadActiveSessions();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Erro ao criar a Sala de Projeção.'),
-            backgroundColor: Colors.redAccent,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isCreating = false);
-    }
   }
 
   // ============================================================
