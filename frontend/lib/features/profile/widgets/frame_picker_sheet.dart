@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
@@ -359,13 +360,21 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
     final s = getStrings();
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return Container(
-      height: screenHeight * 0.82,
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
-      ),
-      child: Column(
+    return ClipRRect(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: Container(
+          height: screenHeight * 0.82,
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.7),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.1),
+              width: 0.5,
+            ),
+          ),
+          child: Column(
         children: [
           // ── Handle bar ──
           Container(
@@ -449,11 +458,12 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
                   )
                 : _buildGrid(r, s),
           ),
-        ],
+          ],
+          ),
+        ),
       ),
     );
   }
-
   Widget _buildGrid(Responsive r, dynamic s) {
     // Construir lista ordenada: "sem moldura" + possuídas + não possuídas
     final items = <_FrameGridItem>[];

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -177,15 +178,32 @@ class ChatMessageActionsSheet extends ConsumerWidget {
   }) {
     return showModalBottomSheet<ChatMessageAction>(
       context: context,
-      backgroundColor: context.surfaceColor,
+      backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => ChatMessageActionsSheet(
-        message: message,
-        onReaction: onReaction,
-        hostId: hostId,
-        coHostIds: coHostIds,
+      builder: (_) => ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            decoration: BoxDecoration(
+              color: context.surfaceColor.withValues(alpha: 0.7),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
+                width: 0.5,
+              ),
+            ),
+            child: ChatMessageActionsSheet(
+              message: message,
+              onReaction: onReaction,
+              hostId: hostId,
+              coHostIds: coHostIds,
+            ),
+          ),
+        ),
       ),
     );
   }
