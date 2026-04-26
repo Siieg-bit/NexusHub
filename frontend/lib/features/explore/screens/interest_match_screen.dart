@@ -207,12 +207,15 @@ class _InterestMatchScreenState extends ConsumerState<InterestMatchScreen>
             Icon(Icons.people_alt_rounded,
                 color: theme.accentPrimary, size: r.s(20)),
             SizedBox(width: r.s(8)),
-            Text(
-              'Pessoas com interesses similares',
-              style: TextStyle(
-                color: theme.textPrimary,
-                fontSize: r.fs(16),
-                fontWeight: FontWeight.w800,
+            Flexible(
+              child: Text(
+                'Pessoas com interesses similares',
+                style: TextStyle(
+                  color: theme.textPrimary,
+                  fontSize: r.fs(16),
+                  fontWeight: FontWeight.w800,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
