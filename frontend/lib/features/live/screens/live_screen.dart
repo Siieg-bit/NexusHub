@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/call_service.dart';
 import '../../chat/screens/call_screen.dart';
-import 'screening_room_screen.dart';
+// Nova Sala de Projeção refatorada (Fase 1)
+import '../screening/screens/screening_room_screen.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../config/nexus_theme_data.dart';
