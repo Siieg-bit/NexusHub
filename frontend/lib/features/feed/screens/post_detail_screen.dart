@@ -545,9 +545,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen>
     };
 
     debugPrint(
-      '[post_detail_screen][reaction] start postId=\${widget.postId} '
-      'communityId=\${postData?.communityId} userId=\$currentUserId '
-      'reactionType=\$reactionType prevReaction=\$prevReaction',
+      '[post_detail_screen][reaction] start postId=${widget.postId} '
+      'communityId=${postData?.communityId} userId=$currentUserId '
+      'reactionType=$reactionType prevReaction=$prevReaction',
     );
 
     try {
@@ -556,20 +556,20 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen>
         params: params,
       );
       debugPrint(
-        '[post_detail_screen][reaction] success postId=\${widget.postId} '
-        'result=\$result',
+        '[post_detail_screen][reaction] success postId=${widget.postId} '
+        'result=$result',
       );
       ref.invalidate(postDetailProvider(widget.postId));
       debugPrint(
         '[post_detail_screen][reaction] invalidated postDetailProvider '
-        'postId=\${widget.postId}',
+        'postId=${widget.postId}',
       );
     } catch (e, stackTrace) {
       debugPrint(
-        '[post_detail_screen][reaction] error postId=\${widget.postId} '
-        'params=\$params error=\$e',
+        '[post_detail_screen][reaction] error postId=${widget.postId} '
+        'params=$params error=$e',
       );
-      debugPrint('[post_detail_screen][reaction] stackTrace=\$stackTrace');
+      debugPrint('[post_detail_screen][reaction] stackTrace=$stackTrace');
     }
   }
 
