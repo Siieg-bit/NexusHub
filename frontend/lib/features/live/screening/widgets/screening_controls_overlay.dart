@@ -346,16 +346,15 @@ class _ScreeningControlsOverlayState
 class _ControlButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback onTap;
-  final Color color;
+  final Color? color;
   final double size;
   final String? label;
   /// Badge numérico exibido no canto superior direito (ex: tamanho da fila).
   final String? badge;
-
   const _ControlButton({
     required this.icon,
     required this.onTap,
-    this.color = Colors.white,
+    this.color,
     this.size = 22,
     this.label,
     this.badge,
@@ -415,7 +414,7 @@ class _ControlButtonState extends State<_ControlButton>
               ? Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(widget.icon, color: widget.color, size: widget.size),
+                    Icon(widget.icon, color: widget.color ?? Colors.white, size: widget.size),
                     const SizedBox(width: 4),
                     Text(
                       widget.label!,
@@ -427,7 +426,7 @@ class _ControlButtonState extends State<_ControlButton>
                     ),
                   ],
                 )
-              : Icon(widget.icon, color: widget.color, size: widget.size),
+              : Icon(widget.icon, color: widget.color ?? Colors.white, size: widget.size),
         ),
       ),
     );

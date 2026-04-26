@@ -490,7 +490,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
     addPart(hint);
 
     if (parts.isNotEmpty) return parts.join(' | ');
-    final fallback = normalized.replaceAll(RegExp(r'\)+$'), '').trim();
+    final fallback = normalized.replaceAll(RegExp(String.fromCharCodes([92, 41, 43, 36])), '').trim();
     return fallback.isEmpty
         ? 'Falha desconhecida ao publicar o blog.'
         : fallback;
@@ -1578,15 +1578,16 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                           ),
                         ),
                       );
-                      },
-                    ),
+                    },
                   ),
+                ),
   
                   // ── Barra fixa inferior ──
                   _buildBottomToolbar(r, s),
                 ],
-              )
-      ),
+              ),
+            ),
+          ),
     );
   }
 
