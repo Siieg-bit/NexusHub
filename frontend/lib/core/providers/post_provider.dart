@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/post_editor_model.dart';
 import '../models/post_model.dart';
 import '../services/supabase_service.dart';
+import '../services/cache_service.dart';
 
 /// ============================================================================
 /// PostProvider — State Management com AsyncNotifier para posts/feed.
@@ -383,6 +384,23 @@ class CommunityFeedNotifier
   Future<List<PostModel>> build(String communityId) async {
     _page = 0;
     _hasMore = true;
+    // Mantém em memória entre navegações
+    ref.keepAlive();
+    // SWR: exibe cache imediatamente e atualiza em background
+    final cached = CacheService.getCachedPosts(communityId);
+    if (cached != null && cached.isNotEmpty) {
+      Future.microtask(() async {
+        try {
+          final fresh = await _fetchPage(communityId, 0);
+          state = AsyncData(fresh);
+        } catch (_) {}
+      });
+      final list = cached
+          .map((e) => _normalizePostMap(e))
+          .toList();
+      await _injectIsLiked(list);
+      return list.map((e) => PostModel.fromJson(e)).toList();
+    }
     return _fetchPage(communityId, 0);
   }
 
@@ -402,6 +420,10 @@ class CommunityFeedNotifier
 
     final posts = list.map((e) => PostModel.fromJson(e)).toList();
     _hasMore = posts.length >= _pageSize;
+    // Persiste apenas a primeira página no cache
+    if (page == 0 && posts.isNotEmpty) {
+      await CacheService.cachePosts(communityId, list);
+    }
     return posts;
   }
 

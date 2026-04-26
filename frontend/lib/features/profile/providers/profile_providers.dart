@@ -4,6 +4,7 @@ import '../../../core/models/user_model.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/cache_service.dart';
 
 const _kProfilePostSelect =
     '*, profiles!posts_author_id_fkey(*), '
@@ -31,10 +32,32 @@ PostModel _mapProfilePost(dynamic raw) {
 
 /// Provider para perfil de um usuário.
 /// Tenta RPC get_user_profile primeiro; se falhar, busca direto da tabela.
+/// Estratégia SWR: exibe cache imediatamente e revalida em background.
 final userProfileProvider =
     FutureProvider.family<UserModel, String>((ref, userId) async {
   // Mantém o perfil em memória para evitar re-fetch ao navegar entre telas.
   ref.keepAlive();
+
+  // SWR: exibe cache imediatamente enquanto busca dados frescos em background
+  final cached = CacheService.getCachedProfile(userId);
+  if (cached != null) {
+    Future.microtask(() async {
+      try {
+        final response = await SupabaseService.rpc('get_user_profile',
+            params: {'p_user_id': userId});
+        if (response != null) {
+          final data = response is Map<String, dynamic>
+              ? response
+              : Map<String, dynamic>.from(response as Map);
+          if (!data.containsKey('error')) {
+            await CacheService.cacheProfile(userId, data);
+          }
+        }
+      } catch (_) {}
+    });
+    return UserModel.fromJson(cached);
+  }
+
   // ── Tentativa 1: RPC (retorna JSONB com followers_count, is_following, etc.) ──
   try {
     final response = await SupabaseService.rpc('get_user_profile',
@@ -52,6 +75,8 @@ final userProfileProvider =
       if (data.containsKey('error')) {
         throw Exception(data['error']);
       }
+      // Persiste no cache
+      await CacheService.cacheProfile(userId, data);
       return UserModel.fromJson(data);
     }
   } catch (_) {
