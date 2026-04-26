@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/chat/screens/roleplay_screen.dart';
 
 /// Helper centralizado de navegação do NexusHub.
 ///
@@ -164,6 +166,14 @@ class AppNavigationHelper {
       case 'match':
         if (actorId != null) {
           navigateToUser(router, actorId);
+        }
+        break;
+
+      // ── Chat: RolePlay com IA ────────────────────────────────
+      case 'roleplay':
+        final context = router.configuration.navigatorKey.currentContext;
+        if (context != null && chatId != null) {
+          RolePlayScreen.show(context, chatId);
         }
         break;
 

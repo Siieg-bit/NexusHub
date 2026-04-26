@@ -163,7 +163,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
           query = query.inFilter('type', ['like', 'comment', 'follow', 'mention', 'wall_post', 'match']);
           break;
         case NotificationCategory.chat:
-          query = query.inFilter('type', ['chat_message', 'chat_mention', 'dm_invite']);
+          query = query.inFilter('type', ['chat_message', 'chat_mention', 'dm_invite', 'roleplay']);
           break;
         case NotificationCategory.community:
           query = query.inFilter('type', ['community_invite', 'community_update', 'join_request', 'role_change']);
@@ -473,7 +473,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
     try {
       final types = switch (category) {
         NotificationCategory.social    => ['like', 'comment', 'follow', 'mention', 'wall_post', 'match'],
-        NotificationCategory.chat      => ['chat_message', 'chat_mention', 'dm_invite'],
+        NotificationCategory.chat      => ['chat_message', 'chat_mention', 'dm_invite', 'roleplay'],
         NotificationCategory.community => ['community_invite', 'community_update', 'join_request', 'role_change'],
         NotificationCategory.system    => ['level_up', 'achievement', 'check_in_streak', 'moderation', 'strike', 'ban', 'broadcast', 'wiki_approved', 'wiki_rejected', 'tip'],
         NotificationCategory.all       => <String>[],

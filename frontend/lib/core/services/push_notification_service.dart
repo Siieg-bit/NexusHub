@@ -45,6 +45,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       case 'chat':
       case 'chat_message':
       case 'chat_mention':
+      case 'roleplay':
         channelId = 'nexushub_chat';
         break;
       case 'like':
@@ -322,6 +323,7 @@ class PushNotificationService {
     switch (type) {
       case 'chat_message':
       case 'chat_mention':
+      case 'roleplay':
         channelId = 'nexushub_chat';
         break;
       case 'like':
