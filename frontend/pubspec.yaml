@@ -47,7 +47,8 @@ dependencies:
   timeago: ^3.6.1
   emoji_picker_flutter: ^1.6.4
   # BlurHash — placeholders visuais para imagens
-  blurhash_dart: ^2.2.0
+  blurhash_dart: ^1.2.1
+  image: ^4.0.8  # Dependência transitiva do blurhash_dart; declarada explicitamente para uso direto em nexus_image.dart
 
   # Voice/Video Calls (Agora.io RTC)
   # agora_rtc_engine usa SDKs nativos para 4 arquiteturas — use ABI splits no build

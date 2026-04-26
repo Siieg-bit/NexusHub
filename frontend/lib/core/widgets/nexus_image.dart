@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:blurhash_dart/blurhash_dart.dart' as bh;
 import 'dart:typed_data';
+import 'package:image/image.dart' as img;
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// ============================================================================
@@ -87,17 +88,20 @@ class NexusImage extends StatelessWidget {
     }
 
     try {
-      // Decodificar BlurHash para pixels e exibir como imagem
-      final blurImage = bh.BlurHash.decode(blurhash!, width: 32, height: 32);
+      // Decodificar BlurHash para pixels e exibir como imagem.
+      // blurhash_dart 1.2.1 usa o pacote `image` (^4.0.8):
+      //   - BlurHash.decode(hash) → BlurHash
+      //   - blurHash.toImage(w, h) → img.Image (RGBA, 4 canais)
+      //   - getBytes(order: img.ChannelOrder.rgba) → Uint8List
+      final blurImage = bh.BlurHash.decode(blurhash!).toImage(32, 32);
+      final Uint8List bytes = blurImage.getBytes(order: img.ChannelOrder.rgba);
       return Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
           borderRadius: borderRadius,
           image: DecorationImage(
-            image: MemoryImage(
-              Uint8List.fromList(blurImage.toUint8List()),
-            ),
+            image: MemoryImage(bytes),
             fit: fit,
           ),
         ),
