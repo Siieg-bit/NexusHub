@@ -153,8 +153,15 @@ class AppNavigationHelper {
         }
         break;
 
-      // ── Social: follow → abre o perfil de quem seguiu ────────
+      // ── Social: follow → abre o perfil de quem seguiu ────
       case 'follow':
+        if (actorId != null) {
+          navigateToUser(router, actorId);
+        }
+        break;
+
+      // ── Social: match mútuo → abre o perfil do usuário que fez match ──
+      case 'match':
         if (actorId != null) {
           navigateToUser(router, actorId);
         }

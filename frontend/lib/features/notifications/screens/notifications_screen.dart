@@ -686,6 +686,8 @@ class _NotificationTile extends ConsumerWidget {
         return Icons.chat_bubble_rounded;
       case 'follow':
         return Icons.person_add_rounded;
+      case 'match':
+        return Icons.people_rounded;
       case 'mention':
       case 'chat_mention':
         return Icons.alternate_email_rounded;
@@ -718,6 +720,8 @@ class _NotificationTile extends ConsumerWidget {
         return context.nexusTheme.accentSecondary;
       case 'follow':
         return context.nexusTheme.accentPrimary;
+      case 'match':
+        return context.nexusTheme.accentSecondary;
       case 'mention':
       case 'chat_mention':
         return context.nexusTheme.warning;
