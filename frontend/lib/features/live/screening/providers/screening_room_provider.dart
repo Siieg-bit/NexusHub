@@ -94,6 +94,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         // ── Criando nova sessão (host) ──
         final session = await SupabaseService.table('call_sessions').insert({
           'creator_id': userId,
+          'host_id': userId, // NOT NULL constraint na tabela call_sessions
           'thread_id': threadId,
           'type': 'screening_room',
           'status': 'active',

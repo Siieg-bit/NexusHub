@@ -148,6 +148,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
               'thread_id': widget.threadId,
               'type': 'screening_room',
               'creator_id': userId,
+              'host_id': userId, // NOT NULL constraint na tabela call_sessions
               'status': 'active',
               'metadata': <String, dynamic>{},
             })
