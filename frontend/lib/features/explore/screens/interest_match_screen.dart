@@ -9,6 +9,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/widgets/user_status_badge.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_data.dart';
 
 // ============================================================================
 // InterestMatchScreen — Encontrar usuários com interesses similares
@@ -228,7 +229,7 @@ class _InterestMatchScreenState extends ConsumerState<InterestMatchScreen>
     );
   }
 
-  Widget _buildBody(dynamic theme, dynamic r) {
+  Widget _buildBody(NexusThemeData theme, Responsive r) {
     if (_isLoading) {
       return Center(
         child: Column(
@@ -440,7 +441,7 @@ class _InterestMatchScreenState extends ConsumerState<InterestMatchScreen>
     );
   }
 
-  Widget _buildMatchCard(MatchedUser user, dynamic theme, dynamic r) {
+  Widget _buildMatchCard(MatchedUser user, NexusThemeData theme, Responsive r) {
     return Container(
       padding: EdgeInsets.all(r.s(14)),
       decoration: BoxDecoration(
@@ -587,8 +588,7 @@ class _ActionButton extends StatelessWidget {
   final String label;
   final Color color;
   final VoidCallback onTap;
-  final dynamic r;
-
+  final Responsive r;
   const _ActionButton({
     required this.icon,
     required this.label,
