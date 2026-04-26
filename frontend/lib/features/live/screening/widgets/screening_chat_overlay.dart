@@ -130,48 +130,79 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
       }
     });
 
-    return Column(
+    // Layout inspirado no Rave: gradiente sutil de fundo + microfone na barra
+    return Stack(
       children: [
-        // ── Lista de mensagens ──────────────────────────────────────────────
-        Expanded(
-          child: messages.isEmpty
-              ? const SizedBox.shrink()
-              : ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    // Fade nas mensagens mais antigas (últimas 8 visíveis)
-                    final fromEnd = messages.length - 1 - index;
-                    final opacity = fromEnd >= 8
-                        ? 0.0
-                        : fromEnd >= 5
-                            ? 0.45
-                            : 1.0;
-                    if (opacity == 0.0) return const SizedBox.shrink();
-                    return Opacity(
-                      opacity: opacity,
-                      child: _ChatBubble(message: messages[index]),
-                    );
-                  },
+        // Gradiente de fundo sutil (como no Rave — mensagens flutuam sobre escuro)
+        Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.45),
+                    Colors.black.withOpacity(0.72),
+                  ],
+                  stops: const [0.0, 0.55, 1.0],
                 ),
-        ),
-
-        // ── Barra de participantes com indicadores de voz ──────────────────
-        _VoiceParticipantsBar(
-          participants: roomState.participants,
-          speakingUids: voiceState.speakingAgoraUids,
-        ),
-
-        const SizedBox(height: 8),
-
-        // ── Input de chat ───────────────────────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-          child: _ChatInput(
-            controller: _textController,
-            onSend: _sendMessage,
+              ),
+            ),
           ),
+        ),
+        Column(
+          children: [
+            // ── Lista de mensagens ──────────────────────────────────────────────────
+            Expanded(
+              child: messages.isEmpty
+                  ? const SizedBox.shrink()
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        // Fade nas mensagens mais antigas (últimas 8 visíveis)
+                        final fromEnd = messages.length - 1 - index;
+                        final opacity = fromEnd >= 8
+                            ? 0.0
+                            : fromEnd >= 5
+                                ? 0.45
+                                : 1.0;
+                        if (opacity == 0.0) return const SizedBox.shrink();
+                        return Opacity(
+                          opacity: opacity,
+                          child: _ChatBubble(message: messages[index]),
+                        );
+                      },
+                    ),
+            ),
+            // ── Barra de participantes com indicadores de voz ──────────────────
+            _VoiceParticipantsBar(
+              participants: roomState.participants,
+              speakingUids: voiceState.speakingAgoraUids,
+            ),
+            const SizedBox(height: 8),
+            // ── Barra inferior: microfone + input (layout Rave) ────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: Row(
+                children: [
+                  // Botão de microfone grande e circular (igual ao Rave)
+                  _MicButton(sessionId: widget.sessionId),
+                  const SizedBox(width: 10),
+                  // Campo de chat
+                  Expanded(
+                    child: _ChatInput(
+                      controller: _textController,
+                      onSend: _sendMessage,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -430,6 +461,58 @@ class _ParticipantAvatarState extends State<_ParticipantAvatar>
                   )
                 : null,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── MicButton ─────────────────────────────────────────────────────────────────
+// Botão de microfone grande e circular, posicionado à esquerda do chat input.
+// Replicando o layout do Rave: microfone proeminente na barra inferior.
+class _MicButton extends ConsumerWidget {
+  final String sessionId;
+  const _MicButton({required this.sessionId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final voiceState = ref.watch(screeningVoiceProvider(sessionId));
+    final isMuted = voiceState.isMuted;
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        ref.read(screeningVoiceProvider(sessionId).notifier).toggleMute();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 46,
+        height: 46,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isMuted
+              ? Colors.redAccent.withOpacity(0.85)
+              : Colors.white.withOpacity(0.18),
+          border: Border.all(
+            color: isMuted
+                ? Colors.redAccent
+                : Colors.white.withOpacity(0.35),
+            width: 1.5,
+          ),
+          boxShadow: isMuted
+              ? [
+                  BoxShadow(
+                    color: Colors.redAccent.withOpacity(0.4),
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                  )
+                ]
+              : null,
+        ),
+        child: Icon(
+          isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
+          color: Colors.white,
+          size: 20,
         ),
       ),
     );

@@ -380,7 +380,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
               ),
             ),
 
-          // ── Camada 2: Gradientes de contraste ─────────────────────────────
+          // ── Camada 2: Gradientes de contraste (IgnorePointer correto) ────────────
           Positioned.fill(
             child: IgnorePointer(
               child: DecoratedBox(
@@ -399,7 +399,9 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
                 ),
               ),
             ),
-             // ── Camada 3: Chat overlay (metade inferior) ──────────────────────────────────
+          ),
+
+          // ── Camada 3: Chat overlay (metade inferior) ──────────────────────────────────
           Positioned(
             left: 0,
             right: 0,

@@ -164,16 +164,7 @@ class _ScreeningControlsOverlayState
           _ViewerCountBadge(count: roomState.viewerCount),
           const SizedBox(width: 8),
 
-          // Mute / Unmute
-          _ControlButton(
-            icon: voiceState.isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
-            onTap: () => ref
-                .read(screeningVoiceProvider(widget.sessionId).notifier)
-                .toggleMute(),
-            color: voiceState.isMuted
-                ? Colors.redAccent
-                : Colors.white,
-          ),
+          // Microfone movido para a barra inferior do chat (como no Rave)
         ],
       ),
     );

@@ -8,6 +8,7 @@ import '../providers/screening_room_provider.dart';
 import '../providers/screening_sync_provider.dart';
 import '../models/sync_event.dart';
 import 'screening_entry_animation.dart';
+import 'screening_ambient_gradient.dart';
 
 // =============================================================================
 // ScreeningPlayerWidget — Player de vídeo imersivo via InAppWebView — Fase 3
@@ -40,6 +41,9 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     with TickerProviderStateMixin {
   InAppWebViewController? _webViewController;
   bool _isLoading = true;
+
+  // ── Ambient gradient key ──────────────────────────────────────────────────
+  final _ambientGradientKey = GlobalKey<ScreeningAmbientGradientState>();
 
   // ── Seek visual feedback ──────────────────────────────────────────────────
   bool _showSeekLeft = false;
@@ -174,7 +178,20 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
           },
           onConsoleMessage: (controller, msg) {
             _handleConsoleMessage(msg.message);
+            // Repassar cor para o gradiente ambiente
+            if (msg.message.startsWith('__nexus_color:')) {
+              _ambientGradientKey.currentState?.handleColorMessage(msg.message);
+            }
           },
+        ),
+
+        // ── Camada 0b: Gradiente ambiente dinâmico (cores do vídeo) ───────────────
+        Positioned.fill(
+          child: ScreeningAmbientGradient(
+            key: _ambientGradientKey,
+            sessionId: widget.sessionId,
+            webViewController: _webViewController,
+          ),
         ),
 
         // ── Camada 1: Buffering overlay ───────────────────────────────────
