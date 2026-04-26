@@ -24,7 +24,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 //     roomId: 'uuid',
 //     title: 'Free Talk',
 //     type: MiniRoomType.freeTalk,
-//     onReturn: () => FreeTalkScreen.show(context, ...),
+//     onReturn: () => CallScreen.show(context, session),
 //     onEnd: () => leaveRoom(),
 //   );
 //

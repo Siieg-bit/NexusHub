@@ -37,6 +37,30 @@ import 'supabase_service.dart';
 
 enum CallType { voice, video, screeningRoom }
 
+// ─── Stage Roles ─────────────────────────────────────────────────────────────
+enum StageRole { host, speaker, listener }
+
+extension StageRoleX on StageRole {
+  String get value {
+    switch (this) {
+      case StageRole.host:     return 'host';
+      case StageRole.speaker:  return 'speaker';
+      case StageRole.listener: return 'listener';
+    }
+  }
+
+  bool get canSpeak => this == StageRole.host || this == StageRole.speaker;
+  bool get isHost   => this == StageRole.host;
+
+  static StageRole fromString(String? s) {
+    switch (s) {
+      case 'host':     return StageRole.host;
+      case 'listener': return StageRole.listener;
+      default:         return StageRole.speaker;
+    }
+  }
+}
+
 class CallSession {
   final String id;
   final String threadId;
@@ -123,6 +147,10 @@ class CallService {
   static final _remoteUsersController = StreamController<Set<int>>.broadcast();
   static final _audioLevelsController =
       StreamController<Map<int, double>>.broadcast();
+  static final _stageRoleController =
+      StreamController<StageRole>.broadcast();
+  static final _handRaisedUsersController =
+      StreamController<Set<String>>.broadcast();
 
   static Stream<List<Map<String, dynamic>>> get participantsStream =>
       _participantsController.stream;
@@ -130,12 +158,18 @@ class CallService {
       _remoteUsersController.stream;
   static Stream<Map<int, double>> get audioLevelsStream =>
       _audioLevelsController.stream;
+  static Stream<StageRole> get stageRoleStream => _stageRoleController.stream;
+  static Stream<Set<String>> get handRaisedUsersStream =>
+      _handRaisedUsersController.stream;
 
   static final Set<int> _remoteUsers = {};
   static final Map<int, double> _audioLevels = {};
   static bool _isMuted = false;
   static bool _isCameraOn = false;
   static bool _isSpeakerOn = true;
+  static StageRole _myStageRole = StageRole.speaker;
+  static Set<String> _handRaisedUsers = {};
+  static Map<String, Map<String, dynamic>> _participantsCache = {};
   static Object? _lastError;
   static StackTrace? _lastStackTrace;
   static String? _lastErrorStage;
@@ -144,6 +178,8 @@ class CallService {
   static bool get isMuted => _isMuted;
   static bool get isCameraOn => _isCameraOn;
   static bool get isSpeakerOn => _isSpeakerOn;
+  static StageRole get myStageRole => _myStageRole;
+  static Set<String> get handRaisedUsers => Set.unmodifiable(_handRaisedUsers);
   static RtcEngine? get engine => _engine;
   static Set<int> get remoteUsers => _remoteUsers;
   static String? get lastErrorStage => _lastErrorStage;
@@ -908,10 +944,144 @@ class CallService {
             if (!_participantsController.isClosed) {
               _participantsController.add(participants);
             }
+            _updateMyRole(participants);
           },
         );
       },
     );
+  }
+
+  // =========================================================================
+  // STAGE METHODS — roles, mão levantada, moderar
+  // =========================================================================
+
+  /// Levantar / abaixar a mão (apenas listeners/speakers)
+  static Future<bool> raiseHand({bool raised = true}) async {
+    final call = activeCall;
+    if (call == null) return false;
+    try {
+      final res = await SupabaseService.rpc('raise_hand_call', params: {
+        'p_session_id': call.id,
+        'p_raised': raised,
+      });
+      return (res as Map<String, dynamic>?)?['success'] == true;
+    } catch (e) {
+      debugPrint('[CallService] raiseHand error: $e');
+      return false;
+    }
+  }
+
+  /// Host aceita um speaker (promove listener → speaker)
+  static Future<bool> acceptSpeaker(String targetUserId) async {
+    final call = activeCall;
+    if (call == null) return false;
+    try {
+      final res = await SupabaseService.rpc('accept_call_speaker', params: {
+        'p_session_id': call.id,
+        'p_target_user': targetUserId,
+      });
+      return (res as Map<String, dynamic>?)?['success'] == true;
+    } catch (e) {
+      debugPrint('[CallService] acceptSpeaker error: $e');
+      return false;
+    }
+  }
+
+  /// Speaker desce do palco voluntariamente
+  static Future<bool> stepDown() async {
+    final call = activeCall;
+    if (call == null) return false;
+    try {
+      final res = await SupabaseService.rpc('step_down_call', params: {
+        'p_session_id': call.id,
+      });
+      if ((res as Map<String, dynamic>?)?['success'] == true) {
+        _myStageRole = StageRole.listener;
+        if (!_stageRoleController.isClosed) {
+          _stageRoleController.add(_myStageRole);
+        }
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('[CallService] stepDown error: $e');
+      return false;
+    }
+  }
+
+  /// Host muta/desmuta um participante
+  static Future<bool> muteParticipant(String targetUserId,
+      {bool muted = true}) async {
+    final call = activeCall;
+    if (call == null) return false;
+    try {
+      final res = await SupabaseService.rpc('mute_call_participant', params: {
+        'p_session_id': call.id,
+        'p_target_user': targetUserId,
+        'p_muted': muted,
+      });
+      return (res as Map<String, dynamic>?)?['success'] == true;
+    } catch (e) {
+      debugPrint('[CallService] muteParticipant error: $e');
+      return false;
+    }
+  }
+
+  /// Host expulsa um participante
+  static Future<bool> kickParticipant(String targetUserId) async {
+    final call = activeCall;
+    if (call == null) return false;
+    try {
+      final res = await SupabaseService.rpc('kick_call_participant', params: {
+        'p_session_id': call.id,
+        'p_target_user': targetUserId,
+      });
+      return (res as Map<String, dynamic>?)?['success'] == true;
+    } catch (e) {
+      debugPrint('[CallService] kickParticipant error: $e');
+      return false;
+    }
+  }
+
+  /// Atualiza o role local do usuário e emite nos streams
+  static void _updateMyRole(List<Map<String, dynamic>> participants) {
+    final myId = SupabaseService.currentUserId;
+    if (myId == null) return;
+
+    final me = participants.firstWhere(
+      (p) => p['user_id'] == myId,
+      orElse: () => {},
+    );
+
+    if (me.isNotEmpty) {
+      final newRole =
+          StageRoleX.fromString(me['stage_role'] as String?);
+      if (newRole != _myStageRole) {
+        _myStageRole = newRole;
+        if (!_stageRoleController.isClosed) {
+          _stageRoleController.add(_myStageRole);
+        }
+      }
+    }
+
+    // Atualizar mãos levantadas
+    final raised = participants
+        .where((p) => p['hand_raised'] == true)
+        .map((p) => p['user_id'] as String? ?? '')
+        .where((id) => id.isNotEmpty)
+        .toSet();
+    if (raised != _handRaisedUsers) {
+      _handRaisedUsers = raised;
+      if (!_handRaisedUsersController.isClosed) {
+        _handRaisedUsersController.add(Set.from(_handRaisedUsers));
+      }
+    }
+
+    // Cache dos participantes por userId
+    _participantsCache = {
+      for (final p in participants)
+        if (p['user_id'] != null) p['user_id'] as String: p,
+    };
   }
 
   static void _cleanup() {
@@ -923,6 +1093,9 @@ class CallService {
     activeCall = null;
     _remoteUsers.clear();
     _audioLevels.clear();
+    _handRaisedUsers.clear();
+    _participantsCache.clear();
+    _myStageRole = StageRole.speaker;
     _isMuted = false;
     _isCameraOn = false;
   }
@@ -936,5 +1109,7 @@ class CallService {
     _participantsController.close();
     _remoteUsersController.close();
     _audioLevelsController.close();
+    _stageRoleController.close();
+    _handRaisedUsersController.close();
   }
 }

@@ -1,26 +1,35 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/services/call_service.dart';
+import '../../../core/services/haptic_service.dart';
+import '../../../core/services/supabase_service.dart';
+import '../../../core/services/realtime_service.dart';
+import '../../../core/models/message_model.dart';
+import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
-/// ============================================================================
-/// CallScreen — UI de chamada com Agora.io RTC real.
-///
-/// Features:
-/// - Vídeo real (câmera local + remota) via AgoraVideoView
-/// - Indicadores de volume de áudio (quem está falando)
-/// - Controles: mute, speaker, câmera, trocar câmera, encerrar
-/// - Grid adaptativo de participantes
-/// - Timer de duração da chamada
-/// - Suporte a Voice Chat, Video Chat e Sala de Projeção
-/// ============================================================================
+// ============================================================================
+// CallScreen — Tela de chamada reformada.
+//
+// Layout:
+//   • Modo padrão (split): grade de participantes (60%) + chat de texto (40%)
+//   • Modo tela cheia: grade ocupa 100% da tela, chat oculto
+//
+// Roles (via CallService.myStageRole):
+//   • host    — controles completos (mutar, expulsar, encerrar)
+//   • speaker — mic ativo, pode descer do palco
+//   • listener — mic silenciado, pode levantar a mão
+//
+// Chat:
+//   • Mensagens salvas no histórico do thread (RPC send_chat_message_with_reputation)
+//   • Stream Realtime via RealtimeService
+// ============================================================================
 
 class CallScreen extends ConsumerStatefulWidget {
   final CallSession session;
@@ -40,21 +49,45 @@ class CallScreen extends ConsumerStatefulWidget {
   ConsumerState<CallScreen> createState() => _CallScreenState();
 }
 
-class _CallScreenState extends ConsumerState<CallScreen> {
+class _CallScreenState extends ConsumerState<CallScreen>
+    with TickerProviderStateMixin {
+  // ── Participantes ──
   List<Map<String, dynamic>> _participants = [];
   Set<int> _remoteUsers = {};
   Map<int, double> _audioLevels = {};
+  StageRole _myRole = StageRole.speaker;
+  Set<String> _handRaisedUsers = {};
+  bool _handRaised = false;
+
+  // ── Streams ──
   StreamSubscription? _participantsSub;
   StreamSubscription? _remoteUsersSub;
   StreamSubscription? _audioLevelsSub;
+  StreamSubscription? _stageRoleSub;
+  StreamSubscription? _handRaisedSub;
 
+  // ── Estado local ──
   bool _isMuted = false;
   bool _isSpeakerOn = true;
+  bool _isFullScreen = false;
   bool _controlsVisible = true;
+  Timer? _controlsTimer;
 
+  // ── Timer de duração ──
   late DateTime _startTime;
-  Timer? _timer;
+  Timer? _durationTimer;
   String _elapsed = '00:00';
+
+  // ── Chat ──
+  final _chatController = TextEditingController();
+  final _chatScrollController = ScrollController();
+  final List<MessageModel> _messages = [];
+  bool _isSendingMessage = false;
+  String? _chatChannelName;
+
+  // ── Animação split ↔ tela cheia ──
+  late AnimationController _splitAnimCtrl;
+  late Animation<double> _chatFraction;
 
   @override
   void initState() {
@@ -62,40 +95,52 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     _startTime = DateTime.now();
     _isMuted = CallService.isMuted;
     _isSpeakerOn = CallService.isSpeakerOn;
+    _myRole = CallService.myStageRole;
 
-    _loadParticipants();
+    // Animação: chatFraction vai de 0.4 (split) a 0.0 (tela cheia)
+    _splitAnimCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _chatFraction = Tween<double>(begin: 0.4, end: 0.0).animate(
+      CurvedAnimation(parent: _splitAnimCtrl, curve: Curves.easeInOut),
+    );
 
-    // Ouvir atualizações de participantes do Supabase
-    _participantsSub = CallService.participantsStream.listen((p) {
+    // Streams do CallService
+    _participantsSub =
+        CallService.participantsStream.listen((p) {
       if (mounted) setState(() => _participants = p);
     });
-
-    // Ouvir usuários remotos do Agora
-    _remoteUsersSub = CallService.remoteUsersStream.listen((users) {
-      if (mounted) setState(() => _remoteUsers = users);
+    _remoteUsersSub =
+        CallService.remoteUsersStream.listen((u) {
+      if (mounted) setState(() => _remoteUsers = u);
     });
-
-    // Ouvir níveis de áudio do Agora
-    _audioLevelsSub = CallService.audioLevelsStream.listen((levels) {
-      if (mounted) setState(() => _audioLevels = levels);
+    _audioLevelsSub =
+        CallService.audioLevelsStream.listen((l) {
+      if (mounted) setState(() => _audioLevels = l);
+    });
+    _stageRoleSub = CallService.stageRoleStream.listen((role) {
+      if (mounted) setState(() => _myRole = role);
+    });
+    _handRaisedSub =
+        CallService.handRaisedUsersStream.listen((raised) {
+      if (mounted) setState(() => _handRaisedUsers = raised);
     });
 
     // Timer de duração
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        final diff = DateTime.now().difference(_startTime);
-        setState(() {
-          _elapsed =
-              '${diff.inMinutes.toString().padLeft(2, '0')}:${(diff.inSeconds % 60).toString().padLeft(2, '0')}';
-        });
-      }
+    _durationTimer =
+        Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      final diff = DateTime.now().difference(_startTime);
+      setState(() {
+        _elapsed =
+            '${diff.inMinutes.toString().padLeft(2, '0')}:${(diff.inSeconds % 60).toString().padLeft(2, '0')}';
+      });
     });
-  }
 
-  Future<void> _loadParticipants() async {
-    final p = await CallService.getParticipants();
-    if (!mounted) return;
-    if (mounted) setState(() => _participants = p);
+    _loadParticipants();
+    _loadMessages();
+    _subscribeChatRealtime();
   }
 
   @override
@@ -103,70 +148,275 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     _participantsSub?.cancel();
     _remoteUsersSub?.cancel();
     _audioLevelsSub?.cancel();
-    _timer?.cancel();
+    _stageRoleSub?.cancel();
+    _handRaisedSub?.cancel();
+    _durationTimer?.cancel();
+    _controlsTimer?.cancel();
+    _chatController.dispose();
+    _chatScrollController.dispose();
+    _splitAnimCtrl.dispose();
+    if (_chatChannelName != null) {
+      RealtimeService.instance.unsubscribe(_chatChannelName!);
+    }
     super.dispose();
   }
 
+  // ── Participantes ──────────────────────────────────────────────────────────
+
+  Future<void> _loadParticipants() async {
+    final p = await CallService.getParticipants();
+    if (!mounted) return;
+    setState(() => _participants = p);
+  }
+
+  List<Map<String, dynamic>> get _speakers => _participants
+      .where((p) =>
+          p['stage_role'] == 'host' ||
+          p['stage_role'] == 'speaker' ||
+          p['stage_role'] == null) // retrocompatibilidade
+      .toList();
+
+  List<Map<String, dynamic>> get _listeners =>
+      _participants.where((p) => p['stage_role'] == 'listener').toList();
+
+  // ── Chat ───────────────────────────────────────────────────────────────────
+
+  Future<void> _loadMessages() async {
+    try {
+      final res = await SupabaseService.table('chat_messages')
+          .select(
+              '*, profiles!chat_messages_author_id_fkey(id, nickname, icon_url)')
+          .eq('thread_id', widget.session.threadId)
+          .order('created_at', ascending: false)
+          .limit(50);
+      final raw =
+          List<Map<String, dynamic>>.from(res as List? ?? []);
+      final normalized = raw.map((e) {
+        final map = Map<String, dynamic>.from(e);
+        if (map['profiles'] != null) {
+          map['sender'] = map['profiles'];
+          map['author'] = map['profiles'];
+        }
+        return MessageModel.fromJson(map);
+      }).toList().reversed.toList();
+      if (mounted) {
+        setState(() => _messages
+          ..clear()
+          ..addAll(normalized));
+        _scrollChatToBottom();
+      }
+    } catch (e) {
+      debugPrint('[CallScreen] loadMessages error: $e');
+    }
+  }
+
+  void _subscribeChatRealtime() {
+    _chatChannelName = 'call_chat:${widget.session.threadId}';
+    RealtimeService.instance.subscribeWithRetry(
+      channelName: _chatChannelName!,
+      configure: (channel) {
+        channel.onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'chat_messages',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'thread_id',
+            value: widget.session.threadId,
+          ),
+          callback: (payload) async {
+            final newRow = payload.newRecord;
+            if (newRow.isEmpty) return;
+            final authorId = newRow['author_id'] as String?;
+            Map<String, dynamic>? profile;
+            if (authorId != null) {
+              try {
+                final res = await SupabaseService.table('profiles')
+                    .select('id, nickname, icon_url')
+                    .eq('id', authorId)
+                    .single();
+                profile = Map<String, dynamic>.from(res);
+              } catch (_) {}
+            }
+            final map = Map<String, dynamic>.from(newRow);
+            if (profile != null) {
+              map['profiles'] = profile;
+              map['sender'] = profile;
+              map['author'] = profile;
+            }
+            final msg = MessageModel.fromJson(map);
+            if (mounted) {
+              setState(() => _messages.add(msg));
+              _scrollChatToBottom();
+            }
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _sendChatMessage() async {
+    final text = _chatController.text.trim();
+    if (text.isEmpty || _isSendingMessage) return;
+    setState(() => _isSendingMessage = true);
+    _chatController.clear();
+    HapticService.action();
+    try {
+      await SupabaseService.rpc(
+          'send_chat_message_with_reputation',
+          params: {
+            'p_thread_id': widget.session.threadId,
+            'p_content': text,
+            'p_type': 'text',
+          });
+    } catch (e) {
+      debugPrint('[CallScreen] sendChatMessage error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text('Erro ao enviar mensagem'),
+          backgroundColor: context.nexusTheme.error,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _isSendingMessage = false);
+    }
+  }
+
+  void _scrollChatToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_chatScrollController.hasClients) {
+        _chatScrollController.animateTo(
+          _chatScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  // ── Controles ──────────────────────────────────────────────────────────────
+
+  void _scheduleHideControls() {
+    _controlsTimer?.cancel();
+    _controlsTimer = Timer(const Duration(seconds: 4), () {
+      if (mounted && _isFullScreen) {
+        setState(() => _controlsVisible = false);
+      }
+    });
+  }
+
+  void _onTapScreen() {
+    if (_isFullScreen) {
+      setState(() => _controlsVisible = !_controlsVisible);
+      if (_controlsVisible) _scheduleHideControls();
+    }
+  }
+
   Future<void> _toggleMute() async {
+    HapticService.micOn();
     await CallService.toggleMute();
     if (!mounted) return;
     setState(() => _isMuted = CallService.isMuted);
   }
 
   Future<void> _toggleSpeaker() async {
+    HapticService.buttonPress();
     await CallService.toggleSpeaker();
     if (!mounted) return;
     setState(() => _isSpeakerOn = CallService.isSpeakerOn);
   }
 
-  Future<void> _endCall() async {
+  Future<void> _toggleHandRaise() async {
+    HapticService.handRaise();
+    final newState = !_handRaised;
+    setState(() => _handRaised = newState);
+    await CallService.raiseHand(raised: newState);
+  }
+
+  Future<void> _stepDown() async {
+    HapticService.action();
+    await CallService.stepDown();
+  }
+
+  Future<void> _leaveCall() async {
+    HapticService.action();
     await CallService.leaveCall();
     if (!mounted) return;
-    if (mounted) Navigator.of(context).pop();
+    Navigator.of(context).pop();
   }
+
+  Future<void> _endCall() async {
+    HapticService.error();
+    await CallService.endCall();
+    if (!mounted) return;
+    Navigator.of(context).pop();
+  }
+
+  void _toggleFullScreen() {
+    HapticService.tap();
+    setState(() {
+      _isFullScreen = !_isFullScreen;
+      _controlsVisible = true;
+    });
+    if (_isFullScreen) {
+      _splitAnimCtrl.forward();
+      _scheduleHideControls();
+    } else {
+      _splitAnimCtrl.reverse();
+      _controlsTimer?.cancel();
+    }
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
-    final isScreening = widget.session.type == CallType.screeningRoom;
-    final title = isScreening ? 'Sala de Projeção' : 'Voice Chat';
-    final bgColor = context.nexusTheme.backgroundPrimary;
+    final theme = context.nexusTheme;
+    final isScreening =
+        widget.session.type == CallType.screeningRoom;
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: theme.backgroundPrimary,
+      resizeToAvoidBottomInset: true,
       body: GestureDetector(
-        onTap: () => setState(() => _controlsVisible = !_controlsVisible),
+        onTap: _onTapScreen,
         child: SafeArea(
-          child: Stack(
+          child: Column(
             children: [
-              // ── Main Content ──
-              Column(
-                children: [
-                  // ── Header ──
-                  AnimatedOpacity(
-                    opacity: _controlsVisible ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: _buildHeader(title),
-                  ),
+              // ── Header ──
+              _buildHeader(isScreening),
 
-                  // ── Audio Grid ──
-                  Expanded(
-                    child: _buildAudioGrid(),
-                  ),
-
-                  // ── Sala de Projeção: área de vídeo ──
-                  if (isScreening) _buildScreeningArea(),
-
-                  // ── Controls ──
-                  AnimatedOpacity(
-                    opacity: _controlsVisible ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: _buildControls(),
-                  ),
-                ],
+              // ── Grade + Chat (animados) ──
+              Expanded(
+                child: AnimatedBuilder(
+                  animation: _chatFraction,
+                  builder: (context, _) {
+                    final chatF = _chatFraction.value;
+                    final gridF = 1.0 - chatF;
+                    return Column(
+                      children: [
+                        Expanded(
+                          flex: (gridF * 100).round().clamp(1, 100),
+                          child: _buildParticipantsGrid(),
+                        ),
+                        if (chatF > 0.01)
+                          Expanded(
+                            flex: (chatF * 100).round().clamp(1, 100),
+                            child: _buildChatPanel(),
+                          ),
+                      ],
+                    );
+                  },
+                ),
               ),
 
-              // Video PiP removido — video chat não suportado
+              // ── Controles ──
+              AnimatedOpacity(
+                opacity: _controlsVisible ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 200),
+                child: _buildControls(),
+              ),
             ],
           ),
         ),
@@ -174,349 +424,416 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     );
   }
 
-  Widget _buildHeader(String title) {
+  // ── Header ─────────────────────────────────────────────────────────────────
+
+  Widget _buildHeader(bool isScreening) {
     final r = context.r;
-    return Padding(
-      padding: EdgeInsets.all(r.s(16)),
-      child: Row(
-        children: [
-          IconButton(
-            icon: Icon(Icons.arrow_back_rounded, color: context.nexusTheme.textPrimary),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          const Spacer(),
-          Column(
-            children: [
-              Text(title,
-                  style: TextStyle(
-                      color: context.nexusTheme.textPrimary,
-                      fontSize: r.fs(18),
-                      fontWeight: FontWeight.w800)),
-              Row(
-                mainAxisSize: MainAxisSize.min,
+    final theme = context.nexusTheme;
+    final title = isScreening ? 'Sala de Projeção' : 'Voice Chat';
+
+    return AnimatedOpacity(
+      opacity: _controlsVisible ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 200),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+            horizontal: r.s(8), vertical: r.s(8)),
+        child: Row(
+          children: [
+            IconButton(
+              icon: Icon(Icons.arrow_back_rounded,
+                  color: theme.textPrimary, size: r.s(22)),
+              onPressed: () => Navigator.of(context).pop(),
+              tooltip: 'Minimizar',
+            ),
+            Expanded(
+              child: Column(
                 children: [
-                  Container(
-                    width: r.s(8),
-                    height: r.s(8),
-                    decoration: BoxDecoration(
-                      color: context.nexusTheme.accentPrimary,
-                      shape: BoxShape.circle,
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: theme.textPrimary,
+                      fontSize: r.fs(16),
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                  SizedBox(width: r.s(6)),
-                  Text(_elapsed,
-                      style: TextStyle(
-                          color: Colors.grey[500], fontSize: r.fs(14))),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: r.s(7),
+                        height: r.s(7),
+                        decoration: BoxDecoration(
+                          color: theme.success,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      SizedBox(width: r.s(4)),
+                      Text(
+                        _elapsed,
+                        style: TextStyle(
+                          color: theme.textSecondary,
+                          fontSize: r.fs(12),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: r.s(8)),
+                      Text(
+                        '${_participants.length} participante${_participants.length != 1 ? 's' : ''}',
+                        style: TextStyle(
+                          color: theme.textSecondary,
+                          fontSize: r.fs(12),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
-          const Spacer(),
-          Container(
-            padding:
-                EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
-            decoration: BoxDecoration(
-              color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(r.s(20)),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.people_rounded,
-                    color: context.nexusTheme.accentPrimary, size: r.s(16)),
-                SizedBox(width: r.s(4)),
-                Text('${_participants.length + _remoteUsers.length}',
-                    style: TextStyle(
-                        color: context.nexusTheme.accentPrimary,
-                        fontWeight: FontWeight.w700)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // _buildVideoGrid removido — video chat não suportado
-
-  /// Grid de áudio com indicadores de volume — placeholder para evitar erro de compilação
-  // ignore: unused_element
-  Widget _buildVideoGrid_removed() {
-    final s = getStrings();
-    final r = context.r;
-    if (CallService.engine == null) {
-      return Center(
-        child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
-      );
-    }
-
-    final List<Widget> videoViews = [];
-
-    // Se não há usuários remotos, mostrar placeholder
-    if (_remoteUsers.isEmpty) {
-      videoViews.add(_buildAvatarPlaceholder(s.you));
-    } else {
-      // Mostrar vídeos remotos
-      for (final uid in _remoteUsers) {
-        videoViews.add(
-          ClipRRect(
-            borderRadius: BorderRadius.circular(r.s(12)),
-            child: AgoraVideoView(
-              controller: VideoViewController.remote(
-                rtcEngine: CallService.engine!,
-                canvas: VideoCanvas(uid: uid),
-                connection: RtcConnection(
-                  channelId:
-                      'nexushub_${widget.session.id.replaceAll('-', '').substring(0, 16)}',
-                ),
+            // Botão tela cheia / split
+            IconButton(
+              icon: Icon(
+                _isFullScreen
+                    ? Icons.fullscreen_exit_rounded
+                    : Icons.fullscreen_rounded,
+                color: theme.textSecondary,
+                size: r.s(22),
               ),
+              onPressed: _toggleFullScreen,
+              tooltip: _isFullScreen ? 'Modo split' : 'Tela cheia',
             ),
-          ),
-        );
-      }
-    }
-
-    return GridView.builder(
-      padding: EdgeInsets.all(r.s(16)),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: videoViews.length <= 1 ? 1 : 2,
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
-        childAspectRatio: videoViews.length <= 1 ? 0.75 : 0.65,
+          ],
+        ),
       ),
-      itemCount: videoViews.length,
-      itemBuilder: (_, i) => videoViews[i],
     );
   }
 
-  /// Grid de áudio com indicadores de volume
-  Widget _buildAudioGrid() {
+  // ── Grade de participantes ─────────────────────────────────────────────────
+
+  Widget _buildParticipantsGrid() {
     final r = context.r;
+    final theme = context.nexusTheme;
+    final speakers = _speakers;
+    final listeners = _listeners;
+
     if (_participants.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
-            SizedBox(height: r.s(16)),
+            CircularProgressIndicator(
+                color: theme.accentPrimary),
+            SizedBox(height: r.s(12)),
             Text('Aguardando participantes...',
-                style: TextStyle(color: Colors.grey[500])),
+                style: TextStyle(
+                    color: theme.textSecondary,
+                    fontSize: r.fs(13))),
           ],
         ),
       );
     }
 
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(
+          horizontal: r.s(12), vertical: r.s(4)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Speakers / Host ──
+          if (speakers.isNotEmpty) ...[
+            _SectionLabel(
+              icon: Icons.mic_rounded,
+              label: 'No palco (${speakers.length})',
+              color: theme.accentPrimary,
+            ),
+            SizedBox(height: r.s(8)),
+            _buildSpeakersGrid(speakers),
+          ],
+
+          // ── Listeners ──
+          if (listeners.isNotEmpty) ...[
+            SizedBox(height: r.s(12)),
+            _SectionLabel(
+              icon: Icons.headphones_rounded,
+              label: 'Ouvindo (${listeners.length})',
+              color: theme.textSecondary,
+            ),
+            SizedBox(height: r.s(8)),
+            _buildListenersWrap(listeners),
+          ],
+
+          SizedBox(height: r.s(8)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSpeakersGrid(List<Map<String, dynamic>> speakers) {
+    final r = context.r;
+    final crossAxisCount = speakers.length <= 2 ? 2 : 3;
     return GridView.builder(
-      padding: EdgeInsets.all(r.s(16)),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: _participants.length <= 2 ? 1 : 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: _participants.length <= 2 ? 1.5 : 1.0,
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: r.s(8),
+        mainAxisSpacing: r.s(8),
+        childAspectRatio: 0.85,
       ),
-      itemCount: _participants.length,
-      itemBuilder: (_, i) => _buildParticipantTile(_participants[i]),
-    );
-  }
-
-  Widget _buildParticipantTile(Map<String, dynamic> participant) {
-    final s = getStrings();
-    final r = context.r;
-    final profile = participant['profiles'] as Map<String, dynamic>?;
-    final nickname = profile?['nickname'] as String? ?? s.user;
-    final iconUrl = profile?['icon_url'] as String?;
-
-    // Detectar se está falando via audio levels do Agora
-    // uid 0 = local user
-    final isSpeaking = _audioLevels.values.any((v) => v > 30);
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(r.s(16)),
-        border: isSpeaking
-            ? Border.all(color: context.nexusTheme.accentPrimary, width: 2.5)
-            : Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
-        boxShadow: isSpeaking
-            ? [
-                BoxShadow(
-                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                )
-              ]
-            : null,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Avatar com indicador de áudio
-          Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              CircleAvatar(
-                radius: 36,
-                backgroundColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
-                backgroundImage: iconUrl != null
-                    ? CachedNetworkImageProvider(iconUrl)
-                    : null,
-                child: iconUrl == null
-                    ? Text(nickname[0].toUpperCase(),
-                        style: TextStyle(
-                            color: context.nexusTheme.textPrimary,
-                            fontSize: r.fs(28),
-                            fontWeight: FontWeight.w800))
-                    : null,
-              ),
-              if (isSpeaking)
-                Container(
-                  width: r.s(20),
-                  height: r.s(20),
-                  decoration: BoxDecoration(
-                    color: context.nexusTheme.accentPrimary,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: context.surfaceColor, width: 2),
-                  ),
-                  child: Icon(Icons.mic_rounded,
-                      color: Colors.white, size: r.s(12)),
-                ),
-            ],
-          ),
-          SizedBox(height: r.s(12)),
-          Text(nickname,
-              style: TextStyle(
-                  color: context.nexusTheme.textPrimary,
-                  fontSize: r.fs(14),
-                  fontWeight: FontWeight.w700)),
-          SizedBox(height: r.s(4)),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: r.s(8),
-                height: r.s(8),
-                decoration: BoxDecoration(
-                  color: context.nexusTheme.accentPrimary,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              SizedBox(width: r.s(4)),
-              Text(s.connected,
-                  style:
-                      TextStyle(color: Colors.grey[500], fontSize: r.fs(11))),
-            ],
-          ),
-          // Audio level bar
-          if (isSpeaking)
-            Padding(
-              padding: EdgeInsets.only(top: r.s(8)),
-              child: _AudioLevelBar(
-                  level: _audioLevels.values.isNotEmpty
-                      ? _audioLevels.values.first / 255
-                      : 0),
-            ),
-        ],
+      itemCount: speakers.length,
+      itemBuilder: (context, i) => _SpeakerCard(
+        participant: speakers[i],
+        audioLevel: _getAudioLevel(speakers[i]),
+        isMe: _isMe(speakers[i]),
+        myRole: _myRole,
+        onMute: (uid) => CallService.muteParticipant(uid),
+        onKick: (uid) => CallService.kickParticipant(uid),
       ),
     );
   }
 
-  Widget _buildAvatarPlaceholder(String name) {
-    final r = context.r;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircleAvatar(
-            radius: 48,
-            backgroundColor: context.nexusTheme.accentPrimary.withValues(alpha: 0.3),
-            child: Text(name[0].toUpperCase(),
-                style: TextStyle(
-                    color: context.nexusTheme.textPrimary,
-                    fontSize: r.fs(36),
-                    fontWeight: FontWeight.w800)),
-          ),
-          SizedBox(height: r.s(16)),
-          Text(name,
-              style: TextStyle(
-                  color: context.nexusTheme.textPrimary,
-                  fontSize: r.fs(18),
-                  fontWeight: FontWeight.w700)),
-        ],
-      ),
+  Widget _buildListenersWrap(
+      List<Map<String, dynamic>> listeners) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: listeners
+          .map((p) => _ListenerChip(
+                participant: p,
+                hasHandRaised: _handRaisedUsers
+                    .contains(p['user_id'] as String? ?? ''),
+                isMe: _isMe(p),
+                myRole: _myRole,
+                onAcceptSpeaker: (uid) async {
+                  HapticService.promoted();
+                  await CallService.acceptSpeaker(uid);
+                },
+              ))
+          .toList(),
     );
   }
 
-  Widget _buildScreeningArea() {
-    final s = getStrings();
+  double _getAudioLevel(Map<String, dynamic> participant) {
+    final agoraUid = participant['agora_uid'] as int?;
+    if (agoraUid != null && _audioLevels.containsKey(agoraUid)) {
+      return (_audioLevels[agoraUid]! / 255.0).clamp(0.0, 1.0);
+    }
+    if (_audioLevels.isNotEmpty) {
+      final maxLevel =
+          _audioLevels.values.reduce((a, b) => a > b ? a : b);
+      return (maxLevel / 255.0).clamp(0.0, 1.0);
+    }
+    return 0.0;
+  }
+
+  bool _isMe(Map<String, dynamic> participant) =>
+      participant['user_id'] == SupabaseService.currentUserId;
+
+  // ── Chat Panel ─────────────────────────────────────────────────────────────
+
+  Widget _buildChatPanel() {
     final r = context.r;
+    final theme = context.nexusTheme;
+
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: r.s(16)),
-      height: r.s(200),
       decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(r.s(16)),
-        border:
-            Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
+        color: theme.surfacePrimary,
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.06),
+            width: 1,
+          ),
+        ),
       ),
-      child: _remoteUsers.isNotEmpty && CallService.engine != null
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(r.s(16)),
-              child: AgoraVideoView(
-                controller: VideoViewController.remote(
-                  rtcEngine: CallService.engine!,
-                  canvas: VideoCanvas(uid: _remoteUsers.first),
-                  connection: RtcConnection(
-                    channelId:
-                        'nexushub_${widget.session.id.replaceAll('-', '').substring(0, 16)}',
+      child: Column(
+        children: [
+          // Título
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: r.s(12), vertical: r.s(6)),
+            child: Row(
+              children: [
+                Icon(Icons.chat_bubble_outline_rounded,
+                    color: theme.textSecondary, size: r.s(14)),
+                SizedBox(width: r.s(6)),
+                Text(
+                  'Chat da sala',
+                  style: TextStyle(
+                    color: theme.textSecondary,
+                    fontSize: r.fs(12),
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ),
-            )
-          : Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.live_tv_rounded,
-                      color: Colors.white.withValues(alpha: 0.24),
-                      size: r.s(48)),
-                  SizedBox(height: r.s(8)),
-                  Text(s.sharedScreenWillAppearHere,
-                      style: TextStyle(color: Colors.grey[500])),
-                ],
-              ),
+              ],
             ),
+          ),
+
+          // Mensagens
+          Expanded(
+            child: _messages.isEmpty
+                ? Center(
+                    child: Text(
+                      'Nenhuma mensagem ainda.\nDiga olá! 👋',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: theme.textHint,
+                        fontSize: r.fs(13),
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    controller: _chatScrollController,
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(10), vertical: r.s(4)),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, i) =>
+                        _ChatBubble(message: _messages[i]),
+                  ),
+          ),
+
+          // Input
+          _buildChatInput(),
+        ],
+      ),
     );
   }
+
+  Widget _buildChatInput() {
+    final r = context.r;
+    final theme = context.nexusTheme;
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+          horizontal: r.s(12), vertical: r.s(8)),
+      decoration: BoxDecoration(
+        color: theme.backgroundSecondary,
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.05),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _chatController,
+              style: TextStyle(
+                  color: theme.textPrimary, fontSize: r.fs(14)),
+              decoration: InputDecoration(
+                hintText: 'Mensagem...',
+                hintStyle: TextStyle(
+                    color: theme.textHint, fontSize: r.fs(14)),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(
+                    horizontal: r.s(4), vertical: r.s(6)),
+              ),
+              textInputAction: TextInputAction.send,
+              onSubmitted: (_) => _sendChatMessage(),
+              maxLines: 1,
+            ),
+          ),
+          SizedBox(width: r.s(8)),
+          GestureDetector(
+            onTap: _sendChatMessage,
+            child: Container(
+              width: r.s(36),
+              height: r.s(36),
+              decoration: BoxDecoration(
+                color: theme.accentPrimary,
+                shape: BoxShape.circle,
+              ),
+              child: _isSendingMessage
+                  ? Padding(
+                      padding: EdgeInsets.all(r.s(10)),
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(Icons.send_rounded,
+                      color: Colors.white, size: r.s(18)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Controles ──────────────────────────────────────────────────────────────
 
   Widget _buildControls() {
-    final s = getStrings();
     final r = context.r;
-    return Padding(
-      padding: EdgeInsets.all(r.s(24)),
+    final theme = context.nexusTheme;
+    final isHost = _myRole.isHost;
+    final canSpeak = _myRole.canSpeak;
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+          horizontal: r.s(16), vertical: r.s(12)),
+      decoration: BoxDecoration(
+        color: theme.backgroundSecondary.withValues(alpha: 0.95),
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.05),
+            width: 1,
+          ),
+        ),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _ControlButton(
-            icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
-            label: _isMuted ? s.muted : s.mic,
-            isActive: !_isMuted,
-            onTap: _toggleMute,
-          ),
+          // Mute (speakers/host)
+          if (canSpeak)
+            _ControlButton(
+              icon: _isMuted
+                  ? Icons.mic_off_rounded
+                  : Icons.mic_rounded,
+              label: _isMuted ? 'Mudo' : 'Mic',
+              isActive: !_isMuted,
+              onTap: _toggleMute,
+            ),
+
+          // Levantar mão (listeners)
+          if (!canSpeak)
+            _ControlButton(
+              icon: _handRaised
+                  ? Icons.back_hand_rounded
+                  : Icons.back_hand_outlined,
+              label: _handRaised ? 'Abaixar' : 'Mão',
+              isActive: _handRaised,
+              onTap: _toggleHandRaise,
+            ),
+
+          // Alto-falante
           _ControlButton(
             icon: _isSpeakerOn
                 ? Icons.volume_up_rounded
                 : Icons.volume_off_rounded,
-            label: s.speaker,
+            label: 'Alto-falante',
             isActive: _isSpeakerOn,
             onTap: _toggleSpeaker,
           ),
+
+          // Descer do palco (speakers não-host)
+          if (_myRole == StageRole.speaker)
+            _ControlButton(
+              icon: Icons.arrow_downward_rounded,
+              label: 'Descer',
+              isActive: false,
+              onTap: _stepDown,
+            ),
+
+          // Encerrar (host) ou Sair (outros)
           _ControlButton(
-            icon: Icons.call_end_rounded,
-            label: s.end,
+            icon: isHost
+                ? Icons.call_end_rounded
+                : Icons.exit_to_app_rounded,
+            label: isHost ? 'Encerrar' : 'Sair',
             isActive: false,
             isEnd: true,
-            onTap: _endCall,
+            onTap: isHost ? _endCall : _leaveCall,
           ),
         ],
       ),
@@ -524,7 +841,424 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   }
 }
 
-/// Barra animada de nível de áudio
+// ============================================================================
+// _SectionLabel
+// ============================================================================
+
+class _SectionLabel extends ConsumerWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  const _SectionLabel({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final r = context.r;
+    return Row(
+      children: [
+        Icon(icon, color: color, size: r.s(14)),
+        SizedBox(width: r.s(4)),
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: r.fs(12),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ============================================================================
+// _SpeakerCard — Card grande para speakers/host no palco
+// ============================================================================
+
+class _SpeakerCard extends ConsumerWidget {
+  final Map<String, dynamic> participant;
+  final double audioLevel;
+  final bool isMe;
+  final StageRole myRole;
+  final Future<bool> Function(String) onMute;
+  final Future<bool> Function(String) onKick;
+
+  const _SpeakerCard({
+    required this.participant,
+    required this.audioLevel,
+    required this.isMe,
+    required this.myRole,
+    required this.onMute,
+    required this.onKick,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final r = context.r;
+    final theme = context.nexusTheme;
+    final profile =
+        participant['profiles'] as Map<String, dynamic>?;
+    final userId = participant['user_id'] as String? ?? '';
+    final nickname =
+        profile?['nickname'] as String? ?? 'Usuário';
+    final iconUrl = profile?['icon_url'] as String?;
+    final isMuted = participant['is_muted'] as bool? ?? false;
+    final isHost = participant['stage_role'] == 'host';
+    final isSpeaking = audioLevel > 0.15;
+
+    return GestureDetector(
+      onLongPress: () {
+        if (myRole.isHost && !isMe) {
+          _showHostActions(context, userId, nickname, isMuted);
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        decoration: BoxDecoration(
+          color: theme.surfacePrimary,
+          borderRadius: BorderRadius.circular(r.s(16)),
+          border: Border.all(
+            color: isSpeaking
+                ? theme.success.withValues(alpha: 0.8)
+                : Colors.white.withValues(alpha: 0.06),
+            width: isSpeaking ? 2 : 1,
+          ),
+          boxShadow: isSpeaking
+              ? [
+                  BoxShadow(
+                    color: theme.success.withValues(alpha: 0.25),
+                    blurRadius: 12,
+                    spreadRadius: 2,
+                  )
+                ]
+              : null,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Avatar com halo pulsante
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  width: r.s(isSpeaking ? 72 : 64),
+                  height: r.s(isSpeaking ? 72 : 64),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSpeaking
+                        ? theme.success.withValues(alpha: 0.2)
+                        : Colors.transparent,
+                  ),
+                ),
+                CosmeticAvatar(
+                  userId: userId,
+                  avatarUrl: iconUrl,
+                  size: r.s(56),
+                ),
+                if (isMuted)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: EdgeInsets.all(r.s(3)),
+                      decoration: BoxDecoration(
+                        color: theme.error,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                            color: theme.surfacePrimary,
+                            width: 1.5),
+                      ),
+                      child: Icon(Icons.mic_off_rounded,
+                          color: Colors.white, size: r.s(10)),
+                    ),
+                  ),
+              ],
+            ),
+            SizedBox(height: r.s(8)),
+            Padding(
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(6)),
+              child: Text(
+                isMe ? '$nickname (você)' : nickname,
+                style: TextStyle(
+                  color: theme.textPrimary,
+                  fontSize: r.fs(12),
+                  fontWeight: FontWeight.w700,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ),
+            SizedBox(height: r.s(4)),
+            Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(8), vertical: r.s(2)),
+              decoration: BoxDecoration(
+                color: isHost
+                    ? theme.accentPrimary.withValues(alpha: 0.15)
+                    : theme.success.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(r.s(20)),
+              ),
+              child: Text(
+                isHost ? '👑 Host' : '🎙️ Speaker',
+                style: TextStyle(
+                  color: isHost
+                      ? theme.accentPrimary
+                      : theme.success,
+                  fontSize: r.fs(10),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            if (!isMuted && isSpeaking) ...[
+              SizedBox(height: r.s(6)),
+              _AudioLevelBar(level: audioLevel),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showHostActions(BuildContext context, String userId,
+      String nickname, bool isMuted) {
+    final theme = context.nexusTheme;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: theme.modalBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(
+                isMuted
+                    ? Icons.mic_rounded
+                    : Icons.mic_off_rounded,
+                color: theme.textPrimary,
+              ),
+              title: Text(
+                isMuted ? 'Desmutar' : 'Mutar',
+                style: TextStyle(color: theme.textPrimary),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                onMute(userId);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.person_remove_rounded,
+                  color: theme.error),
+              title: Text('Expulsar $nickname',
+                  style: TextStyle(color: theme.error)),
+              onTap: () {
+                Navigator.pop(context);
+                onKick(userId);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// _ListenerChip — Chip compacto para listeners na plateia
+// ============================================================================
+
+class _ListenerChip extends ConsumerWidget {
+  final Map<String, dynamic> participant;
+  final bool hasHandRaised;
+  final bool isMe;
+  final StageRole myRole;
+  final Future<void> Function(String) onAcceptSpeaker;
+
+  const _ListenerChip({
+    required this.participant,
+    required this.hasHandRaised,
+    required this.isMe,
+    required this.myRole,
+    required this.onAcceptSpeaker,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final r = context.r;
+    final theme = context.nexusTheme;
+    final profile =
+        participant['profiles'] as Map<String, dynamic>?;
+    final userId = participant['user_id'] as String? ?? '';
+    final nickname =
+        profile?['nickname'] as String? ?? 'Usuário';
+    final iconUrl = profile?['icon_url'] as String?;
+
+    return GestureDetector(
+      onTap: () {
+        if (myRole.isHost && hasHandRaised) {
+          onAcceptSpeaker(userId);
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(
+            horizontal: r.s(10), vertical: r.s(6)),
+        decoration: BoxDecoration(
+          color: hasHandRaised
+              ? theme.accentPrimary.withValues(alpha: 0.12)
+              : theme.surfacePrimary,
+          borderRadius: BorderRadius.circular(r.s(20)),
+          border: Border.all(
+            color: hasHandRaised
+                ? theme.accentPrimary.withValues(alpha: 0.5)
+                : Colors.white.withValues(alpha: 0.06),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CosmeticAvatar(
+              userId: userId,
+              avatarUrl: iconUrl,
+              size: r.s(28),
+            ),
+            SizedBox(width: r.s(6)),
+            Text(
+              isMe ? '$nickname (você)' : nickname,
+              style: TextStyle(
+                color: theme.textPrimary,
+                fontSize: r.fs(12),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (hasHandRaised) ...[
+              SizedBox(width: r.s(4)),
+              Text('✋',
+                  style: TextStyle(fontSize: r.fs(14))),
+              if (myRole.isHost) ...[
+                SizedBox(width: r.s(4)),
+                Icon(Icons.check_circle_rounded,
+                    color: theme.success, size: r.s(16)),
+              ],
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// _ChatBubble — Bolha de mensagem no chat da sala
+// ============================================================================
+
+class _ChatBubble extends ConsumerWidget {
+  final MessageModel message;
+
+  const _ChatBubble({required this.message});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final r = context.r;
+    final theme = context.nexusTheme;
+    final isMe =
+        message.authorId == SupabaseService.currentUserId;
+    final nickname = message.author?.nickname ?? 'Usuário';
+    final iconUrl = message.author?.iconUrl;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: r.s(8)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: isMe
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
+        children: [
+          if (!isMe) ...[
+            CosmeticAvatar(
+              userId: message.authorId,
+              avatarUrl: iconUrl,
+              size: r.s(28),
+            ),
+            SizedBox(width: r.s(6)),
+          ],
+          Flexible(
+            child: Column(
+              crossAxisAlignment: isMe
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
+              children: [
+                if (!isMe)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: r.s(2)),
+                    child: Text(
+                      nickname,
+                      style: TextStyle(
+                        color: theme.accentPrimary,
+                        fontSize: r.fs(11),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(10), vertical: r.s(6)),
+                  decoration: BoxDecoration(
+                    color: isMe
+                        ? theme.accentPrimary
+                            .withValues(alpha: 0.85)
+                        : theme.surfaceSecondary,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(r.s(12)),
+                      topRight: Radius.circular(r.s(12)),
+                      bottomLeft: Radius.circular(
+                          isMe ? r.s(12) : r.s(2)),
+                      bottomRight: Radius.circular(
+                          isMe ? r.s(2) : r.s(12)),
+                    ),
+                  ),
+                  child: Text(
+                    message.content ?? '',
+                    style: TextStyle(
+                      color: isMe
+                          ? Colors.white
+                          : theme.textPrimary,
+                      fontSize: r.fs(13),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (isMe) ...[
+            SizedBox(width: r.s(6)),
+            CosmeticAvatar(
+              userId: message.authorId,
+              avatarUrl: iconUrl,
+              size: r.s(28),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// _AudioLevelBar — Barras animadas de nível de áudio
+// ============================================================================
+
 class _AudioLevelBar extends ConsumerWidget {
   final double level; // 0.0 a 1.0
 
@@ -533,18 +1267,21 @@ class _AudioLevelBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
+    final theme = context.nexusTheme;
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (i) {
         final threshold = (i + 1) / 5;
         final isActive = level >= threshold;
-        return Container(
-          width: r.s(4),
-          height: 8 + (i * 3).toDouble(),
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          width: r.s(3),
+          height: r.s(4.0 + (i * 3).toDouble()),
           margin: const EdgeInsets.symmetric(horizontal: 1),
           decoration: BoxDecoration(
             color: isActive
-                ? context.nexusTheme.accentPrimary
+                ? theme.success
                 : Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(2),
           ),
@@ -553,6 +1290,10 @@ class _AudioLevelBar extends ConsumerWidget {
     );
   }
 }
+
+// ============================================================================
+// _ControlButton — Botão de controle circular
+// ============================================================================
 
 class _ControlButton extends ConsumerWidget {
   final IconData icon;
@@ -572,44 +1313,54 @@ class _ControlButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
+    final theme = context.nexusTheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: r.s(56),
-            height: r.s(56),
+            width: r.s(52),
+            height: r.s(52),
             decoration: BoxDecoration(
               color: isEnd
-                  ? context.nexusTheme.error
+                  ? theme.error
                   : isActive
-                      ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
+                      ? theme.accentPrimary
+                          .withValues(alpha: 0.15)
                       : Colors.white.withValues(alpha: 0.05),
               shape: BoxShape.circle,
               border: Border.all(
                 color: isEnd
                     ? Colors.transparent
                     : isActive
-                        ? context.nexusTheme.accentPrimary.withValues(alpha: 0.5)
+                        ? theme.accentPrimary
+                            .withValues(alpha: 0.5)
                         : Colors.white.withValues(alpha: 0.05),
                 width: 1,
               ),
             ),
-            child: Icon(icon,
-                color: isEnd
-                    ? Colors.white
-                    : isActive
-                        ? context.nexusTheme.accentPrimary
-                        : Colors.grey[500],
-                size: r.s(24)),
+            child: Icon(
+              icon,
+              color: isEnd
+                  ? Colors.white
+                  : isActive
+                      ? theme.accentPrimary
+                      : Colors.grey[500],
+              size: r.s(22),
+            ),
           ),
-          SizedBox(height: r.s(6)),
-          Text(label,
-              style: TextStyle(
-                  color: isEnd ? context.nexusTheme.error : Colors.grey[500],
-                  fontSize: r.fs(11),
-                  fontWeight: FontWeight.w700)),
+          SizedBox(height: r.s(5)),
+          Text(
+            label,
+            style: TextStyle(
+              color:
+                  isEnd ? theme.error : Colors.grey[500],
+              fontSize: r.fs(10),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
