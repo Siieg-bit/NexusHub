@@ -7,6 +7,7 @@ import '../providers/screening_sync_provider.dart';
 import '../providers/screening_voice_provider.dart';
 import '../models/sync_event.dart';
 import 'screening_add_video_sheet.dart';
+import 'screening_transfer_host_sheet.dart';
 
 // =============================================================================
 // ScreeningControlsOverlay — Controles flutuantes da Sala de Projeção
@@ -248,6 +249,18 @@ class _ScreeningControlsOverlayState
               ),
               const Spacer(),
 
+              // Transferir host
+              _ControlButton(
+                icon: Icons.swap_horiz_rounded,
+                label: 'Host',
+                color: Colors.amberAccent,
+                onTap: () => ScreeningTransferHostSheet.show(
+                  context,
+                  sessionId: widget.sessionId,
+                  threadId: widget.threadId,
+                ),
+              ),
+              const SizedBox(width: 8),
               // Trocar vídeo
               _ControlButton(
                 icon: Icons.add_circle_outline_rounded,

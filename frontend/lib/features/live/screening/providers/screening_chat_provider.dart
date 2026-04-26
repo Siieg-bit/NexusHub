@@ -141,6 +141,13 @@ class ScreeningChatNotifier extends StateNotifier<List<ScreeningChatMessage>> {
     }).catchError((e) => debugPrint('[ScreeningChat] persist error: $e'));
   }
 
+  /// Adiciona uma mensagem de sistema localmente (ex: "Host transferido para Ana").
+  /// Não é persistida nem transmitida — apenas visível para o usuário local.
+  void addSystemMessage(String text) {
+    if (!mounted) return;
+    state = [...state, ScreeningChatMessage.system(text)];
+  }
+
   @override
   void dispose() {
     if (_channel != null) {

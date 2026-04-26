@@ -11,9 +11,11 @@ import '../providers/screening_voice_provider.dart';
 import '../widgets/screening_player_widget.dart';
 import '../widgets/screening_controls_overlay.dart';
 import '../widgets/screening_chat_overlay.dart';
+import '../widgets/screening_reaction_bar.dart';
+import '../../../../core/widgets/emoji_rain_overlay.dart';
 
 // =============================================================================
-// ScreeningRoomScreen — Sala de Projeção (Fase 1 — Refatoração Completa)
+// ScreeningRoomScreen — Sala de Projeção (Fase 2 — Sync + Reações + Robustez)
 //
 // Layout em Stack imersivo de 4 camadas:
 //   Camada 0: Player WebView (ocupa toda a tela)
@@ -291,9 +293,11 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
       onPopInvokedWithResult: (didPop, _) async {
         if (!didPop) await _leaveRoom();
       },
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: _buildBody(context, roomState),
+      child: EmojiRainOverlay.withKey(
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          body: _buildBody(context, roomState),
+        ),
       ),
     );
   }
@@ -357,12 +361,19 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
             sessionId: sessionId,
             threadId: widget.threadId,
           ),
-
-          // ── Camada 1: Emoji Rain (reações) ────────────────────────────────
-          // O EmojiRainOverlay é disparado via EmojiRainOverlay.trigger()
-          // a partir do chat overlay quando uma mensagem com emoji especial
-          // é enviada. Não precisa de widget separado aqui pois o overlay
-          // usa um GlobalKey estático interno.
+          // ── Camada 1: SyncStatusBadge (indicador de sincronização) ─────────────
+          // Exibe badge de "Sincronizando..." / "Ajustando..." quando o
+          // SyncStatus não está em stable/idle. IgnorePointer para não
+          // bloquear gestos na tela.
+          if (sessionId.isNotEmpty)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 56,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                child: _SyncStatusBadge(sessionId: sessionId),
+              ),
+            ),
 
           // ── Camada 2: Gradientes de contraste ─────────────────────────────
           Positioned.fill(
@@ -398,9 +409,18 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
                 threadId: widget.threadId,
               ),
             ),
-          ),
-
-          // ── Camada 4: Controles flutuantes ────────────────────────────────
+             // ── Camada 4a: Barra de reações (acima do chat) ───────────────────────────
+          if (sessionId.isNotEmpty)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: MediaQuery.of(context).size.height * 0.48 + 8,
+              child: SafeArea(
+                top: false,
+                child: ScreeningReactionBar(sessionId: sessionId),
+              ),
+            ),
+          // ── Camada 4b: Controles flutuantes ────────────────────────────────────────────────
           Positioned.fill(
             child: ScreeningControlsOverlay(
               sessionId: sessionId,
@@ -455,6 +475,70 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// _SyncStatusBadge — Indicador visual de sincronização (Fase 2)
+//
+// Exibe um badge discreto no topo da tela quando o SyncStatus não está em
+// stable/idle. Desaparece automaticamente quando a sincronização é concluída.
+// =============================================================================
+
+class _SyncStatusBadge extends ConsumerWidget {
+  final String sessionId;
+  const _SyncStatusBadge({required this.sessionId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final syncState = ref.watch(screeningSyncProvider(sessionId));
+
+    final (label, color) = switch (syncState.status) {
+      SyncStatus.syncing      => ('Sincronizando...', const Color(0xFFFFB300)),
+      SyncStatus.adjusting    => ('Ajustando...', const Color(0xFF4FC3F7)),
+      SyncStatus.reconnecting => ('Reconectando...', const Color(0xFFEF5350)),
+      _                       => ('', Colors.transparent),
+    };
+
+    if (label.isEmpty) return const SizedBox.shrink();
+
+    return Center(
+      child: AnimatedOpacity(
+        opacity: 1.0,
+        duration: const Duration(milliseconds: 300),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.72),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: color.withOpacity(0.6), width: 1),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 10,
+                height: 10,
+                child: CircularProgressIndicator(
+                  strokeWidth: 1.5,
+                  color: color,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

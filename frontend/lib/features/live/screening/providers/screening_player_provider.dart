@@ -5,18 +5,171 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/screening_player_state.dart';
 
 // =============================================================================
-// ScreeningPlayerProvider — Gerencia o estado do player de vídeo
+// ScreeningPlayerProvider — Gerencia o estado do player de vídeo (Fase 2)
 //
-// Responsabilidades:
-// - Manter referência ao InAppWebViewController
-// - Expor estado de reprodução (isPlaying, position, duration)
-// - Executar comandos de play/pause/seek via JavaScript injection
-// - Reportar posição atual para o ScreeningSyncProvider
+// Melhorias sobre a Fase 1:
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. JS UNIFICADO: script _kPlayerBridgeJs injeta uma camada de abstração
+//    window._nexusPlayer que normaliza YouTube IFrame API, Twitch Player API
+//    e HTML5 <video> em uma interface única. Reduz duplicação de código e
+//    facilita adicionar novas plataformas.
 //
-// Nota: O player usa InAppWebView com HTML wrapper para máxima compatibilidade
-// com YouTube, Twitch, Kick, Vimeo e outros. O controle é feito via
-// JavaScript Injection usando as APIs nativas de cada plataforma.
+// 2. DURATION DETECTION: ao carregar o vídeo, tenta obter a duração total
+//    para exibir a barra de progresso corretamente.
+//
+// 3. BUFFER DETECTION: monitora readyState e networkState do <video> para
+//    detectar buffering real (não apenas ausência de play).
+//
+// 4. POLLING INTELIGENTE: ao pausar, reduz o polling para 5s (economiza
+//    recursos). Ao dar play, volta para 1s.
+//
+// 5. RETRY DE COMANDOS: play/pause/seek tentam até 3x com 300ms de intervalo
+//    se o controller ainda não estiver pronto.
+//
+// 6. onVideoEnded: notifica quando o vídeo termina (para o host poder
+//    exibir o painel de próximo vídeo).
 // =============================================================================
+
+// ── JavaScript Bridge ─────────────────────────────────────────────────────────
+// Injeta window._nexusPlayer como abstração unificada sobre as APIs de cada
+// plataforma. Injetado via onLoadStop do WebView.
+
+const _kPlayerBridgeJs = r'''
+(function() {
+  if (window._nexusPlayer) return; // já injetado
+
+  window._nexusPlayer = {
+    _yt: null,
+
+    // ── Inicializar YouTube IFrame API ──────────────────────────────────────
+    initYT: function() {
+      if (window.YT && window.YT.Player) {
+        var iframe = document.querySelector('iframe[src*="youtube"]');
+        if (iframe && !this._yt) {
+          this._yt = new YT.Player(iframe, {
+            events: {
+              onStateChange: function(e) {
+                // -1=unstarted, 0=ended, 1=playing, 2=paused, 3=buffering
+                if (e.data === 1) window._nexusPlayerEvent('playing');
+                else if (e.data === 2) window._nexusPlayerEvent('paused');
+                else if (e.data === 3) window._nexusPlayerEvent('buffering');
+                else if (e.data === 0) window._nexusPlayerEvent('ended');
+              }
+            }
+          });
+        }
+      }
+    },
+
+    // ── Obter posição atual (ms) ────────────────────────────────────────────
+    getPosition: function() {
+      try {
+        if (this._yt && this._yt.getCurrentTime) {
+          return Math.floor(this._yt.getCurrentTime() * 1000);
+        }
+        // window._ytPlayer (legacy)
+        if (window._ytPlayer && window._ytPlayer.getCurrentTime) {
+          return Math.floor(window._ytPlayer.getCurrentTime() * 1000);
+        }
+        var v = document.querySelector('video');
+        if (v && !isNaN(v.currentTime)) return Math.floor(v.currentTime * 1000);
+      } catch(e) {}
+      return -1;
+    },
+
+    // ── Obter duração total (ms) ────────────────────────────────────────────
+    getDuration: function() {
+      try {
+        if (this._yt && this._yt.getDuration) {
+          var d = this._yt.getDuration();
+          if (d > 0) return Math.floor(d * 1000);
+        }
+        if (window._ytPlayer && window._ytPlayer.getDuration) {
+          var d2 = window._ytPlayer.getDuration();
+          if (d2 > 0) return Math.floor(d2 * 1000);
+        }
+        var v = document.querySelector('video');
+        if (v && !isNaN(v.duration) && v.duration > 0) {
+          return Math.floor(v.duration * 1000);
+        }
+      } catch(e) {}
+      return 0;
+    },
+
+    // ── Verificar se está em buffering ──────────────────────────────────────
+    isBuffering: function() {
+      try {
+        var v = document.querySelector('video');
+        if (v) {
+          // networkState 2 = NETWORK_LOADING, readyState < 3 = não tem dados suficientes
+          return v.networkState === 2 && v.readyState < 3;
+        }
+      } catch(e) {}
+      return false;
+    },
+
+    // ── Play ────────────────────────────────────────────────────────────────
+    play: function() {
+      try {
+        if (this._yt && this._yt.playVideo) { this._yt.playVideo(); return; }
+        if (window._ytPlayer && window._ytPlayer.playVideo) { window._ytPlayer.playVideo(); return; }
+        var v = document.querySelector('video');
+        if (v) v.play();
+      } catch(e) {}
+    },
+
+    // ── Pause ───────────────────────────────────────────────────────────────
+    pause: function() {
+      try {
+        if (this._yt && this._yt.pauseVideo) { this._yt.pauseVideo(); return; }
+        if (window._ytPlayer && window._ytPlayer.pauseVideo) { window._ytPlayer.pauseVideo(); return; }
+        var v = document.querySelector('video');
+        if (v) v.pause();
+      } catch(e) {}
+    },
+
+    // ── Seek ────────────────────────────────────────────────────────────────
+    seek: function(seconds) {
+      try {
+        if (this._yt && this._yt.seekTo) { this._yt.seekTo(seconds, true); return; }
+        if (window._ytPlayer && window._ytPlayer.seekTo) { window._ytPlayer.seekTo(seconds, true); return; }
+        var v = document.querySelector('video');
+        if (v) v.currentTime = seconds;
+      } catch(e) {}
+    },
+
+    // ── Set playback rate ───────────────────────────────────────────────────
+    setRate: function(rate) {
+      try {
+        if (this._yt && this._yt.setPlaybackRate) { this._yt.setPlaybackRate(rate); return; }
+        if (window._ytPlayer && window._ytPlayer.setPlaybackRate) { window._ytPlayer.setPlaybackRate(rate); return; }
+        var v = document.querySelector('video');
+        if (v) v.playbackRate = rate;
+      } catch(e) {}
+    }
+  };
+
+  // Tentar inicializar YT imediatamente (pode já estar disponível)
+  window._nexusPlayer.initYT();
+
+  // Aguardar YT.ready se necessário
+  if (window.YT && window.YT.ready) {
+    window.YT.ready(function() { window._nexusPlayer.initYT(); });
+  }
+
+  // Observar eventos do <video> HTML5
+  var v = document.querySelector('video');
+  if (v) {
+    v.addEventListener('playing', function() { window._nexusPlayerEvent('playing'); });
+    v.addEventListener('pause',   function() { window._nexusPlayerEvent('paused'); });
+    v.addEventListener('waiting', function() { window._nexusPlayerEvent('buffering'); });
+    v.addEventListener('ended',   function() { window._nexusPlayerEvent('ended'); });
+    v.addEventListener('loadedmetadata', function() { window._nexusPlayerEvent('ready'); });
+  }
+})();
+''';
+
+// ── Provider ──────────────────────────────────────────────────────────────────
 
 final screeningPlayerProvider = StateNotifierProvider.family<
     ScreeningPlayerNotifier, ScreeningPlayerState, String>(
@@ -28,65 +181,74 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
 
   InAppWebViewController? _webViewController;
   Timer? _positionPollTimer;
+  bool _bridgeInjected = false;
 
   ScreeningPlayerNotifier({required this.sessionId})
       : super(const ScreeningPlayerState());
 
-  // ── Registrar o WebViewController ──────────────────────────────────────────
+  // ── Registrar o WebViewController ────────────────────────────────────────────
 
   void registerWebViewController(InAppWebViewController controller) {
     _webViewController = controller;
+    _bridgeInjected = false;
   }
 
-  void onWebViewReady() {
-    state = state.copyWith(isReady: true);
-    _startPositionPolling();
+  /// Chamado em onLoadStop — injeta o bridge e inicia o polling.
+  Future<void> onWebViewReady() async {
+    await _injectBridge();
+    state = state.copyWith(isReady: true, isBuffering: false);
+    _startPositionPolling(intervalSeconds: 1);
+    // Tentar obter duração após um breve delay (aguarda o player carregar)
+    Future.delayed(const Duration(seconds: 2), _updateDuration);
   }
 
+  /// Chamado em onLoadStart — reseta o estado.
   void onWebViewLoading() {
     state = state.copyWith(isReady: false, isBuffering: true);
     _positionPollTimer?.cancel();
+    _bridgeInjected = false;
   }
 
-  // ── Polling de posição ──────────────────────────────────────────────────────
-  // Consulta a posição atual do vídeo via JS a cada 1s para o Microsync.
+  // ── Injeção do bridge JS ──────────────────────────────────────────────────────
 
-  void _startPositionPolling() {
+  Future<void> _injectBridge() async {
+    if (_webViewController == null || _bridgeInjected) return;
+    try {
+      await _webViewController!.evaluateJavascript(source: _kPlayerBridgeJs);
+      _bridgeInjected = true;
+      debugPrint('[ScreeningPlayer] bridge JS injetado');
+    } catch (e) {
+      debugPrint('[ScreeningPlayer] bridge inject error: $e');
+    }
+  }
+
+  // ── Polling de posição ────────────────────────────────────────────────────────
+
+  void _startPositionPolling({required int intervalSeconds}) {
     _positionPollTimer?.cancel();
-    _positionPollTimer =
-        Timer.periodic(const Duration(seconds: 1), (_) async {
-      if (_webViewController == null || !state.isReady) return;
-      try {
-        final posMs = await _getPositionMs();
-        if (posMs != null) {
-          state = state.copyWith(
-            position: Duration(milliseconds: posMs),
-            isBuffering: false,
-          );
-        }
-      } catch (_) {}
-    });
+    _positionPollTimer = Timer.periodic(
+      Duration(seconds: intervalSeconds),
+      (_) async {
+        if (_webViewController == null || !state.isReady || !mounted) return;
+        try {
+          final posMs = await _getPositionMs();
+          final isBuffering = await _getIsBuffering();
+          if (posMs != null && mounted) {
+            state = state.copyWith(
+              position: Duration(milliseconds: posMs),
+              isBuffering: isBuffering,
+            );
+          }
+        } catch (_) {}
+      },
+    );
   }
 
   Future<int?> _getPositionMs() async {
     if (_webViewController == null) return null;
     try {
-      // Tenta obter posição via API do YouTube IFrame
       final result = await _webViewController!.evaluateJavascript(
-        source: '''
-          (function() {
-            try {
-              // YouTube IFrame API
-              if (window._ytPlayer && typeof window._ytPlayer.getCurrentTime === 'function') {
-                return Math.floor(window._ytPlayer.getCurrentTime() * 1000);
-              }
-              // HTML5 video genérico
-              var v = document.querySelector('video');
-              if (v) return Math.floor(v.currentTime * 1000);
-              return -1;
-            } catch(e) { return -1; }
-          })();
-        ''',
+        source: 'window._nexusPlayer ? window._nexusPlayer.getPosition() : -1;',
       );
       final val = result as num?;
       if (val != null && val >= 0) return val.toInt();
@@ -96,98 +258,130 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     return null;
   }
 
-  // ── Comandos de reprodução ──────────────────────────────────────────────────
+  Future<bool> _getIsBuffering() async {
+    if (_webViewController == null) return false;
+    try {
+      final result = await _webViewController!.evaluateJavascript(
+        source: 'window._nexusPlayer ? window._nexusPlayer.isBuffering() : false;',
+      );
+      return result == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _updateDuration() async {
+    if (_webViewController == null || !mounted) return;
+    try {
+      final result = await _webViewController!.evaluateJavascript(
+        source: 'window._nexusPlayer ? window._nexusPlayer.getDuration() : 0;',
+      );
+      final durMs = (result as num?)?.toInt() ?? 0;
+      if (durMs > 0 && mounted) {
+        state = state.copyWith(duration: Duration(milliseconds: durMs));
+        debugPrint('[ScreeningPlayer] duração: ${durMs}ms');
+      }
+    } catch (e) {
+      debugPrint('[ScreeningPlayer] getDuration error: $e');
+    }
+  }
+
+  // ── Comandos de reprodução ────────────────────────────────────────────────────
 
   Future<void> play() async {
-    if (_webViewController == null) return;
-    try {
-      await _webViewController!.evaluateJavascript(source: '''
-        (function() {
-          try {
-            if (window._ytPlayer && typeof window._ytPlayer.playVideo === 'function') {
-              window._ytPlayer.playVideo();
-            } else {
-              var v = document.querySelector('video');
-              if (v) v.play();
-            }
-          } catch(e) {}
-        })();
-      ''');
+    await _ensureBridge();
+    await _retryCommand(() async {
+      await _webViewController!.evaluateJavascript(
+        source: 'window._nexusPlayer && window._nexusPlayer.play();',
+      );
+    });
+    if (mounted) {
       state = state.copyWith(isPlaying: true);
-    } catch (e) {
-      debugPrint('[ScreeningPlayer] play error: $e');
+      _startPositionPolling(intervalSeconds: 1);
     }
   }
 
   Future<void> pause() async {
-    if (_webViewController == null) return;
-    try {
-      await _webViewController!.evaluateJavascript(source: '''
-        (function() {
-          try {
-            if (window._ytPlayer && typeof window._ytPlayer.pauseVideo === 'function') {
-              window._ytPlayer.pauseVideo();
-            } else {
-              var v = document.querySelector('video');
-              if (v) v.pause();
-            }
-          } catch(e) {}
-        })();
-      ''');
+    await _ensureBridge();
+    await _retryCommand(() async {
+      await _webViewController!.evaluateJavascript(
+        source: 'window._nexusPlayer && window._nexusPlayer.pause();',
+      );
+    });
+    if (mounted) {
       state = state.copyWith(isPlaying: false);
-    } catch (e) {
-      debugPrint('[ScreeningPlayer] pause error: $e');
+      // Reduzir polling ao pausar (economiza recursos)
+      _startPositionPolling(intervalSeconds: 5);
     }
   }
 
   Future<void> seek(Duration position) async {
-    if (_webViewController == null) return;
+    await _ensureBridge();
     final seconds = position.inMilliseconds / 1000.0;
-    try {
-      await _webViewController!.evaluateJavascript(source: '''
-        (function() {
-          try {
-            if (window._ytPlayer && typeof window._ytPlayer.seekTo === 'function') {
-              window._ytPlayer.seekTo($seconds, true);
-            } else {
-              var v = document.querySelector('video');
-              if (v) v.currentTime = $seconds;
-            }
-          } catch(e) {}
-        })();
-      ''');
-      state = state.copyWith(position: position);
-    } catch (e) {
-      debugPrint('[ScreeningPlayer] seek error: $e');
-    }
+    await _retryCommand(() async {
+      await _webViewController!.evaluateJavascript(
+        source: 'window._nexusPlayer && window._nexusPlayer.seek($seconds);',
+      );
+    });
+    if (mounted) state = state.copyWith(position: position);
   }
 
   Future<void> setRate(double rate) async {
-    if (_webViewController == null) return;
+    await _ensureBridge();
     try {
-      await _webViewController!.evaluateJavascript(source: '''
-        (function() {
-          try {
-            if (window._ytPlayer && typeof window._ytPlayer.setPlaybackRate === 'function') {
-              window._ytPlayer.setPlaybackRate($rate);
-            } else {
-              var v = document.querySelector('video');
-              if (v) v.playbackRate = $rate;
-            }
-          } catch(e) {}
-        })();
-      ''');
-      state = state.copyWith(playbackRate: rate);
+      await _webViewController!.evaluateJavascript(
+        source: 'window._nexusPlayer && window._nexusPlayer.setRate($rate);',
+      );
+      if (mounted) state = state.copyWith(playbackRate: rate);
     } catch (e) {
       debugPrint('[ScreeningPlayer] setRate error: $e');
     }
   }
 
-  // ── Notificações do WebView ─────────────────────────────────────────────────
+  // ── Helpers ───────────────────────────────────────────────────────────────────
 
-  void onVideoPlaying() => state = state.copyWith(isPlaying: true, isBuffering: false);
-  void onVideoPaused() => state = state.copyWith(isPlaying: false);
-  void onVideoBuffering() => state = state.copyWith(isBuffering: true);
+  Future<void> _ensureBridge() async {
+    if (!_bridgeInjected) await _injectBridge();
+  }
+
+  /// Tenta executar um comando até 3x com 300ms de intervalo.
+  Future<void> _retryCommand(Future<void> Function() command) async {
+    if (_webViewController == null) return;
+    for (int i = 0; i < 3; i++) {
+      try {
+        await command();
+        return;
+      } catch (e) {
+        if (i < 2) await Future.delayed(const Duration(milliseconds: 300));
+      }
+    }
+  }
+
+  // ── Notificações do WebView (via JavaScriptHandler) ───────────────────────────
+
+  void onVideoPlaying() {
+    if (!mounted) return;
+    state = state.copyWith(isPlaying: true, isBuffering: false);
+    _startPositionPolling(intervalSeconds: 1);
+    _updateDuration(); // atualizar duração se ainda não tiver
+  }
+
+  void onVideoPaused() {
+    if (!mounted) return;
+    state = state.copyWith(isPlaying: false);
+    _startPositionPolling(intervalSeconds: 5);
+  }
+
+  void onVideoBuffering() {
+    if (!mounted) return;
+    state = state.copyWith(isBuffering: true);
+  }
+
+  void onVideoEnded() {
+    if (!mounted) return;
+    state = state.copyWith(isPlaying: false, isBuffering: false);
+    _positionPollTimer?.cancel();
+  }
 
   @override
   void dispose() {

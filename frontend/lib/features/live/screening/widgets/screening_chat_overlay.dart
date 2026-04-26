@@ -1,6 +1,10 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../core/services/supabase_service.dart';
+import '../../../../core/widgets/emoji_rain_overlay.dart';
 import '../providers/screening_chat_provider.dart';
 import '../providers/screening_voice_provider.dart';
 import '../providers/screening_room_provider.dart';
@@ -8,11 +12,22 @@ import '../models/screening_participant.dart';
 import '../models/screening_chat_message.dart';
 
 // =============================================================================
-// ScreeningChatOverlay — Chat transparente (Camada 3 do Stack imersivo)
+// ScreeningChatOverlay — Chat transparente (Camada 3 do Stack imersivo) — Fase 2
 //
-// Exibe as mensagens do chat como overlay sobre o vídeo.
-// O fundo é semi-transparente com blur (glassmorphism).
-// O input usa BackdropFilter para o efeito de vidro fosco.
+// Melhorias sobre a Fase 1:
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. RECEPÇÃO DE REAÇÕES: subscreve ao canal de sync para o evento 'reaction'
+//    e dispara EmojiRainOverlay.trigger() localmente ao receber.
+//
+// 2. ANÁLISE DE MENSAGENS: ao enviar/receber mensagens, chama
+//    EmojiRainOverlay.analyzeAndTrigger() para disparar chuva automática
+//    quando o texto contém emojis especiais (🔥❤️😂👏🎉⭐).
+//
+// 3. MENSAGEM DE SISTEMA: exibe mensagens de sistema (host mudou, vídeo
+//    trocado) em estilo diferenciado no chat.
+//
+// 4. FADE DE MENSAGENS ANTIGAS: mensagens mais antigas ficam mais transparentes
+//    para dar destaque às recentes.
 // =============================================================================
 
 class ScreeningChatOverlay extends ConsumerStatefulWidget {
@@ -33,13 +48,42 @@ class ScreeningChatOverlay extends ConsumerStatefulWidget {
 class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  bool _inputFocused = false;
+  RealtimeChannel? _reactionChannel;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscribeToReactions();
+  }
 
   @override
   void dispose() {
     _textController.dispose();
     _scrollController.dispose();
+    _reactionChannel?.unsubscribe();
     super.dispose();
+  }
+
+  // ── Subscrição a reações via Broadcast ────────────────────────────────────────
+
+  void _subscribeToReactions() {
+    _reactionChannel = SupabaseService.client
+        .channel('screening_sync_${widget.sessionId}')
+      ..onBroadcast(
+        event: 'reaction',
+        callback: (payload) {
+          if (!mounted) return;
+          final reactionTypeName = payload['reaction_type'] as String?;
+          if (reactionTypeName == null) return;
+          try {
+            final type = EmojiRainType.values.firstWhere(
+              (e) => e.name == reactionTypeName,
+            );
+            EmojiRainOverlay.trigger(context, type: type);
+          } catch (_) {}
+        },
+      )
+      ..subscribe();
   }
 
   void _scrollToBottom() {
@@ -54,6 +98,19 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
     });
   }
 
+  void _sendMessage() {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+
+    // Analisar e disparar EmojiRain se houver emoji especial
+    EmojiRainOverlay.analyzeAndTrigger(context, text);
+
+    ref
+        .read(screeningChatProvider(widget.sessionId).notifier)
+        .sendMessage(text);
+    _textController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     final messages = ref.watch(screeningChatProvider(widget.sessionId));
@@ -64,6 +121,10 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
     ref.listen(screeningChatProvider(widget.sessionId), (prev, next) {
       if (next.length > (prev?.length ?? 0)) {
         _scrollToBottom();
+        // Analisar última mensagem recebida (de outros participantes)
+        if (next.isNotEmpty && !next.last.isMe) {
+          EmojiRainOverlay.analyzeAndTrigger(context, next.last.text);
+        }
       }
     });
 
@@ -78,7 +139,18 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
                   padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
-                    return _ChatBubble(message: messages[index]);
+                    // Fade nas mensagens mais antigas (últimas 8 visíveis)
+                    final fromEnd = messages.length - 1 - index;
+                    final opacity = fromEnd >= 8
+                        ? 0.0
+                        : fromEnd >= 5
+                            ? 0.45
+                            : 1.0;
+                    if (opacity == 0.0) return const SizedBox.shrink();
+                    return Opacity(
+                      opacity: opacity,
+                      child: _ChatBubble(message: messages[index]),
+                    );
                   },
                 ),
         ),
@@ -96,15 +168,7 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
           child: _ChatInput(
             controller: _textController,
-            onSend: () {
-              final text = _textController.text.trim();
-              if (text.isNotEmpty) {
-                ref
-                    .read(screeningChatProvider(widget.sessionId).notifier)
-                    .sendMessage(text);
-                _textController.clear();
-              }
-            },
+            onSend: _sendMessage,
           ),
         ),
       ],
@@ -121,6 +185,30 @@ class _ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Mensagem de sistema (ex: "Host mudou para Ana")
+    if (message.isSystem) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              message.text,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.6),
+                fontSize: 11,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -230,7 +318,7 @@ class _VoiceParticipantsBar extends StatelessWidget {
   }
 }
 
-class _ParticipantAvatar extends StatelessWidget {
+class _ParticipantAvatar extends StatefulWidget {
   final String username;
   final String? avatarUrl;
   final bool isHost;
@@ -244,47 +332,91 @@ class _ParticipantAvatar extends StatelessWidget {
   });
 
   @override
+  State<_ParticipantAvatar> createState() => _ParticipantAvatarState();
+}
+
+class _ParticipantAvatarState extends State<_ParticipantAvatar>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void didUpdateWidget(_ParticipantAvatar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isSpeaking && !oldWidget.isSpeaking) {
+      _pulseController.repeat(reverse: true);
+    } else if (!widget.isSpeaking && oldWidget.isSpeaking) {
+      _pulseController.stop();
+      _pulseController.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Tooltip(
-      message: username + (isHost ? ' (Host)' : ''),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.all(isSpeaking ? 2.5 : 0),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: isSpeaking
-              ? Border.all(color: Colors.greenAccent, width: 2)
-              : isHost
-                  ? Border.all(
-                      color: Colors.amberAccent.withOpacity(0.8),
-                      width: 1.5,
+      message: widget.username + (widget.isHost ? ' (Host)' : ''),
+      child: ScaleTransition(
+        scale: widget.isSpeaking ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.all(widget.isSpeaking ? 2.5 : 0),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: widget.isSpeaking
+                ? Border.all(color: Colors.greenAccent, width: 2)
+                : widget.isHost
+                    ? Border.all(
+                        color: Colors.amberAccent.withOpacity(0.8),
+                        width: 1.5,
+                      )
+                    : null,
+            boxShadow: widget.isSpeaking
+                ? [
+                    BoxShadow(
+                      color: Colors.greenAccent.withOpacity(0.4),
+                      blurRadius: 8,
+                      spreadRadius: 1,
                     )
-                  : null,
-          boxShadow: isSpeaking
-              ? [
-                  BoxShadow(
-                    color: Colors.greenAccent.withOpacity(0.4),
-                    blurRadius: 8,
-                    spreadRadius: 1,
+                  ]
+                : null,
+          ),
+          child: CircleAvatar(
+            radius: 16,
+            backgroundColor: Colors.white24,
+            backgroundImage: widget.avatarUrl != null
+                ? NetworkImage(widget.avatarUrl!)
+                : null,
+            child: widget.avatarUrl == null
+                ? Text(
+                    widget.username.isNotEmpty
+                        ? widget.username[0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   )
-                ]
-              : null,
-        ),
-        child: CircleAvatar(
-          radius: 16,
-          backgroundColor: Colors.white24,
-          backgroundImage:
-              avatarUrl != null ? NetworkImage(avatarUrl!) : null,
-          child: avatarUrl == null
-              ? Text(
-                  username.isNotEmpty ? username[0].toUpperCase() : '?',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                )
-              : null,
+                : null,
+          ),
         ),
       ),
     );
@@ -330,7 +462,8 @@ class _ChatInput extends StatelessWidget {
                       fontSize: 14,
                     ),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16),
                   ),
                   onSubmitted: (_) => onSend(),
                   textInputAction: TextInputAction.send,

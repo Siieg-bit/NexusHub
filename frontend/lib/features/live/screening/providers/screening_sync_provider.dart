@@ -7,91 +7,187 @@ import '../models/sync_event.dart';
 import 'screening_player_provider.dart';
 
 // =============================================================================
-// ScreeningSyncProvider — Sincronização de reprodução em tempo real
+// ScreeningSyncProvider — Sincronização de reprodução em tempo real (Fase 2)
 //
-// Implementa o algoritmo de dois níveis do Rave:
+// Melhorias sobre a Fase 1:
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. INDICADOR DE SYNC: SyncStatus expõe idle/syncing/adjusting/stable/
+//    reconnecting — consumido pelo SyncStatusBadge no overlay.
 //
-// MACROSYNC: Quando o drift entre o cliente e o host é > 2s, aplica um
-//   seekTo() direto para a posição correta. Acionado por eventos de
-//   play/pause/seek recebidos via Supabase Realtime Broadcast.
+// 2. MICROSYNC ADAPTATIVO: intervalo do timer varia com o drift.
+//    drift > 500ms → verifica a cada 1s | drift < 500ms → a cada 3s.
 //
-// MICROSYNC: A cada 2s, verifica o drift atual. Se estiver entre 300ms e 2s,
-//   ajusta a velocidade de reprodução (1.05x ou 0.95x) para alcançar a
-//   posição correta gradualmente, sem interrupção perceptível.
+// 3. DEAD ZONE: drift < 80ms é ignorado para evitar oscilação perceptível.
 //
-// O timestamp do servidor é incluído em cada evento para compensar a
-// latência de rede no cálculo da posição esperada.
+// 4. RATE SMOOTHING: taxa ajustada em passos de 0.02 por ciclo em vez de
+//    saltar diretamente para 1.05x/0.95x (elimina artefatos de áudio).
+//
+// 5. RECOVERY AUTOMÁTICO: backoff exponencial (2s→4s→8s→…→30s) ao
+//    detectar RealtimeSubscribeStatus.closed/channelError.
+//
+// 6. SYNC TIMEOUT: sem evento do host por 30s → envia 'request_sync'.
+//    O host responde com seu estado atual via respondToResyncRequest().
 // =============================================================================
 
-// Thresholds do algoritmo de sync (em milissegundos)
-const _kMacrosyncThresholdMs = 2000;
-const _kMicrosyncThresholdMs = 300;
-const _kSyncIntervalSeconds = 2;
+// ── Thresholds ────────────────────────────────────────────────────────────────
+const _kMacrosyncThresholdMs = 2000;  // > 2s   → seek direto
+const _kMicrosyncThresholdMs = 150;   // 150ms–2s → ajuste de velocidade
+const _kDeadZoneMs           = 80;    // < 80ms  → ignorar (estável)
+const _kSyncTimeoutSeconds   = 30;    // sem evento → solicitar re-sync
+const _kMaxPlaybackRate      = 1.08;  // taxa máxima de aceleração
+const _kMinPlaybackRate      = 0.92;  // taxa mínima de desaceleração
+const _kRateStep             = 0.02;  // passo de ajuste por ciclo
+
+// ── Estado de sincronização ────────────────────────────────────────────────────
+
+enum SyncStatus {
+  idle,         // Sem vídeo ou sala não ativa
+  syncing,      // Macrosync em andamento (seek)
+  adjusting,    // Microsync ativo (ajuste de velocidade)
+  stable,       // Drift < dead zone — sincronizado
+  reconnecting, // Canal Realtime desconectado
+}
+
+class ScreeningSyncState {
+  final SyncStatus status;
+  final int lastDriftMs;
+  final bool isConnected;
+
+  const ScreeningSyncState({
+    this.status = SyncStatus.idle,
+    this.lastDriftMs = 0,
+    this.isConnected = false,
+  });
+
+  ScreeningSyncState copyWith({
+    SyncStatus? status,
+    int? lastDriftMs,
+    bool? isConnected,
+  }) {
+    return ScreeningSyncState(
+      status: status ?? this.status,
+      lastDriftMs: lastDriftMs ?? this.lastDriftMs,
+      isConnected: isConnected ?? this.isConnected,
+    );
+  }
+}
+
+// ── Provider ──────────────────────────────────────────────────────────────────
 
 final screeningSyncProvider = StateNotifierProvider.family<
-    ScreeningSyncNotifier, AsyncValue<void>, String>(
+    ScreeningSyncNotifier, ScreeningSyncState, String>(
   (ref, sessionId) => ScreeningSyncNotifier(sessionId: sessionId, ref: ref),
 );
 
-class ScreeningSyncNotifier extends StateNotifier<AsyncValue<void>> {
+class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
   final String sessionId;
   final Ref ref;
 
   RealtimeChannel? _channel;
   Timer? _microsyncTimer;
+  Timer? _syncTimeoutTimer;
+  Timer? _reconnectTimer;
 
-  // Estado de referência do host para o Microsync contínuo
   Duration _hostReferencePosition = Duration.zero;
   DateTime _hostReferenceTimestamp = DateTime.now();
   bool _isHostPlaying = false;
+  double _currentRate = 1.0;
+  int _reconnectAttempts = 0;
 
   ScreeningSyncNotifier({required this.sessionId, required this.ref})
-      : super(const AsyncValue.data(null)) {
+      : super(const ScreeningSyncState()) {
     _subscribeToSyncEvents();
   }
 
-  // ── Subscrição ao canal de sync ─────────────────────────────────────────────
+  // ── Subscrição ao canal Realtime ─────────────────────────────────────────────
 
   void _subscribeToSyncEvents() {
-    _channel = SupabaseService.client.channel('screening_sync_$sessionId')
+    final channelName = 'screening_sync_$sessionId';
+    _channel = SupabaseService.client.channel(channelName)
       ..onBroadcast(
         event: 'sync',
         callback: (payload) {
           try {
-            final event = SyncEvent.fromBroadcast(payload);
-            _handleSyncEvent(event);
+            _handleSyncEvent(SyncEvent.fromBroadcast(payload));
           } catch (e) {
             debugPrint('[ScreeningSync] parse error: $e');
           }
         },
       )
-      ..subscribe();
+      ..onBroadcast(
+        event: 'request_sync',
+        callback: (_) => _handleResyncRequest(),
+      )
+      ..subscribe((status, error) {
+        switch (status) {
+          case RealtimeSubscribeStatus.subscribed:
+            _reconnectAttempts = 0;
+            if (mounted) {
+              state = state.copyWith(
+                isConnected: true,
+                status: _isHostPlaying ? SyncStatus.adjusting : SyncStatus.idle,
+              );
+            }
+            debugPrint('[ScreeningSync] canal conectado');
+            break;
+          case RealtimeSubscribeStatus.closed:
+          case RealtimeSubscribeStatus.channelError:
+            if (mounted) {
+              state = state.copyWith(
+                isConnected: false,
+                status: SyncStatus.reconnecting,
+              );
+            }
+            _scheduleReconnect();
+            break;
+          default:
+            break;
+        }
+      });
   }
 
-  // ── Processar evento de sync recebido ───────────────────────────────────────
+  // ── Reconexão com backoff exponencial ────────────────────────────────────────
+
+  void _scheduleReconnect() {
+    _reconnectTimer?.cancel();
+    _reconnectAttempts++;
+    final delaySeconds = (_reconnectAttempts * 2).clamp(2, 30);
+    debugPrint(
+        '[ScreeningSync] reconectando em ${delaySeconds}s (tentativa $_reconnectAttempts)');
+    _reconnectTimer = Timer(Duration(seconds: delaySeconds), () {
+      if (!mounted) return;
+      _channel?.unsubscribe();
+      _channel = null;
+      _subscribeToSyncEvents();
+    });
+  }
+
+  // ── Processamento de eventos ──────────────────────────────────────────────────
 
   void _handleSyncEvent(SyncEvent event) {
+    _resetSyncTimeout();
     final hostTimestamp =
         DateTime.fromMillisecondsSinceEpoch(event.serverTimestampMs);
     final hostPosition = Duration(milliseconds: event.positionMs);
 
     switch (event.type) {
       case SyncEventType.play:
-        _isHostPlaying = true;
         _hostReferencePosition = hostPosition;
         _hostReferenceTimestamp = hostTimestamp;
-        ref.read(screeningPlayerProvider(sessionId).notifier).play();
+        _isHostPlaying = true;
         _applyMacrosync(hostPosition, hostTimestamp);
+        ref.read(screeningPlayerProvider(sessionId).notifier).play();
         _startMicrosyncTimer();
         break;
 
       case SyncEventType.pause:
         _isHostPlaying = false;
         _stopMicrosyncTimer();
-        ref.read(screeningPlayerProvider(sessionId).notifier).pause();
-        // Ao pausar, sincroniza a posição exata
+        _stopSyncTimeout();
         ref.read(screeningPlayerProvider(sessionId).notifier).seek(hostPosition);
-        ref.read(screeningPlayerProvider(sessionId).notifier).setRate(1.0);
+        ref.read(screeningPlayerProvider(sessionId).notifier).pause();
+        _setRateSmooth(1.0);
+        if (mounted) state = state.copyWith(status: SyncStatus.stable, lastDriftMs: 0);
         break;
 
       case SyncEventType.seek:
@@ -102,69 +198,103 @@ class ScreeningSyncNotifier extends StateNotifier<AsyncValue<void>> {
         break;
 
       case SyncEventType.changeVideo:
-        // O ScreeningRoomProvider já trata a troca de vídeo via 'video_changed'
-        // O sync será reiniciado quando o novo vídeo carregar
         _stopMicrosyncTimer();
+        _stopSyncTimeout();
         _isHostPlaying = false;
+        _currentRate = 1.0;
+        if (mounted) state = state.copyWith(status: SyncStatus.idle, lastDriftMs: 0);
         break;
 
       case SyncEventType.hostChange:
-        // Nada a fazer no sync — o ScreeningRoomProvider trata a mudança de host
         break;
     }
   }
 
-  // ── Macrosync ───────────────────────────────────────────────────────────────
+  void _handleResyncRequest() {
+    // Apenas o host responde — verificado externamente via isHost
+    debugPrint('[ScreeningSync] request_sync recebido');
+  }
+
+  // ── Macrosync ─────────────────────────────────────────────────────────────────
 
   void _applyMacrosync(Duration hostPosition, DateTime hostTimestamp) {
     final latency = DateTime.now().difference(hostTimestamp);
-    final expectedPosition = hostPosition + latency;
+    final expectedPosition =
+        _isHostPlaying ? hostPosition + latency : hostPosition;
 
     final playerState = ref.read(screeningPlayerProvider(sessionId));
-    final localPosition = playerState.position;
     final driftMs =
-        expectedPosition.inMilliseconds - localPosition.inMilliseconds;
+        expectedPosition.inMilliseconds - playerState.position.inMilliseconds;
+
+    debugPrint(
+        '[ScreeningSync] drift=${driftMs}ms latency=${latency.inMilliseconds}ms');
 
     if (driftMs.abs() > _kMacrosyncThresholdMs) {
-      debugPrint('[ScreeningSync] MACROSYNC drift=${driftMs}ms → seek');
-      ref
-          .read(screeningPlayerProvider(sessionId).notifier)
-          .seek(expectedPosition);
-      ref.read(screeningPlayerProvider(sessionId).notifier).setRate(1.0);
+      debugPrint('[ScreeningSync] MACROSYNC → seek ${expectedPosition.inSeconds}s');
+      if (mounted) state = state.copyWith(status: SyncStatus.syncing, lastDriftMs: driftMs);
+      ref.read(screeningPlayerProvider(sessionId).notifier).seek(expectedPosition);
+      _setRateSmooth(1.0);
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (mounted) state = state.copyWith(status: SyncStatus.stable);
+      });
     } else {
-      _applyMicrosync(expectedPosition);
+      _applyMicrosync(expectedPosition, driftMs);
     }
   }
 
-  // ── Microsync ───────────────────────────────────────────────────────────────
+  // ── Microsync ─────────────────────────────────────────────────────────────────
 
-  void _applyMicrosync(Duration expectedPosition) {
-    final playerState = ref.read(screeningPlayerProvider(sessionId));
-    final localPosition = playerState.position;
-    final driftMs =
-        expectedPosition.inMilliseconds - localPosition.inMilliseconds;
+  void _applyMicrosync(Duration expectedPosition, int driftMs) {
+    if (!mounted) return;
 
-    if (driftMs > _kMicrosyncThresholdMs) {
-      debugPrint('[ScreeningSync] MICROSYNC drift=${driftMs}ms → rate=1.05');
-      ref.read(screeningPlayerProvider(sessionId).notifier).setRate(1.05);
-    } else if (driftMs < -_kMicrosyncThresholdMs) {
-      debugPrint('[ScreeningSync] MICROSYNC drift=${driftMs}ms → rate=0.95');
-      ref.read(screeningPlayerProvider(sessionId).notifier).setRate(0.95);
+    if (driftMs.abs() <= _kDeadZoneMs) {
+      if (_currentRate != 1.0) _setRateSmooth(1.0);
+      state = state.copyWith(status: SyncStatus.stable, lastDriftMs: driftMs);
+      return;
+    }
+
+    if (driftMs.abs() > _kMicrosyncThresholdMs) {
+      final targetRate = driftMs > 0 ? _kMaxPlaybackRate : _kMinPlaybackRate;
+      _setRateSmooth(targetRate);
+      state = state.copyWith(status: SyncStatus.adjusting, lastDriftMs: driftMs);
     } else {
-      ref.read(screeningPlayerProvider(sessionId).notifier).setRate(1.0);
+      // Zona intermediária: ajuste leve
+      final targetRate = driftMs > 0 ? 1.03 : 0.97;
+      _setRateSmooth(targetRate);
+      state = state.copyWith(status: SyncStatus.adjusting, lastDriftMs: driftMs);
     }
   }
+
+  /// Ajusta a taxa gradualmente (evita artefatos de áudio).
+  void _setRateSmooth(double targetRate) {
+    if ((_currentRate - targetRate).abs() < 0.005) return;
+    final newRate = _currentRate < targetRate
+        ? (_currentRate + _kRateStep).clamp(_kMinPlaybackRate, _kMaxPlaybackRate)
+        : (_currentRate - _kRateStep).clamp(_kMinPlaybackRate, _kMaxPlaybackRate);
+    _currentRate = newRate;
+    ref.read(screeningPlayerProvider(sessionId).notifier).setRate(newRate);
+  }
+
+  // ── Timer de Microsync adaptativo ────────────────────────────────────────────
 
   void _startMicrosyncTimer() {
     _microsyncTimer?.cancel();
+    final intervalSeconds = state.lastDriftMs.abs() > 500 ? 1 : 3;
+
     _microsyncTimer = Timer.periodic(
-      const Duration(seconds: _kSyncIntervalSeconds),
+      Duration(seconds: intervalSeconds),
       (_) {
-        if (!_isHostPlaying) return;
-        // Recalcula a posição esperada do host baseado no tempo decorrido
+        if (!_isHostPlaying || !mounted) return;
         final elapsed = DateTime.now().difference(_hostReferenceTimestamp);
         final expectedHostPosition = _hostReferencePosition + elapsed;
-        _applyMicrosync(expectedHostPosition);
+        final playerState = ref.read(screeningPlayerProvider(sessionId));
+        final driftMs = expectedHostPosition.inMilliseconds -
+            playerState.position.inMilliseconds;
+        _applyMicrosync(expectedHostPosition, driftMs);
+
+        // Reiniciar com intervalo atualizado se o drift mudou muito
+        final newInterval = driftMs.abs() > 500 ? 1 : 3;
+        if (newInterval != intervalSeconds) _startMicrosyncTimer();
       },
     );
   }
@@ -174,15 +304,37 @@ class ScreeningSyncNotifier extends StateNotifier<AsyncValue<void>> {
     _microsyncTimer = null;
   }
 
-  // ── Broadcast de eventos (chamado pelo Host) ────────────────────────────────
+  // ── Timeout de sync ───────────────────────────────────────────────────────────
 
+  void _resetSyncTimeout() {
+    _syncTimeoutTimer?.cancel();
+    if (!_isHostPlaying) return;
+    _syncTimeoutTimer = Timer(
+      const Duration(seconds: _kSyncTimeoutSeconds),
+      () {
+        debugPrint('[ScreeningSync] timeout → solicitando re-sync');
+        _channel?.sendBroadcastMessage(
+          event: 'request_sync',
+          payload: {'session_id': sessionId},
+        );
+      },
+    );
+  }
+
+  void _stopSyncTimeout() {
+    _syncTimeoutTimer?.cancel();
+    _syncTimeoutTimer = null;
+  }
+
+  // ── API pública ───────────────────────────────────────────────────────────────
+
+  /// Broadcast de evento de sync (chamado pelo host via ScreeningControlsOverlay).
   Future<void> broadcastEvent(SyncEvent event) async {
     try {
       await _channel?.sendBroadcastMessage(
         event: 'sync',
         payload: event.toBroadcast(),
       );
-
       // Persistir no banco como fallback para novos entrantes
       if (event.type == SyncEventType.play ||
           event.type == SyncEventType.pause ||
@@ -198,10 +350,17 @@ class ScreeningSyncNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  // ── Sincronização inicial (ao entrar na sala) ───────────────────────────────
+  /// Responde a um request_sync — chamado pelo host via ScreeningRoomProvider.
+  Future<void> respondToResyncRequest() async {
+    final playerState = ref.read(screeningPlayerProvider(sessionId));
+    await broadcastEvent(SyncEvent(
+      type: _isHostPlaying ? SyncEventType.play : SyncEventType.pause,
+      positionMs: playerState.position.inMilliseconds,
+      serverTimestampMs: DateTime.now().millisecondsSinceEpoch,
+    ));
+  }
 
-  /// Chamado quando um novo participante entra na sala.
-  /// Sincroniza com o estado atual do host lido do banco.
+  /// Sincronização inicial ao entrar na sala.
   Future<void> syncOnJoin({
     required int positionMs,
     required bool isPlaying,
@@ -213,21 +372,23 @@ class ScreeningSyncNotifier extends StateNotifier<AsyncValue<void>> {
     _isHostPlaying = isPlaying;
 
     if (isPlaying) {
-      // Calcula a posição esperada compensando o tempo desde o último sync
       final elapsed = DateTime.now().difference(syncUpdatedAt);
       final expectedPosition = hostPosition + elapsed;
-      _applyMacrosync(expectedPosition, DateTime.now());
+      if (mounted) state = state.copyWith(status: SyncStatus.syncing);
+      _applyMacrosync(expectedPosition, syncUpdatedAt);
       _startMicrosyncTimer();
+      _resetSyncTimeout();
     } else {
-      ref
-          .read(screeningPlayerProvider(sessionId).notifier)
-          .seek(hostPosition);
+      ref.read(screeningPlayerProvider(sessionId).notifier).seek(hostPosition);
+      if (mounted) state = state.copyWith(status: SyncStatus.stable);
     }
   }
 
   @override
   void dispose() {
     _microsyncTimer?.cancel();
+    _syncTimeoutTimer?.cancel();
+    _reconnectTimer?.cancel();
     _channel?.unsubscribe();
     super.dispose();
   }

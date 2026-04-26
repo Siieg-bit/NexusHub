@@ -13,6 +13,9 @@ class ScreeningChatMessage {
   /// TRUE se a mensagem foi enviada pelo usuário local.
   final bool isMe;
 
+  /// TRUE se é uma mensagem de sistema (ex: "Host mudou para Ana").
+  final bool isSystem;
+
   const ScreeningChatMessage({
     required this.id,
     required this.userId,
@@ -21,7 +24,21 @@ class ScreeningChatMessage {
     required this.text,
     required this.createdAt,
     this.isMe = false,
+    this.isSystem = false,
   });
+
+  /// Cria uma mensagem de sistema.
+  factory ScreeningChatMessage.system(String text) {
+    return ScreeningChatMessage(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      userId: 'system',
+      username: 'Sistema',
+      text: text,
+      createdAt: DateTime.now(),
+      isMe: false,
+      isSystem: true,
+    );
+  }
 
   /// Cria a partir de um payload de Broadcast Realtime (chat em tempo real).
   factory ScreeningChatMessage.fromBroadcast(
