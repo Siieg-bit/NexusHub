@@ -12,6 +12,7 @@
 // Usado tanto no chat global quanto no chat de comunidade.
 // =============================================================================
 
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -824,14 +825,22 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
       minChildSize: 0.4,
       maxChildSize: 0.95,
       expand: false,
-      builder: (_, scrollCtrl) => Container(
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
-          borderRadius:
-              BorderRadius.vertical(top: Radius.circular(r.s(20))),
-        ),
-        child: Column(
-          children: [
+      builder: (_, scrollCtrl) => ClipRRect(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            decoration: BoxDecoration(
+              color: context.surfaceColor.withValues(alpha: 0.7),
+              borderRadius:
+                  BorderRadius.vertical(top: Radius.circular(r.s(20))),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
+                width: 0.5,
+              ),
+            ),
+            child: Column(
+              children: [
             // ── Handle + Header ──
             Padding(
               padding: EdgeInsets.fromLTRB(
@@ -1190,8 +1199,10 @@ class _ChatModerationSheetState extends State<_ChatModerationSheet> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 
   void _showRenameDialog() {
     final r = context.r;

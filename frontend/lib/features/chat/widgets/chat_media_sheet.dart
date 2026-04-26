@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 
@@ -163,21 +164,35 @@ class ChatMediaSheet extends ConsumerWidget {
   }) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: context.surfaceColor,
+      backgroundColor: Colors.transparent,
       useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => ChatMediaSheet(
-        onImage: onImage,
-        onGif: onGif,
-        onSticker: onSticker,
-        onAudio: onAudio,
-        onPoll: onPoll,
-        onTip: onTip,
-        onScreening: onScreening,
-        onLink: onLink,
-        onVideoFile: onVideoFile,
+      builder: (_) => ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            decoration: BoxDecoration(
+              color: context.surfaceColor.withValues(alpha: 0.7),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
+                width: 0.5,
+              ),
+            ),
+            child: ChatMediaSheet(
+              onImage: onImage,
+              onGif: onGif,
+              onSticker: onSticker,
+              onAudio: onAudio,
+              onPoll: onPoll,
+              onTip: onTip,
+              onScreening: onScreening,
+              onLink: onLink,
+              onVideoFile: onVideoFile,
+            ),
+          ),
+        ),
       ),
     );
   }
