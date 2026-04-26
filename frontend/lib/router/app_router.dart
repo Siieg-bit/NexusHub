@@ -88,7 +88,7 @@ import '../features/moderation/screens/moderation_center_screen.dart';
 import '../features/moderation/screens/flag_detail_screen.dart';
 import '../features/stories/screens/create_story_screen.dart';
 import '../features/stories/screens/community_stories_screen.dart';
-import '../features/live/screens/screening_room_screen.dart';
+import '../features/live/screening/screens/screening_room_screen.dart';
 import '../features/feed/screens/drafts_screen.dart';
 import '../features/stickers/screens/sticker_gallery_screen.dart';
 import '../features/stickers/screens/sticker_pack_screen.dart';
