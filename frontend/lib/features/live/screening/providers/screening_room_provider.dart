@@ -57,6 +57,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
       return;
     }
 
+    debugPrint('[ScreeningRoom] joinRoom() iniciado — userId=$userId, existingSessionId=$existingSessionId, threadId=$threadId');
     try {
       state = state.copyWith(status: ScreeningRoomStatus.loading);
 
@@ -68,14 +69,18 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
 
       if (existingSessionId != null) {
         // ── Entrando em sessão existente ──
+        debugPrint('[ScreeningRoom] Entrando em sessão existente: $existingSessionId');
         sessionId = existingSessionId;
 
+        debugPrint('[ScreeningRoom] Chamando RPC get_screening_session_state...');
         final result = await SupabaseService.client
             .rpc('get_screening_session_state', params: {
           'p_session_id': sessionId,
         }).select();
+        debugPrint('[ScreeningRoom] RPC get_screening_session_state resultado: $result');
 
         if (result == null || (result as List).isEmpty) {
+          debugPrint('[ScreeningRoom] Sessão não encontrada ou encerrada — fechando.');
           state = state.copyWith(
             status: ScreeningRoomStatus.closed,
           );
@@ -87,11 +92,15 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         hostUserId = row['host_user_id'] as String?;
         videoUrl = row['video_url'] as String?;
         videoTitle = row['video_title'] as String?;
+        debugPrint('[ScreeningRoom] Sessão encontrada — isHost=$isHost, hostUserId=$hostUserId, videoUrl=$videoUrl');
 
         // Registrar como participante
+        debugPrint('[ScreeningRoom] Chamando _joinAsParticipant...');
         await _joinAsParticipant(sessionId: sessionId, userId: userId);
+        debugPrint('[ScreeningRoom] _joinAsParticipant concluído.');
       } else {
         // ── Criando nova sessão (host) ──
+        debugPrint('[ScreeningRoom] Criando nova sessão como host — threadId=$threadId, videoUrl=$initialVideoUrl');
         final session = await SupabaseService.table('call_sessions').insert({
           'creator_id': userId,
           'host_id': userId, // NOT NULL constraint na tabela call_sessions
@@ -104,6 +113,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
             'video_thumbnail': initialVideoThumbnail ?? '',
           },
         }).select().single();
+        debugPrint('[ScreeningRoom] Sessão criada: ${session[\'id\']}');
 
         sessionId = session['id'] as String;
         isHost = true;
@@ -112,10 +122,13 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         videoUrl = initialVideoUrl;
         videoTitle = initialVideoTitle;
 
+        debugPrint('[ScreeningRoom] Chamando _joinAsParticipant como host...');
         await _joinAsParticipant(sessionId: sessionId, userId: userId);
+        debugPrint('[ScreeningRoom] _joinAsParticipant (host) concluído.');
       }
 
       // ── Carregar participantes iniciais ──
+      debugPrint('[ScreeningRoom] Carregando participantes iniciais...');
       final participantsData = await SupabaseService.table('call_participants')
           .select('user_id, profiles(nickname, icon_url)')
           .eq('call_session_id', sessionId)
@@ -124,6 +137,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
       final participants = (participantsData as List)
           .map((p) => ScreeningParticipant.fromMap(p as Map<String, dynamic>))
           .toList();
+      debugPrint('[ScreeningRoom] Participantes carregados: ${participants.length}');
 
       state = state.copyWith(
         status: ScreeningRoomStatus.active,
@@ -134,15 +148,19 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         currentVideoTitle: videoTitle,
         participants: participants,
       );
+      debugPrint('[ScreeningRoom] Estado atualizado para active. Iniciando Realtime e heartbeat...');
 
       // ── Iniciar Realtime e heartbeat ──
       _subscribeToRealtime(sessionId: sessionId, userId: userId);
       _startHeartbeat(sessionId: sessionId);
+      debugPrint('[ScreeningRoom] joinRoom() concluído com sucesso.');
     } catch (e, st) {
-      debugPrint('[ScreeningRoom] joinRoom error: $e\n$st');
+      debugPrint('[ScreeningRoom] ❌ joinRoom ERRO: $e');
+      debugPrint('[ScreeningRoom] ❌ joinRoom STACK: $st');
+      debugPrint('[ScreeningRoom] ❌ Contexto: userId=$userId, existingSessionId=$existingSessionId, threadId=$threadId');
       state = state.copyWith(
         status: ScreeningRoomStatus.error,
-        errorMessage: 'Não foi possível entrar na sala. Tente novamente.',
+        errorMessage: 'Não foi possível entrar na sala. Erro: $e',
       );
     }
   }
@@ -151,14 +169,22 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
     required String sessionId,
     required String userId,
   }) async {
-    // Upsert para evitar duplicatas (caso de reconexão)
-    await SupabaseService.table('call_participants').upsert({
-      'call_session_id': sessionId,
-      'user_id': userId,
-      'status': 'connected',
-      'joined_at': DateTime.now().toIso8601String(),
-      'last_heartbeat': DateTime.now().toIso8601String(),
-    }, onConflict: 'call_session_id,user_id');
+    debugPrint('[ScreeningRoom] _joinAsParticipant — sessionId=$sessionId, userId=$userId');
+    try {
+      // Upsert para evitar duplicatas (caso de reconexão)
+      await SupabaseService.table('call_participants').upsert({
+        'call_session_id': sessionId,
+        'user_id': userId,
+        'status': 'connected',
+        'joined_at': DateTime.now().toIso8601String(),
+        'last_heartbeat': DateTime.now().toIso8601String(),
+      }, onConflict: 'call_session_id,user_id');
+      debugPrint('[ScreeningRoom] _joinAsParticipant — upsert concluído.');
+    } catch (e, st) {
+      debugPrint('[ScreeningRoom] ❌ _joinAsParticipant ERRO: $e');
+      debugPrint('[ScreeningRoom] ❌ _joinAsParticipant STACK: $st');
+      rethrow;
+    }
   }
 
   // ── Realtime Broadcast ──────────────────────────────────────────────────────

@@ -523,10 +523,14 @@ class CallService {
     Set<CallType>? allowedTypes,
   }) async {
     try {
+      // Busca sessões ativas: status='active' OU (status IS NULL AND is_active=true).
+      // O banco pode ter sessões antigas com status NULL mas is_active=true
+      // (criadas antes da coluna status existir), o que causa call_already_active
+      // no RPC mas não é detectado pelo Flutter com .eq('status','active').
       final res = await SupabaseService.table('call_sessions')
           .select()
           .eq('thread_id', threadId)
-          .eq('status', 'active')
+          .or('status.eq.active,and(status.is.null,is_active.eq.true)')
           .order('created_at', ascending: false)
           .limit(10);
 
