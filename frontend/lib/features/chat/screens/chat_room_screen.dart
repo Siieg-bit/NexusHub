@@ -212,6 +212,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   bool _isDmInviteSender = false;
 
   // ==========================================================================
+  // PAGINAÇÃO BIDIRECIONAL (Jump to History)
+  // ==========================================================================
+  /// true quando a lista exibe um bloco de histórico antigo (não o final do chat).
+  bool _isViewingHistory = false;
+  /// ID da mensagem alvo do último jump bidirecional (para highlight após carregar).
+  String? _jumpTargetMessageId;
+  /// true enquanto o bloco de histórico está sendo carregado do banco.
+  bool _isLoadingHistory = false;
+
+  // ==========================================================================
   // TYPING INDICATORS (Supabase Realtime Broadcast)
   // ==========================================================================
   /// Mapa de userId → nickname dos usuários que estão digitando.
@@ -296,63 +306,148 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _jumpToMessage(String messageId) async {
+    // ── Passo 1: Verificar se a mensagem já está na lista local ───────────────────────
     final targetIndex =
         _messages.indexWhere((message) => message.id == messageId);
-    if (targetIndex == -1) {
+
+    if (targetIndex != -1) {
+      // Mensagem já carregada — scroll direto
+      _setHighlightedMessage(messageId);
+      await Future<void>.delayed(Duration.zero);
+
+      final messageKey = _messageKeyFor(messageId);
+      final visibleContext = messageKey.currentContext;
+      if (visibleContext != null) {
+        await Scrollable.ensureVisible(
+          visibleContext,
+          duration: const Duration(milliseconds: 280),
+          curve: Curves.easeOutCubic,
+          alignment: 0.2,
+        );
+        return;
+      }
+
+      if (_scrollController.hasClients) {
+        final estimatedOffset = (targetIndex * context.r.s(148)).toDouble();
+        final maxOffset = _scrollController.position.maxScrollExtent;
+        await _scrollController.animateTo(
+          estimatedOffset.clamp(0.0, maxOffset),
+          duration: const Duration(milliseconds: 420),
+          curve: Curves.easeOutCubic,
+        );
+      }
+
+      await Future<void>.delayed(const Duration(milliseconds: 120));
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mensagem original não encontrada nesta conversa.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      final retryContext = messageKey.currentContext;
+      if (retryContext != null) {
+        await Scrollable.ensureVisible(
+          retryContext,
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOutCubic,
+          alignment: 0.2,
+        );
+      }
       return;
     }
 
-    _setHighlightedMessage(messageId);
-    await Future<void>.delayed(Duration.zero);
+    // ── Passo 2: Mensagem não está na lista — buscar contexto no banco ────────────
+    if (!mounted || _isDisposed) return;
+    setState(() => _isLoadingHistory = true);
 
-    final messageKey = _messageKeyFor(messageId);
-    final visibleContext = messageKey.currentContext;
-    if (visibleContext != null) {
-      await Scrollable.ensureVisible(
-        visibleContext,
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeOutCubic,
-        alignment: 0.2,
+    try {
+      final result = await SupabaseService.rpc(
+        'fetch_messages_around',
+        params: {
+          'p_thread_id': widget.threadId,
+          'p_message_id': messageId,
+          'p_limit': 30,
+        },
       );
-      return;
-    }
 
-    if (_scrollController.hasClients) {
-      final estimatedOffset = (targetIndex * context.r.s(148)).toDouble();
-      final maxOffset = _scrollController.position.maxScrollExtent;
-      await _scrollController.animateTo(
-        estimatedOffset.clamp(0.0, maxOffset),
-        duration: const Duration(milliseconds: 420),
-        curve: Curves.easeOutCubic,
-      );
-    }
+      if (!mounted || _isDisposed) return;
 
-    await Future<void>.delayed(const Duration(milliseconds: 120));
-    if (!mounted) return;
-    final retryContext = messageKey.currentContext;
-    if (retryContext != null) {
-      await Scrollable.ensureVisible(
-        retryContext,
-        duration: const Duration(milliseconds: 260),
-        curve: Curves.easeOutCubic,
-        alignment: 0.2,
-      );
-      return;
-    }
+      final rawList = (result as List? ?? []);
+      if (rawList.isEmpty) {
+        setState(() => _isLoadingHistory = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Mensagem original não encontrada.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Não foi possível abrir a mensagem original agora.'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+      // Normalizar as mensagens retornadas pela RPC
+      final authorIds = rawList
+          .map((e) => (e as Map)['author_id'] as String? ?? '')
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList();
+      await _prefetchMemberCache(authorIds);
+
+      final historyMessages = rawList.map((e) {
+        final map = Map<String, dynamic>.from(e as Map);
+        // A RPC retorna author_nickname e author_icon_url em vez de profiles JSONB
+        if (map['author_nickname'] != null) {
+          map['sender'] = {
+            'id': map['author_id'],
+            'nickname': map['author_nickname'],
+            'icon_url': map['author_icon_url'],
+          };
+          map['author'] = map['sender'];
+        }
+        return MessageModel.fromJson(_normalizeMessageAuthorIdentity(map));
+      }).toList();
+
+      // Substituir a lista atual pelo bloco de histórico
+      setState(() {
+        _messages
+          ..clear()
+          ..addAll(historyMessages);
+        _isViewingHistory = true;
+        _jumpTargetMessageId = messageId;
+        _isLoadingHistory = false;
+      });
+
+      // Aguardar o frame ser renderizado e fazer scroll para a mensagem alvo
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+      if (!mounted || _isDisposed) return;
+
+      _setHighlightedMessage(messageId);
+
+      final messageKey = _messageKeyFor(messageId);
+      final ctx = messageKey.currentContext;
+      if (ctx != null) {
+        await Scrollable.ensureVisible(
+          ctx,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          alignment: 0.3,
+        );
+      }
+    } catch (e) {
+      debugPrint('[ChatRoom] _jumpToMessage history error: $e');
+      if (mounted && !_isDisposed) {
+        setState(() => _isLoadingHistory = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível carregar a mensagem original.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Sai do modo de histórico e volta para as mensagens mais recentes.
+  Future<void> _returnToLatest() async {
+    setState(() {
+      _isViewingHistory = false;
+      _jumpTargetMessageId = null;
+    });
+    await _loadMessages();
   }
 
   /// Marca o chat como lido via RPC, zerando o unread_count no banco.
@@ -3053,6 +3148,87 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                   ],
                                 ],
                               ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  // Banner de histórico — exibido quando o usuário está vendo mensagens antigas
+                  if (_isViewingHistory)
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: SafeArea(
+                        bottom: false,
+                        child: GestureDetector(
+                          onTap: _returnToLatest,
+                          child: Container(
+                            margin: EdgeInsets.symmetric(
+                                horizontal: r.s(12), vertical: r.s(6)),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(14), vertical: r.s(10)),
+                            decoration: BoxDecoration(
+                              color: context.nexusTheme.accentPrimary
+                                  .withValues(alpha: 0.92),
+                              borderRadius: BorderRadius.circular(r.s(12)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.25),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.history_rounded,
+                                    color: Colors.white, size: r.s(16)),
+                                SizedBox(width: r.s(8)),
+                                Text(
+                                  'Você está vendo mensagens antigas — toque para voltar ao final',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: r.fs(12),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  // Overlay de loading ao buscar histórico
+                  if (_isLoadingHistory)
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        child: Center(
+                          child: Container(
+                            padding: EdgeInsets.all(r.s(20)),
+                            decoration: BoxDecoration(
+                              color: context.nexusTheme.cardColor,
+                              borderRadius: BorderRadius.circular(r.s(16)),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircularProgressIndicator(
+                                  color: context.nexusTheme.accentPrimary,
+                                  strokeWidth: 2.5,
+                                ),
+                                SizedBox(height: r.s(12)),
+                                Text(
+                                  'Carregando mensagem...',
+                                  style: TextStyle(
+                                    color: context.nexusTheme.textSecondary,
+                                    fontSize: r.fs(13),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
