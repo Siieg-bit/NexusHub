@@ -10,17 +10,26 @@ import 'package:flutter_animate/flutter_animate.dart';
 // usando flutter_animate (já disponível no NexusHub) sem dependência de Lottie.
 //
 // Uso:
-//   // Envolver a tela com EmojiRainOverlay
-//   EmojiRainOverlay(
-//     child: MinhaTela(),
-//   )
+//   // Envolver a tela com EmojiRainOverlay e uma key local
+//   final _emojiRainKey = GlobalKey<EmojiRainOverlayState>();
+//   EmojiRainOverlay(key: _emojiRainKey, child: MinhaTela())
 //
-//   // Disparar a chuva de emojis de qualquer lugar
-//   EmojiRainOverlay.trigger(context, type: EmojiRainType.love);
+//   // Disparar a chuva de emojis via key local
+//   _emojiRainKey.currentState?.trigger(EmojiRainType.love);
+//   _emojiRainKey.currentState?.triggerFromText(text);
 //
 // Integração no chat:
 //   Ao enviar uma mensagem, chamar EmojiRainAnalyzer.analyze(text)
-//   e se retornar um EmojiRainType, chamar EmojiRainOverlay.trigger().
+//   e se retornar um EmojiRainType, chamar trigger() via key local.
+//
+// BUGFIX (GlobalKey conflict):
+//   Anteriormente havia uma GlobalKey estática (_emojiRainKey) usada por
+//   todas as telas via EmojiRainOverlay.withKey(). Quando ChatRoomScreen e
+//   ScreeningRoomScreen estavam ambos na pilha de navegação, a mesma key
+//   era aplicada a dois widgets simultaneamente, causando:
+//   "Multiple widgets used the same GlobalKey".
+//   A solução é cada tela criar sua própria GlobalKey<EmojiRainOverlayState>
+//   e passá-la diretamente ao construtor do EmojiRainOverlay.
 // ============================================================================
 
 // ─── Tipos de chuva ──────────────────────────────────────────────────────────
@@ -121,49 +130,63 @@ class _EmojiParticle {
   });
 }
 
-// ─── Overlay key global ───────────────────────────────────────────────────────
-// FIX: O GlobalKey deve ser passado ao StatefulWidget, não ao Stack interno.
-// Isso garante que _emojiRainKey.currentState seja populado corretamente.
-final _emojiRainKey = GlobalKey<_EmojiRainOverlayState>();
-
 // ─── Widget principal ─────────────────────────────────────────────────────────
 class EmojiRainOverlay extends StatefulWidget {
   final Widget child;
 
-  // O key é passado explicitamente para que o GlobalKey aponte para este widget.
   const EmojiRainOverlay({
     Key? key,
     required this.child,
   }) : super(key: key);
 
-  /// Cria uma instância de EmojiRainOverlay já com o GlobalKey configurado.
-  /// Use este factory quando for envolver uma tela de chat.
-  factory EmojiRainOverlay.withKey({required Widget child}) {
-    return EmojiRainOverlay(key: _emojiRainKey, child: child);
+  /// [DEPRECATED] Use EmojiRainOverlay(key: _localKey, child: ...) diretamente.
+  ///
+  /// Este factory existia com uma GlobalKey estática compartilhada entre todas
+  /// as telas, causando conflito de GlobalKey quando múltiplas telas com
+  /// EmojiRainOverlay estavam na pilha de navegação simultaneamente.
+  ///
+  /// Migração:
+  ///   Antes: EmojiRainOverlay.withKey(child: minhaTela)
+  ///   Depois: EmojiRainOverlay(key: _emojiRainKey, child: minhaTela)
+  ///   onde _emojiRainKey = GlobalKey<EmojiRainOverlayState>() no State.
+  @Deprecated('Use EmojiRainOverlay(key: localKey, child: ...) diretamente.')
+  factory EmojiRainOverlay.withKey({Key? key, required Widget child}) {
+    return EmojiRainOverlay(key: key, child: child);
   }
 
-  /// Dispara a chuva de emojis a partir de qualquer lugar na árvore de widgets.
+  /// Dispara a chuva de emojis usando o contexto para encontrar o
+  /// EmojiRainOverlayState ancestral na árvore de widgets.
+  /// Seguro para uso dentro de widgets que estão dentro do EmojiRainOverlay.
   static void trigger(BuildContext context, {required EmojiRainType type}) {
-    _emojiRainKey.currentState?.trigger(type);
+    context
+        .findAncestorStateOfType<EmojiRainOverlayState>()
+        ?.trigger(type);
   }
 
-  /// Analisa o texto e dispara automaticamente se houver correspondência.
-  static void analyzeAndTrigger(BuildContext context, String text) {
+  /// Analisa o texto e dispara automaticamente se houver correspondência,
+  /// usando a key local passada.
+  static void analyzeAndTrigger(
+    BuildContext context,
+    String text, {
+    GlobalKey<EmojiRainOverlayState>? key,
+  }) {
     final type = EmojiRainAnalyzer.analyze(text);
     if (type != null) {
-      trigger(context, type: type);
+      key?.currentState?.trigger(type);
     }
   }
 
   @override
-  State<EmojiRainOverlay> createState() => _EmojiRainOverlayState();
+  State<EmojiRainOverlay> createState() => EmojiRainOverlayState();
 }
 
-class _EmojiRainOverlayState extends State<EmojiRainOverlay> {
+// Estado público para permitir acesso via GlobalKey<EmojiRainOverlayState>
+class EmojiRainOverlayState extends State<EmojiRainOverlay> {
   final List<_EmojiParticle> _particles = [];
   final _random = Random();
   bool _isActive = false;
 
+  /// Dispara a chuva de emojis para o tipo especificado.
   void trigger(EmojiRainType type) {
     if (_isActive) return; // Evitar sobreposição
     final emojis = EmojiRainAnalyzer.emojisFor(type);
@@ -199,10 +222,16 @@ class _EmojiRainOverlayState extends State<EmojiRainOverlay> {
     });
   }
 
+  /// Analisa o texto e dispara automaticamente se houver correspondência.
+  void triggerFromText(String text) {
+    final type = EmojiRainAnalyzer.analyze(text);
+    if (type != null) {
+      trigger(type);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // FIX: O Stack NÃO recebe o _emojiRainKey. O key está no StatefulWidget
-    // (passado via construtor), o que é o comportamento correto no Flutter.
     return Stack(
       children: [
         widget.child,
@@ -273,9 +302,13 @@ class _AnimatedEmojiParticle extends StatelessWidget {
 
 // ─── Mixin para integração fácil no chat ─────────────────────────────────────
 /// Mixin para adicionar análise de emoji rain em widgets de chat.
-/// Basta chamar `checkEmojiRain(context, text)` ao enviar uma mensagem.
+/// Basta chamar `checkEmojiRain(key, text)` ao enviar uma mensagem.
 mixin EmojiRainMixin {
-  void checkEmojiRain(BuildContext context, String text) {
-    EmojiRainOverlay.analyzeAndTrigger(context, text);
+  void checkEmojiRain(
+    BuildContext context,
+    String text, {
+    GlobalKey<EmojiRainOverlayState>? emojiRainKey,
+  }) {
+    emojiRainKey?.currentState?.triggerFromText(text);
   }
 }

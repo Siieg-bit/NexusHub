@@ -68,8 +68,9 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
   bool _entryAnimationDone = false;
 
   // ── Emoji rain ────────────────────────────────────────────────────────────────
-  // EmojiRainOverlay usa um GlobalKey interno estático — disparado via
-  // EmojiRainOverlay.trigger(context, type: type)
+  // BUGFIX: usar GlobalKey local em vez da key estática global para evitar
+  // conflito quando múltiplas telas com EmojiRainOverlay estão na pilha.
+  final GlobalKey<EmojiRainOverlayState> _emojiRainKey = GlobalKey<EmojiRainOverlayState>();
 
   @override
   void initState() {
@@ -314,7 +315,8 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
       onPopInvokedWithResult: (didPop, _) async {
         if (!didPop) await _leaveRoom();
       },
-      child: EmojiRainOverlay.withKey(
+      child: EmojiRainOverlay(
+        key: _emojiRainKey,
         child: Scaffold(
           backgroundColor: Colors.black,
           body: _buildBody(context, roomState),
@@ -381,6 +383,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
       onEntryAnimationComplete: () {
         if (mounted) setState(() => _entryAnimationDone = true);
       },
+      emojiRainKey: _emojiRainKey,
     );
   }
 

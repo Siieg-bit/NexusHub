@@ -1043,7 +1043,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return EmojiRainOverlay.withKey(
+    return EmojiRainOverlay(
       key: _emojiRainKey,
       child: Scaffold(
         backgroundColor: Colors.black,

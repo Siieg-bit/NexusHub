@@ -216,6 +216,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // _isDmInviteSender:  true quando o usuário atual é o remetente e aguarda aceitação
   bool _isDmInvitePending = false;
   bool _isDmInviteSender = false;
+  // BUGFIX: GlobalKey para o PopupMenuButton do AppBar.
+  // Sem a key, o Flutter pode tentar calcular a posição do botão antes
+  // de ele ser laid out (quando está dentro de um Offstage do Overlay),
+  // causando RenderBox was not laid out / hasSize assertion error.
+  final GlobalKey _appBarMenuKey = GlobalKey();
+  // BUGFIX: GlobalKey local para EmojiRainOverlay.
+  // A key estática global foi removida para evitar conflito quando múltiplas
+  // telas com EmojiRainOverlay estão na pilha de navegação simultaneamente.
+  final GlobalKey<EmojiRainOverlayState> _emojiRainKey = GlobalKey<EmojiRainOverlayState>();
 
   // ==========================================================================
   // PAGINAÇÃO BIDIRECIONAL (Jump to History)
@@ -606,9 +615,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     _messageController.dispose();
     _scrollController.removeListener(_handleScrollPositionChange);
     _scrollController.dispose();
-    RealtimeService.instance.unsubscribe('chat:${widget.threadId}');
+    // BUGFIX: removeListener deve ser chamado ANTES de unsubscribe.
+    // O unsubscribe dispara eventos internos que alteram connectionStatus,
+    // notificando _onRealtimeStatusChanged enquanto o widget ainda está
+    // sendo desmontado — causando setState() com widget tree locked.
     RealtimeService.instance.connectionStatus
         .removeListener(_onRealtimeStatusChanged);
+    RealtimeService.instance.unsubscribe('chat:${widget.threadId}');
     super.dispose();
   }
 
@@ -1285,7 +1298,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     HapticService.action();
     // Disparar chuva de emojis semântica se o texto contiver palavras-chave
     if (text.isNotEmpty) {
-      EmojiRainOverlay.analyzeAndTrigger(context, text);
+      _emojiRainKey.currentState?.triggerFromText(text);
     }
     // Parar de emitir typing ao enviar
     _typingDebounce?.cancel();
@@ -2716,7 +2729,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         0;
     final threadIcon = _threadInfo?['icon_url'] as String?;
 
-    return EmojiRainOverlay.withKey(
+    return EmojiRainOverlay(
+      key: _emojiRainKey,
       child: Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: context.nexusTheme.backgroundPrimary,
@@ -2848,6 +2862,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             ),
           ),
           PopupMenuButton<String>(
+            key: _appBarMenuKey,
             icon: Icon(Icons.more_vert_rounded, color: Colors.grey[500]),
             color: context.surfaceColor,
             shape: RoundedRectangleBorder(

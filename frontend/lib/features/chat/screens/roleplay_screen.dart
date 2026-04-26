@@ -8,6 +8,7 @@ import '../../../core/services/haptic_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_data.dart';
 
 // ============================================================================
 // RolePlayScreen
@@ -398,7 +399,7 @@ class _RolePlayScreenState extends ConsumerState<RolePlayScreen> {
 
   // ── Seleção de personagem ─────────────────────────────────────────────────
 
-  Widget _buildCharacterPicker(dynamic theme, dynamic r) {
+  Widget _buildCharacterPicker(NexusThemeData theme, Responsive r) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -459,7 +460,7 @@ class _RolePlayScreenState extends ConsumerState<RolePlayScreen> {
   }
 
   Widget _buildCharacterCard(
-      AiCharacter char, dynamic theme, dynamic r) {
+      AiCharacter char, NexusThemeData theme, Responsive r) {
     return GestureDetector(
       onTap: () => _startSession(char),
       child: Container(
@@ -558,7 +559,7 @@ class _RolePlayScreenState extends ConsumerState<RolePlayScreen> {
 
   // ── Chat com o personagem ─────────────────────────────────────────────────
 
-  Widget _buildChatView(dynamic theme, dynamic r) {
+  Widget _buildChatView(NexusThemeData theme, Responsive r) {
     return Column(
       children: [
         // Banner do personagem ativo
@@ -597,7 +598,7 @@ class _RolePlayScreenState extends ConsumerState<RolePlayScreen> {
     );
   }
 
-  Widget _buildActiveBanner(dynamic theme, dynamic r) {
+  Widget _buildActiveBanner(NexusThemeData theme, Responsive r) {
     return Container(
       padding: EdgeInsets.symmetric(
           horizontal: r.s(16), vertical: r.s(10)),
@@ -663,7 +664,7 @@ class _RolePlayScreenState extends ConsumerState<RolePlayScreen> {
   }
 
   Widget _buildMessageBubble(
-      RolePlayMessage msg, dynamic theme, dynamic r) {
+      RolePlayMessage msg, NexusThemeData theme, Responsive r) {
     final isUser = msg.isUser;
     return Padding(
       padding: EdgeInsets.only(bottom: r.s(8)),
@@ -716,7 +717,7 @@ class _RolePlayScreenState extends ConsumerState<RolePlayScreen> {
     );
   }
 
-  Widget _buildTypingIndicator(dynamic theme, dynamic r) {
+  Widget _buildTypingIndicator(NexusThemeData theme, Responsive r) {
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(16), 0, r.s(16), r.s(4)),
       child: Row(
@@ -757,7 +758,7 @@ class _RolePlayScreenState extends ConsumerState<RolePlayScreen> {
     );
   }
 
-  Widget _buildInput(dynamic theme, dynamic r) {
+  Widget _buildInput(NexusThemeData theme, Responsive r) {
     return Container(
       padding: EdgeInsets.fromLTRB(r.s(12), r.s(8), r.s(12), r.s(12)),
       decoration: BoxDecoration(

@@ -37,12 +37,15 @@ class ScreeningChatOverlay extends ConsumerStatefulWidget {
   final String threadId;
   /// Em modo landscape, o chat ocupa um painel lateral sem gradiente de fundo.
   final bool isLandscape;
+  /// Key local do EmojiRainOverlay da tela pai para disparar animações.
+  final GlobalKey<EmojiRainOverlayState>? emojiRainKey;
 
   const ScreeningChatOverlay({
     super.key,
     required this.sessionId,
     required this.threadId,
     this.isLandscape = false,
+    this.emojiRainKey,
   });
 
   @override
@@ -84,7 +87,7 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
             final type = EmojiRainType.values.firstWhere(
               (e) => e.name == reactionTypeName,
             );
-            EmojiRainOverlay.trigger(context, type: type);
+            widget.emojiRainKey?.currentState?.trigger(type);
           } catch (_) {}
         },
       )
@@ -108,7 +111,7 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
     if (text.isEmpty) return;
 
     // Analisar e disparar EmojiRain se houver emoji especial
-    EmojiRainOverlay.analyzeAndTrigger(context, text);
+    widget.emojiRainKey?.currentState?.triggerFromText(text);
 
     ref
         .read(screeningChatProvider(widget.sessionId).notifier)
@@ -128,7 +131,7 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
         _scrollToBottom();
         // Analisar última mensagem recebida (de outros participantes)
         if (next.isNotEmpty && !next.last.isMe) {
-          EmojiRainOverlay.analyzeAndTrigger(context, next.last.text);
+          widget.emojiRainKey?.currentState?.triggerFromText(next.last.text);
         }
       }
     });

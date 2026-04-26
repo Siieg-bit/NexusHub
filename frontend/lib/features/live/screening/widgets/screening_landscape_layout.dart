@@ -1,3 +1,4 @@
+import '../../../../core/widgets/emoji_rain_overlay.dart';
 // =============================================================================
 // ScreeningLandscapeLayout — Layout adaptativo para modo landscape
 //
@@ -31,6 +32,8 @@ class ScreeningAdaptiveLayout extends ConsumerStatefulWidget {
   final VoidCallback onTap;
   final VoidCallback onMinimize;
   final VoidCallback onEntryAnimationComplete;
+  /// Key local do EmojiRainOverlay da tela pai para disparar animações.
+  final GlobalKey<EmojiRainOverlayState>? emojiRainKey;
 
   const ScreeningAdaptiveLayout({
     super.key,
@@ -41,6 +44,7 @@ class ScreeningAdaptiveLayout extends ConsumerStatefulWidget {
     required this.onTap,
     required this.onMinimize,
     required this.onEntryAnimationComplete,
+    this.emojiRainKey,
   });
 
   @override
@@ -96,6 +100,7 @@ class _ScreeningAdaptiveLayoutState
             onMinimize: widget.onMinimize,
             onEntryAnimationComplete: widget.onEntryAnimationComplete,
             roomTitle: roomState.title ?? 'Sala de Projeção',
+            emojiRainKey: widget.emojiRainKey,
           );
         }
 
@@ -108,6 +113,7 @@ class _ScreeningAdaptiveLayoutState
           onMinimize: widget.onMinimize,
           onEntryAnimationComplete: widget.onEntryAnimationComplete,
           roomTitle: roomState.title ?? 'Sala de Projeção',
+          emojiRainKey: widget.emojiRainKey,
         );
       },
     );
@@ -126,6 +132,7 @@ class _PortraitLayout extends StatelessWidget {
   final VoidCallback onMinimize;
   final VoidCallback onEntryAnimationComplete;
   final String roomTitle;
+  final GlobalKey<EmojiRainOverlayState>? emojiRainKey;
 
   const _PortraitLayout({
     required this.sessionId,
@@ -136,6 +143,7 @@ class _PortraitLayout extends StatelessWidget {
     required this.onMinimize,
     required this.onEntryAnimationComplete,
     required this.roomTitle,
+    this.emojiRainKey,
   });
 
   @override
@@ -194,6 +202,7 @@ class _PortraitLayout extends StatelessWidget {
               child: ScreeningChatOverlay(
                 sessionId: sessionId,
                 threadId: threadId,
+                emojiRainKey: emojiRainKey,
               ),
             ),
           ),
@@ -250,6 +259,7 @@ class _LandscapeLayout extends StatelessWidget {
   final VoidCallback onMinimize;
   final VoidCallback onEntryAnimationComplete;
   final String roomTitle;
+  final GlobalKey<EmojiRainOverlayState>? emojiRainKey;
 
   const _LandscapeLayout({
     required this.sessionId,
@@ -260,6 +270,7 @@ class _LandscapeLayout extends StatelessWidget {
     required this.onMinimize,
     required this.onEntryAnimationComplete,
     required this.roomTitle,
+    this.emojiRainKey,
   });
 
   @override
@@ -371,6 +382,7 @@ class _LandscapeLayout extends StatelessWidget {
                     sessionId: sessionId,
                     threadId: threadId,
                     isLandscape: true,
+                    emojiRainKey: emojiRainKey,
                   ),
                 ),
               ],
