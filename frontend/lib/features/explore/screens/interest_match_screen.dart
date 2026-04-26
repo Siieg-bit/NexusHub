@@ -234,26 +234,70 @@ class _InterestMatchScreenState extends ConsumerState<InterestMatchScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ScaleTransition(
-              scale: _pulseAnim,
-              child: Container(
-                width: r.s(72),
-                height: r.s(72),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [theme.accentPrimary, theme.accentSecondary],
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                // Círculos de radar animados
+                ...List.generate(3, (index) {
+                  return AnimatedBuilder(
+                    animation: _pulseCtrl,
+                    builder: (context, child) {
+                      final progress = (_pulseCtrl.value + index / 3) % 1.0;
+                      return Container(
+                        width: r.s(72 + (progress * 120)),
+                        height: r.s(72 + (progress * 120)),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: theme.accentPrimary.withValues(alpha: 1 - progress),
+                            width: 2,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }),
+                // Avatar central pulsante
+                ScaleTransition(
+                  scale: _pulseAnim,
+                  child: Container(
+                    width: r.s(80),
+                    height: r.s(80),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [theme.accentPrimary, theme.accentSecondary],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.accentPrimary.withValues(alpha: 0.3),
+                          blurRadius: 15,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: Icon(Icons.people_alt_rounded,
+                        color: Colors.white, size: r.s(40)),
                   ),
                 ),
-                child: Icon(Icons.people_alt_rounded,
-                    color: Colors.white, size: r.s(36)),
+              ],
+            ),
+            SizedBox(height: r.s(48)),
+            Text(
+              'Sintonizando interesses...',
+              style: TextStyle(
+                color: theme.textPrimary,
+                fontSize: r.fs(16),
+                fontWeight: FontWeight.w700,
               ),
             ),
-            SizedBox(height: r.s(16)),
+            SizedBox(height: r.s(8)),
             Text(
-              'Procurando pessoas com interesses similares...',
+              'Encontrando pessoas que curtem o mesmo que você',
               style: TextStyle(
-                  color: theme.textSecondary, fontSize: r.fs(14)),
+                  color: theme.textSecondary, fontSize: r.fs(13)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -292,39 +336,47 @@ class _InterestMatchScreenState extends ConsumerState<InterestMatchScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.interests_rounded,
-                  color: theme.accentPrimary, size: r.s(56)),
-              SizedBox(height: r.s(16)),
+              Container(
+                padding: EdgeInsets.all(r.s(24)),
+                decoration: BoxDecoration(
+                  color: theme.accentPrimary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.interests_rounded,
+                    color: theme.accentPrimary, size: r.s(56)),
+              ),
+              SizedBox(height: r.s(24)),
               Text(
-                'Adicione seus interesses',
+                'Personalize seu perfil',
                 style: TextStyle(
                   color: theme.textPrimary,
-                  fontSize: r.fs(18),
-                  fontWeight: FontWeight.w700,
+                  fontSize: r.fs(20),
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-              SizedBox(height: r.s(8)),
+              SizedBox(height: r.s(12)),
               Text(
-                'Para encontrar pessoas com interesses similares, primeiro adicione seus interesses no perfil.',
+                'Adicione seus interesses para que possamos encontrar pessoas que curtem o mesmo que você!',
                 style: TextStyle(
-                    color: theme.textSecondary, fontSize: r.fs(14)),
+                    color: theme.textSecondary, fontSize: r.fs(14), height: 1.4),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: r.s(20)),
+              SizedBox(height: r.s(32)),
               ElevatedButton.icon(
                 onPressed: () => context.push('/edit-profile'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.accentPrimary,
+                  foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(
-                      horizontal: r.s(24), vertical: r.s(12)),
+                      horizontal: r.s(32), vertical: r.s(14)),
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(r.s(24))),
+                      borderRadius: BorderRadius.circular(r.s(32))),
                 ),
-                icon: const Icon(Icons.edit_rounded,
-                    color: Colors.white, size: 18),
-                label: const Text('Editar perfil',
+                icon: const Icon(Icons.edit_rounded, size: 20),
+                label: Text('ADICIONAR INTERESSES',
                     style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w700)),
+                        fontSize: r.fs(13), fontWeight: FontWeight.w900, letterSpacing: 1.1)),
               ),
             ],
           ),
@@ -340,22 +392,34 @@ class _InterestMatchScreenState extends ConsumerState<InterestMatchScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.search_off_rounded,
-                  color: theme.textSecondary, size: r.s(56)),
-              SizedBox(height: r.s(16)),
+                  color: theme.textSecondary.withValues(alpha: 0.3), size: r.s(72)),
+              SizedBox(height: r.s(20)),
               Text(
-                'Nenhuma sugestão por enquanto',
+                'Nenhuma sugestão encontrada',
                 style: TextStyle(
                   color: theme.textPrimary,
-                  fontSize: r.fs(16),
+                  fontSize: r.fs(18),
                   fontWeight: FontWeight.w700,
                 ),
               ),
               SizedBox(height: r.s(8)),
               Text(
-                'Adicione mais interesses ao seu perfil para encontrar mais pessoas.',
+                'Que tal adicionar interesses mais específicos para expandir sua rede?',
                 style: TextStyle(
-                    color: theme.textSecondary, fontSize: r.fs(14)),
+                    color: theme.textSecondary, fontSize: r.fs(14), height: 1.4),
                 textAlign: TextAlign.center,
+              ),
+              SizedBox(height: r.s(24)),
+              TextButton(
+                onPressed: _loadMatches,
+                child: Text('TENTAR NOVAMENTE', 
+                  style: TextStyle(
+                    color: theme.accentPrimary, 
+                    fontWeight: FontWeight.w800,
+                    fontSize: r.fs(12),
+                    letterSpacing: 1.0
+                  )
+                ),
               ),
             ],
           ),

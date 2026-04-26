@@ -419,9 +419,30 @@ class _RolePlayScreenState extends ConsumerState<RolePlayScreen> {
                       color: theme.accentPrimary))
               : _characters.isEmpty
                   ? Center(
-                      child: Text(
-                        'Nenhum personagem disponível',
-                        style: TextStyle(color: theme.textSecondary),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.smart_toy_outlined,
+                              color: theme.textSecondary.withValues(alpha: 0.3),
+                              size: r.s(64)),
+                          SizedBox(height: r.s(16)),
+                          Text(
+                            'Nenhum personagem disponível',
+                            style: TextStyle(
+                              color: theme.textPrimary,
+                              fontSize: r.fs(16),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(height: r.s(4)),
+                          Text(
+                            'Tente novamente mais tarde',
+                            style: TextStyle(
+                              color: theme.textSecondary,
+                              fontSize: r.fs(13),
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   : ListView.separated(

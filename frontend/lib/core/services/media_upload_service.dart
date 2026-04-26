@@ -222,11 +222,50 @@ class MediaUploadService {
     int compressQuality = 80,
     int compressMaxWidth = 1280,
     int compressMaxHeight = 1280,
+    BuildContext? context, // Opcional para mostrar overlay de progresso
   }) async {
+    OverlayEntry? overlayEntry;
     try {
       final s = getStrings();
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.userNotAuthenticated);
+
+      // Mostrar overlay se for arquivo grande (> 1MB) e tiver context
+      final fileSize = await file.length();
+      final isLargeFile = fileSize > 1024 * 1024;
+      
+      if (isLargeFile && context != null && context.mounted) {
+        final progressNotifier = ValueNotifier<double>(0.0);
+        overlayEntry = OverlayEntry(
+          builder: (ctx) => Positioned(
+            bottom: 100,
+            left: 20,
+            right: 20,
+            child: Material(
+              color: Colors.transparent,
+              child: Center(
+                child: ValueListenableBuilder<double>(
+                  valueListenable: progressNotifier,
+                  builder: (ctx, value, child) {
+                    return UploadProgressIndicator(
+                      progress: value,
+                      label: 'Enviando arquivo...',
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        );
+        Overlay.of(context).insert(overlayEntry!);
+        
+        // Wrap onProgress para atualizar o notifier
+        final originalOnProgress = onProgress;
+        onProgress = (val) {
+          progressNotifier.value = val;
+          originalOnProgress?.call(val);
+        };
+      }
 
       // Comprimir para WebP se for imagem
       final fileToUpload = skipCompression
@@ -249,9 +288,7 @@ class MediaUploadService {
           ? _getMimeType(path.extension(file.path).toLowerCase())
           : 'image/webp';
 
-      // Usa ChunkedUploadService para todos os uploads:
-      // — arquivos < 1MB: upload simples com retry
-      // — arquivos >= 1MB: upload em chunks de 512KB com resume
+      // Usa ChunkedUploadService para todos os uploads
       final url = await ChunkedUploadService.upload(
         file: fileToUpload,
         bucket: bucketName,
@@ -260,6 +297,7 @@ class MediaUploadService {
         contentType: contentType,
       );
 
+      overlayEntry?.remove();
       return UploadResult(
         url: url,
         path: storagePath,
@@ -267,6 +305,7 @@ class MediaUploadService {
       );
     } catch (e) {
       debugPrint('MediaUploadService.uploadFile error: $e');
+      overlayEntry?.remove();
       return null;
     }
   }
