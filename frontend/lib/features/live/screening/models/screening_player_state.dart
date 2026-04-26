@@ -28,6 +28,9 @@ class ScreeningPlayerState {
   /// TRUE se o player está pronto para receber comandos.
   final bool isReady;
 
+  /// TRUE se o vídeo chegou ao fim.
+  final bool hasEnded;
+
   const ScreeningPlayerState({
     this.playerType = ScreeningPlayerType.none,
     this.isPlaying = false,
@@ -36,6 +39,7 @@ class ScreeningPlayerState {
     this.duration = Duration.zero,
     this.playbackRate = 1.0,
     this.isReady = false,
+    this.hasEnded = false,
   });
 
   bool get isLiveStream => duration == Duration.zero;
@@ -48,6 +52,7 @@ class ScreeningPlayerState {
     Duration? duration,
     double? playbackRate,
     bool? isReady,
+    bool? hasEnded,
   }) {
     return ScreeningPlayerState(
       playerType: playerType ?? this.playerType,
@@ -57,6 +62,7 @@ class ScreeningPlayerState {
       duration: duration ?? this.duration,
       playbackRate: playbackRate ?? this.playbackRate,
       isReady: isReady ?? this.isReady,
+      hasEnded: hasEnded ?? this.hasEnded,
     );
   }
 }

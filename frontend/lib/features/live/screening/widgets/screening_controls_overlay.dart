@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/screening_room_provider.dart';
 import '../providers/screening_player_provider.dart';
@@ -328,7 +330,7 @@ class _ScreeningControlsOverlayState
 
 // ── Widgets auxiliares ────────────────────────────────────────────────────────
 
-class _ControlButton extends StatelessWidget {
+class _ControlButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback onTap;
   final Color color;
@@ -344,38 +346,79 @@ class _ControlButton extends StatelessWidget {
   });
 
   @override
+  State<_ControlButton> createState() => _ControlButtonState();
+}
+
+class _ControlButtonState extends State<_ControlButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pressController;
+  late Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _pressController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+    );
+    _scaleAnim = Tween<double>(begin: 1.0, end: 0.85).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pressController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleTap() async {
+    HapticFeedback.selectionClick();
+    await _pressController.forward();
+    await _pressController.reverse();
+    widget.onTap();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.4),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: label != null
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(icon, color: color, size: size),
-                  const SizedBox(width: 4),
-                  Text(
-                    label!,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+      onTap: _handleTap,
+      child: ScaleTransition(
+        scale: _scaleAnim,
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.45),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+              width: 0.5,
+            ),
+          ),
+          child: widget.label != null
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(widget.icon, color: widget.color, size: widget.size),
+                    const SizedBox(width: 4),
+                    Text(
+                      widget.label!,
+                      style: TextStyle(
+                        color: widget.color,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
-              )
-            : Icon(icon, color: color, size: size),
+                  ],
+                )
+              : Icon(widget.icon, color: widget.color, size: widget.size),
+        ),
       ),
     );
   }
 }
 
-class _PlayPauseButton extends StatelessWidget {
+class _PlayPauseButton extends StatefulWidget {
   final bool isPlaying;
   final bool isBuffering;
   final VoidCallback onTap;
@@ -387,31 +430,83 @@ class _PlayPauseButton extends StatelessWidget {
   });
 
   @override
+  State<_PlayPauseButton> createState() => _PlayPauseButtonState();
+}
+
+class _PlayPauseButtonState extends State<_PlayPauseButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pressController;
+  late Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _pressController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 120),
+    );
+    _scaleAnim = Tween<double>(begin: 1.0, end: 0.88).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pressController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleTap() async {
+    HapticFeedback.mediumImpact();
+    await _pressController.forward();
+    await _pressController.reverse();
+    widget.onTap();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-        ),
-        child: isBuffering
-            ? const Padding(
-                padding: EdgeInsets.all(14),
-                child: CircularProgressIndicator(
-                  color: Colors.black,
-                  strokeWidth: 2.5,
-                ),
-              )
-            : Icon(
-                isPlaying
-                    ? Icons.pause_rounded
-                    : Icons.play_arrow_rounded,
-                color: Colors.black,
-                size: 32,
+      onTap: _handleTap,
+      child: ScaleTransition(
+        scale: _scaleAnim,
+        child: Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withOpacity(0.25),
+                blurRadius: 16,
+                spreadRadius: 2,
               ),
+            ],
+          ),
+          child: widget.isBuffering
+              ? const Padding(
+                  padding: EdgeInsets.all(14),
+                  child: CircularProgressIndicator(
+                    color: Colors.black,
+                    strokeWidth: 2.5,
+                  ),
+                )
+              : AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder: (child, animation) => ScaleTransition(
+                    scale: animation,
+                    child: child,
+                  ),
+                  child: Icon(
+                    widget.isPlaying
+                        ? Icons.pause_rounded
+                        : Icons.play_arrow_rounded,
+                    key: ValueKey(widget.isPlaying),
+                    color: Colors.black,
+                    size: 34,
+                  ),
+                ),
+        ),
       ),
     );
   }
@@ -451,7 +546,11 @@ class _ViewerCountBadge extends StatelessWidget {
   }
 }
 
-class _SeekBar extends ConsumerWidget {
+// =============================================================================
+// _SeekBar Premium — Seek bar com preview de posição e thumb animado
+// =============================================================================
+
+class _SeekBar extends ConsumerStatefulWidget {
   final String sessionId;
   final Duration position;
   final Duration duration;
@@ -463,59 +562,91 @@ class _SeekBar extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final total = duration.inMilliseconds.toDouble();
-    final current = position.inMilliseconds.toDouble().clamp(0.0, total);
-    final progress = total > 0 ? current / total : 0.0;
+  ConsumerState<_SeekBar> createState() => _SeekBarState();
+}
 
-    return Row(
+class _SeekBarState extends ConsumerState<_SeekBar> {
+  bool _isDragging = false;
+  double _dragValue = 0.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final total = widget.duration.inMilliseconds.toDouble();
+    final current = widget.position.inMilliseconds.toDouble().clamp(0.0, total);
+    final progress = total > 0 ? current / total : 0.0;
+    final displayProgress = _isDragging ? _dragValue : progress;
+    final displayPosition = _isDragging
+        ? Duration(milliseconds: (_dragValue * total).toInt())
+        : widget.position;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          _formatDuration(position),
-          style: const TextStyle(color: Colors.white70, fontSize: 11),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: SliderTheme(
-            data: SliderThemeData(
-              trackHeight: 3,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
-              activeTrackColor: Colors.white,
-              inactiveTrackColor: Colors.white24,
-              thumbColor: Colors.white,
-              overlayColor: Colors.white24,
-            ),
-            child: Slider(
-              value: progress.clamp(0.0, 1.0),
-              onChanged: (value) {
-                final newPos =
-                    Duration(milliseconds: (value * total).toInt());
-                ref
-                    .read(screeningPlayerProvider(sessionId).notifier)
-                    .seek(newPos);
-              },
-              onChangeEnd: (value) {
-                final newPos =
-                    Duration(milliseconds: (value * total).toInt());
-                final playerState =
-                    ref.read(screeningPlayerProvider(sessionId));
-                ref
-                    .read(screeningSyncProvider(sessionId).notifier)
-                    .broadcastEvent(SyncEvent(
-                      type: SyncEventType.seek,
-                      positionMs: newPos.inMilliseconds,
-                      serverTimestampMs:
-                          DateTime.now().millisecondsSinceEpoch,
-                    ));
-              },
-            ),
+        // ── Barra de progresso ───────────────────────────────────────────
+        SliderTheme(
+          data: SliderThemeData(
+            trackHeight: _isDragging ? 5 : 3,
+            thumbShape: _isDragging
+                ? const RoundSliderThumbShape(enabledThumbRadius: 9)
+                : const RoundSliderThumbShape(enabledThumbRadius: 6),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+            activeTrackColor: Colors.white,
+            inactiveTrackColor: Colors.white.withOpacity(0.2),
+            thumbColor: Colors.white,
+            overlayColor: Colors.white.withOpacity(0.15),
+            trackShape: const RoundedRectSliderTrackShape(),
+          ),
+          child: Slider(
+            value: displayProgress.clamp(0.0, 1.0),
+            onChangeStart: (value) {
+              HapticFeedback.selectionClick();
+              setState(() {
+                _isDragging = true;
+                _dragValue = value;
+              });
+            },
+            onChanged: (value) {
+              setState(() => _dragValue = value);
+              ref
+                  .read(screeningPlayerProvider(widget.sessionId).notifier)
+                  .seek(Duration(milliseconds: (value * total).toInt()));
+            },
+            onChangeEnd: (value) {
+              final newPos = Duration(milliseconds: (value * total).toInt());
+              ref
+                  .read(screeningSyncProvider(widget.sessionId).notifier)
+                  .broadcastEvent(SyncEvent(
+                    type: SyncEventType.seek,
+                    positionMs: newPos.inMilliseconds,
+                    serverTimestampMs: DateTime.now().millisecondsSinceEpoch,
+                  ));
+              setState(() => _isDragging = false);
+            },
           ),
         ),
-        const SizedBox(width: 8),
-        Text(
-          _formatDuration(duration),
-          style: const TextStyle(color: Colors.white70, fontSize: 11),
+
+        // ── Tempos ───────────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                _formatDuration(displayPosition),
+                style: TextStyle(
+                  color: _isDragging ? Colors.white : Colors.white70,
+                  fontSize: 11,
+                  fontWeight: _isDragging
+                      ? FontWeight.w700
+                      : FontWeight.w400,
+                ),
+              ),
+              Text(
+                _formatDuration(widget.duration),
+                style: const TextStyle(color: Colors.white54, fontSize: 11),
+              ),
+            ],
+          ),
         ),
       ],
     );

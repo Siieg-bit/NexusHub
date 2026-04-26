@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/services/supabase_service.dart';
@@ -206,7 +208,10 @@ class _ChatBubble extends StatelessWidget {
             ),
           ),
         ),
-      );
+      )
+          .animate()
+          .fadeIn(duration: 300.ms)
+          .scale(begin: const Offset(0.95, 0.95), end: const Offset(1, 1), duration: 300.ms);
     }
 
     return Padding(
@@ -214,7 +219,7 @@ class _ChatBubble extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Avatar
+          // Avatar com animação de entrada
           CircleAvatar(
             radius: 14,
             backgroundColor: Colors.white24,
@@ -273,7 +278,15 @@ class _ChatBubble extends StatelessWidget {
           ),
         ],
       ),
-    );
+    )
+        .animate()
+        .fadeIn(duration: 250.ms)
+        .slideX(
+          begin: message.isMe ? 0.05 : -0.05,
+          end: 0.0,
+          duration: 250.ms,
+          curve: Curves.easeOut,
+        );
   }
 }
 
@@ -293,7 +306,7 @@ class _VoiceParticipantsBar extends StatelessWidget {
     if (participants.isEmpty) return const SizedBox.shrink();
 
     return SizedBox(
-      height: 44,
+      height: 52,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -425,32 +438,69 @@ class _ParticipantAvatarState extends State<_ParticipantAvatar>
 
 // ── ChatInput ─────────────────────────────────────────────────────────────────
 
-class _ChatInput extends StatelessWidget {
+class _ChatInput extends StatefulWidget {
   final TextEditingController controller;
   final VoidCallback onSend;
 
   const _ChatInput({required this.controller, required this.onSend});
 
   @override
+  State<_ChatInput> createState() => _ChatInputState();
+}
+
+class _ChatInputState extends State<_ChatInput> {
+  bool _hasText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onTextChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onTextChanged);
+    super.dispose();
+  }
+
+  void _onTextChanged() {
+    final hasText = widget.controller.text.trim().isNotEmpty;
+    if (hasText != _hasText) {
+      setState(() => _hasText = hasText);
+    }
+  }
+
+  void _handleSend() {
+    if (!_hasText) return;
+    HapticFeedback.lightImpact();
+    widget.onSend();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          height: 44,
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          height: 46,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.12),
+            color: _hasText
+                ? Colors.white.withOpacity(0.16)
+                : Colors.white.withOpacity(0.10),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withOpacity(0.18),
+              color: _hasText
+                  ? Colors.white.withOpacity(0.28)
+                  : Colors.white.withOpacity(0.15),
             ),
           ),
           child: Row(
             children: [
               Expanded(
                 child: TextField(
-                  controller: controller,
+                  controller: widget.controller,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,
@@ -458,33 +508,41 @@ class _ChatInput extends StatelessWidget {
                   decoration: InputDecoration(
                     hintText: 'Diga algo...',
                     hintStyle: TextStyle(
-                      color: Colors.white.withOpacity(0.45),
+                      color: Colors.white.withOpacity(0.4),
                       fontSize: 14,
                     ),
                     border: InputBorder.none,
                     contentPadding:
                         const EdgeInsets.symmetric(horizontal: 16),
                   ),
-                  onSubmitted: (_) => onSend(),
+                  onSubmitted: (_) => _handleSend(),
                   textInputAction: TextInputAction.send,
                 ),
               ),
-              GestureDetector(
-                onTap: onSend,
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(24),
-                      bottomRight: Radius.circular(24),
+              // Botão de envio com animação
+              AnimatedOpacity(
+                opacity: _hasText ? 1.0 : 0.4,
+                duration: const Duration(milliseconds: 200),
+                child: GestureDetector(
+                  onTap: _handleSend,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: _hasText
+                          ? Colors.white.withOpacity(0.22)
+                          : Colors.transparent,
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(24),
+                        bottomRight: Radius.circular(24),
+                      ),
                     ),
-                  ),
-                  child: const Icon(
-                    Icons.send_rounded,
-                    color: Colors.white,
-                    size: 18,
+                    child: Icon(
+                      Icons.send_rounded,
+                      color: _hasText ? Colors.white : Colors.white54,
+                      size: 18,
+                    ),
                   ),
                 ),
               ),

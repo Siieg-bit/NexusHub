@@ -12,6 +12,8 @@ import '../widgets/screening_player_widget.dart';
 import '../widgets/screening_controls_overlay.dart';
 import '../widgets/screening_chat_overlay.dart';
 import '../widgets/screening_reaction_bar.dart';
+import '../widgets/screening_entry_animation.dart';
+import '../widgets/screening_video_ended_overlay.dart';
 import '../../../../core/widgets/emoji_rain_overlay.dart';
 
 // =============================================================================
@@ -47,11 +49,14 @@ class ScreeningRoomScreen extends ConsumerStatefulWidget {
 
 class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
     with WidgetsBindingObserver {
-  // ── Controles de UI ─────────────────────────────────────────────────────────
+  // ── Controles de UI ────────────────────────────────────────────────────────────────
   bool _showControls = true;
   Timer? _controlsHideTimer;
 
-  // ── Emoji rain ──────────────────────────────────────────────────────────────
+  // ── Animação de entrada ──────────────────────────────────────────────────────────
+  bool _entryAnimationDone = false;
+
+  // ── Emoji rain ────────────────────────────────────────────────────────────────
   // EmojiRainOverlay usa um GlobalKey interno estático — disparado via
   // EmojiRainOverlay.trigger(context, type: type)
 
@@ -394,9 +399,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
                 ),
               ),
             ),
-          ),
-
-          // ── Camada 3: Chat overlay (metade inferior) ──────────────────────
+             // ── Camada 3: Chat overlay (metade inferior) ──────────────────────────────────
           Positioned(
             left: 0,
             right: 0,
@@ -409,7 +412,9 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
                 threadId: widget.threadId,
               ),
             ),
-             // ── Camada 4a: Barra de reações (acima do chat) ───────────────────────────
+          ),
+
+          // ── Camada 4a: Barra de reações (acima do chat) ───────────────────────────────────────────
           if (sessionId.isNotEmpty)
             Positioned(
               left: 0,
@@ -420,7 +425,8 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
                 child: ScreeningReactionBar(sessionId: sessionId),
               ),
             ),
-          // ── Camada 4b: Controles flutuantes ────────────────────────────────────────────────
+
+          // ── Camada 4b: Controles flutuantes ──────────────────────────────────────────────────────────
           Positioned.fill(
             child: ScreeningControlsOverlay(
               sessionId: sessionId,
@@ -429,11 +435,33 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
               onMinimize: _minimize,
             ),
           ),
+
+          // ── Camada 5: Overlay de vídeo encerrado ────────────────────────────────────────
+          if (sessionId.isNotEmpty)
+            Positioned.fill(
+              child: IgnorePointer(
+                ignoring: false,
+                child: ScreeningVideoEndedOverlay(
+                  sessionId: sessionId,
+                  threadId: widget.threadId,
+                ),
+              ),
+            ),
+
+          // ── Camada 6: Animação de entrada (só na primeira vez) ──────────────────────
+          if (!_entryAnimationDone)
+            Positioned.fill(
+              child: ScreeningEntryAnimation(
+                roomName: 'Sala de Projeção',
+                onComplete: () {
+                  if (mounted) setState(() => _entryAnimationDone = true);
+                },
+              ),
+            ),
         ],
       ),
     );
   }
-
   // ── Diálogo de sala encerrada ───────────────────────────────────────────────
 
   void _showRoomClosedDialog() {

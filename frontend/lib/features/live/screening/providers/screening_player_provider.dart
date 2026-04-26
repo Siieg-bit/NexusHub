@@ -323,7 +323,8 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
         source: 'window._nexusPlayer && window._nexusPlayer.seek($seconds);',
       );
     });
-    if (mounted) state = state.copyWith(position: position);
+    // Resetar hasEnded ao fazer seek
+    if (mounted) state = state.copyWith(position: position, hasEnded: false);
   }
 
   Future<void> setRate(double rate) async {
@@ -379,7 +380,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
 
   void onVideoEnded() {
     if (!mounted) return;
-    state = state.copyWith(isPlaying: false, isBuffering: false);
+    state = state.copyWith(isPlaying: false, isBuffering: false, hasEnded: true);
     _positionPollTimer?.cancel();
   }
 
