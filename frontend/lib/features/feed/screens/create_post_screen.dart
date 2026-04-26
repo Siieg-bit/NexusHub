@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/blurhash_service.dart';
 import '../../chat/widgets/giphy_picker.dart';
 import '../../../core/utils/responsive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,6 +51,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen>
   final _tagsController = TextEditingController();
   bool _isSubmitting = false;
   final List<String> _mediaUrls = [];
+  // BlurHash gerado para cada URL de imagem (mesmo índice que _mediaUrls)
+  final Map<String, String> _mediaBlurhashes = {};
   String? _coverImageUrl;
 
   // Visibilidade e controle
@@ -183,6 +186,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen>
       final url = SupabaseService.storage.from('post-media').getPublicUrl(path);
       if (!mounted) return;
       setState(() => _mediaUrls.add(url));
+      // Gerar BlurHash em background (best-effort — não bloqueia o fluxo)
+      BlurHashService.generateForUrl(url).then((hash) {
+        if (hash != null && mounted) {
+          setState(() => _mediaBlurhashes[url] = hash);
+        }
+      });
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -653,13 +662,21 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen>
         },
       ) as String?;
 
-      // Atualizar campos extras
+      // Atualizar campos extras (editor_type, blurhash, pinned)
       if (postId != null) {
         try {
+          // Blurhash da primeira imagem do post (best-effort)
+          final firstUrl = _mediaUrls.isNotEmpty ? _mediaUrls.first : null;
+          final blurhash = firstUrl != null
+              ? (_mediaBlurhashes[firstUrl] ??
+                  await BlurHashService.generateForUrl(firstUrl))
+              : null;
+
           await SupabaseService.table('posts').update({
             'editor_type': 'normal',
             'editor_metadata': editorMetadata,
             if (_isPinnedProfile) 'is_pinned_profile': true,
+            if (blurhash != null) 'media_blurhash': blurhash,
           }).eq('id', postId);
         } catch (_) {
           // best-effort

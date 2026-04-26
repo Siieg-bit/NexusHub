@@ -26,6 +26,7 @@ import '../../../core/services/haptic_service.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/widgets/reaction_picker.dart';
 import '../../../core/widgets/member_title_badge.dart';
+import '../../../core/widgets/nexus_image.dart';
 
 /// Card de post no feed — estilo Amino Apps (web-preview).
 /// Suporta todos os 9 tipos de post com renderização interativa.
@@ -771,32 +772,19 @@ class _PostCardState extends ConsumerState<PostCard>
                 padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
                 child: AspectRatio(
                   aspectRatio: 1.0,
-                  child: ClipRRect(
+                  child: NexusImage(
+                    imageUrl: _post.mediaUrl ?? '',
+                    blurhash: _post.mediaBlurhash,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                     borderRadius: BorderRadius.circular(r.s(10)),
-                    child: CachedNetworkImage(
-                      imageUrl: _post.mediaUrl ?? '',
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        decoration: BoxDecoration(
-                          color: context.surfaceColor,
-                          borderRadius: BorderRadius.circular(r.s(10)),
-                        ),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: context.nexusTheme.accentPrimary,
-                            strokeWidth: 2,
-                          ),
-                        ),
+                    errorWidget: Container(
+                      decoration: BoxDecoration(
+                        color: context.surfaceColor,
+                        borderRadius: BorderRadius.circular(r.s(10)),
                       ),
-                      errorWidget: (_, __, ___) => Container(
-                        decoration: BoxDecoration(
-                          color: context.surfaceColor,
-                          borderRadius: BorderRadius.circular(r.s(10)),
-                        ),
-                        child: Icon(Icons.broken_image_rounded,
-                            color: context.nexusTheme.textHint),
-                      ),
+                      child: Icon(Icons.broken_image_rounded,
+                          color: context.nexusTheme.textHint),
                     ),
                   ),
                 ),
@@ -1621,17 +1609,16 @@ class _PostCardState extends ConsumerState<PostCard>
                   // Imagem de capa do post original
                   if (originalPost?.coverImageUrl != null ||
                       originalPost?.mediaUrl != null)
-                    ClipRRect(
+                    NexusImage(
+                      imageUrl: originalPost?.coverImageUrl ??
+                          originalPost!.mediaUrl!,
+                      blurhash: originalPost?.mediaBlurhash,
+                      width: double.infinity,
+                      height: r.s(160),
+                      fit: BoxFit.cover,
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(r.s(10)),
                         bottomRight: Radius.circular(r.s(10)),
-                      ),
-                      child: CachedNetworkImage(
-                        imageUrl: originalPost?.coverImageUrl ??
-                            originalPost!.mediaUrl!,
-                        width: double.infinity,
-                        height: r.s(160),
-                        fit: BoxFit.cover,
                       ),
                     )
                   else if (originalPost == null)

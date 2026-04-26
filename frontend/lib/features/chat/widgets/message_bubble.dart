@@ -23,6 +23,7 @@ import 'form_message_bubble.dart';
 import '../../../core/widgets/simple_link_preview.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/widgets/member_title_badge.dart';
+import '../../../core/widgets/nexus_image.dart';
 
 /// ============================================================================
 /// MESSAGE BUBBLE (suporta todos os 19+ tipos) — Estilo Amino
@@ -920,25 +921,18 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
         ),
         child: Hero(
           tag: 'chat_img_${message.id}',
-          child: ClipRRect(
+          child: NexusImage(
+            imageUrl: imgUrl,
+            blurhash: message.mediaBlurhash,
+            width: r.s(220),
+            fit: BoxFit.cover,
             borderRadius: BorderRadius.circular(r.s(12)),
-            child: CachedNetworkImage(
-              imageUrl: imgUrl,
+            errorWidget: Container(
               width: r.s(220),
-              fit: BoxFit.cover,
-              placeholder: (_, __) => Container(
-                width: r.s(220),
-                height: r.s(160),
-                color: Colors.grey[800],
-                child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-              ),
-              errorWidget: (_, __, ___) => Container(
-                width: r.s(220),
-                height: r.s(160),
-                color: Colors.grey[800],
-                child: Icon(Icons.broken_image_rounded,
-                    color: Colors.grey[600], size: r.s(32)),
-              ),
+              height: r.s(160),
+              color: Colors.grey[800],
+              child: Icon(Icons.broken_image_rounded,
+                  color: Colors.grey[600], size: r.s(32)),
             ),
           ),
         ),
@@ -1297,13 +1291,12 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
           ),
           SizedBox(height: r.s(4)),
           if (message.mediaUrl != null && message.mediaType == 'image')
-            ClipRRect(
+            NexusImage(
+              imageUrl: message.mediaUrl!,
+              blurhash: message.mediaBlurhash,
+              width: r.s(200),
+              fit: BoxFit.cover,
               borderRadius: BorderRadius.circular(r.s(8)),
-              child: CachedNetworkImage(
-                imageUrl: message.mediaUrl!,
-                width: r.s(200),
-                fit: BoxFit.cover,
-              ),
             )
           else
             Text(message.content ?? '',

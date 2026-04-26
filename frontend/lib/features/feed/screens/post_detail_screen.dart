@@ -28,6 +28,7 @@ import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/comment_media_menu_button.dart';
 import '../../../core/widgets/mention_overlay.dart';
 import '../../../core/widgets/reaction_picker.dart';
+import '../../../core/widgets/nexus_image.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../communities/providers/community_detail_providers.dart'
     as community_providers;
@@ -1316,13 +1317,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen>
                               ),
                               child: Hero(
                                 tag: 'post_media_${post.id}',
-                                child: ClipRRect(
+                                child: NexusImage(
+                                  imageUrl: post.mediaUrl!,
+                                  blurhash: post.mediaBlurhash,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
                                   borderRadius: BorderRadius.circular(r.s(12)),
-                                  child: CachedNetworkImage(
-                                    imageUrl: post.mediaUrl!,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
                                 ),
                               ),
                             ),
@@ -1948,19 +1948,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen>
               // Imagem de capa do post original
               if (originalPost?.coverImageUrl != null ||
                   originalPost?.mediaUrl != null)
-                ClipRRect(
+                NexusImage(
+                  imageUrl:
+                      originalPost?.coverImageUrl ?? originalPost!.mediaUrl!,
+                  blurhash: originalPost?.mediaBlurhash,
+                  width: double.infinity,
+                  height: r.s(200),
+                  fit: BoxFit.cover,
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(r.s(12)),
                     bottomRight: Radius.circular(r.s(12)),
                   ),
-                  child: CachedNetworkImage(
-                    imageUrl:
-                        originalPost?.coverImageUrl ?? originalPost!.mediaUrl!,
-                    width: double.infinity,
-                    height: r.s(200),
-                    fit: BoxFit.cover,
-                    errorWidget: (_, __, ___) => const SizedBox.shrink(),
-                  ),
+                  errorWidget: const SizedBox.shrink(),
                 )
               else if (originalPost == null)
                 Padding(
