@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../utils/responsive.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../services/haptic_service.dart';
 
 // ============================================================================
 // RGBColorPicker — Modal seletor de cor RGB inovador e profissional
@@ -153,7 +154,7 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
   }
 
   void _selectSwatch(Color color) {
-    HapticFeedback.selectionClick();
+    HapticService.tap();
     _syncFromColor(color);
     _currentColor = color;
     _hexController.text = _colorToHex(color);
@@ -413,7 +414,7 @@ class _RGBColorPickerSheetState extends State<_RGBColorPickerSheet>
               Clipboard.setData(ClipboardData(
                 text: '#${_hexController.text}',
               ));
-              HapticFeedback.lightImpact();
+              HapticService.buttonPress();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: const Text('Cor copiada!'),
@@ -949,7 +950,7 @@ class ColorPickerButton extends StatelessWidget {
     final r = context.r;
     return GestureDetector(
       onTap: () async {
-        HapticFeedback.selectionClick();
+        HapticService.tap();
         final result = await showRGBColorPicker(
           context,
           initialColor: color,

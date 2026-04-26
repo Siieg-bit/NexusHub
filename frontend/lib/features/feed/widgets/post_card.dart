@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -23,6 +22,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/linkified_text.dart';
+import '../../../core/services/haptic_service.dart';
 
 /// Card de post no feed — estilo Amino Apps (web-preview).
 /// Suporta todos os 9 tipos de post com renderização interativa.
@@ -227,7 +227,7 @@ class _PostCardState extends ConsumerState<PostCard>
   }
 
   Future<void> _toggleLike() async {
-    HapticFeedback.lightImpact();
+    HapticService.buttonPress();
     final wasLiked = _post.isLiked;
     setState(() {
       _post = _post.copyWith(

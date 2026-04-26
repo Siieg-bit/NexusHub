@@ -55,6 +55,10 @@ class UserModel {
   final bool? isFollowing;
   final bool? isFollowedBy;
 
+  // Mood/Status
+  final String? statusEmoji;
+  final String? statusText;
+
   const UserModel({
     required this.id,
     this.aminoId = '',
@@ -92,6 +96,8 @@ class UserModel {
     required this.updatedAt,
     this.isFollowing,
     this.isFollowedBy,
+    this.statusEmoji,
+    this.statusText,
   });
 
   static const Duration _presenceWindow = Duration(minutes: 15);
@@ -147,6 +153,11 @@ class UserModel {
   /// Indica se o usuário é membro da equipe (admin ou moderador global).
   bool get isTeamMember => isTeamAdmin || isTeamModerator;
 
+  /// Indica se o usuário tem um status/mood definido.
+  bool get hasStatus =>
+      (statusEmoji != null && statusEmoji!.isNotEmpty) ||
+      (statusText != null && statusText!.isNotEmpty);
+
   factory UserModel.fromJson(Map<String, dynamic> json) {
     final s = getStrings();
     return UserModel(
@@ -195,6 +206,8 @@ class UserModel {
           DateTime.now(),
       isFollowing: json['is_following'] as bool?,
       isFollowedBy: json['is_followed_by'] as bool?,
+      statusEmoji: json['status_emoji'] as String?,
+      statusText: json['status_text'] as String?,
     );
   }
 
@@ -213,6 +226,8 @@ class UserModel {
       'online_status': onlineStatus,
       'is_ghost_mode': isGhostMode,
       'is_premium': isPremium,
+      'status_emoji': statusEmoji,
+      'status_text': statusText,
     };
   }
 
@@ -229,6 +244,8 @@ class UserModel {
     bool? isGhostMode,
     DateTime? lastSeenAt,
     bool? hasCompletedOnboarding,
+    String? statusEmoji,
+    String? statusText,
   }) {
     return UserModel(
       id: id,
@@ -268,6 +285,8 @@ class UserModel {
       updatedAt: updatedAt,
       isFollowing: isFollowing,
       isFollowedBy: isFollowedBy,
+      statusEmoji: statusEmoji ?? this.statusEmoji,
+      statusText: statusText ?? this.statusText,
     );
   }
 }

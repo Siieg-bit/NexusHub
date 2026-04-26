@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/realtime_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/widgets/mini_room_overlay.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Sala de Projeção — sala de exibição coletiva de vídeos/streams.
@@ -730,6 +731,36 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
     }
   }
 
+  // ── Minimizar para PiP ─────────────────────────────────────────────────────
+
+  /// Minimiza a sala para o overlay flutuante sem encerrar a sessão.
+  void _minimizeToMiniRoom() {
+    if (_sessionId == null) return;
+    ref.read(miniRoomProvider.notifier).show(
+      roomId: _sessionId!,
+      title: _currentVideoTitle ?? 'Sala de Projeção',
+      type: MiniRoomType.screening,
+      isMuted: false,
+      participantCount: _viewerCount,
+      onReturn: () {
+        ref.read(miniRoomProvider.notifier).hide();
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ScreeningRoomScreen(
+              threadId: widget.threadId,
+              callSessionId: _sessionId,
+            ),
+          ),
+        );
+      },
+      onEnd: () async {
+        ref.read(miniRoomProvider.notifier).hide();
+        await _leaveRoom();
+      },
+    );
+    Navigator.of(context).pop();
+  }
+
   // ── Sair da sala ──────────────────────────────────────────────────────────
 
   Future<void> _leaveRoom() async {
@@ -1081,7 +1112,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: _leaveRoom,
+            onTap: _minimizeToMiniRoom,
             child: Icon(Icons.arrow_back_rounded,
                 color: context.nexusTheme.textPrimary, size: r.s(24)),
           ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -15,6 +14,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/level_up_dialog.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/services/haptic_service.dart';
 
 class CommunityListScreen extends ConsumerStatefulWidget {
   final bool isExplore;
@@ -169,7 +169,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                     cardWidth: null,
                     onTap: () => context.push('/community/${community.id}'),
                     onLongPress: () {
-                      HapticFeedback.mediumImpact();
+                      HapticService.action();
                       _showCommunityPreview(context, community);
                     },
                   );
@@ -858,7 +858,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
           final coins = data['coins_earned'] as int? ?? 0;
           final levelUp = data['level_up'] as bool? ?? false;
           final newLevel = data['new_level'] as int? ?? 0;
-          HapticFeedback.mediumImpact();
+          HapticService.action();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -1351,7 +1351,7 @@ class _CommunityPreviewSheetState
           final coins = data['coins_earned'] as int? ?? 0;
           final levelUp = data['level_up'] as bool? ?? false;
           final newLevel = data['new_level'] as int? ?? 0;
-          HapticFeedback.mediumImpact();
+          HapticService.action();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(

@@ -10,6 +10,7 @@ import 'package:gal/gal.dart';
 import 'package:video_player/video_player.dart';
 import '../utils/responsive.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../services/haptic_service.dart';
 
 // ============================================================================
 // MediaViewer — Visualizador de mídia fullscreen (imagem, GIF, vídeo)
@@ -175,7 +176,7 @@ class _MediaViewerScreenState extends State<_MediaViewerScreen>
     if (_isSaving) return;
     setState(() => _isSaving = true);
     try {
-      HapticFeedback.mediumImpact();
+      HapticService.action();
 
       // Verificar/solicitar permissão de acesso à galeria
       final hasAccess = await Gal.hasAccess(toAlbum: true);

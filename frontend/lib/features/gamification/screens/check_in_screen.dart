@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,6 +7,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/services/haptic_service.dart';
 
 /// Tela de check-in diário com gamificação — Estilo Amino Apps.
 class CheckInScreen extends ConsumerStatefulWidget {
@@ -206,7 +206,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Future<void> _doCheckIn() async {
-    HapticFeedback.mediumImpact();
+    HapticService.success();
     final r = context.r;
     final s = ref.read(stringsProvider);
     setState(() => _isLoading = true);

@@ -4,10 +4,10 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
 import 'supabase_service.dart';
+import 'chunked_upload_service.dart';
 import '../../core/l10n/locale_provider.dart';
 
 /// ============================================================================
@@ -245,22 +245,20 @@ class MediaUploadService {
       final storagePath = customPath ?? '$userId/$fileName';
       final bucketName = _bucketName(bucket);
 
-      final bytes = await fileToUpload.readAsBytes();
+      final contentType = skipCompression
+          ? _getMimeType(path.extension(file.path).toLowerCase())
+          : 'image/webp';
 
-      await SupabaseService.client.storage.from(bucketName).uploadBinary(
-            storagePath,
-            bytes,
-            fileOptions: FileOptions(
-              contentType: skipCompression
-                  ? _getMimeType(path.extension(file.path).toLowerCase())
-                  : 'image/webp',
-              upsert: true,
-            ),
-          );
-
-      final url = SupabaseService.client.storage
-          .from(bucketName)
-          .getPublicUrl(storagePath);
+      // Usa ChunkedUploadService para todos os uploads:
+      // — arquivos < 1MB: upload simples com retry
+      // — arquivos >= 1MB: upload em chunks de 512KB com resume
+      final url = await ChunkedUploadService.upload(
+        file: fileToUpload,
+        bucket: bucketName,
+        path: storagePath,
+        onProgress: onProgress,
+        contentType: contentType,
+      );
 
       return UploadResult(
         url: url,

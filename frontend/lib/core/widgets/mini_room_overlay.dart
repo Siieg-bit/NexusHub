@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../services/haptic_service.dart';
 
 // ============================================================================
 // MiniRoomOverlay — Overlay flutuante para salas ativas inspirado no OluOlu
@@ -206,7 +206,7 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
           });
         },
         onTap: () {
-          HapticFeedback.lightImpact();
+          HapticService.buttonPress();
           s.onReturn?.call();
         },
         child: AnimatedBuilder(
@@ -259,7 +259,7 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
                     ),
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticService.buttonPress();
                         ref.read(miniRoomProvider.notifier).hide();
                       },
                       child: const Icon(
@@ -299,7 +299,7 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
                         s.onToggleMute != null)
                       GestureDetector(
                         onTap: () {
-                          HapticFeedback.selectionClick();
+                          HapticService.tap();
                           s.onToggleMute?.call();
                         },
                         child: Icon(
@@ -316,7 +316,7 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
                     // Botão encerrar
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.mediumImpact();
+                        HapticService.action();
                         s.onEnd?.call();
                         ref.read(miniRoomProvider.notifier).hide();
                       },

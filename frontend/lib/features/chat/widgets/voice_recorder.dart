@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../../core/utils/responsive.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/services/haptic_service.dart';
 
 /// Widget de gravação de Voice Notes — réplica pixel-perfect do Amino.
 ///
@@ -100,7 +100,7 @@ class _VoiceRecorderState extends State<VoiceRecorder>
           _amplitudes.clear();
         });
 
-        HapticFeedback.mediumImpact();
+        HapticService.micOn();
 
         // Timer de duração
         _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -151,7 +151,7 @@ class _VoiceRecorderState extends State<VoiceRecorder>
       final path = await _recorder.stop();
       if (!mounted) return;
       if (path != null && _seconds > 0) {
-        HapticFeedback.lightImpact();
+        HapticService.micOff();
         widget.onRecordingComplete(path, _seconds);
       } else {
         widget.onCancel();

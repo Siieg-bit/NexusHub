@@ -19,6 +19,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/block_provider.dart';
 import '../../../core/services/deep_link_service.dart';
 import '../../../core/widgets/image_viewer.dart';
+import '../../../core/widgets/user_status_badge.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 // =============================================================================
@@ -390,18 +391,75 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             ],
                           ],
                         ),
-                        const SizedBox(height: 2),
+                         const SizedBox(height: 2),
                         if (user.aminoId.isNotEmpty)
                           Text(
                             '@${user.aminoId}',
                             style: TextStyle(
                                 color: Colors.grey[500], fontSize: r.fs(13)),
                           ),
+                        // Mood/Status
+                        if (user.hasStatus) ...[  
+                          SizedBox(height: r.s(6)),
+                          GestureDetector(
+                            onTap: isOwnProfile
+                                ? () => EditStatusSheet.show(
+                                      context,
+                                      currentEmoji: user.statusEmoji,
+                                      currentText: user.statusText,
+                                      onSaved: (_, __) => ref.invalidate(
+                                          userProfileProvider(widget.userId)),
+                                    )
+                                : null,
+                            child: UserStatusBadge(
+                              emoji: user.statusEmoji,
+                              text: user.statusText,
+                            ),
+                          ),
+                        ] else if (isOwnProfile) ...[  
+                          SizedBox(height: r.s(6)),
+                          GestureDetector(
+                            onTap: () => EditStatusSheet.show(
+                              context,
+                              onSaved: (_, __) => ref.invalidate(
+                                  userProfileProvider(widget.userId)),
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: r.s(8), vertical: r.s(3)),
+                              decoration: BoxDecoration(
+                                color: context.nexusTheme.backgroundSecondary
+                                    .withValues(alpha: 0.6),
+                                borderRadius:
+                                    BorderRadius.circular(r.s(12)),
+                                border: Border.all(
+                                  color: Colors.grey[700]!,
+                                  width: 0.5,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.add_rounded,
+                                      size: r.s(12),
+                                      color: Colors.grey[500]),
+                                  SizedBox(width: r.s(4)),
+                                  Text(
+                                    'Definir status',
+                                    style: TextStyle(
+                                      color: Colors.grey[500],
+                                      fontSize: r.fs(11),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
                 ),
-
                 // ================================================================
                 // FOLLOWING / FOLLOWERS
                 // ================================================================

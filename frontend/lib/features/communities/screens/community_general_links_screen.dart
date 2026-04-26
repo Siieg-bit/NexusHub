@@ -5,6 +5,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/services/haptic_service.dart';
 
 /// Tela de gerenciamento de Links Gerais da comunidade.
 /// Permite que líderes/agentes adicionem, editem, reordenem e removam
@@ -265,7 +266,7 @@ class _CommunityGeneralLinksScreenState
   }
 
   Future<void> _reorderLinks(int oldIndex, int newIndex) async {
-    HapticFeedback.mediumImpact();
+    HapticService.action();
     setState(() {
       if (newIndex > oldIndex) newIndex--;
       final item = _links.removeAt(oldIndex);

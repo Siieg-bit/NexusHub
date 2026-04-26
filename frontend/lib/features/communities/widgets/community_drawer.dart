@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -19,6 +18,7 @@ import '../../../core/providers/chat_provider.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/widgets/nexus_badge.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/services/haptic_service.dart';
 
 // Provider de flags pendentes por comunidade (visível apenas para moderadores)
 final _pendingFlagsCountProvider =
@@ -103,7 +103,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         final coins = data['coins_earned'] as int? ?? 0;
         final levelUp = data['level_up'] as bool? ?? false;
         final newLevel = data['new_level'] as int? ?? 0;
-        HapticFeedback.mediumImpact();
+        HapticService.action();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s.checkInStreakMsg(streak, coins)),
           backgroundColor: context.nexusTheme.accentSecondary,

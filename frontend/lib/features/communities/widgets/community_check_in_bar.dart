@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/supabase_service.dart';
@@ -9,6 +8,7 @@ import '../../../core/utils/helpers.dart'; // ReputationRewards
 import '../providers/community_shared_providers.dart'; // checkInStatusProvider
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/services/haptic_service.dart';
 
 // =============================================================================
 // CHECK-IN BAR — Design moderno com gradiente, ícone animado e streak visual
@@ -69,7 +69,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
         final newStreak = result['streak'] as int? ?? 0;
         final levelUp = result['level_up'] as bool? ?? false;
         final newLevel = result['new_level'] as int? ?? 0;
-        HapticFeedback.mediumImpact();
+        HapticService.success();
         if (mounted) {
           ref.invalidate(checkInStatusProvider);
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(

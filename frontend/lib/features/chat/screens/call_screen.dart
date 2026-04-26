@@ -13,6 +13,7 @@ import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/mini_room_overlay.dart';
 
 // ============================================================================
 // CallScreen — Tela de chamada reformada.
@@ -339,15 +340,49 @@ class _CallScreenState extends ConsumerState<CallScreen>
     await CallService.stepDown();
   }
 
+   /// Minimiza a chamada para o PiP flutuante sem encerrar a sessão.
+  void _minimizeToMiniRoom() {
+    HapticService.tap();
+    final session = widget.session;
+    ref.read(miniRoomProvider.notifier).show(
+      roomId: session.id,
+      title: session.type == CallType.screeningRoom
+          ? 'Sala de Projeção'
+          : 'Voice Chat',
+      type: session.type == CallType.screeningRoom
+          ? MiniRoomType.screening
+          : MiniRoomType.voiceChat,
+      isMuted: _isMuted,
+      participantCount: _participants.length,
+      onReturn: () {
+        // Reabrir o CallScreen ao tocar no PiP
+        ref.read(miniRoomProvider.notifier).hide();
+        CallScreen.show(context, session);
+      },
+      onEnd: () {
+        // Encerrar a sessão pelo PiP
+        CallService.leaveCall();
+      },
+      onToggleMute: () {
+        CallService.toggleMute();
+        ref.read(miniRoomProvider.notifier).updateMute(CallService.isMuted);
+      },
+    );
+    Navigator.of(context).pop();
+  }
+
   Future<void> _leaveCall() async {
     HapticService.action();
+    // Esconder PiP se estiver ativo (saída definitiva)
+    ref.read(miniRoomProvider.notifier).hide();
     await CallService.leaveCall();
     if (!mounted) return;
     Navigator.of(context).pop();
   }
-
   Future<void> _endCall() async {
     HapticService.error();
+    // Esconder PiP se estiver ativo (encerramento definitivo)
+    ref.read(miniRoomProvider.notifier).hide();
     await CallService.endCall();
     if (!mounted) return;
     Navigator.of(context).pop();
@@ -442,8 +477,8 @@ class _CallScreenState extends ConsumerState<CallScreen>
             IconButton(
               icon: Icon(Icons.arrow_back_rounded,
                   color: theme.textPrimary, size: r.s(22)),
-              onPressed: () => Navigator.of(context).pop(),
-              tooltip: 'Minimizar',
+              onPressed: _minimizeToMiniRoom,
+              tooltip: 'Minimizar (continuar em segundo plano)',
             ),
             Expanded(
               child: Column(

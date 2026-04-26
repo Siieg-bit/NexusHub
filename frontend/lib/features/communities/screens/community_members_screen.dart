@@ -7,6 +7,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
+import '../../../core/widgets/user_status_badge.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
@@ -19,7 +20,7 @@ final allCommunityMembersProvider =
         (ref, communityId) async {
   final response = await SupabaseService.table('community_members')
       .select(
-          '*, profiles!community_members_user_id_fkey(id, nickname, icon_url, online_status)')
+          '*, profiles!community_members_user_id_fkey(id, nickname, icon_url, online_status, status_emoji, status_text)')
       .eq('community_id', communityId)
       .order('joined_at', ascending: false);
   final members = List<Map<String, dynamic>>.from(response as List? ?? []);
@@ -331,6 +332,10 @@ class _MemberTile extends ConsumerWidget {
     final reputation = member['local_reputation'] as int? ?? 0;
     final level = member['local_level'] as int? ?? calculateLevel(reputation);
     final isOnline = (profile['online_status'] as int? ?? 2) == 1;
+    final statusEmoji = profile['status_emoji'] as String?;
+    final statusText = profile['status_text'] as String?;
+    final hasStatus = (statusEmoji != null && statusEmoji.isNotEmpty) ||
+        (statusText != null && statusText.isNotEmpty);
     final role = member['role'] as String? ?? 'member';
 
     return AminoAnimations.staggerItem(
@@ -403,6 +408,13 @@ class _MemberTile extends ConsumerWidget {
                         style: TextStyle(
                             color: AppTheme.getLevelColor(level),
                             fontSize: r.fs(11))),
+                    if (hasStatus) ...[  
+                      SizedBox(height: r.s(3)),
+                      UserStatusBadge(
+                        emoji: statusEmoji,
+                        text: statusText,
+                      ),
+                    ],
                   ],
                 ),
               ),
