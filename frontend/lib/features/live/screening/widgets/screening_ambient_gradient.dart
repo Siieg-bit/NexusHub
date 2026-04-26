@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:palette_generator/palette_generator.dart';
 
 // =============================================================================
 // ScreeningAmbientGradient — Gradiente dinâmico baseado nas cores do vídeo
@@ -151,6 +152,38 @@ class ScreeningAmbientGradientState
       debugPrint('[AmbientGradient] color sampler injetado');
     } catch (e) {
       debugPrint('[AmbientGradient] erro ao injetar sampler: $e');
+    }
+  }
+
+  /// Extrai a cor dominante de um thumbnail (URL) usando palette_generator.
+  /// Chamado quando o vídeo é definido mas ainda não carregou no WebView.
+  /// Isso garante que o gradiente já esteja animado durante o loading.
+  Future<void> loadFromThumbnail(String thumbnailUrl) async {
+    if (thumbnailUrl.isEmpty) return;
+    try {
+      final imageProvider = NetworkImage(thumbnailUrl);
+      final palette = await PaletteGenerator.fromImageProvider(
+        imageProvider,
+        size: const Size(100, 56), // baixa resolução para performance
+        maximumColorCount: 8,
+      );
+      // Prioridade: vibrantColor > dominantColor > darkVibrantColor
+      final dominantColor = palette.vibrantColor?.color ??
+          palette.dominantColor?.color ??
+          palette.darkVibrantColor?.color;
+      if (dominantColor != null) {
+        // Escurecer para não ofuscar o conteúdo (mesmo fator do JS: 0.55)
+        final darkened = Color.fromARGB(
+          255,
+          (dominantColor.red * 0.55).round(),
+          (dominantColor.green * 0.55).round(),
+          (dominantColor.blue * 0.55).round(),
+        );
+        _updateAmbientColor(darkened);
+        debugPrint('[AmbientGradient] cor do thumbnail: $darkened');
+      }
+    } catch (e) {
+      debugPrint('[AmbientGradient] erro ao processar thumbnail: $e');
     }
   }
 

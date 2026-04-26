@@ -52,22 +52,32 @@ class ScreeningSyncState {
   final SyncStatus status;
   final int lastDriftMs;
   final bool isConnected;
+  /// Taxa de reprodução atual (1.0 = normal, > 1.0 = acelerado, < 1.0 = desacelerado)
+  final double currentPlaybackRate;
+  /// Número de tentativas de reconexão (para debug e backoff)
+  final int reconnectAttempts;
 
   const ScreeningSyncState({
     this.status = SyncStatus.idle,
     this.lastDriftMs = 0,
     this.isConnected = false,
+    this.currentPlaybackRate = 1.0,
+    this.reconnectAttempts = 0,
   });
 
   ScreeningSyncState copyWith({
     SyncStatus? status,
     int? lastDriftMs,
     bool? isConnected,
+    double? currentPlaybackRate,
+    int? reconnectAttempts,
   }) {
     return ScreeningSyncState(
       status: status ?? this.status,
       lastDriftMs: lastDriftMs ?? this.lastDriftMs,
       isConnected: isConnected ?? this.isConnected,
+      currentPlaybackRate: currentPlaybackRate ?? this.currentPlaybackRate,
+      reconnectAttempts: reconnectAttempts ?? this.reconnectAttempts,
     );
   }
 }
@@ -154,6 +164,8 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
     final delaySeconds = (_reconnectAttempts * 2).clamp(2, 30);
     debugPrint(
         '[ScreeningSync] reconectando em ${delaySeconds}s (tentativa $_reconnectAttempts)');
+    // Propaga tentativas de reconexão ao estado para o SyncDebugOverlay
+    if (mounted) state = state.copyWith(reconnectAttempts: _reconnectAttempts);
     _reconnectTimer = Timer(Duration(seconds: delaySeconds), () {
       if (!mounted) return;
       _channel?.unsubscribe();
@@ -272,6 +284,8 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
         ? (_currentRate + _kRateStep).clamp(_kMinPlaybackRate, _kMaxPlaybackRate)
         : (_currentRate - _kRateStep).clamp(_kMinPlaybackRate, _kMaxPlaybackRate);
     _currentRate = newRate;
+    // Propaga a taxa atual ao estado para o SyncDebugOverlay
+    if (mounted) state = state.copyWith(currentPlaybackRate: newRate);
     ref.read(screeningPlayerProvider(sessionId).notifier).setRate(newRate);
   }
 

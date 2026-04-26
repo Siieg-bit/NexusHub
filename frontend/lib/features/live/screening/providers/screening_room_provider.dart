@@ -38,7 +38,15 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
 
   /// Entra em uma sessão existente ou cria uma nova.
   /// [existingSessionId] — ID de sessão existente (ao entrar como participante).
-  Future<void> joinRoom({String? existingSessionId}) async {
+  /// [initialVideoUrl] — URL do vídeo inicial (passado pelo ScreeningCreateRoomSheet).
+  /// [initialVideoTitle] — Título do vídeo inicial.
+  /// [initialVideoThumbnail] — Thumbnail do vídeo inicial.
+  Future<void> joinRoom({
+    String? existingSessionId,
+    String? initialVideoUrl,
+    String? initialVideoTitle,
+    String? initialVideoThumbnail,
+  }) async {
     final userId = SupabaseService.currentUserId;
     if (userId == null) {
       state = state.copyWith(
@@ -88,12 +96,19 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
           'thread_id': threadId,
           'type': 'screening_room',
           'status': 'active',
-          'metadata': {'video_url': '', 'video_title': ''},
+          'metadata': {
+            'video_url': initialVideoUrl ?? '',
+            'video_title': initialVideoTitle ?? '',
+            'video_thumbnail': initialVideoThumbnail ?? '',
+          },
         }).select().single();
 
         sessionId = session['id'] as String;
         isHost = true;
         hostUserId = userId;
+        // Usar o vídeo inicial passado pelo ScreeningCreateRoomSheet
+        videoUrl = initialVideoUrl;
+        videoTitle = initialVideoTitle;
 
         await _joinAsParticipant(sessionId: sessionId, userId: userId);
       }
@@ -189,6 +204,19 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
               hostUserId: newHostId,
               isHost: isNowHost,
             );
+          },
+        );
+        // Atualização da fila de vídeos
+        channel.onBroadcast(
+          event: 'queue_update',
+          callback: (payload) {
+            final rawQueue = payload['queue'] as List<dynamic>?;
+            if (rawQueue == null) return;
+            final queue = rawQueue
+                .map((e) => Map<String, String>.from(
+                    (e as Map).map((k, v) => MapEntry(k.toString(), v.toString()))))
+                .toList();
+            state = state.copyWith(videoQueue: queue);
           },
         );
       },
@@ -361,6 +389,56 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
     } finally {
       _dispose();
     }
+  }
+
+
+  // ── Fila de Vídeos ──────────────────────────────────────────────────────────
+
+  /// Adiciona um vídeo ao final da fila e sincroniza via Broadcast.
+  Future<void> addToQueue({
+    required String url,
+    String? title,
+    String? thumbnail,
+  }) async {
+    if (!state.isHost) return;
+    final item = <String, String>{
+      'url': url,
+      if (title != null) 'title': title,
+      if (thumbnail != null) 'thumbnail': thumbnail,
+    };
+    final newQueue = [...state.videoQueue, item];
+    state = state.copyWith(videoQueue: newQueue);
+    _broadcastQueueUpdate(newQueue);
+  }
+
+  /// Remove um vídeo da fila pelo índice e sincroniza via Broadcast.
+  Future<void> removeFromQueue(int index) async {
+    if (!state.isHost) return;
+    final newQueue = [...state.videoQueue];
+    if (index < 0 || index >= newQueue.length) return;
+    newQueue.removeAt(index);
+    state = state.copyWith(videoQueue: newQueue);
+    _broadcastQueueUpdate(newQueue);
+  }
+
+  /// Reordena a fila via drag-and-drop e sincroniza via Broadcast.
+  Future<void> reorderQueue(int oldIndex, int newIndex) async {
+    if (!state.isHost) return;
+    final newQueue = [...state.videoQueue];
+    final item = newQueue.removeAt(oldIndex);
+    newQueue.insert(newIndex, item);
+    state = state.copyWith(videoQueue: newQueue);
+    _broadcastQueueUpdate(newQueue);
+  }
+
+  void _broadcastQueueUpdate(List<Map<String, String>> queue) {
+    _channel?.sendBroadcastMessage(
+      event: 'queue_update',
+      payload: {
+        'queue': queue,
+        'ts': DateTime.now().millisecondsSinceEpoch,
+      },
+    );
   }
 
   void _dispose() {

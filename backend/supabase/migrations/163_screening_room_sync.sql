@@ -1,5 +1,5 @@
 -- =============================================================================
--- Migration 067: Sala de Projeção — Sincronização em Tempo Real (Fase 1)
+-- Migration 163: Sala de Projeção — Sincronização em Tempo Real
 --
 -- Adiciona suporte a:
 -- 1. sync_position / sync_is_playing / sync_updated_at em call_sessions
@@ -64,7 +64,7 @@ $$;
 GRANT EXECUTE ON FUNCTION public.update_sync_state(UUID, BIGINT, BOOLEAN) TO authenticated;
 
 COMMENT ON FUNCTION public.update_sync_state IS
-  'Atualiza o estado de reprodução da sala. Apenas o host pode chamar. Migration 067.';
+  'Atualiza o estado de reprodução da sala. Apenas o host pode chamar. Migration 163.';
 
 -- ─── 3. RPC: transfer_screening_host ─────────────────────────────────────────
 -- Transfere o controle de host para outro participante ativo na sessão.
@@ -109,7 +109,7 @@ $$;
 GRANT EXECUTE ON FUNCTION public.transfer_screening_host(UUID, UUID) TO authenticated;
 
 COMMENT ON FUNCTION public.transfer_screening_host IS
-  'Transfere o controle de host para outro participante. Apenas o creator pode chamar. Migration 067.';
+  'Transfere o controle de host para outro participante. Apenas o creator pode chamar. Migration 163.';
 
 -- ─── 4. RPC: get_screening_session_state ─────────────────────────────────────
 -- Retorna o estado completo da sessão para novos participantes que entram.
@@ -156,7 +156,7 @@ $$;
 GRANT EXECUTE ON FUNCTION public.get_screening_session_state(UUID) TO authenticated;
 
 COMMENT ON FUNCTION public.get_screening_session_state IS
-  'Retorna o estado completo da sessão de projeção para sincronização inicial. Migration 067.';
+  'Retorna o estado completo da sessão de projeção para sincronização inicial. Migration 163.';
 
 -- ─── 5. Garantir Realtime ativo em call_sessions ─────────────────────────────
 

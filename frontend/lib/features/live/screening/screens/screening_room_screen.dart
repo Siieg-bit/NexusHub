@@ -15,6 +15,8 @@ import '../widgets/screening_reaction_bar.dart';
 import '../widgets/screening_entry_animation.dart';
 import '../widgets/screening_video_ended_overlay.dart';
 import '../../../../core/widgets/emoji_rain_overlay.dart';
+import '../widgets/screening_landscape_layout.dart';
+import '../widgets/screening_sync_badge.dart';
 
 // =============================================================================
 // ScreeningRoomScreen — Sala de Projeção (Fase 2 — Sync + Reações + Robustez)
@@ -35,11 +37,20 @@ import '../../../../core/widgets/emoji_rain_overlay.dart';
 class ScreeningRoomScreen extends ConsumerStatefulWidget {
   final String threadId;
   final String? callSessionId;
+  /// URL do vídeo inicial (passado ao criar a sala com URL já definida)
+  final String? initialVideoUrl;
+  /// Título do vídeo inicial (para exibir na animação de entrada)
+  final String? initialVideoTitle;
+  /// Thumbnail do vídeo inicial (para o gradiente ambiente antes do WebView carregar)
+  final String? initialVideoThumbnail;
 
   const ScreeningRoomScreen({
     super.key,
     required this.threadId,
     this.callSessionId,
+    this.initialVideoUrl,
+    this.initialVideoTitle,
+    this.initialVideoThumbnail,
   });
 
   @override
@@ -73,6 +84,8 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
       _joinRoom();
     });
 
+    // Se vier com vídeo inicial, definir no player após o join
+
     // Mostrar controles inicialmente e esconder após 4s
     _scheduleControlsHide(delay: 4);
   }
@@ -104,6 +117,9 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
   Future<void> _joinRoom() async {
     await ref.read(screeningRoomProvider(widget.threadId).notifier).joinRoom(
           existingSessionId: widget.callSessionId,
+          initialVideoUrl: widget.initialVideoUrl,
+          initialVideoTitle: widget.initialVideoTitle,
+          initialVideoThumbnail: widget.initialVideoThumbnail,
         );
 
     final roomState = ref.read(screeningRoomProvider(widget.threadId));
@@ -354,117 +370,19 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
 
     final sessionId = roomState.sessionId ?? '';
 
-    // ── Stack imersivo ──────────────────────────────────────────────────────
-    return GestureDetector(
+    // ── Layout adaptativo (portrait/landscape) ────────────────────────────
+    return ScreeningAdaptiveLayout(
+      sessionId: sessionId,
+      threadId: widget.threadId,
+      showControls: _showControls,
+      entryAnimationDone: _entryAnimationDone,
       onTap: _onTapScreen,
-      behavior: HitTestBehavior.opaque,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // ── Camada 0: Player ──────────────────────────────────────────────
-          ScreeningPlayerWidget(
-            sessionId: sessionId,
-            threadId: widget.threadId,
-          ),
-          // ── Camada 1: SyncStatusBadge (indicador de sincronização) ─────────────
-          // Exibe badge de "Sincronizando..." / "Ajustando..." quando o
-          // SyncStatus não está em stable/idle. IgnorePointer para não
-          // bloquear gestos na tela.
-          if (sessionId.isNotEmpty)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 56,
-              left: 0,
-              right: 0,
-              child: IgnorePointer(
-                child: _SyncStatusBadge(sessionId: sessionId),
-              ),
-            ),
-
-          // ── Camada 2: Gradientes de contraste (IgnorePointer correto) ────────────
-          Positioned.fill(
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.65),
-                      Colors.transparent,
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.80),
-                    ],
-                    stops: const [0.0, 0.18, 0.55, 1.0],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // ── Camada 3: Chat overlay (metade inferior) ──────────────────────────────────
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: MediaQuery.of(context).size.height * 0.48,
-            child: SafeArea(
-              top: false,
-              child: ScreeningChatOverlay(
-                sessionId: sessionId,
-                threadId: widget.threadId,
-              ),
-            ),
-          ),
-
-          // ── Camada 4a: Barra de reações (acima do chat) ───────────────────────────────────────────
-          if (sessionId.isNotEmpty)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: MediaQuery.of(context).size.height * 0.48 + 8,
-              child: SafeArea(
-                top: false,
-                child: ScreeningReactionBar(sessionId: sessionId),
-              ),
-            ),
-
-          // ── Camada 4b: Controles flutuantes ──────────────────────────────────────────────────────────
-          Positioned.fill(
-            child: ScreeningControlsOverlay(
-              sessionId: sessionId,
-              threadId: widget.threadId,
-              visible: _showControls,
-              onMinimize: _minimize,
-            ),
-          ),
-
-          // ── Camada 5: Overlay de vídeo encerrado ────────────────────────────────────────
-          if (sessionId.isNotEmpty)
-            Positioned.fill(
-              child: IgnorePointer(
-                ignoring: false,
-                child: ScreeningVideoEndedOverlay(
-                  sessionId: sessionId,
-                  threadId: widget.threadId,
-                ),
-              ),
-            ),
-
-          // ── Camada 6: Animação de entrada (só na primeira vez) ──────────────────────
-          if (!_entryAnimationDone)
-            Positioned.fill(
-              child: ScreeningEntryAnimation(
-                roomName: 'Sala de Projeção',
-                onComplete: () {
-                  if (mounted) setState(() => _entryAnimationDone = true);
-                },
-              ),
-            ),
-        ],
-      ),
+      onMinimize: _minimize,
+      onEntryAnimationComplete: () {
+        if (mounted) setState(() => _entryAnimationDone = true);
+      },
     );
   }
-  // ── Diálogo de sala encerrada ───────────────────────────────────────────────
 
   void _showRoomClosedDialog() {
     showDialog(

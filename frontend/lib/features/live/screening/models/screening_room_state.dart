@@ -26,6 +26,15 @@ class ScreeningRoomState {
   /// Título do vídeo atual.
   final String? currentVideoTitle;
 
+  /// Thumbnail do vídeo atual (para o gradiente ambiente e preview).
+  final String? currentVideoThumbnail;
+
+  /// Título da sala (exibido na animação de entrada e no mini overlay).
+  final String? title;
+
+  /// Fila de vídeos: lista de mapas com chaves 'url', 'title', 'thumbnail'.
+  final List<Map<String, String>> videoQueue;
+
   /// TRUE se o usuário local é o host (tem controle de reprodução).
   final bool isHost;
 
@@ -44,6 +53,9 @@ class ScreeningRoomState {
     required this.threadId,
     this.currentVideoUrl,
     this.currentVideoTitle,
+    this.currentVideoThumbnail,
+    this.title,
+    this.videoQueue = const [],
     this.isHost = false,
     this.hostUserId,
     this.participants = const [],
@@ -52,11 +64,17 @@ class ScreeningRoomState {
 
   int get viewerCount => participants.length;
 
+  /// Retorna true se há vídeos na fila além do atual.
+  bool get hasQueue => videoQueue.isNotEmpty;
+
   ScreeningRoomState copyWith({
     ScreeningRoomStatus? status,
     String? sessionId,
     String? currentVideoUrl,
     String? currentVideoTitle,
+    String? currentVideoThumbnail,
+    String? title,
+    List<Map<String, String>>? videoQueue,
     bool? isHost,
     String? hostUserId,
     List<ScreeningParticipant>? participants,
@@ -68,6 +86,10 @@ class ScreeningRoomState {
       threadId: threadId,
       currentVideoUrl: currentVideoUrl ?? this.currentVideoUrl,
       currentVideoTitle: currentVideoTitle ?? this.currentVideoTitle,
+      currentVideoThumbnail:
+          currentVideoThumbnail ?? this.currentVideoThumbnail,
+      title: title ?? this.title,
+      videoQueue: videoQueue ?? this.videoQueue,
       isHost: isHost ?? this.isHost,
       hostUserId: hostUserId ?? this.hostUserId,
       participants: participants ?? this.participants,

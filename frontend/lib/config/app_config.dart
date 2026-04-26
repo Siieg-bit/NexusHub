@@ -17,6 +17,16 @@ class AppConfig {
   static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? 'sb_publishable_HYsYzaF8DuBgXpqJAICJ1Q_b73GLUeb';
 
   // ============================================================================
+  // AGORA RTC (Voice Chat — Sala de Projeção)
+  // ============================================================================
+  /// App ID do Agora RTC — obtenha em https://console.agora.io > Project Management
+  /// NUNCA coloque o App Certificate aqui — use apenas nos Supabase Edge Function Secrets.
+  static String get agoraAppId => dotenv.env['AGORA_APP_ID'] ?? '';
+
+  /// Indica se o voice chat está habilitado (App ID configurado)
+  static bool get isVoiceChatEnabled => agoraAppId.isNotEmpty;
+
+  // ============================================================================
   // APP
   // ============================================================================
   static const String appName = 'NexusHub';

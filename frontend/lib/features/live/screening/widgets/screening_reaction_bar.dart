@@ -47,21 +47,38 @@ final _reactionCooldownProvider =
 
 class ScreeningReactionBar extends ConsumerWidget {
   final String sessionId;
+  /// Modo compacto: exibe as reações em coluna vertical (para landscape).
+  final bool compact;
 
-  const ScreeningReactionBar({super.key, required this.sessionId});
+  const ScreeningReactionBar({
+    super.key,
+    required this.sessionId,
+    this.compact = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final buttons = _kReactions.map((reaction) {
+      return _ReactionButton(
+        reaction: reaction,
+        sessionId: sessionId,
+        size: compact ? 34 : 40,
+      );
+    }).toList();
+
+    if (compact) {
+      // Modo landscape: coluna vertical
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: buttons,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
-        children: _kReactions.map((reaction) {
-          return _ReactionButton(
-            reaction: reaction,
-            sessionId: sessionId,
-          );
-        }).toList(),
+        children: buttons,
       ),
     );
   }
@@ -72,10 +89,12 @@ class ScreeningReactionBar extends ConsumerWidget {
 class _ReactionButton extends ConsumerStatefulWidget {
   final _Reaction reaction;
   final String sessionId;
+  final double size;
 
   const _ReactionButton({
     required this.reaction,
     required this.sessionId,
+    this.size = 40,
   });
 
   @override
@@ -172,8 +191,8 @@ class _ReactionButtonState extends ConsumerState<_ReactionButton>
             opacity: onCooldown ? 0.4 : 1.0,
             duration: const Duration(milliseconds: 200),
             child: Container(
-              width: 40,
-              height: 40,
+              width: widget.size,
+              height: widget.size,
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.55),
                 borderRadius: BorderRadius.circular(20),

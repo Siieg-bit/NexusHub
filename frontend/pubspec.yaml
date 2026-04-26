@@ -33,6 +33,7 @@ dependencies:
   flutter_colorpicker: ^1.0.3
 
   # Image & Media
+  palette_generator: ^0.3.3+3  # Extrai cores dominantes de imagens (thumbnails do vídeo)
   image_picker: ^1.0.7
   image_cropper: ^8.0.0
   flutter_image_compress: ^2.3.0

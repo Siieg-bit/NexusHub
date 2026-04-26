@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import '../models/screening_participant.dart';
 import 'screening_room_provider.dart';
+import '../../../../config/app_config.dart';
+import '../../../../core/services/supabase_service.dart';
 
 // =============================================================================
 // ScreeningVoiceProvider — Voice Chat via Agora RTC
@@ -14,8 +16,11 @@ import 'screening_room_provider.dart';
 // - Controlar mute/unmute do microfone local
 // - Atualizar o ScreeningRoomProvider com os indicadores de voz
 //
-// O App ID do Agora é lido da variável de ambiente AGORA_APP_ID.
-// Para produção, gerar tokens no backend via Edge Function.
+// O App ID do Agora é lido do arquivo .env via AppConfig (flutter_dotenv).
+// Para produção, o token é gerado pela Edge Function 'agora-token' no Supabase.
+// Configure no Supabase Dashboard > Edge Functions > Secrets:
+//   AGORA_APP_ID=seu_app_id
+//   AGORA_APP_CERTIFICATE=seu_certificate
 // =============================================================================
 
 // Threshold de volume para considerar que o usuário está falando (0-255)
@@ -67,14 +72,32 @@ class ScreeningVoiceNotifier extends StateNotifier<ScreeningVoiceState> {
   // ── Entrar no canal de voz ──────────────────────────────────────────────────
 
   Future<void> joinChannel() async {
-    const appId = String.fromEnvironment(
-      'AGORA_APP_ID',
-      defaultValue: '',
-    );
+    // Lido do .env via AppConfig (flutter_dotenv) — não requer --dart-define
+    final appId = AppConfig.agoraAppId;
 
     if (appId.isEmpty) {
-      debugPrint('[ScreeningVoice] AGORA_APP_ID não configurado. Voice chat desabilitado.');
+      debugPrint('[ScreeningVoice] AGORA_APP_ID não configurado no .env. Voice chat desabilitado.');
+      debugPrint('[ScreeningVoice] Adicione AGORA_APP_ID=seu_app_id ao arquivo frontend/.env');
       return;
+    }
+
+    // Tentar obter token seguro via Edge Function (produção)
+    // Em dev sem certificate configurado, usa token vazio (modo sem autenticação)
+    String token = '';
+    try {
+      final result = await SupabaseService.client.functions.invoke(
+        'agora-token',
+        body: {
+          'channelName': 'screening_$sessionId',
+          'uid': 0,
+          'role': 'publisher',
+        },
+      );
+      token = result.data?['token'] as String? ?? '';
+      debugPrint('[ScreeningVoice] Token Agora obtido com sucesso');
+    } catch (e) {
+      debugPrint('[ScreeningVoice] Edge Function agora-token não disponível, usando modo dev: $e');
+      // Continua sem token (válido apenas se App Certificate não estiver habilitado)
     }
 
     try {
@@ -150,7 +173,7 @@ class ScreeningVoiceNotifier extends StateNotifier<ScreeningVoiceState> {
 
       // Entrar no canal (nome = 'screening_{sessionId}')
       await _engine!.joinChannel(
-        token: '', // TODO: Gerar token no backend para produção
+        token: token, // Token gerado pela Edge Function 'agora-token'
         channelId: 'screening_$sessionId',
         uid: 0, // 0 = Agora gera UID automaticamente
         options: const ChannelMediaOptions(

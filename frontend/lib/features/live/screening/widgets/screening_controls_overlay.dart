@@ -10,6 +10,7 @@ import '../providers/screening_voice_provider.dart';
 import '../models/sync_event.dart';
 import 'screening_add_video_sheet.dart';
 import 'screening_transfer_host_sheet.dart';
+import 'screening_queue_sheet.dart';
 
 // =============================================================================
 // ScreeningControlsOverlay — Controles flutuantes da Sala de Projeção
@@ -260,6 +261,27 @@ class _ScreeningControlsOverlayState
                 label: 'Vídeo',
                 onTap: () => _showAddVideoSheet(context),
               ),
+              const SizedBox(width: 8),
+              // Fila de vídeos
+              _ControlButton(
+                icon: Icons.queue_music_rounded,
+                label: 'Fila',
+                color: roomState.videoQueue.isNotEmpty
+                    ? Colors.greenAccent
+                    : null,
+                badge: roomState.videoQueue.isNotEmpty
+                    ? '${roomState.videoQueue.length}'
+                    : null,
+                onTap: () => showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  isScrollControlled: true,
+                  builder: (_) => ScreeningQueueSheet(
+                    sessionId: widget.sessionId,
+                    threadId: widget.threadId,
+                  ),
+                ),
+              ),
             ],
           ),
         ],
@@ -327,6 +349,8 @@ class _ControlButton extends StatefulWidget {
   final Color color;
   final double size;
   final String? label;
+  /// Badge numérico exibido no canto superior direito (ex: tamanho da fila).
+  final String? badge;
 
   const _ControlButton({
     required this.icon,
@@ -334,6 +358,7 @@ class _ControlButton extends StatefulWidget {
     this.color = Colors.white,
     this.size = 22,
     this.label,
+    this.badge,
   });
 
   @override

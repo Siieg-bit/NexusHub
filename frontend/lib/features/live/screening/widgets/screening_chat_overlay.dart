@@ -35,11 +35,14 @@ import '../models/screening_chat_message.dart';
 class ScreeningChatOverlay extends ConsumerStatefulWidget {
   final String sessionId;
   final String threadId;
+  /// Em modo landscape, o chat ocupa um painel lateral sem gradiente de fundo.
+  final bool isLandscape;
 
   const ScreeningChatOverlay({
     super.key,
     required this.sessionId,
     required this.threadId,
+    this.isLandscape = false,
   });
 
   @override

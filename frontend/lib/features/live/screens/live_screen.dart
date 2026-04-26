@@ -5,6 +5,9 @@ import '../../../core/services/call_service.dart';
 import '../../chat/screens/call_screen.dart';
 // Nova Sala de Projeção refatorada (Fase 1)
 import '../screening/screens/screening_room_screen.dart';
+import '../screening/screens/screening_history_screen.dart';
+import '../screening/widgets/screening_create_room_sheet.dart';
+import '../screening/services/screening_notification_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../config/nexus_theme_data.dart';
@@ -77,64 +80,15 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   // CRIAR SALA DE PROJEÇÃO
   // ============================================================
   Future<void> _createScreeningRoom() async {
-    final s = getStrings();
-    final r = context.r;
-    final titleController = TextEditingController(text: 'Sala de Projeção');
-
-    final result = await showDialog<Map<String, String>>(
+    // Abrir o novo ScreeningCreateRoomSheet (moderno, com preview de vídeo)
+    final result = await showModalBottomSheet<Map<String, String>>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: context.surfaceColor,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(r.s(16))),
-        title: Text(s.createScreeningRoom,
-            style: TextStyle(
-                color: context.nexusTheme.textPrimary,
-                fontWeight: FontWeight.w800)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              style: TextStyle(color: context.nexusTheme.textPrimary),
-              decoration: InputDecoration(
-                hintText: s.roomName,
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                prefixIcon: Icon(Icons.live_tv_rounded,
-                    color: context.nexusTheme.accentSecondary),
-                filled: true,
-                fillColor: context.nexusTheme.surfacePrimary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(r.s(12)),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, {
-              'title': titleController.text.trim(),
-            }),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: context.nexusTheme.accentPrimary,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(r.s(10))),
-            ),
-            child: Text(s.create,
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w700)),
-          ),
-        ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ScreeningCreateRoomSheet(
+        communityId: widget.communityId ?? '',
       ),
     );
-
-    titleController.dispose();
     if (result == null) return;
 
     setState(() => _isCreating = true);
@@ -155,10 +109,24 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         'status': 'active',
       });
 
+      // Notificar membros da comunidade sobre a nova sala (fire-and-forget)
+      if (widget.communityId != null) {
+        ScreeningNotificationService.notifyRoomCreated(
+          communityId: widget.communityId!,
+          sessionId: thread['id'] as String,
+          hostUserId: SupabaseService.currentUserId ?? '',
+          videoTitle: result['video_title'],
+          roomTitle: result['title'],
+        );
+      }
+
       if (mounted) {
         await Navigator.of(context).push(MaterialPageRoute(
           builder: (_) => ScreeningRoomScreen(
             threadId: thread['id'] as String? ?? '',
+            initialVideoUrl: result['video_url'],
+            initialVideoTitle: result['video_title'],
+            initialVideoThumbnail: result['video_thumbnail'],
           ),
         ));
         _loadActiveSessions();
@@ -167,8 +135,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.errorCreatingRoom),
-            backgroundColor: context.nexusTheme.error,
+            content: const Text('Erro ao criar a Sala de Projeção.'),
+            backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -542,6 +510,20 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   color: context.nexusTheme.accentPrimary,
+                ),
+              ),
+            ),
+          // Histórico de salas de projeção
+          if (widget.communityId != null)
+            IconButton(
+              icon: const Icon(Icons.history_rounded, size: 22),
+              tooltip: 'Histórico de Salas',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ScreeningHistoryScreen(
+                    communityId: widget.communityId!,
+                    communityName: 'Comunidade',
+                  ),
                 ),
               ),
             ),
