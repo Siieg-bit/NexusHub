@@ -21,6 +21,8 @@ import '../../auth/providers/auth_provider.dart';
 import '../../stories/screens/story_viewer_screen.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/nexus_badge.dart';
+import '../../../core/widgets/shimmer_loading.dart';
+import '../../../core/widgets/nexus_empty_state.dart';
 
 /// Provider para "Meus chats" — lista pessoal do usuário.
 /// Retorna apenas threads com membership ativo (status != 'left').
@@ -554,11 +556,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   // ════════════════════════════════════════════════
                   Expanded(
                     child: chatsAsync.when(
-                      loading: () => Center(
-                        child: CircularProgressIndicator(
-                          color: context.nexusTheme.accentSecondary,
-                          strokeWidth: 2.5,
-                        ),
+                      loading: () => CustomScrollView(
+                        slivers: [const ChatListSkeleton(count: 5)],
                       ),
                       error: (error, _) => Center(
                         child: Column(
@@ -991,58 +990,12 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   // ==========================================================================
   Widget _buildEmptyChats() {
     final s = getStrings();
-    final r = context.r;
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(r.s(32)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: r.s(80),
-              height: r.s(80),
-              decoration: BoxDecoration(
-                color: context.surfaceColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.chat_bubble_outline_rounded,
-                  size: r.s(36), color: context.nexusTheme.textHint),
-            ),
-            SizedBox(height: r.s(16)),
-            Text(s.noChatsYet,
-                style: TextStyle(
-                    color: context.nexusTheme.textPrimary,
-                    fontSize: r.fs(16),
-                    fontWeight: FontWeight.w600)),
-            SizedBox(height: r.s(8)),
-            Text(s.joinCommunityStartChat,
-                style: TextStyle(
-                    color: context.nexusTheme.textSecondary,
-                    fontSize: r.fs(13)),
-                textAlign: TextAlign.center),
-            SizedBox(height: r.s(24)),
-            GestureDetector(
-              onTap: () => context.go('/explore'),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: r.s(20), vertical: r.s(10)),
-                decoration: BoxDecoration(
-                  color: context.nexusTheme.accentSecondary,
-                  borderRadius: BorderRadius.circular(r.s(20)),
-                ),
-                child: Text(
-                  'Explorar Mais Chats',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: r.fs(14),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return NexusEmptyState(
+      icon: Icons.chat_bubble_outline_rounded,
+      title: s.noChatsYet,
+      subtitle: s.joinCommunityStartChat,
+      actionLabel: 'Explorar Mais Chats',
+      onAction: () => context.go('/explore'),
     );
   }
 }

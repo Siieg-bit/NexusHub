@@ -11,6 +11,8 @@ import '../../../core/services/app_navigation_helper.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/shimmer_loading.dart';
+import '../../../core/widgets/nexus_empty_state.dart';
 
 // =============================================================================
 // TELA DE ALERTAS — Estilo Amino Apps
@@ -360,8 +362,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         ],
       ),
       body: notifAsync.when(
-        loading: () => Center(
-          child: CircularProgressIndicator(color: context.nexusTheme.accentPrimary),
+        loading: () => CustomScrollView(
+          slivers: [const NotificationsListSkeleton(count: 5)],
         ),
         error: (error, _) => Center(
           child: Column(

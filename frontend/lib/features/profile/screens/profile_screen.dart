@@ -21,6 +21,7 @@ import '../../../core/services/deep_link_service.dart';
 import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/user_status_badge.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 // =============================================================================
 // PROFILE SCREEN — Layout fiel ao Amino Apps
@@ -68,9 +69,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return profileAsync.when(
       loading: () => Scaffold(
         backgroundColor: context.nexusTheme.backgroundPrimary,
-        body: Center(
-          child: CircularProgressIndicator(
-              color: context.nexusTheme.accentSecondary, strokeWidth: 2),
+        body: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: const ProfileScreenSkeleton(),
         ),
       ),
       error: (error, _) => Scaffold(

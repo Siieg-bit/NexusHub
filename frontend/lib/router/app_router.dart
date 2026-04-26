@@ -93,6 +93,7 @@ import '../features/profile/screens/edit_community_profile_screen.dart';
 import 'shell_screen.dart';
 import '../features/stories/screens/story_viewer_screen.dart';
 import '../core/screens/short_code_redirect_screen.dart';
+import '../core/utils/page_transitions.dart';
 
 /// Router principal do app com GoRouter.
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -227,8 +228,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/community/:id',
         name: 'community-detail',
-        builder: (context, state) => CommunityDetailScreen(
-          communityId: state.pathParameters['id']!,
+        pageBuilder: (context, state) => NexusTransitions.scaleFade(
+          state: state,
+          child: CommunityDetailScreen(
+            communityId: state.pathParameters['id']!,
+          ),
         ),
       ),
       GoRoute(
@@ -298,10 +302,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/post/:id',
         name: 'post-detail',
-        builder: (context, state) => PostDetailScreen(
-          postId: state.pathParameters['id']!,
-          scrollToComments:
-              state.uri.queryParameters['scrollToComments'] == 'true',
+        pageBuilder: (context, state) => NexusTransitions.scaleFade(
+          state: state,
+          child: PostDetailScreen(
+            postId: state.pathParameters['id']!,
+            scrollToComments:
+                state.uri.queryParameters['scrollToComments'] == 'true',
+          ),
         ),
       ),
       GoRoute(
@@ -395,8 +402,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/chat/:id',
         name: 'chat-room',
-        builder: (context, state) => ChatRoomScreen(
-          threadId: state.pathParameters['id']!,
+        pageBuilder: (context, state) => NexusTransitions.slide(
+          state: state,
+          child: ChatRoomScreen(
+            threadId: state.pathParameters['id']!,
+          ),
         ),
       ),
       GoRoute(
@@ -433,8 +443,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/user/:id',
         name: 'user-profile',
-        builder: (context, state) => ProfileScreen(
-          userId: state.pathParameters['id']!,
+        pageBuilder: (context, state) => NexusTransitions.slide(
+          state: state,
+          child: ProfileScreen(
+            userId: state.pathParameters['id']!,
+          ),
         ),
       ),
       GoRoute(

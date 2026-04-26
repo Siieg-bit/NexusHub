@@ -228,8 +228,13 @@ class _PostCardState extends ConsumerState<PostCard>
   }
 
   Future<void> _toggleLike() async {
-    HapticService.buttonPress();
     final wasLiked = _post.isLiked;
+    // Haptic diferenciado: success ao curtir, buttonPress ao descurtir
+    if (!wasLiked) {
+      HapticService.success();
+    } else {
+      HapticService.buttonPress();
+    }
     setState(() {
       _post = _post.copyWith(
         isLiked: !wasLiked,

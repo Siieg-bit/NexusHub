@@ -10,6 +10,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/nexus_empty_state.dart';
 
 // =============================================================================
 // PROVIDERS
@@ -329,32 +330,10 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                     data: (members) {
                       if (members.isEmpty) {
                         return SliverFillRemaining(
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.leaderboard_rounded,
-                                    color: Colors.grey[700], size: 64),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Nenhum membro no ranking ainda',
-                                  style: TextStyle(
-                                    color: Colors.grey[500],
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  s.checkInEarnReputation,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          child: NexusEmptyState(
+                            icon: Icons.leaderboard_rounded,
+                            title: 'Nenhum membro no ranking ainda',
+                            subtitle: s.checkInEarnReputation,
                           ),
                         );
                       }
@@ -529,32 +508,10 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                     data: (members) {
                       if (members.isEmpty) {
                         return SliverFillRemaining(
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.access_time_rounded,
-                                    color: Colors.grey[700], size: 64),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Nenhum dado de tempo online ainda',
-                                  style: TextStyle(
-                                    color: Colors.grey[500],
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Fique online na comunidade para aparecer aqui!',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          child: NexusEmptyState(
+                            icon: Icons.access_time_rounded,
+                            title: 'Nenhum dado de tempo online ainda',
+                            subtitle: 'Fique online na comunidade para aparecer aqui!',
                           ),
                         );
                       }

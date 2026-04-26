@@ -9,6 +9,15 @@ import '../core/providers/notification_provider.dart';
 import '../core/providers/dm_invite_provider.dart';
 import '../core/widgets/nexus_badge.dart';
 
+/// Provider global para o ScrollController de cada aba.
+/// Permite que o shell acione o scroll-to-top ao re-tocar a aba ativa.
+final tabScrollControllerProvider =
+    Provider.family<ScrollController, int>((ref, tabIndex) {
+  final controller = ScrollController();
+  ref.onDispose(controller.dispose);
+  return controller;
+});
+
 /// Bottom Navigation Bar Global — réplica pixel-perfect do Amino Apps.
 ///
 /// 4 Tabs globais:
@@ -20,6 +29,9 @@ import '../core/widgets/nexus_badge.dart';
 /// Cor ativa: ciano (#00BCD4) — NÃO branco.
 /// Cor inativa: cinza translúcido.
 /// Fundo: azul-marinho escuro com blur.
+///
+/// Comportamento de re-tap:
+///   - Tocar na aba já ativa aciona scroll-to-top suave via [tabScrollControllerProvider].
 class ShellScreen extends ConsumerWidget {
   final Widget child;
   const ShellScreen({super.key, required this.child});
@@ -78,7 +90,22 @@ class ShellScreen extends ConsumerWidget {
     return -1;
   }
 
-  void _onItemTapped(BuildContext context, int index) {
+  void _onItemTapped(BuildContext context, WidgetRef ref, int index) {
+    final currentIndex = _getSelectedIndex(context);
+
+    if (currentIndex == index) {
+      // Re-tap na aba ativa: scroll suave para o topo
+      final controller = ref.read(tabScrollControllerProvider(index));
+      if (controller.hasClients) {
+        controller.animateTo(
+          0,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
+        );
+      }
+      return;
+    }
+
     switch (index) {
       case 0:
         context.go('/explore');
@@ -137,7 +164,7 @@ class ShellScreen extends ConsumerWidget {
                       activeIcon: Icons.edit,
                       label: s.discover,
                       isSelected: selectedIndex == 0,
-                      onTap: () => _onItemTapped(context, 0),
+                      onTap: () => _onItemTapped(context, ref, 0),
                     ),
                     // ── Communities — badge de notificações de comunidade
                     _AminoNavItem(
@@ -145,7 +172,7 @@ class ShellScreen extends ConsumerWidget {
                       activeIcon: Icons.grid_view_rounded,
                       label: 'Comunidades',
                       isSelected: selectedIndex == 1,
-                      onTap: () => _onItemTapped(context, 1),
+                      onTap: () => _onItemTapped(context, ref, 1),
                       badgeCount: communityNotifUnread,
                     ),
                     // ── Chats — badge de mensagens não lidas + DM invites pendentes
@@ -154,7 +181,7 @@ class ShellScreen extends ConsumerWidget {
                       activeIcon: Icons.chat_bubble_rounded,
                       label: s.chats2,
                       isSelected: selectedIndex == 2,
-                      onTap: () => _onItemTapped(context, 2),
+                      onTap: () => _onItemTapped(context, ref, 2),
                       badgeCount: totalChatBadge,
                     ),
                     // ── Store
@@ -163,7 +190,7 @@ class ShellScreen extends ConsumerWidget {
                       activeIcon: Icons.store_mall_directory,
                       label: s.shop,
                       isSelected: selectedIndex == 3,
-                      onTap: () => _onItemTapped(context, 3),
+                      onTap: () => _onItemTapped(context, ref, 3),
                     ),
                   ],
                 ),

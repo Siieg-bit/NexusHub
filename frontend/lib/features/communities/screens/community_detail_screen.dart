@@ -27,6 +27,8 @@ import '../widgets/community_online_tab.dart';
 import '../widgets/community_chat_tab.dart';
 import '../widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/widgets/shimmer_loading.dart';
+import '../../../core/services/haptic_service.dart';
 import '../../../core/services/deep_link_service.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import 'package:amino_clone/features/auth/providers/auth_provider.dart';
@@ -205,6 +207,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   Future<void> _joinCommunity() async {
     final r = context.r;
     final s = getStrings();
+    HapticService.action(); // Feedback tátil ao entrar na comunidade
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
@@ -272,9 +275,9 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     return communityAsync.when(
       loading: () => Scaffold(
         backgroundColor: context.nexusTheme.backgroundPrimary,
-        body: Center(
-          child: CircularProgressIndicator(
-              color: context.nexusTheme.accentPrimary, strokeWidth: 2.5),
+        body: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: const CommunityHeaderSkeleton(),
         ),
       ),
       error: (error, _) => Scaffold(

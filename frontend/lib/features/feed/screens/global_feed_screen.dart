@@ -8,7 +8,10 @@ import '../../../core/services/cache_service.dart';
 import '../widgets/post_card.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/widgets/shimmer_loading.dart';
+import '../../../core/widgets/nexus_empty_state.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../router/shell_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Provider de feed global com paginação (AsyncNotifier)
@@ -128,17 +131,23 @@ class GlobalFeedScreen extends ConsumerStatefulWidget {
 }
 
 class _GlobalFeedScreenState extends ConsumerState<GlobalFeedScreen> {
-  final _scrollController = ScrollController();
+  // Tab 0 = Discover/Feed
+  // Usa o tabScrollControllerProvider para que o re-tap na aba acione scroll-to-top
+  ScrollController get _scrollController =>
+      ref.read(tabScrollControllerProvider(0));
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
+    // Listener adicionado após o primeiro frame para garantir que o provider está pronto
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.addListener(_onScroll);
+    });
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    // Não dispose o controller pois ele é gerenciado pelo provider
     super.dispose();
   }
 
@@ -321,11 +330,7 @@ class _GlobalFeedScreenState extends ConsumerState<GlobalFeedScreen> {
             // FEED CONTENT
             // ================================================================
             feedAsync.when(
-              loading: () => SliverFillRemaining(
-                child: Center(
-                    child: CircularProgressIndicator(
-                        color: context.nexusTheme.accentPrimary)),
-              ),
+              loading: () => const GlobalFeedSkeleton(count: 4),
               error: (error, _) => SliverFillRemaining(
                 child: Center(
                   child: Column(
@@ -378,24 +383,12 @@ class _GlobalFeedScreenState extends ConsumerState<GlobalFeedScreen> {
               data: (posts) {
                 if (posts.isEmpty) {
                   return SliverFillRemaining(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.explore_rounded,
-                              size: r.s(64),
-                              color: context.nexusTheme.textHint),
-                          SizedBox(height: r.s(16)),
-                          Text(
-                            'Entre em comunidades para ver posts aqui.',
-                            style: TextStyle(
-                              color: context.nexusTheme.textSecondary,
-                              fontSize: r.fs(14),
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
+                    child: NexusEmptyState(
+                      icon: Icons.explore_rounded,
+                      title: 'Seu feed está vazio',
+                      subtitle: 'Entre em comunidades para ver posts aqui.',
+                      actionLabel: 'Explorar comunidades',
+                      onAction: () => context.push('/explore'),
                     ),
                   );
                 }

@@ -17,6 +17,7 @@ import '../widgets/block_content_renderer.dart';
 import '../widgets/block_editor.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/services/haptic_service.dart';
 
 // =============================================================================
 // CREATE BLOG SCREEN — Editor de blogs estilo Amino
@@ -546,6 +547,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
   }
 
   Future<void> _submit() async {
+    HapticService.action(); // Feedback tátil ao publicar
     final s = getStrings();
     final title = _titleController.text.trim();
     if (title.isEmpty) {
