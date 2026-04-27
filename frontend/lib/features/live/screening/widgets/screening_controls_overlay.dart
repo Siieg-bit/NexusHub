@@ -78,78 +78,95 @@ class _ScreeningControlsOverlayState
 
   @override
   Widget build(BuildContext context) {
-    // Usar select para evitar rebuild do overlay inteiro a cada tick do polling.
-    // playerState é lido apenas no _HostControlsConsumer para isolar os rebuilds.
     final roomState = ref.watch(screeningRoomProvider(widget.threadId));
-    final voiceState = ref.watch(screeningVoiceProvider(widget.sessionId));
+    final mq = MediaQuery.of(context);
+
     return FadeTransition(
       opacity: _fadeAnim,
       child: IgnorePointer(
         ignoring: !widget.visible,
-        child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // ── Top Bar ──────────────────────────────────────────────────
-              _buildTopBar(context, roomState, voiceState),
-              // ── Host Controls (apenas host) ───────────────────────────────
-              if (roomState.isHost)
-                _HostControlsConsumer(
+        child: Stack(
+          children: [
+            // ── Gradiente superior (escurece o topo para a topbar ficar legível) ──
+            Positioned(
+              top: 0, left: 0, right: 0,
+              height: 80 + mq.padding.top,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.72),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // ── Gradiente inferior (escurece o bottom para os controles) ──────────
+            Positioned(
+              bottom: 0, left: 0, right: 0,
+              height: 120,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.80),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // ── Top Bar ────────────────────────────────────────────────────────────
+            Positioned(
+              top: mq.padding.top,
+              left: 0, right: 0,
+              child: _buildTopBar(context, roomState),
+            ),
+            // ── Controles do Player (bottom do player) ─────────────────────────────
+            if (roomState.isHost)
+              Positioned(
+                bottom: 0, left: 0, right: 0,
+                child: _HostControlsConsumer(
                   sessionId: widget.sessionId,
                   threadId: widget.threadId,
                   onSeekAndBroadcast: _seekAndBroadcast,
                   onTogglePlayPause: _togglePlayPause,
                   onShowAddVideo: () => _showAddVideoSheet(context),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
   }
 
   // ── Top Bar ─────────────────────────────────────────────────────────────────
-
-  Widget _buildTopBar(
-    BuildContext context,
-    dynamic roomState,
-    dynamic voiceState,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.black.withValues(alpha: 0.7),
-            Colors.transparent,
-          ],
-        ),
-      ),
+  Widget _buildTopBar(BuildContext context, dynamic roomState) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          // Botão voltar / minimizar
+          // Botão fechar / minimizar
           _ControlButton(
-            icon: Icons.arrow_back_ios_new_rounded,
+            icon: Icons.close_rounded,
             onTap: widget.onMinimize,
           ),
           const SizedBox(width: 8),
-
           // Título do vídeo
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Sala de Projeção',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
                 if (roomState.currentVideoTitle?.isNotEmpty == true)
                   Text(
                     roomState.currentVideoTitle!,
@@ -157,26 +174,71 @@ class _ScreeningControlsOverlayState
                       color: Colors.white,
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
+                      shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  )
+                else
+                  Text(
+                    'Sala de Projeção',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
               ],
             ),
           ),
-
           // Contagem de viewers
           _ViewerCountBadge(count: roomState.viewerCount),
-          const SizedBox(width: 8),
-
-          // Microfone movido para a barra inferior do chat (como no Rave)
+          const SizedBox(width: 4),
+          // Botões de host (apenas host vê)
+          if (roomState.isHost) ...[
+            _ControlButton(
+              icon: Icons.add_circle_outline_rounded,
+              label: 'Vídeo',
+              onTap: () => _showAddVideoSheet(context),
+            ),
+            const SizedBox(width: 4),
+            _ControlButton(
+              icon: Icons.queue_music_rounded,
+              label: 'Fila',
+              color: roomState.videoQueue.isNotEmpty
+                  ? Colors.greenAccent[400]!
+                  : null,
+              badge: roomState.videoQueue.isNotEmpty
+                  ? '\${roomState.videoQueue.length}'
+                  : null,
+              onTap: () => showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                builder: (_) => ScreeningQueueSheet(
+                  sessionId: widget.sessionId,
+                  threadId: widget.threadId,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            _ControlButton(
+              icon: Icons.swap_horiz_rounded,
+              label: 'Host',
+              color: Colors.amberAccent,
+              onTap: () => ScreeningTransferHostSheet.show(
+                context,
+                sessionId: widget.sessionId,
+                threadId: widget.threadId,
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
-
-  // ── Host Controls ───────────────────────────────────────────────────────────
-
   Widget _buildHostControls(
     BuildContext context,
     dynamic roomState,
@@ -763,44 +825,6 @@ class _HostControlsConsumer extends ConsumerWidget {
                   );
                 },
               ),
-              const Spacer(),
-              _ControlButton(
-                icon: Icons.swap_horiz_rounded,
-                label: 'Host',
-                color: Colors.amberAccent,
-                onTap: () => ScreeningTransferHostSheet.show(
-                  context,
-                  sessionId: sessionId,
-                  threadId: threadId,
-                ),
-              ),
-              const SizedBox(width: 8),
-              _ControlButton(
-                icon: Icons.add_circle_outline_rounded,
-                label: 'Vídeo',
-                onTap: onShowAddVideo,
-              ),
-              const SizedBox(width: 8),
-              _ControlButton(
-                icon: Icons.queue_music_rounded,
-                label: 'Fila',
-                color: roomState.videoQueue.isNotEmpty
-                    ? Colors.greenAccent[400]!
-                    : null,
-                badge: roomState.videoQueue.isNotEmpty
-                    ? '\${roomState.videoQueue.length}'
-                    : null,
-                onTap: () => showModalBottomSheet(
-                  context: context,
-                  backgroundColor: Colors.transparent,
-                  isScrollControlled: true,
-                  builder: (_) => ScreeningQueueSheet(
-                    sessionId: sessionId,
-                    threadId: threadId,
-                  ),
-                ),
-              ),
-            ],
           ),
         ],
       ),

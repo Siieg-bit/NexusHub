@@ -22,6 +22,7 @@ import 'screening_video_ended_overlay.dart';
 import 'screening_entry_animation.dart';
 import '../widgets/screening_sync_badge.dart';
 import '../providers/screening_room_provider.dart';
+import 'screening_ambient_gradient.dart';
 
 /// Widget raiz que detecta a orientação e alterna entre portrait e landscape.
 class ScreeningAdaptiveLayout extends ConsumerStatefulWidget {
@@ -125,9 +126,9 @@ class _ScreeningAdaptiveLayoutState
 }
 
 // =============================================================================
-// Layout Portrait — Stack imersivo padrão
+// Layout Portrait — Column: vídeo no topo + chat sólido embaixo (estilo Rave)
 // =============================================================================
-class _PortraitLayout extends StatelessWidget {
+class _PortraitLayout extends ConsumerWidget {
   final String sessionId;
   final String threadId;
   final bool showControls;
@@ -153,227 +154,230 @@ class _PortraitLayout extends StatelessWidget {
   });
 
   @override
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final mq = MediaQuery.of(context);
-    // Altura do chat: 46% da tela, clampada entre 260px e 420px.
-    // Garante boa experiência em telas pequenas e grandes.
-    final chatHeight = (mq.size.height * 0.46).clamp(260.0, 420.0);
-    // Padding inferior da safe area (barra de navegação por gestos ou botões).
-    final bottomPad = mq.padding.bottom;
-    // Reaction bar fica logo acima do chat overlay + 6px de margem.
-    final reactionBarBottom = chatHeight + 6;
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Camada 0: Player (ocupa toda a tela)
-          ScreeningPlayerWidget(
-            sessionId: sessionId,
-            threadId: threadId,
-          ),
-          // Camada 1: SyncStatusBadge (abaixo da topbar)
-          if (sessionId.isNotEmpty)
-            Positioned(
-              top: mq.padding.top + 52,
-              left: 0,
-              right: 0,
-              child: IgnorePointer(
-                child: ScreeningSyncBadge(sessionId: sessionId),
+    // Altura do player: 40% da tela, clampada entre 200px e 320px
+    final playerHeight = (mq.size.height * 0.40).clamp(200.0, 320.0);
+    // Cor ambiente para o gradiente dinâmico do chat
+    final ambientColor = sessionId.isNotEmpty
+        ? ref.watch(screeningAmbientColorProvider(sessionId))
+        : Colors.black;
+
+    return Stack(
+      children: [
+        // ── Estrutura principal: Column com vídeo + chat ─────────────────
+        Column(
+          children: [
+            // ── Área do Player (topo, altura fixa) ──────────────────────
+            SizedBox(
+              height: playerHeight,
+              child: GestureDetector(
+                onTap: onTap,
+                behavior: HitTestBehavior.opaque,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Player WebView
+                    ScreeningPlayerWidget(
+                      sessionId: sessionId,
+                      threadId: threadId,
+                    ),
+                    // Controles sobrepostos no player (topbar + play/pause/seek)
+                    Positioned.fill(
+                      child: ScreeningControlsOverlay(
+                        sessionId: sessionId,
+                        threadId: threadId,
+                        visible: showControls,
+                        onMinimize: onMinimize,
+                      ),
+                    ),
+                    // SyncStatusBadge
+                    if (sessionId.isNotEmpty)
+                      Positioned(
+                        top: mq.padding.top + 52,
+                        left: 0,
+                        right: 0,
+                        child: IgnorePointer(
+                          child: ScreeningSyncBadge(sessionId: sessionId),
+                        ),
+                      ),
+                    // Overlay de vídeo encerrado
+                    if (sessionId.isNotEmpty)
+                      Positioned.fill(
+                        child: ScreeningVideoEndedOverlay(
+                          sessionId: sessionId,
+                          threadId: threadId,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-          // Camada 2: Gradientes de contraste (IgnorePointer)
-          Positioned.fill(
-            child: IgnorePointer(
-              child: DecoratedBox(
+            // ── Área do Chat (resto da tela, gradiente dinâmico) ─────────
+            Expanded(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeInOut,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withValues(alpha: 0.60),
-                      Colors.transparent,
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.82),
+                      Color.lerp(Colors.black, ambientColor, 0.35)!
+                          .withValues(alpha: 1.0),
+                      Color.lerp(Colors.black, ambientColor, 0.15)!
+                          .withValues(alpha: 1.0),
+                      const Color(0xFF0A0A0A),
                     ],
-                    stops: const [0.0, 0.15, 0.50, 1.0],
+                    stops: const [0.0, 0.4, 1.0],
                   ),
+                ),
+                child: ScreeningChatOverlay(
+                  sessionId: sessionId,
+                  threadId: threadId,
+                  emojiRainKey: emojiRainKey,
                 ),
               ),
             ),
-          ),
-          // Camada 3: Chat overlay (ancora no bottom, altura responsiva)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: chatHeight,
-            child: ScreeningChatOverlay(
-              sessionId: sessionId,
-              threadId: threadId,
-              emojiRainKey: emojiRainKey,
-            ),
-          ),
-          // Camada 4a: Barra de reações (acima do chat)
-          if (sessionId.isNotEmpty)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: reactionBarBottom,
-              child: ScreeningReactionBar(sessionId: sessionId),
-            ),
-          // Camada 4b: Controles flutuantes (topbar + host controls)
+          ],
+        ),
+        // ── Animação de entrada (por cima de tudo) ───────────────────────
+        if (!entryAnimationDone)
           Positioned.fill(
-            child: ScreeningControlsOverlay(
-              sessionId: sessionId,
-              threadId: threadId,
-              visible: showControls,
-              onMinimize: onMinimize,
-              chatHeight: chatHeight,
-              bottomPad: bottomPad,
+            child: ScreeningEntryAnimation(
+              isExiting: entryAnimationExiting,
+              onComplete: onEntryAnimationComplete,
             ),
           ),
-          // Camada 5: Overlay de vídeo encerrado
-          if (sessionId.isNotEmpty)
-            Positioned.fill(
-              child: ScreeningVideoEndedOverlay(
-                sessionId: sessionId,
-                threadId: threadId,
-              ),
-            ),
-          // Camada 6: Animação de entrada (por cima de tudo)
-          if (!entryAnimationDone)
-            Positioned.fill(
-              child: ScreeningEntryAnimation(
-                isExiting: entryAnimationExiting,
-                onComplete: onEntryAnimationComplete,
-              ),
-            ),
-        ],
-      ),
+      ],
     );
   }
 }
 
+// =============================================================================
+// Layout Landscape — Row: player à esquerda (70%) + chat à direita (30%)
+// =============================================================================
+class _LandscapeLayout extends StatelessWidget {
+  final String sessionId;
+  final String threadId;
+  final bool showControls;
+  final bool entryAnimationDone;
+  final bool entryAnimationExiting;
+  final VoidCallback onTap;
+  final VoidCallback onMinimize;
+  final VoidCallback onEntryAnimationComplete;
+  final String roomTitle;
+  final GlobalKey<EmojiRainOverlayState>? emojiRainKey;
+
+  const _LandscapeLayout({
+    required this.sessionId,
+    required this.threadId,
+    required this.showControls,
+    required this.entryAnimationDone,
+    required this.entryAnimationExiting,
+    required this.onTap,
+    required this.onMinimize,
+    required this.onEntryAnimationComplete,
+    required this.roomTitle,
+    this.emojiRainKey,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Stack(
       children: [
-        // ── Área do Player (70% da largura) ─────────────────────────────────
-        Expanded(
-          flex: 70,
-          child: GestureDetector(
-            onTap: onTap,
-            behavior: HitTestBehavior.opaque,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Player
-                ScreeningPlayerWidget(
-                  sessionId: sessionId,
-                  threadId: threadId,
-                ),
-                // Gradiente de contraste (apenas topo e base)
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withValues(alpha: 0.55),
-                            Colors.transparent,
-                            Colors.transparent,
-                            Colors.black.withValues(alpha: 0.70),
-                          ],
-                          stops: const [0.0, 0.15, 0.65, 1.0],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // SyncStatusBadge
-                if (sessionId.isNotEmpty)
-                  Positioned(
-                    top: 8,
-                    left: 0,
-                    right: 0,
-                    child: IgnorePointer(
-                      child: ScreeningSyncBadge(sessionId: sessionId),
-                    ),
-                  ),
-                // Barra de reações (canto inferior esquerdo)
-                if (sessionId.isNotEmpty)
-                  Positioned(
-                    left: 8,
-                    bottom: 64,
-                    child: ScreeningReactionBar(
-                      sessionId: sessionId,
-                      compact: true,
-                    ),
-                  ),
-                // Controles flutuantes
-                Positioned.fill(
-                  child: ScreeningControlsOverlay(
-                    sessionId: sessionId,
-                    threadId: threadId,
-                    visible: showControls,
-                    onMinimize: onMinimize,
-                  ),
-                ),
-                // Overlay de vídeo encerrado
-                if (sessionId.isNotEmpty)
-                  Positioned.fill(
-                    child: ScreeningVideoEndedOverlay(
+        Row(
+          children: [
+            // ── Player (70%) ─────────────────────────────────────────────
+            Expanded(
+              flex: 70,
+              child: GestureDetector(
+                onTap: onTap,
+                behavior: HitTestBehavior.opaque,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ScreeningPlayerWidget(
                       sessionId: sessionId,
                       threadId: threadId,
                     ),
-                  ),
-                // Animação de entrada
-                if (!entryAnimationDone)
-                  Positioned.fill(
-                    child: ScreeningEntryAnimation(
-                      isExiting: entryAnimationExiting,
-                      onComplete: onEntryAnimationComplete,
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.55),
+                                Colors.transparent,
+                                Colors.transparent,
+                                Colors.black.withValues(alpha: 0.70),
+                              ],
+                              stops: const [0.0, 0.15, 0.65, 1.0],
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-              ],
+                    if (sessionId.isNotEmpty)
+                      Positioned.fill(
+                        child: ScreeningControlsOverlay(
+                          sessionId: sessionId,
+                          threadId: threadId,
+                          visible: showControls,
+                          onMinimize: onMinimize,
+                        ),
+                      ),
+                    if (sessionId.isNotEmpty)
+                      Positioned.fill(
+                        child: ScreeningVideoEndedOverlay(
+                          sessionId: sessionId,
+                          threadId: threadId,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            // ── Divisor ──────────────────────────────────────────────────
+            Container(
+              width: 1,
+              color: Colors.white.withValues(alpha: 0.08),
+            ),
+            // ── Chat (30%) ───────────────────────────────────────────────
+            Expanded(
+              flex: 30,
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.85),
+                child: Column(
+                  children: [
+                    _LandscapeChatHeader(
+                      threadId: threadId,
+                      onMinimize: onMinimize,
+                    ),
+                    Expanded(
+                      child: ScreeningChatOverlay(
+                        sessionId: sessionId,
+                        threadId: threadId,
+                        isLandscape: true,
+                        emojiRainKey: emojiRainKey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        // Animação de entrada
+        if (!entryAnimationDone)
+          Positioned.fill(
+            child: ScreeningEntryAnimation(
+              isExiting: entryAnimationExiting,
+              onComplete: onEntryAnimationComplete,
             ),
           ),
-        ),
-        // ── Divisor vertical ────────────────────────────────────────────────
-        Container(
-          width: 1,
-          color: Colors.white.withValues(alpha: 0.08),
-        ),
-        // ── Painel lateral do Chat (30% da largura) ──────────────────────────
-        Expanded(
-          flex: 30,
-          child: Container(
-            color: Colors.black.withValues(alpha: 0.85),
-            child: Column(
-              children: [
-                // Header do painel lateral
-                _LandscapeChatHeader(
-                  threadId: threadId,
-                  onMinimize: onMinimize,
-                ),
-                // Chat overlay expandido
-                Expanded(
-                  child: ScreeningChatOverlay(
-                    sessionId: sessionId,
-                    threadId: threadId,
-                    isLandscape: true,
-                    emojiRainKey: emojiRainKey,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ],
     );
   }

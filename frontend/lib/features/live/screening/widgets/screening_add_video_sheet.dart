@@ -1,13 +1,12 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/screening_room_provider.dart';
 
 // =============================================================================
-// ScreeningAddVideoSheet — Bottom sheet para adicionar/trocar vídeo
-// Disponível apenas para o host.
+// ScreeningAddVideoSheet — Bottom sheet para adicionar/trocar vídeo (estilo Rave)
+// Grid de plataformas + campo de busca/URL. Disponível apenas para o host.
 // =============================================================================
-
 class ScreeningAddVideoSheet extends ConsumerStatefulWidget {
   final String sessionId;
   final String threadId;
@@ -25,36 +24,39 @@ class ScreeningAddVideoSheet extends ConsumerStatefulWidget {
 
 class _ScreeningAddVideoSheetState
     extends ConsumerState<ScreeningAddVideoSheet> {
-  final _urlController = TextEditingController();
-  final _titleController = TextEditingController();
+  final _searchController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
+  String? _selectedPlatform;
 
-  // Plataformas suportadas para exibição visual
   static const _platforms = [
-    _PlatformInfo('YouTube', Icons.play_circle_outline, 'youtube.com'),
-    _PlatformInfo('Twitch', Icons.live_tv_rounded, 'twitch.tv'),
-    _PlatformInfo('Vimeo', Icons.videocam_outlined, 'vimeo.com'),
-    _PlatformInfo('Kick', Icons.sports_esports_outlined, 'kick.com'),
-    _PlatformInfo('Dailymotion', Icons.movie_outlined, 'dailymotion.com'),
+    _PlatformTile('YouTube', 'youtube.com'),
+    _PlatformTile('Twitch', 'twitch.tv'),
+    _PlatformTile('Vimeo', 'vimeo.com'),
+    _PlatformTile('Kick', 'kick.com'),
+    _PlatformTile('Dailymotion', 'dailymotion.com'),
+    _PlatformTile('Drive', 'drive.google.com'),
+    _PlatformTile('WEB', null),
+    _PlatformTile('YouTube\nLIVE', 'youtube.com/live'),
   ];
 
   @override
   void dispose() {
-    _urlController.dispose();
-    _titleController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
-    final url = _urlController.text.trim();
-    if (url.isEmpty) {
-      setState(() => _errorMessage = 'Cole a URL do vídeo.');
+    final input = _searchController.text.trim();
+    if (input.isEmpty) {
+      setState(() => _errorMessage = 'Cole a URL ou título do vídeo.');
       return;
     }
-    if (!url.startsWith('http')) {
-      setState(() => _errorMessage = 'URL inválida. Use http:// ou https://');
-      return;
+
+    String url = input;
+    if (!input.startsWith('http')) {
+      url =
+          'https://www.youtube.com/results?search_query=${Uri.encodeComponent(input)}';
     }
 
     setState(() {
@@ -62,15 +64,16 @@ class _ScreeningAddVideoSheetState
       _errorMessage = null;
     });
 
-    final title = _titleController.text.trim().isNotEmpty
-        ? _titleController.text.trim()
-        : _inferTitle(url);
+    final title = _inferTitle(url);
 
     await ref
         .read(screeningRoomProvider(widget.threadId).notifier)
         .updateVideo(videoUrl: url, videoTitle: title);
 
-    if (mounted) Navigator.of(context).pop();
+    if (mounted) {
+      HapticFeedback.lightImpact();
+      Navigator.of(context).pop();
+    }
   }
 
   String _inferTitle(String url) {
@@ -79,181 +82,196 @@ class _ScreeningAddVideoSheetState
     if (u.contains('twitch')) return 'Twitch';
     if (u.contains('vimeo')) return 'Vimeo';
     if (u.contains('kick')) return 'Kick';
+    if (u.contains('dailymotion')) return 'Dailymotion';
+    if (u.contains('drive.google')) return 'Google Drive';
     return 'Vídeo';
+  }
+
+  void _onPlatformTap(_PlatformTile platform) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _selectedPlatform = platform.name;
+      if (platform.domain != null) {
+        _searchController.text = 'https://${platform.domain}/';
+        _searchController.selection = TextSelection.fromPosition(
+          TextPosition(offset: _searchController.text.length),
+        );
+      } else {
+        _searchController.clear();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+    final mq = MediaQuery.of(context);
+    final bottomPad = mq.viewInsets.bottom + mq.padding.bottom + 16;
+
+    return Container(
+      height: mq.size.height * 0.85,
+      decoration: const BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // ── Handle ────────────────────────────────────────────────────────
+          const SizedBox(height: 12),
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
           ),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.85),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Handle
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(2),
+          const SizedBox(height: 16),
+
+          // ── Campo de busca / URL ───────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Container(
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.15),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 14),
+                  Icon(
+                    Icons.search_rounded,
+                    color: Colors.white.withValues(alpha: 0.5),
+                    size: 20,
                   ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Título
-              const Text(
-                'Adicionar vídeo',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Cole a URL de qualquer plataforma suportada',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
-                  fontSize: 13,
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Chips de plataformas suportadas
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _platforms
-                    .map((p) => _PlatformChip(platform: p))
-                    .toList(),
-              ),
-              const SizedBox(height: 20),
-
-              // Campo de URL
-              _DarkTextField(
-                controller: _urlController,
-                hint: 'https://youtube.com/watch?v=...',
-                label: 'URL do vídeo',
-                keyboardType: TextInputType.url,
-                onChanged: (_) =>
-                    setState(() => _errorMessage = null),
-              ),
-              const SizedBox(height: 12),
-
-              // Campo de título (opcional)
-              _DarkTextField(
-                controller: _titleController,
-                hint: 'Deixe em branco para detectar automaticamente',
-                label: 'Título (opcional)',
-              ),
-
-              // Erro
-              if (_errorMessage != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  _errorMessage!,
-                  style: const TextStyle(
-                    color: Colors.redAccent,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 20),
-
-              // Botão confirmar
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                      keyboardType: TextInputType.url,
+                      textInputAction: TextInputAction.go,
+                      onSubmitted: (_) => _submit(),
+                      onChanged: (_) =>
+                          setState(() => _errorMessage = null),
+                      decoration: InputDecoration(
+                        hintText: 'procurar um vídeo, série ou filme...',
+                        hintStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.35),
+                          fontSize: 13,
+                        ),
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
                     ),
-                    elevation: 0,
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.black,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
+                  if (_searchController.text.isNotEmpty)
+                    GestureDetector(
+                      onTap: () => setState(() {
+                        _searchController.clear();
+                        _selectedPlatform = null;
+                        _errorMessage = null;
+                      }),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: Colors.white.withValues(alpha: 0.5),
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+
+          // ── Erro ──────────────────────────────────────────────────────────
+          if (_errorMessage != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Text(
+                _errorMessage!,
+                style: const TextStyle(
+                  color: Colors.redAccent,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+
+          const SizedBox(height: 20),
+
+          // ── Grid de plataformas ───────────────────────────────────────────
+          Expanded(
+            child: GridView.builder(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, bottomPad),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 2.2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: _platforms.length,
+              itemBuilder: (context, index) {
+                final platform = _platforms[index];
+                final isSelected = _selectedPlatform == platform.name;
+                return _PlatformCard(
+                  platform: platform,
+                  isSelected: isSelected,
+                  onTap: () => _onPlatformTap(platform),
+                );
+              },
+            ),
+          ),
+
+          // ── Botão Reproduzir ───────────────────────────────────────────────
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            child: _searchController.text.isNotEmpty
+                ? Padding(
+                    padding: EdgeInsets.fromLTRB(16, 0, 16, bottomPad),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: _isLoading ? null : _submit,
+                        icon: _isLoading
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  color: Colors.black,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.play_arrow_rounded, size: 22),
+                        label: const Text(
                           'Reproduzir',
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 15,
                           ),
                         ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── Widgets auxiliares ────────────────────────────────────────────────────────
-
-class _PlatformInfo {
-  final String name;
-  final IconData icon;
-  final String domain;
-
-  const _PlatformInfo(this.name, this.icon, this.domain);
-}
-
-class _PlatformChip extends StatelessWidget {
-  final _PlatformInfo platform;
-
-  const _PlatformChip({required this.platform});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(platform.icon, color: Colors.white70, size: 13),
-          const SizedBox(width: 5),
-          Text(
-            platform.name,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ),
         ],
       ),
@@ -261,61 +279,59 @@ class _PlatformChip extends StatelessWidget {
   }
 }
 
-class _DarkTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String hint;
-  final String label;
-  final TextInputType? keyboardType;
-  final ValueChanged<String>? onChanged;
+// ── _PlatformTile (modelo) ────────────────────────────────────────────────────
+class _PlatformTile {
+  final String name;
+  final String? domain;
+  const _PlatformTile(this.name, this.domain);
+}
 
-  const _DarkTextField({
-    required this.controller,
-    required this.hint,
-    required this.label,
-    this.keyboardType,
-    this.onChanged,
+// ── _PlatformCard ─────────────────────────────────────────────────────────────
+class _PlatformCard extends StatelessWidget {
+  final _PlatformTile platform;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _PlatformCard({
+    required this.platform,
+    required this.isSelected,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.6),
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Colors.white.withValues(alpha: 0.18)
+              : Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? Colors.white.withValues(alpha: 0.55)
+                : Colors.white.withValues(alpha: 0.10),
+            width: isSelected ? 1.5 : 1.0,
           ),
         ),
-        const SizedBox(height: 6),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.07),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-          ),
-          child: TextField(
-            controller: controller,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
-            keyboardType: keyboardType,
-            onChanged: onChanged,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(
-                color: Colors.white.withValues(alpha: 0.3),
-                fontSize: 13,
-              ),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 12,
-              ),
+        child: Center(
+          child: Text(
+            platform.name,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isSelected
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.85),
+              fontSize: platform.name.length > 8 ? 18 : 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.5,
+              height: 1.2,
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

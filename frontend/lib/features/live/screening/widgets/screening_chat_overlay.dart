@@ -11,6 +11,7 @@ import '../providers/screening_voice_provider.dart';
 import '../providers/screening_room_provider.dart';
 import '../models/screening_participant.dart';
 import '../models/screening_chat_message.dart';
+import 'screening_add_video_sheet.dart';
 
 // =============================================================================
 // ScreeningChatOverlay — Chat transparente (Camada 3 do Stack imersivo) — Fase 2
@@ -123,96 +124,102 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
     final messages = ref.watch(screeningChatProvider(widget.sessionId));
     final roomState = ref.watch(screeningRoomProvider(widget.threadId));
     final voiceState = ref.watch(screeningVoiceProvider(widget.sessionId));
+    final mq = MediaQuery.of(context);
+    final bottomPad = mq.padding.bottom > 0 ? mq.padding.bottom : 12.0;
 
     // Auto-scroll quando novas mensagens chegam
     ref.listen(screeningChatProvider(widget.sessionId), (prev, next) {
       if (next.length > (prev?.length ?? 0)) {
         _scrollToBottom();
-        // Analisar última mensagem recebida (de outros participantes)
         if (next.isNotEmpty && !next.last.isMe) {
           widget.emojiRainKey?.currentState?.triggerFromText(next.last.text);
         }
       }
     });
 
-    // Layout inspirado no Rave: gradiente sutil de fundo + microfone na barra
-    return Stack(
+    return Column(
       children: [
-        // Gradiente de fundo sutil (como no Rave — mensagens flutuam sobre escuro)
-        Positioned.fill(
-          child: IgnorePointer(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.45),
-                    Colors.black.withValues(alpha: 0.72),
-                  ],
-                  stops: const [0.0, 0.55, 1.0],
+        // ── Lista de mensagens ─────────────────────────────────────────────
+        Expanded(
+          child: messages.isEmpty
+              ? const SizedBox.shrink()
+              : ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final fromEnd = messages.length - 1 - index;
+                    final opacity = fromEnd >= 8
+                        ? 0.0
+                        : fromEnd >= 5
+                            ? 0.45
+                            : 1.0;
+                    if (opacity == 0.0) return const SizedBox.shrink();
+                    return Opacity(
+                      opacity: opacity,
+                      child: _ChatBubble(message: messages[index]),
+                    );
+                  },
                 ),
+        ),
+        // ── Indicadores de voz ─────────────────────────────────────────────
+        _VoiceParticipantsBar(
+          participants: roomState.participants,
+          speakingUids: voiceState.speakingAgoraUids,
+        ),
+        // ── Barra inferior: microfone + input estilo Rave ──────────────────
+        Container(
+          padding: EdgeInsets.fromLTRB(12, 8, 12, bottomPad),
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.06),
+                width: 0.5,
               ),
             ),
           ),
-        ),
-        Column(
-          children: [
-            // ── Lista de mensagens ──────────────────────────────────────────────────
-            Expanded(
-              child: messages.isEmpty
-                  ? const SizedBox.shrink()
-                  : ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                      itemCount: messages.length,
-                      itemBuilder: (context, index) {
-                        // Fade nas mensagens mais antigas (últimas 8 visíveis)
-                        final fromEnd = messages.length - 1 - index;
-                        final opacity = fromEnd >= 8
-                            ? 0.0
-                            : fromEnd >= 5
-                                ? 0.45
-                                : 1.0;
-                        if (opacity == 0.0) return const SizedBox.shrink();
-                        return Opacity(
-                          opacity: opacity,
-                          child: _ChatBubble(message: messages[index]),
-                        );
-                      },
-                    ),
-            ),
-            // ── Barra de participantes com indicadores de voz ──────────────────
-            _VoiceParticipantsBar(
-              participants: roomState.participants,
-              speakingUids: voiceState.speakingAgoraUids,
-            ),
-            const SizedBox(height: 8),
-            // ── Barra inferior: microfone + input (layout Rave) ────────────────────
-            Padding(
-              padding: EdgeInsets.fromLTRB(12, 0, 12, MediaQuery.of(context).padding.bottom > 0 ? MediaQuery.of(context).padding.bottom : 12),
-              child: Row(
-                children: [
-                  // Botão de microfone grande e circular (igual ao Rave)
-                  _MicButton(sessionId: widget.sessionId),
-                  const SizedBox(width: 10),
-                  // Campo de chat
-                  Expanded(
-                    child: _ChatInput(
-                      controller: _textController,
-                      onSend: _sendMessage,
+          child: Row(
+            children: [
+              // Botão de microfone grande e circular
+              _MicButton(sessionId: widget.sessionId),
+              const SizedBox(width: 10),
+              // Campo de chat estilo Rave
+              Expanded(
+                child: _ChatInput(
+                  controller: _textController,
+                  onSend: _sendMessage,
+                ),
+              ),
+              // Botão de reação (emoji)
+              const SizedBox(width: 8),
+              _ActionIconButton(
+                icon: Icons.add_reaction_outlined,
+                onTap: () {
+                  // TODO: abrir picker de reações
+                },
+              ),
+              const SizedBox(width: 6),
+              // Botão de adicionar vídeo (apenas para host)
+              if (roomState.isHost) ...[
+                _ActionIconButton(
+                  icon: Icons.video_library_outlined,
+                  onTap: () => showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => ScreeningAddVideoSheet(
+                      sessionId: widget.sessionId,
+                      threadId: widget.threadId,
                     ),
                   ),
-                ],
-              ),
-            ),
-          ],
+                ),
+              ],
+            ],
+          ),
         ),
       ],
     );
   }
-}
 
 // ── ChatBubble ────────────────────────────────────────────────────────────────
 
@@ -637,6 +644,30 @@ class _ChatInputState extends State<_ChatInput> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── ActionIconButton ──────────────────────────────────────────────────────────
+class _ActionIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _ActionIconButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white.withValues(alpha: 0.10),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        ),
+        child: Icon(icon, color: Colors.white70, size: 18),
       ),
     );
   }
