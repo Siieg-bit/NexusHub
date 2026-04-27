@@ -663,7 +663,7 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
       return CosmeticAvatar(
         userId: message.authorId.isNotEmpty ? message.authorId : null,
         avatarUrl: authorIcon,
-        size: r.s(32),
+        size: r.s(36),
         onTap: () {
           if (communityId != null && communityId!.isNotEmpty) {
             context.push('/community/$communityId/profile/${message.authorId}');
@@ -753,7 +753,7 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                               authorName,
                               style: TextStyle(
                                 color: context.nexusTheme.accentPrimary,
-                                fontSize: r.fs(11),
+                                fontSize: r.fs(12.5),
                                 fontWeight: FontWeight.w700,
                               ),
                               maxLines: 1,
