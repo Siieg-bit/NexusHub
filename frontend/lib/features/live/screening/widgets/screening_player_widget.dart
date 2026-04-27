@@ -52,10 +52,15 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   InAppWebViewController? _webViewController;
   bool _isLoading = true;
 
-  // ── Ambient gradient key ──────────────────────────────────────────────────
+  // Referência direta ao notifier guardada no initState para uso seguro no dispose.
+  // Não usar ref.read() no dispose() pois o ConsumerStatefulElement já foi
+  // desmontado nesse ponto e lança 'Bad state: Cannot use ref after disposed'.
+  ScreeningPlayerNotifier? _playerNotifier;
+
+  // ── Ambient gradient key ────────────────────────────────────────────────────────────────────────────────────────
   final _ambientGradientKey = GlobalKey<ScreeningAmbientGradientState>();
 
-  // ── Seek visual feedback ──────────────────────────────────────────────────
+  // ── Seek visual feedback ────────────────────────────────────────────────────────────────────────────────────────
   bool _showSeekLeft = false;
   bool _showSeekRight = false;
   late AnimationController _seekLeftController;
@@ -67,9 +72,10 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     // Injetar threadId no player provider para auto-avanço de fila
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        ref
-            .read(screeningPlayerProvider(widget.sessionId).notifier)
-            .setThreadId(widget.threadId);
+        _playerNotifier = ref.read(
+          screeningPlayerProvider(widget.sessionId).notifier,
+        );
+        _playerNotifier!.setThreadId(widget.threadId);
       }
     });
     _seekLeftController = AnimationController(
@@ -84,11 +90,11 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
 
   @override
   void dispose() {
-    // Notificar o provider que o WebView foi destruído para evitar
-    // MissingPluginException em evaluateJavascript após dispose.
-    ref
-        .read(screeningPlayerProvider(widget.sessionId).notifier)
-        .unregisterWebViewController();
+    // Usar _playerNotifier (guardado no initState) em vez de ref.read().
+    // ref não pode ser usado no dispose() de ConsumerStatefulWidget pois o
+    // ConsumerStatefulElement já foi desmontado antes do dispose() ser chamado.
+    _playerNotifier?.unregisterWebViewController();
+    _playerNotifier = null;
     _seekLeftController.dispose();
     _seekRightController.dispose();
     super.dispose();
