@@ -433,8 +433,10 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     if (!mounted) return;
     state = state.copyWith(isPlaying: true, isBuffering: false);
     if (!_isNativeMode) {
-      _startPositionPolling(intervalSeconds: 1);
-      _updateDuration(); // atualizar duração se ainda não tiver
+      // Polling como fallback: se o bridge JS (timeupdate) estiver ativo,
+      // o primeiro onPositionUpdate cancelará o timer automaticamente.
+      _startPositionPolling(intervalSeconds: 2);
+      _updateDuration();
     }
   }
 
@@ -443,6 +445,31 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     state = state.copyWith(isPlaying: false);
     if (!_isNativeMode) {
       _startPositionPolling(intervalSeconds: 5);
+    }
+  }
+
+  /// Recebe atualização de posição via JavaScriptHandler 'NexusPlayerBridge'.
+  /// Chamado pelo evento 'timeupdate' do <video> HTML5 (throttled a 500ms).
+  /// Mais eficiente que polling: substitui o evaluateJavascript periódico.
+  void onPositionUpdate(int positionMs) {
+    if (!mounted || _isNativeMode) return;
+    // Cancelar polling se o bridge estiver ativo (evita dupla atualização)
+    if (_positionPollTimer?.isActive == true) {
+      _positionPollTimer?.cancel();
+    }
+    state = state.copyWith(
+      position: Duration(milliseconds: positionMs),
+    );
+  }
+
+  /// Recebe atualização de duração via JavaScriptHandler 'NexusPlayerBridge'.
+  /// Chamado pelo evento 'durationchange' do <video> HTML5.
+  void onDurationUpdate(int durationMs) {
+    if (!mounted || _isNativeMode) return;
+    if (durationMs <= 0) return;
+    final newDur = Duration(milliseconds: durationMs);
+    if (newDur != state.duration) {
+      state = state.copyWith(duration: newDur);
     }
   }
 

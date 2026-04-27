@@ -290,6 +290,18 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             ref
                 .read(screeningPlayerProvider(widget.sessionId).notifier)
                 .registerWebViewController(controller);
+            // Handler nativo JS→Flutter para eventos do player
+            // Mais eficiente que console.log polling: o JS chama diretamente
+            controller.addJavaScriptHandler(
+              handlerName: 'NexusPlayerBridge',
+              callback: (args) {
+                if (args.isEmpty || !mounted) return;
+                _handleBridgeEvent(
+                  args[0].toString(),
+                  args.length > 1 ? args[1] : null,
+                );
+              },
+            );
           },
           onLoadStart: (controller, url) {
             setState(() => _isLoading = true);
@@ -347,6 +359,17 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         ref
             .read(screeningPlayerProvider(widget.sessionId).notifier)
             .registerWebViewController(controller);
+        // Handler nativo JS→Flutter para eventos do player (fallback)
+        controller.addJavaScriptHandler(
+          handlerName: 'NexusPlayerBridge',
+          callback: (args) {
+            if (args.isEmpty || !mounted) return;
+            _handleBridgeEvent(
+              args[0].toString(),
+              args.length > 1 ? args[1] : null,
+            );
+          },
+        );
       },
       onLoadStop: (controller, url) async {
         setState(() => _isLoading = false);
@@ -367,34 +390,53 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   Future<void> _injectControlScript(InAppWebViewController controller) async {
     // Injeta o bridge unificado window._nexusPlayer.
     //
-    // IMPORTANTE: o HTML do _buildHtmlWrapper já registra onYouTubeIframeAPIReady
-    // que cria window._ytPlayer. Este script NÃO recria o YT.Player para evitar
-    // duplicação. Em vez disso, apenas define window._nexusPlayer (se ainda não
-    // existir) e conecta os event listeners do <video> HTML5.
+    // Usa window.flutter_inappwebview.callHandler('NexusPlayerBridge', event, data)
+    // para notificar o Flutter de forma nativa (sem polling de console.log).
+    // O console.log permanece como fallback para compatibilidade.
     await controller.evaluateJavascript(source: r'''
       (function() {
+        // Helper: notificar Flutter via handler nativo (instantâneo)
+        function _bridge(event, data) {
+          try {
+            if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+              window.flutter_inappwebview.callHandler('NexusPlayerBridge', event, data);
+            } else {
+              // Fallback: console.log para compatibilidade
+              console.log('__' + event.toUpperCase() + '__');
+            }
+          } catch(e) {
+            console.log('__' + event.toUpperCase() + '__');
+          }
+        }
+
         // Definir _nexusPlayer apenas se ainda não foi injetado
         if (!window._nexusPlayer) {
           window._nexusPlayer = {
             _yt: window._ytPlayer || null,
 
             play: function() {
-              var yt = this._yt || window._ytPlayer;
-              if (yt && yt.playVideo) { yt.playVideo(); return; }
-              var v = document.querySelector('video');
-              if (v) v.play();
+              try {
+                var yt = this._yt || window._ytPlayer;
+                if (yt && yt.playVideo) { yt.playVideo(); return; }
+                var v = document.querySelector('video');
+                if (v) v.play();
+              } catch(e) {}
             },
             pause: function() {
-              var yt = this._yt || window._ytPlayer;
-              if (yt && yt.pauseVideo) { yt.pauseVideo(); return; }
-              var v = document.querySelector('video');
-              if (v) v.pause();
+              try {
+                var yt = this._yt || window._ytPlayer;
+                if (yt && yt.pauseVideo) { yt.pauseVideo(); return; }
+                var v = document.querySelector('video');
+                if (v) v.pause();
+              } catch(e) {}
             },
             seek: function(seconds) {
-              var yt = this._yt || window._ytPlayer;
-              if (yt && yt.seekTo) { yt.seekTo(seconds, true); return; }
-              var v = document.querySelector('video');
-              if (v) v.currentTime = seconds;
+              try {
+                var yt = this._yt || window._ytPlayer;
+                if (yt && yt.seekTo) { yt.seekTo(seconds, true); return; }
+                var v = document.querySelector('video');
+                if (v) v.currentTime = seconds;
+              } catch(e) {}
             },
             getPosition: function() {
               try {
@@ -444,13 +486,79 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         var video = document.querySelector('video');
         if (video && !video._nexusListenersAttached) {
           video._nexusListenersAttached = true;
-          video.addEventListener('playing', function() { console.log('__VIDEO_PLAYING__'); });
-          video.addEventListener('pause',   function() { console.log('__VIDEO_PAUSED__'); });
-          video.addEventListener('waiting', function() { console.log('__VIDEO_BUFFERING__'); });
-          video.addEventListener('ended',   function() { console.log('__VIDEO_ENDED__'); });
+          video.addEventListener('playing', function() {
+            _bridge('VIDEO_PLAYING');
+            // Notificar posição e duração ao iniciar reprodução
+            var pos = window._nexusPlayer ? window._nexusPlayer.getPosition() : -1;
+            var dur = window._nexusPlayer ? window._nexusPlayer.getDuration() : 0;
+            if (pos >= 0) _bridge('VIDEO_POSITION', pos);
+            if (dur > 0)  _bridge('VIDEO_DURATION', dur);
+          });
+          video.addEventListener('pause',   function() { _bridge('VIDEO_PAUSED'); });
+          video.addEventListener('waiting', function() { _bridge('VIDEO_BUFFERING'); });
+          video.addEventListener('ended',   function() { _bridge('VIDEO_ENDED'); });
+          video.addEventListener('durationchange', function() {
+            if (!isNaN(video.duration) && video.duration > 0) {
+              _bridge('VIDEO_DURATION', Math.floor(video.duration * 1000));
+            }
+          });
+          video.addEventListener('timeupdate', function() {
+            // Throttle: notificar posição a cada ~500ms via timeupdate
+            var now = Date.now();
+            if (!video._lastBridgeTime || now - video._lastBridgeTime > 500) {
+              video._lastBridgeTime = now;
+              if (!isNaN(video.currentTime)) {
+                _bridge('VIDEO_POSITION', Math.floor(video.currentTime * 1000));
+              }
+            }
+          });
+        }
+
+        // Para YouTube: conectar eventos do YT.Player ao bridge
+        // (os eventos onStateChange do HTML já estão no _buildHtmlWrapper)
+        // Aqui apenas garantimos que _nexusPlayer._yt está atualizado
+        if (window._ytPlayer && window._nexusPlayer) {
+          window._nexusPlayer._yt = window._ytPlayer;
         }
       })();
     ''');
+  }
+
+  /// Processa eventos recebidos via JavaScriptHandler 'NexusPlayerBridge'.
+  /// Mais eficiente que console.log: chamada nativa direta JS→Flutter.
+  void _handleBridgeEvent(String event, dynamic data) {
+    if (!mounted) return;
+    final notifier = ref.read(screeningPlayerProvider(widget.sessionId).notifier);
+    switch (event) {
+      case 'VIDEO_PLAYING':
+      case 'YT_PLAYING':
+        notifier.onVideoPlaying();
+        break;
+      case 'VIDEO_PAUSED':
+      case 'YT_PAUSED':
+        notifier.onVideoPaused();
+        break;
+      case 'VIDEO_BUFFERING':
+      case 'YT_BUFFERING':
+        notifier.onVideoBuffering();
+        break;
+      case 'VIDEO_ENDED':
+        notifier.onVideoEnded();
+        break;
+      case 'VIDEO_POSITION':
+        // Atualização de posição via timeupdate (substitui polling)
+        final posMs = (data as num?)?.toInt();
+        if (posMs != null && posMs >= 0) {
+          notifier.onPositionUpdate(posMs);
+        }
+        break;
+      case 'VIDEO_DURATION':
+        final durMs = (data as num?)?.toInt();
+        if (durMs != null && durMs > 0) {
+          notifier.onDurationUpdate(durMs);
+        }
+        break;
+    }
   }
 
   void _handleConsoleMessage(String message) {
@@ -558,10 +666,44 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   scrolling="no"
 ></iframe>
 <script>
-  // Bridge unificado: cria window._nexusPlayer e window._ytPlayer via YT IFrame API.
-  // Nota: NÃO define window._nexusPlayer aqui — ele será injetado pelo Flutter
-  // via _injectControlScript após onLoadStop, garantindo que o YT.Player já
-  // esteja inicializado e evitando duplicação.
+  // Helper: notificar Flutter via bridge nativo (instantâneo) com fallback console.log
+  function _ytBridge(event, data) {
+    try {
+      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+        if (data !== undefined) {
+          window.flutter_inappwebview.callHandler('NexusPlayerBridge', event, data);
+        } else {
+          window.flutter_inappwebview.callHandler('NexusPlayerBridge', event);
+        }
+      } else {
+        console.log('__' + event + '__');
+      }
+    } catch(e) {
+      console.log('__' + event + '__');
+    }
+  }
+
+  // Timer de polling de posição para YouTube (substitui timeupdate do <video>)
+  // O YT IFrame API não expoe eventos de timeupdate, então fazemos polling leve
+  var _ytPositionTimer = null;
+  function _startYtPositionPolling(player) {
+    if (_ytPositionTimer) clearInterval(_ytPositionTimer);
+    _ytPositionTimer = setInterval(function() {
+      try {
+        var pos = Math.floor(player.getCurrentTime() * 1000);
+        var dur = Math.floor(player.getDuration() * 1000);
+        if (pos >= 0) _ytBridge('VIDEO_POSITION', pos);
+        if (dur > 0)  _ytBridge('VIDEO_DURATION', dur);
+      } catch(e) {}
+    }, 500);
+  }
+  function _stopYtPositionPolling() {
+    if (_ytPositionTimer) { clearInterval(_ytPositionTimer); _ytPositionTimer = null; }
+  }
+
+  // Bridge unificado: cria window._ytPlayer via YT IFrame API.
+  // window._nexusPlayer será injetado pelo Flutter via _injectControlScript
+  // após onLoadStop, garantindo que o YT.Player já esteja inicializado.
   function onYouTubeIframeAPIReady() {
     var iframe = document.getElementById('player');
     if (iframe && iframe.src && iframe.src.includes('youtube')) {
@@ -574,12 +716,30 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
               e.target.playVideo();
               // Atualizar referência no _nexusPlayer se já foi injetado
               if (window._nexusPlayer) window._nexusPlayer._yt = e.target;
+              // Notificar duração inicial
+              var dur = Math.floor(e.target.getDuration() * 1000);
+              if (dur > 0) _ytBridge('VIDEO_DURATION', dur);
             },
             onStateChange: function(e) {
-              if (e.data === 1) console.log('__YT_PLAYING__');
-              else if (e.data === 2) console.log('__YT_PAUSED__');
-              else if (e.data === 3) console.log('__YT_BUFFERING__');
-              else if (e.data === 0) console.log('__VIDEO_ENDED__');
+              // -1=unstarted, 0=ended, 1=playing, 2=paused, 3=buffering
+              if (e.data === 1) {
+                _ytBridge('YT_PLAYING');
+                _startYtPositionPolling(e.target);
+                // Notificar duração ao iniciar reprodução
+                var dur = Math.floor(e.target.getDuration() * 1000);
+                if (dur > 0) _ytBridge('VIDEO_DURATION', dur);
+              } else if (e.data === 2) {
+                _ytBridge('YT_PAUSED');
+                _stopYtPositionPolling();
+                // Notificar posição final ao pausar
+                var pos = Math.floor(e.target.getCurrentTime() * 1000);
+                if (pos >= 0) _ytBridge('VIDEO_POSITION', pos);
+              } else if (e.data === 3) {
+                _ytBridge('YT_BUFFERING');
+              } else if (e.data === 0) {
+                _ytBridge('VIDEO_ENDED');
+                _stopYtPositionPolling();
+              }
             }
           }
         });

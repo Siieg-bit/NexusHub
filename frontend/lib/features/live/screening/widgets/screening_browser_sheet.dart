@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -7,12 +8,17 @@ import '../services/drm_relay_service.dart';
 import '../services/stream_resolver_service.dart';
 
 // =============================================================================
-// ScreeningBrowserSheet — WebView embutido para seleção de vídeo por plataforma
+// ScreeningBrowserSheet — Navegador integrado tematizado para seleção de vídeo
 //
-// O usuário navega normalmente no site da plataforma (YouTube, Twitch, Kick,
-// Vimeo, Dailymotion, Google Drive). Quando navega para uma URL de vídeo
-// válida, o app captura essa URL, chama updateVideo() no provider e fecha o
-// sheet. Para WEB (URL direta), exibe campo de texto para colar a URL.
+// Abre como página cheia (fullscreenDialog) via Navigator.push.
+// Funcionalidades:
+// - Barra de endereço editável com navegação por URL ou busca Google
+// - Botões: fechar, voltar, avançar, copiar URL, recarregar/parar
+// - Barra de progresso de carregamento animada (cor da plataforma)
+// - Detecção automática de URL de vídeo com banner de confirmação
+// - Overlay de captura com feedback visual e haptic
+// - Suporte a todas as plataformas: YouTube, Twitch, Kick, Vimeo,
+//   Dailymotion, Google Drive, e URL direta (WEB)
 // =============================================================================
 
 // ── Modelo de plataforma ──────────────────────────────────────────────────────
@@ -22,9 +28,8 @@ class ScreeningPlatform {
   final String displayName;
   final String? initialUrl;
   final List<_VideoUrlPattern> videoPatterns;
-  final bool isDirectUrl; // WEB: campo de texto livre
-  final bool isDrm; // Requer relay DRM (Netflix, Disney+, etc.)
-
+  final bool isDirectUrl;
+  final bool isDrm;
   const ScreeningPlatform({
     required this.id,
     required this.displayName,
@@ -40,7 +45,7 @@ class _VideoUrlPattern {
   const _VideoUrlPattern(this.pattern);
 }
 
-// ── Definição das plataformas suportadas ──────────────────────────────────────
+// ── Plataformas suportadas ────────────────────────────────────────────────────
 
 final _kPlatforms = <String, ScreeningPlatform>{
   'youtube': ScreeningPlatform(
@@ -106,74 +111,6 @@ final _kPlatforms = <String, ScreeningPlatform>{
       _VideoUrlPattern(RegExp(r'drive\.google\.com/file/d/[a-zA-Z0-9_-]+')),
     ],
   ),
-  // ── AVOD gratuito (HLS direto) ──────────────────────────────────────────────────
-  'tubi': ScreeningPlatform(
-    id: 'tubi',
-    displayName: 'Tubi',
-    initialUrl: 'https://tubitv.com',
-    videoPatterns: [
-      _VideoUrlPattern(RegExp(r'tubitv\.com/(?:movies|tv-shows|series|video)/\d+')),
-    ],
-  ),
-  'pluto': ScreeningPlatform(
-    id: 'pluto',
-    displayName: 'Pluto TV',
-    initialUrl: 'https://pluto.tv',
-    videoPatterns: [
-      _VideoUrlPattern(RegExp(r'pluto\.tv/live-tv/[a-zA-Z0-9_-]+')),
-      _VideoUrlPattern(RegExp(r'pluto\.tv/(?:on-demand/)?(?:movies|series)/[a-zA-Z0-9_-]+')),
-    ],
-  ),
-  // ── Serviços de assinatura (login + relay) ──────────────────────────────
-  'netflix': ScreeningPlatform(
-    id: 'netflix',
-    isDrm: true,
-    displayName: 'Netflix',
-    initialUrl: 'https://www.netflix.com/browse',
-    videoPatterns: [
-      _VideoUrlPattern(RegExp(r'netflix\.com/watch/\d+')),
-    ],
-  ),
-  'disney': ScreeningPlatform(
-    id: 'disney',
-    isDrm: true,
-    displayName: 'Disney+',
-    initialUrl: 'https://www.disneyplus.com',
-    videoPatterns: [
-      _VideoUrlPattern(RegExp(r'disneyplus\.com/video/[a-zA-Z0-9_-]+')),
-      _VideoUrlPattern(RegExp(r'disneyplus\.com/play/[a-zA-Z0-9_-]+')),
-    ],
-  ),
-  'amazon': ScreeningPlatform(
-    id: 'amazon',
-    isDrm: true,
-    displayName: 'Prime Video',
-    initialUrl: 'https://www.primevideo.com',
-    videoPatterns: [
-      _VideoUrlPattern(RegExp(r'primevideo\.com/detail/[A-Z0-9]+')),
-      _VideoUrlPattern(RegExp(r'amazon\.com/gp/video/detail/[A-Z0-9]+')),
-      _VideoUrlPattern(RegExp(r'primevideo\.com/playback/[A-Z0-9]+')),
-    ],
-  ),
-  'hbo': ScreeningPlatform(
-    id: 'hbo',
-    isDrm: true,
-    displayName: 'Max',
-    initialUrl: 'https://www.max.com',
-    videoPatterns: [
-      _VideoUrlPattern(RegExp(r'max\.com/(?:[a-z-]+/)?(?:movie|episode|feature)/[a-zA-Z0-9_-]+')),
-      _VideoUrlPattern(RegExp(r'hbomax\.com/(?:feature|episode)/[a-zA-Z0-9_-]+')),
-    ],
-  ),
-  'crunchyroll': ScreeningPlatform(
-    id: 'crunchyroll',
-    isDrm: true,
-    displayName: 'Crunchyroll',
-    initialUrl: 'https://www.crunchyroll.com',
-    videoPatterns: [
-      _VideoUrlPattern(RegExp(r'crunchyroll\.com/(?:[a-z-]+/)?watch/[A-Z0-9]+')),
-    ],
-  ),
   'web': ScreeningPlatform(
     id: 'web',
     displayName: 'URL Direta',
@@ -188,9 +125,9 @@ class ScreeningBrowserSheet extends ConsumerStatefulWidget {
   final String sessionId;
   final String threadId;
   final bool addToQueue;
-  /// Quando true, renderiza como página cheia (Scaffold) em vez de bottom
-  /// sheet (Container com altura fixa). Usar ao abrir via Navigator.push
-  /// para que o scroll nativo dos sites funcione corretamente.
+  /// Quando true, renderiza como Scaffold (página cheia) em vez de Container
+  /// com altura fixa. Usar ao abrir via Navigator.push para que o scroll
+  /// nativo dos sites funcione corretamente.
   final bool fullscreen;
 
   const ScreeningBrowserSheet({
@@ -208,43 +145,93 @@ class ScreeningBrowserSheet extends ConsumerStatefulWidget {
 }
 
 class _ScreeningBrowserSheetState
-    extends ConsumerState<ScreeningBrowserSheet> {
+    extends ConsumerState<ScreeningBrowserSheet>
+    with SingleTickerProviderStateMixin {
   InAppWebViewController? _webViewController;
   final _urlBarController = TextEditingController();
   final _directUrlController = TextEditingController();
+  final _urlFocusNode = FocusNode();
 
-  bool _isLoading = true;
+  bool _isLoading = false;
+  double _loadingProgress = 0.0;
   bool _canGoBack = false;
+  bool _canGoForward = false;
   String _currentUrl = '';
   bool _isCapturing = false;
+  bool _urlBarEditing = false;
+  bool _isVideoDetected = false;
+  String _detectedVideoUrl = '';
 
   late final ScreeningPlatform _platform;
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnim;
+
+  // Cor de destaque por plataforma
+  static const _platformColors = <String, Color>{
+    'youtube': Color(0xFFFF0000),
+    'youtube_live': Color(0xFFFF0000),
+    'twitch': Color(0xFF9146FF),
+    'kick': Color(0xFF53FC18),
+    'vimeo': Color(0xFF1AB7EA),
+    'dailymotion': Color(0xFF0066DC),
+    'drive': Color(0xFF4285F4),
+    'web': Color(0xFF6C63FF),
+  };
+
+  Color get _accentColor =>
+      _platformColors[_platform.id] ?? const Color(0xFF6C63FF);
 
   @override
   void initState() {
     super.initState();
-    _platform = _kPlatforms[widget.platformId] ??
-        _kPlatforms['web']!;
+    _platform = _kPlatforms[widget.platformId] ?? _kPlatforms['web']!;
     if (_platform.initialUrl != null) {
       _currentUrl = _platform.initialUrl!;
       _urlBarController.text = _platform.initialUrl!;
     }
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _pulseAnim = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.06), weight: 35),
+      TweenSequenceItem(tween: Tween(begin: 1.06, end: 0.96), weight: 40),
+      TweenSequenceItem(tween: Tween(begin: 0.96, end: 1.0), weight: 25),
+    ]).animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
+
+    _urlFocusNode.addListener(() {
+      if (!_urlFocusNode.hasFocus && _urlBarEditing) {
+        setState(() => _urlBarEditing = false);
+      }
+    });
   }
 
   @override
   void dispose() {
     _urlBarController.dispose();
     _directUrlController.dispose();
+    _urlFocusNode.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
   // ── Detecção de URL de vídeo ──────────────────────────────────────────────
 
   bool _isVideoUrl(String url) {
-    for (final pattern in _platform.videoPatterns) {
-      if (pattern.pattern.hasMatch(url)) return true;
+    for (final p in _platform.videoPatterns) {
+      if (p.pattern.hasMatch(url)) return true;
     }
     return false;
+  }
+
+  void _markVideoDetected(String url) {
+    if (_isCapturing || (_isVideoDetected && _detectedVideoUrl == url)) return;
+    setState(() {
+      _isVideoDetected = true;
+      _detectedVideoUrl = url;
+    });
+    _pulseController.forward(from: 0);
+    HapticFeedback.lightImpact();
   }
 
   // ── Captura e envio do vídeo ──────────────────────────────────────────────
@@ -256,33 +243,25 @@ class _ScreeningBrowserSheetState
 
     try {
       String finalUrl = url;
-
-      // Para plataformas DRM, capturar cookies/tokens e chamar o relay
       if (_platform.isDrm && _webViewController != null) {
         final platform = StreamResolverService.detectPlatform(url);
         StreamResolution? resolution;
-
         try {
           switch (platform) {
             case StreamPlatform.netflix:
-              resolution = await DrmRelayService.resolveNetflix(
-                  url, _webViewController!);
+              resolution = await DrmRelayService.resolveNetflix(url, _webViewController!);
               break;
             case StreamPlatform.disneyPlus:
-              resolution = await DrmRelayService.resolveDisney(
-                  url, _webViewController!);
+              resolution = await DrmRelayService.resolveDisney(url, _webViewController!);
               break;
             case StreamPlatform.amazonPrime:
-              resolution = await DrmRelayService.resolveAmazon(
-                  url, _webViewController!);
+              resolution = await DrmRelayService.resolveAmazon(url, _webViewController!);
               break;
             case StreamPlatform.hboMax:
-              resolution = await DrmRelayService.resolveHbo(
-                  url, _webViewController!);
+              resolution = await DrmRelayService.resolveHbo(url, _webViewController!);
               break;
             case StreamPlatform.crunchyroll:
-              resolution = await DrmRelayService.resolveCrunchyroll(
-                  url, _webViewController!);
+              resolution = await DrmRelayService.resolveCrunchyroll(url, _webViewController!);
               break;
             default:
               break;
@@ -291,17 +270,8 @@ class _ScreeningBrowserSheetState
         } catch (e) {
           debugPrint('[ScreeningBrowserSheet] Relay DRM falhou: $e');
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Erro ao conectar ao serviço: $e',
-                  style: const TextStyle(fontSize: 13),
-                ),
-                backgroundColor: Colors.red.shade800,
-                duration: const Duration(seconds: 4),
-              ),
-            );
-            setState(() => _isCapturing = false);
+            _showError('Erro ao conectar ao serviço: $e');
+            setState(() { _isCapturing = false; _isVideoDetected = false; });
           }
           return;
         }
@@ -311,18 +281,25 @@ class _ScreeningBrowserSheetState
       final notifier = ref.read(screeningRoomProvider(widget.threadId).notifier);
       if (widget.addToQueue) {
         await notifier.addToQueue(url: finalUrl, title: title);
-        if (mounted) {
-          HapticFeedback.lightImpact();
-          Navigator.of(context).pop();
-        }
+        if (mounted) { HapticFeedback.lightImpact(); Navigator.of(context).pop(); }
       } else {
         await notifier.updateVideo(videoUrl: finalUrl, videoTitle: title);
         if (mounted) Navigator.of(context).pop();
       }
     } catch (e) {
-      if (mounted) setState(() => _isCapturing = false);
+      if (mounted) setState(() { _isCapturing = false; _isVideoDetected = false; });
       rethrow;
     }
+  }
+
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg, style: const TextStyle(fontSize: 13)),
+      backgroundColor: const Color(0xFFB00020),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      duration: const Duration(seconds: 4),
+    ));
   }
 
   String _inferTitle(String url) {
@@ -333,8 +310,6 @@ class _ScreeningBrowserSheetState
     if (u.contains('vimeo')) return 'Vimeo';
     if (u.contains('dailymotion')) return 'Dailymotion';
     if (u.contains('drive.google')) return 'Google Drive';
-    if (u.contains('tubitv')) return 'Tubi';
-    if (u.contains('pluto.tv')) return 'Pluto TV';
     if (u.contains('netflix')) return 'Netflix';
     if (u.contains('disneyplus')) return 'Disney+';
     if (u.contains('primevideo') || u.contains('amazon')) return 'Prime Video';
@@ -343,27 +318,68 @@ class _ScreeningBrowserSheetState
     return _platform.displayName;
   }
 
-  // ── Submissão de URL direta (plataforma WEB) ──────────────────────────────
+  // ── Submissão de URL direta ───────────────────────────────────────────────
 
   Future<void> _submitDirectUrl() async {
     final input = _directUrlController.text.trim();
     if (input.isEmpty) return;
-
     String url = input;
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       url = 'https://$url';
     }
-
     await _captureUrl(url);
   }
 
-  // ── Atualizar barra de endereço ───────────────────────────────────────────
+  // ── Navegação pela barra de endereço ─────────────────────────────────────
+
+  void _onUrlBarTap() {
+    setState(() {
+      _urlBarEditing = true;
+      _urlBarController.text = _currentUrl;
+      _urlBarController.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: _urlBarController.text.length,
+      );
+    });
+    _urlFocusNode.requestFocus();
+  }
+
+  void _onUrlBarSubmit(String value) {
+    _urlFocusNode.unfocus();
+    setState(() => _urlBarEditing = false);
+    String url = value.trim();
+    if (url.isEmpty) return;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      if (url.contains('.') && !url.contains(' ')) {
+        url = 'https://$url';
+      } else {
+        url = 'https://www.google.com/search?q=${Uri.encodeComponent(url)}';
+      }
+    }
+    _webViewController?.loadUrl(urlRequest: URLRequest(url: WebUri(url)));
+  }
+
+  void _copyUrl() {
+    if (_currentUrl.isEmpty) return;
+    Clipboard.setData(ClipboardData(text: _currentUrl));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: const Text('URL copiada'),
+      backgroundColor: const Color(0xFF1E1E2E),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      duration: const Duration(seconds: 2),
+    ));
+  }
 
   void _updateUrlBar(String url) {
-    setState(() {
-      _currentUrl = url;
-      _urlBarController.text = url;
-    });
+    if (!_urlBarEditing) {
+      setState(() {
+        _currentUrl = url;
+        _urlBarController.text = url;
+      });
+    } else {
+      setState(() => _currentUrl = url);
+    }
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────
@@ -372,525 +388,499 @@ class _ScreeningBrowserSheetState
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
 
-    // Barra superior compartilhada entre os dois modos de exibição
-    final topBar = _BrowserTopBar(
-      platform: _platform,
-      urlController: _urlBarController,
-      currentUrl: _currentUrl,
-      canGoBack: _canGoBack,
-      isLoading: _isLoading,
-      onBack: () => _webViewController?.goBack(),
-      onClose: () => Navigator.of(context).pop(),
-      onRefresh: () => _webViewController?.reload(),
-    );
-
-    // Modo página cheia: Scaffold com SafeArea, sem handle nem bordas arredondadas.
-    // O scroll nativo dos sites funciona corretamente neste modo.
     if (widget.fullscreen) {
       return Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
+        backgroundColor: const Color(0xFF0A0A0F),
         body: SafeArea(
-          child: Column(
-            children: [
-              topBar,
-              if (!_platform.isDirectUrl)
-                _CaptureHint(platformName: _platform.displayName),
-              Expanded(child: _buildMainContent()),
-            ],
-          ),
+          child: Column(children: [
+            _buildTopBar(),
+            if (!_platform.isDirectUrl) _buildHint(),
+            Expanded(child: _buildContent()),
+          ]),
         ),
       );
     }
 
-    // Modo bottom sheet (padrão): Container com altura fixa e bordas arredondadas
+    // Modo bottom sheet (legado)
     return Container(
       height: mq.size.height * 0.92,
       decoration: const BoxDecoration(
-        color: Color(0xFF0A0A0A),
+        color: Color(0xFF0A0A0F),
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: Column(
-        children: [
-          // ── Handle ──────────────────────────────────────────────────────
-          const SizedBox(height: 10),
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
+      child: Column(children: [
+        const SizedBox(height: 10),
+        Center(
+          child: Container(
+            width: 36, height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: 10),
+        ),
+        const SizedBox(height: 10),
+        _buildTopBar(),
+        if (!_platform.isDirectUrl) _buildHint(),
+        Expanded(child: _buildContent()),
+      ]),
+    );
+  }
 
-          // ── Topbar do browser ────────────────────────────────────────────
-          _BrowserTopBar(
-            platform: _platform,
-            urlController: _urlBarController,
-            currentUrl: _currentUrl,
-            canGoBack: _canGoBack,
-            isLoading: _isLoading,
-            onBack: () => _webViewController?.goBack(),
-            onClose: () => Navigator.of(context).pop(),
-            onRefresh: () => _webViewController?.reload(),
+  // ── TopBar tematizado ─────────────────────────────────────────────────────
+
+  Widget _buildTopBar() {
+    return Container(
+      color: const Color(0xFF0A0A0F),
+      padding: const EdgeInsets.fromLTRB(6, 6, 6, 0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              // Fechar
+              _NavBtn(icon: Icons.close_rounded, onTap: () => Navigator.of(context).pop(), tooltip: 'Fechar'),
+              const SizedBox(width: 2),
+              // Voltar
+              _NavBtn(
+                icon: Icons.arrow_back_ios_new_rounded,
+                onTap: _canGoBack ? () => _webViewController?.goBack() : null,
+                tooltip: 'Voltar',
+              ),
+              // Avançar
+              _NavBtn(
+                icon: Icons.arrow_forward_ios_rounded,
+                onTap: _canGoForward ? () => _webViewController?.goForward() : null,
+                tooltip: 'Avançar',
+              ),
+              const SizedBox(width: 4),
+              // Barra de endereço
+              Expanded(child: _buildUrlBar()),
+              const SizedBox(width: 4),
+              // Copiar URL
+              _NavBtn(icon: Icons.copy_rounded, onTap: _currentUrl.isNotEmpty ? _copyUrl : null, tooltip: 'Copiar URL'),
+              // Recarregar / parar
+              _NavBtn(
+                icon: _isLoading ? Icons.close_rounded : Icons.refresh_rounded,
+                onTap: _isLoading ? () => _webViewController?.stopLoading() : () => _webViewController?.reload(),
+                tooltip: _isLoading ? 'Parar' : 'Recarregar',
+                color: _isLoading ? _accentColor.withValues(alpha: 0.8) : null,
+              ),
+            ],
           ),
-
-          // ── Dica de captura ──────────────────────────────────────────────
-          if (!_platform.isDirectUrl)
-            _CaptureHint(platformName: _platform.displayName),
-
-          // ── Conteúdo principal ───────────────────────────────────────────
-          Expanded(
-            child: _platform.isDirectUrl
-                ? _DirectUrlInput(
-                    controller: _directUrlController,
-                    onSubmit: _submitDirectUrl,
-                    isCapturing: _isCapturing,
+          // Barra de progresso
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            height: _isLoading ? 2.5 : 0.0,
+            margin: const EdgeInsets.only(top: 4),
+            child: _isLoading
+                ? LinearProgressIndicator(
+                    value: _loadingProgress > 0 ? _loadingProgress : null,
+                    backgroundColor: Colors.transparent,
+                    valueColor: AlwaysStoppedAnimation<Color>(_accentColor),
+                    minHeight: 2.5,
                   )
-                : Stack(
-                    children: [
-                      // WebView
-                      InAppWebView(
-                        initialUrlRequest: URLRequest(
-                          url: WebUri(_platform.initialUrl!),
-                        ),
-                        initialSettings: InAppWebViewSettings(
-                          javaScriptEnabled: true,
-                          domStorageEnabled: true,
-                          databaseEnabled: true,
-                          // Cookies persistentes para login (Netflix, etc.)
-                          thirdPartyCookiesEnabled: true,
-                          useHybridComposition: true,
-                          allowsInlineMediaPlayback: true,
-                          userAgent:
-                              'Mozilla/5.0 (Linux; Android 13; Pixel 7) '
-                              'AppleWebKit/537.36 (KHTML, like Gecko) '
-                              'Chrome/120.0.0.0 Mobile Safari/537.36',
-                        ),
-                        onWebViewCreated: (controller) {
-                          _webViewController = controller;
-                        },
-                        onLoadStart: (controller, url) {
-                          if (!mounted) return;
-                          final urlStr = url?.toString() ?? '';
-                          setState(() {
-                            _isLoading = true;
-                          });
-                          _updateUrlBar(urlStr);
-                        },
-                        onLoadStop: (controller, url) async {
-                          if (!mounted) return;
-                          final urlStr = url?.toString() ?? '';
-                          final canGoBack =
-                              await controller.canGoBack();
-                          if (!mounted) return;
-                          setState(() {
-                            _isLoading = false;
-                            _canGoBack = canGoBack;
-                          });
-                          _updateUrlBar(urlStr);
-
-                          // Verificar se é URL de vídeo após carregamento
-                          if (_isVideoUrl(urlStr) && !_isCapturing) {
-                            await _captureUrl(urlStr);
-                          }
-                        },
-                        onUpdateVisitedHistory:
-                            (controller, url, isReload) async {
-                          if (!mounted) return;
-                          final urlStr = url?.toString() ?? '';
-                          final canGoBack =
-                              await controller.canGoBack();
-                          if (!mounted) return;
-                          setState(() => _canGoBack = canGoBack);
-                          _updateUrlBar(urlStr);
-
-                          // Verificar URL em tempo real durante navegação
-                          if (_isVideoUrl(urlStr) && !_isCapturing) {
-                            await _captureUrl(urlStr);
-                          }
-                        },
-                        shouldOverrideUrlLoading:
-                            (controller, navigationAction) async {
-                          final urlStr = navigationAction
-                                  .request.url
-                                  ?.toString() ??
-                              '';
-                          // Capturar URL de vídeo antes de carregar
-                          if (_isVideoUrl(urlStr) && !_isCapturing) {
-                            await _captureUrl(urlStr);
-                            return NavigationActionPolicy.CANCEL;
-                          }
-                          return NavigationActionPolicy.ALLOW;
-                        },
-                      ),
-
-                      // Loading indicator
-                      if (_isLoading)
-                        const Positioned(
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          child: LinearProgressIndicator(
-                            backgroundColor: Colors.transparent,
-                            color: Colors.white54,
-                            minHeight: 2,
-                          ),
-                        ),
-
-                      // Overlay de captura
-                      if (_isCapturing)
-                        Container(
-                          color: Colors.black87,
-                          child: const Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                                SizedBox(height: 16),
-                                Text(
-                                  'Carregando vídeo...',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                : const SizedBox.shrink(),
           ),
+          const SizedBox(height: 4),
         ],
       ),
     );
   }
-}
 
-// ── _BrowserTopBar ────────────────────────────────────────────────────────────
-
-class _BrowserTopBar extends StatelessWidget {
-  final ScreeningPlatform platform;
-  final TextEditingController urlController;
-  final String currentUrl;
-  final bool canGoBack;
-  final bool isLoading;
-  final VoidCallback onBack;
-  final VoidCallback onClose;
-  final VoidCallback onRefresh;
-
-  const _BrowserTopBar({
-    required this.platform,
-    required this.urlController,
-    required this.currentUrl,
-    required this.canGoBack,
-    required this.isLoading,
-    required this.onBack,
-    required this.onClose,
-    required this.onRefresh,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: Row(
-        children: [
-          // Botão voltar
-          _TopBarButton(
-            icon: Icons.arrow_back_ios_new_rounded,
-            onTap: canGoBack ? onBack : null,
-            enabled: canGoBack,
+  Widget _buildUrlBar() {
+    return GestureDetector(
+      onTap: _urlBarEditing ? null : _onUrlBarTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: 38,
+        decoration: BoxDecoration(
+          color: _urlBarEditing ? const Color(0xFF16162A) : const Color(0xFF111120),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: _urlBarEditing
+                ? _accentColor.withValues(alpha: 0.55)
+                : Colors.white.withValues(alpha: 0.09),
+            width: _urlBarEditing ? 1.5 : 1.0,
           ),
-          const SizedBox(width: 8),
-
-          // Barra de endereço (readonly)
-          Expanded(
-            child: Container(
-              height: 38,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.12),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const SizedBox(width: 10),
-                  Icon(
-                    _platformIcon(platform.id),
-                    color: Colors.white54,
-                    size: 14,
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      _formatUrl(currentUrl),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(width: 10),
+            Icon(
+              _isLoading
+                  ? Icons.hourglass_top_rounded
+                  : _currentUrl.startsWith('https://')
+                      ? Icons.lock_rounded
+                      : Icons.lock_open_rounded,
+              color: _isLoading
+                  ? _accentColor.withValues(alpha: 0.7)
+                  : _currentUrl.startsWith('https://')
+                      ? Colors.greenAccent.withValues(alpha: 0.55)
+                      : Colors.orange.withValues(alpha: 0.6),
+              size: 13,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: _urlBarEditing
+                  ? TextField(
+                      controller: _urlBarController,
+                      focusNode: _urlFocusNode,
+                      style: const TextStyle(color: Colors.white, fontSize: 12.5),
+                      keyboardType: TextInputType.url,
+                      textInputAction: TextInputAction.go,
+                      onSubmitted: _onUrlBarSubmit,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    )
+                  : Text(
+                      _formatDisplayUrl(_currentUrl),
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 12,
+                        fontSize: 12.5,
                         overflow: TextOverflow.ellipsis,
                       ),
                       maxLines: 1,
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                ],
-              ),
             ),
-          ),
-
-          const SizedBox(width: 8),
-
-          // Botão refresh
-          _TopBarButton(
-            icon: isLoading
-                ? Icons.close_rounded
-                : Icons.refresh_rounded,
-            onTap: onRefresh,
-          ),
-
-          const SizedBox(width: 8),
-
-          // Botão fechar
-          _TopBarButton(
-            icon: Icons.close_rounded,
-            onTap: onClose,
-            color: Colors.white70,
-          ),
-        ],
+            if (_urlBarEditing)
+              GestureDetector(
+                onTap: () { _urlBarController.clear(); _urlFocusNode.requestFocus(); },
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Icon(Icons.cancel_rounded, color: Colors.white.withValues(alpha: 0.35), size: 16),
+                ),
+              )
+            else
+              const SizedBox(width: 8),
+          ],
+        ),
       ),
     );
   }
 
-  String _formatUrl(String url) {
-    if (url.isEmpty) return platform.initialUrl ?? '';
+  String _formatDisplayUrl(String url) {
+    if (url.isEmpty) return _platform.initialUrl ?? 'Navegar...';
     try {
       final uri = Uri.parse(url);
-      return uri.host + (uri.path.length > 1 ? uri.path : '');
-    } catch (_) {
-      return url;
+      final host = uri.host.replaceFirst('www.', '');
+      final path = uri.path.length > 1 ? uri.path : '';
+      return host + path;
+    } catch (_) { return url; }
+  }
+
+  // ── Hint de captura ───────────────────────────────────────────────────────
+
+  Widget _buildHint() {
+    if (_isVideoDetected && !_isCapturing) {
+      return _buildDetectedBanner();
     }
-  }
-
-  IconData _platformIcon(String platformId) {
-    switch (platformId) {
-      case 'youtube':
-      case 'youtube_live':
-        return Icons.play_circle_outline_rounded;
-      case 'twitch':
-        return Icons.live_tv_rounded;
-      case 'kick':
-        return Icons.sports_esports_rounded;
-      case 'vimeo':
-        return Icons.videocam_rounded;
-      case 'dailymotion':
-        return Icons.movie_rounded;
-      case 'drive':
-        return Icons.folder_rounded;
-      default:
-        return Icons.language_rounded;
-    }
-  }
-}
-
-// ── _TopBarButton ─────────────────────────────────────────────────────────────
-
-class _TopBarButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback? onTap;
-  final bool enabled;
-  final Color? color;
-
-  const _TopBarButton({
-    required this.icon,
-    this.onTap,
-    this.enabled = true,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.07),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(
-          icon,
-          color: (color ??
-                  (enabled
-                      ? Colors.white70
-                      : Colors.white.withValues(alpha: 0.25))),
-          size: 18,
-        ),
-      ),
-    );
-  }
-}
-
-// ── _CaptureHint ──────────────────────────────────────────────────────────────
-
-class _CaptureHint extends StatelessWidget {
-  final String platformName;
-  const _CaptureHint({required this.platformName});
-
-  @override
-  Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+      margin: const EdgeInsets.fromLTRB(10, 4, 10, 6),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: _accentColor.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-        ),
+        border: Border.all(color: _accentColor.withValues(alpha: 0.18)),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.info_outline_rounded,
-            color: Colors.white.withValues(alpha: 0.4),
-            size: 14,
-          ),
+          Icon(Icons.videocam_rounded, color: _accentColor.withValues(alpha: 0.65), size: 14),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Navegue até um vídeo no $platformName e ele será capturado automaticamente.',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.45),
-                fontSize: 11.5,
-              ),
+              'Navegue até um vídeo no ${_platform.displayName} — ele será capturado automaticamente.',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11.5),
             ),
           ),
         ],
       ),
     );
   }
-}
 
-// ── _DirectUrlInput ───────────────────────────────────────────────────────────
+  Widget _buildDetectedBanner() {
+    return AnimatedBuilder(
+      animation: _pulseAnim,
+      builder: (context, child) => Transform.scale(scale: _pulseAnim.value, child: child),
+      child: GestureDetector(
+        onTap: () => _captureUrl(_detectedVideoUrl),
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(10, 4, 10, 6),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [
+              _accentColor.withValues(alpha: 0.22),
+              _accentColor.withValues(alpha: 0.10),
+            ]),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _accentColor.withValues(alpha: 0.5), width: 1.5),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 34, height: 34,
+                decoration: BoxDecoration(
+                  color: _accentColor.withValues(alpha: 0.18),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.play_circle_filled_rounded, color: _accentColor, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Vídeo detectado!',
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13, fontWeight: FontWeight.w700)),
+                    Text('Toque para adicionar à sala',
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 11)),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(color: _accentColor, borderRadius: BorderRadius.circular(8)),
+                child: const Text('Usar', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-class _DirectUrlInput extends StatelessWidget {
-  final TextEditingController controller;
-  final VoidCallback onSubmit;
-  final bool isCapturing;
+  // ── Conteúdo principal ────────────────────────────────────────────────────
 
-  const _DirectUrlInput({
-    required this.controller,
-    required this.onSubmit,
-    required this.isCapturing,
-  });
+  Widget _buildContent() {
+    if (_platform.isDirectUrl) return _buildDirectUrlInput();
+    return Stack(
+      children: [
+        InAppWebView(
+          initialUrlRequest: URLRequest(
+            url: WebUri(_platform.initialUrl ?? 'about:blank'),
+          ),
+          initialSettings: InAppWebViewSettings(
+            javaScriptEnabled: true,
+            mediaPlaybackRequiresUserGesture: false,
+            allowsInlineMediaPlayback: true,
+            useHybridComposition: true,
+            supportZoom: true,
+            builtInZoomControls: true,
+            displayZoomControls: false,
+            domStorageEnabled: true,
+            databaseEnabled: true,
+            allowFileAccessFromFileURLs: false,
+            allowUniversalAccessFromFileURLs: false,
+            userAgent:
+                'Mozilla/5.0 (Linux; Android 13; Pixel 7) '
+                'AppleWebKit/537.36 (KHTML, like Gecko) '
+                'Chrome/124.0.0.0 Mobile Safari/537.36',
+          ),
+          onWebViewCreated: (c) => _webViewController = c,
+          onLoadStart: (c, url) {
+            if (!mounted) return;
+            setState(() { _isLoading = true; _loadingProgress = 0.0; _isVideoDetected = false; });
+            _updateUrlBar(url?.toString() ?? '');
+          },
+          onProgressChanged: (c, progress) {
+            if (!mounted) return;
+            setState(() => _loadingProgress = progress / 100.0);
+          },
+          onLoadStop: (c, url) async {
+            if (!mounted) return;
+            final urlStr = url?.toString() ?? '';
+            final back = await c.canGoBack();
+            final fwd = await c.canGoForward();
+            if (!mounted) return;
+            setState(() { _isLoading = false; _loadingProgress = 1.0; _canGoBack = back; _canGoForward = fwd; });
+            _updateUrlBar(urlStr);
+            if (_isVideoUrl(urlStr) && !_isCapturing) _markVideoDetected(urlStr);
+          },
+          onLoadError: (c, url, code, msg) {
+            if (!mounted) return;
+            setState(() { _isLoading = false; _loadingProgress = 0.0; });
+          },
+          onUpdateVisitedHistory: (c, url, isReload) async {
+            if (!mounted) return;
+            final urlStr = url?.toString() ?? '';
+            final back = await c.canGoBack();
+            final fwd = await c.canGoForward();
+            if (!mounted) return;
+            setState(() { _canGoBack = back; _canGoForward = fwd; });
+            _updateUrlBar(urlStr);
+            if (_isVideoUrl(urlStr) && !_isCapturing) _markVideoDetected(urlStr);
+          },
+          shouldOverrideUrlLoading: (c, nav) async {
+            final urlStr = nav.request.url?.toString() ?? '';
+            if (_isVideoUrl(urlStr) && !_isCapturing) _markVideoDetected(urlStr);
+            return NavigationActionPolicy.ALLOW;
+          },
+        ),
+        if (_isCapturing) _buildCapturingOverlay(),
+      ],
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
+  Widget _buildCapturingOverlay() {
+    return Container(
+      color: Colors.black.withValues(alpha: 0.88),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 52, height: 52,
+              child: CircularProgressIndicator(color: _accentColor, strokeWidth: 3),
+            ),
+            const SizedBox(height: 20),
+            Text('Carregando vídeo...',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            Text(_platform.displayName,
+                style: TextStyle(color: _accentColor.withValues(alpha: 0.75), fontSize: 13)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Input de URL direta ───────────────────────────────────────────────────
+
+  Widget _buildDirectUrlInput() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Cole a URL do vídeo',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.85),
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+          Container(
+            width: 56, height: 56,
+            decoration: BoxDecoration(
+              color: const Color(0xFF6C63FF).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF6C63FF).withValues(alpha: 0.28)),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Funciona com qualquer site de vídeo: Netflix, Disney+, Prime Video, etc.',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.45),
-              fontSize: 13,
-            ),
+            child: const Icon(Icons.link_rounded, color: Color(0xFF6C63FF), size: 28),
           ),
           const SizedBox(height: 20),
+          const Text('Cole a URL do vídeo',
+              style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
+          const SizedBox(height: 8),
+          Text(
+            'Funciona com qualquer site de vídeo: Netflix, Disney+, Prime Video, Max, Crunchyroll e outros.',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 14, height: 1.5),
+          ),
+          const SizedBox(height: 28),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.07),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.15),
-              ),
+              color: const Color(0xFF111120),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFF6C63FF).withValues(alpha: 0.3), width: 1.5),
             ),
             child: TextField(
-              controller: controller,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-              ),
+              controller: _directUrlController,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
               keyboardType: TextInputType.url,
               textInputAction: TextInputAction.go,
-              onSubmitted: (_) => onSubmit(),
+              onSubmitted: (_) => _submitDirectUrl(),
               autofocus: true,
               decoration: InputDecoration(
                 hintText: 'https://...',
-                hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  fontSize: 14,
-                ),
-                prefixIcon: Icon(
-                  Icons.link_rounded,
-                  color: Colors.white.withValues(alpha: 0.4),
-                  size: 20,
-                ),
+                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.22), fontSize: 14),
+                prefixIcon: Icon(Icons.link_rounded, color: const Color(0xFF6C63FF).withValues(alpha: 0.55), size: 20),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),
             ),
           ),
           const SizedBox(height: 16),
           SizedBox(
-            width: double.infinity,
-            height: 50,
+            width: double.infinity, height: 54,
             child: ElevatedButton.icon(
-              onPressed: isCapturing ? null : onSubmit,
-              icon: isCapturing
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        color: Colors.black,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Icon(Icons.play_arrow_rounded, size: 22),
+              onPressed: _isCapturing ? null : _submitDirectUrl,
+              icon: _isCapturing
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                  : const Icon(Icons.play_arrow_rounded, size: 24),
               label: Text(
-                isCapturing ? 'Carregando...' : 'Reproduzir',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 15,
-                ),
+                _isCapturing ? 'Carregando...' : 'Reproduzir',
+                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: -0.3),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+                backgroundColor: const Color(0xFF6C63FF),
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: const Color(0xFF6C63FF).withValues(alpha: 0.35),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 elevation: 0,
               ),
+            ),
+          ),
+          const SizedBox(height: 32),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.04),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Plataformas suportadas',
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.55), fontSize: 11.5, fontWeight: FontWeight.w600, letterSpacing: 0.4)),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8, runSpacing: 8,
+                  children: [
+                    'Netflix', 'Disney+', 'Prime Video', 'Max',
+                    'Crunchyroll', 'Apple TV+', 'Globoplay', 'Qualquer site',
+                  ].map((n) => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(n, style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11.5)),
+                  )).toList(),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+// ── _NavBtn ───────────────────────────────────────────────────────────────────
+
+class _NavBtn extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+  final String? tooltip;
+  final Color? color;
+
+  const _NavBtn({required this.icon, this.onTap, this.tooltip, this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onTap != null;
+    final btn = GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 36, height: 36,
+        decoration: BoxDecoration(
+          color: enabled ? Colors.white.withValues(alpha: 0.06) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          icon,
+          color: color ?? (enabled ? Colors.white.withValues(alpha: 0.78) : Colors.white.withValues(alpha: 0.18)),
+          size: 17,
+        ),
+      ),
+    );
+    return tooltip != null ? Tooltip(message: tooltip!, child: btn) : btn;
   }
 }

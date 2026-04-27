@@ -110,7 +110,7 @@ class _ScreeningControlsOverlayState
                   // Gradiente inferior
                   Positioned(
                     bottom: 0, left: 0, right: 0,
-                    height: 120,
+                    height: 140,
                     child: IgnorePointer(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
@@ -234,10 +234,11 @@ class _ControlButtonState extends State<_ControlButton>
     super.dispose();
   }
 
-  Future<void> _handleTap() async {
+  void _handleTap() {
+    // Haptic imediato + animação sem await — callback executado imediatamente
+    // sem delay de ~200ms que causava travamento ao clicar nos botões.
     HapticFeedback.selectionClick();
-    await _pressController.forward();
-    await _pressController.reverse();
+    _pressController.forward().then((_) => _pressController.reverse());
     widget.onTap();
   }
 
@@ -248,7 +249,7 @@ class _ControlButtonState extends State<_ControlButton>
       child: ScaleTransition(
         scale: _scaleAnim,
         child: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.45),
             borderRadius: BorderRadius.circular(10),
@@ -318,10 +319,10 @@ class _PlayPauseButtonState extends State<_PlayPauseButton>
     super.dispose();
   }
 
-  Future<void> _handleTap() async {
+  void _handleTap() {
+    // Haptic imediato + animação sem await — callback executado imediatamente
     HapticFeedback.mediumImpact();
-    await _pressController.forward();
-    await _pressController.reverse();
+    _pressController.forward().then((_) => _pressController.reverse());
     widget.onTap();
   }
 
@@ -517,7 +518,7 @@ class _HostControlsConsumer extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // ── Seek bar (apenas para vídeos não-live) ──────────────────────
-          if (!playerState.isLiveStream)
+          if (!playerState.isLiveStream && playerState.duration > Duration.zero)
             _SeekBar(
               sessionId: sessionId,
               position: playerState.position,
