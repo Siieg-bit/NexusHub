@@ -103,6 +103,9 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
   bool _isHostPlaying = false;
   double _currentRate = 1.0;
   int _reconnectAttempts = 0;
+  /// Flag para evitar que o closed disparado por unsubscribe intencional
+  /// (durante reconexão ou dispose) acione um novo ciclo de _scheduleReconnect.
+  bool _isIntentionalDisconnect = false;
 
   ScreeningSyncNotifier({required this.sessionId, required this.ref})
       : super(const ScreeningSyncState()) {
@@ -146,6 +149,9 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
               break;
             case RealtimeSubscribeStatus.closed:
             case RealtimeSubscribeStatus.channelError:
+              // Ignorar closed disparado por unsubscribe intencional
+              // (durante reconexão ou dispose) para evitar loop infinito.
+              if (_isIntentionalDisconnect) break;
               if (mounted) {
                 state = state.copyWith(
                   isConnected: false,
@@ -173,8 +179,10 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
     if (mounted) state = state.copyWith(reconnectAttempts: _reconnectAttempts);
     _reconnectTimer = Timer(Duration(seconds: delaySeconds), () {
       if (!mounted) return;
+      _isIntentionalDisconnect = true;
       _channel?.unsubscribe();
       _channel = null;
+      _isIntentionalDisconnect = false;
       _subscribeToSyncEvents();
     });
   }
@@ -408,6 +416,7 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
     _microsyncTimer?.cancel();
     _syncTimeoutTimer?.cancel();
     _reconnectTimer?.cancel();
+    _isIntentionalDisconnect = true;
     _channel?.unsubscribe();
     super.dispose();
   }

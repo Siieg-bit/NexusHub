@@ -87,6 +87,7 @@ class RealtimeService {
     final managed = _channels.remove(channelName);
     if (managed != null) {
       managed.retryTimer?.cancel();
+      managed.isIntentionalDisconnect = true;
       managed.channel.unsubscribe();
     }
   }
@@ -95,6 +96,7 @@ class RealtimeService {
   void unsubscribeAll() {
     for (final managed in _channels.values) {
       managed.retryTimer?.cancel();
+      managed.isIntentionalDisconnect = true;
       managed.channel.unsubscribe();
     }
     _channels.clear();
@@ -143,6 +145,9 @@ class RealtimeService {
   /// Trata desconexão com retry exponencial.
   /// Se o erro for JWT expirado, tenta refresh de sessão primeiro.
   void _handleDisconnect(_ManagedChannel managed, {Object? error}) {
+    // Ignorar closed/error disparado por unsubscribe intencional para evitar
+    // loop infinito de reconexão.
+    if (managed.isIntentionalDisconnect) return;
     _updateGlobalStatus();
 
     // Detectar JWT expirado e fazer refresh antes de reconectar
@@ -246,6 +251,9 @@ class _ManagedChannel {
 
   /// Garante que o refresh de JWT seja tentado apenas uma vez por ciclo de erro.
   bool jwtExpiredRetryDone = false;
+  /// Flag para evitar que o closed disparado por unsubscribe intencional
+  /// (durante reconexão ou remoção do canal) acione um novo ciclo de retry.
+  bool isIntentionalDisconnect = false;
 
   _ManagedChannel({
     required this.name,
