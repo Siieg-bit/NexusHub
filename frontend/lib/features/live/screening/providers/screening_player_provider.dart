@@ -38,6 +38,15 @@ const _kPlayerBridgeJs = r'''
 (function() {
   if (window._nexusPlayer) return; // já injetado
 
+  // Função auxiliar para emitir eventos via console.log (capturado pelo Flutter)
+  function _emit(event) {
+    if (event === 'playing') console.log('__YT_PLAYING__');
+    else if (event === 'paused') console.log('__YT_PAUSED__');
+    else if (event === 'buffering') console.log('__YT_BUFFERING__');
+    else if (event === 'ended') console.log('__VIDEO_ENDED__');
+    else if (event === 'ready') console.log('__YT_READY__');
+  }
+
   window._nexusPlayer = {
     _yt: null,
 
@@ -48,12 +57,13 @@ const _kPlayerBridgeJs = r'''
         if (iframe && !this._yt) {
           this._yt = new YT.Player(iframe, {
             events: {
+              onReady: function(e) { _emit('ready'); e.target.playVideo(); },
               onStateChange: function(e) {
                 // -1=unstarted, 0=ended, 1=playing, 2=paused, 3=buffering
-                if (e.data === 1) window._nexusPlayerEvent('playing');
-                else if (e.data === 2) window._nexusPlayerEvent('paused');
-                else if (e.data === 3) window._nexusPlayerEvent('buffering');
-                else if (e.data === 0) window._nexusPlayerEvent('ended');
+                if (e.data === 1) _emit('playing');
+                else if (e.data === 2) _emit('paused');
+                else if (e.data === 3) _emit('buffering');
+                else if (e.data === 0) _emit('ended');
               }
             }
           });
@@ -160,11 +170,11 @@ const _kPlayerBridgeJs = r'''
   // Observar eventos do <video> HTML5
   var v = document.querySelector('video');
   if (v) {
-    v.addEventListener('playing', function() { window._nexusPlayerEvent('playing'); });
-    v.addEventListener('pause',   function() { window._nexusPlayerEvent('paused'); });
-    v.addEventListener('waiting', function() { window._nexusPlayerEvent('buffering'); });
-    v.addEventListener('ended',   function() { window._nexusPlayerEvent('ended'); });
-    v.addEventListener('loadedmetadata', function() { window._nexusPlayerEvent('ready'); });
+    v.addEventListener('playing', function() { _emit('playing'); });
+    v.addEventListener('pause',   function() { _emit('paused'); });
+    v.addEventListener('waiting', function() { _emit('buffering'); });
+    v.addEventListener('ended',   function() { _emit('ended'); });
+    v.addEventListener('loadedmetadata', function() { _emit('ready'); });
   }
 })();
 ''';
@@ -193,9 +203,16 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     _bridgeInjected = false;
   }
 
-  /// Chamado em onLoadStop — injeta o bridge e inicia o polling.
+  /// Chamado pelo widget após injetar o _injectControlScript para evitar
+  /// que o provider injete o bridge duplicado via _ensureBridge().
+  void markBridgeInjected() {
+    _bridgeInjected = true;
+  }
+
+  /// Chamado em onLoadStop — marca o player como pronto e inicia o polling.
+  /// O bridge JS já foi injetado pelo widget (ScreeningPlayerWidget._injectControlScript)
+  /// antes desta chamada, portanto não injetamos novamente para evitar sobrescrita.
   Future<void> onWebViewReady() async {
-    await _injectBridge();
     state = state.copyWith(isReady: true, isBuffering: false);
     _startPositionPolling(intervalSeconds: 1);
     // Tentar obter duração após um breve delay (aguarda o player carregar)

@@ -78,10 +78,10 @@ class _ScreeningControlsOverlayState
 
   @override
   Widget build(BuildContext context) {
+    // Usar select para evitar rebuild do overlay inteiro a cada tick do polling.
+    // playerState é lido apenas no _HostControlsConsumer para isolar os rebuilds.
     final roomState = ref.watch(screeningRoomProvider(widget.threadId));
-    final playerState = ref.watch(screeningPlayerProvider(widget.sessionId));
     final voiceState = ref.watch(screeningVoiceProvider(widget.sessionId));
-
     return FadeTransition(
       opacity: _fadeAnim,
       child: IgnorePointer(
@@ -92,10 +92,15 @@ class _ScreeningControlsOverlayState
             children: [
               // ── Top Bar ──────────────────────────────────────────────────
               _buildTopBar(context, roomState, voiceState),
-
               // ── Host Controls (apenas host) ───────────────────────────────
               if (roomState.isHost)
-                _buildHostControls(context, roomState, playerState),
+                _HostControlsConsumer(
+                  sessionId: widget.sessionId,
+                  threadId: widget.threadId,
+                  onSeekAndBroadcast: _seekAndBroadcast,
+                  onTogglePlayPause: _togglePlayPause,
+                  onShowAddVideo: () => _showAddVideoSheet(context),
+                ),
             ],
           ),
         ),
@@ -620,13 +625,18 @@ class _SeekBarState extends ConsumerState<_SeekBar> {
               });
             },
             onChanged: (value) {
+              // Apenas atualiza o valor visual durante o drag.
+              // O seek real é feito somente no onChangeEnd para evitar
+              // avalanche de evaluateJavascript a cada frame.
               setState(() => _dragValue = value);
-              ref
-                  .read(screeningPlayerProvider(widget.sessionId).notifier)
-                  .seek(Duration(milliseconds: (value * total).toInt()));
             },
             onChangeEnd: (value) {
               final newPos = Duration(milliseconds: (value * total).toInt());
+              // 1. Seek local imediato para o host ver o resultado
+              ref
+                  .read(screeningPlayerProvider(widget.sessionId).notifier)
+                  .seek(newPos);
+              // 2. Broadcast para sincronizar os outros participantes
               ref
                   .read(screeningSyncProvider(widget.sessionId).notifier)
                   .broadcastEvent(SyncEvent(
@@ -671,5 +681,129 @@ class _SeekBarState extends ConsumerState<_SeekBar> {
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
     return h > 0 ? '$h:$m:$s' : '$m:$s';
+  }
+}
+
+// =============================================================================
+// _HostControlsConsumer — Widget isolado que observa playerState
+// Evita que o overlay inteiro reconstrua a cada tick do polling de posição.
+// =============================================================================
+class _HostControlsConsumer extends ConsumerWidget {
+  final String sessionId;
+  final String threadId;
+  final void Function(Duration position, bool isPlaying) onSeekAndBroadcast;
+  final void Function(dynamic playerState) onTogglePlayPause;
+  final VoidCallback onShowAddVideo;
+
+  const _HostControlsConsumer({
+    required this.sessionId,
+    required this.threadId,
+    required this.onSeekAndBroadcast,
+    required this.onTogglePlayPause,
+    required this.onShowAddVideo,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final playerState = ref.watch(screeningPlayerProvider(sessionId));
+    final roomState = ref.watch(screeningRoomProvider(threadId));
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [
+            Colors.black.withValues(alpha: 0.75),
+            Colors.transparent,
+          ],
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!playerState.isLiveStream)
+            _SeekBar(
+              sessionId: sessionId,
+              position: playerState.position,
+              duration: playerState.duration,
+            ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _ControlButton(
+                icon: Icons.replay_10_rounded,
+                size: 28,
+                onTap: () {
+                  final pos = playerState.position;
+                  final newPos = pos - const Duration(seconds: 10);
+                  onSeekAndBroadcast(
+                    newPos.isNegative ? Duration.zero : newPos,
+                    playerState.isPlaying,
+                  );
+                },
+              ),
+              const SizedBox(width: 24),
+              _PlayPauseButton(
+                isPlaying: playerState.isPlaying,
+                isBuffering: playerState.isBuffering,
+                onTap: () => onTogglePlayPause(playerState),
+              ),
+              const SizedBox(width: 24),
+              _ControlButton(
+                icon: Icons.forward_10_rounded,
+                size: 28,
+                onTap: () {
+                  final pos = playerState.position;
+                  onSeekAndBroadcast(
+                    pos + const Duration(seconds: 10),
+                    playerState.isPlaying,
+                  );
+                },
+              ),
+              const Spacer(),
+              _ControlButton(
+                icon: Icons.swap_horiz_rounded,
+                label: 'Host',
+                color: Colors.amberAccent,
+                onTap: () => ScreeningTransferHostSheet.show(
+                  context,
+                  sessionId: sessionId,
+                  threadId: threadId,
+                ),
+              ),
+              const SizedBox(width: 8),
+              _ControlButton(
+                icon: Icons.add_circle_outline_rounded,
+                label: 'Vídeo',
+                onTap: onShowAddVideo,
+              ),
+              const SizedBox(width: 8),
+              _ControlButton(
+                icon: Icons.queue_music_rounded,
+                label: 'Fila',
+                color: roomState.videoQueue.isNotEmpty
+                    ? Colors.greenAccent[400]!
+                    : null,
+                badge: roomState.videoQueue.isNotEmpty
+                    ? '\${roomState.videoQueue.length}'
+                    : null,
+                onTap: () => showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  isScrollControlled: true,
+                  builder: (_) => ScreeningQueueSheet(
+                    sessionId: sessionId,
+                    threadId: threadId,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

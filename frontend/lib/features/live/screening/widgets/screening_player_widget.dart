@@ -122,17 +122,23 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
 
   @override
   Widget build(BuildContext context) {
-    final roomState = ref.watch(screeningRoomProvider(widget.threadId));
-    final playerState = ref.watch(screeningPlayerProvider(widget.sessionId));
-    final videoUrl = roomState.currentVideoUrl;
-
+    // Usar select para observar APENAS videoUrl e isHost — evita rebuild
+    // do WebView a cada tick do polling de posição (a cada 1s).
+    final videoUrl = ref.watch(
+      screeningRoomProvider(widget.threadId).select((s) => s.currentVideoUrl),
+    );
+    final isHost = ref.watch(
+      screeningRoomProvider(widget.threadId).select((s) => s.isHost),
+    );
+    // isBuffering observado separadamente para não reconstruir o WebView
+    final isBuffering = ref.watch(
+      screeningPlayerProvider(widget.sessionId).select((s) => s.isBuffering),
+    );
     if (videoUrl == null || videoUrl.isEmpty) {
-      return _ScreeningEmptyState(isHost: roomState.isHost);
+      return _ScreeningEmptyState(isHost: isHost);
     }
-
     final embedUrl = _toEmbedUrl(videoUrl);
     final htmlContent = _buildHtmlWrapper(embedUrl);
-
     return Stack(
       children: [
         // ── Camada 0: Player WebView ──────────────────────────────────────
@@ -172,6 +178,11 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
           onLoadStop: (controller, url) async {
             setState(() => _isLoading = false);
             await _injectControlScript(controller);
+            // Sinalizar ao provider que o bridge já foi injetado pelo widget
+            // para evitar que _ensureBridge() injete o bridge duplicado.
+            ref
+                .read(screeningPlayerProvider(widget.sessionId).notifier)
+                .markBridgeInjected();
             ref
                 .read(screeningPlayerProvider(widget.sessionId).notifier)
                 .onWebViewReady();
@@ -184,8 +195,7 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             }
           },
         ),
-
-        // ── Camada 0b: Gradiente ambiente dinâmico (cores do vídeo) ───────────────
+        // ── Camada 0b: Gradiente ambiente dinâmico (cores do vídeo) ──────
         Positioned.fill(
           child: ScreeningAmbientGradient(
             key: _ambientGradientKey,
@@ -193,12 +203,10 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             webViewController: _webViewController,
           ),
         ),
-
         // ── Camada 1: Buffering overlay ───────────────────────────────────
         ScreeningLoadingOverlay(
-          visible: _isLoading || playerState.isBuffering,
+          visible: _isLoading || isBuffering,
         ),
-
         // ── Camada 2: Gestos de double-tap (seek) ─────────────────────────
         Row(
           children: [
@@ -220,7 +228,6 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             ),
           ],
         ),
-
         // ── Indicador visual de seek esquerdo ─────────────────────────────
         if (_showSeekLeft)
           Positioned(
@@ -234,7 +241,6 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
               ),
             ),
           ),
-
         // ── Indicador visual de seek direito ──────────────────────────────
         if (_showSeekRight)
           Positioned(
