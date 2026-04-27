@@ -102,6 +102,69 @@ final _kPlatforms = <String, ScreeningPlatform>{
       _VideoUrlPattern(RegExp(r'drive\.google\.com/file/d/[a-zA-Z0-9_-]+')),
     ],
   ),
+  // ── AVOD gratuito (HLS direto) ──────────────────────────────────────────────────
+  'tubi': ScreeningPlatform(
+    id: 'tubi',
+    displayName: 'Tubi',
+    initialUrl: 'https://tubitv.com',
+    videoPatterns: [
+      _VideoUrlPattern(RegExp(r'tubitv\.com/(?:movies|tv-shows|series|video)/\d+')),
+    ],
+  ),
+  'pluto': ScreeningPlatform(
+    id: 'pluto',
+    displayName: 'Pluto TV',
+    initialUrl: 'https://pluto.tv',
+    videoPatterns: [
+      _VideoUrlPattern(RegExp(r'pluto\.tv/live-tv/[a-zA-Z0-9_-]+')),
+      _VideoUrlPattern(RegExp(r'pluto\.tv/(?:on-demand/)?(?:movies|series)/[a-zA-Z0-9_-]+')),
+    ],
+  ),
+  // ── Serviços de assinatura (login + relay) ──────────────────────────────
+  'netflix': ScreeningPlatform(
+    id: 'netflix',
+    displayName: 'Netflix',
+    initialUrl: 'https://www.netflix.com/browse',
+    videoPatterns: [
+      _VideoUrlPattern(RegExp(r'netflix\.com/watch/\d+')),
+    ],
+  ),
+  'disney': ScreeningPlatform(
+    id: 'disney',
+    displayName: 'Disney+',
+    initialUrl: 'https://www.disneyplus.com',
+    videoPatterns: [
+      _VideoUrlPattern(RegExp(r'disneyplus\.com/video/[a-zA-Z0-9_-]+')),
+      _VideoUrlPattern(RegExp(r'disneyplus\.com/play/[a-zA-Z0-9_-]+')),
+    ],
+  ),
+  'amazon': ScreeningPlatform(
+    id: 'amazon',
+    displayName: 'Prime Video',
+    initialUrl: 'https://www.primevideo.com',
+    videoPatterns: [
+      _VideoUrlPattern(RegExp(r'primevideo\.com/detail/[A-Z0-9]+')),
+      _VideoUrlPattern(RegExp(r'amazon\.com/gp/video/detail/[A-Z0-9]+')),
+      _VideoUrlPattern(RegExp(r'primevideo\.com/playback/[A-Z0-9]+')),
+    ],
+  ),
+  'hbo': ScreeningPlatform(
+    id: 'hbo',
+    displayName: 'Max',
+    initialUrl: 'https://www.max.com',
+    videoPatterns: [
+      _VideoUrlPattern(RegExp(r'max\.com/(?:[a-z-]+/)?(?:movie|episode|feature)/[a-zA-Z0-9_-]+')),
+      _VideoUrlPattern(RegExp(r'hbomax\.com/(?:feature|episode)/[a-zA-Z0-9_-]+')),
+    ],
+  ),
+  'crunchyroll': ScreeningPlatform(
+    id: 'crunchyroll',
+    displayName: 'Crunchyroll',
+    initialUrl: 'https://www.crunchyroll.com',
+    videoPatterns: [
+      _VideoUrlPattern(RegExp(r'crunchyroll\.com/(?:[a-z-]+/)?watch/[A-Z0-9]+')),
+    ],
+  ),
   'web': ScreeningPlatform(
     id: 'web',
     displayName: 'URL Direta',

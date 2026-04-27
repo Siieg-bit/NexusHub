@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:media_kit/media_kit.dart';
 import '../models/screening_player_state.dart';
 
 // =============================================================================
@@ -190,8 +191,10 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   final String sessionId;
 
   InAppWebViewController? _webViewController;
+  Player? _nativePlayer;
   Timer? _positionPollTimer;
   bool _bridgeInjected = false;
+  bool _isNativeMode = false;
 
   ScreeningPlayerNotifier({required this.sessionId})
       : super(const ScreeningPlayerState());
@@ -401,11 +404,54 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     _positionPollTimer?.cancel();
   }
 
+  // ── Player nativo (media_kit) ─────────────────────────────────────────────
+
+  void registerNativePlayer(Player player) {
+    _nativePlayer = player;
+    _isNativeMode = true;
+    state = state.copyWith(isReady: true, isBuffering: false);
+  }
+
+  void onNativePlay() {
+    if (!mounted) return;
+    state = state.copyWith(isPlaying: true, isBuffering: false);
+  }
+
+  void onNativePause() {
+    if (!mounted) return;
+    state = state.copyWith(isPlaying: false);
+  }
+
+  void onNativePositionUpdate(double seconds) {
+    if (!mounted) return;
+    state = state.copyWith(
+      position: Duration(milliseconds: (seconds * 1000).round()),
+    );
+  }
+
+  void onNativeBuffering(bool buffering) {
+    if (!mounted) return;
+    state = state.copyWith(isBuffering: buffering);
+  }
+
+  Future<void> nativePlay() async {
+    await _nativePlayer?.play();
+  }
+
+  Future<void> nativePause() async {
+    await _nativePlayer?.pause();
+  }
+
+  Future<void> nativeSeek(double seconds) async {
+    await _nativePlayer?.seek(Duration(milliseconds: (seconds * 1000).round()));
+  }
+
   @override
   void dispose() {
     _positionPollTimer?.cancel();
     _positionPollTimer = null;
     _webViewController = null; // evita MissingPluginException após dispose
+    _nativePlayer = null;
     super.dispose();
   }
 }

@@ -7,20 +7,30 @@ import '../providers/screening_player_provider.dart';
 import '../providers/screening_room_provider.dart';
 import '../providers/screening_sync_provider.dart';
 import '../models/sync_event.dart';
+import '../services/stream_resolver_service.dart';
 import 'screening_entry_animation.dart';
 import 'screening_ambient_gradient.dart';
+import 'screening_native_player_widget.dart';
 
 // =============================================================================
-// ScreeningPlayerWidget — Player de vídeo imersivo via InAppWebView — Fase 3
+// ScreeningPlayerWidget — Player híbrido: embed (WebView) + HLS nativo
 //
-// Melhorias sobre a Fase 2:
+// Rodada 1 — Arquitetura híbrida:
 // ─────────────────────────────────────────────────────────────────────────────
-// 1. BUFFERING OVERLAY: ScreeningLoadingOverlay com spinner duplo e fade suave
-// 2. GESTOS DE DOUBLE-TAP: esquerdo/direito para seek ±10s (apenas host)
-//    com indicador visual animado (_SeekIndicator)
-// 3. EMPTY STATE POLIDO: ícone pulsante + chips de plataformas suportadas
-// 4. EVENTO ENDED: notifica o provider quando o vídeo termina
+// • Embed (WebView): YouTube, Kick, Vimeo, Dailymotion
+// • HLS nativo (media_kit): Twitch, Tubi, Pluto TV, .m3u8 direto
+// • DRM relay (Rodada 3): Netflix, Disney+, Amazon, HBO
+//
+// O StreamResolverService detecta a plataforma e resolve a URL antes de
+// renderizar o player. Um FutureProvider por URL garante que a resolução
+// só acontece uma vez por URL (sem re-resolução em rebuilds).
 // =============================================================================
+
+// ── Provider de resolução de URL ─────────────────────────────────────────────
+final _streamResolutionProvider = FutureProvider.autoDispose
+    .family<StreamResolution, String>((ref, url) async {
+  return StreamResolverService.resolve(url);
+});
 
 class ScreeningPlayerWidget extends ConsumerStatefulWidget {
   final String sessionId;
@@ -122,28 +132,121 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
 
   @override
   Widget build(BuildContext context) {
-    // Usar select para observar APENAS videoUrl e isHost — evita rebuild
-    // do WebView a cada tick do polling de posição (a cada 1s).
     final videoUrl = ref.watch(
       screeningRoomProvider(widget.threadId).select((s) => s.currentVideoUrl),
     );
     final isHost = ref.watch(
       screeningRoomProvider(widget.threadId).select((s) => s.isHost),
     );
-    // isBuffering observado separadamente para não reconstruir o WebView
     final isBuffering = ref.watch(
       screeningPlayerProvider(widget.sessionId).select((s) => s.isBuffering),
     );
+
     if (videoUrl == null || videoUrl.isEmpty) {
       return _ScreeningEmptyState(isHost: isHost);
     }
-    final embedUrl = _toEmbedUrl(videoUrl);
-    final htmlContent = _buildHtmlWrapper(embedUrl);
+
+    // Resolver a URL (detecta plataforma + extrai HLS se necessário)
+    final resolutionAsync = ref.watch(_streamResolutionProvider(videoUrl));
+
     return Stack(
       children: [
-        // ── Camada 0: Player WebView ──────────────────────────────────────
-        InAppWebView(
-          key: ValueKey(videoUrl),
+        // ── Camada 0: Player (híbrido) ────────────────────────────────────
+        resolutionAsync.when(
+          loading: () => const Center(
+            child: CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 2,
+            ),
+          ),
+          error: (error, _) => _buildErrorFallback(videoUrl, error.toString()),
+          data: (resolution) => _buildPlayer(resolution),
+        ),
+
+        // ── Camada 0b: Gradiente ambiente (apenas para embed WebView) ─────
+        if (resolutionAsync.valueOrNull?.type == StreamType.embed)
+          Positioned.fill(
+            child: ScreeningAmbientGradient(
+              key: _ambientGradientKey,
+              sessionId: widget.sessionId,
+              webViewController: _webViewController,
+            ),
+          ),
+
+        // ── Camada 1: Buffering overlay ───────────────────────────────────
+        ScreeningLoadingOverlay(
+          visible: _isLoading || isBuffering,
+        ),
+
+        // ── Camada 2: Gestos de double-tap (seek) ─────────────────────────
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onDoubleTap: _onDoubleTapLeft,
+                behavior: HitTestBehavior.translucent,
+                child: const SizedBox.expand(),
+              ),
+            ),
+            Expanded(
+              child: GestureDetector(
+                onDoubleTap: _onDoubleTapRight,
+                behavior: HitTestBehavior.translucent,
+                child: const SizedBox.expand(),
+              ),
+            ),
+          ],
+        ),
+
+        // ── Indicadores de seek ───────────────────────────────────────────
+        if (_showSeekLeft)
+          Positioned(
+            left: 24,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: _SeekIndicator(
+                controller: _seekLeftController,
+                isForward: false,
+              ),
+            ),
+          ),
+        if (_showSeekRight)
+          Positioned(
+            right: 24,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: _SeekIndicator(
+                controller: _seekRightController,
+                isForward: true,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // ── Construção do player conforme o tipo de stream ────────────────────────
+
+  Widget _buildPlayer(StreamResolution resolution) {
+    switch (resolution.type) {
+      case StreamType.hls:
+      case StreamType.direct:
+        // Player nativo via media_kit
+        return ScreeningNativePlayerWidget(
+          key: ValueKey(resolution.url),
+          hlsUrl: resolution.url,
+          sessionId: widget.sessionId,
+          threadId: widget.threadId,
+          platform: resolution.platform,
+        );
+
+      case StreamType.embed:
+        // WebView com iframe embed
+        final htmlContent = _buildHtmlWrapper(resolution.url);
+        return InAppWebView(
+          key: ValueKey(resolution.url),
           initialData: InAppWebViewInitialData(
             data: htmlContent,
             mimeType: 'text/html',
@@ -178,8 +281,6 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
           onLoadStop: (controller, url) async {
             setState(() => _isLoading = false);
             await _injectControlScript(controller);
-            // Sinalizar ao provider que o bridge já foi injetado pelo widget
-            // para evitar que _ensureBridge() injete o bridge duplicado.
             ref
                 .read(screeningPlayerProvider(widget.sessionId).notifier)
                 .markBridgeInjected();
@@ -189,72 +290,54 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
           },
           onConsoleMessage: (controller, msg) {
             _handleConsoleMessage(msg.message);
-            // Repassar cor para o gradiente ambiente
             if (msg.message.startsWith('__nexus_color:')) {
               _ambientGradientKey.currentState?.handleColorMessage(msg.message);
             }
           },
-        ),
-        // ── Camada 0b: Gradiente ambiente dinâmico (cores do vídeo) ──────
-        Positioned.fill(
-          child: ScreeningAmbientGradient(
-            key: _ambientGradientKey,
-            sessionId: widget.sessionId,
-            webViewController: _webViewController,
-          ),
-        ),
-        // ── Camada 1: Buffering overlay ───────────────────────────────────
-        ScreeningLoadingOverlay(
-          visible: _isLoading || isBuffering,
-        ),
-        // ── Camada 2: Gestos de double-tap (seek) ─────────────────────────
-        Row(
-          children: [
-            // Metade esquerda — retroceder 10s
-            Expanded(
-              child: GestureDetector(
-                onDoubleTap: _onDoubleTapLeft,
-                behavior: HitTestBehavior.translucent,
-                child: const SizedBox.expand(),
-              ),
-            ),
-            // Metade direita — avançar 10s
-            Expanded(
-              child: GestureDetector(
-                onDoubleTap: _onDoubleTapRight,
-                behavior: HitTestBehavior.translucent,
-                child: const SizedBox.expand(),
-              ),
-            ),
-          ],
-        ),
-        // ── Indicador visual de seek esquerdo ─────────────────────────────
-        if (_showSeekLeft)
-          Positioned(
-            left: 24,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: _SeekIndicator(
-                controller: _seekLeftController,
-                isForward: false,
-              ),
-            ),
-          ),
-        // ── Indicador visual de seek direito ──────────────────────────────
-        if (_showSeekRight)
-          Positioned(
-            right: 24,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: _SeekIndicator(
-                controller: _seekRightController,
-                isForward: true,
-              ),
-            ),
-          ),
-      ],
+        );
+    }
+  }
+
+  /// Fallback: se a resolução falhar, tenta o embed direto da URL original.
+  Widget _buildErrorFallback(String url, String error) {
+    debugPrint('[ScreeningPlayer] Resolução falhou: $error — usando embed direto');
+    final embedUrl = _toEmbedUrlFallback(url);
+    final htmlContent = _buildHtmlWrapper(embedUrl);
+    return InAppWebView(
+      key: ValueKey('fallback_$url'),
+      initialData: InAppWebViewInitialData(
+        data: htmlContent,
+        mimeType: 'text/html',
+        encoding: 'utf-8',
+        baseUrl: WebUri('https://nexushub.app'),
+      ),
+      initialSettings: InAppWebViewSettings(
+        javaScriptEnabled: true,
+        mediaPlaybackRequiresUserGesture: false,
+        allowsInlineMediaPlayback: true,
+        useHybridComposition: true,
+        supportZoom: false,
+        transparentBackground: true,
+        iframeAllow: 'autoplay; fullscreen; picture-in-picture',
+        iframeAllowFullscreen: true,
+      ),
+      onWebViewCreated: (controller) {
+        _webViewController = controller;
+        ref
+            .read(screeningPlayerProvider(widget.sessionId).notifier)
+            .registerWebViewController(controller);
+      },
+      onLoadStop: (controller, url) async {
+        setState(() => _isLoading = false);
+        await _injectControlScript(controller);
+        ref
+            .read(screeningPlayerProvider(widget.sessionId).notifier)
+            .markBridgeInjected();
+        ref
+            .read(screeningPlayerProvider(widget.sessionId).notifier)
+            .onWebViewReady();
+      },
+      onConsoleMessage: (controller, msg) => _handleConsoleMessage(msg.message),
     );
   }
 
@@ -263,7 +346,6 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   Future<void> _injectControlScript(InAppWebViewController controller) async {
     await controller.evaluateJavascript(source: r'''
       (function() {
-        // ── window._nexusPlayer: interface unificada de controle ──
         window._nexusPlayer = {
           play: function() {
             if (window._ytPlayer && window._ytPlayer.playVideo) {
@@ -289,33 +371,6 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
               if (v) v.currentTime = seconds;
             }
           },
-          getCurrentTime: function() {
-            if (window._ytPlayer && window._ytPlayer.getCurrentTime) {
-              return window._ytPlayer.getCurrentTime();
-            }
-            var v = document.querySelector('video');
-            return v ? v.currentTime : 0;
-          },
-          getDuration: function() {
-            if (window._ytPlayer && window._ytPlayer.getDuration) {
-              return window._ytPlayer.getDuration();
-            }
-            var v = document.querySelector('video');
-            return v ? v.duration : 0;
-          },
-          isBuffering: function() {
-            var v = document.querySelector('video');
-            if (!v) return false;
-            return v.networkState === 2 && v.readyState < 3;
-          },
-          setRate: function(rate) {
-            if (window._ytPlayer && window._ytPlayer.setPlaybackRate) {
-              window._ytPlayer.setPlaybackRate(rate);
-            }
-            var v = document.querySelector('video');
-            if (v) v.playbackRate = rate;
-          },
-          // alias usado pelo provider (getPositionMs) — retorna ms
           getPosition: function() {
             try {
               if (window._ytPlayer && window._ytPlayer.getCurrentTime) {
@@ -325,50 +380,53 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
               if (v && !isNaN(v.currentTime)) return Math.floor(v.currentTime * 1000);
             } catch(e) {}
             return -1;
+          },
+          getDuration: function() {
+            try {
+              if (window._ytPlayer && window._ytPlayer.getDuration) {
+                var d = window._ytPlayer.getDuration();
+                if (d > 0) return Math.floor(d * 1000);
+              }
+              var v = document.querySelector('video');
+              if (v && !isNaN(v.duration) && v.duration > 0) return Math.floor(v.duration * 1000);
+            } catch(e) {}
+            return 0;
+          },
+          isBuffering: function() {
+            var v = document.querySelector('video');
+            if (!v) return false;
+            return v.networkState === 2 && v.readyState < 3;
+          },
+          setRate: function(rate) {
+            if (window._ytPlayer && window._ytPlayer.setPlaybackRate) window._ytPlayer.setPlaybackRate(rate);
+            var v = document.querySelector('video');
+            if (v) v.playbackRate = rate;
           }
         };
 
-        // ── YouTube IFrame API ──
         if (typeof YT !== 'undefined' && YT.Player) {
           var iframe = document.getElementById('player');
           if (iframe && iframe.src && iframe.src.includes('youtube')) {
             window._ytPlayer = new YT.Player(iframe, {
               events: {
-                onReady: function(e) {
-                  console.log('__YT_READY__');
-                  e.target.playVideo();
-                },
+                onReady: function(e) { console.log('__YT_READY__'); e.target.playVideo(); },
                 onStateChange: function(e) {
-                  if (e.data === YT.PlayerState.PLAYING) {
-                    console.log('__YT_PLAYING__');
-                  } else if (e.data === YT.PlayerState.PAUSED) {
-                    console.log('__YT_PAUSED__');
-                  } else if (e.data === YT.PlayerState.BUFFERING) {
-                    console.log('__YT_BUFFERING__');
-                  } else if (e.data === YT.PlayerState.ENDED) {
-                    console.log('__VIDEO_ENDED__');
-                  }
+                  if (e.data === 1) console.log('__YT_PLAYING__');
+                  else if (e.data === 2) console.log('__YT_PAUSED__');
+                  else if (e.data === 3) console.log('__YT_BUFFERING__');
+                  else if (e.data === 0) console.log('__VIDEO_ENDED__');
                 }
               }
             });
           }
         }
 
-        // ── HTML5 video genérico ──
         var video = document.querySelector('video');
         if (video) {
-          video.addEventListener('playing', function() {
-            console.log('__VIDEO_PLAYING__');
-          });
-          video.addEventListener('pause', function() {
-            console.log('__VIDEO_PAUSED__');
-          });
-          video.addEventListener('waiting', function() {
-            console.log('__VIDEO_BUFFERING__');
-          });
-          video.addEventListener('ended', function() {
-            console.log('__VIDEO_ENDED__');
-          });
+          video.addEventListener('playing', function() { console.log('__VIDEO_PLAYING__'); });
+          video.addEventListener('pause', function() { console.log('__VIDEO_PAUSED__'); });
+          video.addEventListener('waiting', function() { console.log('__VIDEO_BUFFERING__'); });
+          video.addEventListener('ended', function() { console.log('__VIDEO_ENDED__'); });
         }
       })();
     ''');
@@ -392,9 +450,9 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     }
   }
 
-  // ── Helpers de URL ────────────────────────────────────────────────────────
+  // ── Fallback embed URL (sem API) ──────────────────────────────────────────
 
-  String _toEmbedUrl(String url) {
+  String _toEmbedUrlFallback(String url) {
     final u = url.toLowerCase();
     if (u.contains('youtube.com') || u.contains('youtu.be')) {
       final id = _extractYouTubeId(url);
@@ -404,7 +462,7 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             '&playsinline=1&enablejsapi=1&origin=https://nexushub.app';
       }
     }
-    if (u.contains('twitch.tv') && !u.contains('/clip')) {
+    if (u.contains('twitch.tv')) {
       final match = RegExp(r'twitch\.tv/([a-zA-Z0-9_]+)').firstMatch(url);
       final channel = match?.group(1) ?? '';
       if (channel.isNotEmpty) {
@@ -435,6 +493,7 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
       RegExp(r'youtube\.com/watch\?v=([a-zA-Z0-9_-]{11})'),
       RegExp(r'youtube\.com/embed/([a-zA-Z0-9_-]{11})'),
       RegExp(r'youtube\.com/shorts/([a-zA-Z0-9_-]{11})'),
+      RegExp(r'youtube\.com/live/([a-zA-Z0-9_-]{11})'),
     ];
     for (final pattern in patterns) {
       final match = pattern.firstMatch(url);
@@ -452,14 +511,8 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   <script src="https://www.youtube.com/iframe_api"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body {
-      width: 100%; height: 100%;
-      background: #000; overflow: hidden;
-    }
-    iframe {
-      width: 100%; height: 100%;
-      border: none; display: block;
-    }
+    html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+    iframe { width: 100%; height: 100%; border: none; display: block; }
   </style>
 </head>
 <body>
@@ -478,10 +531,7 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     if (iframe && iframe.src.includes('youtube')) {
       window._ytPlayer = new YT.Player('player', {
         events: {
-          onReady: function(e) {
-            console.log('__YT_READY__');
-            e.target.playVideo();
-          },
+          onReady: function(e) { console.log('__YT_READY__'); e.target.playVideo(); },
           onStateChange: function(e) {
             if (e.data === 1) console.log('__YT_PLAYING__');
             else if (e.data === 2) console.log('__YT_PAUSED__');
@@ -499,7 +549,7 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
 }
 
 // =============================================================================
-// _ScreeningEmptyState — Área do player sem vídeo (fundo preto limpo)
+// _ScreeningEmptyState
 // =============================================================================
 class _ScreeningEmptyState extends StatelessWidget {
   final bool isHost;
@@ -507,34 +557,6 @@ class _ScreeningEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const ColoredBox(color: Colors.black);
-  }
-}
-
-class _PlatformChip extends StatelessWidget {
-  final String label;
-
-  const _PlatformChip({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.12),
-        ),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.5),
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
   }
 }
 

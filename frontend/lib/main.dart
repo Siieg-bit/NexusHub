@@ -28,6 +28,7 @@ import 'core/services/analytics_service.dart';
 import 'core/services/error_handler.dart';
 import 'core/widgets/error_boundary.dart';
 import 'core/widgets/mini_room_overlay.dart';
+import 'package:media_kit/media_kit.dart';
 import 'core/widgets/connectivity_banner.dart';
 import 'core/l10n/locale_provider.dart';
 import 'firebase_options.dart';
@@ -47,6 +48,9 @@ void main() async {
     dotenv.testLoad(mergeWith: {});
   }
   final binding = WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializar media_kit (player nativo HLS para Twitch, Tubi, Pluto TV)
+  MediaKit.ensureInitialized();
 
   // ── 120Hz: Solicitar a maior taxa de atualização disponível ────────
   binding.resamplingEnabled = true;

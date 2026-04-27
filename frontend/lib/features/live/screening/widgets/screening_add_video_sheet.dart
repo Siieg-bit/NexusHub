@@ -76,6 +76,50 @@ class _ScreeningAddVideoSheetState
       icon: Icons.stream_rounded,
       color: Color(0xFFFF0000),
     ),
+    // ── AVOD gratuito ──────────────────────────────────────────────────
+    _PlatformTile(
+      id: 'tubi',
+      name: 'Tubi',
+      icon: Icons.tv_rounded,
+      color: Color(0xFFFA4B00),
+    ),
+    _PlatformTile(
+      id: 'pluto',
+      name: 'Pluto TV',
+      icon: Icons.satellite_alt_rounded,
+      color: Color(0xFF00A0E3),
+    ),
+    // ── Assinatura (login) ──────────────────────────────────────────
+    _PlatformTile(
+      id: 'netflix',
+      name: 'Netflix',
+      icon: Icons.movie_filter_rounded,
+      color: Color(0xFFE50914),
+    ),
+    _PlatformTile(
+      id: 'disney',
+      name: 'Disney+',
+      icon: Icons.auto_awesome_rounded,
+      color: Color(0xFF0063E5),
+    ),
+    _PlatformTile(
+      id: 'amazon',
+      name: 'Prime\nVideo',
+      icon: Icons.local_play_rounded,
+      color: Color(0xFF00A8E1),
+    ),
+    _PlatformTile(
+      id: 'hbo',
+      name: 'Max',
+      icon: Icons.hd_rounded,
+      color: Color(0xFF002BE7),
+    ),
+    _PlatformTile(
+      id: 'crunchyroll',
+      name: 'Crunchyroll',
+      icon: Icons.animation_rounded,
+      color: Color(0xFFF47521),
+    ),
   ];
 
   // ── Abrir o browser sheet para a plataforma selecionada ───────────────────
