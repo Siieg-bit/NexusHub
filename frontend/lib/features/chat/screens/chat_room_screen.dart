@@ -202,6 +202,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   static const double _scrollButtonHorizontalSpacing = 16;
   static const double _scrollButtonVisibilityOffset = 240;
   bool _isOpeningVoiceCall = false;
+  bool _isOpeningProjection = false;
   List<Map<String, dynamic>> _pinnedMessages = [];
   String? _chatBackground;
   String? _chatCoverUrl;
@@ -1248,11 +1249,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _startProjection() async {
-    // Envia mensagem de sistema informando o início da projeção
-    await _sendMessage(type: 'screening_room');
-    if (!mounted) return;
-    // Navega para a Sala de Projeção passando o threadId
-    context.push('/screening-room/${widget.threadId}');
+    // Debounce: evita abertura múltipla por clique rápido
+    if (_isOpeningProjection) return;
+    setState(() => _isOpeningProjection = true);
+    try {
+      // Envia mensagem de sistema informando o início da projeção
+      await _sendMessage(type: 'screening_room');
+      if (!mounted) return;
+      // Navega para a Sala de Projeção passando o threadId
+      context.push('/screening-room/${widget.threadId}');
+    } finally {
+      // Liberar o flag após 2s para evitar double-tap mas permitir nova abertura
+      await Future.delayed(const Duration(seconds: 2));
+      if (mounted) setState(() => _isOpeningProjection = false);
+    }
   }
 
   // ==========================================================================

@@ -71,8 +71,6 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // Forçar modo landscape-friendly (sem barras de status)
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     // Entrar na sala após o primeiro frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -99,8 +97,11 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
     _controlsHideTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
 
-    // Restaurar UI do sistema
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    // Restaurar UI do sistema (mostrar status bar e nav bar novamente)
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: SystemUiOverlay.values,
+    );
 
     super.dispose();
   }

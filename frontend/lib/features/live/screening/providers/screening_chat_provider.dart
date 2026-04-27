@@ -30,7 +30,10 @@ class ScreeningChatNotifier extends StateNotifier<List<ScreeningChatMessage>> {
   String? _myAvatarUrl;
 
   ScreeningChatNotifier({required this.sessionId}) : super([]) {
-    _init();
+    // Aguardar sessionId válido antes de inicializar.
+    // Durante o loading da sala, sessionId pode ser '' (string vazia),
+    // o que causaria erro 'invalid input syntax for type uuid: ""' no banco.
+    if (sessionId.isNotEmpty) _init();
   }
 
   Future<void> _init() async {

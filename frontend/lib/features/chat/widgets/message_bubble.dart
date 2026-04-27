@@ -1375,7 +1375,33 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
       // Sala de Projeção é clicável para entrar na sala
       if (!isVoice && threadId.isNotEmpty) {
         return GestureDetector(
-          onTap: () => context.push('/screening-room/$threadId'),
+          onTap: () async {
+            // Verificar se ainda existe uma sessão ativa para este thread
+            // antes de navegar, para evitar entrar em sessão já encerrada.
+            try {
+              final result = await SupabaseService.client.rpc(
+                'get_active_screening_session',
+                params: {'p_thread_id': threadId},
+              );
+              if (!context.mounted) return;
+              if (result == null || (result as List).isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Esta projeção já foi encerrada.'),
+                    duration: Duration(seconds: 3),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+                return;
+              }
+              final sessionId = (result as List).first['id'] as String?;
+              context.push(
+                '/screening-room/$threadId${sessionId != null ? '?sessionId=\$sessionId' : ''}',
+              );
+            } catch (_) {
+              if (context.mounted) context.push('/screening-room/$threadId');
+            }
+          },
           child: container,
         );
       }

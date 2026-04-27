@@ -153,31 +153,38 @@ class _PortraitLayout extends StatelessWidget {
   });
 
   @override
+  @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
+    final mq = MediaQuery.of(context);
+    // Altura do chat: 46% da tela, clampada entre 260px e 420px.
+    // Garante boa experiência em telas pequenas e grandes.
+    final chatHeight = (mq.size.height * 0.46).clamp(260.0, 420.0);
+    // Padding inferior da safe area (barra de navegação por gestos ou botões).
+    final bottomPad = mq.padding.bottom;
+    // Reaction bar fica logo acima do chat overlay + 6px de margem.
+    final reactionBarBottom = chatHeight + 6;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Camada 0: Player
+          // Camada 0: Player (ocupa toda a tela)
           ScreeningPlayerWidget(
             sessionId: sessionId,
             threadId: threadId,
           ),
-          // Camada 1: SyncStatusBadge
+          // Camada 1: SyncStatusBadge (abaixo da topbar)
           if (sessionId.isNotEmpty)
             Positioned(
-              top: MediaQuery.of(context).padding.top + 56,
+              top: mq.padding.top + 52,
               left: 0,
               right: 0,
               child: IgnorePointer(
                 child: ScreeningSyncBadge(sessionId: sessionId),
               ),
             ),
-          // Camada 2: Gradientes de contraste
+          // Camada 2: Gradientes de contraste (IgnorePointer)
           Positioned.fill(
             child: IgnorePointer(
               child: DecoratedBox(
@@ -186,50 +193,46 @@ class _PortraitLayout extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withValues(alpha: 0.65),
+                      Colors.black.withValues(alpha: 0.60),
                       Colors.transparent,
                       Colors.transparent,
-                      Colors.black.withValues(alpha: 0.80),
+                      Colors.black.withValues(alpha: 0.82),
                     ],
-                    stops: const [0.0, 0.18, 0.55, 1.0],
+                    stops: const [0.0, 0.15, 0.50, 1.0],
                   ),
                 ),
               ),
             ),
           ),
-          // Camada 3: Chat overlay
+          // Camada 3: Chat overlay (ancora no bottom, altura responsiva)
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
-            height: size.height * 0.48,
-            child: SafeArea(
-              top: false,
-              child: ScreeningChatOverlay(
-                sessionId: sessionId,
-                threadId: threadId,
-                emojiRainKey: emojiRainKey,
-              ),
+            height: chatHeight,
+            child: ScreeningChatOverlay(
+              sessionId: sessionId,
+              threadId: threadId,
+              emojiRainKey: emojiRainKey,
             ),
           ),
-          // Camada 4a: Barra de reações
+          // Camada 4a: Barra de reações (acima do chat)
           if (sessionId.isNotEmpty)
             Positioned(
               left: 0,
               right: 0,
-              bottom: size.height * 0.48 + 8,
-              child: SafeArea(
-                top: false,
-                child: ScreeningReactionBar(sessionId: sessionId),
-              ),
+              bottom: reactionBarBottom,
+              child: ScreeningReactionBar(sessionId: sessionId),
             ),
-          // Camada 4b: Controles flutuantes
+          // Camada 4b: Controles flutuantes (topbar + host controls)
           Positioned.fill(
             child: ScreeningControlsOverlay(
               sessionId: sessionId,
               threadId: threadId,
               visible: showControls,
               onMinimize: onMinimize,
+              chatHeight: chatHeight,
+              bottomPad: bottomPad,
             ),
           ),
           // Camada 5: Overlay de vídeo encerrado
@@ -240,7 +243,7 @@ class _PortraitLayout extends StatelessWidget {
                 threadId: threadId,
               ),
             ),
-          // Camada 6: Animação de entrada
+          // Camada 6: Animação de entrada (por cima de tudo)
           if (!entryAnimationDone)
             Positioned.fill(
               child: ScreeningEntryAnimation(
@@ -253,34 +256,6 @@ class _PortraitLayout extends StatelessWidget {
     );
   }
 }
-
-// =============================================================================
-// Layout Landscape — Row com player à esquerda e chat à direita
-// =============================================================================
-class _LandscapeLayout extends StatelessWidget {
-  final String sessionId;
-  final String threadId;
-  final bool showControls;
-  final bool entryAnimationDone;
-  final bool entryAnimationExiting;
-  final VoidCallback onTap;
-  final VoidCallback onMinimize;
-  final VoidCallback onEntryAnimationComplete;
-  final String roomTitle;
-  final GlobalKey<EmojiRainOverlayState>? emojiRainKey;
-
-  const _LandscapeLayout({
-    required this.sessionId,
-    required this.threadId,
-    required this.showControls,
-    required this.entryAnimationDone,
-    required this.entryAnimationExiting,
-    required this.onTap,
-    required this.onMinimize,
-    required this.onEntryAnimationComplete,
-    required this.roomTitle,
-    this.emojiRainKey,
-  });
 
   @override
   Widget build(BuildContext context) {

@@ -191,7 +191,7 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
             const SizedBox(height: 8),
             // ── Barra inferior: microfone + input (layout Rave) ────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              padding: EdgeInsets.fromLTRB(12, 0, 12, MediaQuery.of(context).padding.bottom > 0 ? MediaQuery.of(context).padding.bottom : 12),
               child: Row(
                 children: [
                   // Botão de microfone grande e circular (igual ao Rave)
