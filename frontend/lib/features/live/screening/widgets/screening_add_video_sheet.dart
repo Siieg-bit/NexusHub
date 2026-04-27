@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/screening_room_provider.dart';
 import 'screening_browser_sheet.dart';
+import 'screening_local_video_sheet.dart';
 
 // =============================================================================
 // ScreeningAddVideoSheet — Bottom sheet para adicionar/trocar vídeo (estilo Rave)
 // Grid de plataformas. Ao clicar, abre ScreeningBrowserSheet para navegar.
+// "Galeria" abre o ScreeningLocalVideoSheet para upload de vídeo local.
 // Disponível apenas para o host.
 // =============================================================================
 class ScreeningAddVideoSheet extends ConsumerStatefulWidget {
@@ -28,6 +30,14 @@ class _ScreeningAddVideoSheetState
     extends ConsumerState<ScreeningAddVideoSheet> {
   // ── Plataformas do grid ───────────────────────────────────────────────────
   static const _platforms = [
+    // ── Galeria local ─────────────────────────────────────────────────────
+    _PlatformTile(
+      id: 'local',
+      name: 'Galeria',
+      icon: Icons.video_library_rounded,
+      color: Color(0xFF6C5CE7),
+    ),
+    // ── Plataformas online ─────────────────────────────────────────────────
     _PlatformTile(
       id: 'youtube',
       name: 'YouTube',
@@ -76,7 +86,7 @@ class _ScreeningAddVideoSheetState
       icon: Icons.stream_rounded,
       color: Color(0xFFFF0000),
     ),
-    // ── AVOD gratuito ──────────────────────────────────────────────────
+    // ── AVOD gratuito ──────────────────────────────────────────────────────
     _PlatformTile(
       id: 'tubi',
       name: 'Tubi',
@@ -89,7 +99,7 @@ class _ScreeningAddVideoSheetState
       icon: Icons.satellite_alt_rounded,
       color: Color(0xFF00A0E3),
     ),
-    // ── Assinatura (login) ──────────────────────────────────────────
+    // ── Assinatura (login) ─────────────────────────────────────────────────
     _PlatformTile(
       id: 'netflix',
       name: 'Netflix',
@@ -121,6 +131,29 @@ class _ScreeningAddVideoSheetState
       color: Color(0xFFF47521),
     ),
   ];
+
+  // ── Abrir galeria local ───────────────────────────────────────────────────
+
+  Future<void> _openLocalGallery() async {
+    HapticFeedback.selectionClick();
+    if (!mounted) return;
+
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => ScreeningLocalVideoSheet(
+        sessionId: widget.sessionId,
+        threadId: widget.threadId,
+      ),
+    );
+
+    // Se o upload foi bem-sucedido, fechar o ScreeningAddVideoSheet também
+    if (result != null && mounted) {
+      Navigator.of(context).pop();
+    }
+  }
 
   // ── Abrir o browser sheet para a plataforma selecionada ───────────────────
 
@@ -232,7 +265,9 @@ class _ScreeningAddVideoSheetState
                 final platform = _platforms[index];
                 return _PlatformCard(
                   platform: platform,
-                  onTap: () => _openBrowser(platform),
+                  onTap: platform.id == 'local'
+                      ? _openLocalGallery
+                      : () => _openBrowser(platform),
                 );
               },
             ),

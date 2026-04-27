@@ -38,6 +38,8 @@ enum StreamPlatform {
   hboMax,
   crunchyroll,
   vk,
+  /// Vídeo local enviado pelo host para o Supabase Storage
+  local,
   web,
   unknown,
 }
@@ -116,6 +118,10 @@ class StreamResolverService {
     }
     if (u.contains('crunchyroll.com')) return StreamPlatform.crunchyroll;
     if (u.contains('vk.com') || u.contains('vk.ru')) return StreamPlatform.vk;
+    // Vídeo local enviado para o Supabase Storage
+    if (u.contains('supabase.co/storage') && u.contains('screening-videos')) {
+      return StreamPlatform.local;
+    }
     return StreamPlatform.web;
   }
 
@@ -324,6 +330,16 @@ class StreamResolverService {
             originalUrl: url,
           );
         }
+
+      // ── Vídeo local (Supabase Storage) ───────────────────────────────────────
+      case StreamPlatform.local:
+        // URL pública do Supabase Storage — reproduzir diretamente com media_kit
+        return StreamResolution(
+          url: url,
+          type: StreamType.direct,
+          platform: platform,
+          originalUrl: url,
+        );
 
       // ── Direto / Web ──────────────────────────────────────────────────
       case StreamPlatform.vk:
