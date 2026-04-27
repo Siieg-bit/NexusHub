@@ -202,14 +202,20 @@ class _PortraitLayout extends ConsumerWidget {
                 fit: StackFit.expand,
                 children: [
                   // Player WebView (toque dispara controles de reprodução)
-                  // translucent: permite que toques passem para o
-                  // ScreeningControlsOverlay acima no Stack quando visível.
+                  // AbsorbPointer bloqueia toques na WebView quando os controles
+                  // estão visíveis, impedindo que a AndroidViewSurface (hybrid
+                  // composition) consuma os eventos antes do Flutter.
+                  // Quando showControls=false, os toques passam para a WebView
+                  // normalmente (GestureDetector captura o onTap para mostrar controles).
                   GestureDetector(
                     onTap: onTap,
-                    behavior: HitTestBehavior.translucent,
-                    child: ScreeningPlayerWidget(
-                      sessionId: sessionId,
-                      threadId: threadId,
+                    behavior: HitTestBehavior.opaque,
+                    child: AbsorbPointer(
+                      absorbing: showControls,
+                      child: ScreeningPlayerWidget(
+                        sessionId: sessionId,
+                        threadId: threadId,
+                      ),
                     ),
                   ),
                   // Controles de reprodução (play/pause/seek) — overlay de fade
@@ -331,13 +337,16 @@ class _LandscapeLayout extends StatelessWidget {
               flex: 70,
               child: GestureDetector(
                 onTap: onTap,
-                behavior: HitTestBehavior.translucent,
+                behavior: HitTestBehavior.opaque,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    ScreeningPlayerWidget(
-                      sessionId: sessionId,
-                      threadId: threadId,
+                    AbsorbPointer(
+                      absorbing: showControls,
+                      child: ScreeningPlayerWidget(
+                        sessionId: sessionId,
+                        threadId: threadId,
+                      ),
                     ),
                     Positioned.fill(
                       child: IgnorePointer(

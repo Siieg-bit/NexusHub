@@ -132,14 +132,13 @@ class StreamResolverService {
       case StreamPlatform.youtubeLive:
         final id = _extractYouTubeId(url);
         if (id.isNotEmpty) {
-          // IMPORTANTE: usar youtube.com/embed com origin=https://www.youtube.com
-          // O baseUrl do InAppWebView também deve ser 'https://www.youtube.com'
-          // para que o postMessage do IFrame API funcione sem origin mismatch.
+          // origin= deve bater com o baseUrl do InAppWebView ('https://nexushub.app').
+          // Não usar youtube.com como baseUrl pois causa erro 152-4 (embed bloqueado).
           // controls=0 oculta os controles nativos do YouTube (usamos os do Flutter).
           return 'https://www.youtube.com/embed/$id'
               '?autoplay=1&mute=0&rel=0&modestbranding=1'
               '&playsinline=1&enablejsapi=1&controls=0'
-              '&origin=https://www.youtube.com';
+              '&origin=https://nexushub.app';
         }
         return null;
 

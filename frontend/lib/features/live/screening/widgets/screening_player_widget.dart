@@ -261,14 +261,11 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         // O player já está posicionado abaixo do TopBar no layout Flutter,
         // por isso não é necessário padding-top no HTML.
         //
-        // IMPORTANTE: baseUrl deve ser 'https://www.youtube.com' para que o
-        // postMessage do YouTube IFrame API funcione sem origin mismatch.
-        // O www-widgetapi.js faz: parent.postMessage(data, 'https://www.youtube.com')
-        // Se o baseUrl for diferente, o postMessage falha silenciosamente.
-        final isYouTubeEmbed = resolution.url.contains('youtube.com/embed');
-        final baseUrlStr = isYouTubeEmbed
-            ? 'https://www.youtube.com'
-            : 'https://nexushub.app';
+        // IMPORTANTE: baseUrl deve ser 'https://nexushub.app' (não youtube.com).
+        // Usar baseUrl=youtube.com causa erro 152-4 (embed não permitido) porque
+        // o YouTube bloqueia embeds que parecem vir do próprio domínio youtube.com.
+        // O postMessage do IFrame API funciona via window.addEventListener('message')
+        // no HTML wrapper, independente do baseUrl.
         final htmlContent = _buildHtmlWrapper(resolution.url);
         return InAppWebView(
           key: ValueKey(resolution.url),
@@ -276,7 +273,7 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             data: htmlContent,
             mimeType: 'text/html',
             encoding: 'utf-8',
-            baseUrl: WebUri(baseUrlStr),
+            baseUrl: WebUri('https://nexushub.app'),
           ),
           initialSettings: InAppWebViewSettings(
             javaScriptEnabled: true,
@@ -345,15 +342,14 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     debugPrint('[ScreeningPlayer] Resolução falhou: $error — usando embed direto');
     final embedUrl = _toEmbedUrlFallback(url);
     final htmlContent = _buildHtmlWrapper(embedUrl);
-    // Usar baseUrl youtube.com para YouTube para evitar postMessage origin mismatch
-    final isYt = embedUrl.contains('youtube.com/embed');
+    // baseUrl sempre nexushub.app — youtube.com como baseUrl causa erro 152-4
     return InAppWebView(
       key: ValueKey('fallback_$url'),
       initialData: InAppWebViewInitialData(
         data: htmlContent,
         mimeType: 'text/html',
         encoding: 'utf-8',
-        baseUrl: WebUri(isYt ? 'https://www.youtube.com' : 'https://nexushub.app'),
+        baseUrl: WebUri('https://nexushub.app'),
       ),
       initialSettings: InAppWebViewSettings(
         javaScriptEnabled: true,
@@ -597,12 +593,12 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     if (u.contains('youtube.com') || u.contains('youtu.be')) {
       final id = _extractYouTubeId(url);
       if (id.isNotEmpty) {
-        // baseUrl do InAppWebView será 'https://www.youtube.com' para este embed.
+        // origin= deve bater com o baseUrl do InAppWebView ('https://nexushub.app').
         // controls=0 oculta os controles nativos do YouTube.
         return 'https://www.youtube.com/embed/$id'
             '?autoplay=1&mute=0&rel=0&modestbranding=1'
             '&playsinline=1&enablejsapi=1&controls=0'
-            '&origin=https://www.youtube.com';
+            '&origin=https://nexushub.app';
       }
     }
     if (u.contains('twitch.tv')) {
