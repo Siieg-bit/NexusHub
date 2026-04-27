@@ -442,8 +442,14 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     if (_positionPollTimer?.isActive == true) {
       _positionPollTimer?.cancel();
     }
+    final newPos = Duration(milliseconds: positionMs);
+    // Se a posição está avançando, o vídeo está reproduzindo — limpar buffering.
+    // Isso é uma salvaguarda para o caso do YT_PLAYING não ser recebido.
+    final wasBuffering = state.isBuffering;
+    final positionAdvanced = newPos > state.position;
     state = state.copyWith(
-      position: Duration(milliseconds: positionMs),
+      position: newPos,
+      isBuffering: wasBuffering && positionAdvanced ? false : state.isBuffering,
     );
   }
 

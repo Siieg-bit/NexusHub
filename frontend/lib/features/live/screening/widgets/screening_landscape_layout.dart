@@ -13,6 +13,7 @@ import '../../../../core/widgets/emoji_rain_overlay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 
 import 'screening_player_widget.dart';
 import 'screening_controls_overlay.dart';
@@ -201,21 +202,29 @@ class _PortraitLayout extends ConsumerWidget {
                 fit: StackFit.expand,
                 children: [
                   // Player WebView (toque dispara controles de reprodução)
+                  // translucent: permite que toques passem para o
+                  // ScreeningControlsOverlay acima no Stack quando visível.
                   GestureDetector(
                     onTap: onTap,
-                    behavior: HitTestBehavior.opaque,
+                    behavior: HitTestBehavior.translucent,
                     child: ScreeningPlayerWidget(
                       sessionId: sessionId,
                       threadId: threadId,
                     ),
                   ),
                   // Controles de reprodução (play/pause/seek) — overlay de fade
+                  // PointerInterceptor garante que os toques nos botões Flutter
+                  // sejam recebidos mesmo quando a WebView (AndroidViewSurface)
+                  // interceptaria os eventos no nível do sistema Android.
                   Positioned.fill(
-                    child: ScreeningControlsOverlay(
-                      sessionId: sessionId,
-                      threadId: threadId,
-                      visible: showControls,
-                      onMinimize: onMinimize,
+                    child: PointerInterceptor(
+                      intercepting: showControls,
+                      child: ScreeningControlsOverlay(
+                        sessionId: sessionId,
+                        threadId: threadId,
+                        visible: showControls,
+                        onMinimize: onMinimize,
+                      ),
                     ),
                   ),
                   // SyncStatusBadge (topo do player)
@@ -231,9 +240,12 @@ class _PortraitLayout extends ConsumerWidget {
                   // Overlay de vídeo encerrado
                   if (sessionId.isNotEmpty)
                     Positioned.fill(
-                      child: ScreeningVideoEndedOverlay(
-                        sessionId: sessionId,
-                        threadId: threadId,
+                      child: PointerInterceptor(
+                        intercepting: true,
+                        child: ScreeningVideoEndedOverlay(
+                          sessionId: sessionId,
+                          threadId: threadId,
+                        ),
                       ),
                     ),
                 ],
@@ -314,12 +326,12 @@ class _LandscapeLayout extends StatelessWidget {
       children: [
         Row(
           children: [
-            // ── Player (70%) ─────────────────────────────────────────────
+            // ── Player (70%) ─────────────────────────────────────────────────────────────
             Expanded(
               flex: 70,
               child: GestureDetector(
                 onTap: onTap,
-                behavior: HitTestBehavior.opaque,
+                behavior: HitTestBehavior.translucent,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -348,18 +360,24 @@ class _LandscapeLayout extends StatelessWidget {
                     ),
                     if (sessionId.isNotEmpty)
                       Positioned.fill(
-                        child: ScreeningControlsOverlay(
-                          sessionId: sessionId,
-                          threadId: threadId,
-                          visible: showControls,
-                          onMinimize: onMinimize,
+                        child: PointerInterceptor(
+                          intercepting: showControls,
+                          child: ScreeningControlsOverlay(
+                            sessionId: sessionId,
+                            threadId: threadId,
+                            visible: showControls,
+                            onMinimize: onMinimize,
+                          ),
                         ),
                       ),
                     if (sessionId.isNotEmpty)
                       Positioned.fill(
-                        child: ScreeningVideoEndedOverlay(
-                          sessionId: sessionId,
-                          threadId: threadId,
+                        child: PointerInterceptor(
+                          intercepting: true,
+                          child: ScreeningVideoEndedOverlay(
+                            sessionId: sessionId,
+                            threadId: threadId,
+                          ),
                         ),
                       ),
                   ],

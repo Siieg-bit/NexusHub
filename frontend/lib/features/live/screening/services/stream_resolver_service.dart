@@ -132,13 +132,14 @@ class StreamResolverService {
       case StreamPlatform.youtubeLive:
         final id = _extractYouTubeId(url);
         if (id.isNotEmpty) {
-          // IMPORTANTE: usar youtube.com/embed (não youtube-nocookie.com)
-          // para que o postMessage do IFrame API funcione com o baseUrl
-          // 'https://nexushub.app' definido no InAppWebView.
-          // O parâmetro origin deve bater exatamente com o baseUrl.
+          // IMPORTANTE: usar youtube.com/embed com origin=https://www.youtube.com
+          // O baseUrl do InAppWebView também deve ser 'https://www.youtube.com'
+          // para que o postMessage do IFrame API funcione sem origin mismatch.
+          // controls=0 oculta os controles nativos do YouTube (usamos os do Flutter).
           return 'https://www.youtube.com/embed/$id'
               '?autoplay=1&mute=0&rel=0&modestbranding=1'
-              '&playsinline=1&enablejsapi=1&origin=https://nexushub.app';
+              '&playsinline=1&enablejsapi=1&controls=0'
+              '&origin=https://www.youtube.com';
         }
         return null;
 
@@ -242,10 +243,42 @@ class StreamResolverService {
           originalUrl: url,
         );
 
-       // ── YouTube via Innertube (HLS nativo para lives, embed para VODs) ───
+       // ── YouTube: embed para VODs regulares, Innertube apenas para lives ───
       case StreamPlatform.youtube:
+        // VOD regular: usar embed (IFrame API) para controle total via Flutter.
+        // O Innertube retorna URLs diretas que o YouTube pode bloquear e que
+        // não permitem controle via IFrame API.
+        final embedUrl = _toEmbedUrl(url, platform);
+        if (embedUrl != null) {
+          return StreamResolution(
+            url: embedUrl,
+            type: StreamType.embed,
+            platform: platform,
+            originalUrl: url,
+          );
+        }
+        // Fallback: Innertube se embed não for possível
+        try {
+          final result = await YouTubeStreamService.resolve(url);
+          final isHls = result.hlsUrl.contains('.m3u8');
+          return StreamResolution(
+            url: result.hlsUrl,
+            type: isHls ? StreamType.hls : StreamType.direct,
+            platform: platform,
+            title: result.title,
+            thumbnailUrl: result.thumbnailUrl,
+            originalUrl: url,
+          );
+        } catch (_) {}
+        return StreamResolution(
+          url: url,
+          type: StreamType.direct,
+          platform: platform,
+          originalUrl: url,
+        );
+
       case StreamPlatform.youtubeLive:
-        // Tentar Innertube primeiro (melhor para lives e Shorts)
+        // Lives: tentar Innertube primeiro (melhor qualidade para HLS ao vivo)
         try {
           final result = await YouTubeStreamService.resolve(url);
           final isHls = result.hlsUrl.contains('.m3u8');
@@ -258,7 +291,7 @@ class StreamResolverService {
             originalUrl: url,
           );
         } catch (e) {
-          // Fallback para embed se Innertube falhar (vídeos com restrição de idade, etc.)
+          // Fallback para embed se Innertube falhar
           final embedUrl = _toEmbedUrl(url, platform);
           if (embedUrl != null) {
             return StreamResolution(

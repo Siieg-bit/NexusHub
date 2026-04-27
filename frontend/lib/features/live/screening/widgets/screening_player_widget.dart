@@ -260,6 +260,15 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         // WebView com iframe embed.
         // O player já está posicionado abaixo do TopBar no layout Flutter,
         // por isso não é necessário padding-top no HTML.
+        //
+        // IMPORTANTE: baseUrl deve ser 'https://www.youtube.com' para que o
+        // postMessage do YouTube IFrame API funcione sem origin mismatch.
+        // O www-widgetapi.js faz: parent.postMessage(data, 'https://www.youtube.com')
+        // Se o baseUrl for diferente, o postMessage falha silenciosamente.
+        final isYouTubeEmbed = resolution.url.contains('youtube.com/embed');
+        final baseUrlStr = isYouTubeEmbed
+            ? 'https://www.youtube.com'
+            : 'https://nexushub.app';
         final htmlContent = _buildHtmlWrapper(resolution.url);
         return InAppWebView(
           key: ValueKey(resolution.url),
@@ -267,14 +276,19 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             data: htmlContent,
             mimeType: 'text/html',
             encoding: 'utf-8',
-            baseUrl: WebUri('https://nexushub.app'),
+            baseUrl: WebUri(baseUrlStr),
           ),
           initialSettings: InAppWebViewSettings(
             javaScriptEnabled: true,
             mediaPlaybackRequiresUserGesture: false,
             allowsInlineMediaPlayback: true,
             allowsAirPlayForMediaPlayback: true,
-            useHybridComposition: true,
+            // useHybridComposition: false (AndroidView em vez de AndroidViewSurface)
+            // Com false, widgets Flutter sobrepostos recebem toques normalmente.
+            // Com true (AndroidViewSurface), a WebView captura todos os toques
+            // no nível do Android, impedindo que o ScreeningControlsOverlay
+            // receba cliques. O pointer_interceptor não funciona no Android.
+            useHybridComposition: false,
             supportZoom: false,
             disableHorizontalScroll: true,
             disableVerticalScroll: true,
@@ -331,19 +345,21 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     debugPrint('[ScreeningPlayer] Resolução falhou: $error — usando embed direto');
     final embedUrl = _toEmbedUrlFallback(url);
     final htmlContent = _buildHtmlWrapper(embedUrl);
+    // Usar baseUrl youtube.com para YouTube para evitar postMessage origin mismatch
+    final isYt = embedUrl.contains('youtube.com/embed');
     return InAppWebView(
       key: ValueKey('fallback_$url'),
       initialData: InAppWebViewInitialData(
         data: htmlContent,
         mimeType: 'text/html',
         encoding: 'utf-8',
-        baseUrl: WebUri('https://nexushub.app'),
+        baseUrl: WebUri(isYt ? 'https://www.youtube.com' : 'https://nexushub.app'),
       ),
       initialSettings: InAppWebViewSettings(
         javaScriptEnabled: true,
         mediaPlaybackRequiresUserGesture: false,
         allowsInlineMediaPlayback: true,
-        useHybridComposition: true,
+        useHybridComposition: false,  // false para permitir toques nos controles Flutter
         supportZoom: false,
         transparentBackground: true,
         iframeAllow: 'autoplay; fullscreen; picture-in-picture',
@@ -581,11 +597,12 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     if (u.contains('youtube.com') || u.contains('youtu.be')) {
       final id = _extractYouTubeId(url);
       if (id.isNotEmpty) {
-        // Usar youtube.com/embed para que o postMessage do IFrame API
-        // funcione corretamente com o baseUrl 'https://nexushub.app'.
+        // baseUrl do InAppWebView será 'https://www.youtube.com' para este embed.
+        // controls=0 oculta os controles nativos do YouTube.
         return 'https://www.youtube.com/embed/$id'
             '?autoplay=1&mute=0&rel=0&modestbranding=1'
-            '&playsinline=1&enablejsapi=1&origin=https://nexushub.app';
+            '&playsinline=1&enablejsapi=1&controls=0'
+            '&origin=https://www.youtube.com';
       }
     }
     if (u.contains('twitch.tv')) {
