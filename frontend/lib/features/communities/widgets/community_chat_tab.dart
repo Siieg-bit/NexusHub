@@ -459,7 +459,9 @@ class _ChatCard extends ConsumerWidget {
     final hostAvatar = host?['icon_url'] as String?;
     final description = chat['description'] as String?;
     final coverUrl =
-        chat['background_url'] as String? ?? chat['icon_url'] as String?;
+        chat['cover_image_url'] as String? ??
+        chat['background_url'] as String? ??
+        chat['icon_url'] as String?;
 
     return AminoAnimations.staggerItem(
       index: 0,

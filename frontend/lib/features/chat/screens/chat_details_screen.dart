@@ -393,7 +393,7 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
               onPressed: () => context.pop(),
             ),
             actions: [
-              if (canManage)
+              if (isHost)
                 IconButton(
                   icon: Icon(Icons.edit_rounded,
                       color: Colors.white, size: r.s(20)),

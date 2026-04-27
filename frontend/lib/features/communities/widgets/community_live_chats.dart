@@ -349,9 +349,9 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
                                 ClipRRect(
                                   borderRadius: BorderRadius.vertical(
                                       top: Radius.circular(r.s(12))),
-                                  child: chat['icon_url'] != null
+                                  child: (chat['cover_image_url'] as String? ?? chat['icon_url'] as String?) != null
                                       ? CachedNetworkImage(
-                                          imageUrl: chat['icon_url'] as String,
+                                          imageUrl: (chat['cover_image_url'] as String? ?? chat['icon_url'] as String?)!,
                                           fit: BoxFit.cover,
                                         )
                                       : Container(
