@@ -657,189 +657,104 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                 SizedBox(width: r.s(8)),
               ],
               Flexible(
-                child: isMediaOnly
-                    // ── Mídia sem bubble: apenas nome do autor + conteúdo + hora ──
-                    ? Column(
-                        crossAxisAlignment: isMe
-                            ? CrossAxisAlignment.end
-                            : CrossAxisAlignment.start,
+                child: Column(
+                  crossAxisAlignment: isMe
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // ── Nome do autor ACIMA do balão ──────────────────────────
+                    if (shouldShowAuthorName) ..[
+                      Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (shouldShowAuthorName)
-                            Transform.translate(
-                              offset: Offset(isMe ? 0 : -r.s(6), 0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.only(bottom: r.s(1)),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            authorName,
-                                            style: TextStyle(
-                                              color: context.nexusTheme.accentPrimary,
-                                              fontSize: r.fs(11),
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        if (_buildRoleBadge(context, r) != null)
-                                          _buildRoleBadge(context, r)!,
-                                      ],
-                                    ),
-                                  ),
-                                  // Título de membro (apenas em chats de comunidade)
-                                  if (!isMe &&
-                                      communityId != null &&
-                                      communityId!.isNotEmpty &&
-                                      message.authorId.isNotEmpty)
-                                    Padding(
-                                      padding: EdgeInsets.only(bottom: r.s(2)),
-                                      child: MemberTitleBadge(
-                                        userId: message.authorId,
-                                        communityId: communityId!,
-                                        fontSize: 9,
-                                      ),
-                                    ),
-                                ],
+                          Flexible(
+                            child: Text(
+                              authorName,
+                              style: TextStyle(
+                                color: context.nexusTheme.accentPrimary,
+                                fontSize: r.fs(11),
+                                fontWeight: FontWeight.w700,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          // Conteúdo de mídia (imagem/gif/vídeo)
-                          ClipRRect(
+                          ),
+                          if (_buildRoleBadge(context, r) != null)
+                            _buildRoleBadge(context, r)!,
+                        ],
+                      ),
+                      // Título de membro (apenas em chats de comunidade)
+                      if (!isMe &&
+                          communityId != null &&
+                          communityId!.isNotEmpty &&
+                          message.authorId.isNotEmpty)
+                        MemberTitleBadge(
+                          userId: message.authorId,
+                          communityId: communityId!,
+                          fontSize: 9,
+                        ),
+                      SizedBox(height: r.s(2)),
+                    ],
+                    // ── Conteúdo (mídia ou bubble) ────────────────────────────
+                    isMediaOnly
+                        // Mídia sem bubble
+                        ? ClipRRect(
                             borderRadius: BorderRadius.circular(r.s(12)),
                             child: _buildContent(context),
-                          ),
-                        ],
-                      )
-                    // ── Mensagem com bubble cosmético (texto, áudio, etc.) ──
-                    : bubbleFrameUrl != null || bubbleColor != null
-                        // Bubble cosmético da loja
-                        ? ChatBubble(
-                            isMine: isMe,
-                            bubbleFrameUrl: bubbleFrameUrl,
-                            bubbleColor: bubbleColor,
-                            showTail: showAvatar,
-                            isBubbleAnimated: isBubbleAnimated,
-                            sliceInsets: bubbleSliceInsets,
-                            imageSize: bubbleImageSize,
-                            contentPadding: bubbleContentPadding,
-                            // Cor customizada do texto lida do asset_config.text_color
-                            bubbleTextColor: activeCosmetics?.chatBubbleTextColor,
-                            // Polígono opcional de fill lido do asset_config.poly_points
-                            polyPoints: activeCosmetics?.chatBubblePolyPoints,
-                            // Parâmetros do modo dynamic_nineslice
-                            bubbleMode: bubbleMode,
-                            dynMaxWidth: bubbleDynMaxWidth,
-                            dynMinWidth: bubbleDynMinWidth,
-                            dynPaddingX: bubbleDynPaddingX,
-                            dynPaddingY: bubbleDynPaddingY,
-                            dynHorizontalPriority: bubbleDynHorizontalPriority,
-                            dynTransitionZone: bubbleDynTransitionZone,
-                            // Parâmetros do modo horizontal_stretch
-                            hsMaxWidth: bubbleHsMaxWidth,
-                            hsMinWidth: bubbleHsMinWidth,
-                            hsPaddingX: bubbleHsPaddingX,
-                            hsPaddingY: bubbleHsPaddingY,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (shouldShowAuthorName)
-                                  Transform.translate(
-                                    offset: Offset(isMe ? 0 : -r.s(6), 0),
-                                    child: Padding(
-                                      padding: EdgeInsets.only(bottom: r.s(4)),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Flexible(
-                                            child: Text(
-                                              authorName,
-                                              style: TextStyle(
-                                                color: activeCosmetics?.chatBubbleTextColor
-                                                        ?.withValues(alpha: 0.9) ??
-                                                    Colors.white.withValues(alpha: 0.9),
-                                                fontSize: r.fs(11),
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          if (_buildRoleBadge(context, r) != null)
-                                            _buildRoleBadge(context, r)!,
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                // Passa bubbleTextColor para que LinkifiedText e outros
-                                // widgets filhos usem a cor correta do asset_config.
-                                _buildContent(
+                          )
+                        // ── Mensagem com bubble cosmético (texto, áudio, etc.) ──
+                        : bubbleFrameUrl != null || bubbleColor != null
+                            // Bubble cosmético da loja
+                            ? ChatBubble(
+                                isMine: isMe,
+                                bubbleFrameUrl: bubbleFrameUrl,
+                                bubbleColor: bubbleColor,
+                                showTail: showAvatar,
+                                isBubbleAnimated: isBubbleAnimated,
+                                sliceInsets: bubbleSliceInsets,
+                                imageSize: bubbleImageSize,
+                                contentPadding: bubbleContentPadding,
+                                bubbleTextColor: activeCosmetics?.chatBubbleTextColor,
+                                polyPoints: activeCosmetics?.chatBubblePolyPoints,
+                                bubbleMode: bubbleMode,
+                                dynMaxWidth: bubbleDynMaxWidth,
+                                dynMinWidth: bubbleDynMinWidth,
+                                dynPaddingX: bubbleDynPaddingX,
+                                dynPaddingY: bubbleDynPaddingY,
+                                dynHorizontalPriority: bubbleDynHorizontalPriority,
+                                dynTransitionZone: bubbleDynTransitionZone,
+                                hsMaxWidth: bubbleHsMaxWidth,
+                                hsMinWidth: bubbleHsMinWidth,
+                                hsPaddingX: bubbleHsPaddingX,
+                                hsPaddingY: bubbleHsPaddingY,
+                                child: _buildContent(
                                   context,
                                   bubbleTextColor: activeCosmetics?.chatBubbleTextColor,
                                 ),
-                              ],
-                            ),
-                          )
-                        // Bubble padrão (sem cosmético)
-                        : Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: r.s(isAudioType ? 8 : 14),
-                                vertical: r.s(isAudioType ? 4 : 10)),
-                            decoration: BoxDecoration(
-                              color: isMe
-                                  ? context.nexusTheme.accentPrimary
-                                  : context.surfaceColor,
-                              borderRadius: BorderRadius.only(
-                                topLeft: const Radius.circular(16),
-                                topRight: const Radius.circular(16),
-                                bottomLeft: Radius.circular(
-                                    isMe ? 16 : (showAvatar ? 4 : 16)),
-                                bottomRight: Radius.circular(
-                                    isMe ? (showAvatar ? 4 : 16) : 16),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (shouldShowAuthorName)
-                                  Transform.translate(
-                                    offset: Offset(isMe ? 0 : -r.s(6), 0),
-                                    child: Padding(
-                                      padding: EdgeInsets.only(bottom: r.s(4)),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Flexible(
-                                            child: Text(
-                                              authorName,
-                                              style: TextStyle(
-                                                color: isMe
-                                                    ? Colors.white.withValues(alpha: 0.9)
-                                                    : context.nexusTheme.accentPrimary,
-                                                fontSize: r.fs(11),
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          if (_buildRoleBadge(context, r) != null)
-                                            _buildRoleBadge(context, r)!,
-                                        ],
-                                      ),
-                                    ),
+                              )
+                            // Bubble padrão (sem cosmético)
+                            : Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(isAudioType ? 8 : 14),
+                                    vertical: r.s(isAudioType ? 4 : 10)),
+                                decoration: BoxDecoration(
+                                  color: isMe
+                                      ? context.nexusTheme.accentPrimary
+                                      : context.surfaceColor,
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: const Radius.circular(16),
+                                    topRight: const Radius.circular(16),
+                                    bottomLeft: Radius.circular(
+                                        isMe ? 16 : (showAvatar ? 4 : 16)),
+                                    bottomRight: Radius.circular(
+                                        isMe ? (showAvatar ? 4 : 16) : 16),
                                   ),
-                                _buildContent(context),
-                              ],
-                            ),
-                          ),
+                                ),
+                                child: _buildContent(context),
+                              ),
+                  ],
+                ),
               ),
               if (isMe) ...[
                 SizedBox(width: r.s(8)),
