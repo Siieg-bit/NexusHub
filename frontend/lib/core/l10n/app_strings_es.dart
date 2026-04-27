@@ -5690,6 +5690,8 @@ class AppStringsEs implements AppStrings {
   @override
   String userLeftTheChat(String user) => '$user salió del chat';
   @override
+  String userDeletedMessage(String user) => '$user eliminó un mensaje.';
+  @override
   String youWereKickedFromTheChat(String reason) => 'Fuiste eliminado del chat. Motivo: $reason';
   @override
   String youWereMutedInTheChat(String reason) => 'Fuiste silenciado en el chat. Motivo: $reason';

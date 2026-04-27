@@ -2931,6 +2931,7 @@ abstract class AppStrings {
   String userJoinedTheCommunity(String user);
   String userJoinedTheChat(String user);
   String userLeftTheChat(String user);
+  String userDeletedMessage(String user);
   String youWereKickedFromTheChat(String reason);
   String youWereMutedInTheChat(String reason);
   String youLeveledUpTo(int level);

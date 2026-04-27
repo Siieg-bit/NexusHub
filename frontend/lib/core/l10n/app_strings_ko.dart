@@ -5184,6 +5184,8 @@ class AppStringsKo implements AppStrings {
   @override
   String userLeftTheChat(String user) => '$user이(가) 채팅을 나갔습니다';
   @override
+  String userDeletedMessage(String user) => '$user이(가) 메시지를 삭제했습니다.';
+  @override
   String youWereKickedFromTheChat(String reason) => '채팅에서 제거되었습니다. 이유: $reason';
   @override
   String youWereMutedInTheChat(String reason) => '채팅에서 음소거되었습니다. 이유: $reason';

@@ -5819,6 +5819,8 @@ class AppStringsPt implements AppStrings {
   @override
   String userLeftTheChat(String user) => '$user saiu do chat';
   @override
+  String userDeletedMessage(String user) => '$user excluiu uma mensagem.';
+  @override
   String youWereKickedFromTheChat(String reason) => 'Você foi removido do chat. Motivo: $reason';
   @override
   String youWereMutedInTheChat(String reason) => 'Você foi silenciado no chat. Motivo: $reason';

@@ -4546,6 +4546,8 @@ class AppStringsRu implements AppStrings {
   @override
   String userLeftTheChat(String user) => '$user покинул чат';
   @override
+  String userDeletedMessage(String user) => '$user удалил сообщение.';
+  @override
   String youWereKickedFromTheChat(String reason) => 'Вас удалили из чата. Причина: $reason';
   @override
   String youWereMutedInTheChat(String reason) => 'Вас заглушили в чате. Причина: $reason';

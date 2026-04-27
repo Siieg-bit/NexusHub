@@ -4879,6 +4879,8 @@ class AppStringsAr implements AppStrings {
   @override
   String userLeftTheChat(String user) => '$user غادر الدردشة';
   @override
+  String userDeletedMessage(String user) => '$user حذف رسالة.';
+  @override
   String youWereKickedFromTheChat(String reason) => 'تمت إزالتك من الدردشة. السبب: $reason';
   @override
   String youWereMutedInTheChat(String reason) => 'تم كتمك في الدردشة. السبب: $reason';

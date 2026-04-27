@@ -475,7 +475,87 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
       );
     }
 
-    // System messages genéricos (system_join, system_leave, etc.)
+    // System messages com nome do autor em azul clicável (system_join, system_leave, system_deleted, system_removed, system_admin_delete)
+    if (message.isSystemMessage &&
+        (_specialType == 'system_join' ||
+            _specialType == 'system_leave' ||
+            _specialType == 'system_deleted' ||
+            _specialType == 'system_removed' ||
+            _specialType == 'system_admin_delete')) {
+      final s = getStrings();
+      final authorName = message.author?.nickname ?? '';
+      final authorId = message.authorId;
+      String actionText;
+      if (_specialType == 'system_join') {
+        // Extrai só a parte do texto sem o nome do usuário
+        final fullJoinMsg = s.userJoinedTheChat(authorName.isNotEmpty ? authorName : '\u200B');
+        actionText = fullJoinMsg.replaceFirst(authorName.isNotEmpty ? authorName : '\u200B', '').trim();
+        if (actionText.isEmpty) actionText = 'entrou no chat.';
+      } else if (_specialType == 'system_leave') {
+        final fullLeaveMsg = s.userLeftTheChat(authorName.isNotEmpty ? authorName : '\u200B');
+        actionText = fullLeaveMsg.replaceFirst(authorName.isNotEmpty ? authorName : '\u200B', '').trim();
+        if (actionText.isEmpty) actionText = 'saiu do chat.';
+      } else {
+        // system_deleted, system_removed, system_admin_delete
+        // Extrai só a parte do texto sem o nome do usuário
+        final fullDeletedMsg = s.userDeletedMessage(authorName.isNotEmpty ? authorName : '\u200B');
+        actionText = fullDeletedMsg.replaceFirst(authorName.isNotEmpty ? authorName : '\u200B', '').trim();
+        if (actionText.isEmpty) actionText = 'excluiu uma mensagem.';
+      }
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: r.s(6)),
+        child: Center(
+          child: RichText(
+            textAlign: TextAlign.center,
+            text: TextSpan(
+              children: [
+                if (authorName.isNotEmpty) ...
+                  [
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: GestureDetector(
+                        onTap: () {
+                          if (authorId.isEmpty) return;
+                          if (communityId != null && communityId!.isNotEmpty) {
+                            context.push('/community/$communityId/profile/$authorId');
+                          } else {
+                            context.push('/user/$authorId');
+                          }
+                        },
+                        child: Text(
+                          authorName,
+                          style: TextStyle(
+                            color: context.nexusTheme.accentPrimary,
+                            fontSize: r.fs(13),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' $actionText',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontSize: r.fs(13),
+                      ),
+                    ),
+                  ]
+                else
+                  TextSpan(
+                    text: message.content ?? actionText,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.75),
+                      fontSize: r.fs(13),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // System messages genéricos (system_pin, system_unpin, system_tip, etc.)
     if (message.isSystemMessage) {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: r.s(8)),

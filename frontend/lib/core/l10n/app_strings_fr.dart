@@ -5624,6 +5624,8 @@ class AppStringsFr implements AppStrings {
   @override
   String userLeftTheChat(String user) => '$user a quitté le chat';
   @override
+  String userDeletedMessage(String user) => '$user a supprimé un message.';
+  @override
   String youWereKickedFromTheChat(String reason) => 'Vous avez été retiré du chat. Raison : $reason';
   @override
   String youWereMutedInTheChat(String reason) => 'Vous avez été mis en sourdine dans le chat. Raison : $reason';

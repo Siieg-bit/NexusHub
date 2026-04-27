@@ -419,6 +419,8 @@ class AppStringsDe implements AppStrings {
   @override
   String userLeftTheChat(String user)=>'$user hat den Chat verlassen';
   @override
+  String userDeletedMessage(String user) => '$user hat eine Nachricht gelöscht.';
+  @override
   String youWereKickedFromTheChat(String reason)=>'Du wurdest aus dem Chat geworfen. Grund: $reason';
   @override
   String youWereMutedInTheChat(String reason)=>'Du wurdest im Chat stummgeschaltet. Grund: $reason';

@@ -5690,6 +5690,8 @@ class AppStringsJa implements AppStrings {
   @override
   String userLeftTheChat(String user) => '$userがチャットを退出しました';
   @override
+  String userDeletedMessage(String user) => '$userがメッセージを削除しました。';
+  @override
   String youWereKickedFromTheChat(String reason) => 'チャットから削除されました。理由: $reason';
   @override
   String youWereMutedInTheChat(String reason) => 'チャットでミュートされました。理由: $reason';
