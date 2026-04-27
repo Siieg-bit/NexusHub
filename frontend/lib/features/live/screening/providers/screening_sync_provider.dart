@@ -103,9 +103,6 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
   bool _isHostPlaying = false;
   double _currentRate = 1.0;
   int _reconnectAttempts = 0;
-  /// Flag para evitar que o closed disparado por unsubscribe intencional
-  /// (durante reconexão ou dispose) acione um novo ciclo de _scheduleReconnect.
-  bool _isIntentionalDisconnect = false;
 
   ScreeningSyncNotifier({required this.sessionId, required this.ref})
       : super(const ScreeningSyncState()) {
@@ -116,7 +113,11 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
 
   void _subscribeToSyncEvents() {
     final channelName = 'screening_sync_$sessionId';
-    _channel = SupabaseService.client.channel(channelName)
+    // Captura referência local para que o callback ignore eventos de canais
+    // antigos substituídos durante reconexão (identical check abaixo).
+    final channel = SupabaseService.client.channel(channelName);
+    _channel = channel;
+    channel
       ..onBroadcast(
         event: 'sync',
         callback: (payload) {
@@ -136,6 +137,8 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
         // the widget tree was building" — o subscribe pode ser chamado
         // sincronamente durante o primeiro build quando o provider é criado.
         Future.microtask(() {
+          // Se este canal não é mais o ativo, ignorar para evitar loop.
+          if (!identical(channel, _channel)) return;
           switch (status) {
             case RealtimeSubscribeStatus.subscribed:
               _reconnectAttempts = 0;
@@ -149,9 +152,6 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
               break;
             case RealtimeSubscribeStatus.closed:
             case RealtimeSubscribeStatus.channelError:
-              // Ignorar closed disparado por unsubscribe intencional
-              // (durante reconexão ou dispose) para evitar loop infinito.
-              if (_isIntentionalDisconnect) break;
               if (mounted) {
                 state = state.copyWith(
                   isConnected: false,
@@ -179,10 +179,12 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
     if (mounted) state = state.copyWith(reconnectAttempts: _reconnectAttempts);
     _reconnectTimer = Timer(Duration(seconds: delaySeconds), () {
       if (!mounted) return;
-      _isIntentionalDisconnect = true;
-      _channel?.unsubscribe();
+      // Anular _channel ANTES do unsubscribe para que o callback do canal
+      // antigo (que pode chegar via Future.microtask) seja ignorado pela
+      // verificação identical(channel, _channel) em _subscribeToSyncEvents.
+      final oldChannel = _channel;
       _channel = null;
-      _isIntentionalDisconnect = false;
+      oldChannel?.unsubscribe();
       _subscribeToSyncEvents();
     });
   }
@@ -416,8 +418,11 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
     _microsyncTimer?.cancel();
     _syncTimeoutTimer?.cancel();
     _reconnectTimer?.cancel();
-    _isIntentionalDisconnect = true;
-    _channel?.unsubscribe();
+    // Anular _channel antes do unsubscribe para que callbacks pendentes
+    // via Future.microtask sejam ignorados (identical check).
+    final ch = _channel;
+    _channel = null;
+    ch?.unsubscribe();
     super.dispose();
   }
 }
