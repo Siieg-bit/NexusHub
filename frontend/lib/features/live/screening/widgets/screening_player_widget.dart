@@ -325,6 +325,11 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
                 'Chrome/124.0.0.0 Safari/537.36',
           ),
           onWebViewCreated: (controller) {
+            // Resetar _isLoading=true sempre que um novo InAppWebView é criado
+            // (inclusive ao trocar de vídeo via key: ValueKey(url)).
+            // Garante que o overlay preto cobre os badges nativos do YouTube
+            // durante o carregamento inicial de cada vídeo.
+            if (mounted) setState(() => _isLoading = true);
             _webViewController = controller;
             final notifier = ref.read(screeningPlayerProvider(widget.sessionId).notifier);
             notifier.registerWebViewController(controller);

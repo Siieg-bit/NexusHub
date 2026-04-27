@@ -8,7 +8,7 @@ import 'screening_queue_sheet.dart';
 // ScreeningTopBar — Barra superior fixa da Sala de Projeção (estilo Rave)
 //
 // Sempre visível sobre o player (não é overlay de fade).
-// Layout: X | ⚙️ | NEXUS (centralizado) | 🗑️ | 🔍 | 👥 | 📋
+// Layout: X | ⚙️ | NEXUS (centralizado) | 🔍 | 👥 | 📋
 // =============================================================================
 
 class ScreeningTopBar extends ConsumerWidget {
@@ -32,8 +32,6 @@ class ScreeningTopBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final roomState = ref.watch(screeningRoomProvider(threadId));
     final mq = MediaQuery.of(context);
-    final hasVideo = roomState.currentVideoUrl != null &&
-        roomState.currentVideoUrl!.isNotEmpty;
     // Se overrideTopPadding for fornecido, usa ele; caso contrário usa mq.padding.top
     final topPad = overrideTopPadding ?? mq.padding.top;
 
@@ -91,13 +89,6 @@ class ScreeningTopBar extends ConsumerWidget {
               ),
             ),
           ),
-          // ── Remover vídeo atual (host, apenas quando há vídeo) ────────
-          if (roomState.isHost && hasVideo)
-            _TopBarButton(
-              icon: Icons.delete_outline_rounded,
-              onTap: () => _confirmClearVideo(context, ref),
-            ),
-          if (roomState.isHost && hasVideo) const SizedBox(width: 4),
           // ── Busca / Adicionar vídeo (host) ────────────────────────────
           if (roomState.isHost)
             _TopBarButton(
@@ -142,49 +133,6 @@ class ScreeningTopBar extends ConsumerWidget {
         threadId: threadId,
       ),
     );
-  }
-
-  /// Confirma e remove o vídeo atual da sala.
-  Future<void> _confirmClearVideo(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Remover vídeo?',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
-        ),
-        content: const Text(
-          'O vídeo atual será removido da sala para todos os participantes.',
-          style: TextStyle(color: Colors.white60),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar',
-                style: TextStyle(color: Colors.white54)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text('Remover',
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      await ref
-          .read(screeningRoomProvider(threadId).notifier)
-          .clearVideo();
-    }
   }
 
   void _showSettings(BuildContext context, dynamic roomState) {
