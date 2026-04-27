@@ -24,6 +24,9 @@ class ChatMediaSheet extends ConsumerWidget {
   final VoidCallback onScreening;
   final VoidCallback onLink;
   final VoidCallback onVideoFile;
+  /// Callback para abrir o modo RPG. Quando não-nulo, exibe o item no menu.
+  /// Deve ser fornecido apenas para chats públicos em grupo.
+  final VoidCallback? onRolePlay;
 
   const ChatMediaSheet({
     super.key,
@@ -36,6 +39,7 @@ class ChatMediaSheet extends ConsumerWidget {
     required this.onScreening,
     required this.onLink,
     required this.onVideoFile,
+    this.onRolePlay,
   });
 
   @override
@@ -142,6 +146,16 @@ class ChatMediaSheet extends ConsumerWidget {
                   onVideoFile();
                 },
               ),
+              if (onRolePlay != null)
+                MediaOptionItem(
+                  icon: Icons.auto_awesome_rounded,
+                  label: 'RolePlay IA',
+                  color: const Color(0xFF7C4DFF),
+                  onTap: () {
+                    Navigator.pop(context);
+                    onRolePlay!();
+                  },
+                ),
             ],
           ),
         ],
@@ -150,6 +164,8 @@ class ChatMediaSheet extends ConsumerWidget {
   }
 
   /// Mostra o bottom sheet de opções de mídia.
+  /// [onRolePlay] é opcional — quando fornecido, exibe o item RolePlay IA.
+  /// Deve ser passado apenas para chats públicos em grupo.
   static void show(
     BuildContext context, {
     required VoidCallback onImage,
@@ -161,6 +177,7 @@ class ChatMediaSheet extends ConsumerWidget {
     required VoidCallback onScreening,
     required VoidCallback onLink,
     required VoidCallback onVideoFile,
+    VoidCallback? onRolePlay,
   }) {
     showModalBottomSheet(
       context: context,
@@ -190,6 +207,7 @@ class ChatMediaSheet extends ConsumerWidget {
               onScreening: onScreening,
               onLink: onLink,
               onVideoFile: onVideoFile,
+              onRolePlay: onRolePlay,
             ),
           ),
         ),

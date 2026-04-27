@@ -2912,9 +2912,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 case 'bubble':
                   _showBubblePicker();
                   break;
-                case 'roleplay':
-                  RolePlayScreen.show(context, widget.threadId);
-                  break;
                 case 'leave':
                   _leaveChatConfirm();
                   break;
@@ -2930,8 +2927,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   r, 'background', Icons.wallpaper_rounded, s.chatBackground),
               _buildPopupItem(
                   r, 'bubble', Icons.chat_bubble_rounded, 'Meu Bubble'),
-              _buildPopupItem(
-                  r, 'roleplay', Icons.auto_awesome_rounded, 'RolePlay com IA'),
               _buildPopupItem(
                   r, 'leave', Icons.exit_to_app_rounded, s.leaveChatTitle,
                   isDestructive: true),
@@ -3876,6 +3871,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   void _showMediaOptions(BuildContext context) {
+    // RolePlay IA é exclusivo para chats públicos em grupo
+    final threadType = _threadInfo?['type'] as String? ?? 'public';
+    final isPublicGroup = threadType == 'public';
+
     ChatMediaSheet.show(
       context,
       onImage: _sendImage,
@@ -3907,6 +3906,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       onScreening: _startProjection,
       onLink: _showLinkInput,
       onVideoFile: _sendVideoFile,
+      // RolePlay IA: só aparece em chats públicos em grupo
+      onRolePlay: isPublicGroup
+          ? () => RolePlayScreen.show(context, widget.threadId)
+          : null,
     );
   }
 
