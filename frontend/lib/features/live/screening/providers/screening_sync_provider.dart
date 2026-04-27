@@ -129,30 +129,35 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
         callback: (_) => _handleResyncRequest(),
       )
       ..subscribe((status, error) {
-        switch (status) {
-          case RealtimeSubscribeStatus.subscribed:
-            _reconnectAttempts = 0;
-            if (mounted) {
-              state = state.copyWith(
-                isConnected: true,
-                status: _isHostPlaying ? SyncStatus.adjusting : SyncStatus.idle,
-              );
-            }
-            debugPrint('[ScreeningSync] canal conectado');
-            break;
-          case RealtimeSubscribeStatus.closed:
-          case RealtimeSubscribeStatus.channelError:
-            if (mounted) {
-              state = state.copyWith(
-                isConnected: false,
-                status: SyncStatus.reconnecting,
-              );
-            }
-            _scheduleReconnect();
-            break;
-          default:
-            break;
-        }
+        // Usa Future.microtask para evitar "Tried to modify a provider while
+        // the widget tree was building" — o subscribe pode ser chamado
+        // sincronamente durante o primeiro build quando o provider é criado.
+        Future.microtask(() {
+          switch (status) {
+            case RealtimeSubscribeStatus.subscribed:
+              _reconnectAttempts = 0;
+              if (mounted) {
+                state = state.copyWith(
+                  isConnected: true,
+                  status: _isHostPlaying ? SyncStatus.adjusting : SyncStatus.idle,
+                );
+              }
+              debugPrint('[ScreeningSync] canal conectado');
+              break;
+            case RealtimeSubscribeStatus.closed:
+            case RealtimeSubscribeStatus.channelError:
+              if (mounted) {
+                state = state.copyWith(
+                  isConnected: false,
+                  status: SyncStatus.reconnecting,
+                );
+              }
+              _scheduleReconnect();
+              break;
+            default:
+              break;
+          }
+        });
       });
   }
 
