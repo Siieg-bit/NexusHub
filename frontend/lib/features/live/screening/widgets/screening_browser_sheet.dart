@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/screening_room_provider.dart';
+import '../services/drm_relay_service.dart';
+import '../services/stream_resolver_service.dart';
 
 // =============================================================================
 // ScreeningBrowserSheet — WebView embutido para seleção de vídeo por plataforma
@@ -123,6 +125,7 @@ final _kPlatforms = <String, ScreeningPlatform>{
   // ── Serviços de assinatura (login + relay) ──────────────────────────────
   'netflix': ScreeningPlatform(
     id: 'netflix',
+    isDrm: true,
     displayName: 'Netflix',
     initialUrl: 'https://www.netflix.com/browse',
     videoPatterns: [
@@ -131,6 +134,7 @@ final _kPlatforms = <String, ScreeningPlatform>{
   ),
   'disney': ScreeningPlatform(
     id: 'disney',
+    isDrm: true,
     displayName: 'Disney+',
     initialUrl: 'https://www.disneyplus.com',
     videoPatterns: [
@@ -140,6 +144,7 @@ final _kPlatforms = <String, ScreeningPlatform>{
   ),
   'amazon': ScreeningPlatform(
     id: 'amazon',
+    isDrm: true,
     displayName: 'Prime Video',
     initialUrl: 'https://www.primevideo.com',
     videoPatterns: [
@@ -150,6 +155,7 @@ final _kPlatforms = <String, ScreeningPlatform>{
   ),
   'hbo': ScreeningPlatform(
     id: 'hbo',
+    isDrm: true,
     displayName: 'Max',
     initialUrl: 'https://www.max.com',
     videoPatterns: [
@@ -159,6 +165,7 @@ final _kPlatforms = <String, ScreeningPlatform>{
   ),
   'crunchyroll': ScreeningPlatform(
     id: 'crunchyroll',
+    isDrm: true,
     displayName: 'Crunchyroll',
     initialUrl: 'https://www.crunchyroll.com',
     videoPatterns: [
@@ -236,17 +243,70 @@ class _ScreeningBrowserSheetState
   Future<void> _captureUrl(String url) async {
     if (_isCapturing) return;
     setState(() => _isCapturing = true);
-
     HapticFeedback.mediumImpact();
 
-    final title = _inferTitle(url);
-    await ref
-        .read(screeningRoomProvider(widget.threadId).notifier)
-        .updateVideo(videoUrl: url, videoTitle: title);
+    try {
+      String finalUrl = url;
 
-    if (mounted) {
-      // Fechar o browser sheet e o add video sheet (2 pops)
-      Navigator.of(context).pop(); // fecha browser sheet
+      // Para plataformas DRM, capturar cookies/tokens e chamar o relay
+      if (_platform.isDrm && _webViewController != null) {
+        final platform = StreamResolverService.detectPlatform(url);
+        StreamResolution? resolution;
+
+        try {
+          switch (platform) {
+            case StreamPlatform.netflix:
+              resolution = await DrmRelayService.resolveNetflix(
+                  url, _webViewController!);
+              break;
+            case StreamPlatform.disneyPlus:
+              resolution = await DrmRelayService.resolveDisney(
+                  url, _webViewController!);
+              break;
+            case StreamPlatform.amazonPrime:
+              resolution = await DrmRelayService.resolveAmazon(
+                  url, _webViewController!);
+              break;
+            case StreamPlatform.hboMax:
+              resolution = await DrmRelayService.resolveHbo(
+                  url, _webViewController!);
+              break;
+            case StreamPlatform.crunchyroll:
+              resolution = await DrmRelayService.resolveCrunchyroll(
+                  url, _webViewController!);
+              break;
+            default:
+              break;
+          }
+          if (resolution != null) finalUrl = resolution.url;
+        } catch (e) {
+          debugPrint('[ScreeningBrowserSheet] Relay DRM falhou: $e');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Erro ao conectar ao serviço: $e',
+                  style: const TextStyle(fontSize: 13),
+                ),
+                backgroundColor: Colors.red.shade800,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+            setState(() => _isCapturing = false);
+          }
+          return;
+        }
+      }
+
+      final title = _inferTitle(url);
+      await ref
+          .read(screeningRoomProvider(widget.threadId).notifier)
+          .updateVideo(videoUrl: finalUrl, videoTitle: title);
+
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) setState(() => _isCapturing = false);
+      rethrow;
     }
   }
 
@@ -258,6 +318,13 @@ class _ScreeningBrowserSheetState
     if (u.contains('vimeo')) return 'Vimeo';
     if (u.contains('dailymotion')) return 'Dailymotion';
     if (u.contains('drive.google')) return 'Google Drive';
+    if (u.contains('tubitv')) return 'Tubi';
+    if (u.contains('pluto.tv')) return 'Pluto TV';
+    if (u.contains('netflix')) return 'Netflix';
+    if (u.contains('disneyplus')) return 'Disney+';
+    if (u.contains('primevideo') || u.contains('amazon')) return 'Prime Video';
+    if (u.contains('max.com') || u.contains('hbomax')) return 'Max';
+    if (u.contains('crunchyroll')) return 'Crunchyroll';
     return _platform.displayName;
   }
 
