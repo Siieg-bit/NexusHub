@@ -661,7 +661,7 @@ class _CallScreenState extends ConsumerState<CallScreen>
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: r.s(8),
         mainAxisSpacing: r.s(8),
-        childAspectRatio: 0.72,
+        childAspectRatio: 0.95,
       ),
       itemCount: speakers.length,
       itemBuilder: (context, i) => _SpeakerCard(
@@ -1001,48 +1001,36 @@ class _SpeakerCard extends ConsumerWidget {
           _showHostActions(context, userId, nickname, isMuted);
         }
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        decoration: BoxDecoration(
-          color: theme.surfacePrimary,
-          borderRadius: BorderRadius.circular(r.s(16)),
-          border: Border.all(
-            color: isSpeaking
-                ? theme.success.withValues(alpha: 0.8)
-                : Colors.white.withValues(alpha: 0.06),
-            width: isSpeaking ? 2 : 1,
-          ),
-          boxShadow: isSpeaking
-              ? [
-                  BoxShadow(
-                    color: theme.success.withValues(alpha: 0.25),
-                    blurRadius: 12,
-                    spreadRadius: 2,
-                  )
-                ]
-              : null,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(r.s(16)),
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: r.s(8)),
-            child: Column(
+      child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Avatar com halo pulsante
+            // Avatar com anel de fala
             Stack(
               alignment: Alignment.center,
               children: [
+                // Anel verde pulsante quando falando
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
-                  width: r.s(isSpeaking ? 72 : 64),
-                  height: r.s(isSpeaking ? 72 : 64),
+                  width: r.s(isSpeaking ? 70 : 60),
+                  height: r.s(isSpeaking ? 70 : 60),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isSpeaking
-                        ? theme.success.withValues(alpha: 0.2)
-                        : Colors.transparent,
+                    border: isSpeaking
+                        ? Border.all(
+                            color: theme.success,
+                            width: 2.5,
+                          )
+                        : null,
+                    boxShadow: isSpeaking
+                        ? [
+                            BoxShadow(
+                              color: theme.success.withValues(alpha: 0.4),
+                              blurRadius: 10,
+                              spreadRadius: 2,
+                            )
+                          ]
+                        : null,
                   ),
                 ),
                 CosmeticAvatar(
@@ -1112,12 +1100,8 @@ class _SpeakerCard extends ConsumerWidget {
             ],
           ],
         ),
-          ),
-        ),
-      ),
     );
   }
-
   void _showHostActions(BuildContext context, String userId,
       String nickname, bool isMuted) {
     final theme = context.nexusTheme;
