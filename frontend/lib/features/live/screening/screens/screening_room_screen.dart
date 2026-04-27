@@ -334,21 +334,11 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
 
   Widget _buildBody(BuildContext context, ScreeningRoomState roomState) {
     // ── Estado de carregamento ──────────────────────────────────────────────
-    if (roomState.status == ScreeningRoomStatus.loading) {
-      return const Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(color: Colors.white54),
-            SizedBox(height: 16),
-            Text(
-              'Entrando na sala...',
-              style: TextStyle(color: Colors.white54, fontSize: 14),
-            ),
-          ],
-        ),
-      );
-    }
+    // Não retornamos um widget genérico durante o loading: o ScreeningAdaptiveLayout
+    // já exibe o ScreeningEntryAnimation ("Preparando a experiência") como overlay
+    // enquanto entryAnimationDone == false. Isso evita que o widget seja desmontado
+    // e remontado entre os estados loading → active, o que impedia o didUpdateWidget
+    // de disparar o fade-out corretamente.
 
     // ── Estado de erro ──────────────────────────────────────────────────────
     if (roomState.status == ScreeningRoomStatus.error) {

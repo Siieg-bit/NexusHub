@@ -48,11 +48,24 @@ class _ScreeningEntryAnimationState extends State<ScreeningEntryAnimation>
       parent: _exitController,
       curve: Curves.easeIn,
     );
+
+    // Se o widget já nasce com isExiting=true (ex: joinRoom() completou antes
+    // do primeiro build), disparar o fade-out no próximo frame.
+    if (widget.isExiting) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _exitController.forward().then((_) {
+            widget.onComplete?.call();
+          });
+        }
+      });
+    }
   }
 
   @override
   void didUpdateWidget(ScreeningEntryAnimation oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // Disparar fade-out quando isExiting muda de false → true
     if (widget.isExiting && !oldWidget.isExiting) {
       _exitController.forward().then((_) {
         widget.onComplete?.call();
