@@ -661,7 +661,7 @@ class _CallScreenState extends ConsumerState<CallScreen>
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: r.s(8),
         mainAxisSpacing: r.s(8),
-        childAspectRatio: 0.85,
+        childAspectRatio: 0.72,
       ),
       itemCount: speakers.length,
       itemBuilder: (context, i) => _SpeakerCard(
@@ -1022,8 +1022,13 @@ class _SpeakerCard extends ConsumerWidget {
                 ]
               : null,
         ),
-        child: Column(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(r.s(16)),
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: r.s(8)),
+            child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Avatar com halo pulsante
             Stack(
@@ -1106,6 +1111,8 @@ class _SpeakerCard extends ConsumerWidget {
               _AudioLevelBar(level: audioLevel),
             ],
           ],
+        ),
+          ),
         ),
       ),
     );
