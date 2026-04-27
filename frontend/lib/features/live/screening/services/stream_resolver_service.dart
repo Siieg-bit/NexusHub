@@ -8,6 +8,8 @@
 import 'twitch_stream_service.dart';
 import 'tubi_stream_service.dart';
 import 'pluto_stream_service.dart';
+import 'youtube_stream_service.dart';
+import 'google_drive_stream_service.dart';
 
 enum StreamType {
   /// Stream HLS direto — usa o player nativo (media_kit / video_player)
@@ -218,9 +220,41 @@ class StreamResolverService {
           originalUrl: url,
         );
 
-      // ── Embed iframe ────────────────────────────────────────────────────
+       // ── YouTube via Innertube (HLS nativo para lives, embed para VODs) ───
       case StreamPlatform.youtube:
       case StreamPlatform.youtubeLive:
+        // Tentar Innertube primeiro (melhor para lives e Shorts)
+        try {
+          final result = await YouTubeStreamService.resolve(url);
+          final isHls = result.hlsUrl.contains('.m3u8');
+          return StreamResolution(
+            url: result.hlsUrl,
+            type: isHls ? StreamType.hls : StreamType.direct,
+            platform: platform,
+            title: result.title,
+            thumbnailUrl: result.thumbnailUrl,
+            originalUrl: url,
+          );
+        } catch (e) {
+          // Fallback para embed se Innertube falhar (vídeos com restrição de idade, etc.)
+          final embedUrl = _toEmbedUrl(url, platform);
+          if (embedUrl != null) {
+            return StreamResolution(
+              url: embedUrl,
+              type: StreamType.embed,
+              platform: platform,
+              originalUrl: url,
+            );
+          }
+        }
+        return StreamResolution(
+          url: url,
+          type: StreamType.direct,
+          platform: platform,
+          originalUrl: url,
+        );
+
+      // ── Embed iframe ──────────────────────────────────────────────────
       case StreamPlatform.kick:
       case StreamPlatform.vimeo:
       case StreamPlatform.dailymotion:
@@ -257,8 +291,29 @@ class StreamResolverService {
           originalUrl: url,
         );
 
-      // ── Direto / Web ────────────────────────────────────────────────────
+      // ── Google Drive (MP4 direto) ──────────────────────────────────────────
       case StreamPlatform.googleDrive:
+        try {
+          final result = await GoogleDriveStreamService.resolve(url);
+          return StreamResolution(
+            url: result.streamUrl,
+            type: StreamType.direct,
+            platform: platform,
+            title: result.title,
+            thumbnailUrl: result.thumbnailUrl,
+            originalUrl: url,
+          );
+        } catch (_) {
+          // Fallback: embed no WebView
+          return StreamResolution(
+            url: url,
+            type: StreamType.embed,
+            platform: platform,
+            originalUrl: url,
+          );
+        }
+
+      // ── Direto / Web ──────────────────────────────────────────────────
       case StreamPlatform.vk:
       case StreamPlatform.web:
       case StreamPlatform.unknown:
