@@ -5,6 +5,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_kit/media_kit.dart';
 import '../models/screening_player_state.dart';
+import 'screening_room_provider.dart';
 
 // =============================================================================
 // ScreeningPlayerProvider — Gerencia o estado do player de vídeo (Fase 2)
@@ -185,11 +186,13 @@ const _kPlayerBridgeJs = r'''
 
 final screeningPlayerProvider = StateNotifierProvider.family<
     ScreeningPlayerNotifier, ScreeningPlayerState, String>(
-  (ref, sessionId) => ScreeningPlayerNotifier(sessionId: sessionId),
+  (ref, sessionId) => ScreeningPlayerNotifier(sessionId: sessionId, ref: ref),
 );
 
 class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   final String sessionId;
+  final Ref _ref;
+  String? _threadId;
 
   InAppWebViewController? _webViewController;
   Player? _nativePlayer;
@@ -198,8 +201,10 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   bool _bridgeInjected = false;
   bool _isNativeMode = false;
 
-  ScreeningPlayerNotifier({required this.sessionId})
-      : super(const ScreeningPlayerState());
+  ScreeningPlayerNotifier({required this.sessionId, required Ref ref})
+      : _ref = ref,
+        super(const ScreeningPlayerState());
+  void setThreadId(String threadId) => _threadId = threadId;
 
   // ── Registrar o WebViewController ────────────────────────────────────────────
 
@@ -403,7 +408,28 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   void onVideoEnded() {
     if (!mounted) return;
     state = state.copyWith(isPlaying: false, isBuffering: false, hasEnded: true);
-     _positionPollTimer?.cancel();
+    _positionPollTimer?.cancel();
+    _autoAdvanceQueue();
+  }
+
+  /// Avança automaticamente para o próximo vídeo da fila quando o atual termina.
+  Future<void> _autoAdvanceQueue() async {
+    final tid = _threadId;
+    if (tid == null) return;
+    try {
+      final roomState = _ref.read(screeningRoomProvider(tid));
+      if (!roomState.isHost) return; // apenas o host controla a fila
+      if (roomState.videoQueue.isEmpty) return;
+      final next = roomState.videoQueue.first;
+      final notifier = _ref.read(screeningRoomProvider(tid).notifier);
+      await notifier.updateVideo(
+        videoUrl: next['url'] ?? '',
+        videoTitle: next['title'] ?? '',
+      );
+      await notifier.removeFromQueue(0);
+    } catch (e) {
+      debugPrint('[ScreeningPlayerProvider] Auto-avanço falhou: \$e');
+    }
   }
 
   // ── Player nativo (media_kit) ─────────────────────────────────────────────────────

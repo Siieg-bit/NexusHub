@@ -18,11 +18,14 @@ import '../services/local_video_service.dart';
 class ScreeningLocalVideoSheet extends ConsumerStatefulWidget {
   final String sessionId;
   final String threadId;
+  /// Se true, o vídeo é adicionado à fila em vez de reproduzir imediatamente.
+  final bool addToQueue;
 
   const ScreeningLocalVideoSheet({
     super.key,
     required this.sessionId,
     required this.threadId,
+    this.addToQueue = false,
   });
 
   @override
@@ -93,16 +96,18 @@ class _ScreeningLocalVideoSheetState
 
       if (!mounted) return;
 
-      // Atualizar o vídeo da sala
-      await ref
-          .read(screeningRoomProvider(widget.threadId).notifier)
-          .updateVideo(
-            videoUrl: result.url,
-            videoTitle: result.fileName,
-          );
+      // Adicionar à fila ou reproduzir imediatamente
+      final notifier = ref.read(screeningRoomProvider(widget.threadId).notifier);
+      if (widget.addToQueue) {
+        await notifier.addToQueue(url: result.url, title: result.fileName);
+      } else {
+        await notifier.updateVideo(
+          videoUrl: result.url,
+          videoTitle: result.fileName,
+        );
+      }
 
       if (mounted) {
-        // Fechar o sheet com sucesso
         Navigator.of(context).pop(result.url);
       }
     } catch (e) {

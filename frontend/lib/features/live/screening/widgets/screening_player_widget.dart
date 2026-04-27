@@ -64,6 +64,14 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   @override
   void initState() {
     super.initState();
+    // Injetar threadId no player provider para auto-avanço de fila
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref
+            .read(screeningPlayerProvider(widget.sessionId).notifier)
+            .setThreadId(widget.threadId);
+      }
+    });
     _seekLeftController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),

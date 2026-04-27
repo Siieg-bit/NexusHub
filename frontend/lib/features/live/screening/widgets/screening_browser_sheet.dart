@@ -191,6 +191,7 @@ class ScreeningBrowserSheet extends ConsumerStatefulWidget {
     required this.platformId,
     required this.sessionId,
     required this.threadId,
+    this.addToQueue = false,
   });
 
   @override
@@ -299,11 +300,17 @@ class _ScreeningBrowserSheetState
       }
 
       final title = _inferTitle(url);
-      await ref
-          .read(screeningRoomProvider(widget.threadId).notifier)
-          .updateVideo(videoUrl: finalUrl, videoTitle: title);
-
-      if (mounted) Navigator.of(context).pop();
+      final notifier = ref.read(screeningRoomProvider(widget.threadId).notifier);
+      if (widget.addToQueue) {
+        await notifier.addToQueue(url: finalUrl, title: title);
+        if (mounted) {
+          HapticFeedback.lightImpact();
+          Navigator.of(context).pop();
+        }
+      } else {
+        await notifier.updateVideo(videoUrl: finalUrl, videoTitle: title);
+        if (mounted) Navigator.of(context).pop();
+      }
     } catch (e) {
       if (mounted) setState(() => _isCapturing = false);
       rethrow;

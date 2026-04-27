@@ -1,14 +1,16 @@
 // =============================================================================
-// ScreeningQueueSheet — Fila de vídeos da Sala de Projeção
+// ScreeningQueueSheet — Fila de vídeos da Sala de Projeção (v2)
 //
-// Permite ao host:
-//   - Ver os vídeos na fila
-//   - Adicionar novos vídeos à fila
-//   - Reordenar via drag-and-drop
-//   - Remover vídeos da fila
-//   - Avançar para o próximo vídeo manualmente
+// Host pode:
+//   - Ver todos os vídeos na fila com thumbnail, título e plataforma
+//   - Reordenar via drag-and-drop (long-press + arrastar)
+//   - Remover qualquer item com swipe-to-dismiss ou botão ×
+//   - "Reproduzir agora" por item (pula para aquele vídeo)
+//   - Adicionar via browser de plataformas (abre ScreeningBrowserSheet)
+//   - Adicionar vídeo local da galeria (abre ScreeningLocalVideoSheet)
+//   - "Próximo" no header para avançar para o primeiro da fila
 //
-// Os participantes veem a fila mas não podem editá-la.
+// Participantes veem a fila mas não podem editá-la.
 // A fila é sincronizada via Supabase Realtime Broadcast.
 // =============================================================================
 
@@ -16,7 +18,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/screening_room_provider.dart';
+import '../services/stream_resolver_service.dart';
 import '../../../../core/services/supabase_service.dart';
+import 'screening_browser_sheet.dart';
+import 'screening_local_video_sheet.dart';
 
 class ScreeningQueueSheet extends ConsumerStatefulWidget {
   final String sessionId;
@@ -34,100 +39,80 @@ class ScreeningQueueSheet extends ConsumerStatefulWidget {
 }
 
 class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
-  final TextEditingController _urlController = TextEditingController();
-  final TextEditingController _titleController = TextEditingController();
-  bool _isAdding = false;
-  bool _showAddForm = false;
-
-  @override
-  void dispose() {
-    _urlController.dispose();
-    _titleController.dispose();
-    super.dispose();
-  }
-
   bool get _isHost {
     final roomState = ref.read(screeningRoomProvider(widget.threadId));
     return roomState.hostUserId == SupabaseService.currentUserId;
   }
 
-  Future<void> _addToQueue() async {
-    final url = _urlController.text.trim();
-    if (url.isEmpty) return;
-
-    setState(() => _isAdding = true);
-    try {
-      await ref.read(screeningRoomProvider(widget.threadId).notifier)
-          .addToQueue(
-            url: url,
-            title: _titleController.text.trim().isEmpty
-                ? _extractTitleFromUrl(url)
-                : _titleController.text.trim(),
-          );
-      _urlController.clear();
-      _titleController.clear();
-      setState(() => _showAddForm = false);
-      HapticFeedback.lightImpact();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao adicionar: $e'),
-            backgroundColor: Colors.redAccent,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isAdding = false);
-    }
-  }
-
-  Future<void> _removeFromQueue(int index) async {
-    HapticFeedback.mediumImpact();
-    await ref.read(screeningRoomProvider(widget.threadId).notifier)
-        .removeFromQueue(index);
-  }
-
-  Future<void> _playNext() async {
-    final roomState = ref.read(screeningRoomProvider(widget.threadId));
-    if (roomState.videoQueue.isEmpty) return;
-
-    final next = roomState.videoQueue.first;
+  // ── Reproduzir agora (item específico) ───────────────────────────────────
+  Future<void> _playNow(int index) async {
     HapticFeedback.heavyImpact();
-    await ref.read(screeningRoomProvider(widget.threadId).notifier)
+    final roomState = ref.read(screeningRoomProvider(widget.threadId));
+    if (index < 0 || index >= roomState.videoQueue.length) return;
+
+    final item = roomState.videoQueue[index];
+    await ref
+        .read(screeningRoomProvider(widget.threadId).notifier)
         .updateVideo(
-          videoUrl: next['url'] ?? '',
-          videoTitle: next['title'] ?? '',
+          videoUrl: item['url'] ?? '',
+          videoTitle: item['title'] ?? '',
         );
-    await ref.read(screeningRoomProvider(widget.threadId).notifier)
-        .removeFromQueue(0);
+    await ref
+        .read(screeningRoomProvider(widget.threadId).notifier)
+        .removeFromQueue(index);
     if (mounted) Navigator.of(context).pop();
   }
 
-  String _extractTitleFromUrl(String url) {
-    try {
-      final uri = Uri.parse(url);
-      if (uri.host.contains('youtube') || uri.host.contains('youtu.be')) {
-        return 'Vídeo do YouTube';
-      } else if (uri.host.contains('twitch')) {
-        return 'Stream da Twitch';
-      } else if (uri.host.contains('vimeo')) {
-        return 'Vídeo do Vimeo';
-      }
-      return uri.host;
-    } catch (_) {
-      return 'Vídeo';
-    }
+  // ── Próximo (primeiro da fila) ────────────────────────────────────────────
+  Future<void> _playNext() async {
+    final roomState = ref.read(screeningRoomProvider(widget.threadId));
+    if (roomState.videoQueue.isEmpty) return;
+    await _playNow(0);
   }
 
-  String _getPlatformIcon(String url) {
-    if (url.contains('youtube') || url.contains('youtu.be')) return '▶️';
-    if (url.contains('twitch')) return '🎮';
-    if (url.contains('vimeo')) return '🎬';
-    if (url.contains('netflix')) return '🎭';
-    if (url.contains('drive.google')) return '📁';
-    return '🎥';
+  // ── Remover item ──────────────────────────────────────────────────────────
+  Future<void> _removeFromQueue(int index) async {
+    HapticFeedback.mediumImpact();
+    await ref
+        .read(screeningRoomProvider(widget.threadId).notifier)
+        .removeFromQueue(index);
+  }
+
+  // ── Abrir browser para adicionar à fila ──────────────────────────────────
+  Future<void> _openAddBrowser() async {
+    HapticFeedback.selectionClick();
+    if (!mounted) return;
+
+    // Mostrar seletor de plataforma
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => _PlatformPickerSheet(
+        sessionId: widget.sessionId,
+        threadId: widget.threadId,
+        addToQueue: true,
+      ),
+    );
+  }
+
+  // ── Abrir galeria para adicionar à fila ──────────────────────────────────
+  Future<void> _openAddGallery() async {
+    HapticFeedback.selectionClick();
+    if (!mounted) return;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => ScreeningLocalVideoSheet(
+        sessionId: widget.sessionId,
+        threadId: widget.threadId,
+        addToQueue: true,
+      ),
+    );
   }
 
   @override
@@ -135,19 +120,20 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
     final roomState = ref.watch(screeningRoomProvider(widget.threadId));
     final isHost = _isHost;
     final queue = roomState.videoQueue;
+    final mq = MediaQuery.of(context);
 
     return Container(
+      height: mq.size.height * 0.80,
       decoration: const BoxDecoration(
-        color: Color(0xFF111111),
+        color: Color(0xFF0E0E0E),
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Handle ──────────────────────────────────────────────────────────
+          // ── Handle ────────────────────────────────────────────────────────
+          const SizedBox(height: 12),
           Center(
             child: Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 8),
               width: 36,
               height: 4,
               decoration: BoxDecoration(
@@ -156,13 +142,18 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
               ),
             ),
           ),
-          // ── Header ──────────────────────────────────────────────────────────
+          const SizedBox(height: 16),
+
+          // ── Header ────────────────────────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                const Icon(Icons.queue_music_rounded,
-                    color: Colors.white70, size: 20),
+                const Icon(
+                  Icons.playlist_play_rounded,
+                  color: Colors.white70,
+                  size: 22,
+                ),
                 const SizedBox(width: 10),
                 const Text(
                   'Fila de Vídeos',
@@ -170,268 +161,676 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
                     color: Colors.white,
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
                   ),
                 ),
                 const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    '${queue.length}',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                // Badge com contagem
+                if (queue.isNotEmpty)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6C5CE7).withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${queue.length}',
+                      style: const TextStyle(
+                        color: Color(0xFF6C5CE7),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
                 const Spacer(),
                 // Botão "Próximo" para o host
                 if (isHost && queue.isNotEmpty)
-                  TextButton.icon(
-                    onPressed: _playNext,
-                    icon: const Icon(Icons.skip_next_rounded,
-                        color: Colors.amberAccent, size: 18),
-                    label: const Text(
-                      'Próximo',
-                      style: TextStyle(
-                          color: Colors.amberAccent,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600),
-                    ),
-                    style: TextButton.styleFrom(
+                  GestureDetector(
+                    onTap: _playNext,
+                    child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      backgroundColor: Colors.amberAccent.withValues(alpha: 0.1),
-                      shape: RoundedRectangleBorder(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.amberAccent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.amberAccent.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.skip_next_rounded,
+                              color: Colors.amberAccent, size: 16),
+                          SizedBox(width: 4),
+                          Text(
+                            'Próximo',
+                            style: TextStyle(
+                              color: Colors.amberAccent,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
               ],
             ),
           ),
+          const SizedBox(height: 12),
           const Divider(color: Colors.white12, height: 1),
-          // ── Lista da fila ────────────────────────────────────────────────────
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.45,
-            ),
+
+          // ── Lista da fila ─────────────────────────────────────────────────
+          Expanded(
             child: queue.isEmpty
-                ? _buildEmptyQueue(isHost)
+                ? _buildEmptyState(isHost)
                 : isHost
-                    ? _buildReorderableQueue(queue)
-                    : _buildReadOnlyQueue(queue),
+                    ? _buildReorderableList(queue)
+                    : _buildReadOnlyList(queue),
           ),
-          // ── Formulário de adicionar ──────────────────────────────────────────
+
+          // ── Botões de adicionar (apenas host) ─────────────────────────────
           if (isHost) ...[
             const Divider(color: Colors.white12, height: 1),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeInOut,
-              child: _showAddForm
-                  ? _buildAddForm()
-                  : _buildAddButton(),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                  16, 12, 16, mq.padding.bottom + 16),
+              child: Row(
+                children: [
+                  // Galeria
+                  Expanded(
+                    child: _AddButton(
+                      icon: Icons.video_library_rounded,
+                      label: 'Galeria',
+                      color: const Color(0xFF6C5CE7),
+                      onTap: _openAddGallery,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  // Plataformas online
+                  Expanded(
+                    flex: 2,
+                    child: _AddButton(
+                      icon: Icons.add_rounded,
+                      label: 'Adicionar à fila',
+                      color: Colors.white,
+                      onTap: _openAddBrowser,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+          ] else
+            SizedBox(height: mq.padding.bottom + 16),
         ],
       ),
     );
   }
 
-  Widget _buildEmptyQueue(bool isHost) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 32),
+  // ── Estado vazio ──────────────────────────────────────────────────────────
+  Widget _buildEmptyState(bool isHost) {
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.playlist_play_rounded,
-              color: Colors.white24, size: 48),
-          const SizedBox(height: 12),
+          Icon(
+            Icons.playlist_add_rounded,
+            color: Colors.white.withValues(alpha: 0.15),
+            size: 56,
+          ),
+          const SizedBox(height: 14),
           Text(
             isHost
-                ? 'Nenhum vídeo na fila.\nAdicione um para reproduzir a seguir!'
-                : 'Nenhum vídeo na fila.',
+                ? 'A fila está vazia'
+                : 'Nenhum vídeo na fila',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            isHost
+                ? 'Adicione vídeos para reproduzir em sequência'
+                : 'O host ainda não adicionou vídeos à fila',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.3),
+              fontSize: 13,
+            ),
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white38, fontSize: 14),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildReorderableQueue(List<Map<String, String>> queue) {
+  // ── Lista reordenável (host) ──────────────────────────────────────────────
+  Widget _buildReorderableList(List<Map<String, String>> queue) {
     return ReorderableListView.builder(
-      shrinkWrap: true,
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: queue.length,
+      proxyDecorator: (child, index, animation) {
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (_, child) {
+            final t = Curves.easeInOut.transform(animation.value);
+            final scale = 1.0 + 0.03 * t;
+            return Transform.scale(
+              scale: scale,
+              child: Material(
+                color: Colors.transparent,
+                child: child,
+              ),
+            );
+          },
+          child: child,
+        );
+      },
       onReorder: (oldIndex, newIndex) {
         if (newIndex > oldIndex) newIndex--;
-        ref.read(screeningRoomProvider(widget.threadId).notifier)
+        ref
+            .read(screeningRoomProvider(widget.threadId).notifier)
             .reorderQueue(oldIndex, newIndex);
+        HapticFeedback.selectionClick();
       },
       itemBuilder: (context, index) {
         final item = queue[index];
-        return _QueueItem(
-          key: ValueKey('queue_$index'),
-          item: item,
-          index: index,
-          isHost: true,
-          platformIcon: _getPlatformIcon(item['url'] ?? ''),
-          onRemove: () => _removeFromQueue(index),
+        return Dismissible(
+          key: ValueKey('queue_dismiss_${item['url']}_$index'),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 20),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(Icons.delete_rounded,
+                color: Colors.redAccent, size: 22),
+          ),
+          onDismissed: (_) => _removeFromQueue(index),
+          child: _QueueItemTile(
+            key: ValueKey('queue_${item['url']}_$index'),
+            item: item,
+            index: index,
+            isHost: true,
+            onRemove: () => _removeFromQueue(index),
+            onPlayNow: () => _playNow(index),
+          ),
         );
       },
     );
   }
 
-  Widget _buildReadOnlyQueue(List<Map<String, String>> queue) {
+  // ── Lista somente leitura (participantes) ─────────────────────────────────
+  Widget _buildReadOnlyList(List<Map<String, String>> queue) {
     return ListView.builder(
-      shrinkWrap: true,
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: queue.length,
       itemBuilder: (context, index) {
         final item = queue[index];
-        return _QueueItem(
-          key: ValueKey('queue_$index'),
+        return _QueueItemTile(
+          key: ValueKey('queue_ro_${item['url']}_$index'),
           item: item,
           index: index,
           isHost: false,
-          platformIcon: _getPlatformIcon(item['url'] ?? ''),
           onRemove: null,
+          onPlayNow: null,
         );
       },
     );
   }
+}
 
-  Widget _buildAddButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: SizedBox(
-        width: double.infinity,
-        child: OutlinedButton.icon(
-          onPressed: () => setState(() => _showAddForm = true),
-          icon: const Icon(Icons.add_rounded, size: 18),
-          label: const Text('Adicionar à fila'),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: Colors.white70,
-            side: const BorderSide(color: Colors.white24),
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+// =============================================================================
+// _QueueItemTile — Card de item da fila
+// =============================================================================
+class _QueueItemTile extends StatelessWidget {
+  final Map<String, String> item;
+  final int index;
+  final bool isHost;
+  final VoidCallback? onRemove;
+  final VoidCallback? onPlayNow;
+
+  const _QueueItemTile({
+    super.key,
+    required this.item,
+    required this.index,
+    required this.isHost,
+    required this.onRemove,
+    required this.onPlayNow,
+  });
+
+  // ── Dados da plataforma ───────────────────────────────────────────────────
+  static _PlatformInfo _getPlatformInfo(String url) {
+    final u = url.toLowerCase();
+    if (u.contains('youtube') || u.contains('youtu.be')) {
+      return _PlatformInfo('YouTube', const Color(0xFFFF0000),
+          Icons.play_circle_filled_rounded);
+    }
+    if (u.contains('twitch.tv')) {
+      return _PlatformInfo(
+          'Twitch', const Color(0xFF9146FF), Icons.live_tv_rounded);
+    }
+    if (u.contains('kick.com')) {
+      return _PlatformInfo(
+          'Kick', const Color(0xFF53FC18), Icons.sports_esports_rounded);
+    }
+    if (u.contains('vimeo.com')) {
+      return _PlatformInfo(
+          'Vimeo', const Color(0xFF1AB7EA), Icons.videocam_rounded);
+    }
+    if (u.contains('netflix.com')) {
+      return _PlatformInfo(
+          'Netflix', const Color(0xFFE50914), Icons.movie_filter_rounded);
+    }
+    if (u.contains('disneyplus') || u.contains('disney.com')) {
+      return _PlatformInfo(
+          'Disney+', const Color(0xFF0063E5), Icons.auto_awesome_rounded);
+    }
+    if (u.contains('primevideo') || u.contains('amazon.com/video')) {
+      return _PlatformInfo(
+          'Prime', const Color(0xFF00A8E1), Icons.local_play_rounded);
+    }
+    if (u.contains('hbomax') || u.contains('max.com')) {
+      return _PlatformInfo('Max', const Color(0xFF002BE7), Icons.hd_rounded);
+    }
+    if (u.contains('crunchyroll')) {
+      return _PlatformInfo(
+          'Crunchyroll', const Color(0xFFF47521), Icons.animation_rounded);
+    }
+    if (u.contains('tubitv')) {
+      return _PlatformInfo(
+          'Tubi', const Color(0xFFFA4B00), Icons.tv_rounded);
+    }
+    if (u.contains('pluto.tv')) {
+      return _PlatformInfo(
+          'Pluto TV', const Color(0xFF00A0E3), Icons.satellite_alt_rounded);
+    }
+    if (u.contains('drive.google')) {
+      return _PlatformInfo(
+          'Drive', const Color(0xFF4285F4), Icons.folder_rounded);
+    }
+    if (u.contains('supabase.co/storage')) {
+      return _PlatformInfo(
+          'Galeria', const Color(0xFF6C5CE7), Icons.video_library_rounded);
+    }
+    if (u.contains('dailymotion')) {
+      return _PlatformInfo(
+          'Dailymotion', const Color(0xFF0066DC), Icons.movie_rounded);
+    }
+    return _PlatformInfo('WEB', Colors.white38, Icons.language_rounded);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final title = item['title'] ?? 'Vídeo ${index + 1}';
+    final url = item['url'] ?? '';
+    final thumbnail = item['thumbnail'];
+    final platform = _getPlatformInfo(url);
+
+    return Container(
+      key: key,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Row(
+        children: [
+          // ── Thumbnail / ícone de plataforma ──────────────────────────────
+          Container(
+            width: 60,
+            height: 60,
+            margin: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: platform.color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+              image: thumbnail != null && thumbnail.isNotEmpty
+                  ? DecorationImage(
+                      image: NetworkImage(thumbnail),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+            child: thumbnail == null || thumbnail.isEmpty
+                ? Icon(
+                    platform.icon,
+                    color: platform.color.withValues(alpha: 0.8),
+                    size: 26,
+                  )
+                : null,
+          ),
+
+          // ── Info do vídeo ─────────────────────────────────────────────────
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Título
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  // Badge de plataforma
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: platform.color.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(
+                          platform.name,
+                          style: TextStyle(
+                            color: platform.color,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '#${index + 1}',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
+
+          // ── Ações (host) ──────────────────────────────────────────────────
+          if (isHost) ...[
+            // Botão "Reproduzir agora"
+            if (onPlayNow != null)
+              GestureDetector(
+                onTap: onPlayNow,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.white.withValues(alpha: 0.5),
+                    size: 22,
+                  ),
+                ),
+              ),
+            // Botão remover
+            if (onRemove != null)
+              GestureDetector(
+                onTap: onRemove,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: Colors.white.withValues(alpha: 0.35),
+                    size: 18,
+                  ),
+                ),
+              ),
+            // Handle de drag
+            Padding(
+              padding: const EdgeInsets.only(right: 10, left: 2),
+              child: Icon(
+                Icons.drag_handle_rounded,
+                color: Colors.white.withValues(alpha: 0.2),
+                size: 20,
+              ),
+            ),
+          ] else
+            const SizedBox(width: 12),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlatformInfo {
+  final String name;
+  final Color color;
+  final IconData icon;
+  const _PlatformInfo(this.name, this.color, this.icon);
+}
+
+// =============================================================================
+// _AddButton — Botão de adicionar à fila
+// =============================================================================
+class _AddButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _AddButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isWhite = color == Colors.white;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 13),
+        decoration: BoxDecoration(
+          color: isWhite
+              ? Colors.white
+              : color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: isWhite
+              ? null
+              : Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: isWhite ? Colors.black : color,
+              size: 18,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: isWhite ? Colors.black : color,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildAddForm() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+// =============================================================================
+// _PlatformPickerSheet — Seletor de plataforma para adicionar à fila
+// Reutiliza o ScreeningBrowserSheet mas com modo addToQueue
+// =============================================================================
+class _PlatformPickerSheet extends ConsumerWidget {
+  final String sessionId;
+  final String threadId;
+  final bool addToQueue;
+
+  const _PlatformPickerSheet({
+    required this.sessionId,
+    required this.threadId,
+    required this.addToQueue,
+  });
+
+  static const _platforms = [
+    _PlatformTile('youtube', 'YouTube', Icons.play_circle_outline_rounded,
+        Color(0xFFFF0000)),
+    _PlatformTile(
+        'twitch', 'Twitch', Icons.live_tv_rounded, Color(0xFF9146FF)),
+    _PlatformTile(
+        'kick', 'Kick', Icons.sports_esports_rounded, Color(0xFF53FC18)),
+    _PlatformTile(
+        'vimeo', 'Vimeo', Icons.videocam_rounded, Color(0xFF1AB7EA)),
+    _PlatformTile('dailymotion', 'Dailymotion', Icons.movie_rounded,
+        Color(0xFF0066DC)),
+    _PlatformTile(
+        'drive', 'Drive', Icons.folder_rounded, Color(0xFF4285F4)),
+    _PlatformTile(
+        'web', 'WEB', Icons.language_rounded, Color(0xFF888888)),
+    _PlatformTile('youtube_live', 'YT Live', Icons.stream_rounded,
+        Color(0xFFFF0000)),
+    _PlatformTile('tubi', 'Tubi', Icons.tv_rounded, Color(0xFFFA4B00)),
+    _PlatformTile('pluto', 'Pluto TV', Icons.satellite_alt_rounded,
+        Color(0xFF00A0E3)),
+    _PlatformTile('netflix', 'Netflix', Icons.movie_filter_rounded,
+        Color(0xFFE50914)),
+    _PlatformTile('disney', 'Disney+', Icons.auto_awesome_rounded,
+        Color(0xFF0063E5)),
+    _PlatformTile('amazon', 'Prime', Icons.local_play_rounded,
+        Color(0xFF00A8E1)),
+    _PlatformTile('hbo', 'Max', Icons.hd_rounded, Color(0xFF002BE7)),
+    _PlatformTile('crunchyroll', 'Crunchyroll', Icons.animation_rounded,
+        Color(0xFFF47521)),
+  ];
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mq = MediaQuery.of(context);
+    final bottomPad = mq.viewInsets.bottom + mq.padding.bottom + 16;
+
+    return Container(
+      height: mq.size.height * 0.65,
+      decoration: const BoxDecoration(
+        color: Color(0xFF0E0E0E),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Adicionar à fila',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 10),
-          // Campo URL
-          TextField(
-            controller: _urlController,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
-            decoration: InputDecoration(
-              hintText: 'URL do vídeo (YouTube, Twitch, etc.)',
-              hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
-              filled: true,
-              fillColor: Colors.white.withValues(alpha: 0.07),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              prefixIcon:
-                  const Icon(Icons.link_rounded, color: Colors.white38, size: 18),
-            ),
-          ),
-          const SizedBox(height: 8),
-          // Campo título (opcional)
-          TextField(
-            controller: _titleController,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
-            decoration: InputDecoration(
-              hintText: 'Título (opcional)',
-              hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
-              filled: true,
-              fillColor: Colors.white.withValues(alpha: 0.07),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              prefixIcon:
-                  const Icon(Icons.title_rounded, color: Colors.white38, size: 18),
-            ),
-          ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    _urlController.clear();
-                    _titleController.clear();
-                    setState(() => _showAddForm = false);
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Text(
+                  'Adicionar à fila',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              'Escolha a plataforma e selecione o vídeo',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.4),
+                fontSize: 13,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: GridView.builder(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, bottomPad),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 2.0,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: _platforms.length,
+              itemBuilder: (context, index) {
+                final p = _platforms[index];
+                return GestureDetector(
+                  onTap: () async {
+                    HapticFeedback.selectionClick();
+                    Navigator.of(context).pop();
+                    // Abrir o browser sheet no modo addToQueue
+                    await showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      useSafeArea: true,
+                      builder: (_) => ScreeningBrowserSheet(
+                        platformId: p.id,
+                        sessionId: sessionId,
+                        threadId: threadId,
+                        addToQueue: true,
+                      ),
+                    );
                   },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white38,
-                    side: const BorderSide(color: Colors.white12),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.09),
+                      ),
                     ),
-                  ),
-                  child: const Text('Cancelar'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                flex: 2,
-                child: ElevatedButton.icon(
-                  onPressed: _isAdding ? null : _addToQueue,
-                  icon: _isAdding
-                      ? const SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.black,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(p.icon,
+                            color: p.color.withValues(alpha: 0.8), size: 18),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            p.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        )
-                      : const Icon(Icons.add_rounded, size: 18),
-                  label: Text(_isAdding ? 'Adicionando...' : 'Adicionar'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ),
-            ],
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -439,137 +838,10 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
   }
 }
 
-// =============================================================================
-// Item da fila
-// =============================================================================
-class _QueueItem extends StatelessWidget {
-  final Map<String, String> item;
-  final int index;
-  final bool isHost;
-  final String platformIcon;
-  final VoidCallback? onRemove;
-
-  const _QueueItem({
-    super.key,
-    required this.item,
-    required this.index,
-    required this.isHost,
-    required this.platformIcon,
-    required this.onRemove,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final title = item['title'] ?? 'Vídeo ${index + 1}';
-    final url = item['url'] ?? '';
-    final thumbnail = item['thumbnail'];
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-      ),
-      child: Row(
-        children: [
-          // Número / thumbnail
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(8),
-              image: thumbnail != null
-                  ? DecorationImage(
-                      image: NetworkImage(thumbnail),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
-            ),
-            child: thumbnail == null
-                ? Center(
-                    child: Text(
-                      platformIcon,
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  )
-                : null,
-          ),
-          const SizedBox(width: 12),
-          // Título e URL
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  url,
-                  style: const TextStyle(
-                    color: Colors.white38,
-                    fontSize: 11,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          // Posição na fila
-          Container(
-            margin: const EdgeInsets.only(left: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              '#${index + 1}',
-              style: const TextStyle(
-                color: Colors.white38,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          // Botão remover (apenas host)
-          if (isHost && onRemove != null) ...[
-            const SizedBox(width: 4),
-            GestureDetector(
-              onTap: onRemove,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                child: const Icon(
-                  Icons.close_rounded,
-                  color: Colors.white38,
-                  size: 16,
-                ),
-              ),
-            ),
-          ],
-          // Handle de drag (apenas host)
-          if (isHost)
-            const Padding(
-              padding: EdgeInsets.only(left: 4),
-              child: Icon(
-                Icons.drag_handle_rounded,
-                color: Colors.white24,
-                size: 18,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+class _PlatformTile {
+  final String id;
+  final String name;
+  final IconData icon;
+  final Color color;
+  const _PlatformTile(this.id, this.name, this.icon, this.color);
 }

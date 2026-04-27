@@ -93,15 +93,18 @@ class ScreeningTopBar extends ConsumerWidget {
           // ── Viewers ───────────────────────────────────────────────────
           _ViewersBadge(count: roomState.viewerCount),
           // ── Fila (host) ───────────────────────────────────────────────
-          if (roomState.isHost && roomState.videoQueue.isNotEmpty) ...[
+          if (roomState.isHost) ...[
             const SizedBox(width: 4),
             _TopBarButton(
-              icon: Icons.queue_music_rounded,
-              badge: '${roomState.videoQueue.length}',
+              icon: Icons.playlist_play_rounded,
+              badge: roomState.videoQueue.isNotEmpty
+                  ? '\${roomState.videoQueue.length}'
+                  : null,
               onTap: () => showModalBottomSheet(
                 context: context,
                 backgroundColor: Colors.transparent,
                 isScrollControlled: true,
+                useSafeArea: true,
                 builder: (_) => ScreeningQueueSheet(
                   sessionId: sessionId,
                   threadId: threadId,
