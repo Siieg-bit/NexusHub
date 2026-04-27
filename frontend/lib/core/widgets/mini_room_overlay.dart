@@ -24,7 +24,7 @@ import '../services/haptic_service.dart';
 //     roomId: 'uuid',
 //     title: 'Free Talk',
 //     type: MiniRoomType.freeTalk,
-//     onReturn: () => CallScreen.show(context, session),
+//     onReturnWithContext: (ctx) => Navigator.of(ctx).push(...),
 //     onEnd: () => leaveRoom(),
 //   );
 //
@@ -47,7 +47,13 @@ class MiniRoomState {
   final bool isMuted;
   final int participantCount;
   final bool isVisible;
+  /// Callback legado (sem context). Mantido por compatibilidade com voice/freeTalk.
   final VoidCallback? onReturn;
+  /// Callback com context do PiP — preferir este para navegação segura.
+  /// Recebe o BuildContext do _MiniRoomPip (sempre válido), evitando o erro
+  /// "Cannot use ref after widget was disposed" que ocorre quando o callback
+  /// captura ref/context de um widget já descartado.
+  final void Function(BuildContext context)? onReturnWithContext;
   final VoidCallback? onEnd;
   final VoidCallback? onToggleMute;
 
@@ -59,6 +65,7 @@ class MiniRoomState {
     this.participantCount = 0,
     this.isVisible = true,
     this.onReturn,
+    this.onReturnWithContext,
     this.onEnd,
     this.onToggleMute,
   });
@@ -76,6 +83,7 @@ class MiniRoomState {
       participantCount: participantCount ?? this.participantCount,
       isVisible: isVisible ?? this.isVisible,
       onReturn: onReturn,
+      onReturnWithContext: onReturnWithContext,
       onEnd: onEnd,
       onToggleMute: onToggleMute,
     );
@@ -93,6 +101,7 @@ class MiniRoomNotifier extends StateNotifier<MiniRoomState?> {
     bool isMuted = false,
     int participantCount = 0,
     VoidCallback? onReturn,
+    void Function(BuildContext context)? onReturnWithContext,
     VoidCallback? onEnd,
     VoidCallback? onToggleMute,
   }) {
@@ -104,6 +113,7 @@ class MiniRoomNotifier extends StateNotifier<MiniRoomState?> {
       participantCount: participantCount,
       isVisible: true,
       onReturn: onReturn,
+      onReturnWithContext: onReturnWithContext,
       onEnd: onEnd,
       onToggleMute: onToggleMute,
     );
@@ -207,7 +217,13 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
         },
         onTap: () {
           HapticService.buttonPress();
-          s.onReturn?.call();
+          // Preferir onReturnWithContext (passa o context do PiP, sempre válido).
+          // Fallback para onReturn legado (voice/freeTalk).
+          if (s.onReturnWithContext != null) {
+            s.onReturnWithContext!(context);
+          } else {
+            s.onReturn?.call();
+          }
         },
         child: AnimatedBuilder(
           animation: _pulseAnimation,

@@ -155,8 +155,12 @@ class _ScreeningAddVideoSheetState
       Navigator.of(context).pop();
     }
   }
-
-  // ── Abrir o browser sheet para a plataforma selecionada ───────────────────
+  // ── Abrir o browser como página cheia para a plataforma selecionada ────────────
+  //
+  // Motivo: o showModalBottomSheet não permite scroll nativo nos sites porque
+  // o DraggableScrollableSheet captura os gestos verticais antes do WebView.
+  // Usar Navigator.push com tela cheia resolve o problema de scroll e também
+  // oferece melhor experiência de navegação (barra de endereço, histórico, etc).
 
   Future<void> _openBrowser(_PlatformTile platform) async {
     HapticFeedback.selectionClick();
@@ -168,20 +172,23 @@ class _ScreeningAddVideoSheetState
         .read(screeningRoomProvider(widget.threadId))
         .videoQueue.length;
 
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      useSafeArea: true,
-      builder: (_) => ScreeningBrowserSheet(
-        platformId: platform.id,
-        sessionId: widget.sessionId,
-        threadId: widget.threadId,
-        addToQueue: true,
+    // Abrir como página cheia (Navigator.push) em vez de bottom sheet.
+    // O ScreeningBrowserSheet já é um Scaffold completo e funciona bem como
+    // página independente. O scroll dos sites funciona corretamente desta forma.
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => ScreeningBrowserSheet(
+          platformId: platform.id,
+          sessionId: widget.sessionId,
+          threadId: widget.threadId,
+          addToQueue: true,
+          fullscreen: true,
+        ),
       ),
     );
 
-    // Após o browser sheet fechar, verificar se um novo vídeo foi adicionado à fila
+    // Após o browser fechar, verificar se um novo vídeo foi adicionado à fila
     if (mounted) {
       final queueAfter = ref
           .read(screeningRoomProvider(widget.threadId))

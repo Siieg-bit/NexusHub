@@ -167,8 +167,8 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
               strokeWidth: 2,
             ),
           ),
-          error: (error, _) => _buildErrorFallback(videoUrl, error.toString()),
-          data: (resolution) => _buildPlayer(resolution),
+          error: (error, _) => _buildErrorFallback(context, videoUrl, error.toString()),
+          data: (resolution) => _buildPlayer(context, resolution),
         ),
 
         // ── Camada 0b: Gradiente ambiente (apenas para embed WebView) ─────
@@ -237,7 +237,7 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
 
   // ── Construção do player conforme o tipo de stream ────────────────────────
 
-  Widget _buildPlayer(StreamResolution resolution) {
+  Widget _buildPlayer(BuildContext context, StreamResolution resolution) {
     switch (resolution.type) {
       case StreamType.hls:
       case StreamType.direct:
@@ -258,7 +258,12 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
 
       case StreamType.embed:
         // WebView com iframe embed
-        final htmlContent = _buildHtmlWrapper(resolution.url);
+        final mq = MediaQuery.of(context);
+        // topPaddingPx: status bar + altura do ScreeningTopBar (≈48px)
+        // Isso garante que o conteúdo do iframe não fique atrás do TopBar
+        // em dispositivos onde o WebView ignora o z-order do Flutter.
+        final topPad = mq.padding.top + 48.0;
+        final htmlContent = _buildHtmlWrapper(resolution.url, topPaddingPx: topPad);
         return InAppWebView(
           key: ValueKey(resolution.url),
           initialData: InAppWebViewInitialData(
@@ -313,10 +318,12 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   }
 
   /// Fallback: se a resolução falhar, tenta o embed direto da URL original.
-  Widget _buildErrorFallback(String url, String error) {
+  Widget _buildErrorFallback(BuildContext context, String url, String error) {
     debugPrint('[ScreeningPlayer] Resolução falhou: $error — usando embed direto');
     final embedUrl = _toEmbedUrlFallback(url);
-    final htmlContent = _buildHtmlWrapper(embedUrl);
+    final mq = MediaQuery.of(context);
+    final topPad = mq.padding.top + 48.0;
+    final htmlContent = _buildHtmlWrapper(embedUrl, topPaddingPx: topPad);
     return InAppWebView(
       key: ValueKey('fallback_$url'),
       initialData: InAppWebViewInitialData(
@@ -518,7 +525,10 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     return '';
   }
 
-  String _buildHtmlWrapper(String embedUrl) {
+  /// Constrói o HTML wrapper para o embed do player.
+  /// [topPaddingPx] é o padding-top em pixels para evitar que o vídeo
+  /// fique atrás do ScreeningTopBar (status bar + altura da barra).
+  String _buildHtmlWrapper(String embedUrl, {double topPaddingPx = 0}) {
     // Determina se é URL do YouTube para incluir a IFrame API
     final isYouTube = embedUrl.contains('youtube') || embedUrl.contains('youtu.be');
     final ytApiScript = isYouTube
@@ -533,7 +543,8 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
-    iframe { width: 100%; height: 100%; border: none; display: block; }
+    body { padding-top: \${topPaddingPx.toStringAsFixed(0)}px; }
+    iframe { width: 100%; height: calc(100% - \${topPaddingPx.toStringAsFixed(0)}px); border: none; display: block; }
   </style>
 </head>
 <body>

@@ -188,6 +188,10 @@ class ScreeningBrowserSheet extends ConsumerStatefulWidget {
   final String sessionId;
   final String threadId;
   final bool addToQueue;
+  /// Quando true, renderiza como página cheia (Scaffold) em vez de bottom
+  /// sheet (Container com altura fixa). Usar ao abrir via Navigator.push
+  /// para que o scroll nativo dos sites funcione corretamente.
+  final bool fullscreen;
 
   const ScreeningBrowserSheet({
     super.key,
@@ -195,6 +199,7 @@ class ScreeningBrowserSheet extends ConsumerStatefulWidget {
     required this.sessionId,
     required this.threadId,
     this.addToQueue = false,
+    this.fullscreen = false,
   });
 
   @override
@@ -367,6 +372,37 @@ class _ScreeningBrowserSheetState
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
 
+    // Barra superior compartilhada entre os dois modos de exibição
+    final topBar = _BrowserTopBar(
+      platform: _platform,
+      urlController: _urlBarController,
+      currentUrl: _currentUrl,
+      canGoBack: _canGoBack,
+      isLoading: _isLoading,
+      onBack: () => _webViewController?.goBack(),
+      onClose: () => Navigator.of(context).pop(),
+      onRefresh: () => _webViewController?.reload(),
+    );
+
+    // Modo página cheia: Scaffold com SafeArea, sem handle nem bordas arredondadas.
+    // O scroll nativo dos sites funciona corretamente neste modo.
+    if (widget.fullscreen) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0A0A0A),
+        body: SafeArea(
+          child: Column(
+            children: [
+              topBar,
+              if (!_platform.isDirectUrl)
+                _CaptureHint(platformName: _platform.displayName),
+              Expanded(child: _buildMainContent()),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Modo bottom sheet (padrão): Container com altura fixa e bordas arredondadas
     return Container(
       height: mq.size.height * 0.92,
       decoration: const BoxDecoration(

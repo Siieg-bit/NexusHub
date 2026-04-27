@@ -194,43 +194,122 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
 
   // ── Minimizar (PiP) ─────────────────────────────────────────────────────────
 
-  void _minimize() {
+  /// Exibe um dialog perguntando se o usuário quer minimizar (PiP) ou encerrar
+  /// a sala. Isso substitui o comportamento anterior de minimizar direto ao
+  /// clicar no X, e também corrige o crash "Cannot use ref after widget was
+  /// disposed" capturando todos os valores necessários antes do Navigator.pop.
+  Future<void> _minimize() async {
     final roomState = ref.read(screeningRoomProvider(widget.threadId));
     if (roomState.sessionId == null) {
-      Navigator.of(context).pop();
+      if (mounted) Navigator.of(context).pop();
       return;
     }
 
-    ref.read(miniRoomProvider.notifier).show(
-      roomId: roomState.sessionId!,
-      title: roomState.currentVideoTitle ?? 'Sala de Projeção',
+    // Mostrar dialog de escolha: Minimizar ou Encerrar
+    final choice = await _showMinimizeOrEndDialog(roomState.isHost);
+    if (choice == null || !mounted) return; // Cancelou
+
+    if (choice == _MinimizeChoice.end) {
+      // Encerrar sala (mesmo fluxo do _leaveRoom)
+      await _leaveRoom();
+      return;
+    }
+
+    // ── Minimizar (PiP) ──────────────────────────────────────────────────────
+    // Capturar todos os valores ANTES do Navigator.pop para evitar o erro
+    // "Cannot use ref after widget was disposed" que ocorria quando o
+    // MiniRoomPip chamava os callbacks depois que este widget já foi descartado.
+    final sessionId = roomState.sessionId!;
+    final videoTitle = roomState.currentVideoTitle ?? 'Sala de Projeção';
+    final threadId = widget.threadId;
+    final miniNotifier = ref.read(miniRoomProvider.notifier);
+    final roomNotifier = ref.read(screeningRoomProvider(threadId).notifier);
+    final voiceNotifier = ref.read(screeningVoiceProvider(sessionId).notifier);
+
+    miniNotifier.show(
+      roomId: sessionId,
+      title: videoTitle,
       type: MiniRoomType.screening,
-      onReturn: () {
-        ref.read(miniRoomProvider.notifier).hide();
-        // Navegar de volta para a sala
-        Navigator.of(context).push(MaterialPageRoute(
+      // onReturnWithContext recebe o BuildContext do _MiniRoomPip (sempre válido),
+      // evitando o crash "Cannot use ref after widget was disposed" que ocorria
+      // quando o callback capturava ref/context do ScreeningRoomScreen já descartado.
+      onReturnWithContext: (pipContext) {
+        miniNotifier.hide();
+        Navigator.of(pipContext).push(MaterialPageRoute(
           builder: (_) => ScreeningRoomScreen(
-            threadId: widget.threadId,
-            callSessionId: roomState.sessionId,
+            threadId: threadId,
+            callSessionId: sessionId,
           ),
         ));
       },
       onEnd: () {
-        ref.read(miniRoomProvider.notifier).hide();
-        ref
-            .read(screeningRoomProvider(widget.threadId).notifier)
-            .leaveRoom();
+        miniNotifier.hide();
+        roomNotifier.leaveRoom();
       },
       onToggleMute: () {
-        if (roomState.sessionId != null) {
-          ref
-              .read(screeningVoiceProvider(roomState.sessionId!).notifier)
-              .toggleMute();
-        }
+        voiceNotifier.toggleMute();
       },
     );
 
-    Navigator.of(context).pop();
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  Future<_MinimizeChoice?> _showMinimizeOrEndDialog(bool isHost) async {
+    return showDialog<_MinimizeChoice>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text(
+          'O que deseja fazer?',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        content: Text(
+          isHost
+              ? 'Você pode minimizar a sala (continuar em segundo plano) ou encerrá-la para todos.'
+              : 'Você pode minimizar a sala (continuar em segundo plano) ou sair dela.',
+          style: const TextStyle(color: Colors.white60),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(null),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: Colors.white54),
+            ),
+          ),
+          TextButton(
+            onPressed: () =>
+                Navigator.of(ctx).pop(_MinimizeChoice.minimize),
+            child: const Text(
+              'Minimizar',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(_MinimizeChoice.end),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: Text(
+              isHost ? 'Encerrar sala' : 'Sair',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // ── Sair da sala ────────────────────────────────────────────────────────────
@@ -493,3 +572,6 @@ class _SyncStatusBadge extends ConsumerWidget {
     );
   }
 }
+
+// ── Enum interno para o dialog de minimizar/encerrar ─────────────────────────
+enum _MinimizeChoice { minimize, end }

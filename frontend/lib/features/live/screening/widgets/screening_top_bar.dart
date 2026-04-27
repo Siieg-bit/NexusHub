@@ -3,13 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/screening_room_provider.dart';
 import 'screening_add_video_sheet.dart';
 import 'screening_queue_sheet.dart';
-import 'screening_transfer_host_sheet.dart';
 
 // =============================================================================
 // ScreeningTopBar — Barra superior fixa da Sala de Projeção (estilo Rave)
 //
 // Sempre visível sobre o player (não é overlay de fade).
-// Layout: X | ⚙️ | NEXUS (centralizado) | 🔍 | 👥 (+ botões host)
+// Layout: X | ⚙️ | NEXUS (centralizado) | 🗑️ | 🔍 | 👥 | 📋
 // =============================================================================
 
 class ScreeningTopBar extends ConsumerWidget {
@@ -28,8 +27,15 @@ class ScreeningTopBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final roomState = ref.watch(screeningRoomProvider(threadId));
     final mq = MediaQuery.of(context);
+    final hasVideo = roomState.currentVideoUrl != null &&
+        roomState.currentVideoUrl!.isNotEmpty;
 
     return Container(
+      // Usar mq.padding.top para respeitar a status bar do sistema.
+      // O player abaixo desta barra começa em y=0 (sem SafeArea), então
+      // a TopBar usa padding.top para "empurrar" o conteúdo para baixo da
+      // status bar sem que o player em si precise de SafeArea (o que
+      // causaria um espaço vazio preto no topo do player).
       padding: EdgeInsets.only(
         top: mq.padding.top + 4,
         left: 4,
@@ -41,7 +47,7 @@ class ScreeningTopBar extends ConsumerWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black.withValues(alpha: 0.75),
+            Colors.black.withValues(alpha: 0.80),
             Colors.transparent,
           ],
         ),
@@ -49,7 +55,7 @@ class ScreeningTopBar extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // ── Botão fechar ──────────────────────────────────────────────
+          // ── Botão fechar / minimizar ──────────────────────────────────
           _TopBarButton(
             icon: Icons.close_rounded,
             onTap: onMinimize,
@@ -65,9 +71,9 @@ class ScreeningTopBar extends ConsumerWidget {
           // ── Logo NEXUS centralizado ───────────────────────────────────
           Expanded(
             child: Center(
-              child: Text(
+              child: const Text(
                 'NEXUS',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
@@ -83,6 +89,13 @@ class ScreeningTopBar extends ConsumerWidget {
               ),
             ),
           ),
+          // ── Remover vídeo atual (host, apenas quando há vídeo) ────────
+          if (roomState.isHost && hasVideo)
+            _TopBarButton(
+              icon: Icons.delete_outline_rounded,
+              onTap: () => _confirmClearVideo(context, ref),
+            ),
+          if (roomState.isHost && hasVideo) const SizedBox(width: 4),
           // ── Busca / Adicionar vídeo (host) ────────────────────────────
           if (roomState.isHost)
             _TopBarButton(
@@ -98,7 +111,7 @@ class ScreeningTopBar extends ConsumerWidget {
             _TopBarButton(
               icon: Icons.playlist_play_rounded,
               badge: roomState.videoQueue.isNotEmpty
-                  ? '\${roomState.videoQueue.length}'
+                  ? '${roomState.videoQueue.length}'
                   : null,
               onTap: () => showModalBottomSheet(
                 context: context,
@@ -129,8 +142,50 @@ class ScreeningTopBar extends ConsumerWidget {
     );
   }
 
+  /// Confirma e remove o vídeo atual da sala.
+  Future<void> _confirmClearVideo(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Remover vídeo?',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+        ),
+        content: const Text(
+          'O vídeo atual será removido da sala para todos os participantes.',
+          style: TextStyle(color: Colors.white60),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar',
+                style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Remover',
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await ref
+          .read(screeningRoomProvider(threadId).notifier)
+          .clearVideo();
+    }
+  }
+
   void _showSettings(BuildContext context, dynamic roomState) {
-    // TODO: abrir painel de configurações da sala
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Configurações em breve'),

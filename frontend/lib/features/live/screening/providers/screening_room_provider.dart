@@ -378,6 +378,40 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
     }
   }
 
+  // ── Remover vídeo atual (host) ─────────────────────────────────────────────────────
+
+  /// Remove o vídeo atual da sala, limpando a URL no banco e notificando
+  /// todos os participantes. Após isso o player exibe o estado vazio.
+  Future<void> clearVideo() async {
+    if (!state.isHost || state.sessionId == null) return;
+
+    try {
+      await SupabaseService.client.rpc('update_screening_metadata', params: {
+        'p_session_id': state.sessionId,
+        'p_metadata': {
+          'video_url': '',
+          'video_title': '',
+          'is_playing': false,
+        },
+      });
+
+      _channel?.sendBroadcastMessage(
+        event: 'video_changed',
+        payload: {
+          'video_url': '',
+          'video_title': '',
+        },
+      );
+
+      state = state.copyWith(
+        currentVideoUrl: '',
+        currentVideoTitle: '',
+      );
+    } catch (e) {
+      debugPrint('[ScreeningRoom] clearVideo error: $e');
+    }
+  }
+
   // ── Transferir host ─────────────────────────────────────────────────────────
 
   Future<void> transferHost(String newHostUserId) async {
