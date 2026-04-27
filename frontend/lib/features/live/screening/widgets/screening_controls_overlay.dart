@@ -5,11 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/screening_room_provider.dart';
 import '../providers/screening_player_provider.dart';
 import '../providers/screening_sync_provider.dart';
-import '../providers/screening_voice_provider.dart';
 import '../models/sync_event.dart';
-import 'screening_add_video_sheet.dart';
-import 'screening_transfer_host_sheet.dart';
-import 'screening_queue_sheet.dart';
 
 // =============================================================================
 // ScreeningControlsOverlay — Controles flutuantes da Sala de Projeção
@@ -139,117 +135,17 @@ class _ScreeningControlsOverlayState
                         threadId: widget.threadId,
                         onSeekAndBroadcast: _seekAndBroadcast,
                         onTogglePlayPause: _togglePlayPause,
-                        onShowAddVideo: () => _showAddVideoSheet(context),
-                      ),
+                                      ),
                     ),
                 ],
               ),
             ),
           ),
-        // ── Top Bar — sempre visível ao tocar (independente de ter vídeo) ────
-        Positioned(
-          top: mq.padding.top,
-          left: 0, right: 0,
-          child: IgnorePointer(
-            ignoring: !widget.visible,
-            child: _buildTopBar(context, roomState),
-          ),
-        ),
+        // TopBar agora gerenciada pelo _PortraitLayout (ScreeningTopBar fixo)
       ],
     );
   }
 
-
-  // ── Top Bar ─────────────────────────────────────────────────────────────────
-  Widget _buildTopBar(BuildContext context, dynamic roomState) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Row(
-        children: [
-          // Botão fechar / minimizar
-          _ControlButton(
-            icon: Icons.close_rounded,
-            onTap: widget.onMinimize,
-          ),
-          const SizedBox(width: 8),
-          // Título do vídeo
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (roomState.currentVideoTitle?.isNotEmpty == true)
-                  Text(
-                    roomState.currentVideoTitle!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                  )
-                else
-                  Text(
-                    'Sala de Projeção',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-              ],
-            ),
-          ),
-          // Contagem de viewers
-          _ViewerCountBadge(count: roomState.viewerCount),
-          const SizedBox(width: 4),
-          // Botões de host (apenas host vê)
-          if (roomState.isHost) ...[
-            _ControlButton(
-              icon: Icons.add_circle_outline_rounded,
-              label: 'Vídeo',
-              onTap: () => _showAddVideoSheet(context),
-            ),
-            const SizedBox(width: 4),
-            _ControlButton(
-              icon: Icons.queue_music_rounded,
-              label: 'Fila',
-              color: roomState.videoQueue.isNotEmpty
-                  ? Colors.greenAccent[400]!
-                  : null,
-              badge: roomState.videoQueue.isNotEmpty
-                  ? '\${roomState.videoQueue.length}'
-                  : null,
-              onTap: () => showModalBottomSheet(
-                context: context,
-                backgroundColor: Colors.transparent,
-                isScrollControlled: true,
-                builder: (_) => ScreeningQueueSheet(
-                  sessionId: widget.sessionId,
-                  threadId: widget.threadId,
-                ),
-              ),
-            ),
-            const SizedBox(width: 4),
-            _ControlButton(
-              icon: Icons.swap_horiz_rounded,
-              label: 'Host',
-              color: Colors.amberAccent,
-              onTap: () => ScreeningTransferHostSheet.show(
-                context,
-                sessionId: widget.sessionId,
-                threadId: widget.threadId,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
 
   void _togglePlayPause(dynamic playerState) {
     final syncNotifier =
@@ -290,17 +186,6 @@ class _ScreeningControlsOverlayState
     ));
   }
 
-  void _showAddVideoSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => ScreeningAddVideoSheet(
-        sessionId: widget.sessionId,
-        threadId: widget.threadId,
-      ),
-    );
-  }
 }
 
 // ── Widgets auxiliares ────────────────────────────────────────────────────────
@@ -489,43 +374,6 @@ class _PlayPauseButtonState extends State<_PlayPauseButton>
   }
 }
 
-class _ViewerCountBadge extends StatelessWidget {
-  final int count;
-
-  const _ViewerCountBadge({required this.count});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.remove_red_eye_outlined,
-              color: Colors.white70, size: 13),
-          const SizedBox(width: 4),
-          Text(
-            '$count',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// =============================================================================
-// _SeekBar Premium — Seek bar com preview de posição e thumb animado
-// =============================================================================
 
 class _SeekBar extends ConsumerStatefulWidget {
   final String sessionId;
@@ -651,14 +499,12 @@ class _HostControlsConsumer extends ConsumerWidget {
   final String threadId;
   final void Function(Duration position, bool isPlaying) onSeekAndBroadcast;
   final void Function(dynamic playerState) onTogglePlayPause;
-  final VoidCallback onShowAddVideo;
 
   const _HostControlsConsumer({
     required this.sessionId,
     required this.threadId,
     required this.onSeekAndBroadcast,
     required this.onTogglePlayPause,
-    required this.onShowAddVideo,
   });
 
   @override

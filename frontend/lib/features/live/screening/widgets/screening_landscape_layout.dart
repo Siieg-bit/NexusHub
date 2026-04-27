@@ -23,6 +23,7 @@ import 'screening_entry_animation.dart';
 import '../widgets/screening_sync_badge.dart';
 import '../providers/screening_room_provider.dart';
 import 'screening_ambient_gradient.dart';
+import 'screening_top_bar.dart';
 
 /// Widget raiz que detecta a orientação e alterna entre portrait e landscape.
 class ScreeningAdaptiveLayout extends ConsumerStatefulWidget {
@@ -171,46 +172,57 @@ class _PortraitLayout extends ConsumerWidget {
             // ── Área do Player (topo, altura fixa) ──────────────────────
             SizedBox(
               height: playerHeight,
-              child: GestureDetector(
-                onTap: onTap,
-                behavior: HitTestBehavior.opaque,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Player WebView
-                    ScreeningPlayerWidget(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Player WebView (toque dispara controles de reprodução)
+                  GestureDetector(
+                    onTap: onTap,
+                    behavior: HitTestBehavior.opaque,
+                    child: ScreeningPlayerWidget(
                       sessionId: sessionId,
                       threadId: threadId,
                     ),
-                    // Controles sobrepostos no player (topbar + play/pause/seek)
-                    Positioned.fill(
-                      child: ScreeningControlsOverlay(
-                        sessionId: sessionId,
-                        threadId: threadId,
-                        visible: showControls,
-                        onMinimize: onMinimize,
+                  ),
+                  // Controles de reprodução (play/pause/seek) — overlay de fade
+                  Positioned.fill(
+                    child: ScreeningControlsOverlay(
+                      sessionId: sessionId,
+                      threadId: threadId,
+                      visible: showControls,
+                      onMinimize: onMinimize,
+                    ),
+                  ),
+                  // ── TopBar FIXA (sempre visível, por cima de tudo) ────────
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: ScreeningTopBar(
+                      sessionId: sessionId,
+                      threadId: threadId,
+                      onMinimize: onMinimize,
+                    ),
+                  ),
+                  // SyncStatusBadge (abaixo da topbar)
+                  if (sessionId.isNotEmpty)
+                    Positioned(
+                      top: mq.padding.top + 56,
+                      left: 0,
+                      right: 0,
+                      child: IgnorePointer(
+                        child: ScreeningSyncBadge(sessionId: sessionId),
                       ),
                     ),
-                    // SyncStatusBadge
-                    if (sessionId.isNotEmpty)
-                      Positioned(
-                        top: mq.padding.top + 52,
-                        left: 0,
-                        right: 0,
-                        child: IgnorePointer(
-                          child: ScreeningSyncBadge(sessionId: sessionId),
-                        ),
+                  // Overlay de vídeo encerrado
+                  if (sessionId.isNotEmpty)
+                    Positioned.fill(
+                      child: ScreeningVideoEndedOverlay(
+                        sessionId: sessionId,
+                        threadId: threadId,
                       ),
-                    // Overlay de vídeo encerrado
-                    if (sessionId.isNotEmpty)
-                      Positioned.fill(
-                        child: ScreeningVideoEndedOverlay(
-                          sessionId: sessionId,
-                          threadId: threadId,
-                        ),
-                      ),
-                  ],
-                ),
+                    ),
+                ],
               ),
             ),
             // ── Área do Chat (resto da tela, gradiente dinâmico) ─────────
