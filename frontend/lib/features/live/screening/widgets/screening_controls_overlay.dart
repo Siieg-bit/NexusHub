@@ -691,7 +691,11 @@ class _BottomControlsConsumer extends ConsumerWidget {
     final roomState   = ref.watch(screeningRoomProvider(threadId));
     final mq = MediaQuery.of(context);
 
-    final showSeekBar = roomState.isHost && playerState.duration > Duration.zero;
+    // Seek bar apenas para VOD: host + duração conhecida + NÃO é live stream.
+    // Em transmissões ao vivo o seek não é possível, então a barra é ocultada.
+    final showSeekBar = roomState.isHost
+        && playerState.duration > Duration.zero
+        && !playerState.isLiveStream;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 0, 0, mq.padding.bottom + 8),
