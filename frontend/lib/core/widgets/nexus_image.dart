@@ -88,20 +88,19 @@ class NexusImage extends StatelessWidget {
     }
 
     try {
-      // Decodificar BlurHash para pixels e exibir como imagem.
-      // blurhash_dart 1.2.1 usa o pacote `image` (^4.0.8):
-      //   - BlurHash.decode(hash) → BlurHash
-      //   - blurHash.toImage(w, h) → img.Image (RGBA, 4 canais)
-      //   - getBytes(order: img.ChannelOrder.rgba) → Uint8List
+      // Decodificar BlurHash para uma imagem 32×32 usando o pacote `image`.
+      // IMPORTANTE: MemoryImage espera bytes codificados (PNG/JPEG), não pixels
+      // raw RGBA. Por isso codificamos o resultado como PNG antes de passar.
       final blurImage = bh.BlurHash.decode(blurhash!).toImage(32, 32);
-      final Uint8List bytes = blurImage.getBytes(order: img.ChannelOrder.rgba);
+      final Uint8List pngBytes =
+          Uint8List.fromList(img.encodePng(blurImage));
       return Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
           borderRadius: borderRadius,
           image: DecorationImage(
-            image: MemoryImage(bytes),
+            image: MemoryImage(pngBytes),
             fit: fit,
           ),
         ),
