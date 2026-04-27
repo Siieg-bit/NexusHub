@@ -137,8 +137,6 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
         // the widget tree was building" — o subscribe pode ser chamado
         // sincronamente durante o primeiro build quando o provider é criado.
         Future.microtask(() {
-          // Se este canal não é mais o ativo, ignorar para evitar loop.
-          if (!identical(channel, _channel)) return;
           switch (status) {
             case RealtimeSubscribeStatus.subscribed:
               _reconnectAttempts = 0;
@@ -152,6 +150,9 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
               break;
             case RealtimeSubscribeStatus.closed:
             case RealtimeSubscribeStatus.channelError:
+              // Ignorar eventos de canais antigos (substituídos durante reconexão
+              // ou anulados no dispose) para evitar loop infinito de reconexão.
+              if (!identical(channel, _channel)) return;
               if (mounted) {
                 state = state.copyWith(
                   isConnected: false,
