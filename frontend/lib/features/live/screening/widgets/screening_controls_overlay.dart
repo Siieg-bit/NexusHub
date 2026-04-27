@@ -80,74 +80,85 @@ class _ScreeningControlsOverlayState
   Widget build(BuildContext context) {
     final roomState = ref.watch(screeningRoomProvider(widget.threadId));
     final mq = MediaQuery.of(context);
+    final hasVideo = roomState.currentVideoUrl?.isNotEmpty == true;
 
-    return FadeTransition(
-      opacity: _fadeAnim,
-      child: IgnorePointer(
-        ignoring: !widget.visible,
-        child: Stack(
-          children: [
-            // ── Gradiente superior (escurece o topo para a topbar ficar legível) ──
-            Positioned(
-              top: 0, left: 0, right: 0,
-              height: 80 + mq.padding.top,
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.72),
-                        Colors.transparent,
-                      ],
+    return Stack(
+      children: [
+        // ── Controles de reprodução + gradientes (só quando há vídeo) ────────
+        if (hasVideo)
+          FadeTransition(
+            opacity: _fadeAnim,
+            child: IgnorePointer(
+              ignoring: !widget.visible,
+              child: Stack(
+                children: [
+                  // Gradiente superior
+                  Positioned(
+                    top: 0, left: 0, right: 0,
+                    height: 80 + mq.padding.top,
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.72),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ),
-            // ── Gradiente inferior (escurece o bottom para os controles) ──────────
-            Positioned(
-              bottom: 0, left: 0, right: 0,
-              height: 120,
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.80),
-                        Colors.transparent,
-                      ],
+                  // Gradiente inferior
+                  Positioned(
+                    bottom: 0, left: 0, right: 0,
+                    height: 120,
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.80),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  // Controles do Player (bottom) — apenas host
+                  if (roomState.isHost)
+                    Positioned(
+                      bottom: 0, left: 0, right: 0,
+                      child: _HostControlsConsumer(
+                        sessionId: widget.sessionId,
+                        threadId: widget.threadId,
+                        onSeekAndBroadcast: _seekAndBroadcast,
+                        onTogglePlayPause: _togglePlayPause,
+                        onShowAddVideo: () => _showAddVideoSheet(context),
+                      ),
+                    ),
+                ],
               ),
             ),
-            // ── Top Bar ────────────────────────────────────────────────────────────
-            Positioned(
-              top: mq.padding.top,
-              left: 0, right: 0,
-              child: _buildTopBar(context, roomState),
-            ),
-            // ── Controles do Player (bottom do player) ─────────────────────────────
-            if (roomState.isHost)
-              Positioned(
-                bottom: 0, left: 0, right: 0,
-                child: _HostControlsConsumer(
-                  sessionId: widget.sessionId,
-                  threadId: widget.threadId,
-                  onSeekAndBroadcast: _seekAndBroadcast,
-                  onTogglePlayPause: _togglePlayPause,
-                  onShowAddVideo: () => _showAddVideoSheet(context),
-                ),
-              ),
-          ],
+          ),
+        // ── Top Bar — sempre visível ao tocar (independente de ter vídeo) ────
+        Positioned(
+          top: mq.padding.top,
+          left: 0, right: 0,
+          child: IgnorePointer(
+            ignoring: !widget.visible,
+            child: _buildTopBar(context, roomState),
+          ),
         ),
-      ),
+      ],
     );
   }
+
 
   // ── Top Bar ─────────────────────────────────────────────────────────────────
   Widget _buildTopBar(BuildContext context, dynamic roomState) {
@@ -235,121 +246,6 @@ class _ScreeningControlsOverlayState
               ),
             ),
           ],
-        ],
-      ),
-    );
-  }
-  Widget _buildHostControls(
-    BuildContext context,
-    dynamic roomState,
-    dynamic playerState,
-  ) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          colors: [
-            Colors.black.withValues(alpha: 0.75),
-            Colors.transparent,
-          ],
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Seek bar
-          if (!playerState.isLiveStream)
-            _SeekBar(
-              sessionId: widget.sessionId,
-              position: playerState.position,
-              duration: playerState.duration,
-            ),
-          const SizedBox(height: 8),
-
-          // Botões de controle
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Retroceder 10s
-              _ControlButton(
-                icon: Icons.replay_10_rounded,
-                size: 28,
-                onTap: () {
-                  final pos = playerState.position;
-                  final newPos = pos - const Duration(seconds: 10);
-                  _seekAndBroadcast(
-                    newPos.isNegative ? Duration.zero : newPos,
-                    playerState.isPlaying,
-                  );
-                },
-              ),
-              const SizedBox(width: 24),
-
-              // Play / Pause
-              _PlayPauseButton(
-                isPlaying: playerState.isPlaying,
-                isBuffering: playerState.isBuffering,
-                onTap: () => _togglePlayPause(playerState),
-              ),
-              const SizedBox(width: 24),
-
-              // Avançar 10s
-              _ControlButton(
-                icon: Icons.forward_10_rounded,
-                size: 28,
-                onTap: () {
-                  final pos = playerState.position;
-                  _seekAndBroadcast(
-                    pos + const Duration(seconds: 10),
-                    playerState.isPlaying,
-                  );
-                },
-              ),
-              const Spacer(),
-
-              // Transferir host
-              _ControlButton(
-                icon: Icons.swap_horiz_rounded,
-                label: 'Host',
-                color: Colors.amberAccent,
-                onTap: () => ScreeningTransferHostSheet.show(
-                  context,
-                  sessionId: widget.sessionId,
-                  threadId: widget.threadId,
-                ),
-              ),
-              const SizedBox(width: 8),
-              // Trocar vídeo
-              _ControlButton(
-                icon: Icons.add_circle_outline_rounded,
-                label: 'Vídeo',
-                onTap: () => _showAddVideoSheet(context),
-              ),
-              const SizedBox(width: 8),
-              // Fila de vídeos
-              _ControlButton(
-                icon: Icons.queue_music_rounded,
-                label: 'Fila',
-                color: roomState.videoQueue.isNotEmpty
-                    ? Colors.greenAccent[400]!
-                    : null,
-                badge: roomState.videoQueue.isNotEmpty
-                    ? '${roomState.videoQueue.length}'
-                    : null,
-                onTap: () => showModalBottomSheet(
-                  context: context,
-                  backgroundColor: Colors.transparent,
-                  isScrollControlled: true,
-                  builder: (_) => ScreeningQueueSheet(
-                    sessionId: widget.sessionId,
-                    threadId: widget.threadId,
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );

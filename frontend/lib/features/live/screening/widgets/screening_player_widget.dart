@@ -499,95 +499,14 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
 }
 
 // =============================================================================
-// _ScreeningEmptyState — Estado vazio polido com animação e chips de plataforma
+// _ScreeningEmptyState — Área do player sem vídeo (fundo preto limpo)
 // =============================================================================
-
 class _ScreeningEmptyState extends StatelessWidget {
   final bool isHost;
-
   const _ScreeningEmptyState({required this.isHost});
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.black,
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Ícone animado com pulso suave
-            Icon(
-              Icons.movie_creation_outlined,
-              color: Colors.white.withValues(alpha: 0.15),
-              size: 80,
-            )
-                .animate(
-                  onPlay: (controller) => controller.repeat(reverse: true),
-                )
-                .fade(
-                  begin: 0.15,
-                  end: 0.4,
-                  duration: 2000.ms,
-                  curve: Curves.easeInOut,
-                ),
-
-            const SizedBox(height: 24),
-
-            // Título
-            Text(
-              isHost ? 'Adicione um vídeo' : 'Aguardando o host',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            )
-                .animate()
-                .fadeIn(duration: 500.ms, delay: 200.ms)
-                .slideY(begin: 0.1, end: 0.0, duration: 500.ms, delay: 200.ms),
-
-            const SizedBox(height: 8),
-
-            // Subtítulo
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                isHost
-                    ? 'Cole um link do YouTube, Twitch, Vimeo ou Kick para começar a sessão'
-                    : 'O host ainda não adicionou um vídeo. Fique à vontade para conversar no chat!',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.4),
-                  fontSize: 13,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            )
-                .animate()
-                .fadeIn(duration: 500.ms, delay: 400.ms),
-
-            if (isHost) ...[
-              const SizedBox(height: 32),
-
-              // Chips de plataformas suportadas
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                alignment: WrapAlignment.center,
-                children: const [
-                  _PlatformChip(label: '▶ YouTube'),
-                  _PlatformChip(label: '🎮 Twitch'),
-                  _PlatformChip(label: '🎬 Vimeo'),
-                  _PlatformChip(label: '🟢 Kick'),
-                ],
-              )
-                  .animate()
-                  .fadeIn(duration: 500.ms, delay: 600.ms),
-            ],
-          ],
-        ),
-      ),
-    );
+    return const ColoredBox(color: Colors.black);
   }
 }
 
