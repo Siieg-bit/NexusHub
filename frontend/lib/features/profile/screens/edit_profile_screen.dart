@@ -13,6 +13,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../widgets/rich_bio.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/user_status_badge.dart';
+import 'edit_interests_screen.dart';
 
 /// Tela de edição de perfil do usuário com Rich Bio Editor.
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -612,6 +613,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 // Status / Mood
                 _buildStatusField(r),
                 SizedBox(height: r.s(16)),
+                // Interesses
+                _buildInterestsField(r),
+                SizedBox(height: r.s(16)),
                 // Rich Bio Editor
                 _buildRichBioEditor(r),
               ],
@@ -779,6 +783,93 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       ),
     );
   }
+  Widget _buildInterestsField(Responsive r) {
+    final theme = context.nexusTheme;
+    final user = ref.watch(currentUserProvider);
+    final interests = user?.selectedInterests ?? [];
+    return GestureDetector(
+      onTap: () => context.push('/edit-interests'),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+            horizontal: r.s(16), vertical: r.s(14)),
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: BorderRadius.circular(r.s(16)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.interests_rounded,
+                color: theme.accentPrimary, size: r.s(20)),
+            SizedBox(width: r.s(12)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Interesses',
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: r.fs(12),
+                    ),
+                  ),
+                  SizedBox(height: r.s(4)),
+                  if (interests.isEmpty)
+                    Text(
+                      'Nenhum interesse selecionado',
+                      style: TextStyle(
+                        color: theme.textSecondary,
+                        fontSize: r.fs(13),
+                      ),
+                    )
+                  else
+                    Wrap(
+                      spacing: r.s(4),
+                      runSpacing: r.s(4),
+                      children: interests
+                          .take(5)
+                          .map((i) => Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(8), vertical: r.s(2)),
+                                decoration: BoxDecoration(
+                                  color: theme.accentPrimary
+                                      .withValues(alpha: 0.15),
+                                  borderRadius:
+                                      BorderRadius.circular(r.s(20)),
+                                ),
+                                child: Text(
+                                  i,
+                                  style: TextStyle(
+                                    color: theme.accentPrimary,
+                                    fontSize: r.fs(11),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                  if (interests.length > 5)
+                    Padding(
+                      padding: EdgeInsets.only(top: r.s(4)),
+                      child: Text(
+                        '+${interests.length - 5} mais',
+                        style: TextStyle(
+                          color: theme.textSecondary,
+                          fontSize: r.fs(11),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded,
+                color: theme.textSecondary, size: r.s(20)),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,

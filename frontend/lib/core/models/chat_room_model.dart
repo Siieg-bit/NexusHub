@@ -69,6 +69,14 @@ class ChatRoomModel {
   final bool counterpartIsGhostMode;
   final DateTime? counterpartLastSeenAt;
 
+  // ── Chat temporário (match_dm) ──────────────────────────────────────────
+  /// true quando o chat foi criado via matchmaking e ainda não foi promovido.
+  final bool isTemporary;
+  /// Quando o chat temporário expira e é promovido automaticamente (ou cancelado).
+  final DateTime? tempExpiresAt;
+  /// Interesses em comum que geraram o match.
+  final List<String> matchInterests;
+
   ChatRoomModel({
     required this.id,
     this.communityId,
@@ -103,6 +111,9 @@ class ChatRoomModel {
     this.counterpartOnlineStatus = 2,
     this.counterpartIsGhostMode = false,
     this.counterpartLastSeenAt,
+    this.isTemporary = false,
+    this.tempExpiresAt,
+    this.matchInterests = const [],
   });
 
   static const Duration _presenceWindow = Duration(minutes: 15);
@@ -194,6 +205,14 @@ class ChatRoomModel {
       counterpartLastSeenAt: json['counterpart_last_seen_at'] != null
           ? DateTime.tryParse(json['counterpart_last_seen_at'] as String)
           : null,
+      isTemporary: json['is_temporary'] as bool? ?? false,
+      tempExpiresAt: json['temp_expires_at'] != null
+          ? DateTime.tryParse(json['temp_expires_at'] as String)
+          : null,
+      matchInterests: (json['match_interests'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
     );
   }
 

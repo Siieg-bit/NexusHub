@@ -59,6 +59,9 @@ class UserModel {
   final String? statusEmoji;
   final String? statusText;
 
+  // Interesses
+  final List<String> selectedInterests;
+
   const UserModel({
     required this.id,
     this.aminoId = '',
@@ -98,6 +101,7 @@ class UserModel {
     this.isFollowedBy,
     this.statusEmoji,
     this.statusText,
+    this.selectedInterests = const [],
   });
 
   static const Duration _presenceWindow = Duration(minutes: 15);
@@ -208,6 +212,7 @@ class UserModel {
       isFollowedBy: json['is_followed_by'] as bool?,
       statusEmoji: json['status_emoji'] as String?,
       statusText: json['status_text'] as String?,
+      selectedInterests: (json['selected_interests'] as List?)?.map((e) => e.toString()).toList() ?? [],
     );
   }
 
@@ -246,6 +251,7 @@ class UserModel {
     bool? hasCompletedOnboarding,
     String? statusEmoji,
     String? statusText,
+    List<String>? selectedInterests,
   }) {
     return UserModel(
       id: id,
@@ -287,6 +293,7 @@ class UserModel {
       isFollowedBy: isFollowedBy,
       statusEmoji: statusEmoji ?? this.statusEmoji,
       statusText: statusText ?? this.statusText,
+      selectedInterests: selectedInterests ?? this.selectedInterests,
     );
   }
 }

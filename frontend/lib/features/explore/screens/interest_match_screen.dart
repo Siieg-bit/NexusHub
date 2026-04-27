@@ -222,6 +222,16 @@ class _InterestMatchScreenState extends ConsumerState<InterestMatchScreen>
         ),
         actions: [
           IconButton(
+            icon: Icon(Icons.tune_rounded, color: theme.textSecondary),
+            onPressed: () => context.push('/edit-interests'),
+            tooltip: 'Editar interesses',
+          ),
+          IconButton(
+            icon: Icon(Icons.person_search_rounded, color: theme.accentPrimary),
+            onPressed: () => context.push('/match-queue'),
+            tooltip: 'Entrar na fila de match',
+          ),
+          IconButton(
             icon: Icon(Icons.refresh_rounded, color: theme.textSecondary),
             onPressed: _loadMatches,
             tooltip: 'Atualizar',

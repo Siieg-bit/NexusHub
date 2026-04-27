@@ -211,6 +211,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   String? _bigNote;
   String? _bigNoteAuthorId;
   bool _bigNoteDismissed = false;
+  // ── Chat temporário (match_dm) ──
+  bool _isTemporary = false;
+  DateTime? _tempExpiresAt;
+  List<String> _matchInterests = [];
+  Timer? _tempChatTimer;
+  Duration _tempTimeLeft = Duration.zero;
   bool get _isChatDisabled => (_threadInfo?['status'] as String? ?? 'ok') == 'disabled';
   // Fluxo de DM invite
   // _isDmInvitePending: true quando o usuário atual é o destinatário de um convite pendente (status='invite_sent')
@@ -630,6 +636,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     _isDisposed = true;
     _replyHighlightTimer?.cancel();
     _typingDebounce?.cancel();
+    _tempChatTimer?.cancel();
     _typingChannel?.unsubscribe();
     _linkPreviewDebounce?.cancel();
     _slowModeTimer?.cancel();
@@ -947,10 +954,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       final userId = SupabaseService.currentUserId;
       // Capa do chat + host_id + co_hosts (tudo em uma query só)
       final threadData = await SupabaseService.table('chat_threads')
-          .select('cover_image_url, is_announcement_only, is_read_only, host_id, co_hosts, big_note, big_note_author_id')
+          .select('cover_image_url, is_announcement_only, is_read_only, host_id, co_hosts, big_note, big_note_author_id, is_temporary, temp_expires_at, match_interests')
           .eq('id', widget.threadId)
           .single();
       if (mounted && !_isDisposed) {
+        final expiresAt = threadData['temp_expires_at'] != null
+            ? DateTime.tryParse(threadData['temp_expires_at'] as String)
+            : null;
         setState(() {
           _chatCoverUrl = threadData['cover_image_url'] as String?;
           _isAnnouncementOnly =
@@ -959,7 +969,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           _bigNote = threadData['big_note'] as String?;
           _bigNoteAuthorId = threadData['big_note_author_id'] as String?;
           _bigNoteDismissed = false;
+          _isTemporary = threadData['is_temporary'] as bool? ?? false;
+          _tempExpiresAt = expiresAt;
+          _matchInterests = (threadData['match_interests'] as List<dynamic>?)
+                  ?.map((e) => e.toString())
+                  .toList() ??
+              [];
         });
+        if (_isTemporary && expiresAt != null) {
+          _startTempChatTimer(expiresAt);
+        }
       }
       // Role do usuário atual — usa host_id/co_hosts do banco diretamente
       if (userId != null) {
@@ -3209,6 +3228,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   ),
                 ),
               ),
+
+            // ── Temporary Chat banner ──
+            if (_isTemporary)
+              _buildTempChatBanner(r),
 
             // ── Big Note banner ──
             if (_bigNote != null && _bigNote!.isNotEmpty && !_bigNoteDismissed)
@@ -5864,5 +5887,173 @@ class _UploadQueueIndicator extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // ==========================================================================
+  // CHAT TEMPORÁRIO (match_dm)
+  // ==========================================================================
+
+  /// Inicia o timer de contagem regressiva para o chat temporário.
+  void _startTempChatTimer(DateTime expiresAt) {
+    _tempChatTimer?.cancel();
+    _updateTempTimeLeft(expiresAt);
+    _tempChatTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted || _isDisposed) return;
+      _updateTempTimeLeft(expiresAt);
+    });
+  }
+
+  void _updateTempTimeLeft(DateTime expiresAt) {
+    final now = DateTime.now().toUtc();
+    final left = expiresAt.toUtc().difference(now);
+    if (left.isNegative) {
+      _tempChatTimer?.cancel();
+      // Chat expirou — recarregar para refletir promoção
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _isTemporary = false;
+          _tempTimeLeft = Duration.zero;
+        });
+      }
+    } else {
+      if (mounted && !_isDisposed) {
+        setState(() => _tempTimeLeft = left);
+      }
+    }
+  }
+
+  String _formatTempTimeLeft() {
+    final h = _tempTimeLeft.inHours;
+    final m = _tempTimeLeft.inMinutes % 60;
+    final s = _tempTimeLeft.inSeconds % 60;
+    if (h > 0) return '${h}h ${m.toString().padLeft(2, '0')}m';
+    if (m > 0) return '${m}m ${s.toString().padLeft(2, '0')}s';
+    return '${s}s';
+  }
+
+  /// Banner exibido no topo do chat temporário com timer e botão de cancelar.
+  Widget _buildTempChatBanner(Responsive r) {
+    final theme = context.nexusTheme;
+    final timeStr = _tempExpiresAt != null ? _formatTempTimeLeft() : '--';
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFF6B6B).withValues(alpha: 0.12),
+        border: Border(
+          bottom: BorderSide(
+              color: const Color(0xFFFF6B6B).withValues(alpha: 0.3)),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.timer_outlined,
+              color: const Color(0xFFFF6B6B), size: r.s(16)),
+          SizedBox(width: r.s(6)),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: TextStyle(
+                    fontSize: r.fs(11), color: theme.textSecondary),
+                children: [
+                  const TextSpan(
+                    text: 'Chat temporário — ',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  TextSpan(
+                    text: _tempTimeLeft.isNegative
+                        ? 'promovido!'
+                        : 'expira em $timeStr',
+                    style: const TextStyle(
+                        color: Color(0xFFFF6B6B),
+                        fontWeight: FontWeight.w700),
+                  ),
+                  const TextSpan(
+                      text:
+                          '. Se nenhum cancelar, vira permanente.'),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(width: r.s(8)),
+          GestureDetector(
+            onTap: _confirmCancelTempChat,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(8), vertical: r.s(4)),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF6B6B).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(r.s(8)),
+                border: Border.all(
+                    color: const Color(0xFFFF6B6B).withValues(alpha: 0.4)),
+              ),
+              child: Text(
+                'Cancelar',
+                style: TextStyle(
+                  color: const Color(0xFFFF6B6B),
+                  fontSize: r.fs(11),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Diálogo de confirmação antes de cancelar o chat temporário.
+  void _confirmCancelTempChat() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.nexusTheme.backgroundSecondary,
+        title: Text(
+          'Cancelar chat?',
+          style: TextStyle(color: context.nexusTheme.textPrimary),
+        ),
+        content: Text(
+          'Ao cancelar, a conversa será apagada para ambos e não poderá ser recuperada.',
+          style: TextStyle(color: context.nexusTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Manter',
+                style:
+                    TextStyle(color: context.nexusTheme.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _cancelTempChat();
+            },
+            child: Text('Cancelar chat',
+                style: TextStyle(color: const Color(0xFFFF6B6B))),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Chama a RPC cancel_temp_chat e navega de volta.
+  Future<void> _cancelTempChat() async {
+    try {
+      await SupabaseService.rpc('cancel_temp_chat', params: {
+        'p_thread_id': widget.threadId,
+      });
+      if (mounted) context.pop();
+    } catch (e) {
+      debugPrint('[ChatRoom] cancelTempChat error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao cancelar: $e'),
+            backgroundColor: context.nexusTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 }
