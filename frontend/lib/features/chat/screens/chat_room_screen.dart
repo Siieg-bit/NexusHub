@@ -283,6 +283,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   int _activeUploadCount = 0;
   /// Fila de uploads pendentes (aguardando slot disponível).
   final List<Future<void> Function()> _uploadQueue = [];
+  /// Mapa de uploads cancelados pelo usuário (chave = tempId da mensagem fantasma).
+  final Set<String> _cancelledUploads = {};
 
   // ==========================================================================
   // LIFECYCLE
@@ -2142,6 +2144,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       );
     }
 
+    void doCancel() {
+      if (!mounted) return;
+      setState(() {
+        _cancelledUploads.add(tempId);
+        _messages.removeWhere((m) => m.id == tempId);
+      });
+    }
+
     ghost = MessageModel(
       id: tempId,
       threadId: widget.threadId,
@@ -2154,6 +2164,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       createdAt: now,
       updatedAt: now,
       author: currentUser,
+      onCancel: doCancel,
     );
 
     if (mounted) {
@@ -2187,6 +2198,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     try {
       final result = await uploadFn();
       if (!mounted) return;
+      // Se o upload foi cancelado pelo usuário, apenas limpa o estado
+      if (_cancelledUploads.contains(tempId)) {
+        _cancelledUploads.remove(tempId);
+        setState(() => _messages.removeWhere((m) => m.id == tempId));
+        return;
+      }
       // Remove a mensagem fantasma
       setState(() => _messages.removeWhere((m) => m.id == tempId));
       // Envia a mensagem real
@@ -2197,9 +2214,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         mediaBlurhash: result.blurhash,
       );
     } catch (e, stack) {
-      debugPrint('[ChatRoom] \u274c Upload error ($messageType): $e');
-      debugPrint('[ChatRoom] \u274c Stack: $stack');
+          debugPrint('[ChatRoom] ❌ Upload error ($messageType): $e');
+      debugPrint('[ChatRoom] ❌ Stack: $stack');
       if (!mounted) return;
+      // Se o upload foi cancelado, apenas remove a mensagem fantasma sem mostrar erro
+      if (_cancelledUploads.contains(tempId)) {
+        _cancelledUploads.remove(tempId);
+        setState(() => _messages.removeWhere((m) => m.id == tempId));
+        return;
+      }
       setState(() {
         final idx = _messages.indexWhere((m) => m.id == tempId);
         if (idx >= 0) {
@@ -4291,7 +4314,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       try {
         await SupabaseService.rpc('set_chat_big_note', params: {
           'p_thread_id': widget.threadId,
-          'p_note': newNote.isEmpty ? null : newNote,
+          'p_big_note': newNote.isEmpty ? null : newNote,
         });
         if (mounted) {
           setState(() {

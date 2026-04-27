@@ -68,6 +68,8 @@ class MessageModel {
   final String? uploadError;
   /// Callback de retry (quando uploadState == 'error').
   final VoidCallback? onRetry;
+  /// Callback de cancelamento (quando uploadState == 'uploading').
+  final VoidCallback? onCancel;
 
   const MessageModel({
     required this.id,
@@ -101,6 +103,7 @@ class MessageModel {
     this.uploadState,
     this.uploadError,
     this.onRetry,
+    this.onCancel,
   });
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
@@ -237,6 +240,7 @@ class MessageModel {
     String? uploadState,
     String? uploadError,
     VoidCallback? onRetry,
+    VoidCallback? onCancel,
   }) {
     return MessageModel(
       id: id,
@@ -270,6 +274,7 @@ class MessageModel {
       uploadState: uploadState ?? this.uploadState,
       uploadError: uploadError ?? this.uploadError,
       onRetry: onRetry ?? this.onRetry,
+      onCancel: onCancel ?? this.onCancel,
     );
   }
 }

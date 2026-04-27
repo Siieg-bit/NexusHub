@@ -1001,6 +1001,28 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                     color: Colors.white, size: r.s(22)),
               ),
             ),
+          // Botão X de cancelamento (apenas durante upload, não em erro)
+          if (!hasError && message.onCancel != null)
+            Positioned(
+              top: r.s(6),
+              right: r.s(6),
+              child: GestureDetector(
+                onTap: message.onCancel,
+                child: Container(
+                  width: r.s(26),
+                  height: r.s(26),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.65),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: Colors.white,
+                    size: r.s(16),
+                  ),
+                ),
+              ),
+            ),
           // Label de status
           Positioned(
             bottom: r.s(8),

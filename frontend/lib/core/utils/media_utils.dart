@@ -17,18 +17,22 @@ class MediaUtils {
   /// Qualidade padrão de compressão JPEG (0–100).
   static const int defaultJpegQuality = 80;
 
-  /// Comprime uma imagem a partir de bytes brutos.
+  /// Comprime e converte uma imagem para JPEG a partir de bytes brutos.
+  ///
+  /// SEMPRE converte para JPEG, independente do tamanho original.
+  /// Isso garante compatibilidade com todos os formatos de entrada
+  /// (HEIC, WebP, PNG, etc.) que o Android/iOS pode não conseguir
+  /// decodificar diretamente via MemoryImage.
+  ///
   /// Reduz a qualidade progressivamente até atingir [maxImageSizeBytes].
-  /// Retorna os bytes comprimidos ou os originais se já estiverem abaixo do limite.
   static Future<Uint8List> compressImage(
     Uint8List bytes, {
     int quality = defaultJpegQuality,
     int minWidth = 1920,
     int minHeight = 1920,
   }) async {
-    if (bytes.length <= maxImageSizeBytes) return bytes;
-
     try {
+      // Sempre converte para JPEG para garantir compatibilidade
       var result = await FlutterImageCompress.compressWithList(
         bytes,
         quality: quality,
@@ -36,6 +40,12 @@ class MediaUtils {
         minHeight: minHeight,
         format: CompressFormat.jpeg,
       );
+
+      // Se a compressão retornou vazio (formato não suportado), usa original
+      if (result.isEmpty) {
+        debugPrint('[MediaUtils] ⚠️ Compressão retornou vazio, usando original');
+        return bytes;
+      }
 
       // Reduz qualidade progressivamente se ainda estiver grande
       int currentQuality = quality;
@@ -48,13 +58,14 @@ class MediaUtils {
           minHeight: minHeight,
           format: CompressFormat.jpeg,
         );
+        if (result.isEmpty) break;
       }
 
       debugPrint(
-          '[MediaUtils] Imagem comprimida: ${bytes.length} → ${result.length} bytes (qualidade: $currentQuality)');
-      return result;
+          '[MediaUtils] ✅ Imagem convertida para JPEG: ${bytes.length} → ${result.length} bytes (qualidade: $currentQuality)');
+      return result.isNotEmpty ? result : bytes;
     } catch (e) {
-      debugPrint('[MediaUtils] Erro ao comprimir imagem: $e');
+      debugPrint('[MediaUtils] ❌ Erro ao comprimir imagem: $e');
       return bytes; // Retorna original em caso de erro
     }
   }
