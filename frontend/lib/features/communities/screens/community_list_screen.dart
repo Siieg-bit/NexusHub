@@ -846,6 +846,17 @@ class _AminoCommunityCard extends ConsumerStatefulWidget {
   /// Se null, o widget se expande para preencher o espaço disponível (GridView).
   final double? cardWidth;
 
+  /// Callbacks para drag-to-reorder iniciado pelo ícone de arrastar.
+  /// Se null, o ícone de arrastar não é exibido (modo sem reordenamento).
+  final VoidCallback? onDragStarted;
+  final void Function(DraggableDetails)? onDragEnd;
+  final void Function(Velocity, Offset)? onDraggableCanceled;
+
+  /// Widget a ser exibido como feedback durante o drag (fornecido pelo pai).
+  final Widget? dragFeedback;
+  /// Widget a ser exibido no lugar do card durante o drag.
+  final Widget? dragChildWhenDragging;
+
   static const double _iconSize      = 36;
   static const double _iconOverflow  = 18;
 
@@ -855,6 +866,11 @@ class _AminoCommunityCard extends ConsumerStatefulWidget {
     this.cardWidth,
     required this.onTap,
     required this.onLongPress,
+    this.onDragStarted,
+    this.onDragEnd,
+    this.onDraggableCanceled,
+    this.dragFeedback,
+    this.dragChildWhenDragging,
   });
 
   @override
@@ -1043,28 +1059,42 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                             ),
                           ),
 
-                          Positioned(
-                            top: r.s(6),
-                            right: r.s(6),
-                            child: ReorderableDelayedDragStartListener(
-                              index: widget.reorderIndex,
-                              child: Container(
-                                padding: EdgeInsets.all(r.s(4)),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.42),
-                                  borderRadius: BorderRadius.circular(r.s(999)),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.12),
+                          // Ícone de arrastar — só aparece quando o pai fornece callbacks de drag
+                          if (widget.onDragStarted != null)
+                            Positioned(
+                              top: r.s(6),
+                              right: r.s(6),
+                              child: Draggable<int>(
+                                data: widget.reorderIndex,
+                                onDragStarted: () {
+                                  HapticService.action();
+                                  widget.onDragStarted?.call();
+                                },
+                                onDragEnd: (details) {
+                                  widget.onDragEnd?.call(details);
+                                },
+                                onDraggableCanceled: (velocity, offset) {
+                                  widget.onDraggableCanceled?.call(velocity, offset);
+                                },
+                                feedback: widget.dragFeedback ?? const SizedBox.shrink(),
+                                childWhenDragging: widget.dragChildWhenDragging ?? const SizedBox.shrink(),
+                                child: Container(
+                                  padding: EdgeInsets.all(r.s(4)),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.42),
+                                    borderRadius: BorderRadius.circular(r.s(999)),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.12),
+                                    ),
                                   ),
-                                ),
-                                child: Icon(
-                                  Icons.drag_indicator_rounded,
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  size: r.s(16),
+                                  child: Icon(
+                                    Icons.drag_indicator_rounded,
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    size: r.s(16),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
 
                           // Nome da comunidade
                           Positioned(
@@ -1769,9 +1799,10 @@ class _StatChip extends ConsumerWidget {
 // =============================================================================
 // ReorderableWrap — Grade 3 colunas com suporte a drag-and-drop.
 //
-// Implementação com LongPressDraggable + DragTarget para arrastar cards
-// individualmente dentro do grid. O usuário segura um card por ~400ms
-// para iniciar o drag e solta sobre outro card para trocar as posições.
+// Implementação com Draggable + DragTarget para arrastar cards individualmente
+// dentro do grid. O drag é iniciado APENAS pelo ícone de arrastar (canto superior
+// direito do card), preservando o long press no card para o menu de contexto.
+// O usuário arrasta pelo ícone e solta sobre outro card para trocar posições.
 // =============================================================================
 class ReorderableWrap extends StatefulWidget {
   final List<CommunityModel> orderedCommunities;
@@ -1834,6 +1865,44 @@ class _ReorderableWrapState extends State<ReorderableWrap> {
             final isDragging = _draggingIndex == index;
             final isHovered = _hoverIndex == index && _draggingIndex != index;
 
+            // Feedback visual do drag (card ampliado e semi-transparente)
+            final Widget feedbackWidget = Material(
+              color: Colors.transparent,
+              child: Transform.scale(
+                scale: 1.08,
+                child: SizedBox(
+                  width: itemWidth,
+                  height: itemHeight,
+                  child: Opacity(
+                    opacity: 0.9,
+                    child: _AminoCommunityCard(
+                      community: community,
+                      reorderIndex: index,
+                      cardWidth: itemWidth,
+                      onTap: () {},
+                      onLongPress: () {},
+                    ),
+                  ),
+                ),
+              ),
+            );
+
+            // Card fantasma exibido no lugar do original durante o drag
+            final Widget ghostWidget = SizedBox(
+              width: itemWidth,
+              height: itemHeight,
+              child: Opacity(
+                opacity: 0.25,
+                child: _AminoCommunityCard(
+                  community: community,
+                  reorderIndex: index,
+                  cardWidth: itemWidth,
+                  onTap: () {},
+                  onLongPress: () {},
+                ),
+              ),
+            );
+
             return DragTarget<int>(
               key: ValueKey(community.id),
               onWillAcceptWithDetails: (details) {
@@ -1854,93 +1923,46 @@ class _ReorderableWrapState extends State<ReorderableWrap> {
                 widget.onReorder(details.data, index);
               },
               builder: (context, candidateData, rejectedData) {
-                return LongPressDraggable<int>(
-                  data: index,
-                  delay: const Duration(milliseconds: 400),
-                  onDragStarted: () {
-                    HapticService.action();
-                    setState(() => _draggingIndex = index);
-                  },
-                  onDragEnd: (_) {
-                    setState(() {
-                      _draggingIndex = null;
-                      _hoverIndex = null;
-                    });
-                  },
-                  onDraggableCanceled: (_, __) {
-                    setState(() {
-                      _draggingIndex = null;
-                      _hoverIndex = null;
-                    });
-                  },
-                  feedback: Material(
-                    color: Colors.transparent,
-                    child: Transform.scale(
-                      scale: 1.08,
-                      child: SizedBox(
-                        width: itemWidth,
-                        height: itemHeight,
-                        child: Opacity(
-                          opacity: 0.9,
-                          child: _AminoCommunityCard(
-                            community: community,
-                            reorderIndex: index,
-                            cardWidth: itemWidth,
-                            onTap: () {},
-                            onLongPress: () {},
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  width: itemWidth,
+                  height: itemHeight,
+                  decoration: isHovered
+                      ? BoxDecoration(
+                          borderRadius: BorderRadius.circular(r.s(12)),
+                          border: Border.all(
+                            color: context.nexusTheme.accentPrimary
+                                .withValues(alpha: 0.7),
+                            width: 2,
                           ),
+                        )
+                      : null,
+                  // O drag é iniciado APENAS pelo ícone de arrastar dentro do card.
+                  // O LongPressDraggable foi removido daqui para que o long press
+                  // no card abra o menu de contexto sem conflito.
+                  child: isDragging
+                      ? ghostWidget
+                      : _AminoCommunityCard(
+                          community: community,
+                          reorderIndex: index,
+                          cardWidth: itemWidth,
+                          onTap: () => widget.onCardTap(community),
+                          onLongPress: () =>
+                              widget.onCardLongPress(community),
+                          // Callbacks de drag passados ao ícone de arrastar
+                          onDragStarted: () =>
+                              setState(() => _draggingIndex = index),
+                          onDragEnd: (_) => setState(() {
+                            _draggingIndex = null;
+                            _hoverIndex = null;
+                          }),
+                          onDraggableCanceled: (_, __) => setState(() {
+                            _draggingIndex = null;
+                            _hoverIndex = null;
+                          }),
+                          dragFeedback: feedbackWidget,
+                          dragChildWhenDragging: ghostWidget,
                         ),
-                      ),
-                    ),
-                  ),
-                  childWhenDragging: SizedBox(
-                    width: itemWidth,
-                    height: itemHeight,
-                    child: Opacity(
-                      opacity: 0.25,
-                      child: _AminoCommunityCard(
-                        community: community,
-                        reorderIndex: index,
-                        cardWidth: itemWidth,
-                        onTap: () {},
-                        onLongPress: () {},
-                      ),
-                    ),
-                  ),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    width: itemWidth,
-                    height: itemHeight,
-                    decoration: isHovered
-                        ? BoxDecoration(
-                            borderRadius: BorderRadius.circular(r.s(12)),
-                            border: Border.all(
-                              color: context.nexusTheme.accentPrimary
-                                  .withValues(alpha: 0.7),
-                              width: 2,
-                            ),
-                          )
-                        : null,
-                    child: isDragging
-                        ? Opacity(
-                            opacity: 0.25,
-                            child: _AminoCommunityCard(
-                              community: community,
-                              reorderIndex: index,
-                              cardWidth: itemWidth,
-                              onTap: () {},
-                              onLongPress: () {},
-                            ),
-                          )
-                        : _AminoCommunityCard(
-                            community: community,
-                            reorderIndex: index,
-                            cardWidth: itemWidth,
-                            onTap: () => widget.onCardTap(community),
-                            onLongPress: () =>
-                                widget.onCardLongPress(community),
-                          ),
-                  ),
                 );
               },
             );
