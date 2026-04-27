@@ -192,29 +192,19 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
                   ),
                 );
               },
-              config: Config(
-                height: 250,
+              config: const Config(
+                columns: 8,
+                emojiSizeMax: 28,
+                bgColor: Color(0xFF1A1A2E),
+                indicatorColor: Color(0xFF6C63FF),
+                iconColor: Colors.white38,
+                iconColorSelected: Color(0xFF6C63FF),
+                backspaceColor: Color(0xFF6C63FF),
+                skinToneDialogBgColor: Color(0xFF12121E),
+                skinToneIndicatorColor: Colors.white38,
                 checkPlatformCompatibility: true,
-                emojiViewConfig: EmojiViewConfig(
-                  columns: 8,
-                  emojiSizeMax: 28,
-                  backgroundColor: const Color(0xFF1A1A2E),
-                ),
-                categoryViewConfig: CategoryViewConfig(
-                  indicatorColor: const Color(0xFF6C63FF),
-                  iconColorSelected: const Color(0xFF6C63FF),
-                  iconColor: Colors.white38,
-                  backgroundColor: const Color(0xFF12121E),
-                ),
-                bottomActionBarConfig: const BottomActionBarConfig(
-                  backgroundColor: Color(0xFF12121E),
-                  buttonColor: Color(0xFF6C63FF),
-                  buttonIconColor: Colors.white,
-                ),
-                searchViewConfig: SearchViewConfig(
-                  backgroundColor: const Color(0xFF1A1A2E),
-                  buttonIconColor: Colors.white,
-                ),
+                recentTabBehavior: RecentTabBehavior.RECENT,
+                recentsLimit: 20,
               ),
             ),
           ),
