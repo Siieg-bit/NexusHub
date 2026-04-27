@@ -2086,88 +2086,171 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // MEDIA UPLOAD
   // ==========================================================================
 
+  /// Insere uma mensagem fantasma na lista, executa o upload e substitui pela
+  /// mensagem real ao concluir. Em caso de erro, marca como 'error' com retry.
+  Future<void> _uploadMediaOptimistic({
+    required String localPath,
+    required String messageType,
+    required String mediaType,
+    required Future<({String url, String? blurhash})> Function() uploadFn,
+  }) async {
+    final userId = SupabaseService.currentUserId ?? '';
+    final tempId = 'optimistic_${DateTime.now().millisecondsSinceEpoch}';
+    final now = DateTime.now();
+
+    // Busca o autor do cache local para exibir avatar/nome na mensagem fantasma
+    final currentUser = ref.read(authProvider).user;
+
+    late MessageModel ghost;
+
+    void doRetry() {
+      if (!mounted) return;
+      // Atualiza o ghost para 'uploading' novamente e retenta
+      setState(() {
+        final idx = _messages.indexWhere((m) => m.id == tempId);
+        if (idx >= 0) {
+          _messages[idx] = _messages[idx].copyWith(
+            uploadState: 'uploading',
+            uploadError: null,
+          );
+        }
+      });
+      _executeUpload(
+        tempId: tempId,
+        messageType: messageType,
+        mediaType: mediaType,
+        uploadFn: uploadFn,
+        doRetry: doRetry,
+      );
+    }
+
+    ghost = MessageModel(
+      id: tempId,
+      threadId: widget.threadId,
+      authorId: userId,
+      type: messageType,
+      mediaType: mediaType,
+      localPath: localPath,
+      uploadState: 'uploading',
+      reactions: const {},
+      createdAt: now,
+      updatedAt: now,
+      author: currentUser,
+    );
+
+    if (mounted) {
+      setState(() => _messages.insert(0, ghost));
+      // Scroll para o topo (mensagem mais recente)
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    }
+
+    await _executeUpload(
+      tempId: tempId,
+      messageType: messageType,
+      mediaType: mediaType,
+      uploadFn: uploadFn,
+      doRetry: doRetry,
+    );
+  }
+
+  Future<void> _executeUpload({
+    required String tempId,
+    required String messageType,
+    required String mediaType,
+    required Future<({String url, String? blurhash})> Function() uploadFn,
+    required VoidCallback doRetry,
+  }) async {
+    try {
+      final result = await uploadFn();
+      if (!mounted) return;
+      // Remove a mensagem fantasma
+      setState(() => _messages.removeWhere((m) => m.id == tempId));
+      // Envia a mensagem real
+      await _sendMessage(
+        type: messageType,
+        mediaUrl: result.url,
+        mediaType: mediaType,
+        mediaBlurhash: result.blurhash,
+      );
+    } catch (e, stack) {
+      debugPrint('[ChatRoom] \u274c Upload error ($messageType): $e');
+      debugPrint('[ChatRoom] \u274c Stack: $stack');
+      if (!mounted) return;
+      setState(() {
+        final idx = _messages.indexWhere((m) => m.id == tempId);
+        if (idx >= 0) {
+          _messages[idx] = _messages[idx].copyWith(
+            uploadState: 'error',
+            uploadError: e.toString(),
+            onRetry: doRetry,
+          );
+        }
+      });
+    }
+  }
+
   Future<void> _sendImage() async {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
-    // Bug fix #059: setar _isSending=true antes do upload para mostrar o
-    // indicador de carregamento durante o processo de compressão e envio.
-    if (mounted) setState(() => _isSending = true);
-    try {
-      final userId = SupabaseService.currentUserId ?? 'unknown';
-      final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final rawBytes = await image.readAsBytes();
-      final bytes = await MediaUtils.compressImage(rawBytes);
-      debugPrint('[ChatRoom] 🖼️ Uploading image: $path');
-      await SupabaseService.storage.from('chat-media').uploadBinary(path, bytes,
-          fileOptions: const FileOptions(contentType: 'image/jpeg'));
-      final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
-      debugPrint('[ChatRoom] ✅ Image uploaded: $url');
-      // Gerar BlurHash em background (não bloqueia o envio)
-      final blurhash = await BlurHashService.generateForUrl(url);
-      await _sendMessage(type: 'image', mediaUrl: url, mediaType: 'image', mediaBlurhash: blurhash);
-    } catch (e, stack) {
-      debugPrint('[ChatRoom] ❌ Image upload error: $e');
-      debugPrint('[ChatRoom] ❌ Image upload stack: $stack');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('❌ Imagem: $e'),
-            backgroundColor: context.nexusTheme.error,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 10),
-          ),
-        );
-      }
-    } finally {
-      // Bug fix #059: garantir reset do _isSending mesmo se _sendMessage
-      // não for chamado (ex: falha no upload antes do _sendMessage).
-      if (mounted) setState(() => _isSending = false);
-    }
+    await _uploadMediaOptimistic(
+      localPath: image.path,
+      messageType: 'image',
+      mediaType: 'image',
+      uploadFn: () async {
+        final userId = SupabaseService.currentUserId ?? 'unknown';
+        final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final rawBytes = await image.readAsBytes();
+        final bytes = await MediaUtils.compressImage(rawBytes);
+        debugPrint('[ChatRoom] 🖼️ Uploading image: $path');
+        await SupabaseService.storage.from('chat-media').uploadBinary(path, bytes,
+            fileOptions: const FileOptions(contentType: 'image/jpeg'));
+        final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
+        debugPrint('[ChatRoom] ✅ Image uploaded: $url');
+        final blurhash = await BlurHashService.generateForUrl(url);
+        return (url: url, blurhash: blurhash);
+      },
+    );
   }
 
   Future<void> _sendVideoFile() async {
     final picker = ImagePicker();
     final video = await picker.pickVideo(source: ImageSource.gallery);
     if (video == null) return;
-    final error = await MediaUtils.validateVideoDuration(video.path);
-    if (error != null && mounted) {
+    final validationError = await MediaUtils.validateVideoDuration(video.path);
+    if (validationError != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(error),
+          content: Text(validationError),
           backgroundColor: context.nexusTheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
       return;
     }
-    // Bug fix #059: setar _isSending=true antes do upload.
-    if (mounted) setState(() => _isSending = true);
-    try {
-      final userId = SupabaseService.currentUserId ?? 'unknown';
-      final ext = video.path.split('.').last.toLowerCase();
-      final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}.$ext';
-      final bytes = await video.readAsBytes();
-      await SupabaseService.storage.from('chat-media').uploadBinary(path, bytes,
-          fileOptions: const FileOptions(contentType: 'video/mp4'));
-      final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
-      await _sendMessage(type: 'video', mediaUrl: url, mediaType: 'video');
-    } catch (e, stack) {
-      debugPrint('[ChatRoom] ❌ Video upload error: $e');
-      debugPrint('[ChatRoom] ❌ Video upload stack: $stack');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('❌ Vídeo: $e'),
-            backgroundColor: context.nexusTheme.error,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 10),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isSending = false);
-    }
+    await _uploadMediaOptimistic(
+      localPath: video.path,
+      messageType: 'video',
+      mediaType: 'video',
+      uploadFn: () async {
+        final userId = SupabaseService.currentUserId ?? 'unknown';
+        final ext = video.path.split('.').last.toLowerCase();
+        final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}.$ext';
+        final bytes = await video.readAsBytes();
+        debugPrint('[ChatRoom] 🎥 Uploading video: $path');
+        await SupabaseService.storage.from('chat-media').uploadBinary(path, bytes,
+            fileOptions: const FileOptions(contentType: 'video/mp4'));
+        final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
+        debugPrint('[ChatRoom] ✅ Video uploaded: $url');
+        return (url: url, blurhash: null);
+      },
+    );
   }
   // ==========================================================================
   // REACTIONS & PIN

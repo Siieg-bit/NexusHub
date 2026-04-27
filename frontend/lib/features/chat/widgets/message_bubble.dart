@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -39,6 +40,8 @@ bool _isMediaOnlyType(MessageModel message) {
   if (type == 'image' && message.mediaUrl != null) return true;
   if (type == 'gif' && message.mediaUrl != null) return true;
   if (type == 'video') return true;
+  // Mensagens otimistas (upload em andamento ou com erro) são sem bubble
+  if (message.uploadState != null) return true;
   // Stickers: sem borda/bubble
   if (type == 'sticker') return true;
   if (message.stickerUrl != null) return true;
@@ -933,6 +936,94 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
     final textColor = bubbleTextColor ??
         (isMe ? Colors.white : context.nexusTheme.textPrimary);
 
+    // ── Upload otimista: exibe thumbnail local + spinner ou retry ─────────────────
+    if (message.uploadState != null && message.localPath != null) {
+      final isVideo = message.mediaType == 'video' || message.type == 'video';
+      final hasError = message.uploadState == 'error';
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          // Thumbnail local
+          ClipRRect(
+            borderRadius: BorderRadius.circular(r.s(12)),
+            child: isVideo
+                ? Container(
+                    width: r.s(220),
+                    height: r.s(160),
+                    color: Colors.black87,
+                    child: Center(
+                      child: Icon(Icons.videocam_rounded,
+                          color: Colors.white38, size: r.s(40)),
+                    ),
+                  )
+                : Image.file(
+                    File(message.localPath!),
+                    width: r.s(220),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: r.s(220),
+                      height: r.s(160),
+                      color: Colors.grey[800],
+                      child: Icon(Icons.broken_image_rounded,
+                          color: Colors.white38, size: r.s(40)),
+                    ),
+                  ),
+          ),
+          // Overlay escuro
+          ClipRRect(
+            borderRadius: BorderRadius.circular(r.s(12)),
+            child: Container(
+              width: r.s(220),
+              height: isVideo ? r.s(160) : null,
+              color: Colors.black.withValues(alpha: hasError ? 0.6 : 0.4),
+            ),
+          ),
+          // Spinner ou ícone de erro + retry
+          if (!hasError)
+            SizedBox(
+              width: r.s(36),
+              height: r.s(36),
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: Colors.white.withValues(alpha: 0.9),
+              ),
+            )
+          else
+            GestureDetector(
+              onTap: message.onRetry,
+              child: Container(
+                padding: EdgeInsets.all(r.s(10)),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.85),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.refresh_rounded,
+                    color: Colors.white, size: r.s(22)),
+              ),
+            ),
+          // Label de status
+          Positioned(
+            bottom: r.s(8),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(8), vertical: r.s(3)),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(r.s(8)),
+              ),
+              child: Text(
+                hasError ? 'Toque para reenviar' : 'Enviando...',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: r.fs(11),
+                    fontWeight: FontWeight.w500),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     // Imagem: tipo 'image' (nativo) OU tipo 'text' com media_type == 'image' (legado)
     if ((type == 'image' && message.mediaUrl != null) ||
         (message.mediaUrl != null && message.mediaType == 'image')) {
@@ -1067,13 +1158,69 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
 
     // Video — sem bubble, renderizado diretamente (ClipRRect aplicado no build)
     if (type == 'video') {
-      return Container(
-        width: r.s(220),
-        height: r.s(160),
-        color: Colors.black45,
-        child: Center(
-          child: Icon(Icons.play_circle_rounded,
-              color: Colors.white, size: r.s(48)),
+      final videoUrl = message.mediaUrl ?? '';
+      return GestureDetector(
+        onTap: videoUrl.isNotEmpty
+            ? () => context.push(
+                  Uri(
+                    path: '/video-player',
+                    queryParameters: {'url': videoUrl},
+                  ).toString(),
+                )
+            : null,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              width: r.s(220),
+              height: r.s(160),
+              decoration: BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.circular(r.s(4)),
+              ),
+              child: videoUrl.isEmpty
+                  ? Center(
+                      child: Icon(Icons.videocam_off_rounded,
+                          color: Colors.white38, size: r.s(36)),
+                    )
+                  : null,
+            ),
+            Container(
+              width: r.s(56),
+              height: r.s(56),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.55),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.play_arrow_rounded,
+                  color: Colors.white, size: r.s(32)),
+            ),
+            if (videoUrl.isNotEmpty)
+              Positioned(
+                bottom: r.s(8),
+                right: r.s(8),
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(6), vertical: r.s(2)),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(r.s(4)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.videocam_rounded,
+                          color: Colors.white70, size: r.s(12)),
+                      SizedBox(width: r.s(3)),
+                      Text('Vídeo',
+                          style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: r.fs(10))),
+                    ],
+                  ),
+                ),
+              ),
+          ],
         ),
       );
     }

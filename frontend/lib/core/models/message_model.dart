@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'user_model.dart';
 
 /// Modelo de mensagem de chat.
@@ -58,6 +59,16 @@ class MessageModel {
   /// BlurHash da mídia da mensagem — usado como placeholder visual.
   final String? mediaBlurhash;
 
+  // ── Campos de upload otimista (apenas em memória, não persistidos) ──────────
+  /// Caminho local do arquivo sendo enviado (antes do upload concluir).
+  final String? localPath;
+  /// Estado do upload: null = mensagem real, 'uploading' = enviando, 'error' = falhou.
+  final String? uploadState;
+  /// Mensagem de erro do upload (quando uploadState == 'error').
+  final String? uploadError;
+  /// Callback de retry (quando uploadState == 'error').
+  final VoidCallback? onRetry;
+
   const MessageModel({
     required this.id,
     required this.threadId,
@@ -86,6 +97,10 @@ class MessageModel {
     this.editedAt,
     this.author,
     this.mediaBlurhash,
+    this.localPath,
+    this.uploadState,
+    this.uploadError,
+    this.onRetry,
   });
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
@@ -198,6 +213,11 @@ class MessageModel {
   bool get isAudio => type == 'audio' || type == 'voice_note';
   bool get isEdited => editedAt != null;
 
+  /// True quando esta é uma mensagem otimista aguardando upload.
+  bool get isUploading => uploadState == 'uploading';
+  /// True quando o upload desta mensagem falhou.
+  bool get hasUploadError => uploadState == 'error';
+
   /// Cria uma cópia do modelo com campos alterados.
   MessageModel copyWith({
     String? content,
@@ -213,6 +233,10 @@ class MessageModel {
     String? packId,
     String? sharedUrl,
     Map<String, dynamic>? extraData,
+    String? localPath,
+    String? uploadState,
+    String? uploadError,
+    VoidCallback? onRetry,
   }) {
     return MessageModel(
       id: id,
@@ -242,6 +266,10 @@ class MessageModel {
       editedAt: editedAt ?? this.editedAt,
       author: author,
       mediaBlurhash: mediaBlurhash,
+      localPath: localPath ?? this.localPath,
+      uploadState: uploadState ?? this.uploadState,
+      uploadError: uploadError ?? this.uploadError,
+      onRetry: onRetry ?? this.onRetry,
     );
   }
 }

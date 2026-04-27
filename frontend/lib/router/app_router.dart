@@ -14,6 +14,7 @@ import '../features/chat/screens/chat_list_screen.dart';
 import '../features/chat/screens/chat_requests_screen.dart';
 import '../features/chat/screens/chat_room_screen.dart';
 import '../features/chat/screens/chat_details_screen.dart';
+import '../features/chat/screens/video_player_screen.dart';
 import '../features/communities/screens/community_detail_screen.dart';
 import '../features/communities/screens/my_community_chats_screen.dart';
 import '../features/communities/screens/community_info_screen.dart';
@@ -282,6 +283,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'my-title',
         builder: (context, state) => MemberTitlePickerScreen(
           communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/video-player',
+        name: 'video-player',
+        builder: (context, state) => VideoPlayerScreen(
+          videoUrl: state.uri.queryParameters['url'] ?? '',
         ),
       ),
       GoRoute(
