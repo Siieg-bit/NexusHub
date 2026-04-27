@@ -431,7 +431,7 @@ class _CommunityVisualEditorState extends ConsumerState<CommunityVisualEditor> {
                   title: label,
                 );
                 if (pickedColor != null) {
-                  final hexColor = '#${pickedColor.value.toRadixString(16).substring(2).toUpperCase()}';
+                  final hexColor = '#${pickedColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
                   onChanged(hexColor);
                 }
               },

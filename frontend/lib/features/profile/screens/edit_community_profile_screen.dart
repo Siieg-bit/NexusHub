@@ -403,7 +403,7 @@ class _EditCommunityProfileScreenState
       title: s.backgroundTypeLabel,
     );
     if (picked != null && mounted) {
-      final argb = picked.value;
+      final argb = picked.toARGB32();
       final red = (argb >> 16) & 0xFF;
       final green = (argb >> 8) & 0xFF;
       final blue = argb & 0xFF;

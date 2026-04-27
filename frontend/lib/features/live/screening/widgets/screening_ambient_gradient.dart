@@ -175,9 +175,9 @@ class ScreeningAmbientGradientState
         // Escurecer para não ofuscar o conteúdo (mesmo fator do JS: 0.55)
         final darkened = Color.fromARGB(
           255,
-          (dominantColor.red * 0.55).round(),
-          (dominantColor.green * 0.55).round(),
-          (dominantColor.blue * 0.55).round(),
+          (dominantColor.r * 255 * 0.55).round(),
+          (dominantColor.g * 255 * 0.55).round(),
+          (dominantColor.b * 255 * 0.55).round(),
         );
         _updateAmbientColor(darkened);
         debugPrint('[AmbientGradient] cor do thumbnail: $darkened');
@@ -221,9 +221,9 @@ class ScreeningAmbientGradientState
 
   double _colorDistance(Color a, Color b) {
     return math.sqrt(
-      math.pow(a.red - b.red, 2) +
-          math.pow(a.green - b.green, 2) +
-          math.pow(a.blue - b.blue, 2),
+      math.pow((a.r - b.r) * 255, 2) +
+          math.pow((a.g - b.g) * 255, 2) +
+          math.pow((a.b - b.b) * 255, 2),
     );
   }
 
