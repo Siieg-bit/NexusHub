@@ -44,7 +44,7 @@ dependencies:
   media_kit_video: ^1.2.4
   media_kit_libs_video: ^1.0.5
   # DRM Widevine para Netflix, Disney+, Amazon, HBO Max, Crunchyroll
-  better_player_plus: ^1.2.0
+  better_player_plus: ^1.0.8
   photo_manager: ^3.0.0       # Acesso à galeria nativa (fotos e vídeos) sem abrir app externo
   video_thumbnail: ^0.5.3     # Gera thumbnail do primeiro frame de vídeos locais
   audioplayers: ^5.2.1
