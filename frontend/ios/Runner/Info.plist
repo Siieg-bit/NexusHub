@@ -70,9 +70,9 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>NexusHub precisa acessar o microfone para chamadas de voz, chamadas de vídeo e mensagens de voz.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>NexusHub precisa acessar suas fotos para compartilhar imagens.</string>
+	<string>NexusHub precisa acessar suas fotos e vídeos para compartilhar mídia no chat, posts, stories e comunidades.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>NexusHub precisa salvar imagens na sua galeria.</string>
+	<string>NexusHub precisa salvar fotos e vídeos na sua galeria.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>NexusHub usa sua localização para mostrar comunidades próximas.</string>
 	<key>NSFaceIDUsageDescription</key>
