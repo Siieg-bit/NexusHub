@@ -146,6 +146,7 @@ class _ScreeningAddVideoSheetState
       builder: (_) => ScreeningLocalVideoSheet(
         sessionId: widget.sessionId,
         threadId: widget.threadId,
+        addToQueue: true,
       ),
     );
 
@@ -162,10 +163,10 @@ class _ScreeningAddVideoSheetState
 
     if (!mounted) return;
 
-    // Capturar URL atual antes de abrir o browser (para detectar mudança)
-    final urlBefore = ref
+    // Capturar tamanho da fila antes de abrir o browser (para detectar adição)
+    final queueBefore = ref
         .read(screeningRoomProvider(widget.threadId))
-        .currentVideoUrl;
+        .videoQueue.length;
 
     await showModalBottomSheet(
       context: context,
@@ -176,18 +177,16 @@ class _ScreeningAddVideoSheetState
         platformId: platform.id,
         sessionId: widget.sessionId,
         threadId: widget.threadId,
+        addToQueue: true,
       ),
     );
 
-    // Após o browser sheet fechar, verificar se um NOVO vídeo foi selecionado
-    // (URL mudou em relação ao que era antes de abrir o browser)
+    // Após o browser sheet fechar, verificar se um novo vídeo foi adicionado à fila
     if (mounted) {
-      final urlAfter = ref
+      final queueAfter = ref
           .read(screeningRoomProvider(widget.threadId))
-          .currentVideoUrl;
-      if (urlAfter != null &&
-          urlAfter.isNotEmpty &&
-          urlAfter != urlBefore) {
+          .videoQueue;
+      if (queueAfter.length > queueBefore) {
         Navigator.of(context).pop();
       }
     }
