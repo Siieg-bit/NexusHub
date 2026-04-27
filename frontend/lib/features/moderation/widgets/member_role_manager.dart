@@ -1108,7 +1108,7 @@ class _MemberRoleManagerSheetState
                                 );
                                 if (picked != null && mounted) {
                                   final hex =
-                                      '#${picked.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
+                                      '#${picked.value.toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
                                   setState(() => _selectedTitleColor = hex);
                                 }
                               },

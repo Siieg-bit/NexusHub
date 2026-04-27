@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../config/nexus_theme_extension.dart';
+import '../../../../config/nexus_theme_data.dart';
 import '../../../../core/services/supabase_service.dart';
 // import '../../../../l10n/app_localizations.dart'; // Removido pois não existe e não é usado
 import '../screens/screening_room_screen.dart';

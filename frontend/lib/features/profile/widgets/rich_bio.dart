@@ -294,13 +294,9 @@ class RichBioCodec {
 
   static String? colorToHex(Color? color) {
     if (color == null) return null;
-    final argb = color.toARGB32();
-    final red = (argb >> 16) & 0xFF;
-    final green = (argb >> 8) & 0xFF;
-    final blue = argb & 0xFF;
-    return '#${red.toRadixString(16).padLeft(2, '0').toUpperCase()}'
-        '${green.toRadixString(16).padLeft(2, '0').toUpperCase()}'
-        '${blue.toRadixString(16).padLeft(2, '0').toUpperCase()}';
+    return '#${color.red.toRadixString(16).padLeft(2, '0').toUpperCase()}'
+        '${color.green.toRadixString(16).padLeft(2, '0').toUpperCase()}'
+        '${color.blue.toRadixString(16).padLeft(2, '0').toUpperCase()}';
   }
 
   static String? _normalizeHex(String? hex) {

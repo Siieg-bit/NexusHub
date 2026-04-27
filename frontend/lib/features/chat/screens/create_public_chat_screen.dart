@@ -448,12 +448,12 @@ class _CreatePublicChatScreenState
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: Colors.white,
-                                                constraints: BoxConstraints(
-                                                    maxWidth: r.s(12),
-                                                    maxHeight: r.s(12))),
+                                            SizedBox(
+                                                width: r.s(12),
+                                                height: r.s(12),
+                                                child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    color: Colors.white)),
                                             SizedBox(width: r.s(6)),
                                             Text('Enviando...',
                                                 style: TextStyle(
