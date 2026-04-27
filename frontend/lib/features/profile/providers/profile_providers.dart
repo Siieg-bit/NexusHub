@@ -418,6 +418,13 @@ final communityFrameProvider =
     // Sem moldura local definida → usar moldura global (caller faz o fallback)
     if (activeFramePurchaseId == null) return null;
 
+    // Sentinel 'none' → usuário removeu explicitamente a moldura nesta comunidade.
+    // Retorna mapa vazio com frame_url = null para indicar "sem moldura"
+    // sem cair no fallback global.
+    if (activeFramePurchaseId == 'none') {
+      return {'frame_url': null, 'frame_is_animated': false};
+    }
+
     // 2. Buscar a URL da moldura via user_purchases JOIN store_items
     final purchase = await SupabaseService.table('user_purchases')
         .select(

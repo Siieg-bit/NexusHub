@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
@@ -30,10 +31,59 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   // _avatarUrl removido: agora usa currentUserAvatarProvider (atualização em tempo real)
   int _coins = 0;
 
+  // Ordem customizada das comunidades (lista de IDs na ordem desejada pelo usuário).
+  // null = ainda não carregado; lista vazia = sem ordem salva (usa padrão).
+  List<String>? _customOrder;
+
+  static const String _kOrderPrefKey = 'community_custom_order';
+
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _loadCustomOrder();
+  }
+
+  Future<void> _loadCustomOrder() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = SupabaseService.currentUserId ?? 'anon';
+      final saved = prefs.getStringList('${_kOrderPrefKey}_$userId');
+      if (mounted) {
+        setState(() => _customOrder = saved ?? []);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _customOrder = []);
+    }
+  }
+
+  Future<void> _saveCustomOrder(List<String> ids) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = SupabaseService.currentUserId ?? 'anon';
+      await prefs.setStringList('${_kOrderPrefKey}_$userId', ids);
+    } catch (_) {}
+  }
+
+  /// Aplica a ordem customizada sobre a lista de comunidades.
+  /// Comunidades novas (não presentes na ordem salva) ficam no final.
+  List<CommunityModel> _applyCustomOrder(List<CommunityModel> communities) {
+    final order = _customOrder;
+    if (order == null || order.isEmpty) {
+      // Sem ordem salva: ordena por data de criação (comportamento original)
+      return List<CommunityModel>.from(communities)
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    }
+    final byId = {for (final c in communities) c.id: c};
+    final ordered = <CommunityModel>[];
+    for (final id in order) {
+      if (byId.containsKey(id)) ordered.add(byId[id]!);
+    }
+    // Adiciona comunidades novas (não estavam na ordem salva) no final
+    for (final c in communities) {
+      if (!order.contains(c.id)) ordered.add(c);
+    }
+    return ordered;
   }
 
   Future<void> _loadUserData() async {
@@ -106,11 +156,10 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   Widget _buildCommunityList(List<CommunityModel> communities) {
     final s = getStrings();
     final r = context.r;
-    
-    // Ordenar comunidades por mais recentes primeiro
-    final sortedCommunities = List<CommunityModel>.from(communities)
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    
+
+    // Aplica ordem customizada (ou padrão por data se não houver ordem salva)
+    final orderedCommunities = _applyCustomOrder(communities);
+
     return RefreshIndicator(
       color: context.nexusTheme.accentPrimary,
       onRefresh: () async {
@@ -138,41 +187,28 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
               ),
             ),
 
-            // ── Grade de comunidades com 3 colunas (GridView) ──
-            // Mostra todas as comunidades dinamicamente
-            // JoinCard fica sempre no final
+            // ── Grade de comunidades com 3 colunas (ReorderableGridView) ──
+            // O usuário pode segurar e arrastar qualquer card para reordenar.
+            // A ordem é persistida localmente via SharedPreferences.
             Padding(
               padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: r.s(8),
-                  mainAxisSpacing: r.s(8),
-                  childAspectRatio: 120.0 / 175.0,
-                ),
-                itemCount: sortedCommunities.length + 1, // +1 para JoinCard
-                itemBuilder: (context, index) {
-                  // Último item é o JoinCard
-                  if (index == sortedCommunities.length) {
-                    return _JoinCommunityCard(
-                      cardWidth: null,
-                      onTap: () => _showJoinCommunitySheet(sortedCommunities),
-                    );
-                  }
-                  
-                  final community = sortedCommunities[index];
-                  return _AminoCommunityCard(
-                    community: community,
-                    reorderIndex: index,
-                    cardWidth: null,
-                    onTap: () => context.push('/community/${community.id}'),
-                    onLongPress: () {
-                      HapticService.action();
-                      _showCommunityPreview(context, community);
-                    },
-                  );
+              child: ReorderableWrap(
+                orderedCommunities: orderedCommunities,
+                onReorder: (oldIndex, newIndex) {
+                  if (oldIndex == newIndex) return;
+                  final reordered = List<CommunityModel>.from(orderedCommunities);
+                  final item = reordered.removeAt(oldIndex);
+                  reordered.insert(newIndex, item);
+                  final newIds = reordered.map((c) => c.id).toList();
+                  setState(() => _customOrder = newIds);
+                  _saveCustomOrder(newIds);
+                },
+                onJoinTap: () => _showJoinCommunitySheet(orderedCommunities),
+                onCardTap: (community) =>
+                    context.push('/community/${community.id}'),
+                onCardLongPress: (community) {
+                  HapticService.action();
+                  _showCommunityPreview(context, community);
                 },
               ),
             ),
@@ -1725,6 +1761,192 @@ class _StatChip extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+
+// =============================================================================
+// ReorderableWrap — Grade 3 colunas com suporte a drag-and-drop.
+//
+// Implementação com LongPressDraggable + DragTarget para arrastar cards
+// individualmente dentro do grid. O usuário segura um card por ~400ms
+// para iniciar o drag e solta sobre outro card para trocar as posições.
+// =============================================================================
+class ReorderableWrap extends StatefulWidget {
+  final List<CommunityModel> orderedCommunities;
+  final void Function(int oldIndex, int newIndex) onReorder;
+  final VoidCallback onJoinTap;
+  final void Function(CommunityModel) onCardTap;
+  final void Function(CommunityModel) onCardLongPress;
+
+  const ReorderableWrap({
+    super.key,
+    required this.orderedCommunities,
+    required this.onReorder,
+    required this.onJoinTap,
+    required this.onCardTap,
+    required this.onCardLongPress,
+  });
+
+  @override
+  State<ReorderableWrap> createState() => _ReorderableWrapState();
+}
+
+class _ReorderableWrapState extends State<ReorderableWrap> {
+  int? _draggingIndex;
+  int? _hoverIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    const int crossAxisCount = 3;
+    final double spacing = r.s(8);
+    final communities = widget.orderedCommunities;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final itemWidth =
+            (constraints.maxWidth - spacing * (crossAxisCount - 1)) /
+                crossAxisCount;
+        final itemHeight = itemWidth * (175.0 / 120.0);
+
+        // Total de itens: comunidades + JoinCard
+        final totalItems = communities.length + 1;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: List.generate(totalItems, (index) {
+            // Último item é o JoinCard (não draggável)
+            if (index == communities.length) {
+              return SizedBox(
+                width: itemWidth,
+                height: itemHeight,
+                child: _JoinCommunityCard(
+                  cardWidth: itemWidth,
+                  onTap: widget.onJoinTap,
+                ),
+              );
+            }
+
+            final community = communities[index];
+            final isDragging = _draggingIndex == index;
+            final isHovered = _hoverIndex == index && _draggingIndex != index;
+
+            return DragTarget<int>(
+              key: ValueKey(community.id),
+              onWillAcceptWithDetails: (details) {
+                if (details.data == index) return false;
+                setState(() => _hoverIndex = index);
+                return true;
+              },
+              onLeave: (_) {
+                if (_hoverIndex == index) {
+                  setState(() => _hoverIndex = null);
+                }
+              },
+              onAcceptWithDetails: (details) {
+                setState(() {
+                  _hoverIndex = null;
+                  _draggingIndex = null;
+                });
+                widget.onReorder(details.data, index);
+              },
+              builder: (context, candidateData, rejectedData) {
+                return LongPressDraggable<int>(
+                  data: index,
+                  delay: const Duration(milliseconds: 400),
+                  onDragStarted: () {
+                    HapticService.action();
+                    setState(() => _draggingIndex = index);
+                  },
+                  onDragEnd: (_) {
+                    setState(() {
+                      _draggingIndex = null;
+                      _hoverIndex = null;
+                    });
+                  },
+                  onDraggableCanceled: (_, __) {
+                    setState(() {
+                      _draggingIndex = null;
+                      _hoverIndex = null;
+                    });
+                  },
+                  feedback: Material(
+                    color: Colors.transparent,
+                    child: Transform.scale(
+                      scale: 1.08,
+                      child: SizedBox(
+                        width: itemWidth,
+                        height: itemHeight,
+                        child: Opacity(
+                          opacity: 0.9,
+                          child: _AminoCommunityCard(
+                            community: community,
+                            reorderIndex: index,
+                            cardWidth: itemWidth,
+                            onTap: () {},
+                            onLongPress: () {},
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  childWhenDragging: SizedBox(
+                    width: itemWidth,
+                    height: itemHeight,
+                    child: Opacity(
+                      opacity: 0.25,
+                      child: _AminoCommunityCard(
+                        community: community,
+                        reorderIndex: index,
+                        cardWidth: itemWidth,
+                        onTap: () {},
+                        onLongPress: () {},
+                      ),
+                    ),
+                  ),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    width: itemWidth,
+                    height: itemHeight,
+                    decoration: isHovered
+                        ? BoxDecoration(
+                            borderRadius: BorderRadius.circular(r.s(12)),
+                            border: Border.all(
+                              color: context.nexusTheme.accentPrimary
+                                  .withValues(alpha: 0.7),
+                              width: 2,
+                            ),
+                          )
+                        : null,
+                    child: isDragging
+                        ? Opacity(
+                            opacity: 0.25,
+                            child: _AminoCommunityCard(
+                              community: community,
+                              reorderIndex: index,
+                              cardWidth: itemWidth,
+                              onTap: () {},
+                              onLongPress: () {},
+                            ),
+                          )
+                        : _AminoCommunityCard(
+                            community: community,
+                            reorderIndex: index,
+                            cardWidth: itemWidth,
+                            onTap: () => widget.onCardTap(community),
+                            onLongPress: () =>
+                                widget.onCardLongPress(community),
+                          ),
+                  ),
+                );
+              },
+            );
+          }),
+        );
+      },
     );
   }
 }

@@ -977,33 +977,29 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                               // Bug fix: prioriza a moldura local da comunidade
                               // (active_avatar_frame_id em community_members);
                               // usa a moldura global (is_equipped) como fallback.
-                              AvatarWithFrame(
-                                avatarUrl: displayAvatar,
-                                frameUrl: (ref
-                                            .watch(communityFrameProvider((
-                                              userId: widget.userId,
-                                              communityId: widget.communityId,
-                                            )))
-                                            .valueOrNull ??
-                                        ref
-                                            .watch(equippedItemsProvider(
-                                                widget.userId))
-                                            .valueOrNull ??
-                                        {})['frame_url'] as String?,
-                                isFrameAnimated: (ref
-                                                .watch(communityFrameProvider((
-                                                  userId: widget.userId,
-                                                  communityId:
-                                                      widget.communityId,
-                                                )))
-                                                .valueOrNull ??
-                                            ref
-                                                .watch(equippedItemsProvider(
-                                                    widget.userId))
-                                                .valueOrNull ??
-                                            {})['frame_is_animated']
-                                        as bool? ??
-                                    false,
+                              // Resolve moldura: local da comunidade tem prioridade.
+                              // Se communityFrameProvider retornar mapa não-nulo
+                              // (mesmo com frame_url == null, que é o sentinel 'none'),
+                              // não faz fallback para a moldura global.
+                              Builder(builder: (context) {
+                                final communityFrameData = ref
+                                    .watch(communityFrameProvider((
+                                      userId: widget.userId,
+                                      communityId: widget.communityId,
+                                    )))
+                                    .valueOrNull;
+                                // communityFrameData == null → nunca configurou → usa global
+                                // communityFrameData != null → já configurou (pode ser 'none') → não usa global
+                                final frameData = communityFrameData ??
+                                    ref
+                                        .watch(equippedItemsProvider(widget.userId))
+                                        .valueOrNull ??
+                                    {};
+                                return AvatarWithFrame(
+                                  avatarUrl: displayAvatar,
+                                  frameUrl: frameData['frame_url'] as String?,
+                                  isFrameAnimated:
+                                      frameData['frame_is_animated'] as bool? ?? false,
                                 size: r.s(96),
                                 showAminoPlus: isPremium,
                                 hasActiveStory: _hasActiveStory,
@@ -1016,7 +1012,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                           heroTag:
                                               'community-profile-media-${widget.communityId}-${widget.userId}',
                                         ),
-                              ),
+                                );
+                              }),
                               SizedBox(height: r.s(10)),
 
                               // Nome + badge Amino+
