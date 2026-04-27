@@ -20,6 +20,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
+import 'package:supabase_flutter/supabase_flutter.dart' show FileOptions;
 import '../../../../core/services/supabase_service.dart';
 
 class LocalVideoResult {
@@ -123,7 +124,10 @@ class LocalVideoService {
         bucket: _bucket,
         path: storagePath,
         file: fileBytes,
-        contentType: _mimeType(safeExt),
+        fileOptions: FileOptions(
+          contentType: _mimeType(safeExt),
+          upsert: false,
+        ),
       );
 
       onProgress?.call(const LocalVideoUploadProgress(

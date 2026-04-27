@@ -23,6 +23,7 @@ class ScreeningPlatform {
   final String? initialUrl;
   final List<_VideoUrlPattern> videoPatterns;
   final bool isDirectUrl; // WEB: campo de texto livre
+  final bool isDrm; // Requer relay DRM (Netflix, Disney+, etc.)
 
   const ScreeningPlatform({
     required this.id,
@@ -30,6 +31,7 @@ class ScreeningPlatform {
     this.initialUrl,
     this.videoPatterns = const [],
     this.isDirectUrl = false,
+    this.isDrm = false,
   });
 }
 
@@ -185,6 +187,7 @@ class ScreeningBrowserSheet extends ConsumerStatefulWidget {
   final String platformId;
   final String sessionId;
   final String threadId;
+  final bool addToQueue;
 
   const ScreeningBrowserSheet({
     super.key,
