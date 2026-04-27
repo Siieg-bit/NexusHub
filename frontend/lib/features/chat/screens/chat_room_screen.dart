@@ -1610,28 +1610,28 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   SizedBox(height: r.s(8)),
 
                   // ── SEÇÃO: Membros e Convites ──────────────────────────
-                  if (isPublic) ...[
-                    _settingsSectionLabel(r, 'Membros'),
-                    _settingsTile(r, Icons.people_rounded, 'Ver Membros', () {
+                  // Aparece para todos os tipos de chat (público, grupo, dm)
+                  _settingsSectionLabel(r, 'Membros'),
+                  _settingsTile(r, Icons.people_rounded, 'Ver Membros', () {
+                    Navigator.pop(ctx);
+                    _showChatMembers();
+                  }),
+                  _settingsTile(r, Icons.info_outline_rounded, 'Detalhes do chat', () {
+                    Navigator.pop(ctx);
+                    context.push('/chat/${widget.threadId}/details');
+                  }),
+                  // Compartilhar: disponível para chats públicos
+                  if (isPublic)
+                    _settingsTile(r, Icons.share_rounded, 'Compartilhar chat', () {
                       Navigator.pop(ctx);
-                      _showChatMembers();
+                      DeepLinkService.shareUrl(
+                        type: 'chat',
+                        targetId: widget.threadId,
+                        title: _threadInfo?['title'] as String? ?? '',
+                        text: _threadInfo?['title'] as String? ?? '',
+                      );
                     }),
-                    _settingsTile(r, Icons.info_outline_rounded, 'Detalhes do chat', () {
-                      Navigator.pop(ctx);
-                      context.push('/chat/${widget.threadId}/details');
-                    }),
-                    if (isPublic)
-                      _settingsTile(r, Icons.person_add_rounded, 'Convidar pessoas', () {
-                        Navigator.pop(ctx);
-                        DeepLinkService.shareUrl(
-                          type: 'chat',
-                          targetId: widget.threadId,
-                          title: _threadInfo?['title'] as String? ?? '',
-                          text: _threadInfo?['title'] as String? ?? '',
-                        );
-                      }),
-                    SizedBox(height: r.s(8)),
-                  ],
+                  SizedBox(height: r.s(8)),
 
                   // ── SEÇÃO: Notificações ────────────────────────────────
                   _settingsSectionLabel(r, 'Notificações'),
@@ -2890,27 +2890,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 borderRadius: BorderRadius.circular(r.s(12))),
             onSelected: (val) {
               switch (val) {
-                case 'share':
-                  if (threadType == 'public') {
-                    DeepLinkService.shareUrl(
-                      type: 'chat',
-                      targetId: widget.threadId,
-                      title: threadTitle,
-                      text: threadTitle,
-                    );
-                  }
-                  break;
-                case 'members':
-                  _showChatMembers();
-                  break;
                 case 'settings':
                   _showChatSettings();
-                  break;
-                case 'background':
-                  _showBackgroundPicker();
-                  break;
-                case 'bubble':
-                  _showBubblePicker();
                   break;
                 case 'leave':
                   _leaveChatConfirm();
@@ -2918,15 +2899,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               }
             },
             itemBuilder: (ctx) => [
-              if (threadType == 'public')
-                _buildPopupItem(r, 'share', Icons.share_outlined, s.share),
-              _buildPopupItem(r, 'members', Icons.people_rounded, s.members),
               _buildPopupItem(
                   r, 'settings', Icons.settings_rounded, s.settings),
-              _buildPopupItem(
-                  r, 'background', Icons.wallpaper_rounded, s.chatBackground),
-              _buildPopupItem(
-                  r, 'bubble', Icons.chat_bubble_rounded, 'Meu Bubble'),
               _buildPopupItem(
                   r, 'leave', Icons.exit_to_app_rounded, s.leaveChatTitle,
                   isDestructive: true),
@@ -3871,9 +3845,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   void _showMediaOptions(BuildContext context) {
-    // RolePlay IA é exclusivo para chats públicos em grupo
+    // RolePlay IA disponível para chats em grupo (público ou privado), não para DM
     final threadType = _threadInfo?['type'] as String? ?? 'public';
-    final isPublicGroup = threadType == 'public';
+    final isGroupChat = threadType == 'public' || threadType == 'group';
 
     ChatMediaSheet.show(
       context,
@@ -3906,8 +3880,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       onScreening: _startProjection,
       onLink: _showLinkInput,
       onVideoFile: _sendVideoFile,
-      // RolePlay IA: só aparece em chats públicos em grupo
-      onRolePlay: isPublicGroup
+      // RolePlay IA: disponível em grupos (público e privado), não em DM
+      onRolePlay: isGroupChat
           ? () => RolePlayScreen.show(context, widget.threadId)
           : null,
     );
