@@ -139,25 +139,35 @@ class ShellScreen extends ConsumerWidget {
     return Scaffold(
       body: child,
       extendBody: true,
-      bottomNavigationBar: ClipRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-          child: Container(
-            decoration: BoxDecoration(
-              color: context.bottomNavBg.withValues(alpha: 0.95),
-              border: const Border(
-                top: BorderSide(
-                  color: Color(0x10FFFFFF),
-                  width: 0.5,
+      bottomNavigationBar: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Camada de blur — ClipRect apenas aqui, sem afetar o conteúdo
+          Positioned.fill(
+            child: ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: context.bottomNavBg.withValues(alpha: 0.95),
+                    border: const Border(
+                      top: BorderSide(
+                        color: Color(0x10FFFFFF),
+                        width: 0.5,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
+          ),
+          // Conteúdo — fora do ClipRect para badges e glow transbordarem
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
                     // ── Discover
                     _AminoNavItem(
                       icon: Icons.edit_outlined,

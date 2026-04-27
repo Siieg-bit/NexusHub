@@ -47,41 +47,60 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(50);
+  Size get preferredSize {
+    // preferredSize precisa incluir o statusBarHeight para que o Scaffold
+    // reserve espaço correto em modo edge-to-edge.
+    // MediaQuery não está disponível aqui, então usamos o valor do sistema.
+    final statusBarHeight = WidgetsBinding
+            .instance.platformDispatcher.views.first.padding.top /
+        WidgetsBinding
+            .instance.platformDispatcher.views.first.devicePixelRatio;
+    return Size.fromHeight(50 + statusBarHeight);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
     final s = ref.watch(stringsProvider);
     final currentLocale = ref.watch(localeProvider);
+    final statusBarHeight = MediaQuery.of(context).padding.top;
 
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        height: r.s(50),
-        padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
-        color: context.nexusTheme.backgroundPrimary,
-        child: Row(
-          children: [
-            // ── Avatar circular 30px ──
-            _buildAvatar(context),
+    return Container(
+      color: context.nexusTheme.backgroundPrimary,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Espaço da status bar (edge-to-edge)
+          SizedBox(height: statusBarHeight),
+          // Conteúdo da barra
+          SizedBox(
+            height: r.s(50),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
+              child: Row(
+                children: [
+                  // ── Avatar circular 30px ──
+                  _buildAvatar(context),
 
-            SizedBox(width: r.s(8)),
+                  SizedBox(width: r.s(8)),
 
-            // ── Barra de Busca (flex) ──
-            _buildSearchBar(context, ref, s, currentLocale),
+                  // ── Barra de Busca (flex) ──
+                  _buildSearchBar(context, ref, s, currentLocale),
 
-            SizedBox(width: r.s(8)),
+                  SizedBox(width: r.s(8)),
 
-            // ── Pílula unificada: Moedas + Add ──
-            _buildCoinsPill(context),
+                  // ── Pílula unificada: Moedas + Add ──
+                  _buildCoinsPill(context),
 
-            SizedBox(width: r.s(6)),
+                  SizedBox(width: r.s(6)),
 
-            // ── Sino de Notificações ──
-            _buildNotificationBell(context),
-          ],
-        ),
+                  // ── Sino de Notificações ──
+                  _buildNotificationBell(context),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
