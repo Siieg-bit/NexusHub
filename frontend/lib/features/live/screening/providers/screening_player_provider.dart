@@ -404,6 +404,8 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   @override
   void dispose() {
     _positionPollTimer?.cancel();
+    _positionPollTimer = null;
+    _webViewController = null; // evita MissingPluginException após dispose
     super.dispose();
   }
 }

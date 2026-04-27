@@ -314,6 +314,17 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             }
             var v = document.querySelector('video');
             if (v) v.playbackRate = rate;
+          },
+          // alias usado pelo provider (getPositionMs) — retorna ms
+          getPosition: function() {
+            try {
+              if (window._ytPlayer && window._ytPlayer.getCurrentTime) {
+                return Math.floor(window._ytPlayer.getCurrentTime() * 1000);
+              }
+              var v = document.querySelector('video');
+              if (v && !isNaN(v.currentTime)) return Math.floor(v.currentTime * 1000);
+            } catch(e) {}
+            return -1;
           }
         };
 
@@ -364,6 +375,7 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   }
 
   void _handleConsoleMessage(String message) {
+    if (!mounted) return;
     final notifier =
         ref.read(screeningPlayerProvider(widget.sessionId).notifier);
     if (message.contains('__YT_PLAYING__') ||
