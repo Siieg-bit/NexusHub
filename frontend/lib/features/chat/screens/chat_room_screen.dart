@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -2113,6 +2114,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     required String messageType,
     required String mediaType,
     required Future<({String url, String? blurhash})> Function() uploadFn,
+    Uint8List? localBytes,
   }) async {
     final userId = SupabaseService.currentUserId ?? '';
     final tempId = 'optimistic_${DateTime.now().millisecondsSinceEpoch}';
@@ -2159,6 +2161,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       type: messageType,
       mediaType: mediaType,
       localPath: localPath,
+      localBytes: localBytes,
       uploadState: 'uploading',
       reactions: const {},
       createdAt: now,
@@ -2308,18 +2311,22 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     for (final picked in pickedFiles) {
       final image = picked.file;
       _registerMediaUpload();
+      // Pré-comprime a imagem para obter os bytes JPEG antes de enfileirar
+      // Isso garante que o thumbnail exibido durante o upload seja sempre JPEG válido
+      // (evita erro 'Invalid image data' com HEIC/WebP no decodificador nativo)
+      final rawBytes = await image.readAsBytes();
+      final compressedBytes = await MediaUtils.compressImage(rawBytes);
       await _enqueueUpload(() => _uploadMediaOptimistic(
         localPath: image.path,
+        localBytes: compressedBytes,
         messageType: 'image',
         mediaType: 'image',
         uploadFn: () async {
           final userId = SupabaseService.currentUserId ?? 'unknown';
           final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.path.split('/').last}';
-          final rawBytes = await image.readAsBytes();
-          final bytes = await MediaUtils.compressImage(rawBytes);
           debugPrint('[ChatRoom] 🖼️ Uploading image: $path');
           await SupabaseService.storage.from('chat-media').uploadBinary(
-            path, bytes,
+            path, compressedBytes,
             fileOptions: const FileOptions(contentType: 'image/jpeg'),
           );
           final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);

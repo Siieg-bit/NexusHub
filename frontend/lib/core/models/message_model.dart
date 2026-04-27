@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'dart:typed_data';
 import 'user_model.dart';
 
 /// Modelo de mensagem de chat.
@@ -62,6 +63,9 @@ class MessageModel {
   // ── Campos de upload otimista (apenas em memória, não persistidos) ──────────
   /// Caminho local do arquivo sendo enviado (antes do upload concluir).
   final String? localPath;
+  /// Bytes JPEG comprimidos da imagem local (thumbnail para exibição durante upload).
+  /// Evita problemas com formatos não suportados (HEIC, WebP) no decodificador nativo.
+  final Uint8List? localBytes;
   /// Estado do upload: null = mensagem real, 'uploading' = enviando, 'error' = falhou.
   final String? uploadState;
   /// Mensagem de erro do upload (quando uploadState == 'error').
@@ -100,6 +104,7 @@ class MessageModel {
     this.author,
     this.mediaBlurhash,
     this.localPath,
+    this.localBytes,
     this.uploadState,
     this.uploadError,
     this.onRetry,
@@ -237,6 +242,7 @@ class MessageModel {
     String? sharedUrl,
     Map<String, dynamic>? extraData,
     String? localPath,
+    Uint8List? localBytes,
     String? uploadState,
     String? uploadError,
     VoidCallback? onRetry,
@@ -271,6 +277,7 @@ class MessageModel {
       author: author,
       mediaBlurhash: mediaBlurhash,
       localPath: localPath ?? this.localPath,
+      localBytes: localBytes ?? this.localBytes,
       uploadState: uploadState ?? this.uploadState,
       uploadError: uploadError ?? this.uploadError,
       onRetry: onRetry ?? this.onRetry,

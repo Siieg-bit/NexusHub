@@ -956,18 +956,31 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                           color: Colors.white38, size: r.s(40)),
                     ),
                   )
-                : Image.file(
-                    File(message.localPath!),
-                    width: r.s(220),
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      width: r.s(220),
-                      height: r.s(160),
-                      color: Colors.grey[800],
-                      child: Icon(Icons.broken_image_rounded,
-                          color: Colors.white38, size: r.s(40)),
-                    ),
-                  ),
+                : message.localBytes != null
+                    ? Image.memory(
+                        message.localBytes!,
+                        width: r.s(220),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          width: r.s(220),
+                          height: r.s(160),
+                          color: Colors.grey[800],
+                          child: Icon(Icons.broken_image_rounded,
+                              color: Colors.white38, size: r.s(40)),
+                        ),
+                      )
+                    : Image.file(
+                        File(message.localPath!),
+                        width: r.s(220),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          width: r.s(220),
+                          height: r.s(160),
+                          color: Colors.grey[800],
+                          child: Icon(Icons.broken_image_rounded,
+                              color: Colors.white38, size: r.s(40)),
+                        ),
+                      ),
           ),
           // Overlay escuro
           ClipRRect(
