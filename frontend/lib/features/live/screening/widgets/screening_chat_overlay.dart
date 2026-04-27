@@ -220,6 +220,7 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
       ],
     );
   }
+}
 
 // ── ChatBubble ────────────────────────────────────────────────────────────────
 

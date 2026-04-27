@@ -768,36 +768,27 @@ class _HostControlsConsumer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final playerState = ref.watch(screeningPlayerProvider(sessionId));
-    final roomState = ref.watch(screeningRoomProvider(threadId));
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          colors: [
-            Colors.black.withValues(alpha: 0.75),
-            Colors.transparent,
-          ],
-        ),
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // ── Seek bar (apenas para vídeos não-live) ──────────────────────
           if (!playerState.isLiveStream)
             _SeekBar(
               sessionId: sessionId,
               position: playerState.position,
               duration: playerState.duration,
             ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          // ── Botões de controle ──────────────────────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _ControlButton(
                 icon: Icons.replay_10_rounded,
-                size: 28,
+                size: 32,
                 onTap: () {
                   final pos = playerState.position;
                   final newPos = pos - const Duration(seconds: 10);
@@ -807,16 +798,16 @@ class _HostControlsConsumer extends ConsumerWidget {
                   );
                 },
               ),
-              const SizedBox(width: 24),
+              const SizedBox(width: 28),
               _PlayPauseButton(
                 isPlaying: playerState.isPlaying,
                 isBuffering: playerState.isBuffering,
                 onTap: () => onTogglePlayPause(playerState),
               ),
-              const SizedBox(width: 24),
+              const SizedBox(width: 28),
               _ControlButton(
                 icon: Icons.forward_10_rounded,
-                size: 28,
+                size: 32,
                 onTap: () {
                   final pos = playerState.position;
                   onSeekAndBroadcast(
@@ -825,6 +816,7 @@ class _HostControlsConsumer extends ConsumerWidget {
                   );
                 },
               ),
+            ],
           ),
         ],
       ),
