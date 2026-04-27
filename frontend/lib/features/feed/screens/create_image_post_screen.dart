@@ -295,7 +295,7 @@ final selected = _pickedFiles_selected.map((f) => f.file).toList();
         final rawBytes = await image.readAsBytes();
         final bytes = await MediaUtils.compressImage(rawBytes);
         final path =
-            'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+            'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.path.split('/').last}';
         await SupabaseService.storage
             .from('post-media')
             .uploadBinary(path, bytes);

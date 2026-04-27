@@ -120,7 +120,7 @@ final image = _pickedFiles_image.first.file;
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final bytes = await image.readAsBytes();
       final path =
-          'stories/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+          'stories/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.path.split('/').last}';
       await SupabaseService.client.storage
           .from('post-media')
           .uploadBinary(path, bytes);
@@ -151,19 +151,21 @@ final image = _pickedFiles_image.first.file;
 
   Future<void> _pickVideo() async {
     final s = getStrings();
-    final video = await picker.pickVideo(
-      source: ImageSource.gallery,
-      maxDuration: const Duration(seconds: 60),
+    final files = await showNexusMediaPicker(
+      context,
+      maxSelect: 1,
+      mode: NexusPickerMode.videoOnly,
     );
-    if (!mounted || video == null) return;
+    if (!mounted || files.isEmpty) return;
+    final videoFile = files.first.file;
 
     setState(() => _isSubmitting = true);
 
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
-      final bytes = await video.readAsBytes();
+      final bytes = await videoFile.readAsBytes();
       final path =
-          'stories/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${video.name}';
+          'stories/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${videoFile.path.split('/').last}';
       await SupabaseService.client.storage.from('post-media').uploadBinary(
           path, bytes,
           fileOptions: const FileOptions(contentType: 'video/mp4'));

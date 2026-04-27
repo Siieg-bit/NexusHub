@@ -335,11 +335,13 @@ final file = _pickedFiles_file.first.file;
   }
 
   Future<void> _doPickVideo() async {
-    final file = await picker.pickVideo(
-      source: ImageSource.gallery,
-      maxDuration: const Duration(seconds: 60),
+    final files = await showNexusMediaPicker(
+      context,
+      maxSelect: 1,
+      mode: NexusPickerMode.videoOnly,
     );
-    if (file == null) return;
+    if (files.isEmpty) return;
+    final file = files.first.file;
     setState(() => _isUploadingMedia = true);
     try {
       final bytes = await file.readAsBytes();

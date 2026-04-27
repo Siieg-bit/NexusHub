@@ -28,7 +28,7 @@ android {
     namespace "com.nexushub.app"
     // Fixado em 35 para satisfazer agora_rtc_engine (requer Android SDK 31+)
     // e manter compatibilidade com Android 15 (API 35).
-    compileSdk 35
+    compileSdk 36
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -47,7 +47,7 @@ android {
     defaultConfig {
         applicationId "com.nexushub.app"
         minSdk 24
-        targetSdk 35
+        targetSdk 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true

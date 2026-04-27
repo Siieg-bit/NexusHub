@@ -118,15 +118,14 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   }
 
   Future<void> _pickCoverImage() async {
-    final r = context.r;
     try {
-      final picked = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: r.w(800),
-        maxHeight: 400,
+      final files = await showNexusMediaPicker(
+        context,
+        maxSelect: 1,
+        mode: NexusPickerMode.imageOnly,
       );
-      if (picked != null && mounted) {
-        setState(() => _coverImage = File(picked.path));
+      if (files.isNotEmpty && mounted) {
+        setState(() => _coverImage = files.first.file);
       }
     } catch (e) {
       debugPrint('[create_group_chat_screen] Erro: $e');

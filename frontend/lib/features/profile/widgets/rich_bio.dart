@@ -1233,13 +1233,13 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
   }
 
   Future<void> _pickAndInsertInlineImage() async {
-    final file = await MediaUploadService.pickImage(context: context, source: ImageSource.gallery);
+    final file = await MediaUploadService.pickImage(context: context);
     if (file == null || !mounted) return;
     await _uploadInlineImageFile(file);
   }
 
   Future<void> _pickAndUploadVideo() async {
-    final file = await MediaUploadService.pickVideo(context: context, source: ImageSource.gallery);
+    final file = await MediaUploadService.pickVideo(context: context);
     if (file == null || !mounted) return;
     await _uploadMediaFile(file, type: 'video');
   }

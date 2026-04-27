@@ -65,7 +65,7 @@ final image = _pickedFiles_image.first.file;
         minHeight: 512,
       );
       final path =
-          'stickers/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+          'stickers/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.path.split('/').last}';
 
       await SupabaseService.storage
           .from('post-media')
@@ -74,7 +74,7 @@ final image = _pickedFiles_image.first.file;
       final url = SupabaseService.storage.from('post-media').getPublicUrl(path);
 
       if (mounted) {
-        final name = image.name.replaceAll(RegExp(r'\.[^.]+$'), '');
+        final name = image.path.split('/').last.replaceAll(RegExp(r'\.[^.]+$'), '');
         setState(() {
           _stickerUrl = url;
           _stickerName = name;

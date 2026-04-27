@@ -466,7 +466,7 @@ class _NexusMediaPickerSheetState extends State<NexusMediaPickerSheet>
     );
   }
 
-  Widget _buildHandle(NexusThemeData theme, ResponsiveHelper r) {
+  Widget _buildHandle(NexusThemeData theme, Responsive r) {
     return Padding(
       padding: EdgeInsets.only(top: r.s(10), bottom: r.s(6)),
       child: Container(
@@ -480,7 +480,7 @@ class _NexusMediaPickerSheetState extends State<NexusMediaPickerSheet>
     );
   }
 
-  Widget _buildHeader(NexusThemeData theme, ResponsiveHelper r) {
+  Widget _buildHeader(NexusThemeData theme, Responsive r) {
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(16), r.s(4), r.s(12), r.s(8)),
       child: Row(
@@ -568,7 +568,7 @@ class _NexusMediaPickerSheetState extends State<NexusMediaPickerSheet>
     );
   }
 
-  Widget _buildTabBar(NexusThemeData theme, ResponsiveHelper r) {
+  Widget _buildTabBar(NexusThemeData theme, Responsive r) {
     return Container(
       margin: EdgeInsets.fromLTRB(r.s(16), 0, r.s(16), r.s(8)),
       height: r.s(36),
@@ -618,7 +618,7 @@ class _NexusMediaPickerSheetState extends State<NexusMediaPickerSheet>
     );
   }
 
-  Widget _buildShimmerGrid(NexusThemeData theme, ResponsiveHelper r) {
+  Widget _buildShimmerGrid(NexusThemeData theme, Responsive r) {
     return AnimatedBuilder(
       animation: _shimmerAnimation,
       builder: (_, __) {
@@ -642,7 +642,7 @@ class _NexusMediaPickerSheetState extends State<NexusMediaPickerSheet>
   }
 
   Widget _buildGrid(
-      NexusThemeData theme, ResponsiveHelper r, ScrollController sc) {
+      NexusThemeData theme, Responsive r, ScrollController sc) {
     if (_assets.isEmpty) {
       return Center(
         child: Column(
@@ -700,7 +700,7 @@ class _NexusMediaPickerSheetState extends State<NexusMediaPickerSheet>
     );
   }
 
-  Widget _buildCameraTab(NexusThemeData theme, ResponsiveHelper r) {
+  Widget _buildCameraTab(NexusThemeData theme, Responsive r) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -748,7 +748,7 @@ class _NexusMediaPickerSheetState extends State<NexusMediaPickerSheet>
     );
   }
 
-  void _showAlbumPicker(NexusThemeData theme, ResponsiveHelper r) {
+  void _showAlbumPicker(NexusThemeData theme, Responsive r) {
     showModalBottomSheet(
       context: context,
       backgroundColor: theme.backgroundSecondary,
@@ -820,7 +820,7 @@ class _NexusMediaPickerSheetState extends State<NexusMediaPickerSheet>
     );
   }
 
-  Widget _buildConfirmBar(NexusThemeData theme, ResponsiveHelper r) {
+  Widget _buildConfirmBar(NexusThemeData theme, Responsive r) {
     final isMulti = widget.maxSelect != 1;
     return SafeArea(
       child: Container(
@@ -949,7 +949,7 @@ class _NexusMediaPickerSheetState extends State<NexusMediaPickerSheet>
     );
   }
 
-  Widget _buildPermissionDenied(NexusThemeData theme, ResponsiveHelper r) {
+  Widget _buildPermissionDenied(NexusThemeData theme, Responsive r) {
     return Expanded(
       child: Center(
         child: Padding(
@@ -1306,7 +1306,7 @@ class _SelectedPreviewChip extends StatefulWidget {
   final AssetEntity asset;
   final VoidCallback onRemove;
   final Color accentColor;
-  final ResponsiveHelper r;
+  final Responsive r;
 
   const _SelectedPreviewChip({
     required this.asset,

@@ -349,7 +349,7 @@ final image = _pickedFiles_image.first.file;
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final bytes = await image.readAsBytes();
       final path =
-          'posts/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+          'posts/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.path.split('/').last}';
 
       await SupabaseService.client.storage
           .from('post-media')
@@ -411,7 +411,7 @@ final image = _pickedFiles_image.first.file;
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final bytes = await image.readAsBytes();
       final path =
-          'posts/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+          'posts/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.path.split('/').last}';
 
       await SupabaseService.client.storage
           .from('post-media')

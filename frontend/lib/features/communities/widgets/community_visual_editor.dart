@@ -82,7 +82,7 @@ final image = _pickedFiles_image.first.file;
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final rawBytes = await image.readAsBytes();
       final bytes = await MediaUtils.compressImage(rawBytes);
-      final path = 'community-covers/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+      final path = 'community-covers/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.path.split('/').last}';
       
       await SupabaseService.storage
           .from('post-media')

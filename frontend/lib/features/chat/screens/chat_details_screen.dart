@@ -25,6 +25,7 @@ import '../widgets/chat_cover_picker.dart';
 import '../widgets/chat_moderation_sheet.dart';
 import '../widgets/chat_background_picker.dart';
 import 'chat_room_screen.dart' show showBubblePickerFromDetails;
+import 'chat_list_screen.dart' show chatListProvider;
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 class ChatDetailsScreen extends ConsumerStatefulWidget {
