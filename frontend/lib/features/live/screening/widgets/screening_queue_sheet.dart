@@ -786,17 +786,17 @@ class _PlatformPickerSheet extends ConsumerWidget {
                   onTap: () async {
                     HapticFeedback.selectionClick();
                     Navigator.of(context).pop();
-                    // Abrir o browser sheet no modo addToQueue
-                    await showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      useSafeArea: true,
-                      builder: (_) => ScreeningBrowserSheet(
-                        platformId: p.id,
-                        sessionId: sessionId,
-                        threadId: threadId,
-                        addToQueue: true,
+                    // Abrir como tela cheia para evitar problemas de scroll
+                    await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        fullscreenDialog: true,
+                        builder: (_) => ScreeningBrowserSheet(
+                          platformId: p.id,
+                          sessionId: sessionId,
+                          threadId: threadId,
+                          addToQueue: true,
+                          fullscreen: true,
+                        ),
                       ),
                     );
                   },

@@ -59,24 +59,12 @@ const _kPlayerBridgeJs = r'''
   window._nexusPlayer = {
     _yt: null,
 
-    // ── Inicializar YouTube IFrame API ──────────────────────────────────────
+    // ── Conectar ao YT.Player já criado pelo onYouTubeIframeAPIReady ─────────
+    // NÃO cria um novo YT.Player para evitar conflito com o _ytPlayer
+    // criado pelo _buildHtmlWrapper. Apenas conecta ao existente.
     initYT: function() {
-      if (window.YT && window.YT.Player) {
-        var iframe = document.querySelector('iframe[src*="youtube"]');
-        if (iframe && !this._yt) {
-          this._yt = new YT.Player(iframe, {
-            events: {
-              onReady: function(e) { _emit('ready'); e.target.playVideo(); },
-              onStateChange: function(e) {
-                // -1=unstarted, 0=ended, 1=playing, 2=paused, 3=buffering
-                if (e.data === 1) _emit('playing');
-                else if (e.data === 2) _emit('paused');
-                else if (e.data === 3) _emit('buffering');
-                else if (e.data === 0) _emit('ended');
-              }
-            }
-          });
-        }
+      if (window._ytPlayer && !this._yt) {
+        this._yt = window._ytPlayer;
       }
     },
 
@@ -169,22 +157,19 @@ const _kPlayerBridgeJs = r'''
   };
 
   // Tentar inicializar YT imediatamente (pode já estar disponível)
+  // NOTA: initYT() NÃO cria um novo YT.Player — apenas conecta ao _ytPlayer
+  // já criado pelo onYouTubeIframeAPIReady no _buildHtmlWrapper.
+  // Os event listeners do <video> são registrados pelo _injectControlScript
+  // (widget) via callHandler nativo, evitando duplicação com console.log.
   window._nexusPlayer.initYT();
 
   // Aguardar YT.ready se necessário
   if (window.YT && window.YT.ready) {
     window.YT.ready(function() { window._nexusPlayer.initYT(); });
   }
-
-  // Observar eventos do <video> HTML5
-  var v = document.querySelector('video');
-  if (v) {
-    v.addEventListener('playing', function() { _emit('playing'); });
-    v.addEventListener('pause',   function() { _emit('paused'); });
-    v.addEventListener('waiting', function() { _emit('buffering'); });
-    v.addEventListener('ended',   function() { _emit('ended'); });
-    v.addEventListener('loadedmetadata', function() { _emit('ready'); });
-  }
+  // Os event listeners do <video> HTML5 são registrados pelo
+  // _injectControlScript (ScreeningPlayerWidget) via callHandler nativo.
+  // Não registramos aqui para evitar duplicação de eventos.
 })();
 ''';
 
