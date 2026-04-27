@@ -607,7 +607,16 @@ class _ChatInputState extends State<_ChatInput> {
                       color: Colors.white.withValues(alpha: 0.4),
                       fontSize: 14,
                     ),
+                    // Remover bordas em TODOS os estados para evitar o bug
+                    // visual de caixa quadrada dentro do container arredondado.
                     border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    // Fundo transparente para não sobrepor o container pai
+                    filled: false,
                     contentPadding:
                         const EdgeInsets.symmetric(horizontal: 16),
                   ),
