@@ -59,6 +59,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
 
   // ── Animação de entrada ──────────────────────────────────────────────────────────
   bool _entryAnimationDone = false;
+  bool _entryAnimationExiting = false;
 
   // ── Emoji rain ────────────────────────────────────────────────────────────────
   // BUGFIX: usar GlobalKey local em vez da key estática global para evitar
@@ -76,6 +77,15 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
     // Entrar na sala após o primeiro frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _joinRoom();
+    });
+
+    // Timeout de segurança: se a animação de entrada não for descartada em 15s,
+    // forçar a saída para evitar loop infinito de carregamento.
+    Future.delayed(const Duration(seconds: 15), () {
+      if (mounted && !_entryAnimationDone && !_entryAnimationExiting) {
+        debugPrint('[ScreeningRoomScreen] Timeout da animação de entrada — forçando saída.');
+        setState(() => _entryAnimationExiting = true);
+      }
     });
 
     // Se vier com vídeo inicial, definir no player após o join
@@ -117,6 +127,10 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
         );
 
     final roomState = ref.read(screeningRoomProvider(widget.threadId));
+    // Disparar o fade-out da animação de entrada assim que a sala estiver ativa
+    if (mounted && !_entryAnimationExiting) {
+      setState(() => _entryAnimationExiting = true);
+    }
     if (roomState.status == ScreeningRoomStatus.active &&
         roomState.sessionId != null) {
       // Iniciar voice chat
@@ -373,6 +387,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
       entryAnimationDone: _entryAnimationDone,
       onTap: _onTapScreen,
       onMinimize: _minimize,
+      entryAnimationExiting: _entryAnimationExiting,
       onEntryAnimationComplete: () {
         if (mounted) setState(() => _entryAnimationDone = true);
       },

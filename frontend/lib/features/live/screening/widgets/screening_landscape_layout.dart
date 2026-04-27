@@ -29,6 +29,7 @@ class ScreeningAdaptiveLayout extends ConsumerStatefulWidget {
   final String threadId;
   final bool showControls;
   final bool entryAnimationDone;
+  final bool entryAnimationExiting;
   final VoidCallback onTap;
   final VoidCallback onMinimize;
   final VoidCallback onEntryAnimationComplete;
@@ -41,6 +42,7 @@ class ScreeningAdaptiveLayout extends ConsumerStatefulWidget {
     required this.threadId,
     required this.showControls,
     required this.entryAnimationDone,
+    required this.entryAnimationExiting,
     required this.onTap,
     required this.onMinimize,
     required this.onEntryAnimationComplete,
@@ -96,6 +98,7 @@ class _ScreeningAdaptiveLayoutState
             threadId: widget.threadId,
             showControls: widget.showControls,
             entryAnimationDone: widget.entryAnimationDone,
+            entryAnimationExiting: widget.entryAnimationExiting,
             onTap: widget.onTap,
             onMinimize: widget.onMinimize,
             onEntryAnimationComplete: widget.onEntryAnimationComplete,
@@ -109,6 +112,7 @@ class _ScreeningAdaptiveLayoutState
           threadId: widget.threadId,
           showControls: widget.showControls,
           entryAnimationDone: widget.entryAnimationDone,
+          entryAnimationExiting: widget.entryAnimationExiting,
           onTap: widget.onTap,
           onMinimize: widget.onMinimize,
           onEntryAnimationComplete: widget.onEntryAnimationComplete,
@@ -128,6 +132,7 @@ class _PortraitLayout extends StatelessWidget {
   final String threadId;
   final bool showControls;
   final bool entryAnimationDone;
+  final bool entryAnimationExiting;
   final VoidCallback onTap;
   final VoidCallback onMinimize;
   final VoidCallback onEntryAnimationComplete;
@@ -139,6 +144,7 @@ class _PortraitLayout extends StatelessWidget {
     required this.threadId,
     required this.showControls,
     required this.entryAnimationDone,
+    required this.entryAnimationExiting,
     required this.onTap,
     required this.onMinimize,
     required this.onEntryAnimationComplete,
@@ -238,6 +244,7 @@ class _PortraitLayout extends StatelessWidget {
           if (!entryAnimationDone)
             Positioned.fill(
               child: ScreeningEntryAnimation(
+                isExiting: entryAnimationExiting,
                 onComplete: onEntryAnimationComplete,
               ),
             ),
@@ -255,6 +262,7 @@ class _LandscapeLayout extends StatelessWidget {
   final String threadId;
   final bool showControls;
   final bool entryAnimationDone;
+  final bool entryAnimationExiting;
   final VoidCallback onTap;
   final VoidCallback onMinimize;
   final VoidCallback onEntryAnimationComplete;
@@ -266,6 +274,7 @@ class _LandscapeLayout extends StatelessWidget {
     required this.threadId,
     required this.showControls,
     required this.entryAnimationDone,
+    required this.entryAnimationExiting,
     required this.onTap,
     required this.onMinimize,
     required this.onEntryAnimationComplete,
@@ -352,6 +361,7 @@ class _LandscapeLayout extends StatelessWidget {
                 if (!entryAnimationDone)
                   Positioned.fill(
                     child: ScreeningEntryAnimation(
+                      isExiting: entryAnimationExiting,
                       onComplete: onEntryAnimationComplete,
                     ),
                   ),
