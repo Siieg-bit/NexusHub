@@ -128,15 +128,40 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
       }
 
       // ── Carregar participantes iniciais ──
+      // Nota: call_participants.user_id tem FK para auth.users (não public.profiles),
+      // por isso o join automático do PostgREST não funciona. Buscamos os perfis
+      // separadamente via query em public.profiles.
       debugPrint('[ScreeningRoom] Carregando participantes iniciais...');
-      final participantsData = await SupabaseService.table('call_participants')
-          .select('user_id, profiles(nickname, icon_url)')
+      final participantsRaw = await SupabaseService.table('call_participants')
+          .select('user_id')
           .eq('call_session_id', sessionId)
           .eq('status', 'connected');
 
-      final participants = (participantsData as List)
-          .map((p) => ScreeningParticipant.fromMap(p as Map<String, dynamic>))
+      final userIds = (participantsRaw as List)
+          .map((p) => (p as Map<String, dynamic>)['user_id'] as String?)
+          .whereType<String>()
           .toList();
+
+      List<ScreeningParticipant> participants = [];
+      if (userIds.isNotEmpty) {
+        final profilesData = await SupabaseService.table('profiles')
+            .select('id, nickname, icon_url')
+            .inFilter('id', userIds);
+        final profileMap = <String, Map<String, dynamic>>{};
+        for (final p in (profilesData as List)) {
+          final row = p as Map<String, dynamic>;
+          profileMap[row['id'] as String] = row;
+        }
+        participants = userIds.map((uid) {
+          final profile = profileMap[uid];
+          return ScreeningParticipant(
+            userId: uid,
+            username: profile?['nickname'] as String? ?? 'Usuário',
+            avatarUrl: profile?['icon_url'] as String?,
+            isHost: uid == (hostUserId ?? userId),
+          );
+        }).toList();
+      }
       debugPrint('[ScreeningRoom] Participantes carregados: ${participants.length}');
 
       state = state.copyWith(

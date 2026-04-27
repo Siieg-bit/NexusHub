@@ -3099,6 +3099,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             key: _appBarMenuKey,
             icon: Icon(Icons.more_vert_rounded, color: Colors.grey[500]),
             color: context.surfaceColor,
+            // BUGFIX: position=under + offset evita o erro 'RenderBox was not laid out'
+            // que ocorre quando o Flutter tenta calcular a posição do botão via
+            // localToGlobal antes do layout estar completo (ex: durante transição).
+            position: PopupMenuPosition.under,
+            offset: const Offset(0, 4),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(r.s(12))),
             onSelected: (val) {
