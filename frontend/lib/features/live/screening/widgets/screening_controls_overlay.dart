@@ -492,7 +492,7 @@ class _SeekBarState extends ConsumerState<_SeekBar> {
 }
 
 // =============================================================================
-// _HostControlsConsumer — Widget isolado que observa playerState
+// _HostControlsConsumer — Widget isolado que observa playerState e roomState
 // Evita que o overlay inteiro reconstrua a cada tick do polling de posição.
 // =============================================================================
 class _HostControlsConsumer extends ConsumerWidget {
@@ -508,57 +508,116 @@ class _HostControlsConsumer extends ConsumerWidget {
     required this.onTogglePlayPause,
   });
 
+  /// Navega para um vídeo específico da fila e faz broadcast.
+  Future<void> _navigateTo(WidgetRef ref, Map<String, String> item) async {
+    final notifier = ref.read(screeningRoomProvider(threadId).notifier);
+    await notifier.updateVideo(
+      videoUrl: item['url'] ?? '',
+      videoTitle: item['title'] ?? '',
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final playerState = ref.watch(screeningPlayerProvider(sessionId));
+    final roomState   = ref.watch(screeningRoomProvider(threadId));
+
+    // ── Navegação de fila ─────────────────────────────────────────────
+    final queue       = roomState.videoQueue;
+    final currentUrl  = roomState.currentVideoUrl ?? '';
+    final currentIdx  = queue.indexWhere((e) => (e['url'] ?? '') == currentUrl);
+    final hasPrev     = currentIdx > 0;
+    final hasNext     = currentIdx >= 0 && currentIdx < queue.length - 1;
+    // Se o vídeo atual não está na fila mas a fila tem itens, “próximo” é o primeiro
+    final hasNextFallback = currentIdx < 0 && queue.isNotEmpty;
+
+    final prevItem = hasPrev ? queue[currentIdx - 1] : null;
+    final nextItem = hasNext
+        ? queue[currentIdx + 1]
+        : (hasNextFallback ? queue[0] : null);
+
+    // ── Seek bar: mostrar sempre que tiver duração (VOD) ─────────────────
+    // isLiveStream = duration == Duration.zero; se duration > 0 é VOD
+    final showSeekBar = playerState.duration > Duration.zero;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Seek bar (apenas para vídeos não-live) ──────────────────────
-          if (!playerState.isLiveStream && playerState.duration > Duration.zero)
+          // ── Seek bar (apenas para vídeos não-live) ──────────────────────────
+          if (showSeekBar)
             _SeekBar(
               sessionId: sessionId,
               position: playerState.position,
               duration: playerState.duration,
             ),
           const SizedBox(height: 12),
-          // ── Botões de controle ──────────────────────────────────────────
+          // ── Botões de controle ──────────────────────────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _ControlButton(
-                icon: Icons.replay_10_rounded,
-                size: 32,
-                onTap: () {
-                  final pos = playerState.position;
-                  final newPos = pos - const Duration(seconds: 10);
-                  onSeekAndBroadcast(
-                    newPos.isNegative ? Duration.zero : newPos,
-                    playerState.isPlaying,
-                  );
-                },
-              ),
-              const SizedBox(width: 28),
+              // Botão Anterior (apenas quando há item anterior na fila)
+              if (prevItem != null)
+                _ControlButton(
+                  icon: Icons.skip_previous_rounded,
+                  size: 28,
+                  onTap: () => _navigateTo(ref, prevItem),
+                )
+              else
+                // Placeholder para manter centralização quando não há anterior
+                const SizedBox(width: 48),
+              const SizedBox(width: 8),
+              // Botão -10s (apenas para VOD)
+              if (!playerState.isLiveStream)
+                _ControlButton(
+                  icon: Icons.replay_10_rounded,
+                  size: 28,
+                  onTap: () {
+                    final pos = playerState.position;
+                    final newPos = pos - const Duration(seconds: 10);
+                    onSeekAndBroadcast(
+                      newPos.isNegative ? Duration.zero : newPos,
+                      playerState.isPlaying,
+                    );
+                  },
+                )
+              else
+                const SizedBox(width: 48),
+              const SizedBox(width: 16),
+              // Botão Play/Pause (central)
               _PlayPauseButton(
                 isPlaying: playerState.isPlaying,
                 isBuffering: playerState.isBuffering,
                 onTap: () => onTogglePlayPause(playerState),
               ),
-              const SizedBox(width: 28),
-              _ControlButton(
-                icon: Icons.forward_10_rounded,
-                size: 32,
-                onTap: () {
-                  final pos = playerState.position;
-                  onSeekAndBroadcast(
-                    pos + const Duration(seconds: 10),
-                    playerState.isPlaying,
-                  );
-                },
-              ),
+              const SizedBox(width: 16),
+              // Botão +10s (apenas para VOD)
+              if (!playerState.isLiveStream)
+                _ControlButton(
+                  icon: Icons.forward_10_rounded,
+                  size: 28,
+                  onTap: () {
+                    final pos = playerState.position;
+                    onSeekAndBroadcast(
+                      pos + const Duration(seconds: 10),
+                      playerState.isPlaying,
+                    );
+                  },
+                )
+              else
+                const SizedBox(width: 48),
+              const SizedBox(width: 8),
+              // Botão Próximo (apenas quando há item próximo na fila)
+              if (nextItem != null)
+                _ControlButton(
+                  icon: Icons.skip_next_rounded,
+                  size: 28,
+                  onTap: () => _navigateTo(ref, nextItem),
+                )
+              else
+                // Placeholder para manter centralização quando não há próximo
+                const SizedBox(width: 48),
             ],
           ),
         ],

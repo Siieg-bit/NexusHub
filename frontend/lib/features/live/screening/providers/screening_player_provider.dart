@@ -191,6 +191,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   Timer? _positionPollTimer;
   bool _bridgeInjected = false;
   bool _isNativeMode = false;
+  bool _webViewDisposed = false; // true quando o InAppWebView nativo foi destruído
 
   ScreeningPlayerNotifier({required this.sessionId, required Ref ref})
       : _ref = ref,
@@ -202,8 +203,19 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   void registerWebViewController(InAppWebViewController controller) {
     _webViewController = controller;
     _bridgeInjected = false;
+    _webViewDisposed = false;
     // Ao registrar um WebView, sair do modo nativo
     _isNativeMode = false;
+  }
+
+  /// Chamado quando o InAppWebView é destruído (onDispose do widget).
+  /// Impede MissingPluginException ao tentar evaluateJavascript em canal morto.
+  void unregisterWebViewController() {
+    _webViewDisposed = true;
+    _positionPollTimer?.cancel();
+    _positionPollTimer = null;
+    _webViewController = null;
+    _bridgeInjected = false;
   }
 
   /// Chamado pelo widget após injetar o _injectControlScript para evitar
@@ -271,7 +283,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   }
 
   Future<int?> _getPositionMs() async {
-    if (_webViewController == null || _isNativeMode) return null;
+    if (_webViewController == null || _isNativeMode || _webViewDisposed) return null;
     try {
       final result = await _webViewController!.evaluateJavascript(
         source: 'window._nexusPlayer ? window._nexusPlayer.getPosition() : -1;',
@@ -279,7 +291,13 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
       final val = result as num?;
       if (val != null && val >= 0) return val.toInt();
     } catch (e) {
-      debugPrint('[ScreeningPlayer] getPositionMs error: $e');
+      // Silenciar MissingPluginException — ocorre quando o WebView foi destruído
+      // antes do timer ser cancelado. Não é um erro real.
+      if (!e.toString().contains('MissingPluginException')) {
+        debugPrint('[ScreeningPlayer] getPositionMs error: $e');
+      }
+      _webViewDisposed = true;
+      _positionPollTimer?.cancel();
     }
     return null;
   }
@@ -579,6 +597,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   void dispose() {
     _positionPollTimer?.cancel();
     _positionPollTimer = null;
+    _webViewDisposed = true;
     _webViewController = null; // evita MissingPluginException após dispose
     _nativePlayer = null;
     _drmPlayer = null;

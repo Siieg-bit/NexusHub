@@ -84,6 +84,11 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
 
   @override
   void dispose() {
+    // Notificar o provider que o WebView foi destruído para evitar
+    // MissingPluginException em evaluateJavascript após dispose.
+    ref
+        .read(screeningPlayerProvider(widget.sessionId).notifier)
+        .unregisterWebViewController();
     _seekLeftController.dispose();
     _seekRightController.dispose();
     super.dispose();
