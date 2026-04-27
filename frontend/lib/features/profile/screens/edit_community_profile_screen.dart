@@ -75,7 +75,7 @@ class _EditCommunityProfileScreenState
       final membership = await SupabaseService.table('community_members')
           .select(
               'local_nickname, local_bio, local_icon_url, local_banner_url, '
-              'local_background_url, local_background_color, local_gallery, active_avatar_frame_id')
+              'local_background_url, local_background_color, local_gallery')
           .eq('community_id', widget.communityId)
           .eq('user_id', userId)
           .maybeSingle();
@@ -84,36 +84,29 @@ class _EditCommunityProfileScreenState
           ? Map<String, dynamic>.from(membership as Map)
           : null;
 
-      // Carregar moldura ativa fora do setState (operação async)
+      // Carregar moldura global (is_equipped) — única fonte de verdade
       String? resolvedFrameUrl;
       String? resolvedFramePurchaseId;
-      if (hydratedMembership != null) {
-        final activeFramePurchaseId =
-            hydratedMembership['active_avatar_frame_id'] as String?;
-        if (activeFramePurchaseId != null) {
-          try {
-            final fp = await SupabaseService.table('user_purchases')
-                .select(
-                    'id, store_items!user_purchases_item_id_fkey(preview_url, asset_url, asset_config)')
-                .eq('id', activeFramePurchaseId)
-                .maybeSingle();
-            if (fp != null) {
-              final si = fp['store_items'] as Map<String, dynamic>?;
-              if (si != null) {
-                String? fUrl = si['preview_url'] as String?;
-                if (fUrl == null || fUrl.isEmpty)
-                  fUrl = si['asset_url'] as String?;
-                if ((fUrl == null || fUrl.isEmpty) &&
-                    si['asset_config'] is Map) {
-                  fUrl = (si['asset_config'] as Map)['frame_url'] as String?;
-                }
-                resolvedFrameUrl = fUrl;
-                resolvedFramePurchaseId = activeFramePurchaseId;
-              }
+      try {
+        final equipped = await SupabaseService.table('user_purchases')
+            .select(
+                'id, store_items!user_purchases_item_id_fkey(preview_url, asset_url, asset_config)')
+            .eq('user_id', userId)
+            .eq('is_equipped', true)
+            .maybeSingle();
+        if (equipped != null) {
+          final si = equipped['store_items'] as Map<String, dynamic>?;
+          if (si != null) {
+            String? fUrl = si['preview_url'] as String?;
+            if (fUrl == null || fUrl.isEmpty) fUrl = si['asset_url'] as String?;
+            if ((fUrl == null || fUrl.isEmpty) && si['asset_config'] is Map) {
+              fUrl = (si['asset_config'] as Map)['frame_url'] as String?;
             }
-          } catch (_) {}
+            resolvedFrameUrl = fUrl;
+            resolvedFramePurchaseId = equipped['id'] as String?;
+          }
         }
-      }
+      } catch (_) {}
 
       if (mounted) {
         setState(() {
@@ -501,6 +494,34 @@ class _EditCommunityProfileScreenState
         bannerUrlToSave = _gallery.isNotEmpty ? _gallery.first : null;
       }
 
+      // Se a moldura foi alterada, equipa globalmente via equip_store_item.
+      // Isso garante que a moldura é a mesma em todas as comunidades e no perfil global.
+      if (_frameSelectionChanged && _selectedFramePurchaseId != null) {
+        await SupabaseService.rpc(
+          'equip_store_item',
+          params: {
+            'p_purchase_id': _selectedFramePurchaseId,
+            'p_item_type': 'avatar_frame',
+          },
+        );
+      } else if (_frameSelectionChanged && _selectedFramePurchaseId == null) {
+        // Usuário removeu a moldura: desequipa qualquer moldura global ativa.
+        final equipped = await SupabaseService.table('user_purchases')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('is_equipped', true)
+            .maybeSingle();
+        if (equipped != null) {
+          await SupabaseService.rpc(
+            'equip_store_item',
+            params: {
+              'p_purchase_id': equipped['id'] as String,
+              'p_item_type': 'avatar_frame',
+            },
+          );
+        }
+      }
+
       await SupabaseService.client.rpc('update_community_profile', params: {
         'p_community_id': widget.communityId,
         'p_local_nickname': nickname.isEmpty ? null : nickname,
@@ -510,27 +531,10 @@ class _EditCommunityProfileScreenState
         'p_local_background_url': backgroundUrlToSave,
         'p_local_background_color': backgroundColorToSave,
         'p_local_gallery': galleryPayload,
-        'p_active_avatar_frame_purchase_id':
-            _frameSelectionChanged ? _selectedFramePurchaseId : null,
-        'p_frame_changed': _frameSelectionChanged,
       });
 
-      // Nota: community_profile_screen usa _loadProfile() com estado local
-      // (não usa communityMembershipProvider). O recarregamento é feito via
-      // .then((_) => _loadProfile()) no onTap do botão de editar na tela de perfil.
-      // O invalidate abaixo serve apenas para atualizar a community_detail_screen
-      // caso ela esteja na pilha de navegação.
       ref.invalidate(communityMembershipProvider(widget.communityId));
-
-      // Invalida os providers de moldura para que a tela de perfil reflita
-      // a nova moldura imediatamente ao voltar, sem precisar reiniciar o app.
-      // communityFrameProvider: moldura local da comunidade (active_avatar_frame_id)
-      // equippedItemsProvider: moldura global (is_equipped) — invalida por precaução
-      // caso a compra rápida no frame_picker_sheet tenha alterado is_equipped.
-      ref.invalidate(communityFrameProvider((
-        userId: userId,
-        communityId: widget.communityId,
-      )));
+      // Invalida moldura global para refletir imediatamente em todas as telas.
       ref.invalidate(equippedItemsProvider(userId));
 
       if (mounted) {

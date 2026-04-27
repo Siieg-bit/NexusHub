@@ -974,24 +974,10 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               // Avatar centralizado
-                              // Bug fix: prioriza a moldura local da comunidade
-                              // (active_avatar_frame_id em community_members);
-                              // usa a moldura global (is_equipped) como fallback.
-                              // Resolve moldura: local da comunidade tem prioridade.
-                              // Se communityFrameProvider retornar mapa não-nulo
-                              // (mesmo com frame_url == null, que é o sentinel 'none'),
-                              // não faz fallback para a moldura global.
+                              // Moldura é 100% global: usa equippedItemsProvider
+                              // (is_equipped em user_purchases) como única fonte.
                               Builder(builder: (context) {
-                                final communityFrameData = ref
-                                    .watch(communityFrameProvider((
-                                      userId: widget.userId,
-                                      communityId: widget.communityId,
-                                    )))
-                                    .valueOrNull;
-                                // communityFrameData == null → nunca configurou → usa global
-                                // communityFrameData != null → já configurou (pode ser 'none') → não usa global
-                                final frameData = communityFrameData ??
-                                    ref
+                                final frameData = ref
                                         .watch(equippedItemsProvider(widget.userId))
                                         .valueOrNull ??
                                     {};
@@ -1000,18 +986,18 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                   frameUrl: frameData['frame_url'] as String?,
                                   isFrameAnimated:
                                       frameData['frame_is_animated'] as bool? ?? false,
-                                size: r.s(96),
-                                showAminoPlus: isPremium,
-                                hasActiveStory: _hasActiveStory,
-                                onTap: profileMediaUrls.isEmpty
-                                    ? null
-                                    : () => _openProfileMediaViewer(
-                                          context,
-                                          mediaUrls: profileMediaUrls,
-                                          initialUrl: displayAvatar,
-                                          heroTag:
-                                              'community-profile-media-${widget.communityId}-${widget.userId}',
-                                        ),
+                                  size: r.s(96),
+                                  showAminoPlus: isPremium,
+                                  hasActiveStory: _hasActiveStory,
+                                  onTap: profileMediaUrls.isEmpty
+                                      ? null
+                                      : () => _openProfileMediaViewer(
+                                            context,
+                                            mediaUrls: profileMediaUrls,
+                                            initialUrl: displayAvatar,
+                                            heroTag:
+                                                'community-profile-media-${widget.communityId}-${widget.userId}',
+                                          ),
                                 );
                               }),
                               SizedBox(height: r.s(10)),
