@@ -332,3 +332,23 @@ CREATE INDEX IF NOT EXISTS idx_chat_threads_temp ON public.chat_threads(is_tempo
 
 CREATE INDEX IF NOT EXISTS idx_chat_threads_match_dm ON public.chat_threads(type)
   WHERE type = 'match_dm';
+
+-- ── 11. RPC set_user_interests — salva os interesses do usuário no perfil ─────
+-- A coluna selected_interests em profiles é JSONB (criada na migration 001).
+-- Esta RPC permite que o usuário autenticado atualize seus próprios interesses.
+DROP FUNCTION IF EXISTS public.set_user_interests(TEXT[]);
+
+CREATE OR REPLACE FUNCTION public.set_user_interests(p_interests JSONB)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  UPDATE public.profiles
+  SET selected_interests = p_interests
+  WHERE id = auth.uid();
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.set_user_interests(JSONB) TO authenticated;
