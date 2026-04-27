@@ -22,6 +22,11 @@ class ScreeningPlayerState {
   /// Duração total do vídeo (0 para streams ao vivo).
   final Duration duration;
 
+  /// TRUE quando a plataforma é explicitamente ao vivo (Twitch, Kick, YouTubeLive).
+  /// Tem precedência sobre o cálculo por duration == Duration.zero, pois
+  /// Twitch e Kick podem reportar uma duração de buffer DVR mesmo sendo live.
+  final bool isLive;
+
   /// Velocidade de reprodução atual (1.0 = normal, 1.05 = microsync acelerado).
   final double playbackRate;
 
@@ -40,9 +45,12 @@ class ScreeningPlayerState {
     this.playbackRate = 1.0,
     this.isReady = false,
     this.hasEnded = false,
+    this.isLive = false,
   });
 
-  bool get isLiveStream => duration == Duration.zero;
+  /// TRUE se o conteúdo é ao vivo: plataforma explicitamente live (Twitch,
+  /// Kick, YouTubeLive) OU duração desconhecida (duration == Duration.zero).
+  bool get isLiveStream => isLive || duration == Duration.zero;
 
   ScreeningPlayerState copyWith({
     ScreeningPlayerType? playerType,
@@ -53,6 +61,7 @@ class ScreeningPlayerState {
     double? playbackRate,
     bool? isReady,
     bool? hasEnded,
+    bool? isLive,
   }) {
     return ScreeningPlayerState(
       playerType: playerType ?? this.playerType,
@@ -63,6 +72,7 @@ class ScreeningPlayerState {
       playbackRate: playbackRate ?? this.playbackRate,
       isReady: isReady ?? this.isReady,
       hasEnded: hasEnded ?? this.hasEnded,
+      isLive: isLive ?? this.isLive,
     );
   }
 }

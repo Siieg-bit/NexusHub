@@ -262,6 +262,15 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         // overlay de loading do WebView não fique preso em true.
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted && _isLoading) setState(() => _isLoading = false);
+          // Informar ao provider se é live stream (Twitch HLS é sempre ao vivo).
+          if (mounted) {
+            final isLivePlatform = resolution.platform == StreamPlatform.twitch
+                || resolution.platform == StreamPlatform.kick
+                || resolution.platform == StreamPlatform.youtubeLive;
+            ref
+                .read(screeningPlayerProvider(widget.sessionId).notifier)
+                .setIsLive(isLivePlatform);
+          }
         });
         return ScreeningNativePlayerWidget(
           key: ValueKey(resolution.url),
@@ -317,9 +326,15 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
           ),
           onWebViewCreated: (controller) {
             _webViewController = controller;
-            ref
-                .read(screeningPlayerProvider(widget.sessionId).notifier)
-                .registerWebViewController(controller);
+            final notifier = ref.read(screeningPlayerProvider(widget.sessionId).notifier);
+            notifier.registerWebViewController(controller);
+            // Informar ao provider se é live stream com base na plataforma.
+            // Twitch, Kick e YouTubeLive são sempre ao vivo — a seek bar
+            // não deve aparecer mesmo que o player reporte uma duração de DVR.
+            final isLivePlatform = resolution.platform == StreamPlatform.twitch
+                || resolution.platform == StreamPlatform.kick
+                || resolution.platform == StreamPlatform.youtubeLive;
+            notifier.setIsLive(isLivePlatform);
             // Handler nativo JS→Flutter para eventos do player
             // Mais eficiente que console.log polling: o JS chama diretamente
             controller.addJavaScriptHandler(

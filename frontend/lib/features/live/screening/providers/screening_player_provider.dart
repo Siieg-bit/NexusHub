@@ -218,6 +218,15 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     _bridgeInjected = false;
   }
 
+  /// Define explicitamente se o conteúdo é ao vivo.
+  /// Chamado pelo widget quando a plataforma é conhecida (Twitch, Kick, YouTubeLive).
+  /// Tem precedência sobre o cálculo por duration == Duration.zero.
+  void setIsLive(bool isLive) {
+    if (state.isLive != isLive) {
+      state = state.copyWith(isLive: isLive);
+    }
+  }
+
   /// Chamado pelo widget após injetar o _injectControlScript para evitar
   /// que o provider injete o bridge duplicado via _ensureBridge().
   void markBridgeInjected() {
