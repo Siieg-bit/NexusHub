@@ -654,11 +654,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   void _onRealtimeStatusChanged() {
-    if (!mounted || _isDisposed) return;
+    if (_isDisposed) return;
     final status = RealtimeService.instance.connectionStatus.value;
     final connected = status == RealtimeConnectionStatus.connected;
     if (connected != _realtimeConnected) {
-      setState(() => _realtimeConnected = connected);
+      // Adiar o setState para o próximo frame para evitar
+      // "setState called when widget tree was locked" durante dispose.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _isDisposed) return;
+        setState(() => _realtimeConnected = connected);
+      });
     }
   }
 
