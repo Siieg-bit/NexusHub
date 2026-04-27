@@ -11,9 +11,10 @@ import '../models/sync_event.dart';
 // ScreeningControlsOverlay — Controles flutuantes da Sala de Projeção
 //
 // Camada 4 do Stack imersivo. Aparece ao tocar na tela e some após 3s.
-// Contém:
-// - TopBar: botão voltar, título do vídeo, contagem de viewers, mute
-// - HostControls: play/pause, seek bar, trocar vídeo (apenas host)
+// Layout:
+// - Centro: botões play/pause, ±10s, anterior/próximo (apenas host)
+// - Bottom: seek bar com tempos + botão fullscreen (apenas host)
+// - Toque na área transparente central: esconde os controles (toggle)
 // =============================================================================
 
 class ScreeningControlsOverlay extends ConsumerStatefulWidget {
@@ -21,6 +22,9 @@ class ScreeningControlsOverlay extends ConsumerStatefulWidget {
   final String threadId;
   final bool visible;
   final VoidCallback onMinimize;
+  /// Callback chamado quando o usuário toca na área transparente do overlay
+  /// para esconder os controles (toggle off).
+  final VoidCallback? onTapToDismiss;
 
   const ScreeningControlsOverlay({
     super.key,
@@ -28,6 +32,7 @@ class ScreeningControlsOverlay extends ConsumerStatefulWidget {
     required this.threadId,
     required this.visible,
     required this.onMinimize,
+    this.onTapToDismiss,
   });
 
   @override
@@ -40,6 +45,9 @@ class _ScreeningControlsOverlayState
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
+
+  // Estado de fullscreen (landscape forçado)
+  bool _isFullscreen = false;
 
   @override
   void initState() {
@@ -68,8 +76,37 @@ class _ScreeningControlsOverlayState
 
   @override
   void dispose() {
+    // Restaurar orientação ao sair
+    if (_isFullscreen) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    }
     _animController.dispose();
     super.dispose();
+  }
+
+  void _toggleFullscreen() {
+    HapticFeedback.selectionClick();
+    setState(() => _isFullscreen = !_isFullscreen);
+    if (_isFullscreen) {
+      // Forçar landscape
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    } else {
+      // Restaurar todas as orientações
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    }
   }
 
   @override
@@ -77,6 +114,15 @@ class _ScreeningControlsOverlayState
     final roomState = ref.watch(screeningRoomProvider(widget.threadId));
     final mq = MediaQuery.of(context);
     final hasVideo = roomState.currentVideoUrl?.isNotEmpty == true;
+
+    // Atualizar estado de fullscreen com base na orientação atual
+    final isLandscape = mq.orientation == Orientation.landscape;
+    if (isLandscape != _isFullscreen) {
+      // Sincronizar estado interno com a orientação real do dispositivo
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _isFullscreen = isLandscape);
+      });
+    }
 
     return Stack(
       children: [
@@ -88,7 +134,19 @@ class _ScreeningControlsOverlayState
               ignoring: !widget.visible,
               child: Stack(
                 children: [
-                  // Gradiente superior
+                  // ── Área transparente central: toque para esconder controles ──
+                  // Posicionada entre o gradiente superior e os controles do bottom.
+                  // Quando o usuário toca aqui (fora dos botões), os controles somem.
+                  if (widget.onTapToDismiss != null)
+                    Positioned.fill(
+                      child: GestureDetector(
+                        onTap: widget.onTapToDismiss,
+                        behavior: HitTestBehavior.translucent,
+                        child: const SizedBox.expand(),
+                      ),
+                    ),
+
+                  // ── Gradiente superior ─────────────────────────────────────
                   Positioned(
                     top: 0, left: 0, right: 0,
                     height: 80 + mq.padding.top,
@@ -107,10 +165,11 @@ class _ScreeningControlsOverlayState
                       ),
                     ),
                   ),
-                  // Gradiente inferior
+
+                  // ── Gradiente inferior ─────────────────────────────────────
                   Positioned(
                     bottom: 0, left: 0, right: 0,
-                    height: 140,
+                    height: 160,
                     child: IgnorePointer(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
@@ -118,7 +177,7 @@ class _ScreeningControlsOverlayState
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                             colors: [
-                              Colors.black.withValues(alpha: 0.80),
+                              Colors.black.withValues(alpha: 0.85),
                               Colors.transparent,
                             ],
                           ),
@@ -126,26 +185,42 @@ class _ScreeningControlsOverlayState
                       ),
                     ),
                   ),
-                  // Controles do Player (bottom) — apenas host
+
+                  // ── Botões centrais (play/pause, ±10s, anterior/próximo) ───
+                  // Apenas host. Posicionados no centro vertical do player.
                   if (roomState.isHost)
-                    Positioned(
-                      bottom: 0, left: 0, right: 0,
-                      child: _HostControlsConsumer(
-                        sessionId: widget.sessionId,
-                        threadId: widget.threadId,
-                        onSeekAndBroadcast: _seekAndBroadcast,
-                        onTogglePlayPause: _togglePlayPause,
-                                      ),
+                    Positioned.fill(
+                      child: Center(
+                        child: _CenterControlsConsumer(
+                          sessionId: widget.sessionId,
+                          threadId: widget.threadId,
+                          onSeekAndBroadcast: _seekAndBroadcast,
+                          onTogglePlayPause: _togglePlayPause,
+                        ),
+                      ),
                     ),
+
+                  // ── Seek bar + botão fullscreen (bottom) ───────────────────
+                  // Seek bar: apenas host e apenas para VOD (duration > 0).
+                  // Botão fullscreen: sempre visível quando há vídeo.
+                  Positioned(
+                    bottom: 0, left: 0, right: 0,
+                    child: _BottomControlsConsumer(
+                      sessionId: widget.sessionId,
+                      threadId: widget.threadId,
+                      onSeekAndBroadcast: _seekAndBroadcast,
+                      isFullscreen: _isFullscreen,
+                      onToggleFullscreen: _toggleFullscreen,
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
-        // TopBar agora gerenciada pelo _PortraitLayout (ScreeningTopBar fixo)
+        // TopBar gerenciada pelo _PortraitLayout (ScreeningTopBar fixo)
       ],
     );
   }
-
 
   void _togglePlayPause(dynamic playerState) {
     final syncNotifier =
@@ -185,7 +260,6 @@ class _ScreeningControlsOverlayState
       serverTimestampMs: DateTime.now().millisecondsSinceEpoch,
     ));
   }
-
 }
 
 // ── Widgets auxiliares ────────────────────────────────────────────────────────
@@ -235,8 +309,6 @@ class _ControlButtonState extends State<_ControlButton>
   }
 
   void _handleTap() {
-    // Haptic imediato + animação sem await — callback executado imediatamente
-    // sem delay de ~200ms que causava travamento ao clicar nos botões.
     HapticFeedback.selectionClick();
     _pressController.forward().then((_) => _pressController.reverse());
     widget.onTap();
@@ -320,7 +392,6 @@ class _PlayPauseButtonState extends State<_PlayPauseButton>
   }
 
   void _handleTap() {
-    // Haptic imediato + animação sem await — callback executado imediatamente
     HapticFeedback.mediumImpact();
     _pressController.forward().then((_) => _pressController.reverse());
     widget.onTap();
@@ -333,8 +404,8 @@ class _PlayPauseButtonState extends State<_PlayPauseButton>
       child: ScaleTransition(
         scale: _scaleAnim,
         child: Container(
-          width: 60,
-          height: 60,
+          width: 64,
+          height: 64,
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
@@ -366,7 +437,7 @@ class _PlayPauseButtonState extends State<_PlayPauseButton>
                         : Icons.play_arrow_rounded,
                     key: ValueKey(widget.isPlaying),
                     color: Colors.black,
-                    size: 34,
+                    size: 36,
                   ),
                 ),
         ),
@@ -380,11 +451,13 @@ class _SeekBar extends ConsumerStatefulWidget {
   final String sessionId;
   final Duration position;
   final Duration duration;
+  final void Function(Duration position, bool isPlaying) onSeekAndBroadcast;
 
   const _SeekBar({
     required this.sessionId,
     required this.position,
     required this.duration,
+    required this.onSeekAndBroadcast,
   });
 
   @override
@@ -432,25 +505,12 @@ class _SeekBarState extends ConsumerState<_SeekBar> {
               });
             },
             onChanged: (value) {
-              // Apenas atualiza o valor visual durante o drag.
-              // O seek real é feito somente no onChangeEnd para evitar
-              // avalanche de evaluateJavascript a cada frame.
               setState(() => _dragValue = value);
             },
             onChangeEnd: (value) {
               final newPos = Duration(milliseconds: (value * total).toInt());
-              // 1. Seek local imediato para o host ver o resultado
-              ref
-                  .read(screeningPlayerProvider(widget.sessionId).notifier)
-                  .seek(newPos);
-              // 2. Broadcast para sincronizar os outros participantes
-              ref
-                  .read(screeningSyncProvider(widget.sessionId).notifier)
-                  .broadcastEvent(SyncEvent(
-                    type: SyncEventType.seek,
-                    positionMs: newPos.inMilliseconds,
-                    serverTimestampMs: DateTime.now().millisecondsSinceEpoch,
-                  ));
+              final playerState = ref.read(screeningPlayerProvider(widget.sessionId));
+              widget.onSeekAndBroadcast(newPos, playerState.isPlaying);
               setState(() => _isDragging = false);
             },
           ),
@@ -492,24 +552,23 @@ class _SeekBarState extends ConsumerState<_SeekBar> {
 }
 
 // =============================================================================
-// _HostControlsConsumer — Widget isolado que observa playerState e roomState
-// Evita que o overlay inteiro reconstrua a cada tick do polling de posição.
+// _CenterControlsConsumer — Botões centrais do player (play/pause, ±10s, prev/next)
+// Posicionados no centro vertical do player, visíveis quando os controles estão ativos.
 // =============================================================================
-class _HostControlsConsumer extends ConsumerWidget {
+class _CenterControlsConsumer extends ConsumerWidget {
   final String sessionId;
   final String threadId;
   final void Function(Duration position, bool isPlaying) onSeekAndBroadcast;
   final void Function(dynamic playerState) onTogglePlayPause;
 
-  const _HostControlsConsumer({
+  const _CenterControlsConsumer({
     required this.sessionId,
     required this.threadId,
     required this.onSeekAndBroadcast,
     required this.onTogglePlayPause,
   });
 
-  /// Navega para um vídeo específico da fila e faz broadcast.
-  Future<void> _navigateTo(WidgetRef ref, Map<String, String> item) async {
+  Future<void> _navigateTo(WidgetRef ref, Map<String, String> item, String threadId) async {
     final notifier = ref.read(screeningRoomProvider(threadId).notifier);
     await notifier.updateVideo(
       videoUrl: item['url'] ?? '',
@@ -523,12 +582,11 @@ class _HostControlsConsumer extends ConsumerWidget {
     final roomState   = ref.watch(screeningRoomProvider(threadId));
 
     // ── Navegação de fila ─────────────────────────────────────────────
-    final queue       = roomState.videoQueue;
-    final currentUrl  = roomState.currentVideoUrl ?? '';
-    final currentIdx  = queue.indexWhere((e) => (e['url'] ?? '') == currentUrl);
-    final hasPrev     = currentIdx > 0;
-    final hasNext     = currentIdx >= 0 && currentIdx < queue.length - 1;
-    // Se o vídeo atual não está na fila mas a fila tem itens, “próximo” é o primeiro
+    final queue      = roomState.videoQueue;
+    final currentUrl = roomState.currentVideoUrl ?? '';
+    final currentIdx = queue.indexWhere((e) => (e['url'] ?? '') == currentUrl);
+    final hasPrev    = currentIdx > 0;
+    final hasNext    = currentIdx >= 0 && currentIdx < queue.length - 1;
     final hasNextFallback = currentIdx < 0 && queue.isNotEmpty;
 
     final prevItem = hasPrev ? queue[currentIdx - 1] : null;
@@ -536,89 +594,149 @@ class _HostControlsConsumer extends ConsumerWidget {
         ? queue[currentIdx + 1]
         : (hasNextFallback ? queue[0] : null);
 
-    // ── Seek bar: mostrar sempre que tiver duração (VOD) ─────────────────
-    // isLiveStream = duration == Duration.zero; se duration > 0 é VOD
-    final showSeekBar = playerState.duration > Duration.zero;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Botão Anterior
+        if (prevItem != null)
+          _ControlButton(
+            icon: Icons.skip_previous_rounded,
+            size: 28,
+            onTap: () => _navigateTo(ref, prevItem, threadId),
+          )
+        else
+          const SizedBox(width: 48),
+        const SizedBox(width: 8),
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        // Botão -10s (apenas VOD)
+        if (!playerState.isLiveStream)
+          _ControlButton(
+            icon: Icons.replay_10_rounded,
+            size: 28,
+            onTap: () {
+              final pos = playerState.position;
+              final newPos = pos - const Duration(seconds: 10);
+              onSeekAndBroadcast(
+                newPos.isNegative ? Duration.zero : newPos,
+                playerState.isPlaying,
+              );
+            },
+          )
+        else
+          const SizedBox(width: 48),
+        const SizedBox(width: 16),
+
+        // Botão Play/Pause (central — maior)
+        _PlayPauseButton(
+          isPlaying: playerState.isPlaying,
+          isBuffering: playerState.isBuffering,
+          onTap: () => onTogglePlayPause(playerState),
+        ),
+        const SizedBox(width: 16),
+
+        // Botão +10s (apenas VOD)
+        if (!playerState.isLiveStream)
+          _ControlButton(
+            icon: Icons.forward_10_rounded,
+            size: 28,
+            onTap: () {
+              final pos = playerState.position;
+              onSeekAndBroadcast(
+                pos + const Duration(seconds: 10),
+                playerState.isPlaying,
+              );
+            },
+          )
+        else
+          const SizedBox(width: 48),
+        const SizedBox(width: 8),
+
+        // Botão Próximo
+        if (nextItem != null)
+          _ControlButton(
+            icon: Icons.skip_next_rounded,
+            size: 28,
+            onTap: () => _navigateTo(ref, nextItem, threadId),
+          )
+        else
+          const SizedBox(width: 48),
+      ],
+    );
+  }
+}
+
+// =============================================================================
+// _BottomControlsConsumer — Seek bar + botão fullscreen (bottom do player)
+// Seek bar apenas para host e VOD. Botão fullscreen sempre visível.
+// =============================================================================
+class _BottomControlsConsumer extends ConsumerWidget {
+  final String sessionId;
+  final String threadId;
+  final void Function(Duration position, bool isPlaying) onSeekAndBroadcast;
+  final bool isFullscreen;
+  final VoidCallback onToggleFullscreen;
+
+  const _BottomControlsConsumer({
+    required this.sessionId,
+    required this.threadId,
+    required this.onSeekAndBroadcast,
+    required this.isFullscreen,
+    required this.onToggleFullscreen,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final playerState = ref.watch(screeningPlayerProvider(sessionId));
+    final roomState   = ref.watch(screeningRoomProvider(threadId));
+    final mq = MediaQuery.of(context);
+
+    final showSeekBar = roomState.isHost && playerState.duration > Duration.zero;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(0, 0, 0, mq.padding.bottom + 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Seek bar (apenas para vídeos não-live) ──────────────────────────
+          // ── Seek bar (host + VOD) ─────────────────────────────────────
           if (showSeekBar)
             _SeekBar(
               sessionId: sessionId,
               position: playerState.position,
               duration: playerState.duration,
+              onSeekAndBroadcast: onSeekAndBroadcast,
             ),
-          const SizedBox(height: 12),
-          // ── Botões de controle ──────────────────────────────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Botão Anterior (apenas quando há item anterior na fila)
-              if (prevItem != null)
-                _ControlButton(
-                  icon: Icons.skip_previous_rounded,
-                  size: 28,
-                  onTap: () => _navigateTo(ref, prevItem),
-                )
-              else
-                // Placeholder para manter centralização quando não há anterior
-                const SizedBox(width: 48),
-              const SizedBox(width: 8),
-              // Botão -10s (apenas para VOD)
-              if (!playerState.isLiveStream)
-                _ControlButton(
-                  icon: Icons.replay_10_rounded,
-                  size: 28,
-                  onTap: () {
-                    final pos = playerState.position;
-                    final newPos = pos - const Duration(seconds: 10);
-                    onSeekAndBroadcast(
-                      newPos.isNegative ? Duration.zero : newPos,
-                      playerState.isPlaying,
-                    );
-                  },
-                )
-              else
-                const SizedBox(width: 48),
-              const SizedBox(width: 16),
-              // Botão Play/Pause (central)
-              _PlayPauseButton(
-                isPlaying: playerState.isPlaying,
-                isBuffering: playerState.isBuffering,
-                onTap: () => onTogglePlayPause(playerState),
-              ),
-              const SizedBox(width: 16),
-              // Botão +10s (apenas para VOD)
-              if (!playerState.isLiveStream)
-                _ControlButton(
-                  icon: Icons.forward_10_rounded,
-                  size: 28,
-                  onTap: () {
-                    final pos = playerState.position;
-                    onSeekAndBroadcast(
-                      pos + const Duration(seconds: 10),
-                      playerState.isPlaying,
-                    );
-                  },
-                )
-              else
-                const SizedBox(width: 48),
-              const SizedBox(width: 8),
-              // Botão Próximo (apenas quando há item próximo na fila)
-              if (nextItem != null)
-                _ControlButton(
-                  icon: Icons.skip_next_rounded,
-                  size: 28,
-                  onTap: () => _navigateTo(ref, nextItem),
-                )
-              else
-                // Placeholder para manter centralização quando não há próximo
-                const SizedBox(width: 48),
-            ],
+
+          // ── Linha inferior: espaço + botão fullscreen ─────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                // Botão fullscreen (canto inferior direito)
+                GestureDetector(
+                  onTap: onToggleFullscreen,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Icon(
+                      isFullscreen
+                          ? Icons.fullscreen_exit_rounded
+                          : Icons.fullscreen_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

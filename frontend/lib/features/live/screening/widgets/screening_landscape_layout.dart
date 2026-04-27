@@ -238,6 +238,8 @@ class _PortraitLayout extends ConsumerWidget {
                         threadId: threadId,
                         visible: showControls,
                         onMinimize: onMinimize,
+                        // Toque na área transparente esconde os controles
+                        onTapToDismiss: showControls ? onTap : null,
                       ),
                     ),
                   ),
@@ -391,6 +393,8 @@ class _LandscapeLayout extends StatelessWidget {
                           threadId: threadId,
                           visible: showControls,
                           onMinimize: onMinimize,
+                          // Toque na área transparente esconde os controles
+                          onTapToDismiss: showControls ? onTap : null,
                         ),
                       ),
                     ),

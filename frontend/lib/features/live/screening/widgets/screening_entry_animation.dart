@@ -176,8 +176,17 @@ class _ScreeningEntryAnimationState extends State<ScreeningEntryAnimation>
 
 class ScreeningLoadingOverlay extends StatelessWidget {
   final bool visible;
+  /// Quando true (carregamento inicial da WebView), usa fundo preto sólido
+  /// para ocultar badges nativos do YouTube que aparecem brevemente antes
+  /// do controls=0 ser aplicado pelo IFrame API. Quando false (buffering),
+  /// usa semi-transparente para não bloquear a visão do vídeo.
+  final bool isInitialLoad;
 
-  const ScreeningLoadingOverlay({super.key, required this.visible});
+  const ScreeningLoadingOverlay({
+    super.key,
+    required this.visible,
+    this.isInitialLoad = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +196,9 @@ class ScreeningLoadingOverlay extends StatelessWidget {
       child: IgnorePointer(
         ignoring: !visible,
         child: Container(
-          color: Colors.black.withValues(alpha: 0.45),
+          color: isInitialLoad
+              ? Colors.black
+              : Colors.black.withValues(alpha: 0.45),
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,

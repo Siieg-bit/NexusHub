@@ -193,8 +193,12 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
           ),
 
         // ── Camada 1: Buffering overlay ───────────────────────────────────
+        // isInitialLoad=true → fundo preto sólido para ocultar badges nativos
+        // do YouTube durante o carregamento inicial (antes do controls=0 ser
+        // aplicado). isInitialLoad=false → semi-transparente para buffering.
         ScreeningLoadingOverlay(
           visible: _isLoading || isBuffering,
+          isInitialLoad: _isLoading,
         ),
 
         // ── Camada 2: Gestos de double-tap (seek) ─────────────────────────
