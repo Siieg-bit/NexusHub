@@ -4584,6 +4584,53 @@ class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
 // BUBBLE PICKER SHEET — Seleciona o chat bubble ativo dentro do chat
 // =============================================================================
 
+/// Função pública para abrir o BubblePicker a partir de outras telas
+/// (ex: ChatDetailsScreen). Equivalente a _showBubblePicker() do ChatRoomScreen.
+void showBubblePickerFromDetails(BuildContext context, WidgetRef ref) {
+  final r = context.r;
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: context.surfaceColor,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+    ),
+    builder: (ctx) => _BubblePickerSheet(
+      onBubbleSelected: (purchaseId, itemType) async {
+        try {
+          final result = await SupabaseService.client.rpc(
+            'equip_store_item',
+            params: {
+              'p_purchase_id': purchaseId.isEmpty ? null : purchaseId,
+              'p_item_type': itemType,
+            },
+          );
+          final resultMap =
+              result is Map ? Map<String, dynamic>.from(result) : null;
+          final ok = resultMap?['success'] as bool? ?? false;
+          final equipped = resultMap?['equipped'] as bool? ?? false;
+          final userId = SupabaseService.currentUserId;
+          if (userId != null) {
+            ref.invalidate(userCosmeticsProvider(userId));
+          }
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(ok
+                    ? (equipped ? 'Bubble equipado!' : 'Bubble removido.')
+                    : 'Não foi possível atualizar o bubble.'),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        } catch (e) {
+          debugPrint('[BubblePicker] ERRO: $e');
+        }
+      },
+    ),
+  );
+}
+
 /// Bottom sheet que lista todos os chat_bubbles comprados pelo usuário,
 /// com preview visual e opção de equipar/desequipar.
 ///

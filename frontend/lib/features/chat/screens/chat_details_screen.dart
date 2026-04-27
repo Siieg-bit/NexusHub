@@ -7,7 +7,8 @@
 //   • Contagem de membros
 //   • Grid de membros (avatares)
 //   • Botão de convidar
-//   • Ações de moderação (apenas para host/co_host)
+//   • Seções de configurações completas (Personalização, Membros, Notificações,
+//     Moderação, Zona de perigo)
 // =============================================================================
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,9 +19,12 @@ import '../../../core/services/deep_link_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/providers/chat_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../widgets/chat_cover_picker.dart';
 import '../widgets/chat_moderation_sheet.dart';
+import '../widgets/chat_background_picker.dart';
+import 'chat_room_screen.dart' show showBubblePickerFromDetails;
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 class ChatDetailsScreen extends ConsumerStatefulWidget {
@@ -36,6 +40,8 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
   List<Map<String, dynamic>> _members = [];
   bool _isLoading = true;
   String? _callerRole;
+  bool _isAnnouncementOnly = false;
+  bool _isReadOnly = false;
 
   @override
   void initState() {
@@ -88,6 +94,9 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
           _threadInfo = threadInfo;
           _members = members;
           _callerRole = role ?? 'member';
+          _isAnnouncementOnly =
+              threadInfo['is_announcement_only'] as bool? ?? false;
+          _isReadOnly = threadInfo['is_read_only'] as bool? ?? false;
           _isLoading = false;
         });
       }
@@ -143,6 +152,189 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
     );
   }
 
+  void _showBackgroundPicker() {
+    showChatBackgroundPicker(
+      context: context,
+      threadId: widget.threadId,
+      currentBackground: null,
+      onChanged: (_) {},
+    );
+  }
+
+  void _showBubblePicker() {
+    showBubblePickerFromDetails(context, ref);
+  }
+
+  void _leaveChatConfirm() {
+    final s = ref.read(stringsProvider);
+    final r = context.r;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.surfaceColor,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(r.s(16))),
+        title: Text(s.leaveChatTitle,
+            style: TextStyle(
+                color: context.nexusTheme.textPrimary,
+                fontWeight: FontWeight.w700)),
+        content: Text(s.confirmLeaveChat,
+            style: TextStyle(
+                color: Colors.grey[400], fontSize: r.fs(14))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child:
+                Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _leaveChat();
+            },
+            child: Text(s.logout,
+                style: TextStyle(
+                    color: context.nexusTheme.error,
+                    fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _leaveChat() async {
+    try {
+      await SupabaseService.rpc('leave_public_chat',
+          params: {'p_thread_id': widget.threadId});
+      ref.invalidate(chatListProvider);
+      if (mounted) context.go('/chat');
+    } catch (e) {
+      debugPrint('[ChatDetails] leave error: $e');
+    }
+  }
+
+  void _deleteChatConfirm() {
+    final s = ref.read(stringsProvider);
+    final r = context.r;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.surfaceColor,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(r.s(16))),
+        title: Text(s.deleteChatTitle,
+            style: TextStyle(
+                color: context.nexusTheme.textPrimary,
+                fontWeight: FontWeight.w700)),
+        content: Text(s.confirmDeleteChat2,
+            style: TextStyle(
+                color: Colors.grey[400], fontSize: r.fs(14))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child:
+                Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _deleteChat();
+            },
+            child: Text(s.delete,
+                style: TextStyle(
+                    color: context.nexusTheme.error,
+                    fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteChat() async {
+    try {
+      await SupabaseService.rpc('delete_public_chat',
+          params: {'p_thread_id': widget.threadId});
+      ref.invalidate(chatListProvider);
+      if (mounted) context.go('/chat');
+    } catch (e) {
+      debugPrint('[ChatDetails] delete error: $e');
+    }
+  }
+
+  Future<void> _toggleAnnouncementOnly() async {
+    final newVal = !_isAnnouncementOnly;
+    try {
+      await SupabaseService.table('chat_threads')
+          .update({'is_announcement_only': newVal})
+          .eq('id', widget.threadId);
+      if (mounted) setState(() => _isAnnouncementOnly = newVal);
+    } catch (e) {
+      debugPrint('[ChatDetails] toggle announcement: $e');
+    }
+  }
+
+  Future<void> _toggleReadOnly() async {
+    final newVal = !_isReadOnly;
+    try {
+      final result = await SupabaseService.rpc(
+        'toggle_chat_read_only',
+        params: {
+          'p_thread_id': widget.threadId,
+          'p_enabled': newVal,
+        },
+      );
+      final res = result as Map<String, dynamic>?;
+      if (res?['success'] == true && mounted) {
+        setState(() => _isReadOnly = newVal);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(newVal
+                ? 'Modo somente leitura ativado'
+                : 'Modo somente leitura desativado'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('[ChatDetails] toggle read-only: $e');
+    }
+  }
+
+  Future<void> _toggleChatDisabled(bool disabled) async {
+    try {
+      final result = await SupabaseService.rpc(
+          'toggle_chat_thread_status',
+          params: {
+            'p_thread_id': widget.threadId,
+            'p_disabled': disabled,
+          });
+      final res = result is Map<String, dynamic>
+          ? result
+          : (result is Map
+              ? Map<String, dynamic>.from(result)
+              : <String, dynamic>{});
+      if (res['success'] == true && mounted) {
+        setState(() {
+          _threadInfo = {
+            ...?_threadInfo,
+            'status': disabled ? 'disabled' : 'ok',
+          };
+        });
+        ref.invalidate(chatListProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(disabled
+                ? 'Chat desativado com sucesso.'
+                : 'Chat reativado com sucesso.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('[ChatDetails] toggle disabled: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final r = context.r;
@@ -172,10 +364,18 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
     final coverUrl = _threadInfo?['cover_image_url'] as String?;
     final iconUrl = _threadInfo?['icon_url'] as String?;
     final category = _threadInfo?['category'] as String?;
+    final threadType = _threadInfo?['type'] as String? ?? 'public';
+    final isPublic = threadType == 'public';
     final memberCount = _members.length;
     final isHost = _callerRole == 'host' || _callerRole == 'co_host';
     final currentUser = ref.read(currentUserProvider);
     final canManage = isHost || (currentUser?.isTeamMember ?? false);
+    final canDelete = (SupabaseService.currentUserId != null &&
+            SupabaseService.currentUserId ==
+                (_threadInfo?['host_id'] as String?)) ||
+        (currentUser?.isTeamMember ?? false);
+    final isChatDisabled =
+        (_threadInfo?['status'] as String? ?? 'ok') == 'disabled';
 
     return Scaffold(
       backgroundColor: theme.backgroundPrimary,
@@ -373,33 +573,36 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
 
                   SizedBox(height: r.s(20)),
 
-                  // Botão de convidar
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _openInvite,
-                      icon: Icon(Icons.person_add_rounded,
-                          size: r.s(18), color: Colors.white),
-                      label: Text(
-                        s.invite,
-                        style: TextStyle(
-                          fontSize: r.fs(14),
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                  // Botão de convidar (apenas público)
+                  if (isPublic) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _openInvite,
+                        icon: Icon(Icons.person_add_rounded,
+                            size: r.s(18), color: Colors.white),
+                        label: Text(
+                          s.invite,
+                          style: TextStyle(
+                            fontSize: r.fs(14),
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.accentPrimary,
-                        padding: EdgeInsets.symmetric(vertical: r.s(14)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(r.s(12)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.accentPrimary,
+                          padding:
+                              EdgeInsets.symmetric(vertical: r.s(14)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(r.s(12)),
+                          ),
+                          elevation: 0,
                         ),
-                        elevation: 0,
                       ),
                     ),
-                  ),
-
-                  SizedBox(height: r.s(28)),
+                    SizedBox(height: r.s(28)),
+                  ],
 
                   // Seção de membros
                   Text(
@@ -416,11 +619,170 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
                   _buildMembersGrid(r, theme, s),
 
                   SizedBox(height: r.s(32)),
+
+                  // ══════════════════════════════════════════════════════════
+                  // SEÇÕES DE CONFIGURAÇÕES
+                  // ══════════════════════════════════════════════════════════
+
+                  // ── Personalização ────────────────────────────────────────
+                  _sectionLabel(r, 'Personalização'),
+                  _settingsTile(r, Icons.wallpaper_rounded,
+                      s.chatBackground, _showBackgroundPicker),
+                  _settingsTile(r, Icons.chat_bubble_rounded,
+                      'Meu Bubble', _showBubblePicker),
+                  if (isHost)
+                    _settingsTile(r, Icons.image_rounded, 'Capa do chat',
+                        _editCover),
+                  SizedBox(height: r.s(8)),
+
+                  // ── Membros ───────────────────────────────────────────────
+                  _sectionLabel(r, 'Membros'),
+                  _settingsTile(r, Icons.info_outline_rounded,
+                      'Detalhes do chat', () {
+                    // já estamos nessa tela, não faz nada
+                  }),
+                  if (isPublic)
+                    _settingsTile(r, Icons.share_rounded,
+                        'Compartilhar chat', _openInvite),
+                  SizedBox(height: r.s(8)),
+
+                  // ── Notificações ──────────────────────────────────────────
+                  _sectionLabel(r, 'Notificações'),
+                  _settingsTile(r, Icons.notifications_rounded,
+                      s.notifications, () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content:
+                            Text(s.notificationSettingsComingSoon),
+                        backgroundColor: theme.accentPrimary,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }),
+                  SizedBox(height: r.s(8)),
+
+                  // ── Moderação (host + público) ────────────────────────────
+                  if (isHost && isPublic) ...[
+                    _sectionLabel(r, 'Moderação'),
+                    _settingsTile(
+                        r,
+                        Icons.manage_accounts_rounded,
+                        'Gerenciar membros',
+                        _openModeration),
+                    _settingsTile(
+                      r,
+                      _isAnnouncementOnly
+                          ? Icons.record_voice_over_rounded
+                          : Icons.voice_over_off_rounded,
+                      _isAnnouncementOnly
+                          ? 'Desativar modo anúncio'
+                          : 'Modo somente anúncio',
+                      _toggleAnnouncementOnly,
+                    ),
+                    _settingsTile(
+                      r,
+                      _isReadOnly
+                          ? Icons.lock_open_rounded
+                          : Icons.lock_outline_rounded,
+                      _isReadOnly
+                          ? 'Desativar modo somente leitura'
+                          : 'Modo somente leitura',
+                      _toggleReadOnly,
+                    ),
+                    _settingsTile(
+                      r,
+                      isChatDisabled
+                          ? Icons.visibility_rounded
+                          : Icons.visibility_off_rounded,
+                      isChatDisabled ? 'Reativar chat' : 'Desativar chat',
+                      () => _toggleChatDisabled(!isChatDisabled),
+                      isDestructive: !isChatDisabled,
+                    ),
+                    SizedBox(height: r.s(8)),
+                  ],
+
+                  // ── Zona de perigo ────────────────────────────────────────
+                  if (canDelete || !isHost) ...[
+                    Divider(
+                        color: Colors.white.withValues(alpha: 0.07),
+                        height: r.s(16)),
+                    if (!isHost)
+                      _settingsTile(
+                        r,
+                        Icons.exit_to_app_rounded,
+                        s.leaveChatTitle,
+                        _leaveChatConfirm,
+                        isDestructive: true,
+                      ),
+                    if (canDelete)
+                      _settingsTile(
+                        r,
+                        Icons.delete_rounded,
+                        s.deleteChatTitle,
+                        _deleteChatConfirm,
+                        isDestructive: true,
+                      ),
+                  ],
+
+                  SizedBox(height: r.s(40)),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ── Helpers de UI ──────────────────────────────────────────────────────────
+
+  Widget _sectionLabel(Responsive r, String label) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: r.s(4), top: r.s(2)),
+      child: Text(
+        label.toUpperCase(),
+        style: TextStyle(
+          color: Colors.grey[600],
+          fontSize: r.fs(10),
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+
+  Widget _settingsTile(
+      Responsive r, IconData icon, String label, VoidCallback onTap,
+      {bool isDestructive = false}) {
+    final color = isDestructive
+        ? context.nexusTheme.error
+        : Colors.grey[400]!;
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: r.s(12)),
+        decoration: BoxDecoration(
+          border: Border(
+              bottom: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.05))),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: r.s(20)),
+            SizedBox(width: r.s(12)),
+            Expanded(
+              child: Text(label,
+                  style: TextStyle(
+                      color: isDestructive
+                          ? context.nexusTheme.error
+                          : context.nexusTheme.textPrimary,
+                      fontSize: r.fs(14))),
+            ),
+            Icon(Icons.chevron_right_rounded,
+                color: Colors.grey[600], size: r.s(18)),
+          ],
+        ),
       ),
     );
   }
@@ -432,8 +794,8 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
           padding: EdgeInsets.symmetric(vertical: r.s(20)),
           child: Text(
             s.noMemberFound,
-            style:
-                TextStyle(color: theme.textSecondary, fontSize: r.fs(13)),
+            style: TextStyle(
+                color: theme.textSecondary, fontSize: r.fs(13)),
           ),
         ),
       );
