@@ -241,7 +241,13 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     switch (resolution.type) {
       case StreamType.hls:
       case StreamType.direct:
-        // Player nativo via media_kit
+        // Player nativo via media_kit.
+        // O _isLoading é controlado pelo próprio ScreeningNativePlayerWidget
+        // via onNativePlay/onNativeBuffering no provider. Garantir que o
+        // overlay de loading do WebView não fique preso em true.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _isLoading) setState(() => _isLoading = false);
+        });
         return ScreeningNativePlayerWidget(
           key: ValueKey(resolution.url),
           hlsUrl: resolution.url,
@@ -352,89 +358,89 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   // ── JavaScript injection ──────────────────────────────────────────────────
 
   Future<void> _injectControlScript(InAppWebViewController controller) async {
+    // Injeta o bridge unificado window._nexusPlayer.
+    //
+    // IMPORTANTE: o HTML do _buildHtmlWrapper já registra onYouTubeIframeAPIReady
+    // que cria window._ytPlayer. Este script NÃO recria o YT.Player para evitar
+    // duplicação. Em vez disso, apenas define window._nexusPlayer (se ainda não
+    // existir) e conecta os event listeners do <video> HTML5.
     await controller.evaluateJavascript(source: r'''
       (function() {
-        window._nexusPlayer = {
-          play: function() {
-            if (window._ytPlayer && window._ytPlayer.playVideo) {
-              window._ytPlayer.playVideo();
-            } else {
+        // Definir _nexusPlayer apenas se ainda não foi injetado
+        if (!window._nexusPlayer) {
+          window._nexusPlayer = {
+            _yt: window._ytPlayer || null,
+
+            play: function() {
+              var yt = this._yt || window._ytPlayer;
+              if (yt && yt.playVideo) { yt.playVideo(); return; }
               var v = document.querySelector('video');
               if (v) v.play();
-            }
-          },
-          pause: function() {
-            if (window._ytPlayer && window._ytPlayer.pauseVideo) {
-              window._ytPlayer.pauseVideo();
-            } else {
+            },
+            pause: function() {
+              var yt = this._yt || window._ytPlayer;
+              if (yt && yt.pauseVideo) { yt.pauseVideo(); return; }
               var v = document.querySelector('video');
               if (v) v.pause();
-            }
-          },
-          seek: function(seconds) {
-            if (window._ytPlayer && window._ytPlayer.seekTo) {
-              window._ytPlayer.seekTo(seconds, true);
-            } else {
+            },
+            seek: function(seconds) {
+              var yt = this._yt || window._ytPlayer;
+              if (yt && yt.seekTo) { yt.seekTo(seconds, true); return; }
               var v = document.querySelector('video');
               if (v) v.currentTime = seconds;
-            }
-          },
-          getPosition: function() {
-            try {
-              if (window._ytPlayer && window._ytPlayer.getCurrentTime) {
-                return Math.floor(window._ytPlayer.getCurrentTime() * 1000);
-              }
-              var v = document.querySelector('video');
-              if (v && !isNaN(v.currentTime)) return Math.floor(v.currentTime * 1000);
-            } catch(e) {}
-            return -1;
-          },
-          getDuration: function() {
-            try {
-              if (window._ytPlayer && window._ytPlayer.getDuration) {
-                var d = window._ytPlayer.getDuration();
-                if (d > 0) return Math.floor(d * 1000);
-              }
-              var v = document.querySelector('video');
-              if (v && !isNaN(v.duration) && v.duration > 0) return Math.floor(v.duration * 1000);
-            } catch(e) {}
-            return 0;
-          },
-          isBuffering: function() {
-            var v = document.querySelector('video');
-            if (!v) return false;
-            return v.networkState === 2 && v.readyState < 3;
-          },
-          setRate: function(rate) {
-            if (window._ytPlayer && window._ytPlayer.setPlaybackRate) window._ytPlayer.setPlaybackRate(rate);
-            var v = document.querySelector('video');
-            if (v) v.playbackRate = rate;
-          }
-        };
-
-        if (typeof YT !== 'undefined' && YT.Player) {
-          var iframe = document.getElementById('player');
-          if (iframe && iframe.src && iframe.src.includes('youtube')) {
-            window._ytPlayer = new YT.Player(iframe, {
-              events: {
-                onReady: function(e) { console.log('__YT_READY__'); e.target.playVideo(); },
-                onStateChange: function(e) {
-                  if (e.data === 1) console.log('__YT_PLAYING__');
-                  else if (e.data === 2) console.log('__YT_PAUSED__');
-                  else if (e.data === 3) console.log('__YT_BUFFERING__');
-                  else if (e.data === 0) console.log('__VIDEO_ENDED__');
+            },
+            getPosition: function() {
+              try {
+                var yt = this._yt || window._ytPlayer;
+                if (yt && yt.getCurrentTime) return Math.floor(yt.getCurrentTime() * 1000);
+                var v = document.querySelector('video');
+                if (v && !isNaN(v.currentTime)) return Math.floor(v.currentTime * 1000);
+              } catch(e) {}
+              return -1;
+            },
+            getDuration: function() {
+              try {
+                var yt = this._yt || window._ytPlayer;
+                if (yt && yt.getDuration) {
+                  var d = yt.getDuration();
+                  if (d > 0) return Math.floor(d * 1000);
                 }
-              }
-            });
+                var v = document.querySelector('video');
+                if (v && !isNaN(v.duration) && v.duration > 0) return Math.floor(v.duration * 1000);
+              } catch(e) {}
+              return 0;
+            },
+            isBuffering: function() {
+              try {
+                var v = document.querySelector('video');
+                if (v) return v.networkState === 2 && v.readyState < 3;
+              } catch(e) {}
+              return false;
+            },
+            setRate: function(rate) {
+              try {
+                var yt = this._yt || window._ytPlayer;
+                if (yt && yt.setPlaybackRate) yt.setPlaybackRate(rate);
+                var v = document.querySelector('video');
+                if (v) v.playbackRate = rate;
+              } catch(e) {}
+            }
+          };
+        } else {
+          // Já existe: apenas atualizar a referência ao _ytPlayer se disponível
+          if (window._ytPlayer && !window._nexusPlayer._yt) {
+            window._nexusPlayer._yt = window._ytPlayer;
           }
         }
 
+        // Registrar event listeners do <video> HTML5 (idempotente via flag)
         var video = document.querySelector('video');
-        if (video) {
+        if (video && !video._nexusListenersAttached) {
+          video._nexusListenersAttached = true;
           video.addEventListener('playing', function() { console.log('__VIDEO_PLAYING__'); });
-          video.addEventListener('pause', function() { console.log('__VIDEO_PAUSED__'); });
+          video.addEventListener('pause',   function() { console.log('__VIDEO_PAUSED__'); });
           video.addEventListener('waiting', function() { console.log('__VIDEO_BUFFERING__'); });
-          video.addEventListener('ended', function() { console.log('__VIDEO_ENDED__'); });
+          video.addEventListener('ended',   function() { console.log('__VIDEO_ENDED__'); });
         }
       })();
     ''');
@@ -465,7 +471,9 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     if (u.contains('youtube.com') || u.contains('youtu.be')) {
       final id = _extractYouTubeId(url);
       if (id.isNotEmpty) {
-        return 'https://www.youtube-nocookie.com/embed/$id'
+        // Usar youtube.com/embed para que o postMessage do IFrame API
+        // funcione corretamente com o baseUrl 'https://nexushub.app'.
+        return 'https://www.youtube.com/embed/$id'
             '?autoplay=1&mute=0&rel=0&modestbranding=1'
             '&playsinline=1&enablejsapi=1&origin=https://nexushub.app';
       }
@@ -511,12 +519,17 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   }
 
   String _buildHtmlWrapper(String embedUrl) {
+    // Determina se é URL do YouTube para incluir a IFrame API
+    final isYouTube = embedUrl.contains('youtube') || embedUrl.contains('youtu.be');
+    final ytApiScript = isYouTube
+        ? '<script src="https://www.youtube.com/iframe_api"></script>'
+        : '';
     return '''<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <script src="https://www.youtube.com/iframe_api"></script>
+  $ytApiScript
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
@@ -534,20 +547,32 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   scrolling="no"
 ></iframe>
 <script>
+  // Bridge unificado: cria window._nexusPlayer e window._ytPlayer via YT IFrame API.
+  // Nota: NÃO define window._nexusPlayer aqui — ele será injetado pelo Flutter
+  // via _injectControlScript após onLoadStop, garantindo que o YT.Player já
+  // esteja inicializado e evitando duplicação.
   function onYouTubeIframeAPIReady() {
     var iframe = document.getElementById('player');
-    if (iframe && iframe.src.includes('youtube')) {
-      window._ytPlayer = new YT.Player('player', {
-        events: {
-          onReady: function(e) { console.log('__YT_READY__'); e.target.playVideo(); },
-          onStateChange: function(e) {
-            if (e.data === 1) console.log('__YT_PLAYING__');
-            else if (e.data === 2) console.log('__YT_PAUSED__');
-            else if (e.data === 3) console.log('__YT_BUFFERING__');
-            else if (e.data === 0) console.log('__VIDEO_ENDED__');
+    if (iframe && iframe.src && iframe.src.includes('youtube')) {
+      // Criar apenas UMA instância do YT.Player
+      if (!window._ytPlayer) {
+        window._ytPlayer = new YT.Player('player', {
+          events: {
+            onReady: function(e) {
+              console.log('__YT_READY__');
+              e.target.playVideo();
+              // Atualizar referência no _nexusPlayer se já foi injetado
+              if (window._nexusPlayer) window._nexusPlayer._yt = e.target;
+            },
+            onStateChange: function(e) {
+              if (e.data === 1) console.log('__YT_PLAYING__');
+              else if (e.data === 2) console.log('__YT_PAUSED__');
+              else if (e.data === 3) console.log('__YT_BUFFERING__');
+              else if (e.data === 0) console.log('__VIDEO_ENDED__');
+            }
           }
-        }
-      });
+        });
+      }
     }
   }
 </script>

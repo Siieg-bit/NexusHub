@@ -31,6 +31,12 @@ import 'screening_room_provider.dart';
 //
 // 6. onVideoEnded: notifica quando o vídeo termina (para o host poder
 //    exibir o painel de próximo vídeo).
+//
+// 7. MODO NATIVO: quando _isNativeMode=true, todos os comandos (play/pause/
+//    seek/setRate) são roteados para o player nativo (media_kit ou DRM) e o
+//    polling via evaluateJavascript é completamente desabilitado — evita o
+//    MissingPluginException que ocorria quando o WebView era destruído após
+//    a Twitch/HLS assumir o player.
 // =============================================================================
 
 // ── JavaScript Bridge ─────────────────────────────────────────────────────────
@@ -211,6 +217,8 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   void registerWebViewController(InAppWebViewController controller) {
     _webViewController = controller;
     _bridgeInjected = false;
+    // Ao registrar um WebView, sair do modo nativo
+    _isNativeMode = false;
   }
 
   /// Chamado pelo widget após injetar o _injectControlScript para evitar
@@ -224,9 +232,12 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   /// antes desta chamada, portanto não injetamos novamente para evitar sobrescrita.
   Future<void> onWebViewReady() async {
     state = state.copyWith(isReady: true, isBuffering: false);
-    _startPositionPolling(intervalSeconds: 1);
-    // Tentar obter duração após um breve delay (aguarda o player carregar)
-    Future.delayed(const Duration(seconds: 2), _updateDuration);
+    // Só inicia polling se NÃO estiver em modo nativo
+    if (!_isNativeMode) {
+      _startPositionPolling(intervalSeconds: 1);
+      // Tentar obter duração após um breve delay (aguarda o player carregar)
+      Future.delayed(const Duration(seconds: 2), _updateDuration);
+    }
   }
 
   /// Chamado em onLoadStart — reseta o estado.
@@ -239,7 +250,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   // ── Injeção do bridge JS ──────────────────────────────────────────────────────
 
   Future<void> _injectBridge() async {
-    if (_webViewController == null || _bridgeInjected) return;
+    if (_webViewController == null || _bridgeInjected || _isNativeMode) return;
     try {
       await _webViewController!.evaluateJavascript(source: _kPlayerBridgeJs);
       _bridgeInjected = true;
@@ -253,10 +264,13 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
 
   void _startPositionPolling({required int intervalSeconds}) {
     _positionPollTimer?.cancel();
+    // NUNCA iniciar polling WebView em modo nativo
+    if (_isNativeMode) return;
     _positionPollTimer = Timer.periodic(
       Duration(seconds: intervalSeconds),
       (_) async {
-        if (_webViewController == null || !state.isReady || !mounted) return;
+        // Verificação dupla: se entrou em modo nativo durante o ciclo, parar
+        if (_webViewController == null || !state.isReady || !mounted || _isNativeMode) return;
         try {
           final posMs = await _getPositionMs();
           final isBuffering = await _getIsBuffering();
@@ -272,7 +286,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   }
 
   Future<int?> _getPositionMs() async {
-    if (_webViewController == null) return null;
+    if (_webViewController == null || _isNativeMode) return null;
     try {
       final result = await _webViewController!.evaluateJavascript(
         source: 'window._nexusPlayer ? window._nexusPlayer.getPosition() : -1;',
@@ -286,7 +300,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   }
 
   Future<bool> _getIsBuffering() async {
-    if (_webViewController == null) return false;
+    if (_webViewController == null || _isNativeMode) return false;
     try {
       final result = await _webViewController!.evaluateJavascript(
         source: 'window._nexusPlayer ? window._nexusPlayer.isBuffering() : false;',
@@ -298,7 +312,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   }
 
   Future<void> _updateDuration() async {
-    if (_webViewController == null || !mounted) return;
+    if (_webViewController == null || !mounted || _isNativeMode) return;
     try {
       final result = await _webViewController!.evaluateJavascript(
         source: 'window._nexusPlayer ? window._nexusPlayer.getDuration() : 0;',
@@ -313,9 +327,17 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     }
   }
 
-  // ── Comandos de reprodução ────────────────────────────────────────────────────
+  // ── Comandos de reprodução (roteiam para nativo ou WebView) ──────────────────
 
   Future<void> play() async {
+    if (_isNativeMode) {
+      await _nativePlayer?.play();
+      await _drmPlayer?.play();
+      if (mounted) {
+        state = state.copyWith(isPlaying: true);
+      }
+      return;
+    }
     await _ensureBridge();
     await _retryCommand(() async {
       await _webViewController!.evaluateJavascript(
@@ -329,6 +351,14 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   }
 
   Future<void> pause() async {
+    if (_isNativeMode) {
+      await _nativePlayer?.pause();
+      await _drmPlayer?.pause();
+      if (mounted) {
+        state = state.copyWith(isPlaying: false);
+      }
+      return;
+    }
     await _ensureBridge();
     await _retryCommand(() async {
       await _webViewController!.evaluateJavascript(
@@ -343,6 +373,12 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   }
 
   Future<void> seek(Duration position) async {
+    if (_isNativeMode) {
+      await _nativePlayer?.seek(position);
+      await _drmPlayer?.seekTo(position);
+      if (mounted) state = state.copyWith(position: position, hasEnded: false);
+      return;
+    }
     await _ensureBridge();
     final seconds = position.inMilliseconds / 1000.0;
     await _retryCommand(() async {
@@ -355,6 +391,12 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   }
 
   Future<void> setRate(double rate) async {
+    if (_isNativeMode) {
+      // media_kit não suporta setRate diretamente via Player; ignorar microsync de rate
+      // para streams ao vivo (Twitch). Para VODs nativos, poderia ser implementado.
+      if (mounted) state = state.copyWith(playbackRate: rate);
+      return;
+    }
     await _ensureBridge();
     try {
       await _webViewController!.evaluateJavascript(
@@ -369,12 +411,12 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   // ── Helpers ───────────────────────────────────────────────────────────────────
 
   Future<void> _ensureBridge() async {
-    if (!_bridgeInjected) await _injectBridge();
+    if (!_bridgeInjected && !_isNativeMode) await _injectBridge();
   }
 
   /// Tenta executar um comando até 3x com 300ms de intervalo.
   Future<void> _retryCommand(Future<void> Function() command) async {
-    if (_webViewController == null) return;
+    if (_webViewController == null || _isNativeMode) return;
     for (int i = 0; i < 3; i++) {
       try {
         await command();
@@ -390,14 +432,18 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   void onVideoPlaying() {
     if (!mounted) return;
     state = state.copyWith(isPlaying: true, isBuffering: false);
-    _startPositionPolling(intervalSeconds: 1);
-    _updateDuration(); // atualizar duração se ainda não tiver
+    if (!_isNativeMode) {
+      _startPositionPolling(intervalSeconds: 1);
+      _updateDuration(); // atualizar duração se ainda não tiver
+    }
   }
 
   void onVideoPaused() {
     if (!mounted) return;
     state = state.copyWith(isPlaying: false);
-    _startPositionPolling(intervalSeconds: 5);
+    if (!_isNativeMode) {
+      _startPositionPolling(intervalSeconds: 5);
+    }
   }
 
   void onVideoBuffering() {
@@ -428,7 +474,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
       );
       await notifier.removeFromQueue(0);
     } catch (e) {
-      debugPrint('[ScreeningPlayerProvider] Auto-avanço falhou: \$e');
+      debugPrint('[ScreeningPlayerProvider] Auto-avanço falhou: $e');
     }
   }
 
@@ -437,6 +483,9 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   void registerNativePlayer(Player player) {
     _nativePlayer = player;
     _isNativeMode = true;
+    // Parar polling WebView imediatamente ao entrar em modo nativo
+    _positionPollTimer?.cancel();
+    _positionPollTimer = null;
     state = state.copyWith(isReady: true, isBuffering: false);
   }
 
@@ -445,6 +494,9 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   void registerDrmPlayer(BetterPlayerController controller) {
     _drmPlayer = controller;
     _isNativeMode = true;
+    // Parar polling WebView imediatamente ao entrar em modo nativo
+    _positionPollTimer?.cancel();
+    _positionPollTimer = null;
     state = state.copyWith(isReady: true, isBuffering: false);
   }
 

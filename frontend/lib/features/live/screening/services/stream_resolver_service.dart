@@ -132,7 +132,11 @@ class StreamResolverService {
       case StreamPlatform.youtubeLive:
         final id = _extractYouTubeId(url);
         if (id.isNotEmpty) {
-          return 'https://www.youtube-nocookie.com/embed/$id'
+          // IMPORTANTE: usar youtube.com/embed (não youtube-nocookie.com)
+          // para que o postMessage do IFrame API funcione com o baseUrl
+          // 'https://nexushub.app' definido no InAppWebView.
+          // O parâmetro origin deve bater exatamente com o baseUrl.
+          return 'https://www.youtube.com/embed/$id'
               '?autoplay=1&mute=0&rel=0&modestbranding=1'
               '&playsinline=1&enablejsapi=1&origin=https://nexushub.app';
         }
