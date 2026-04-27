@@ -15,12 +15,17 @@ class ScreeningTopBar extends ConsumerWidget {
   final String sessionId;
   final String threadId;
   final VoidCallback onMinimize;
+  /// Quando não nulo, sobrescreve o padding top calculado via mq.padding.top.
+  /// Use 0 quando o TopBar está fora do player (já posicionado abaixo da status bar).
+  /// Use null (padrão) quando o TopBar está sobreposto ao player (usa mq.padding.top).
+  final double? overrideTopPadding;
 
   const ScreeningTopBar({
     super.key,
     required this.sessionId,
     required this.threadId,
     required this.onMinimize,
+    this.overrideTopPadding,
   });
 
   @override
@@ -29,15 +34,12 @@ class ScreeningTopBar extends ConsumerWidget {
     final mq = MediaQuery.of(context);
     final hasVideo = roomState.currentVideoUrl != null &&
         roomState.currentVideoUrl!.isNotEmpty;
+    // Se overrideTopPadding for fornecido, usa ele; caso contrário usa mq.padding.top
+    final topPad = overrideTopPadding ?? mq.padding.top;
 
     return Container(
-      // Usar mq.padding.top para respeitar a status bar do sistema.
-      // O player abaixo desta barra começa em y=0 (sem SafeArea), então
-      // a TopBar usa padding.top para "empurrar" o conteúdo para baixo da
-      // status bar sem que o player em si precise de SafeArea (o que
-      // causaria um espaço vazio preto no topo do player).
       padding: EdgeInsets.only(
-        top: mq.padding.top + 4,
+        top: topPad + 4,
         left: 4,
         right: 4,
         bottom: 4,
@@ -47,8 +49,8 @@ class ScreeningTopBar extends ConsumerWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black.withValues(alpha: 0.80),
-            Colors.transparent,
+            Colors.black.withValues(alpha: 0.90),
+            Colors.black.withValues(alpha: 0.60),
           ],
         ),
       ),

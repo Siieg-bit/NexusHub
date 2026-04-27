@@ -43,13 +43,13 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
     final roomState = ref.read(screeningRoomProvider(widget.threadId));
     return roomState.hostUserId == SupabaseService.currentUserId;
   }
-
-  // ── Reproduzir agora (item específico) ───────────────────────────────────
+  // ── Reproduzir agora (item específico) ───────────────────────────────────────
+  /// Carrega o item no player sem removê-lo da fila.
+  /// O item permanece na fila até ser explicitamente removido pelo host.
   Future<void> _playNow(int index) async {
     HapticFeedback.heavyImpact();
     final roomState = ref.read(screeningRoomProvider(widget.threadId));
     if (index < 0 || index >= roomState.videoQueue.length) return;
-
     final item = roomState.videoQueue[index];
     await ref
         .read(screeningRoomProvider(widget.threadId).notifier)
@@ -57,9 +57,7 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
           videoUrl: item['url'] ?? '',
           videoTitle: item['title'] ?? '',
         );
-    await ref
-        .read(screeningRoomProvider(widget.threadId).notifier)
-        .removeFromQueue(index);
+    // Não remove da fila — o item fica até ser removido manualmente
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -120,6 +118,7 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
     final roomState = ref.watch(screeningRoomProvider(widget.threadId));
     final isHost = _isHost;
     final queue = roomState.videoQueue;
+    final currentVideoUrl = roomState.currentVideoUrl ?? '';
     final mq = MediaQuery.of(context);
 
     return Container(
@@ -227,8 +226,8 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
             child: queue.isEmpty
                 ? _buildEmptyState(isHost)
                 : isHost
-                    ? _buildReorderableList(queue)
-                    : _buildReadOnlyList(queue),
+                    ? _buildReorderableList(queue, currentVideoUrl)
+                    : _buildReadOnlyList(queue, currentVideoUrl),
           ),
 
           // ── Botões de adicionar (apenas host) ─────────────────────────────
@@ -307,8 +306,9 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
     );
   }
 
-  // ── Lista reordenável (host) ──────────────────────────────────────────────
-  Widget _buildReorderableList(List<Map<String, String>> queue) {
+  // ── Lista reordenável (host) ──────────────────────────────────
+  Widget _buildReorderableList(
+      List<Map<String, String>> queue, String currentVideoUrl) {
     return ReorderableListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: queue.length,
@@ -358,6 +358,8 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
             item: item,
             index: index,
             isHost: true,
+            isCurrentlyPlaying: (item['url'] ?? '') == currentVideoUrl &&
+                currentVideoUrl.isNotEmpty,
             onRemove: () => _removeFromQueue(index),
             onPlayNow: () => _playNow(index),
           ),
@@ -366,8 +368,9 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
     );
   }
 
-  // ── Lista somente leitura (participantes) ─────────────────────────────────
-  Widget _buildReadOnlyList(List<Map<String, String>> queue) {
+   // ── Lista somente leitura (participantes) ─────────────────────────────
+  Widget _buildReadOnlyList(
+      List<Map<String, String>> queue, String currentVideoUrl) {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: queue.length,
@@ -378,6 +381,8 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
           item: item,
           index: index,
           isHost: false,
+          isCurrentlyPlaying: (item['url'] ?? '') == currentVideoUrl &&
+              currentVideoUrl.isNotEmpty,
           onRemove: null,
           onPlayNow: null,
         );
@@ -393,6 +398,7 @@ class _QueueItemTile extends StatelessWidget {
   final Map<String, String> item;
   final int index;
   final bool isHost;
+  final bool isCurrentlyPlaying;
   final VoidCallback? onRemove;
   final VoidCallback? onPlayNow;
 
@@ -401,6 +407,7 @@ class _QueueItemTile extends StatelessWidget {
     required this.item,
     required this.index,
     required this.isHost,
+    this.isCurrentlyPlaying = false,
     required this.onRemove,
     required this.onPlayNow,
   });
@@ -477,10 +484,15 @@ class _QueueItemTile extends StatelessWidget {
       key: key,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: isCurrentlyPlaying
+            ? const Color(0xFF7C3AED).withValues(alpha: 0.12)
+            : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: isCurrentlyPlaying
+              ? const Color(0xFF7C3AED).withValues(alpha: 0.6)
+              : Colors.white.withValues(alpha: 0.08),
+          width: isCurrentlyPlaying ? 1.5 : 1.0,
         ),
       ),
       child: Row(
@@ -556,6 +568,28 @@ class _QueueItemTile extends StatelessWidget {
                           fontSize: 11,
                         ),
                       ),
+                      if (isCurrentlyPlaying) ...
+                        [
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF7C3AED)
+                                  .withValues(alpha: 0.25),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: const Text(
+                              '▶ TOCANDO',
+                              style: TextStyle(
+                                color: Color(0xFFB57BFF),
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ],
                     ],
                   ),
                 ],

@@ -471,20 +471,31 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   }
 
   /// Avança automaticamente para o próximo vídeo da fila quando o atual termina.
+  /// O vídeo atual permanece na fila — apenas o currentVideoUrl é atualizado
+  /// para o próximo item. O host pode remover itens manualmente da fila.
   Future<void> _autoAdvanceQueue() async {
     final tid = _threadId;
     if (tid == null) return;
     try {
       final roomState = _ref.read(screeningRoomProvider(tid));
       if (!roomState.isHost) return; // apenas o host controla a fila
-      if (roomState.videoQueue.isEmpty) return;
-      final next = roomState.videoQueue.first;
+      final queue = roomState.videoQueue;
+      if (queue.isEmpty) return;
+      // Encontrar o índice do vídeo atual na fila
+      final currentUrl = roomState.currentVideoUrl ?? '';
+      final currentIndex = queue.indexWhere((item) => item['url'] == currentUrl);
+      // Próximo é o item após o atual, ou o primeiro se não encontrado
+      final nextIndex = (currentIndex >= 0 && currentIndex + 1 < queue.length)
+          ? currentIndex + 1
+          : (currentIndex < 0 && queue.isNotEmpty ? 0 : -1);
+      if (nextIndex < 0) return; // Não há próximo vídeo
+      final next = queue[nextIndex];
       final notifier = _ref.read(screeningRoomProvider(tid).notifier);
+      // Atualiza o currentVideoUrl sem remover da fila
       await notifier.updateVideo(
         videoUrl: next['url'] ?? '',
         videoTitle: next['title'] ?? '',
       );
-      await notifier.removeFromQueue(0);
     } catch (e) {
       debugPrint('[ScreeningPlayerProvider] Auto-avanço falhou: $e');
     }

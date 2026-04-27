@@ -497,6 +497,9 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
   // ── Fila de Vídeos ──────────────────────────────────────────────────────────
 
   /// Adiciona um vídeo ao final da fila e sincroniza via Broadcast.
+  /// Se não houver vídeo atual no player, carrega automaticamente o primeiro
+  /// item da fila (pausado) para que o host possa iniciar quando quiser.
+  /// O item permanece na fila até ser explicitamente removido.
   Future<void> addToQueue({
     required String url,
     String? title,
@@ -511,6 +514,16 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
     final newQueue = [...state.videoQueue, item];
     state = state.copyWith(videoQueue: newQueue);
     _broadcastQueueUpdate(newQueue);
+    // Auto-carregar o primeiro vídeo se o player estiver vazio.
+    // O item NÃO é removido da fila — permanece até ser explicitamente removido.
+    final hasVideo = state.currentVideoUrl != null &&
+        state.currentVideoUrl!.isNotEmpty;
+    if (!hasVideo) {
+      await updateVideo(
+        videoUrl: item['url'] ?? '',
+        videoTitle: item['title'] ?? '',
+      );
+    }
   }
 
   /// Remove um vídeo da fila pelo índice e sincroniza via Broadcast.

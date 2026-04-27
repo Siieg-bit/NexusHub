@@ -157,7 +157,13 @@ class _PortraitLayout extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mq = MediaQuery.of(context);
-    // Altura do player: 40% da tela, clampada entre 200px e 320px
+    // Altura da status bar do sistema
+    final statusBarH = mq.padding.top;
+    // Altura do TopBar (ícones + padding interno de 4px em cima e embaixo)
+    const topBarH = 52.0;
+    // Altura total do bloco superior: status bar + topbar
+    final headerH = statusBarH + topBarH;
+    // Altura do player: 40% da tela, clampada. O player fica ABAIXO do header.
     final playerHeight = (mq.size.height * 0.40).clamp(200.0, 320.0);
     // Cor ambiente para o gradiente dinâmico do chat
     final ambientColor = sessionId.isNotEmpty
@@ -166,10 +172,29 @@ class _PortraitLayout extends ConsumerWidget {
 
     return Stack(
       children: [
-        // ── Estrutura principal: Column com vídeo + chat ─────────────────
+        // ── Estrutura principal: Column com header + vídeo + chat ────────
         Column(
           children: [
-            // ── Área do Player (topo, altura fixa) ──────────────────────
+            // ── Header (status bar + TopBar) — fundo sólido para cobrir
+            //    qualquer conteúdo que possa vazar por baixo ──────────────
+            Container(
+              height: headerH,
+              color: Colors.black,
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  height: topBarH,
+                  child: ScreeningTopBar(
+                    sessionId: sessionId,
+                    threadId: threadId,
+                    onMinimize: onMinimize,
+                    // TopBar está fora do player, não precisa de padding.top
+                    overrideTopPadding: 0,
+                  ),
+                ),
+              ),
+            ),
+            // ── Área do Player (abaixo do header, altura fixa) ───────────
             SizedBox(
               height: playerHeight,
               child: Stack(
@@ -193,21 +218,10 @@ class _PortraitLayout extends ConsumerWidget {
                       onMinimize: onMinimize,
                     ),
                   ),
-                  // ── TopBar FIXA (sempre visível, por cima de tudo) ────────
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: ScreeningTopBar(
-                      sessionId: sessionId,
-                      threadId: threadId,
-                      onMinimize: onMinimize,
-                    ),
-                  ),
-                  // SyncStatusBadge (abaixo da topbar)
+                  // SyncStatusBadge (topo do player)
                   if (sessionId.isNotEmpty)
                     Positioned(
-                      top: mq.padding.top + 56,
+                      top: 4,
                       left: 0,
                       right: 0,
                       child: IgnorePointer(
