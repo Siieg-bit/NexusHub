@@ -267,6 +267,24 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   Timer? _slowModeTimer;
 
   // ==========================================================================
+  // UPLOAD MÚLTIPLO & ANTI-SPAM
+  // ==========================================================================
+  /// Máximo de imagens selecionáveis de uma vez.
+  static const int _kMaxImagesPerBatch = 5;
+  /// Máximo de uploads simultâneos em andamento.
+  static const int _kMaxConcurrentUploads = 3;
+  /// Máximo de mensagens de mídia em uma janela deslizante.
+  static const int _kMediaRateLimit = 10;
+  /// Janela de tempo para o rate limit (segundos).
+  static const int _kMediaRateWindowSec = 30;
+  /// Timestamps dos envios de mídia recentes (para rate limit).
+  final List<DateTime> _mediaUploadTimestamps = [];
+  /// Número de uploads atualmente em andamento.
+  int _activeUploadCount = 0;
+  /// Fila de uploads pendentes (aguardando slot disponível).
+  final List<Future<void> Function()> _uploadQueue = [];
+
+  // ==========================================================================
   // LIFECYCLE
   // ===========================================================================
 
@@ -2195,42 +2213,113 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // ANTI-SPAM: verifica rate limit e retorna true se pode enviar
+  // ---------------------------------------------------------------------------
+  bool _checkMediaRateLimit() {
+    final now = DateTime.now();
+    final window = Duration(seconds: _kMediaRateWindowSec);
+    // Remove timestamps fora da janela
+    _mediaUploadTimestamps.removeWhere((t) => now.difference(t) > window);
+    if (_mediaUploadTimestamps.length >= _kMediaRateLimit) {
+      final oldest = _mediaUploadTimestamps.first;
+      final waitSec = _kMediaRateWindowSec - now.difference(oldest).inSeconds;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Muitas mídias enviadas. Aguarde ${waitSec}s antes de enviar mais.',
+            ),
+            backgroundColor: context.nexusTheme.error,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      return false;
+    }
+    return true;
+  }
+
+  /// Registra um timestamp de envio de mídia (para rate limit).
+  void _registerMediaUpload() {
+    _mediaUploadTimestamps.add(DateTime.now());
+  }
+
+  /// Enfileira um upload e executa respeitando o limite de concorrência.
+  Future<void> _enqueueUpload(Future<void> Function() task) async {
+    if (_activeUploadCount < _kMaxConcurrentUploads) {
+      _activeUploadCount++;
+      try {
+        await task();
+      } finally {
+        _activeUploadCount--;
+        _drainQueue();
+      }
+    } else {
+      // Adiciona à fila para executar quando um slot abrir
+      _uploadQueue.add(task);
+    }
+  }
+
+  /// Processa o próximo item da fila de uploads.
+  void _drainQueue() {
+    if (_uploadQueue.isEmpty) return;
+    if (_activeUploadCount >= _kMaxConcurrentUploads) return;
+    final next = _uploadQueue.removeAt(0);
+    _enqueueUpload(next);
+  }
+
   Future<void> _sendImage() async {
-    final _pickedFiles_image = await showNexusMediaPicker(
-  context,
-  maxSelect: 1,
-  mode: NexusPickerMode.imageOnly,
-);
-if (_pickedFiles_image.isEmpty) return;
-final image = _pickedFiles_image.first.file;
-    await _uploadMediaOptimistic(
-      localPath: image.path,
-      messageType: 'image',
-      mediaType: 'image',
-      uploadFn: () async {
-        final userId = SupabaseService.currentUserId ?? 'unknown';
-        final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
-        final rawBytes = await image.readAsBytes();
-        final bytes = await MediaUtils.compressImage(rawBytes);
-        debugPrint('[ChatRoom] 🖼️ Uploading image: $path');
-        await SupabaseService.storage.from('chat-media').uploadBinary(path, bytes,
-            fileOptions: const FileOptions(contentType: 'image/jpeg'));
-        final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
-        debugPrint('[ChatRoom] ✅ Image uploaded: $url');
-        final blurhash = await BlurHashService.generateForUrl(url);
-        return (url: url, blurhash: blurhash);
-      },
+    final pickedFiles = await showNexusMediaPicker(
+      context,
+      maxSelect: _kMaxImagesPerBatch,
+      mode: NexusPickerMode.imageOnly,
     );
+    if (pickedFiles.isEmpty) return;
+
+    // Verifica rate limit antes de iniciar qualquer upload
+    if (!_checkMediaRateLimit()) return;
+
+    // Enfileira cada imagem como upload independente
+    for (final picked in pickedFiles) {
+      final image = picked.file;
+      _registerMediaUpload();
+      await _enqueueUpload(() => _uploadMediaOptimistic(
+        localPath: image.path,
+        messageType: 'image',
+        mediaType: 'image',
+        uploadFn: () async {
+          final userId = SupabaseService.currentUserId ?? 'unknown';
+          final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.path.split('/').last}';
+          final rawBytes = await image.readAsBytes();
+          final bytes = await MediaUtils.compressImage(rawBytes);
+          debugPrint('[ChatRoom] 🖼️ Uploading image: $path');
+          await SupabaseService.storage.from('chat-media').uploadBinary(
+            path, bytes,
+            fileOptions: const FileOptions(contentType: 'image/jpeg'),
+          );
+          final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
+          debugPrint('[ChatRoom] ✅ Image uploaded: $url');
+          final blurhash = await BlurHashService.generateForUrl(url);
+          return (url: url, blurhash: blurhash);
+        },
+      ));
+    }
   }
 
   Future<void> _sendVideoFile() async {
-    final _pickedFiles_video = await showNexusMediaPicker(
-  context,
-  maxSelect: 1,
-  mode: NexusPickerMode.videoOnly,
-);
-if (_pickedFiles_video.isEmpty) return;
-final video = _pickedFiles_video.first.file;
+    final pickedVideos = await showNexusMediaPicker(
+      context,
+      maxSelect: 1,
+      mode: NexusPickerMode.videoOnly,
+    );
+    if (pickedVideos.isEmpty) return;
+    final video = pickedVideos.first.file;
+
+    // Verifica rate limit
+    if (!_checkMediaRateLimit()) return;
+
     final validationError = await MediaUtils.validateVideoDuration(video.path);
     if (validationError != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -2242,7 +2331,8 @@ final video = _pickedFiles_video.first.file;
       );
       return;
     }
-    await _uploadMediaOptimistic(
+    _registerMediaUpload();
+    await _enqueueUpload(() => _uploadMediaOptimistic(
       localPath: video.path,
       messageType: 'video',
       mediaType: 'video',
@@ -2252,13 +2342,15 @@ final video = _pickedFiles_video.first.file;
         final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}.$ext';
         final bytes = await video.readAsBytes();
         debugPrint('[ChatRoom] 🎥 Uploading video: $path');
-        await SupabaseService.storage.from('chat-media').uploadBinary(path, bytes,
-            fileOptions: const FileOptions(contentType: 'video/mp4'));
+        await SupabaseService.storage.from('chat-media').uploadBinary(
+          path, bytes,
+          fileOptions: const FileOptions(contentType: 'video/mp4'),
+        );
         final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
         debugPrint('[ChatRoom] ✅ Video uploaded: $url');
         return (url: url, blurhash: null);
       },
-    );
+    ));
   }
   // ==========================================================================
   // REACTIONS & PIN
@@ -3871,6 +3963,13 @@ final video = _pickedFiles_video.first.file;
             // Typing Indicator — exibido acima do input quando outros digitam
             if (_typingUsers.isNotEmpty)
               _TypingIndicatorWidget(typingUsers: _typingUsers),
+
+            // Indicador de uploads em andamento
+            if (_activeUploadCount > 0 || _uploadQueue.isNotEmpty)
+              _UploadQueueIndicator(
+                active: _activeUploadCount,
+                queued: _uploadQueue.length,
+              ),
 
             // Input bar principal
             if (!_isRecordingVoice &&
@@ -5683,4 +5782,52 @@ class _LinkPreviewInputCard extends StatelessWidget {
     );
   }
 
+}
+
+// =============================================================================
+// _UploadQueueIndicator — barra de status de uploads em andamento
+// =============================================================================
+class _UploadQueueIndicator extends StatelessWidget {
+  final int active;
+  final int queued;
+  const _UploadQueueIndicator({required this.active, required this.queued});
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    final theme = context.nexusTheme;
+    final total = active + queued;
+    final label = queued > 0
+        ? '$active enviando · $queued na fila'
+        : total == 1
+            ? '1 arquivo enviando...'
+            : '$total arquivos enviando...';
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
+      color: theme.backgroundSecondary,
+      child: Row(
+        children: [
+          SizedBox(
+            width: r.s(14),
+            height: r.s(14),
+            child: CircularProgressIndicator(
+              strokeWidth: 1.8,
+              color: theme.accentPrimary,
+            ),
+          ),
+          SizedBox(width: r.s(8)),
+          Text(
+            label,
+            style: TextStyle(
+              color: theme.textSecondary,
+              fontSize: r.fs(12),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
