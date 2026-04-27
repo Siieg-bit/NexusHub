@@ -744,7 +744,7 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // ── Nome do autor ACIMA do balão ──────────────────────────
-                    if (shouldShowAuthorName) ..[
+                    if (shouldShowAuthorName) ...[
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
