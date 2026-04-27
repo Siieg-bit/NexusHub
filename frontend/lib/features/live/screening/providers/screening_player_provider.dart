@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:better_player_plus/better_player_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -192,6 +193,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
 
   InAppWebViewController? _webViewController;
   Player? _nativePlayer;
+  BetterPlayerController? _drmPlayer;
   Timer? _positionPollTimer;
   bool _bridgeInjected = false;
   bool _isNativeMode = false;
@@ -401,15 +403,35 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   void onVideoEnded() {
     if (!mounted) return;
     state = state.copyWith(isPlaying: false, isBuffering: false, hasEnded: true);
-    _positionPollTimer?.cancel();
+     _positionPollTimer?.cancel();
   }
 
-  // ── Player nativo (media_kit) ─────────────────────────────────────────────
+  // ── Player nativo (media_kit) ─────────────────────────────────────────────────────
 
   void registerNativePlayer(Player player) {
     _nativePlayer = player;
     _isNativeMode = true;
     state = state.copyWith(isReady: true, isBuffering: false);
+  }
+
+  // ── Player DRM (better_player_plus / Widevine) ────────────────────────────────
+
+  void registerDrmPlayer(BetterPlayerController controller) {
+    _drmPlayer = controller;
+    _isNativeMode = true;
+    state = state.copyWith(isReady: true, isBuffering: false);
+  }
+
+  Future<void> drmPlay() async {
+    await _drmPlayer?.play();
+  }
+
+  Future<void> drmPause() async {
+    await _drmPlayer?.pause();
+  }
+
+  Future<void> drmSeek(double seconds) async {
+    await _drmPlayer?.seekTo(Duration(milliseconds: (seconds * 1000).round()));
   }
 
   void onNativePlay() {
@@ -452,6 +474,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     _positionPollTimer = null;
     _webViewController = null; // evita MissingPluginException após dispose
     _nativePlayer = null;
+    _drmPlayer = null;
     super.dispose();
   }
 }

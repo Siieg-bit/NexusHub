@@ -61,6 +61,15 @@ class StreamResolution {
   /// Se true, requer DRM Widevine para reprodução
   final bool requiresDrm;
 
+  /// URL do servidor de licença Widevine (obrigatório quando requiresDrm = true)
+  final String? licenseUrl;
+
+  /// PSSH box em base64 (opcional, melhora a inicialização DRM)
+  final String? pssh;
+
+  /// Headers HTTP adicionais para o manifest e segmentos
+  final Map<String, String>? headers;
+
   /// URL original (antes da resolução)
   final String originalUrl;
 
@@ -71,6 +80,9 @@ class StreamResolution {
     this.title,
     this.thumbnailUrl,
     this.requiresDrm = false,
+    this.licenseUrl,
+    this.pssh,
+    this.headers,
     required this.originalUrl,
   });
 }
