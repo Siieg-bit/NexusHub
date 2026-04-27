@@ -7,7 +7,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -18,6 +17,7 @@ import '../../../core/widgets/rgb_color_picker.dart';
 import '../../chat/widgets/giphy_picker.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import 'package:go_router/go_router.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 class RichBioMediaItem {
   final String id;
@@ -1233,13 +1233,13 @@ class _RichBioEditorSheetState extends State<RichBioEditorSheet> {
   }
 
   Future<void> _pickAndInsertInlineImage() async {
-    final file = await MediaUploadService.pickImage(source: ImageSource.gallery);
+    final file = await MediaUploadService.pickImage(context: context, source: ImageSource.gallery);
     if (file == null || !mounted) return;
     await _uploadInlineImageFile(file);
   }
 
   Future<void> _pickAndUploadVideo() async {
-    final file = await MediaUploadService.pickVideo(source: ImageSource.gallery);
+    final file = await MediaUploadService.pickVideo(context: context, source: ImageSource.gallery);
     if (file == null || !mounted) return;
     await _uploadMediaFile(file, type: 'video');
   }

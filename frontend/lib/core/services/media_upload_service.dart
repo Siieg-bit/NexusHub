@@ -9,6 +9,7 @@ import 'package:path/path.dart' as path;
 import 'supabase_service.dart';
 import 'chunked_upload_service.dart';
 import '../../core/l10n/locale_provider.dart';
+import '../widgets/nexus_media_picker.dart';
 
 /// ============================================================================
 /// MediaUploadService — Upload de mídia para Supabase Storage.
@@ -50,8 +51,13 @@ class UploadResult {
 }
 
 class MediaUploadService {
-  static final _picker = ImagePicker();
   static const _uuid = Uuid();
+
+  // Context obrigatório para abrir o NexusMediaPicker.
+  // Deve ser setado antes de chamar pickImage/pickVideo/pickMultipleImages.
+  // Alternativa: passar context diretamente em cada método.
+  // Mantemos o _picker como fallback para contextos sem BuildContext.
+  static final _picker = ImagePicker();
 
   /// Retorna o nome do bucket no Supabase Storage
   static String _bucketName(MediaBucket bucket) {
@@ -75,13 +81,29 @@ class MediaUploadService {
     }
   }
 
-  /// Pick uma única imagem da galeria ou câmera
+  /// Pick uma única imagem usando o NexusMediaPicker (galeria própria).
+  /// [context] é obrigatório para abrir o bottom sheet.
+  /// [cropConfig] aplica crop após a seleção.
   static Future<File?> pickImage({
-    ImageSource source = ImageSource.gallery,
+    BuildContext? context,
+    ImageSource source = ImageSource.gallery, // mantido para retrocompat.
     int maxWidth = 1920,
     int maxHeight = 1920,
     int imageQuality = 85,
+    NexusCropConfig? cropConfig,
   }) async {
+    // Se tiver context, usa o NexusMediaPicker
+    if (context != null && context.mounted) {
+      final results = await showNexusMediaPicker(
+        context,
+        maxSelect: 1,
+        mode: NexusPickerMode.imageOnly,
+        cropConfig: cropConfig,
+      );
+      if (results.isEmpty) return null;
+      return results.first.file;
+    }
+    // Fallback: ImagePicker legado (sem context)
     final picked = await _picker.pickImage(
       source: source,
       maxWidth: maxWidth.toDouble(),
@@ -92,13 +114,23 @@ class MediaUploadService {
     return File(picked.path);
   }
 
-  /// Pick múltiplas imagens da galeria
+  /// Pick múltiplas imagens usando o NexusMediaPicker.
   static Future<List<File>> pickMultipleImages({
+    BuildContext? context,
     int maxWidth = 1920,
     int maxHeight = 1920,
     int imageQuality = 85,
     int limit = 10,
   }) async {
+    if (context != null && context.mounted) {
+      final results = await showNexusMediaPicker(
+        context,
+        maxSelect: limit,
+        mode: NexusPickerMode.imageOnly,
+      );
+      return results.map((r) => r.file).toList();
+    }
+    // Fallback: ImagePicker legado
     final picked = await _picker.pickMultiImage(
       maxWidth: maxWidth.toDouble(),
       maxHeight: maxHeight.toDouble(),
@@ -108,17 +140,43 @@ class MediaUploadService {
     return picked.map((xf) => File(xf.path)).toList();
   }
 
-  /// Pick um vídeo
+  /// Pick um vídeo usando o NexusMediaPicker.
   static Future<File?> pickVideo({
-    ImageSource source = ImageSource.gallery,
+    BuildContext? context,
+    ImageSource source = ImageSource.gallery, // mantido para retrocompat.
     Duration maxDuration = const Duration(minutes: 5),
   }) async {
+    if (context != null && context.mounted) {
+      final results = await showNexusMediaPicker(
+        context,
+        maxSelect: 1,
+        mode: NexusPickerMode.videoOnly,
+      );
+      if (results.isEmpty) return null;
+      return results.first.file;
+    }
+    // Fallback: ImagePicker legado
     final picked = await _picker.pickVideo(
       source: source,
       maxDuration: maxDuration,
     );
     if (picked == null) return null;
     return File(picked.path);
+  }
+
+  /// Pick imagem OU vídeo usando o NexusMediaPicker.
+  static Future<NexusMediaFile?> pickMedia({
+    required BuildContext context,
+    NexusCropConfig? cropConfig,
+  }) async {
+    final results = await showNexusMediaPicker(
+      context,
+      maxSelect: 1,
+      mode: NexusPickerMode.all,
+      cropConfig: cropConfig,
+    );
+    if (results.isEmpty) return null;
+    return results.first;
   }
 
   /// Crop de imagem (para avatares, banners)
@@ -344,13 +402,16 @@ class MediaUploadService {
 
   /// Upload de avatar com crop circular e compressão otimizada para avatar.
   static Future<String?> uploadAvatar({
+    BuildContext? context,
     ImageSource source = ImageSource.gallery,
   }) async {
     final file = await pickImage(
+      context: context,
       source: source,
       maxWidth: 512,
       maxHeight: 512,
       imageQuality: 90,
+      cropConfig: NexusCropConfig.avatar,
     );
     if (file == null) return null;
 
@@ -375,13 +436,16 @@ class MediaUploadService {
 
   /// Upload de banner/cover da comunidade
   static Future<String?> uploadCommunityBanner({
+    BuildContext? context,
     ImageSource source = ImageSource.gallery,
   }) async {
     final file = await pickImage(
+      context: context,
       source: source,
       maxWidth: 1920,
       maxHeight: 1080,
       imageQuality: 85,
+      cropConfig: NexusCropConfig.banner,
     );
     if (file == null) return null;
 
@@ -405,9 +469,10 @@ class MediaUploadService {
 
   /// Upload de imagens para post (múltiplas, em paralelo)
   static Future<List<String>> uploadPostImages({
+    BuildContext? context,
     void Function(int completed, int total)? onProgress,
   }) async {
-    final files = await pickMultipleImages(limit: 10);
+    final files = await pickMultipleImages(context: context, limit: 10);
     if (files.isEmpty) return [];
 
     final results = await uploadMultipleFiles(

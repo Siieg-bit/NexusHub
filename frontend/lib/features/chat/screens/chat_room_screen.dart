@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 import '../../../core/models/message_model.dart';
@@ -45,6 +44,7 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/emoji_rain_overlay.dart';
 import '../../../core/services/haptic_service.dart';
 import 'roleplay_screen.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 // screening_room_screen.dart — navegação via GoRouter ('/screening-room/:threadId')
 
 /// =============================================================================
@@ -2196,9 +2196,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _sendImage() async {
-    final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
-    if (image == null) return;
+    final _pickedFiles_image = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_image.isEmpty) return;
+final image = _pickedFiles_image.first.file;
     await _uploadMediaOptimistic(
       localPath: image.path,
       messageType: 'image',
@@ -2220,9 +2224,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _sendVideoFile() async {
-    final picker = ImagePicker();
-    final video = await picker.pickVideo(source: ImageSource.gallery);
-    if (video == null) return;
+    final _pickedFiles_video = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.videoOnly,
+);
+if (_pickedFiles_video.isEmpty) return;
+final video = _pickedFiles_video.first.file;
     final validationError = await MediaUtils.validateVideoDuration(video.path);
     if (validationError != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

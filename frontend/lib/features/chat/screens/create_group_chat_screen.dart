@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 // =============================================================================
 // CREATE GROUP CHAT SCREEN — Estilo Amino Apps
@@ -120,7 +120,6 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   Future<void> _pickCoverImage() async {
     final r = context.r;
     try {
-      final picker = ImagePicker();
       final picked = await picker.pickImage(
         source: ImageSource.gallery,
         maxWidth: r.w(800),

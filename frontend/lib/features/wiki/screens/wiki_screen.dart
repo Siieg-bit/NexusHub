@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
@@ -22,6 +21,7 @@ import '../../moderation/widgets/report_dialog.dart';
 import '../../stickers/stickers.dart';
 import '../../../core/widgets/image_viewer.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 // ============================================================================
 // PROVIDER: comentários de wiki
@@ -741,9 +741,13 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
 
   Future<void> _pickCommentImage() async {
     final s = getStrings();
-    final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
-    if (image == null) return;
+    final _pickedFiles_image = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_image.isEmpty) return;
+final image = _pickedFiles_image.first.file;
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final path =

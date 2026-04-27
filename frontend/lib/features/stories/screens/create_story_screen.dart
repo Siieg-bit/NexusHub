@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:video_player/video_player.dart';
 import '../../../core/services/supabase_service.dart';
@@ -9,6 +8,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 /// Create Story Screen — Criação de stories estilo Amino/Instagram.
 ///
@@ -105,8 +105,13 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
 
   Future<void> _pickImage() async {
     final s = getStrings();
-    final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
+    final _pickedFiles_image = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_image.isEmpty) return;
+final image = _pickedFiles_image.first.file;
     if (!mounted || image == null) return;
 
     setState(() => _isSubmitting = true);
@@ -146,7 +151,6 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
 
   Future<void> _pickVideo() async {
     final s = getStrings();
-    final picker = ImagePicker();
     final video = await picker.pickVideo(
       source: ImageSource.gallery,
       maxDuration: const Duration(seconds: 60),

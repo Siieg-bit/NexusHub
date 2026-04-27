@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import '../../../core/services/supabase_service.dart';
@@ -10,6 +9,7 @@ import '../../../core/utils/responsive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show FileOptions;
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 // =============================================================================
 // CREATE PUBLIC CHAT SCREEN — Personalização Avançada
@@ -88,13 +88,13 @@ class _CreatePublicChatScreenState
 
   Future<void> _pickCoverImage() async {
     try {
-      final picker = ImagePicker();
-      final picked = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1200,
-        maxHeight: 400,
-        imageQuality: 85,
-      );
+      final _pickedFiles_picked = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_picked.isEmpty) return;
+final picked = _pickedFiles_picked.first.file;
       if (picked == null || !mounted) return;
       setState(() {
         _coverImageFile = File(picked.path);
@@ -120,13 +120,13 @@ class _CreatePublicChatScreenState
 
   Future<void> _pickIconImage() async {
     try {
-      final picker = ImagePicker();
-      final picked = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 400,
-        maxHeight: 400,
-        imageQuality: 85,
-      );
+      final _pickedFiles_picked = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_picked.isEmpty) return;
+final picked = _pickedFiles_picked.first.file;
       if (picked == null || !mounted) return;
       setState(() {
         _iconImageFile = File(picked.path);

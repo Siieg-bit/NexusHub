@@ -7,6 +7,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 /// Shared Folder — Pasta Compartilhada da Comunidade.
 ///
@@ -178,16 +179,27 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
 
     if (choice == null) return;
 
-    if (choice == 'gallery' || choice == 'camera') {
+    if (choice == 'camera') {
       final picker = ImagePicker();
       final picked = await picker.pickImage(
-        source: choice == 'camera' ? ImageSource.camera : ImageSource.gallery,
+        source: ImageSource.camera,
         imageQuality: 85,
       );
       if (picked == null) return;
       fileBytes = await picked.readAsBytes();
       fileName = picked.name;
       mimeType = 'image/${picked.name.split('.').last.toLowerCase()}';
+    } else if (choice == 'gallery') {
+      final _pickedFiles_gallery = await showNexusMediaPicker(
+        context,
+        maxSelect: 1,
+        mode: NexusPickerMode.imageOnly,
+      );
+      if (_pickedFiles_gallery.isEmpty) return;
+      final galleryFile = _pickedFiles_gallery.first.file;
+      fileBytes = await galleryFile.readAsBytes();
+      fileName = galleryFile.path.split('/').last;
+      mimeType = 'image/${fileName.split('.').last.toLowerCase()}';
     } else {
       final result = await FilePicker.platform.pickFiles(withData: true);
       if (result == null || result.files.isEmpty) return;

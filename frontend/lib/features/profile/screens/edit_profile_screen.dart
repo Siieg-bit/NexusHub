@@ -295,7 +295,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final s = getStrings();
     setState(() => _isUploadingAvatar = true);
     try {
-      final url = await MediaUploadService.uploadAvatar();
+      final url = await MediaUploadService.uploadAvatar(context: context, );
       if (url != null && mounted) {
         // 1. Atualizar estado local da tela
         setState(() => _avatarUrl = url);

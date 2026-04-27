@@ -2,7 +2,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -17,6 +16,7 @@ import '../../../core/widgets/image_viewer.dart';
 import '../../../core/widgets/comment_media_menu_button.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/nexus_empty_state.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 // =============================================================================
 // PROVIDER — carregamento de comentários do mural via RPC
@@ -301,14 +301,13 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
   }
 
   Future<void> _doPickImage() async {
-    final picker = ImagePicker();
-    final file = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 1080,
-      maxHeight: 1080,
-      imageQuality: 85,
-    );
-    if (file == null) return;
+    final _pickedFiles_file = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_file.isEmpty) return;
+final file = _pickedFiles_file.first.file;
     setState(() => _isUploadingMedia = true);
     try {
       final rawBytes = await file.readAsBytes();
@@ -336,7 +335,6 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
   }
 
   Future<void> _doPickVideo() async {
-    final picker = ImagePicker();
     final file = await picker.pickVideo(
       source: ImageSource.gallery,
       maxDuration: const Duration(seconds: 60),

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/utils/media_utils.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 /// Widget para criação rápida de figurinhas (stickers)
 /// Dois modos de operação:
@@ -45,8 +45,13 @@ class _QuickStickerCreatorState extends ConsumerState<QuickStickerCreator> {
 
   Future<void> _pickStickerImage() async {
     final s = ref.read(stringsProvider);
-    final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
+    final _pickedFiles_image = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_image.isEmpty) return;
+final image = _pickedFiles_image.first.file;
     if (image == null || !mounted) return;
 
     setState(() => _isUploading = true);

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/community_model.dart';
@@ -18,6 +17,7 @@ import '../widgets/block_editor.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/services/haptic_service.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 // =============================================================================
 // CREATE BLOG SCREEN — Editor de blogs estilo Amino
@@ -256,8 +256,13 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
 
   Future<void> _pickCoverImage() async {
     final s = getStrings();
-    final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
+    final _pickedFiles_image = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_image.isEmpty) return;
+final image = _pickedFiles_image.first.file;
     if (image == null || !mounted) return;
 
     setState(() => _isUploadingCover = true);

@@ -17,7 +17,6 @@ import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../moderation/widgets/report_dialog.dart';
 import '../../moderation/widgets/post_moderation_menu.dart';
 import '../../stickers/stickers.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../core/widgets/linkified_text.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
@@ -33,6 +32,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../communities/providers/community_detail_providers.dart'
     as community_providers;
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 enum _CommentSortOrder { mostRecent, oldest, mostPopular }
 
@@ -482,10 +482,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen>
 
   Future<void> _pickCommentImage() async {
     final s = getStrings();
-    final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
-    if (image == null) return;
-
+    final _pickedFiles_image = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_image.isEmpty) return;
+final image = _pickedFiles_image.first.file;
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final path = 'comments/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';

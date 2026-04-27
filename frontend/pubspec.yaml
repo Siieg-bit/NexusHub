@@ -39,6 +39,8 @@ dependencies:
   flutter_image_compress: ^2.3.0
   photo_view: ^0.14.0
   video_player: ^2.8.3
+  photo_manager: ^3.0.0       # Acesso à galeria nativa (fotos e vídeos) sem abrir app externo
+  video_thumbnail: ^0.5.3     # Gera thumbnail do primeiro frame de vídeos locais
   audioplayers: ^5.2.1
   record: ^6.2.0
   file_picker: ^8.1.6

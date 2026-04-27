@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/blurhash_service.dart';
@@ -14,6 +13,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import '../../../core/widgets/mention_overlay.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 /// Editor de criação e edição de posts do tipo **normal** (texto genérico).
 ///
@@ -169,9 +169,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen>
 
   Future<void> _pickImage() async {
     final s = getStrings();
-    final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
-    if (image == null) return;
+    final _pickedFiles_image = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_image.isEmpty) return;
+final image = _pickedFiles_image.first.file;
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final path =
@@ -204,9 +208,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen>
 
   Future<void> _pickCoverImage() async {
     final s = getStrings();
-    final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
-    if (image == null) return;
+    final _pickedFiles_image = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_image.isEmpty) return;
+final image = _pickedFiles_image.first.file;
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final path =
@@ -233,9 +241,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen>
 
   Future<void> _pickBackgroundImage() async {
     final s = getStrings();
-    final picker = ImagePicker();
-    final image = await picker.pickImage(source: ImageSource.gallery);
-    if (image == null) return;
+    final _pickedFiles_image = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_image.isEmpty) return;
+final image = _pickedFiles_image.first.file;
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final path =

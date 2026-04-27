@@ -12,13 +12,13 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show FileOptions;
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 /// Abre o bottom sheet de seleção de capa do chat.
 /// [threadId] — ID do chat thread.
@@ -67,11 +67,13 @@ class _ChatCoverPickerSheetState extends State<_ChatCoverPickerSheet> {
 
   Future<void> _pickFromGallery() async {
     if (!widget.canEdit) return;
-    final picker = ImagePicker();
-    final image = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 90,
-    );
+    final _pickedFiles_image = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_image.isEmpty) return;
+final image = _pickedFiles_image.first.file;
     if (image == null || !mounted) return;
 
     setState(() => _isUploading = true);

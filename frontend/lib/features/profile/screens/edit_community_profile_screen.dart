@@ -14,6 +14,7 @@ import '../providers/profile_providers.dart';
 import '../widgets/rich_bio.dart';
 import '../widgets/frame_picker_sheet.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 /// Editar Perfil da Comunidade — estilo Amino Apps.
 ///
@@ -208,7 +209,7 @@ class _EditCommunityProfileScreenState
           '${DateTime.now().millisecondsSinceEpoch}.jpg';
 
       // Abre o picker
-      final file = await MediaUploadService.pickImage(
+      final file = await MediaUploadService.pickImage(context: context, 
         maxWidth: folder == 'avatar' ? 512 : 1200,
         maxHeight: folder == 'avatar' ? 512 : 1200,
         imageQuality: folder == 'gallery' ? 80 : 85,

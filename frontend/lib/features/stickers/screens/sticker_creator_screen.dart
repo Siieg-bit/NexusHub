@@ -3,12 +3,12 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/utils/responsive.dart';
 import '../repositories/sticker_repository.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 /// Tela de criação de stickers personalizados.
 /// Permite: escolher imagem, adicionar texto, emojis, molduras e bordas.
@@ -79,14 +79,13 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
   }
 
   Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final file = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 90,
-    );
-    if (file == null) return;
+    final _pickedFiles_file = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_file.isEmpty) return;
+final file = _pickedFiles_file.first.file;
     final bytes = await file.readAsBytes();
     setState(() {
       _imageBytes = bytes;

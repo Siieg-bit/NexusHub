@@ -8,8 +8,8 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
 /// Tela para criação de nova comunidade.
 class CreateCommunityScreen extends ConsumerStatefulWidget {
@@ -36,13 +36,13 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
 
   Future<void> _pickCoverImage() async {
     try {
-      final picker = ImagePicker();
-      final picked = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1200,
-        maxHeight: 400,
-        imageQuality: 85,
-      );
+      final _pickedFiles_picked = await showNexusMediaPicker(
+  context,
+  maxSelect: 1,
+  mode: NexusPickerMode.imageOnly,
+);
+if (_pickedFiles_picked.isEmpty) return;
+final picked = _pickedFiles_picked.first.file;
       if (picked == null || !mounted) return;
       setState(() {
         _coverImageFile = File(picked.path);
