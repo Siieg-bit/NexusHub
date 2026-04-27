@@ -190,8 +190,14 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             // ── Grade de comunidades com 3 colunas (ReorderableGridView) ──
             // O usuário pode segurar e arrastar qualquer card para reordenar.
             // A ordem é persistida localmente via SharedPreferences.
+            // paddingTop = _iconOverflow (18dp) para que o ícone flutuante
+            // que transborda para cima do card não fique sobreposto ao conteúdo acima.
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+              padding: EdgeInsets.only(
+                left: r.s(16),
+                right: r.s(16),
+                top: r.s(_AminoCommunityCard._iconOverflow),
+              ),
               child: ReorderableWrap(
                 orderedCommunities: orderedCommunities,
                 onReorder: (oldIndex, newIndex) {
@@ -1059,13 +1065,16 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                             ),
                           ),
 
-                          // Ícone de arrastar — só aparece quando o pai fornece callbacks de drag
+                          // Ícone de arrastar — só aparece quando o pai fornece callbacks de drag.
+                          // Usa LongPressDraggable para que o gesto de segurar no ícone
+                          // inicie o drag sem conflitar com o GestureDetector do card.
                           if (widget.onDragStarted != null)
                             Positioned(
                               top: r.s(6),
                               right: r.s(6),
-                              child: Draggable<int>(
+                              child: LongPressDraggable<int>(
                                 data: widget.reorderIndex,
+                                delay: const Duration(milliseconds: 200),
                                 onDragStarted: () {
                                   HapticService.action();
                                   widget.onDragStarted?.call();
@@ -1845,9 +1854,12 @@ class _ReorderableWrapState extends State<ReorderableWrap> {
         // Total de itens: comunidades + JoinCard
         final totalItems = communities.length + 1;
 
+        // runSpacing inclui o overflow do ícone flutuante (18dp) para que
+        // o ícone da linha seguinte não sobreponha o card da linha anterior.
+        final double iconOverflow = r.s(_AminoCommunityCard._iconOverflow);
         return Wrap(
           spacing: spacing,
-          runSpacing: spacing,
+          runSpacing: spacing + iconOverflow,
           children: List.generate(totalItems, (index) {
             // Último item é o JoinCard (não draggável)
             if (index == communities.length) {
