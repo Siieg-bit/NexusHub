@@ -297,6 +297,13 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             transparentBackground: true,
             iframeAllow: 'autoplay; fullscreen; picture-in-picture',
             iframeAllowFullscreen: true,
+            // User-Agent desktop: impede o YouTube de redirecionar para m.youtube.com
+            // (versão mobile que exibe controles nativos e botões indesejados).
+            // O embed youtube.com/embed/ funciona corretamente com UA desktop.
+            userAgent:
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                'AppleWebKit/537.36 (KHTML, like Gecko) '
+                'Chrome/124.0.0.0 Safari/537.36',
           ),
           onWebViewCreated: (controller) {
             _webViewController = controller;
@@ -365,6 +372,11 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         transparentBackground: true,
         iframeAllow: 'autoplay; fullscreen; picture-in-picture',
         iframeAllowFullscreen: true,
+        // User-Agent desktop: impede redirect para m.youtube.com
+        userAgent:
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/124.0.0.0 Safari/537.36',
       ),
       onWebViewCreated: (controller) {
         _webViewController = controller;

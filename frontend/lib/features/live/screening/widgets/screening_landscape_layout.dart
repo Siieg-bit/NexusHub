@@ -201,20 +201,28 @@ class _PortraitLayout extends ConsumerWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Player WebView (toque dispara controles de reprodução)
+                  // Player WebView
                   // AbsorbPointer bloqueia toques na WebView quando os controles
                   // estão visíveis, impedindo que a AndroidViewSurface (hybrid
                   // composition) consuma os eventos antes do Flutter.
-                  // Quando showControls=false, os toques passam para a WebView
-                  // normalmente (GestureDetector captura o onTap para mostrar controles).
-                  GestureDetector(
-                    onTap: onTap,
-                    behavior: HitTestBehavior.opaque,
-                    child: AbsorbPointer(
-                      absorbing: showControls,
-                      child: ScreeningPlayerWidget(
-                        sessionId: sessionId,
-                        threadId: threadId,
+                  AbsorbPointer(
+                    absorbing: showControls,
+                    child: ScreeningPlayerWidget(
+                      sessionId: sessionId,
+                      threadId: threadId,
+                    ),
+                  ),
+                  // GestureDetector transparente ACIMA da WebView para capturar
+                  // toques e mostrar/esconder os controles. Fica acima do
+                  // AbsorbPointer para receber toques mesmo quando showControls=false.
+                  // Quando showControls=true, o PointerInterceptor do overlay
+                  // captura os toques nos botões antes de chegar aqui.
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      ignoring: showControls,
+                      child: GestureDetector(
+                        onTap: onTap,
+                        behavior: HitTestBehavior.translucent,
                       ),
                     ),
                   ),
@@ -335,62 +343,68 @@ class _LandscapeLayout extends StatelessWidget {
             // ── Player (70%) ─────────────────────────────────────────────────────────────
             Expanded(
               flex: 70,
-              child: GestureDetector(
-                onTap: onTap,
-                behavior: HitTestBehavior.opaque,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    AbsorbPointer(
-                      absorbing: showControls,
-                      child: ScreeningPlayerWidget(
-                        sessionId: sessionId,
-                        threadId: threadId,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  AbsorbPointer(
+                    absorbing: showControls,
+                    child: ScreeningPlayerWidget(
+                      sessionId: sessionId,
+                      threadId: threadId,
+                    ),
+                  ),
+                  // GestureDetector transparente ACIMA da WebView
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      ignoring: showControls,
+                      child: GestureDetector(
+                        onTap: onTap,
+                        behavior: HitTestBehavior.translucent,
                       ),
                     ),
+                  ),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.55),
+                              Colors.transparent,
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.70),
+                            ],
+                            stops: const [0.0, 0.15, 0.65, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (sessionId.isNotEmpty)
                     Positioned.fill(
-                      child: IgnorePointer(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.black.withValues(alpha: 0.55),
-                                Colors.transparent,
-                                Colors.transparent,
-                                Colors.black.withValues(alpha: 0.70),
-                              ],
-                              stops: const [0.0, 0.15, 0.65, 1.0],
-                            ),
-                          ),
+                      child: PointerInterceptor(
+                        intercepting: showControls,
+                        child: ScreeningControlsOverlay(
+                          sessionId: sessionId,
+                          threadId: threadId,
+                          visible: showControls,
+                          onMinimize: onMinimize,
                         ),
                       ),
                     ),
-                    if (sessionId.isNotEmpty)
-                      Positioned.fill(
-                        child: PointerInterceptor(
-                          intercepting: showControls,
-                          child: ScreeningControlsOverlay(
-                            sessionId: sessionId,
-                            threadId: threadId,
-                            visible: showControls,
-                            onMinimize: onMinimize,
-                          ),
+                  if (sessionId.isNotEmpty)
+                    Positioned.fill(
+                      child: PointerInterceptor(
+                        intercepting: true,
+                        child: ScreeningVideoEndedOverlay(
+                          sessionId: sessionId,
+                          threadId: threadId,
                         ),
                       ),
-                    if (sessionId.isNotEmpty)
-                      Positioned.fill(
-                        child: PointerInterceptor(
-                          intercepting: true,
-                          child: ScreeningVideoEndedOverlay(
-                            sessionId: sessionId,
-                            threadId: threadId,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+                    ),
+                ],
               ),
             ),
             // ── Divisor ──────────────────────────────────────────────────
