@@ -11,6 +11,7 @@ import '../providers/screening_voice_provider.dart';
 import '../providers/screening_room_provider.dart';
 import '../models/screening_participant.dart';
 import '../models/screening_chat_message.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'screening_add_video_sheet.dart';
 
 // =============================================================================
@@ -57,6 +58,7 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   RealtimeChannel? _reactionChannel;
+  bool _showEmojiPicker = false;
 
   @override
   void initState() {
@@ -109,14 +111,14 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
   void _sendMessage() {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
-
     // Analisar e disparar EmojiRain se houver emoji especial
     widget.emojiRainKey?.currentState?.triggerFromText(text);
-
     ref
         .read(screeningChatProvider(widget.sessionId).notifier)
         .sendMessage(text);
     _textController.clear();
+    // Fechar o emoji picker ao enviar mensagem
+    if (_showEmojiPicker) setState(() => _showEmojiPicker = false);
   }
 
   @override
@@ -167,6 +169,55 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
           participants: roomState.participants,
           speakingUids: voiceState.speakingAgoraUids,
         ),
+        // ── Emoji picker ───────────────────────────────────────────────────────────
+        if (_showEmojiPicker)
+          SizedBox(
+            height: 250,
+            child: EmojiPicker(
+              textEditingController: _textController,
+              onEmojiSelected: (category, emoji) {
+                // Inserir emoji na posição atual do cursor
+                final text = _textController.text;
+                final selection = _textController.selection;
+                final newText = selection.isValid
+                    ? text.replaceRange(
+                        selection.start, selection.end, emoji.emoji)
+                    : text + emoji.emoji;
+                _textController.value = TextEditingValue(
+                  text: newText,
+                  selection: TextSelection.collapsed(
+                    offset: selection.isValid
+                        ? selection.start + emoji.emoji.length
+                        : newText.length,
+                  ),
+                );
+              },
+              config: Config(
+                height: 250,
+                checkPlatformCompatibility: true,
+                emojiViewConfig: EmojiViewConfig(
+                  columns: 8,
+                  emojiSizeMax: 28,
+                  backgroundColor: const Color(0xFF1A1A2E),
+                ),
+                categoryViewConfig: CategoryViewConfig(
+                  indicatorColor: const Color(0xFF6C63FF),
+                  iconColorSelected: const Color(0xFF6C63FF),
+                  iconColor: Colors.white38,
+                  backgroundColor: const Color(0xFF12121E),
+                ),
+                bottomActionBarConfig: const BottomActionBarConfig(
+                  backgroundColor: Color(0xFF12121E),
+                  buttonColor: Color(0xFF6C63FF),
+                  buttonIconColor: Colors.white,
+                ),
+                searchViewConfig: SearchViewConfig(
+                  backgroundColor: const Color(0xFF1A1A2E),
+                  buttonIconColor: Colors.white,
+                ),
+              ),
+            ),
+          ),
         // ── Barra inferior: microfone + input estilo Rave ──────────────────
         Container(
           padding: EdgeInsets.fromLTRB(12, 8, 12, bottomPad),
@@ -190,13 +241,14 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
                   onSend: _sendMessage,
                 ),
               ),
-              // Botão de reação (emoji)
+              // Botão de reação (emoji) — toggle do EmojiPicker
               const SizedBox(width: 8),
               _ActionIconButton(
-                icon: Icons.add_reaction_outlined,
-                onTap: () {
-                  // TODO: abrir picker de reações
-                },
+                icon: _showEmojiPicker
+                    ? Icons.keyboard_rounded
+                    : Icons.add_reaction_outlined,
+                onTap: () => setState(
+                    () => _showEmojiPicker = !_showEmojiPicker),
               ),
               const SizedBox(width: 6),
               // Botão de adicionar vídeo (apenas para host)
