@@ -14,8 +14,6 @@ import '../../../core/providers/notification_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/shimmer_loading.dart';
-import '../../../core/widgets/nexus_empty_state.dart';
-import 'interest_match_screen.dart';
 import '../../../router/shell_screen.dart';
 
 /// Provider para busca de comunidades.

@@ -15,7 +15,6 @@ import '../../../core/providers/chat_provider.dart'
 import '../widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
-import '../../../core/widgets/nexus_badge.dart';
 
 Map<String, dynamic>? _extractProfile(dynamic rawProfile) {
   if (rawProfile is Map<String, dynamic>) return rawProfile;

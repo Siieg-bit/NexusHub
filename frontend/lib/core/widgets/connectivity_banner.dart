@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Banner global de conectividade.
 ///

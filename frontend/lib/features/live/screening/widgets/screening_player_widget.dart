@@ -500,7 +500,7 @@ class _ScreeningEmptyState extends StatelessWidget {
             // Ícone animado com pulso suave
             Icon(
               Icons.movie_creation_outlined,
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               size: 80,
             )
                 .animate(
@@ -538,7 +538,7 @@ class _ScreeningEmptyState extends StatelessWidget {
                     ? 'Cole um link do YouTube, Twitch, Vimeo ou Kick para começar a sessão'
                     : 'O host ainda não adicionou um vídeo. Fique à vontade para conversar no chat!',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                   fontSize: 13,
                   height: 1.5,
                 ),
@@ -583,16 +583,16 @@ class _PlatformChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.07),
+        color: Colors.white.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withOpacity(0.12),
+          color: Colors.white.withValues(alpha: 0.12),
         ),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: Colors.white.withOpacity(0.5),
+          color: Colors.white.withValues(alpha: 0.5),
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
@@ -630,7 +630,7 @@ class _SeekIndicator extends StatelessWidget {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.55),
+                color: Colors.black.withValues(alpha: 0.55),
                 shape: BoxShape.circle,
               ),
               child: Column(

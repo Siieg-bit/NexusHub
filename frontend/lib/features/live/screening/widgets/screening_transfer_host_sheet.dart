@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/screening_participant.dart';
 import '../providers/screening_room_provider.dart';
 import '../providers/screening_chat_provider.dart';
-import '../models/screening_chat_message.dart';
 
 // =============================================================================
 // ScreeningTransferHostSheet — Bottom sheet para transferir o controle de host
@@ -94,7 +93,7 @@ class ScreeningTransferHostSheet extends ConsumerWidget {
             child: Text(
               'Escolha quem vai controlar a reprodução',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 fontSize: 12,
               ),
             ),
@@ -109,7 +108,7 @@ class ScreeningTransferHostSheet extends ConsumerWidget {
               child: Text(
                 'Nenhum outro participante na sala.',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                   fontSize: 13,
                 ),
               ),
@@ -201,7 +200,7 @@ class _CandidateTile extends StatelessWidget {
       trailing: TextButton(
         onPressed: onTransfer,
         style: TextButton.styleFrom(
-          backgroundColor: Colors.amberAccent.withOpacity(0.15),
+          backgroundColor: Colors.amberAccent.withValues(alpha: 0.15),
           foregroundColor: Colors.amberAccent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),

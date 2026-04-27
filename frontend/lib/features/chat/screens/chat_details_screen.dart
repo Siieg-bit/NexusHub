@@ -19,7 +19,6 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../../core/models/user_model.dart';
 import '../widgets/chat_cover_picker.dart';
 import '../widgets/chat_moderation_sheet.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';

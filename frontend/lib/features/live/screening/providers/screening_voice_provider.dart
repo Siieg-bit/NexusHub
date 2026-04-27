@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import '../models/screening_participant.dart';
 import 'screening_room_provider.dart';
 import '../../../../config/app_config.dart';
 import '../../../../core/services/supabase_service.dart';

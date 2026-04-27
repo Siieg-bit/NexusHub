@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
-import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/nexus_empty_state.dart';
-import '../../../core/widgets/nexus_loading_button.dart';
 
 // ── Providers ─────────────────────────────────────────────────────────────────
 final communityRolesProvider = FutureProvider.autoDispose

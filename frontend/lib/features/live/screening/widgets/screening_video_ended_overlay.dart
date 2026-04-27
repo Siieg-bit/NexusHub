@@ -40,7 +40,7 @@ class ScreeningVideoEndedOverlay extends ConsumerWidget {
       opacity: playerState.hasEnded ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 500),
       child: Container(
-        color: Colors.black.withOpacity(0.82),
+        color: Colors.black.withValues(alpha: 0.82),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -48,7 +48,7 @@ class ScreeningVideoEndedOverlay extends ConsumerWidget {
               // ── Ícone de replay ──────────────────────────────────────────
               Icon(
                 Icons.replay_rounded,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 size: 64,
               )
                   .animate()
@@ -81,7 +81,7 @@ class ScreeningVideoEndedOverlay extends ConsumerWidget {
               Text(
                 '${roomState.participants.length} ${roomState.participants.length == 1 ? 'pessoa' : 'pessoas'} na sala',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 13,
                 ),
               )
@@ -182,11 +182,11 @@ class _EndedButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: isPrimary
               ? Colors.white
-              : Colors.white.withOpacity(0.12),
+              : Colors.white.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(24),
           border: isPrimary
               ? null
-              : Border.all(color: Colors.white.withOpacity(0.2)),
+              : Border.all(color: Colors.white.withValues(alpha: 0.2)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

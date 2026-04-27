@@ -266,7 +266,7 @@ class _HistoryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -285,7 +285,7 @@ class _HistoryCard extends StatelessWidget {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.06),
+                    color: Colors.white.withValues(alpha: 0.06),
                     borderRadius: BorderRadius.circular(10),
                     image: entry.videoThumbnail != null
                         ? DecorationImage(
@@ -366,10 +366,10 @@ class _HistoryCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
+                      color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                          color: Colors.white.withOpacity(0.12)),
+                          color: Colors.white.withValues(alpha: 0.12)),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,

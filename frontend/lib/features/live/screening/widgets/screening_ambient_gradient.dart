@@ -242,9 +242,9 @@ class ScreeningAmbientGradientState
                 center: Alignment.bottomCenter,
                 radius: 1.4,
                 colors: [
-                  interpolated.withOpacity(0.55),
-                  interpolated.withOpacity(0.25),
-                  Colors.black.withOpacity(0.0),
+                  interpolated.withValues(alpha: 0.55),
+                  interpolated.withValues(alpha: 0.25),
+                  Colors.black.withValues(alpha: 0.0),
                 ],
                 stops: const [0.0, 0.45, 1.0],
               ),

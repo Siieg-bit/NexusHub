@@ -94,7 +94,7 @@ class _ScreeningEntryAnimationState extends State<ScreeningEntryAnimation>
                   .then()
                   .shimmer(
                     duration: 1800.ms,
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                   ),
 
               const SizedBox(height: 28),
@@ -119,7 +119,7 @@ class _ScreeningEntryAnimationState extends State<ScreeningEntryAnimation>
               Text(
                 'Preparando a experiência...',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.45),
+                  color: Colors.white.withValues(alpha: 0.45),
                   fontSize: 13,
                   fontWeight: FontWeight.w400,
                 ),
@@ -135,9 +135,9 @@ class _ScreeningEntryAnimationState extends State<ScreeningEntryAnimation>
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
-                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.white.withOpacity(0.7),
+                      Colors.white.withValues(alpha: 0.7),
                     ),
                     minHeight: 2,
                   ),
@@ -174,7 +174,7 @@ class ScreeningLoadingOverlay extends StatelessWidget {
       child: IgnorePointer(
         ignoring: !visible,
         child: Container(
-          color: Colors.black.withOpacity(0.45),
+          color: Colors.black.withValues(alpha: 0.45),
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -191,7 +191,7 @@ class ScreeningLoadingOverlay extends StatelessWidget {
                         width: 48,
                         height: 48,
                         child: CircularProgressIndicator(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           strokeWidth: 2,
                           value: 1.0,
                         ),
@@ -212,7 +212,7 @@ class ScreeningLoadingOverlay extends StatelessWidget {
                 Text(
                   'Carregando...',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'supabase_service.dart';
 import '../../config/app_config.dart';
 
 /// ============================================================================

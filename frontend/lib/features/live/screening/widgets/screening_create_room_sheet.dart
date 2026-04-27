@@ -292,7 +292,7 @@ class _ScreeningCreateRoomSheetState
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: theme.accentPrimary.withOpacity(0.15),
+                  color: theme.accentPrimary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
@@ -358,7 +358,7 @@ class _ScreeningCreateRoomSheetState
           style: TextStyle(color: theme.textPrimary, fontSize: 14),
           decoration: InputDecoration(
             hintText: 'youtube.com/watch?v=... ou qualquer URL de vídeo',
-            hintStyle: TextStyle(color: theme.textSecondary.withOpacity(0.5), fontSize: 13),
+            hintStyle: TextStyle(color: theme.textSecondary.withValues(alpha: 0.5), fontSize: 13),
             prefixIcon: Icon(
               Icons.link_rounded,
               color: _urlError != null ? Colors.red[400] : theme.accentSecondary,
@@ -396,8 +396,8 @@ class _ScreeningCreateRoomSheetState
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
                 color: _urlError != null
-                    ? Colors.red.withOpacity(0.5)
-                    : Colors.white.withOpacity(0.06),
+                    ? Colors.red.withValues(alpha: 0.5)
+                    : Colors.white.withValues(alpha: 0.06),
                 width: 1,
               ),
             ),
@@ -428,7 +428,7 @@ class _ScreeningCreateRoomSheetState
           color: theme.surfacePrimary,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: theme.accentPrimary.withOpacity(0.2),
+            color: theme.accentPrimary.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -537,7 +537,7 @@ class _ScreeningCreateRoomSheetState
           style: TextStyle(color: theme.textPrimary, fontSize: 14),
           decoration: InputDecoration(
             hintText: 'Ex: Maratona de filmes de terror',
-            hintStyle: TextStyle(color: theme.textSecondary.withOpacity(0.5), fontSize: 13),
+            hintStyle: TextStyle(color: theme.textSecondary.withValues(alpha: 0.5), fontSize: 13),
             prefixIcon: Icon(
               Icons.edit_rounded,
               color: theme.accentSecondary,
@@ -553,7 +553,7 @@ class _ScreeningCreateRoomSheetState
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Colors.white.withOpacity(0.06),
+                color: Colors.white.withValues(alpha: 0.06),
                 width: 1,
               ),
             ),
@@ -580,7 +580,7 @@ class _ScreeningCreateRoomSheetState
             onPressed: _isCreating ? null : () => _createRoom(withoutVideo: !hasUrl),
             style: ElevatedButton.styleFrom(
               backgroundColor: theme.accentPrimary,
-              disabledBackgroundColor: theme.accentPrimary.withOpacity(0.4),
+              disabledBackgroundColor: theme.accentPrimary.withValues(alpha: 0.4),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -630,7 +630,7 @@ class _ScreeningCreateRoomSheetState
               style: TextButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
-                  side: BorderSide(color: Colors.white.withOpacity(0.1)),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                 ),
               ),
               child: Text(

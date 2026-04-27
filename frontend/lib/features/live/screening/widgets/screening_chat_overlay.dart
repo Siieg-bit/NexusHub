@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -149,8 +148,8 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    Colors.black.withOpacity(0.45),
-                    Colors.black.withOpacity(0.72),
+                    Colors.black.withValues(alpha: 0.45),
+                    Colors.black.withValues(alpha: 0.72),
                   ],
                   stops: const [0.0, 0.55, 1.0],
                 ),
@@ -232,13 +231,13 @@ class _ChatBubble extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
+              color: Colors.white.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               message.text,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 11,
                 fontStyle: FontStyle.italic,
               ),
@@ -289,7 +288,7 @@ class _ChatBubble extends StatelessWidget {
                   style: TextStyle(
                     color: message.isMe
                         ? Colors.lightBlueAccent
-                        : Colors.white.withOpacity(0.75),
+                        : Colors.white.withValues(alpha: 0.75),
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     shadows: const [
@@ -434,14 +433,14 @@ class _ParticipantAvatarState extends State<_ParticipantAvatar>
                 ? Border.all(color: Colors.greenAccent, width: 2)
                 : widget.isHost
                     ? Border.all(
-                        color: Colors.amberAccent.withOpacity(0.8),
+                        color: Colors.amberAccent.withValues(alpha: 0.8),
                         width: 1.5,
                       )
                     : null,
             boxShadow: widget.isSpeaking
                 ? [
                     BoxShadow(
-                      color: Colors.greenAccent.withOpacity(0.4),
+                      color: Colors.greenAccent.withValues(alpha: 0.4),
                       blurRadius: 8,
                       spreadRadius: 1,
                     )
@@ -497,18 +496,18 @@ class _MicButton extends ConsumerWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: isMuted
-              ? Colors.redAccent.withOpacity(0.85)
-              : Colors.white.withOpacity(0.18),
+              ? Colors.redAccent.withValues(alpha: 0.85)
+              : Colors.white.withValues(alpha: 0.18),
           border: Border.all(
             color: isMuted
                 ? Colors.redAccent
-                : Colors.white.withOpacity(0.35),
+                : Colors.white.withValues(alpha: 0.35),
             width: 1.5,
           ),
           boxShadow: isMuted
               ? [
                   BoxShadow(
-                    color: Colors.redAccent.withOpacity(0.4),
+                    color: Colors.redAccent.withValues(alpha: 0.4),
                     blurRadius: 8,
                     spreadRadius: 1,
                   )
@@ -576,13 +575,13 @@ class _ChatInputState extends State<_ChatInput> {
           height: 46,
           decoration: BoxDecoration(
             color: _hasText
-                ? Colors.white.withOpacity(0.16)
-                : Colors.white.withOpacity(0.10),
+                ? Colors.white.withValues(alpha: 0.16)
+                : Colors.white.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: _hasText
-                  ? Colors.white.withOpacity(0.28)
-                  : Colors.white.withOpacity(0.15),
+                  ? Colors.white.withValues(alpha: 0.28)
+                  : Colors.white.withValues(alpha: 0.15),
             ),
           ),
           child: Row(
@@ -597,7 +596,7 @@ class _ChatInputState extends State<_ChatInput> {
                   decoration: InputDecoration(
                     hintText: 'Diga algo...',
                     hintStyle: TextStyle(
-                      color: Colors.white.withOpacity(0.4),
+                      color: Colors.white.withValues(alpha: 0.4),
                       fontSize: 14,
                     ),
                     border: InputBorder.none,
@@ -620,7 +619,7 @@ class _ChatInputState extends State<_ChatInput> {
                     height: 46,
                     decoration: BoxDecoration(
                       color: _hasText
-                          ? Colors.white.withOpacity(0.22)
+                          ? Colors.white.withValues(alpha: 0.22)
                           : Colors.transparent,
                       borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(24),

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/services/call_service.dart';
@@ -11,7 +10,6 @@ import '../../../core/services/realtime_service.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../core/l10n/locale_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/mini_room_overlay.dart';

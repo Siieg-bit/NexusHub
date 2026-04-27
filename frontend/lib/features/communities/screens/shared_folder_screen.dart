@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,9 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../core/l10n/app_strings.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
-import '../../../core/widgets/cosmetic_avatar.dart';
 
 /// Shared Folder — Pasta Compartilhada da Comunidade.
 ///

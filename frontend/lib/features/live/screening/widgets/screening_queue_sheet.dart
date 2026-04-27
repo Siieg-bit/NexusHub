@@ -16,8 +16,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/screening_room_provider.dart';
-import '../providers/screening_player_provider.dart';
-import '../models/screening_room_state.dart';
 import '../../../../core/services/supabase_service.dart';
 
 class ScreeningQueueSheet extends ConsumerStatefulWidget {
@@ -179,7 +177,7 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.12),
+                    color: Colors.white.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -208,7 +206,7 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
-                      backgroundColor: Colors.amberAccent.withOpacity(0.1),
+                      backgroundColor: Colors.amberAccent.withValues(alpha: 0.1),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -355,7 +353,7 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
               hintText: 'URL do vídeo (YouTube, Twitch, etc.)',
               hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
               filled: true,
-              fillColor: Colors.white.withOpacity(0.07),
+              fillColor: Colors.white.withValues(alpha: 0.07),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none,
@@ -375,7 +373,7 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
               hintText: 'Título (opcional)',
               hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
               filled: true,
-              fillColor: Colors.white.withOpacity(0.07),
+              fillColor: Colors.white.withValues(alpha: 0.07),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none,
@@ -470,9 +468,9 @@ class _QueueItem extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Row(
         children: [
@@ -481,7 +479,7 @@ class _QueueItem extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
+              color: Colors.white.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(8),
               image: thumbnail != null
                   ? DecorationImage(
@@ -533,7 +531,7 @@ class _QueueItem extends StatelessWidget {
             margin: const EdgeInsets.only(left: 8),
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
+              color: Colors.white.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(

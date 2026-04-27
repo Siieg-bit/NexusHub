@@ -21,7 +21,6 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../stories/screens/story_viewer_screen.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
-import '../../../core/widgets/nexus_badge.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/widgets/nexus_empty_state.dart';
 import 'chat_requests_screen.dart' show chatRequestsProvider;

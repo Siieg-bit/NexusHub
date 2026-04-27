@@ -110,10 +110,10 @@ class SyncDebugOverlay extends ConsumerWidget {
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.75),
+            color: Colors.black.withValues(alpha: 0.75),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: _statusColor(syncState.status).withOpacity(0.6),
+              color: _statusColor(syncState.status).withValues(alpha: 0.6),
               width: 1,
             ),
           ),

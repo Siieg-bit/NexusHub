@@ -180,10 +180,10 @@ class _PortraitLayout extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.65),
+                      Colors.black.withValues(alpha: 0.65),
                       Colors.transparent,
                       Colors.transparent,
-                      Colors.black.withOpacity(0.80),
+                      Colors.black.withValues(alpha: 0.80),
                     ],
                     stops: const [0.0, 0.18, 0.55, 1.0],
                   ),
@@ -300,10 +300,10 @@ class _LandscapeLayout extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black.withOpacity(0.55),
+                            Colors.black.withValues(alpha: 0.55),
                             Colors.transparent,
                             Colors.transparent,
-                            Colors.black.withOpacity(0.70),
+                            Colors.black.withValues(alpha: 0.70),
                           ],
                           stops: const [0.0, 0.15, 0.65, 1.0],
                         ),
@@ -362,13 +362,13 @@ class _LandscapeLayout extends StatelessWidget {
         // ── Divisor vertical ────────────────────────────────────────────────
         Container(
           width: 1,
-          color: Colors.white.withOpacity(0.08),
+          color: Colors.white.withValues(alpha: 0.08),
         ),
         // ── Painel lateral do Chat (30% da largura) ──────────────────────────
         Expanded(
           flex: 30,
           child: Container(
-            color: Colors.black.withOpacity(0.85),
+            color: Colors.black.withValues(alpha: 0.85),
             child: Column(
               children: [
                 // Header do painel lateral
@@ -414,9 +414,9 @@ class _LandscapeChatHeader extends ConsumerWidget {
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         border: Border(
-          bottom: BorderSide(color: Colors.white.withOpacity(0.08)),
+          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
         ),
       ),
       child: Row(
@@ -439,7 +439,7 @@ class _LandscapeChatHeader extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(

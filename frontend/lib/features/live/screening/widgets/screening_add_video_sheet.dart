@@ -96,9 +96,9 @@ class _ScreeningAddVideoSheetState
             bottom: MediaQuery.of(context).viewInsets.bottom + 24,
           ),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.85),
+            color: Colors.black.withValues(alpha: 0.85),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -130,7 +130,7 @@ class _ScreeningAddVideoSheetState
               Text(
                 'Cole a URL de qualquer plataforma suportada',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 13,
                 ),
               ),
@@ -238,9 +238,9 @@ class _PlatformChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.15)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -284,7 +284,7 @@ class _DarkTextField extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
@@ -292,9 +292,9 @@ class _DarkTextField extends StatelessWidget {
         const SizedBox(height: 6),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.07),
+            color: Colors.white.withValues(alpha: 0.07),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.12)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           ),
           child: TextField(
             controller: controller,
@@ -304,7 +304,7 @@ class _DarkTextField extends StatelessWidget {
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: TextStyle(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 fontSize: 13,
               ),
               border: InputBorder.none,

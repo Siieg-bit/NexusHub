@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/screening_room_provider.dart';
 import '../providers/screening_player_provider.dart';
@@ -118,7 +117,7 @@ class _ScreeningControlsOverlayState
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black.withOpacity(0.7),
+            Colors.black.withValues(alpha: 0.7),
             Colors.transparent,
           ],
         ),
@@ -141,7 +140,7 @@ class _ScreeningControlsOverlayState
                 Text(
                   'Sala de Projeção',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
                   ),
@@ -185,7 +184,7 @@ class _ScreeningControlsOverlayState
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
           colors: [
-            Colors.black.withOpacity(0.75),
+            Colors.black.withValues(alpha: 0.75),
             Colors.transparent,
           ],
         ),
@@ -403,10 +402,10 @@ class _ControlButtonState extends State<_ControlButton>
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.45),
+            color: Colors.black.withValues(alpha: 0.45),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               width: 0.5,
             ),
           ),
@@ -492,7 +491,7 @@ class _PlayPauseButtonState extends State<_PlayPauseButton>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.white.withOpacity(0.25),
+                color: Colors.white.withValues(alpha: 0.25),
                 blurRadius: 16,
                 spreadRadius: 2,
               ),
@@ -537,9 +536,9 @@ class _ViewerCountBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5),
+        color: Colors.black.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -606,9 +605,9 @@ class _SeekBarState extends ConsumerState<_SeekBar> {
                 : const RoundSliderThumbShape(enabledThumbRadius: 6),
             overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
             activeTrackColor: Colors.white,
-            inactiveTrackColor: Colors.white.withOpacity(0.2),
+            inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
             thumbColor: Colors.white,
-            overlayColor: Colors.white.withOpacity(0.15),
+            overlayColor: Colors.white.withValues(alpha: 0.15),
             trackShape: const RoundedRectSliderTrackShape(),
           ),
           child: Slider(

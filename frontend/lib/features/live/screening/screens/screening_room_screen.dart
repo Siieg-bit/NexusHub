@@ -8,15 +8,8 @@ import '../models/screening_room_state.dart';
 import '../providers/screening_room_provider.dart';
 import '../providers/screening_sync_provider.dart';
 import '../providers/screening_voice_provider.dart';
-import '../widgets/screening_player_widget.dart';
-import '../widgets/screening_controls_overlay.dart';
-import '../widgets/screening_chat_overlay.dart';
-import '../widgets/screening_reaction_bar.dart';
-import '../widgets/screening_entry_animation.dart';
-import '../widgets/screening_video_ended_overlay.dart';
 import '../../../../core/widgets/emoji_rain_overlay.dart';
 import '../widgets/screening_landscape_layout.dart';
-import '../widgets/screening_sync_badge.dart';
 
 // =============================================================================
 // ScreeningRoomScreen — Sala de Projeção (Fase 2 — Sync + Reações + Robustez)
@@ -462,9 +455,9 @@ class _SyncStatusBadge extends ConsumerWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.72),
+            color: Colors.black.withValues(alpha: 0.72),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: color.withOpacity(0.6), width: 1),
+            border: Border.all(color: color.withValues(alpha: 0.6), width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

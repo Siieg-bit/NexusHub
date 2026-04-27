@@ -7,10 +7,8 @@ import '../../chat/screens/call_screen.dart';
 import '../screening/screens/screening_room_screen.dart';
 import '../screening/screens/screening_history_screen.dart';
 import '../screening/widgets/screening_create_room_sheet.dart';
-import '../screening/services/screening_notification_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../config/nexus_theme_data.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Tela Live — exibe Salas de Projeção e Voice Chats ativos.
