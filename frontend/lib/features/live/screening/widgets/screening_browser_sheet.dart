@@ -13,6 +13,9 @@ import '../services/kick_meta_service.dart';
 import '../services/og_tags_meta_service.dart';
 import '../services/google_drive_stream_service.dart';
 import '../services/pluto_stream_service.dart';
+import '../services/disney/disney_auth_service.dart';
+import '../services/disney/disney_playback_service.dart';
+import 'disney_browser_sheet.dart';
 
 // =============================================================================
 // ScreeningBrowserSheet — Navegador integrado tematizado para seleção de vídeo
@@ -157,16 +160,24 @@ final _kPlatforms = <String, ScreeningPlatform>{
   'disney': ScreeningPlatform(
     id: 'disney',
     displayName: 'Disney+',
-    // O site do Disney+ redireciona para o app nativo no mobile e não permite
-    // navegar pelo catálogo via WebView. A integração usa entrada direta de URL:
-    // o usuário abre o app Disney+, navega até o vídeo, copia a URL de compartilhamento
-    // (ex: https://www.disneyplus.com/video/abc123) e cola aqui.
-    // O relay DRM (screening-relay-disney) extrai o stream e a licença Widevine.
-    isDirectUrl: true,
+    // Integração via API BAMGrid (arquitetura do Rave):
+    // 1. O usuário faz login no WebView oficial do Disney+.
+    // 2. O disney.js intercepta os tokens do localStorage após o login.
+    // 3. O DisneyBrowserSheet abre o catálogo nativo via API BAMGrid.
+    // 4. O DisneyPlaybackService resolve o stream HLS/DASH + licença Widevine.
     isDrm: true,
-    directUrlHint: 'Abra o app Disney+, navegue até o vídeo desejado, '
-        'toque em Compartilhar e copie o link. '
-        'Cole a URL abaixo para reproduzir na sala.',
+    initialUrl: 'https://www.disneyplus.com/login',
+    loginUrl: 'https://www.disneyplus.com/login',
+    loggedInUrl: 'https://www.disneyplus.com/home',
+    // Detecta login: após login bem-sucedido, a URL muda para /home ou /browse
+    loginCheckJs: "window.location.pathname.startsWith('/home') || "
+        "window.location.pathname.startsWith('/browse') || "
+        "window.location.pathname.startsWith('/movies') || "
+        "window.location.pathname.startsWith('/series') || "
+        "(window.location.hostname.includes('disneyplus.com') && "
+        "!window.location.pathname.includes('/login') && "
+        "!window.location.pathname.includes('/register') && "
+        "!window.location.pathname.includes('/activate'))",
     videoPatterns: [
       _VideoUrlPattern(RegExp(r'disneyplus\.com/video/[a-zA-Z0-9_-]+')),
       _VideoUrlPattern(RegExp(r'disneyplus\.com/movies/[^/]+/[a-zA-Z0-9_-]+')),
@@ -287,6 +298,8 @@ class _ScreeningBrowserSheetState
   bool _urlBarEditing = false;
   bool _isVideoDetected = false;
   String _detectedVideoUrl = '';
+  // Disney+: controla se os tokens já foram extraídos do localStorage
+  bool _disneyTokensExtracted = false;
 
   late final ScreeningPlatform _platform;
   late final AnimationController _pulseController;
@@ -301,6 +314,12 @@ class _ScreeningBrowserSheetState
     'vimeo': Color(0xFF1AB7EA),
     'drive': Color(0xFF4285F4),
     'web': Color(0xFF6C63FF),
+    'disney': Color(0xFF0063E5),
+    'netflix': Color(0xFFE50914),
+    'amazon': Color(0xFF00A8E1),
+    'hbo': Color(0xFF7B2FBE),
+    'crunchyroll': Color(0xFFFF6400),
+    'pluto': Color(0xFF22C55E),
   };
 
   Color get _accentColor =>
@@ -378,9 +397,19 @@ class _ScreeningBrowserSheetState
               resolution = await DrmRelayService.resolveNetflix(url, _webViewController!);
               break;
             case StreamPlatform.disneyPlus:
-              // Disney+ aceita webViewController null — usa cookies persistidos
-              // quando o usuário cola a URL diretamente (modo isDirectUrl).
-              resolution = await DrmRelayService.resolveDisney(url, _webViewController);
+              // Disney+ usa DisneyPlaybackService (API BAMGrid direta, sem relay).
+              // O usuário precisa estar autenticado via DisneyAuthService.
+              try {
+                final disneyStream = await DisneyPlaybackService.resolveFromUrl(url);
+                finalUrl = disneyStream.manifestUrl;
+              } on DisneyAuthException catch (e) {
+                if (e.isExpired || e.message.contains('Não autenticado')) {
+                  // Usuário não logado — tentar via relay como fallback
+                  resolution = await DrmRelayService.resolveDisney(url, _webViewController);
+                } else {
+                  rethrow;
+                }
+              }
               break;
             case StreamPlatform.amazonPrime:
               if (_webViewController == null) throw Exception('Prime Video: browser não disponível');
@@ -540,6 +569,60 @@ class _ScreeningBrowserSheetState
   // ── Navegação pela barra de endereço ─────────────────────────────────────
 
   // ── Redirecionamento inteligente (login → biblioteca) ────────────────────────
+
+  // ── Login Disney+ via interceptação de tokens ───────────────────────────
+  /// Injetado no onLoadStop do Disney+.
+  /// Injeta o disney.js e tenta extrair os tokens do localStorage.
+  /// Quando os tokens são encontrados, abre o DisneyBrowserSheet automaticamente.
+  Future<void> _handleDisneyLogin(
+    InAppWebViewController controller,
+    String currentUrl,
+  ) async {
+    // Injetar o script disney.js em toda página do Disney+
+    if (currentUrl.contains('disneyplus.com')) {
+      try {
+        await controller.evaluateJavascript(source: DisneyAuthService.disneyJs);
+      } catch (_) {}
+    }
+
+    // Só tentar extrair tokens se parece que o usuário está logado
+    final checkJs = _platform.loginCheckJs;
+    if (checkJs == null) return;
+
+    try {
+      final result = await controller.evaluateJavascript(source: '($checkJs) === true');
+      final isLoggedIn = result?.toString().trim() == 'true';
+      if (!isLoggedIn) return;
+    } catch (_) {
+      return;
+    }
+
+    // Usuário está logado — tentar extrair tokens
+    debugPrint('[Disney] Usuário logado, extraindo tokens...');
+    final success = await DisneyAuthService.extractAndSaveTokens(controller);
+
+    if (success && mounted) {
+      setState(() => _disneyTokensExtracted = true);
+      debugPrint('[Disney] Tokens extraídos! Abrindo catálogo nativo...');
+
+      // Abrir o catálogo nativo Disney+
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          fullscreenDialog: true,
+          builder: (_) => DisneyBrowserSheet(
+            sessionId: widget.sessionId,
+            threadId: widget.threadId,
+            addToQueue: widget.addToQueue,
+          ),
+        ),
+      );
+
+      // Resetar flag para permitir nova extração se o usuário voltar
+      if (mounted) setState(() => _disneyTokensExtracted = false);
+    } else if (!success) {
+      debugPrint('[Disney] Tokens não encontrados ainda, aguardando...');
+    }
+  }
 
   /// Chamado após cada `onLoadStop`. Se a plataforma tem `loginCheckJs`
   /// e o usuário acabou de fazer login (está na loginUrl mas já autenticado),
@@ -943,6 +1026,10 @@ class _ScreeningBrowserSheetState
             setState(() { _isLoading = false; _loadingProgress = 1.0; _canGoBack = back; _canGoForward = fwd; });
             _updateUrlBar(urlStr);
             if (_isVideoUrl(urlStr) && !_isCapturing) _markVideoDetected(urlStr);
+            // Disney+: injetar script e tentar extrair tokens após cada carregamento
+            if (_platform.id == 'disney' && !_disneyTokensExtracted) {
+              await _handleDisneyLogin(c, urlStr);
+            }
             // Redirecionar para a página correta após login (Vimeo, Drive, etc.)
             await _handleSmartRedirect(c, urlStr);
           },
