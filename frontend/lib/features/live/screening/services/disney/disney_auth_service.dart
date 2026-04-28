@@ -76,84 +76,109 @@ class DisneyAuthService {
 })();
 ''';
 
-  /// Script que extrai tokens do localStorage (baseado no Rave).
-  static const _extractTokensJs = r'''
-(function() {
-    try {
-        var ls = JSON.stringify(window.localStorage);
-        return ls;
-    } catch(e) {
-        return null;
-    }
-})()
-''';
-
   // ── Extração de tokens via WebView ────────────────────────────────────────
-
   /// Extrai e salva os tokens de autenticação do localStorage do WebView.
   ///
-  /// Deve ser chamado após o usuário fazer login na página do Disney+.
-  /// Retorna `true` se os tokens foram encontrados e salvos com sucesso.
+  /// Fluxo idêntico ao Rave (DisneyVideoGridFragment.extractLocalStorage):
+  /// 1. Serializa o localStorage completo com JSON.stringify
+  /// 2. Remove todos os backslashes (unescape de JSON aninhado) — IGUAL AO RAVE
+  /// 3. Aplica os regexes exatos do Rave: {"token":"(.*?)"} e {"refresh_token":"(.*?)"}
+  ///
+  /// O Disney+ armazena os tokens dentro de valores JSON aninhados no localStorage,
+  /// ex: {"bam.api.token":"{\"token\":\"eyJ...\",\"refresh_token\":\"eyJ...\"}"}
+  /// Após remover os backslashes, o regex encontra os tokens corretamente.
   static Future<bool> extractAndSaveTokens(
     InAppWebViewController controller,
   ) async {
     try {
       debugPrint('[DisneyAuth] Extraindo tokens do localStorage...');
 
-      // Extrair o localStorage completo como JSON string
+      // Passo 1: Serializar o localStorage completo (igual ao Rave)
       final lsRaw = await controller.evaluateJavascript(
-        source: _extractTokensJs,
+        source: 'JSON.stringify(window.localStorage)',
       );
 
-      if (lsRaw == null || lsRaw == 'null') {
+      if (lsRaw == null || lsRaw == 'null' || lsRaw.toString().isEmpty) {
         debugPrint('[DisneyAuth] localStorage vazio ou inacessível');
         return false;
       }
 
-      // O Rave usa regex: {"token":"(.*?)"} e {"refresh_token":"(.*?)"}
-      // O localStorage do Disney+ armazena os tokens como JSON strings aninhadas.
-      final lsString = lsRaw.toString();
+      // Passo 2: Remover backslashes — EXATAMENTE como o Rave faz
+      // O Rave chama: Ll60/d0;->S(p1, "\\", "", false, 4, null)
+      // que é equivalente a string.replace("\", "")
+      final lsUnescaped = lsRaw.toString().replaceAll(r'\', '');
 
-      // Tentar extrair access_token via regex (padrão Rave)
-      String? accessToken = _extractTokenByRegex(
-        lsString,
-        [
-          RegExp(r'"token"\s*:\s*"([^"]+)"'),
-          RegExp(r'"access_token"\s*:\s*"([^"]+)"'),
-          RegExp(r'"bamAccessToken"\s*:\s*"([^"]+)"'),
-        ],
-      );
+      debugPrint('[DisneyAuth] localStorage (primeiros 500 chars): '
+          '${lsUnescaped.length > 500 ? lsUnescaped.substring(0, 500) : lsUnescaped}');
 
-      // Tentar extrair refresh_token via regex (padrão Rave)
-      String? refreshToken = _extractTokenByRegex(
-        lsString,
-        [
-          RegExp(r'"refresh_token"\s*:\s*"([^"]+)"'),
-          RegExp(r'"bamRefreshToken"\s*:\s*"([^"]+)"'),
-        ],
-      );
+      // Passo 3: Aplicar os regexes EXATOS do Rave
+      // Rave usa: Pattern.compile("\\{\"token\":\"(.*?)\"}")
+      // Equivalente Dart: RegExp(r'{"token":"(.*?)"}')
+      String? accessToken;
+      final tokenMatch = RegExp(r'{"token":"(.*?)"}').firstMatch(lsUnescaped);
+      if (tokenMatch != null &&
+          tokenMatch.group(1) != null &&
+          tokenMatch.group(1)!.isNotEmpty) {
+        accessToken = tokenMatch.group(1);
+        debugPrint('[DisneyAuth] access_token encontrado via regex Rave');
+      }
 
-      // Fallback: tentar acessar chaves diretamente
+      String? refreshToken;
+      final refreshMatch =
+          RegExp(r'{"refresh_token":"(.*?)"}').firstMatch(lsUnescaped);
+      if (refreshMatch != null &&
+          refreshMatch.group(1) != null &&
+          refreshMatch.group(1)!.isNotEmpty) {
+        refreshToken = refreshMatch.group(1);
+        debugPrint('[DisneyAuth] refresh_token encontrado via regex Rave');
+      }
+
+      // Fallback 1: regex mais permissivo para variações de formato
       if (accessToken == null) {
-        for (final key in ['token', 'access_token', 'bamAccessToken']) {
-          final val = await controller.evaluateJavascript(
-            source: "localStorage.getItem('$key')",
-          );
-          if (val != null && val != 'null' && val.isNotEmpty) {
-            accessToken = val.toString().replaceAll('"', '');
+        final fallbackPatterns = [
+          RegExp(r'"token":"([^"]{20,})"'),
+          RegExp(r'"access_token":"([^"]{20,})"'),
+          RegExp(r'"bamAccessToken":"([^"]{20,})"'),
+        ];
+        for (final pattern in fallbackPatterns) {
+          final m = pattern.firstMatch(lsUnescaped);
+          if (m != null && m.group(1) != null && m.group(1)!.isNotEmpty) {
+            accessToken = m.group(1);
+            debugPrint('[DisneyAuth] access_token encontrado via fallback regex');
             break;
           }
         }
       }
 
-      if (refreshToken == null) {
-        for (final key in ['refresh_token', 'bamRefreshToken']) {
+      // Fallback 2: acessar chaves diretamente no localStorage
+      if (accessToken == null) {
+        debugPrint('[DisneyAuth] Tentando acesso direto às chaves do localStorage...');
+        for (final key in [
+          'token',
+          'access_token',
+          'bamAccessToken',
+          'bam.api.token',
+        ]) {
           final val = await controller.evaluateJavascript(
             source: "localStorage.getItem('$key')",
           );
-          if (val != null && val != 'null' && val.isNotEmpty) {
-            refreshToken = val.toString().replaceAll('"', '');
-            break;
+          if (val != null && val != 'null' && val.toString().length > 10) {
+            final cleaned =
+                val.toString().replaceAll('"', '').replaceAll(r'\', '');
+            // Se o valor for um JSON, tentar extrair o token de dentro
+            final innerMatch =
+                RegExp(r'{"token":"(.*?)"}').firstMatch(cleaned);
+            if (innerMatch != null) {
+              accessToken = innerMatch.group(1);
+            } else if (cleaned.startsWith('eyJ')) {
+              // JWT direto
+              accessToken = cleaned;
+            }
+            if (accessToken != null && accessToken.isNotEmpty) {
+              debugPrint(
+                  '[DisneyAuth] access_token encontrado via chave direta: $key');
+              break;
+            }
           }
         }
       }
