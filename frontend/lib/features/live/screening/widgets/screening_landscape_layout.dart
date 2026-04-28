@@ -209,9 +209,13 @@ class _PortraitLayout extends ConsumerWidget {
       fit: StackFit.expand,
       children: [
         // Player WebView
+        // key: ValueKey(sessionId) garante que o widget é recriado completamente
+        // quando o sessionId muda (nova sessão), descartando o WebView anterior
+        // e evitando que o vídeo da sessão anterior persista.
         AbsorbPointer(
           absorbing: showControls,
           child: ScreeningPlayerWidget(
+            key: ValueKey(sessionId),
             sessionId: sessionId,
             threadId: threadId,
           ),
@@ -394,6 +398,7 @@ class _LandscapeLayout extends StatelessWidget {
                   AbsorbPointer(
                     absorbing: showControls,
                     child: ScreeningPlayerWidget(
+                      key: ValueKey(sessionId),
                       sessionId: sessionId,
                       threadId: threadId,
                     ),

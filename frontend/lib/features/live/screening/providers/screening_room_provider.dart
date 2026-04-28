@@ -59,7 +59,13 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
 
     debugPrint('[ScreeningRoom] joinRoom() iniciado — userId=$userId, existingSessionId=$existingSessionId, threadId=$threadId');
     try {
-      state = state.copyWith(status: ScreeningRoomStatus.loading);
+      // Resetar o estado completamente antes de iniciar uma nova sessão.
+      // Não usar copyWith aqui pois ele herda currentVideoUrl, videoQueue, etc.
+      // da sessão anterior (copyWith não consegue setar campos para null).
+      state = ScreeningRoomState(
+        threadId: threadId,
+        status: ScreeningRoomStatus.loading,
+      );
 
       String sessionId;
       bool isHost;
@@ -577,6 +583,14 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
       RealtimeService.instance.unsubscribe('screening_${state.sessionId}');
     }
     _channel = null;
+    // Resetar o estado completamente para evitar que dados da sessão anterior
+    // (currentVideoUrl, videoQueue, sessionId, etc.) persistam quando o usuário
+    // abrir uma nova sala. O copyWith não consegue setar campos para null,
+    // por isso recriamos o estado do zero.
+    state = ScreeningRoomState(
+      threadId: threadId,
+      status: ScreeningRoomStatus.closed,
+    );
   }
 
   @override
