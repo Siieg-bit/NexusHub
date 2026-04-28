@@ -438,7 +438,14 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         mediaPlaybackRequiresUserGesture: false,
         allowsInlineMediaPlayback: true,
         allowsAirPlayForMediaPlayback: true,
-        useHybridComposition: false,
+        // useHybridComposition: true para Twitch/Kick.
+        // Com true (AndroidViewSurface), o WebView renderiza em thread separado
+        // do Flutter — elimina jank ao abrir teclado ou interagir com a UI.
+        // Com false (AndroidView), o WebView compete com o Flutter pelo mesmo
+        // thread de renderizacao, causando travamentos com video de alta resolucao.
+        // Os controles Flutter (ScreeningControlsOverlay) funcionam via
+        // PointerInterceptor que ja esta configurado no _PortraitLayout.
+        useHybridComposition: true,
         supportZoom: false,
         disableHorizontalScroll: true,
         disableVerticalScroll: true,

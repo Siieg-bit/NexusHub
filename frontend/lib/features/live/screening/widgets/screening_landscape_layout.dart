@@ -212,12 +212,16 @@ class _PortraitLayout extends ConsumerWidget {
         // key: ValueKey(sessionId) garante que o widget é recriado completamente
         // quando o sessionId muda (nova sessão), descartando o WebView anterior
         // e evitando que o vídeo da sessão anterior persista.
-        AbsorbPointer(
-          absorbing: showControls,
-          child: ScreeningPlayerWidget(
-            key: ValueKey(sessionId),
-            sessionId: sessionId,
-            threadId: threadId,
+        // RepaintBoundary isola o player: quando o teclado abre, controles aparecem
+        // ou outros widgets são redesenhados, o player NÃO é redesenhado junto.
+        RepaintBoundary(
+          child: AbsorbPointer(
+            absorbing: showControls,
+            child: ScreeningPlayerWidget(
+              key: ValueKey(sessionId),
+              sessionId: sessionId,
+              threadId: threadId,
+            ),
           ),
         ),
         // GestureDetector transparente para mostrar/esconder controles
@@ -395,12 +399,14 @@ class _LandscapeLayout extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  AbsorbPointer(
-                    absorbing: showControls,
-                    child: ScreeningPlayerWidget(
-                      key: ValueKey(sessionId),
-                      sessionId: sessionId,
-                      threadId: threadId,
+                  RepaintBoundary(
+                    child: AbsorbPointer(
+                      absorbing: showControls,
+                      child: ScreeningPlayerWidget(
+                        key: ValueKey(sessionId),
+                        sessionId: sessionId,
+                        threadId: threadId,
+                      ),
                     ),
                   ),
                   // GestureDetector transparente ACIMA da WebView

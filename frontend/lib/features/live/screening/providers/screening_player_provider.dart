@@ -240,9 +240,15 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     state = state.copyWith(isReady: true, isBuffering: false);
     // Só inicia polling se NÃO estiver em modo nativo
     if (!_isNativeMode) {
-      _startPositionPolling(intervalSeconds: 1);
-      // Tentar obter duração após um breve delay (aguarda o player carregar)
-      Future.delayed(const Duration(seconds: 2), _updateDuration);
+      // Para lives (Twitch/Kick/YouTubeLive): NÃO iniciar polling de posição.
+      // Lives não têm seek bar — o polling de posição a cada 1s é desnecessário
+      // e causa evaluateJavascript frequente que compete com o thread JS do WebView,
+      // degradando a performance do player de vídeo.
+      if (!state.isLive) {
+        _startPositionPolling(intervalSeconds: 1);
+        // Tentar obter duração após um breve delay (aguarda o player carregar)
+        Future.delayed(const Duration(seconds: 2), _updateDuration);
+      }
     }
   }
 
@@ -358,7 +364,10 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     });
     if (mounted) {
       state = state.copyWith(isPlaying: true);
-      _startPositionPolling(intervalSeconds: 1);
+      // Para lives: não iniciar polling (sem seek bar)
+      if (!state.isLive) {
+        _startPositionPolling(intervalSeconds: 1);
+      }
     }
   }
 
@@ -379,8 +388,10 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     });
     if (mounted) {
       state = state.copyWith(isPlaying: false);
-      // Reduzir polling ao pausar (economiza recursos)
-      _startPositionPolling(intervalSeconds: 5);
+      // Reduzir polling ao pausar (economiza recursos) — apenas para VODs
+      if (!state.isLive) {
+        _startPositionPolling(intervalSeconds: 5);
+      }
     }
   }
 
@@ -445,10 +456,13 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     if (!mounted) return;
     state = state.copyWith(isPlaying: true, isBuffering: false);
     if (!_isNativeMode) {
-      // Polling como fallback: se o bridge JS (timeupdate) estiver ativo,
-      // o primeiro onPositionUpdate cancelará o timer automaticamente.
-      _startPositionPolling(intervalSeconds: 2);
-      _updateDuration();
+      // Para lives: não iniciar polling (sem seek bar, sem necessidade de posição)
+      if (!state.isLive) {
+        // Polling como fallback: se o bridge JS (timeupdate) estiver ativo,
+        // o primeiro onPositionUpdate cancelará o timer automaticamente.
+        _startPositionPolling(intervalSeconds: 2);
+        _updateDuration();
+      }
     }
   }
 

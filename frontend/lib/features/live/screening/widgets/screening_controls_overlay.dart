@@ -553,12 +553,20 @@ class _CenterControlsConsumer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final playerState = ref.watch(screeningPlayerProvider(sessionId));
-    final roomState   = ref.watch(screeningRoomProvider(threadId));
+    // Usar .select() para evitar rebuilds desnecessarios quando position/buffering muda.
+    // _CenterControlsConsumer so precisa de isPlaying, isBuffering, isLiveStream e position
+    // (para os botoes +-10s). Nao precisa de duration ou outros campos.
+    final isPlaying    = ref.watch(screeningPlayerProvider(sessionId).select((s) => s.isPlaying));
+    final isBuffering  = ref.watch(screeningPlayerProvider(sessionId).select((s) => s.isBuffering));
+    final isLiveStream = ref.watch(screeningPlayerProvider(sessionId).select((s) => s.isLiveStream));
+    final position     = ref.watch(screeningPlayerProvider(sessionId).select((s) => s.position));
+    final roomState    = ref.watch(
+      screeningRoomProvider(threadId).select((s) => (queue: s.videoQueue, currentUrl: s.currentVideoUrl)),
+    );
 
-    // ── Navegação de fila ─────────────────────────────────────────────
-    final queue      = roomState.videoQueue;
-    final currentUrl = roomState.currentVideoUrl ?? '';
+    // ── Navegação de fila ─────────────────────────────────────────────────────
+    final queue      = roomState.queue;
+    final currentUrl = roomState.currentUrl ?? '';
     final currentIdx = queue.indexWhere((e) => (e['url'] ?? '') == currentUrl);
     final hasPrev    = currentIdx > 0;
     final hasNext    = currentIdx >= 0 && currentIdx < queue.length - 1;
@@ -585,16 +593,15 @@ class _CenterControlsConsumer extends ConsumerWidget {
         const SizedBox(width: 8),
 
         // Botão -10s (apenas VOD)
-        if (!playerState.isLiveStream)
+        if (!isLiveStream)
           _ControlButton(
             icon: Icons.replay_10_rounded,
             size: 28,
             onTap: () {
-              final pos = playerState.position;
-              final newPos = pos - const Duration(seconds: 10);
+              final newPos = position - const Duration(seconds: 10);
               onSeekAndBroadcast(
                 newPos.isNegative ? Duration.zero : newPos,
-                playerState.isPlaying,
+                isPlaying,
               );
             },
           )
@@ -604,22 +611,21 @@ class _CenterControlsConsumer extends ConsumerWidget {
 
         // Botão Play/Pause (central — maior)
         _PlayPauseButton(
-          isPlaying: playerState.isPlaying,
-          isBuffering: playerState.isBuffering,
-          onTap: () => onTogglePlayPause(playerState),
+          isPlaying: isPlaying,
+          isBuffering: isBuffering,
+          onTap: () => onTogglePlayPause(ref.read(screeningPlayerProvider(sessionId))),
         ),
         const SizedBox(width: 16),
 
         // Botão +10s (apenas VOD)
-        if (!playerState.isLiveStream)
+        if (!isLiveStream)
           _ControlButton(
             icon: Icons.forward_10_rounded,
             size: 28,
             onTap: () {
-              final pos = playerState.position;
               onSeekAndBroadcast(
-                pos + const Duration(seconds: 10),
-                playerState.isPlaying,
+                position + const Duration(seconds: 10),
+                isPlaying,
               );
             },
           )
@@ -662,15 +668,21 @@ class _BottomControlsConsumer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final playerState = ref.watch(screeningPlayerProvider(sessionId));
-    final roomState   = ref.watch(screeningRoomProvider(threadId));
+    // Usar .select() para evitar rebuilds desnecessarios.
+    // _BottomControlsConsumer so precisa de isHost, isLiveStream, duration e position.
+    // Nao precisa reconstruir por isPlaying, isBuffering ou outros campos.
+    final isHost       = ref.watch(screeningRoomProvider(threadId).select((s) => s.isHost));
+    final isLiveStream = ref.watch(screeningPlayerProvider(sessionId).select((s) => s.isLiveStream));
+    final duration     = ref.watch(screeningPlayerProvider(sessionId).select((s) => s.duration));
+    final position     = ref.watch(screeningPlayerProvider(sessionId).select((s) => s.position));
+    final isPlaying    = ref.watch(screeningPlayerProvider(sessionId).select((s) => s.isPlaying));
     final mq = MediaQuery.of(context);
 
     // Seek bar apenas para VOD: host + duração conhecida + NÃO é live stream.
     // Em transmissões ao vivo o seek não é possível, então a barra é ocultada.
-    final showSeekBar = roomState.isHost
-        && playerState.duration > Duration.zero
-        && !playerState.isLiveStream;
+    final showSeekBar = isHost
+        && duration > Duration.zero
+        && !isLiveStream;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 0, 0, mq.padding.bottom + 8),
@@ -681,9 +693,9 @@ class _BottomControlsConsumer extends ConsumerWidget {
           if (showSeekBar)
             _SeekBar(
               sessionId: sessionId,
-              position: playerState.position,
-              duration: playerState.duration,
-              onSeekAndBroadcast: onSeekAndBroadcast,
+              position: position,
+              duration: duration,
+              onSeekAndBroadcast: (pos, _) => onSeekAndBroadcast(pos, isPlaying),
             ),
 
           // ── Linha inferior: espaço + botão fullscreen ─────────────────
