@@ -368,8 +368,12 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             // (inclusive ao trocar de vídeo via key: ValueKey(url)).
             // Garante que o overlay preto cobre os badges nativos do YouTube
             // durante o carregamento inicial de cada vídeo.
-            if (mounted) setState(() => _isLoading = true);
             _webViewController = controller;
+            // BUGFIX AmbientGradient: setState força o rebuild do Stack, que
+            // passa o controller atualizado ao ScreeningAmbientGradient via
+            // didUpdateWidget. Sem isso, o gradient recebia null no construtor
+            // e nunca era atualizado (variável local não causa rebuild).
+            if (mounted) setState(() => _isLoading = true);
             final notifier = ref.read(screeningPlayerProvider(widget.sessionId).notifier);
             notifier.registerWebViewController(controller);
             // Informar ao provider se é live stream com base na plataforma.
@@ -410,6 +414,11 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
               if (mounted) setState(() => _isLoading = false);
             }
             await _injectControlScript(controller);
+            // Injetar o color sampler do AmbientGradient após o carregamento.
+            // O _scheduleScriptInjection() do widget usa um Timer de 1.5s, mas
+            // pode falhar se o controller ainda não estiver pronto. Injetar
+            // diretamente aqui garante que o sampler rode após o onLoadStop.
+            _ambientGradientKey.currentState?.injectColorSampler(controller);
             ref
                 .read(screeningPlayerProvider(widget.sessionId).notifier)
                 .markBridgeInjected();

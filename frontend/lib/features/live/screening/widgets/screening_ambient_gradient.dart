@@ -125,7 +125,7 @@ class ScreeningAmbientGradientState
     super.didUpdateWidget(oldWidget);
     if (widget.webViewController != oldWidget.webViewController &&
         widget.webViewController != null) {
-      _injectColorSampler(widget.webViewController!);
+      injectColorSampler(widget.webViewController!);
     }
   }
 
@@ -141,12 +141,14 @@ class ScreeningAmbientGradientState
       if (!mounted) return;
       final controller = widget.webViewController;
       if (controller != null) {
-        _injectColorSampler(controller);
+        injectColorSampler(controller);
       }
     });
   }
 
-  Future<void> _injectColorSampler(InAppWebViewController controller) async {
+  /// Torna o método público para que o ScreeningPlayerWidget possa injetar
+  /// o sampler diretamente após o onLoadStop (garantia extra além do Timer).
+  Future<void> injectColorSampler(InAppWebViewController controller) async {
     try {
       await controller.evaluateJavascript(source: _kColorSamplerScript);
       debugPrint('[AmbientGradient] color sampler injetado');

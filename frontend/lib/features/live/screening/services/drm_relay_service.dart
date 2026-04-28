@@ -128,24 +128,39 @@ class DrmRelayService {
   }
 
   // ── Chama a Edge Function relay para Disney+ ──────────────────────────────
+  // O webViewController é opcional: quando null (modo isDirectUrl), o token
+  // é extraído dos cookies persistidos pelo InAppWebView (o usuário deve ter
+  // feito login no Disney+ pelo app ou pelo browser integrado anteriormente).
   static Future<StreamResolution> resolveDisney(
     String url,
-    InAppWebViewController webViewController,
+    InAppWebViewController? webViewController,
   ) async {
     final contentId = extractContentId(url, 'disney');
     if (contentId == null) throw Exception('Disney+: contentId não encontrado');
 
-    // Capturar token de acesso via JavaScript
-    final accessToken = await _extractTokenFromStorage(
-      webViewController,
-      'disneyplus.com',
-      keys: ['access_token', 'bamAccessToken', 'token'],
-    );
+    String? accessToken;
+
+    if (webViewController != null) {
+      // Modo browser: extrair token via localStorage/sessionStorage
+      accessToken = await _extractTokenFromStorage(
+        webViewController,
+        'disneyplus.com',
+        keys: ['access_token', 'bamAccessToken', 'token'],
+      );
+    }
+
+    // Fallback: cookies persistidos pelo InAppWebView (modo isDirectUrl)
+    if (accessToken == null) {
+      final cookies = await captureCookies('www.disneyplus.com');
+      accessToken = cookies['access_token']
+          ?? cookies['bamAccessToken']
+          ?? cookies['token'];
+    }
 
     if (accessToken == null) {
       throw Exception(
         'Disney+: token de acesso não encontrado. '
-        'Por favor, faça login no Disney+ primeiro.',
+        'Abra o Disney+ pelo navegador integrado e faça login antes de usar esta opção.',
       );
     }
 

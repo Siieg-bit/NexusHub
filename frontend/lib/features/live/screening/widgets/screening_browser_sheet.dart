@@ -43,6 +43,9 @@ class ScreeningPlatform {
   final String? loggedInUrl;
   /// JavaScript que retorna `true` se o usuário está logado na página atual.
   final String? loginCheckJs;
+  /// Mensagem de instrução customizada exibida no modo isDirectUrl.
+  /// Quando null, usa a mensagem genérica padrão.
+  final String? directUrlHint;
   const ScreeningPlatform({
     required this.id,
     required this.displayName,
@@ -53,6 +56,7 @@ class ScreeningPlatform {
     this.loginUrl,
     this.loggedInUrl,
     this.loginCheckJs,
+    this.directUrlHint,
   });
 }
 
@@ -154,14 +158,16 @@ final _kPlatforms = <String, ScreeningPlatform>{
     id: 'disney',
     displayName: 'Disney+',
     isDrm: true,
-    initialUrl: 'https://www.disneyplus.com/login',
-    loginUrl: 'https://www.disneyplus.com/login',
-    loggedInUrl: 'https://www.disneyplus.com/home',
-    // Disney+ redireciona para /home após login.
-    loginCheckJs: "window.location.pathname.startsWith('/home') || "
-        "window.location.pathname.startsWith('/movies') || "
-        "window.location.pathname.startsWith('/series') || "
-        "window.location.pathname.startsWith('/video')",
+    // O site do Disney+ redireciona para o app nativo no mobile e não permite
+    // navegar pelo catálogo via WebView. A integração usa entrada direta de URL:
+    // o usuário abre o app Disney+, navega até o vídeo, copia a URL de compartilhamento
+    // (ex: https://www.disneyplus.com/video/abc123) e cola aqui.
+    // O relay DRM (screening-relay-disney) extrai o stream e a licença Widevine.
+    isDirectUrl: true,
+    isDrm: true,
+    directUrlHint: 'Abra o app Disney+, navegue até o vídeo desejado, '
+        'toque em Compartilhar e copie o link. '
+        'Cole a URL abaixo para reproduzir na sala.',
     videoPatterns: [
       _VideoUrlPattern(RegExp(r'disneyplus\.com/video/[a-zA-Z0-9_-]+')),
       _VideoUrlPattern(RegExp(r'disneyplus\.com/movies/[^/]+/[a-zA-Z0-9_-]+')),
@@ -363,24 +369,30 @@ class _ScreeningBrowserSheetState
 
     try {
       String finalUrl = url;
-      if (_platform.isDrm && _webViewController != null) {
+      if (_platform.isDrm) {
         final platform = StreamResolverService.detectPlatform(url);
         StreamResolution? resolution;
         try {
           switch (platform) {
             case StreamPlatform.netflix:
+              if (_webViewController == null) throw Exception('Netflix: browser não disponível');
               resolution = await DrmRelayService.resolveNetflix(url, _webViewController!);
               break;
             case StreamPlatform.disneyPlus:
-              resolution = await DrmRelayService.resolveDisney(url, _webViewController!);
+              // Disney+ aceita webViewController null — usa cookies persistidos
+              // quando o usuário cola a URL diretamente (modo isDirectUrl).
+              resolution = await DrmRelayService.resolveDisney(url, _webViewController);
               break;
             case StreamPlatform.amazonPrime:
+              if (_webViewController == null) throw Exception('Prime Video: browser não disponível');
               resolution = await DrmRelayService.resolveAmazon(url, _webViewController!);
               break;
             case StreamPlatform.hboMax:
+              if (_webViewController == null) throw Exception('Max: browser não disponível');
               resolution = await DrmRelayService.resolveHbo(url, _webViewController!);
               break;
             case StreamPlatform.crunchyroll:
+              if (_webViewController == null) throw Exception('Crunchyroll: browser não disponível');
               resolution = await DrmRelayService.resolveCrunchyroll(url, _webViewController!);
               break;
             default:
@@ -1001,13 +1013,40 @@ class _ScreeningBrowserSheetState
             child: const Icon(Icons.link_rounded, color: Color(0xFF6C63FF), size: 28),
           ),
           const SizedBox(height: 20),
-          const Text('Cole a URL do vídeo',
-              style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
-          const SizedBox(height: 8),
           Text(
-            'Funciona com qualquer site de vídeo: Netflix, Disney+, Prime Video, Max, Crunchyroll e outros.',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 14, height: 1.5),
+            _platform.id == 'disney' ? 'Cole o link do Disney+' : 'Cole a URL do vídeo',
+            style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.5),
           ),
+          const SizedBox(height: 8),
+          if (_platform.directUrlHint != null) ...[
+            // Hint customizado para plataformas que precisam de instrução especial
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0063E5).withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF0063E5).withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.info_outline_rounded, color: Color(0xFF4A9EFF), size: 16),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      _platform.directUrlHint!,
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.60), fontSize: 13, height: 1.5),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            Text(
+              'Funciona com qualquer site de vídeo: Netflix, Disney+, Prime Video, Max, Crunchyroll e outros.',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 14, height: 1.5),
+            ),
+          ],
           const SizedBox(height: 28),
           Container(
             decoration: BoxDecoration(

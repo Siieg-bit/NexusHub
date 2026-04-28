@@ -11,7 +11,7 @@ import '../providers/screening_voice_provider.dart';
 import '../providers/screening_room_provider.dart';
 import '../models/screening_participant.dart';
 import '../models/screening_chat_message.dart';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+// emoji_picker_flutter removido — usar EmojiRainCascadePicker (efeito cascata)
 import 'screening_add_video_sheet.dart';
 
 // =============================================================================
@@ -169,44 +169,13 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
           participants: roomState.participants,
           speakingUids: voiceState.speakingAgoraUids,
         ),
-        // ── Emoji picker ───────────────────────────────────────────────────────────
+        // ── Seletor de reações (efeito cascata) ────────────────────────────────
+        // Substitui o EmojiPicker padrão: ao tocar em uma reação, dispara
+        // o EmojiRainOverlay (chuva de emojis) em vez de inserir no texto.
         if (_showEmojiPicker)
-          SizedBox(
-            height: 250,
-            child: EmojiPicker(
-              textEditingController: _textController,
-              onEmojiSelected: (category, emoji) {
-                // Inserir emoji na posição atual do cursor
-                final text = _textController.text;
-                final selection = _textController.selection;
-                final newText = selection.isValid
-                    ? text.replaceRange(
-                        selection.start, selection.end, emoji.emoji)
-                    : text + emoji.emoji;
-                _textController.value = TextEditingValue(
-                  text: newText,
-                  selection: TextSelection.collapsed(
-                    offset: selection.isValid
-                        ? selection.start + emoji.emoji.length
-                        : newText.length,
-                  ),
-                );
-              },
-              config: const Config(
-                columns: 8,
-                emojiSizeMax: 28,
-                bgColor: Color(0xFF1A1A2E),
-                indicatorColor: Color(0xFF6C63FF),
-                iconColor: Colors.white38,
-                iconColorSelected: Color(0xFF6C63FF),
-                backspaceColor: Color(0xFF6C63FF),
-                skinToneDialogBgColor: Color(0xFF12121E),
-                skinToneIndicatorColor: Colors.white38,
-                checkPlatformCompatibility: true,
-                recentTabBehavior: RecentTabBehavior.RECENT,
-                recentsLimit: 20,
-              ),
-            ),
+          _EmojiCascadePicker(
+            emojiRainKey: widget.emojiRainKey,
+            onClose: () => setState(() => _showEmojiPicker = false),
           ),
         // ── Barra inferior: microfone + input estilo Rave ──────────────────
         Container(
@@ -231,11 +200,11 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
                   onSend: _sendMessage,
                 ),
               ),
-              // Botão de reação (emoji) — toggle do EmojiPicker
+              // Botão de reação (emoji) — toggle do seletor de cascata
               const SizedBox(width: 8),
               _ActionIconButton(
                 icon: _showEmojiPicker
-                    ? Icons.keyboard_rounded
+                    ? Icons.close_rounded
                     : Icons.add_reaction_outlined,
                 onTap: () => setState(
                     () => _showEmojiPicker = !_showEmojiPicker),
@@ -720,6 +689,157 @@ class _ActionIconButton extends StatelessWidget {
           border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
         ),
         child: Icon(icon, color: Colors.white70, size: 18),
+      ),
+    );
+  }
+}
+
+// ── EmojiCascadePicker ────────────────────────────────────────────────────────
+// Seletor de reações que substitui o EmojiPicker padrão na Sala de Projeção.
+// Ao tocar em uma reação, dispara o EmojiRainOverlay (chuva de emojis) em vez
+// de inserir texto no campo de mensagem — comportamento imersivo e consistente
+// com o restante da experiência da sala.
+//
+// Os 7 tipos de reação espelham o EmojiRainType definido em emoji_rain_overlay.dart.
+// =============================================================================
+class _EmojiCascadePicker extends StatelessWidget {
+  final GlobalKey<EmojiRainOverlayState>? emojiRainKey;
+  final VoidCallback onClose;
+
+  const _EmojiCascadePicker({
+    required this.emojiRainKey,
+    required this.onClose,
+  });
+
+  static const _reactions = [
+    (emoji: '🔥', type: EmojiRainType.fire,      label: 'Fogo'),
+    (emoji: '❤️', type: EmojiRainType.love,      label: 'Amor'),
+    (emoji: '😂', type: EmojiRainType.laugh,     label: 'Risada'),
+    (emoji: '👏', type: EmojiRainType.clap,      label: 'Palmas'),
+    (emoji: '🎉', type: EmojiRainType.celebrate, label: 'Festa'),
+    (emoji: '⭐', type: EmojiRainType.star,      label: 'Estrela'),
+    (emoji: '😢', type: EmojiRainType.sad,       label: 'Triste'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 88,
+      decoration: BoxDecoration(
+        color: const Color(0xFF12121E).withValues(alpha: 0.97),
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.08),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: _reactions.map((r) {
+          return _CascadeReactionButton(
+            emoji: r.emoji,
+            label: r.label,
+            type: r.type,
+            emojiRainKey: emojiRainKey,
+            onTap: onClose,
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _CascadeReactionButton extends StatefulWidget {
+  final String emoji;
+  final String label;
+  final EmojiRainType type;
+  final GlobalKey<EmojiRainOverlayState>? emojiRainKey;
+  final VoidCallback onTap;
+
+  const _CascadeReactionButton({
+    required this.emoji,
+    required this.label,
+    required this.type,
+    required this.emojiRainKey,
+    required this.onTap,
+  });
+
+  @override
+  State<_CascadeReactionButton> createState() => _CascadeReactionButtonState();
+}
+
+class _CascadeReactionButtonState extends State<_CascadeReactionButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 180),
+    );
+    _scale = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.35), weight: 40),
+      TweenSequenceItem(tween: Tween(begin: 1.35, end: 0.90), weight: 30),
+      TweenSequenceItem(tween: Tween(begin: 0.90, end: 1.0), weight: 30),
+    ]).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onTap() async {
+    HapticFeedback.lightImpact();
+    await _ctrl.forward(from: 0);
+    widget.emojiRainKey?.currentState?.trigger(widget.type);
+    widget.onTap();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _onTap,
+      child: ScaleTransition(
+        scale: _scale,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.08),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.14),
+                  width: 1,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  widget.emoji,
+                  style: const TextStyle(fontSize: 22),
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              widget.label,
+              style: const TextStyle(
+                color: Colors.white54,
+                fontSize: 9,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
