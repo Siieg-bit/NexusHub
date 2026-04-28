@@ -240,8 +240,9 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
     if (choice == null || !mounted) return; // Cancelou
 
     if (choice == _MinimizeChoice.end) {
-      // Encerrar sala (mesmo fluxo do _leaveRoom)
-      await _leaveRoom();
+      // Encerrar sala — skipConfirm:true pois o usuário já confirmou
+      // a intenção ao escolher 'Encerrar sala' no dialog anterior.
+      await _leaveRoom(skipConfirm: true);
       return;
     }
 
@@ -344,10 +345,13 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
 
   // ── Sair da sala ────────────────────────────────────────────────────────────
 
-  Future<void> _leaveRoom() async {
+  Future<void> _leaveRoom({bool skipConfirm = false}) async {
     final roomState = ref.read(screeningRoomProvider(widget.threadId));
 
-    if (roomState.isHost) {
+    // Mostrar dialog de confirmação apenas quando chamado diretamente (ex: botão
+    // de back do sistema). Quando chamado via _minimize() com choice == end,
+    // o usuário já confirmou a intenção no dialog anterior — pular confirmação.
+    if (roomState.isHost && !skipConfirm) {
       final confirmed = await _showLeaveConfirmDialog();
       if (!confirmed) return;
     }
