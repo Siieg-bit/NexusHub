@@ -309,6 +309,7 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
           sessionId: widget.sessionId,
           threadId: widget.threadId,
           platform: resolution.platform,
+          resolution: resolution, // Passa licenseUrl, pssh, headers e requiresDrm para DRM Widevine
         );
 
       case StreamType.embed:

@@ -108,7 +108,60 @@ class DisneyPlaybackService {
     if (contentId == null) {
       throw Exception('Disney+: não foi possível extrair o contentId da URL: $url');
     }
-    return resolveStream(contentId);
+    // Resolver o stream
+    final stream = await resolveStream(contentId);
+    // Tentar buscar metadados do conteúdo (título e thumbnail).
+    // Falha silenciosa — metadados são opcionais para o player funcionar.
+    try {
+      final accessToken = await DisneyAuthService.getValidAccessToken();
+      final metaRaw = await DisneyApiService.fetchPlayerExperience(contentId);
+      // Extrair título e thumbnail do JSON bruto do playerExperience
+      final data = metaRaw['data'] as Map<String, dynamic>?;
+      final experience = data?['DmcVideo'] as Map<String, dynamic>?
+          ?? data?['DmcSeries'] as Map<String, dynamic>?
+          ?? data;
+      final text = experience?['text'] as Map<String, dynamic>?;
+      final titleField = text?['title'] as Map<String, dynamic>?;
+      final titleFull = (titleField?['full'] as Map<String, dynamic>?)?['program']
+          as Map<String, dynamic>?;
+      final title = titleFull?['content'] as String?
+          ?? titleFull?['default'] as String?;
+      final image = experience?['image'] as Map<String, dynamic>?;
+      String? thumbnailUrl;
+      if (image != null) {
+        for (final key in ['tile', 'thumbnail', 'background']) {
+          final field = image[key] as Map<String, dynamic>?;
+          if (field == null) continue;
+          for (final aspect in field.values) {
+            final aspectMap = aspect as Map<String, dynamic>?;
+            if (aspectMap == null) continue;
+            for (final size in aspectMap.values) {
+              final sizeMap = size as Map<String, dynamic>?;
+              final url = (sizeMap?['default'] as Map<String, dynamic>?)?['url'] as String?;
+              if (url != null && url.isNotEmpty) {
+                thumbnailUrl = url;
+                break;
+              }
+            }
+            if (thumbnailUrl != null) break;
+          }
+          if (thumbnailUrl != null) break;
+        }
+      }
+      return stream.copyWith(
+        title: title,
+        thumbnailUrl: thumbnailUrl,
+        // Headers com Authorization para segmentos protegidos pelo DRM
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'X-BAMSDK-Client-ID': 'disney-svod-3d9324fc',
+          'X-BAMSDK-Platform': 'android/google/handset',
+        },
+      );
+    } catch (e) {
+      debugPrint('[DisneyPlayback] Metadados não disponíveis: $e');
+    }
+    return stream;
   }
 
   // ── Fetch do manifesto ────────────────────────────────────────────────────

@@ -284,11 +284,23 @@ class DisneyStream {
   final String manifestUrl;
   final String? licenseUrl;
   final bool isDrm;
+  /// Título do conteúdo (preenchido pelo DisneyPlaybackService)
+  final String? title;
+  /// URL da thumbnail (preenchido pelo DisneyPlaybackService)
+  final String? thumbnailUrl;
+  /// PSSH box em base64 para inicialização DRM mais rápida (opcional)
+  final String? pssh;
+  /// Headers HTTP adicionais para o manifesto e segmentos (ex: Authorization)
+  final Map<String, String>? headers;
 
   const DisneyStream({
     required this.manifestUrl,
     this.licenseUrl,
     this.isDrm = true,
+    this.title,
+    this.thumbnailUrl,
+    this.pssh,
+    this.headers,
   });
 
   factory DisneyStream.fromJson(Map<String, dynamic> json) {
@@ -301,6 +313,27 @@ class DisneyStream {
       manifestUrl: url,
       licenseUrl: json['licenseUrl'] as String?,
       isDrm: json['isDrm'] as bool? ?? true,
+      title: json['title'] as String?,
+      thumbnailUrl: json['thumbnailUrl'] as String?,
+      pssh: json['pssh'] as String?,
+    );
+  }
+
+  /// Cria uma cópia com campos adicionais preenchidos
+  DisneyStream copyWith({
+    String? title,
+    String? thumbnailUrl,
+    String? pssh,
+    Map<String, String>? headers,
+  }) {
+    return DisneyStream(
+      manifestUrl: manifestUrl,
+      licenseUrl: licenseUrl,
+      isDrm: isDrm,
+      title: title ?? this.title,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
+      pssh: pssh ?? this.pssh,
+      headers: headers ?? this.headers,
     );
   }
 }

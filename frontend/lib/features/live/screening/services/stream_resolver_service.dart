@@ -10,6 +10,8 @@ import 'tubi_stream_service.dart';
 import 'pluto_stream_service.dart';
 import 'youtube_stream_service.dart';
 import 'google_drive_stream_service.dart';
+import 'disney/disney_playback_service.dart';
+import 'disney/disney_auth_service.dart';
 
 enum StreamType {
   /// Stream HLS direto — usa o player nativo (media_kit / video_player)
@@ -347,14 +349,50 @@ class StreamResolverService {
           originalUrl: url,
         );
 
-      // ── DRM (Rodada 3 — relay) ──────────────────────────────────────────
-      case StreamPlatform.netflix:
+      // ── Disney+ — API BAMGrid nativa com DRM Widevine ──────────────────
       case StreamPlatform.disneyPlus:
+        try {
+          // Tentar resolver via DisneyPlaybackService (API BAMGrid direta)
+          // Requer que o usuário tenha feito login via DisneyBrowserSheet
+          final disneyStream = await DisneyPlaybackService.resolveFromUrl(url);
+          return StreamResolution(
+            url: disneyStream.manifestUrl,
+            type: StreamType.hls,
+            platform: platform,
+            title: disneyStream.title,
+            thumbnailUrl: disneyStream.thumbnailUrl,
+            requiresDrm: disneyStream.licenseUrl != null,
+            licenseUrl: disneyStream.licenseUrl,
+            pssh: disneyStream.pssh,
+            headers: disneyStream.headers,
+            originalUrl: url,
+          );
+        } on DisneyAuthException {
+          // Usuário não autenticado — abrir WebView de login
+          return StreamResolution(
+            url: 'https://www.disneyplus.com/login',
+            type: StreamType.embed,
+            platform: platform,
+            requiresDrm: true,
+            originalUrl: url,
+          );
+        } catch (_) {
+          // Fallback genérico — abrir site no WebView
+          return StreamResolution(
+            url: url,
+            type: StreamType.embed,
+            platform: platform,
+            requiresDrm: true,
+            originalUrl: url,
+          );
+        }
+      // ── DRM (outras plataformas — relay futuro) ─────────────────────────
+      case StreamPlatform.netflix:
       case StreamPlatform.amazonPrime:
       case StreamPlatform.hboMax:
       case StreamPlatform.crunchyroll:
-        // Por enquanto, abre o site no WebView para login
-        // A Rodada 3 implementará o relay completo
+        // Abre o site no WebView para login
+        // Relay completo a ser implementado por plataforma
         return StreamResolution(
           url: url,
           type: StreamType.embed,

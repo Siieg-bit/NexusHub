@@ -57,6 +57,25 @@
 -keep class android.webkit.** { *; }
 -dontwarn android.webkit.**
 
+# better_player_plus — ExoPlayer com DRM Widevine para Disney+/Netflix/Amazon
+-keep class com.jhomlala.better_player.** { *; }
+-dontwarn com.jhomlala.better_player.**
+
+# ExoPlayer (usado pelo better_player_plus para DRM Widevine L1/L3)
+-keep class com.google.android.exoplayer2.** { *; }
+-dontwarn com.google.android.exoplayer2.**
+-keep class androidx.media3.** { *; }
+-dontwarn androidx.media3.**
+
+# Widevine CDM — manter classes nativas de DRM
+-keep class android.media.MediaDrm { *; }
+-keep class android.media.MediaDrmException { *; }
+-keep class android.media.NotProvisionedException { *; }
+-keep class android.media.DeniedByServerException { *; }
+-keep interface android.media.MediaDrm$OnEventListener { *; }
+-keep interface android.media.MediaDrm$OnKeyStatusChangeListener { *; }
+-dontwarn android.media.MediaDrm**
+
 # Suprime avisos de libs de terceiros
 -dontwarn javax.annotation.**
 -dontwarn org.conscrypt.**
