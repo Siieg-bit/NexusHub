@@ -132,6 +132,106 @@ final _kPlatforms = <String, ScreeningPlatform>{
       _VideoUrlPattern(RegExp(r'drive\.google\.com/file/d/[a-zA-Z0-9_-]+')),
     ],
   ),
+  // ── Plataformas de assinatura (DRM) ───────────────────────────────────────
+  'netflix': ScreeningPlatform(
+    id: 'netflix',
+    displayName: 'Netflix',
+    isDrm: true,
+    initialUrl: 'https://www.netflix.com/login',
+    loginUrl: 'https://www.netflix.com/login',
+    loggedInUrl: 'https://www.netflix.com/browse',
+    // Netflix define o cookie 'NetflixId' após login bem-sucedido.
+    loginCheckJs: "document.cookie.includes('NetflixId') || "
+        "window.location.pathname.startsWith('/browse') || "
+        "window.location.pathname.startsWith('/watch') || "
+        "window.location.pathname.startsWith('/title')",
+    videoPatterns: [
+      _VideoUrlPattern(RegExp(r'netflix\.com/watch/\d+')),
+      _VideoUrlPattern(RegExp(r'netflix\.com/title/\d+')),
+    ],
+  ),
+  'disney': ScreeningPlatform(
+    id: 'disney',
+    displayName: 'Disney+',
+    isDrm: true,
+    initialUrl: 'https://www.disneyplus.com/login',
+    loginUrl: 'https://www.disneyplus.com/login',
+    loggedInUrl: 'https://www.disneyplus.com/home',
+    // Disney+ redireciona para /home após login.
+    loginCheckJs: "window.location.pathname.startsWith('/home') || "
+        "window.location.pathname.startsWith('/movies') || "
+        "window.location.pathname.startsWith('/series') || "
+        "window.location.pathname.startsWith('/video')",
+    videoPatterns: [
+      _VideoUrlPattern(RegExp(r'disneyplus\.com/video/[a-zA-Z0-9_-]+')),
+      _VideoUrlPattern(RegExp(r'disneyplus\.com/movies/[^/]+/[a-zA-Z0-9_-]+')),
+      _VideoUrlPattern(RegExp(r'disneyplus\.com/series/[^/]+/[a-zA-Z0-9_-]+')),
+    ],
+  ),
+  'amazon': ScreeningPlatform(
+    id: 'amazon',
+    displayName: 'Prime Video',
+    isDrm: true,
+    initialUrl: 'https://www.primevideo.com',
+    loginUrl: 'https://www.amazon.com/ap/signin?openid.return_to=https://www.primevideo.com',
+    loggedInUrl: 'https://www.primevideo.com/storefront/',
+    // Prime Video: após login, o hostname é primevideo.com e não há '/signin'.
+    loginCheckJs: "window.location.hostname.includes('primevideo.com') && "
+        "!window.location.pathname.includes('signin') && "
+        "!window.location.pathname.includes('ap/signin')",
+    videoPatterns: [
+      _VideoUrlPattern(RegExp(r'primevideo\.com/detail/[A-Z0-9]+')),
+      _VideoUrlPattern(RegExp(r'primevideo\.com/.*dp/[A-Z0-9]+')),
+      _VideoUrlPattern(RegExp(r'amazon\.com/.*dp/[A-Z0-9]+')),
+    ],
+  ),
+  'hbo': ScreeningPlatform(
+    id: 'hbo',
+    displayName: 'Max',
+    isDrm: true,
+    initialUrl: 'https://www.max.com/login',
+    loginUrl: 'https://www.max.com/login',
+    loggedInUrl: 'https://www.max.com/home',
+    // Max (HBO): após login, redireciona para /home.
+    loginCheckJs: "window.location.pathname.startsWith('/home') || "
+        "window.location.pathname.startsWith('/movies') || "
+        "window.location.pathname.startsWith('/series') || "
+        "window.location.pathname.startsWith('/video')",
+    videoPatterns: [
+      _VideoUrlPattern(RegExp(r'max\.com/video/watch/[a-zA-Z0-9_-]+')),
+      _VideoUrlPattern(RegExp(r'max\.com/movies/[^/]+/[a-zA-Z0-9_-]+')),
+      _VideoUrlPattern(RegExp(r'max\.com/series/[^/]+/[a-zA-Z0-9_-]+')),
+    ],
+  ),
+  'crunchyroll': ScreeningPlatform(
+    id: 'crunchyroll',
+    displayName: 'Crunchyroll',
+    isDrm: true,
+    initialUrl: 'https://www.crunchyroll.com/login',
+    loginUrl: 'https://www.crunchyroll.com/login',
+    loggedInUrl: 'https://www.crunchyroll.com/videos/new',
+    // Crunchyroll: após login, o cookie 'etp_rt' é definido.
+    loginCheckJs: "document.cookie.includes('etp_rt') || "
+        "(window.location.hostname.includes('crunchyroll.com') && "
+        "!window.location.pathname.includes('/login'))",
+    videoPatterns: [
+      _VideoUrlPattern(RegExp(r'crunchyroll\.com/watch/[A-Z0-9]+')),
+      _VideoUrlPattern(RegExp(r'crunchyroll\.com/series/[A-Z0-9]+')),
+    ],
+  ),
+  // ── AVOD gratuito ──────────────────────────────────────────────────────────
+  'pluto': ScreeningPlatform(
+    id: 'pluto',
+    displayName: 'Pluto TV',
+    initialUrl: 'https://pluto.tv/live-tv',
+    loggedInUrl: 'https://pluto.tv/live-tv',
+    // Pluto TV não exige login — abre direto no catálogo.
+    // loginCheckJs não é necessário pois não há redirecionamento de login.
+    videoPatterns: [
+      _VideoUrlPattern(RegExp(r'pluto\.tv/live-tv/[a-zA-Z0-9_-]+')),
+      _VideoUrlPattern(RegExp(r'pluto\.tv/on-demand/[^?]+')),
+    ],
+  ),
   'web': ScreeningPlatform(
     id: 'web',
     displayName: 'URL Direta',
