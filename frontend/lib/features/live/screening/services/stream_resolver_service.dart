@@ -143,7 +143,21 @@ class StreamResolverService {
         return null;
 
       case StreamPlatform.twitch:
-        // Twitch usa HLS direto — não usa embed aqui
+        // Twitch embed: player.twitch.tv com parent=nexushub.app
+        // O HLS direto via GQL falha por autenticação (token expirado/inválido).
+        // O embed oficial é o método mais confiável e não requer auth adicional.
+        final twitchMatch = RegExp(r'twitch\.tv/(?:videos/)?(\d+|[a-zA-Z0-9_]+)').firstMatch(url);
+        final twitchId = twitchMatch?.group(1) ?? '';
+        if (twitchId.isNotEmpty) {
+          // VOD: twitch.tv/videos/123456789
+          if (url.contains('/videos/')) {
+            return 'https://player.twitch.tv/?video=$twitchId'
+                '&parent=nexushub.app&parent=localhost&autoplay=true';
+          }
+          // Canal ao vivo: twitch.tv/channelname
+          return 'https://player.twitch.tv/?channel=$twitchId'
+              '&parent=nexushub.app&parent=localhost&autoplay=true';
+        }
         return null;
 
       case StreamPlatform.kick:
@@ -207,15 +221,44 @@ class StreamResolverService {
     final platform = detectPlatform(url);
 
     switch (platform) {
-      // ── HLS direto via API ──────────────────────────────────────────────
+      // ── Twitch: embed iframe (HLS direto falha por auth GQL) ─────────────
       case StreamPlatform.twitch:
-        final result = await TwitchStreamService.resolve(url);
+        final twitchEmbedUrl = _toEmbedUrl(url, platform);
+        if (twitchEmbedUrl != null) {
+          // Tentar obter metadados (título/thumbnail) via GQL em background
+          // sem bloquear o carregamento do player
+          String? twitchTitle;
+          String? twitchThumb;
+          try {
+            final meta = await TwitchStreamService.resolveMetaOnly(url);
+            twitchTitle = meta.title;
+            twitchThumb = meta.thumbnailUrl;
+          } catch (_) {}
+          return StreamResolution(
+            url: twitchEmbedUrl,
+            type: StreamType.embed,
+            platform: platform,
+            title: twitchTitle,
+            thumbnailUrl: twitchThumb,
+            originalUrl: url,
+          );
+        }
+        // Fallback: tentar HLS direto
+        try {
+          final result = await TwitchStreamService.resolve(url);
+          return StreamResolution(
+            url: result.hlsUrl,
+            type: StreamType.hls,
+            platform: platform,
+            title: result.title,
+            thumbnailUrl: result.thumbnailUrl,
+            originalUrl: url,
+          );
+        } catch (_) {}
         return StreamResolution(
-          url: result.hlsUrl,
-          type: StreamType.hls,
+          url: url,
+          type: StreamType.direct,
           platform: platform,
-          title: result.title,
-          thumbnailUrl: result.thumbnailUrl,
           originalUrl: url,
         );
 

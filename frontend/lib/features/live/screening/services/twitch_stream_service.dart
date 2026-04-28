@@ -262,6 +262,25 @@ query VideoMetadata(\$videoID: ID!) {
     );
   }
 
+  /// Resolve apenas metadados (título/thumbnail) sem obter o token HLS.
+  /// Usado quando o player usa embed iframe e não precisa do token HLS.
+  static Future<TwitchStreamResult> resolveMetaOnly(String url) async {
+    final parsed = _parseUrl(url);
+    if (parsed.channel == null && parsed.vodId == null) {
+      throw Exception('URL da Twitch inválida: $url');
+    }
+    final isLive = parsed.channel != null;
+    final meta = isLive
+        ? await _getChannelMeta(parsed.channel!)
+        : await _getVodMeta(parsed.vodId!);
+    return TwitchStreamResult(
+      hlsUrl: '', // não usado no modo embed
+      title: meta.title,
+      thumbnailUrl: meta.thumbnail,
+      isLive: isLive,
+    );
+  }
+
   /// Verifica se uma URL é da Twitch.
   static bool canHandle(String url) {
     return url.contains('twitch.tv');

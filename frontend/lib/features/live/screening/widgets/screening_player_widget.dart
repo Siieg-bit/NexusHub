@@ -16,9 +16,9 @@ import 'screening_native_player_widget.dart';
 // ScreeningPlayerWidget — Player híbrido: embed (WebView) + HLS nativo
 //
 // Rodada 1 — Arquitetura híbrida:
-// ─────────────────────────────────────────────────────────────────────────────
-// • Embed (WebView): YouTube, Kick, Vimeo, Dailymotion
-// • HLS nativo (media_kit): Twitch, Tubi, Pluto TV, .m3u8 direto
+// ────────────────────────────────────────────────────────────────────────────────
+// • Embed (WebView): YouTube, Twitch, Kick, Vimeo, Dailymotion
+// • HLS nativo (media_kit): Tubi, Pluto TV, .m3u8 direto
 // • DRM relay (Rodada 3): Netflix, Disney+, Amazon, HBO
 //
 // O StreamResolverService detecta a plataforma e resolve a URL antes de
@@ -738,6 +738,12 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     final ytApiScript = isYouTube
         ? '<script src="https://www.youtube.com/iframe_api"></script>'
         : '';
+    // O touch-blocker é necessário APENAS para o YouTube:
+    //   - YouTube usa controls=0 (sem controles nativos) e é controlado via JS
+    //   - O touch-blocker impede que gestos ativem a UI nativa do YouTube
+    // Para Twitch, Kick, Vimeo etc., os controles nativos do player são
+    // necessários — o touch-blocker os bloquearia completamente.
+    final needsTouchBlocker = isYouTube;
     return '''<!DOCTYPE html>
 <html>
 <head>
@@ -759,25 +765,20 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     iframe {
       width: 100%; height: 100%;
       border: none; display: block;
-      /* Impedir que o iframe receba eventos de ponteiro diretamente.
-         O player é controlado 100% via JavaScript (window._nexusPlayer),
-         nunca via interação direta do usuário com o iframe. */
-      pointer-events: none;
-      /* Impedir gestos de touch no elemento iframe */
-      touch-action: none;
+      /* YouTube: pointer-events:none (controlado 100% via JS, sem interação direta).
+         Outros players (Twitch, Kick, Vimeo): pointer-events:auto (controles nativos). */
+      pointer-events: ${needsTouchBlocker ? 'none' : 'auto'};
+      touch-action: ${needsTouchBlocker ? 'none' : 'auto'};
     }
-    /* Overlay transparente com pointer-events:all na frente do iframe.
-       Intercepta TODOS os toques antes de chegarem ao iframe do YouTube.
-       Como o iframe tem pointer-events:none, o overlay é a única camada
-       que recebe eventos de input — e os cancela todos. */
+    /* Touch-blocker: ativo apenas para YouTube (controls=0).
+       Para outros players, fica oculto para não bloquear os controles nativos. */
     #touch-blocker {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       z-index: 9999;
       background: transparent;
-      /* pointer-events: all — intercepta TODOS os toques */
-      pointer-events: all;
-      /* Impedir qualquer gesto nativo do browser */
+      pointer-events: ${needsTouchBlocker ? 'all' : 'none'};
+      display: ${needsTouchBlocker ? 'block' : 'none'};
       touch-action: none;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
