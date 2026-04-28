@@ -748,6 +748,17 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; background: #000; overflow: hidden; padding: 0; margin: 0; }
     iframe { width: 100%; height: 100%; border: none; display: block; }
+    /* Overlay transparente sobre o iframe para interceptar todos os toques.
+       pointer-events: none é sobrescrito via JS após o player estar pronto,
+       mas o bloqueio de touch é feito via event listeners no document. */
+    #touch-blocker {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 9999;
+      background: transparent;
+      /* pointer-events: none por padrão — ativado apenas para bloquear swipes */
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -760,6 +771,8 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   frameborder="0"
   scrolling="no"
 ></iframe>
+<!-- Overlay para interceptar swipes horizontais antes de chegarem ao iframe -->
+<div id="touch-blocker"></div>
 <script>
   // Helper: notificar Flutter via bridge nativo (instantâneo) com fallback console.log
   function _ytBridge(event, data) {
@@ -841,6 +854,56 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
       }
     }
   }
+
+  // ── Bloqueio de touch/swipe no documento ─────────────────────────────────
+  // O YouTube interpreta swipes horizontais como gestos de controle (mini
+  // player, seek bar, etc.) e exibe badges/controles nativos mesmo com
+  // controls=0. Para evitar isso, bloqueamos todos os eventos de touch no
+  // document e no body, impedindo que cheguem ao iframe.
+  //
+  // Estratégia:
+  // 1. Bloquear touchstart/touchmove/touchend no document com preventDefault
+  //    e stopPropagation (captura na fase de captura para pegar antes do iframe)
+  // 2. Usar passive: false para poder chamar preventDefault()
+  // 3. Bloquear também touchcancel para limpar estado
+  //
+  // IMPORTANTE: isso NÃO impede que o Flutter receba os eventos de touch,
+  // pois o Flutter processa os toques na camada nativa (Android View),
+  // ANTES de passá-los para a WebView. O bloqueio aqui é apenas dentro
+  // do contexto JavaScript da WebView.
+  (function() {
+    function blockTouch(e) {
+      // Bloquear completamente todos os eventos de touch dentro do iframe
+      // para impedir que o YouTube processe gestos de swipe.
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+    }
+
+    // Opções: capture=true para interceptar ANTES do iframe;
+    // passive=false para poder chamar preventDefault()
+    var opts = { capture: true, passive: false };
+    document.addEventListener('touchstart',  blockTouch, opts);
+    document.addEventListener('touchmove',   blockTouch, opts);
+    document.addEventListener('touchend',    blockTouch, opts);
+    document.addEventListener('touchcancel', blockTouch, opts);
+
+    // Também bloquear no body e no iframe diretamente
+    document.body.addEventListener('touchstart',  blockTouch, opts);
+    document.body.addEventListener('touchmove',   blockTouch, opts);
+    document.body.addEventListener('touchend',    blockTouch, opts);
+
+    // Bloquear mouse events que o WebView pode sintetizar a partir de touch
+    // (alguns builds do Chromium convertem touch→mouse antes de enviar ao JS)
+    document.addEventListener('mousedown', function(e) { e.preventDefault(); e.stopPropagation(); }, { capture: true });
+    document.addEventListener('mousemove', function(e) { e.preventDefault(); e.stopPropagation(); }, { capture: true });
+    document.addEventListener('mouseup',   function(e) { e.preventDefault(); e.stopPropagation(); }, { capture: true });
+
+    // Bloquear pointer events (API moderna)
+    document.addEventListener('pointerdown', function(e) { e.preventDefault(); e.stopPropagation(); }, { capture: true, passive: false });
+    document.addEventListener('pointermove', function(e) { e.preventDefault(); e.stopPropagation(); }, { capture: true, passive: false });
+    document.addEventListener('pointerup',   function(e) { e.preventDefault(); e.stopPropagation(); }, { capture: true, passive: false });
+  })();
 </script>
 </body>
 </html>''';
