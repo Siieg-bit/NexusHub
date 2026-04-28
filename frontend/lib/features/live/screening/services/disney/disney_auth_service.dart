@@ -209,7 +209,8 @@ class DisneyAuthService {
         }
       }
       debugPrint('[DisneyAuth] Tokens salvos com sucesso!');
-      await _saveTokens(accessToken, refreshToken);
+      // accessToken foi verificado como não-nulo na linha 186
+      await _saveTokens(accessToken!, refreshToken);
       return true;
     } catch (e) {
       debugPrint('[DisneyAuth] Erro ao extrair tokens: $e');
