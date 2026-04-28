@@ -69,6 +69,14 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
   // conflito quando múltiplas telas com EmojiRainOverlay estão na pilha.
   final GlobalKey<EmojiRainOverlayState> _emojiRainKey = GlobalKey<EmojiRainOverlayState>();
 
+  // ── Flag de saída ativa ─────────────────────────────────────────────────────
+  // Impede que o _showRoomClosedDialog (destinado a participantes que recebem
+  // o evento room_closed via Realtime) seja exibido quando o HOST está
+  // encerrando a sala ativamente via _leaveRoom(). Sem esse flag, o dialog
+  // aparece e bloqueia o Navigator.pop() do _leaveRoom(), fazendo a tela
+  // ficar presa.
+  bool _isLeavingRoom = false;
+
   @override
   void initState() {
     super.initState();
@@ -356,6 +364,10 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
       if (!confirmed) return;
     }
 
+    // Sinalizar que estamos encerrando ativamente para que o ref.listen
+    // não exiba o _showRoomClosedDialog (destinado a participantes externos).
+    _isLeavingRoom = true;
+
     if (roomState.sessionId != null) {
       await ref
           .read(screeningVoiceProvider(roomState.sessionId!).notifier)
@@ -425,8 +437,11 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
     final roomState = ref.watch(screeningRoomProvider(widget.threadId));
 
     // Ouvir mudanças de status da sala
+    // _isLeavingRoom evita que o dialog apareça quando o HOST encerra
+    // ativamente (o _leaveRoom já chama Navigator.pop diretamente).
+    // O dialog só é exibido para participantes que recebem room_closed via Realtime.
     ref.listen(screeningRoomProvider(widget.threadId), (prev, next) {
-      if (next.status == ScreeningRoomStatus.closed && mounted) {
+      if (next.status == ScreeningRoomStatus.closed && mounted && !_isLeavingRoom) {
         _showRoomClosedDialog();
       }
     });
