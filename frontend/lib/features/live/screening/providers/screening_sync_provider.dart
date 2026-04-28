@@ -309,17 +309,35 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
 
   void _startMicrosyncTimer() {
     _microsyncTimer?.cancel();
+
+    // Otimização: lives (Twitch/Kick) não têm posição determinística —
+    // o microsync não faz sentido e apenas gera state updates e
+    // evaluateJavascript desnecessariamente a cada 1-3s.
+    final playerState = ref.read(screeningPlayerProvider(sessionId));
+    if (playerState.isLive) {
+      debugPrint('[ScreeningSync] live stream detectado — microsync desativado');
+      return;
+    }
+
     final intervalSeconds = state.lastDriftMs.abs() > 500 ? 1 : 3;
 
     _microsyncTimer = Timer.periodic(
       Duration(seconds: intervalSeconds),
       (_) {
         if (!_isHostPlaying || !mounted) return;
+
+        // Verificar novamente se tornou live durante a sessão
+        final ps = ref.read(screeningPlayerProvider(sessionId));
+        if (ps.isLive) {
+          debugPrint('[ScreeningSync] live detectado no timer — parando microsync');
+          _stopMicrosyncTimer();
+          return;
+        }
+
         final elapsed = DateTime.now().difference(_hostReferenceTimestamp);
         final expectedHostPosition = _hostReferencePosition + elapsed;
-        final playerState = ref.read(screeningPlayerProvider(sessionId));
         final driftMs = expectedHostPosition.inMilliseconds -
-            playerState.position.inMilliseconds;
+            ps.position.inMilliseconds;
         _applyMicrosync(expectedHostPosition, driftMs);
 
         // Reiniciar com intervalo atualizado se o drift mudou muito

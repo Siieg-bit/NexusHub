@@ -9,6 +9,12 @@ import 'screening_queue_sheet.dart';
 //
 // Sempre visível sobre o player (não é overlay de fade).
 // Layout: X | ⚙️ | NEXUS (centralizado) | 🔍 | 👥 | 📋
+//
+// Otimização de performance: em vez de ref.watch(screeningRoomProvider)
+// completo (que reconstruía o TopBar a cada mudança de estado da sala —
+// participantes, posição, queue, etc.), usamos .select() para cada campo
+// específico. O TopBar só é reconstruído quando isHost, viewerCount ou
+// videoQueue.length realmente mudam.
 // =============================================================================
 
 class ScreeningTopBar extends ConsumerWidget {
@@ -30,7 +36,20 @@ class ScreeningTopBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final roomState = ref.watch(screeningRoomProvider(threadId));
+    // Otimização: .select() garante rebuild apenas quando o campo específico muda.
+    // Antes: ref.watch(screeningRoomProvider(threadId)) → rebuild em qualquer
+    // mudança de estado (participantes, posição, status, currentVideoUrl, etc.).
+    final isHost = ref.watch(
+      screeningRoomProvider(threadId).select((s) => s.isHost),
+    );
+    final viewerCount = ref.watch(
+      screeningRoomProvider(threadId).select((s) => s.viewerCount),
+    );
+    final queueLength = ref.watch(
+      screeningRoomProvider(threadId).select((s) => s.videoQueue.length),
+    );
+    final hasQueue = queueLength > 0;
+
     final mq = MediaQuery.of(context);
     // Se overrideTopPadding for fornecido, usa ele; caso contrário usa mq.padding.top
     final topPad = overrideTopPadding ?? mq.padding.top;
@@ -62,12 +81,12 @@ class ScreeningTopBar extends ConsumerWidget {
           ),
           const SizedBox(width: 4),
           // ── Configurações (host) ──────────────────────────────────────
-          if (roomState.isHost)
+          if (isHost)
             _TopBarButton(
               icon: Icons.settings_rounded,
-              onTap: () => _showSettings(context, roomState),
+              onTap: () => _showSettings(context),
             ),
-          if (!roomState.isHost) const SizedBox(width: 8),
+          if (!isHost) const SizedBox(width: 8),
           // ── Logo NEXUS centralizado ───────────────────────────────────
           Expanded(
             child: Center(
@@ -90,22 +109,20 @@ class ScreeningTopBar extends ConsumerWidget {
             ),
           ),
           // ── Busca / Adicionar vídeo (host) ────────────────────────────
-          if (roomState.isHost)
+          if (isHost)
             _TopBarButton(
               icon: Icons.search_rounded,
               onTap: () => _showAddVideo(context),
             ),
           const SizedBox(width: 4),
           // ── Viewers ───────────────────────────────────────────────────
-          _ViewersBadge(count: roomState.viewerCount),
+          _ViewersBadge(count: viewerCount),
           // ── Fila (host) ───────────────────────────────────────────────
-          if (roomState.isHost) ...[
+          if (isHost) ...[
             const SizedBox(width: 4),
             _TopBarButton(
               icon: Icons.playlist_play_rounded,
-              badge: roomState.videoQueue.isNotEmpty
-                  ? '${roomState.videoQueue.length}'
-                  : null,
+              badge: hasQueue ? '$queueLength' : null,
               onTap: () => showModalBottomSheet(
                 context: context,
                 backgroundColor: Colors.transparent,
@@ -135,7 +152,7 @@ class ScreeningTopBar extends ConsumerWidget {
     );
   }
 
-  void _showSettings(BuildContext context, dynamic roomState) {
+  void _showSettings(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Configurações em breve'),

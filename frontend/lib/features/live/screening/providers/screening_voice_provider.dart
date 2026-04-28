@@ -155,6 +155,12 @@ class ScreeningVoiceNotifier extends StateNotifier<ScreeningVoiceState> {
             final started = nowSpeaking.difference(prev);
             final stopped = prev.difference(nowSpeaking);
 
+            // Otimização: só emitir state update se speakingAgoraUids realmente
+            // mudou. O Agora dispara este callback a cada 200ms mesmo em silêncio,
+            // o que causava rebuilds constantes em todos os widgets que assistem
+            // ao screeningVoiceProvider.
+            if (started.isEmpty && stopped.isEmpty) return;
+
             for (final uid in started) {
               _updateParticipantSpeaking(uid, true);
             }
