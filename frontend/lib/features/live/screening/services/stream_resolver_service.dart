@@ -223,41 +223,14 @@ class StreamResolverService {
     switch (platform) {
       // ── Twitch: embed iframe (HLS direto falha por auth GQL) ─────────────
       case StreamPlatform.twitch:
+        // Retornar embed imediatamente — sem await de metadados.
+        // O resolveMetaOnly() fazia await do GQL da Twitch (2-5s de latência)
+        // antes de retornar a URL do embed, bloqueando o carregamento do player.
+        // Título/thumbnail não são críticos para o player funcionar.
         final twitchEmbedUrl = _toEmbedUrl(url, platform);
-        if (twitchEmbedUrl != null) {
-          // Tentar obter metadados (título/thumbnail) via GQL em background
-          // sem bloquear o carregamento do player
-          String? twitchTitle;
-          String? twitchThumb;
-          try {
-            final meta = await TwitchStreamService.resolveMetaOnly(url);
-            twitchTitle = meta.title;
-            twitchThumb = meta.thumbnailUrl;
-          } catch (_) {}
-          return StreamResolution(
-            url: twitchEmbedUrl,
-            type: StreamType.embed,
-            platform: platform,
-            title: twitchTitle,
-            thumbnailUrl: twitchThumb,
-            originalUrl: url,
-          );
-        }
-        // Fallback: tentar HLS direto
-        try {
-          final result = await TwitchStreamService.resolve(url);
-          return StreamResolution(
-            url: result.hlsUrl,
-            type: StreamType.hls,
-            platform: platform,
-            title: result.title,
-            thumbnailUrl: result.thumbnailUrl,
-            originalUrl: url,
-          );
-        } catch (_) {}
         return StreamResolution(
-          url: url,
-          type: StreamType.direct,
+          url: twitchEmbedUrl ?? url,
+          type: twitchEmbedUrl != null ? StreamType.embed : StreamType.direct,
           platform: platform,
           originalUrl: url,
         );

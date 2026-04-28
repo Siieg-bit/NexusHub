@@ -738,12 +738,11 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     final ytApiScript = isYouTube
         ? '<script src="https://www.youtube.com/iframe_api"></script>'
         : '';
-    // O touch-blocker é necessário APENAS para o YouTube:
-    //   - YouTube usa controls=0 (sem controles nativos) e é controlado via JS
-    //   - O touch-blocker impede que gestos ativem a UI nativa do YouTube
-    // Para Twitch, Kick, Vimeo etc., os controles nativos do player são
-    // necessários — o touch-blocker os bloquearia completamente.
-    final needsTouchBlocker = isYouTube;
+    // O touch-blocker bloqueia os controles nativos de TODOS os players embed.
+    // O NexusHub controla o player via JS injetado (window._nexusPlayer),
+    // portanto nenhum player deve receber toques diretos do usuário.
+    // Isso impede que gestos ativem a UI nativa do YouTube, Twitch, Kick, Vimeo.
+    const needsTouchBlocker = true;
     return '''<!DOCTYPE html>
 <html>
 <head>
@@ -765,20 +764,20 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     iframe {
       width: 100%; height: 100%;
       border: none; display: block;
-      /* YouTube: pointer-events:none (controlado 100% via JS, sem interação direta).
-         Outros players (Twitch, Kick, Vimeo): pointer-events:auto (controles nativos). */
-      pointer-events: ${needsTouchBlocker ? 'none' : 'auto'};
-      touch-action: ${needsTouchBlocker ? 'none' : 'auto'};
+      /* Todos os players: pointer-events:none.
+         O NexusHub controla via JS injetado (window._nexusPlayer),
+         nunca via interacao direta do usuario com o iframe. */
+      pointer-events: none;
+      touch-action: none;
     }
-    /* Touch-blocker: ativo apenas para YouTube (controls=0).
-       Para outros players, fica oculto para não bloquear os controles nativos. */
+    /* Touch-blocker: ativo para TODOS os embeds.
+       Bloqueia controles nativos de YouTube, Twitch, Kick, Vimeo etc. */
     #touch-blocker {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       z-index: 9999;
       background: transparent;
-      pointer-events: ${needsTouchBlocker ? 'all' : 'none'};
-      display: ${needsTouchBlocker ? 'block' : 'none'};
+      pointer-events: all;
       touch-action: none;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
