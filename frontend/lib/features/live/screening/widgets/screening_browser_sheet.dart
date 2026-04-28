@@ -157,7 +157,6 @@ final _kPlatforms = <String, ScreeningPlatform>{
   'disney': ScreeningPlatform(
     id: 'disney',
     displayName: 'Disney+',
-    isDrm: true,
     // O site do Disney+ redireciona para o app nativo no mobile e não permite
     // navegar pelo catálogo via WebView. A integração usa entrada direta de URL:
     // o usuário abre o app Disney+, navega até o vídeo, copia a URL de compartilhamento
