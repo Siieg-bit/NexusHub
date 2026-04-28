@@ -377,9 +377,24 @@ class CallService {
 
       final result = rpcResult as Map<String, dynamic>? ?? {};
       if (result['success'] != true) {
+        final errCode = result['error'] as String? ?? 'unknown rpc error';
+
+        // Race condition: outro usuário criou uma call no mesmo instante.
+        // Tentar recuperar a sessão ativa e entrar nela.
+        if (errCode == 'call_already_active') {
+          final raceWinner = await getActiveCallForThread(
+            threadId,
+            allowedTypes: {type},
+          );
+          if (raceWinner != null) {
+            // Entrar na sessão criada pelo outro usuário
+            return joinCallSession(raceWinner.id);
+          }
+        }
+
         _recordFailure(
           stage: 'createCall.rpc',
-          error: StateError('create_call_session returned success=false: ${result['error'] ?? 'unknown rpc error'}'),
+          error: StateError('create_call_session returned success=false: $errCode'),
           stackTrace: StackTrace.current,
           context: {
             'threadId': threadId,

@@ -105,32 +105,40 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         await _joinAsParticipant(sessionId: sessionId, userId: userId);
         debugPrint('[ScreeningRoom] _joinAsParticipant concluído.');
       } else {
-        // ── Criando nova sessão (host) ──
-        debugPrint('[ScreeningRoom] Criando nova sessão como host — threadId=$threadId, videoUrl=$initialVideoUrl');
-        final session = await SupabaseService.table('call_sessions').insert({
-          'creator_id': userId,
-          'host_id': userId, // NOT NULL constraint na tabela call_sessions
-          'thread_id': threadId,
-          'type': 'screening_room',
-          'status': 'active',
-          'metadata': {
-            'video_url': initialVideoUrl ?? '',
-            'video_title': initialVideoTitle ?? '',
-            'video_thumbnail': initialVideoThumbnail ?? '',
+        // ── Criando nova sessão (host) via RPC — regra de ouro: sem INSERT direto ──
+        debugPrint('[ScreeningRoom] Criando nova sessão como host via RPC — threadId=$threadId, videoUrl=$initialVideoUrl');
+        final rpcResult = await SupabaseService.rpc(
+          'create_screening_session',
+          params: {
+            'p_thread_id':       threadId,
+            'p_video_url':       initialVideoUrl ?? '',
+            'p_video_title':     initialVideoTitle ?? '',
+            'p_video_thumbnail': initialVideoThumbnail ?? '',
           },
-        }).select().single();
-        debugPrint('[ScreeningRoom] Sessao criada: ${session["id"]}');
+        );
 
-        sessionId = session['id'] as String;
+        final rpcData = rpcResult as Map<String, dynamic>? ?? {};
+        if (rpcData['success'] != true) {
+          final errCode = rpcData['error'] as String? ?? 'unknown_rpc_error';
+          debugPrint('[ScreeningRoom] create_screening_session falhou: $errCode');
+          state = state.copyWith(
+            status: ScreeningRoomStatus.error,
+            errorMessage: errCode == 'screening_room_already_active'
+                ? 'Já existe uma Sala de Projeção ativa neste chat.'
+                : 'Não foi possível criar a sala ($errCode).',
+          );
+          return;
+        }
+
+        sessionId = rpcData['session_id'] as String;
+        debugPrint('[ScreeningRoom] Sessão criada via RPC: $sessionId');
+
         isHost = true;
         hostUserId = userId;
         // Usar o vídeo inicial passado pelo ScreeningCreateRoomSheet
         videoUrl = initialVideoUrl;
         videoTitle = initialVideoTitle;
-
-        debugPrint('[ScreeningRoom] Chamando _joinAsParticipant como host...');
-        await _joinAsParticipant(sessionId: sessionId, userId: userId);
-        debugPrint('[ScreeningRoom] _joinAsParticipant (host) concluído.');
+        // O RPC já inseriu o criador como participante HOST — não chamar _joinAsParticipant.
       }
 
       // ── Carregar participantes iniciais ──
@@ -206,15 +214,17 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
   }) async {
     debugPrint('[ScreeningRoom] _joinAsParticipant — sessionId=$sessionId, userId=$userId');
     try {
-      // Upsert para evitar duplicatas (caso de reconexão)
-      await SupabaseService.table('call_participants').upsert({
-        'call_session_id': sessionId,
-        'user_id': userId,
-        'status': 'connected',
-        'joined_at': DateTime.now().toIso8601String(),
-        'last_heartbeat': DateTime.now().toIso8601String(),
-      }, onConflict: 'call_session_id,user_id');
-      debugPrint('[ScreeningRoom] _joinAsParticipant — upsert concluído.');
+      // Usar RPC join_call_session (regra de ouro: sem mutações diretas)
+      final rpcResult = await SupabaseService.rpc('join_call_session', params: {
+        'p_session_id': sessionId,
+      });
+      final rpcData = rpcResult as Map<String, dynamic>? ?? {};
+      if (rpcData['success'] != true) {
+        final errCode = rpcData['error'] as String? ?? 'unknown';
+        debugPrint('[ScreeningRoom] join_call_session falhou: $errCode');
+        throw StateError('join_call_session failed: $errCode');
+      }
+      debugPrint('[ScreeningRoom] _joinAsParticipant — RPC concluído.');
     } catch (e, st) {
       debugPrint('[ScreeningRoom] ❌ _joinAsParticipant ERRO: $e');
       debugPrint('[ScreeningRoom] ❌ _joinAsParticipant STACK: $st');
@@ -488,13 +498,11 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
           payload: {'action': 'leave', 'user_id': userId},
         );
 
-        await SupabaseService.table('call_participants')
-            .update({
-              'status': 'disconnected',
-              'left_at': DateTime.now().toIso8601String(),
-            })
-            .eq('call_session_id', sessionId)
-            .eq('user_id', userId);
+        // Usar RPC leave_call_session (regra de ouro: sem mutações diretas)
+        // O RPC também encerra a sessão se não houver mais participantes conectados.
+        await SupabaseService.rpc('leave_call_session', params: {
+          'p_session_id': sessionId,
+        });
       }
     } catch (e) {
       debugPrint('[ScreeningRoom] leaveRoom error: $e');
