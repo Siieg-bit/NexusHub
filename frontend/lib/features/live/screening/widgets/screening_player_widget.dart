@@ -746,18 +746,43 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   $ytApiScript
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; background: #000; overflow: hidden; padding: 0; margin: 0; }
-    iframe { width: 100%; height: 100%; border: none; display: block; }
-    /* Overlay transparente sobre o iframe para interceptar todos os toques.
-       pointer-events: none é sobrescrito via JS após o player estar pronto,
-       mas o bloqueio de touch é feito via event listeners no document. */
+    html, body {
+      width: 100%; height: 100%;
+      background: #000;
+      overflow: hidden;
+      padding: 0; margin: 0;
+      /* Impedir scroll/bounce nativo do WebView */
+      touch-action: none;
+      -webkit-overflow-scrolling: none;
+      overscroll-behavior: none;
+    }
+    iframe {
+      width: 100%; height: 100%;
+      border: none; display: block;
+      /* Impedir que o iframe receba eventos de ponteiro diretamente.
+         O player é controlado 100% via JavaScript (window._nexusPlayer),
+         nunca via interação direta do usuário com o iframe. */
+      pointer-events: none;
+      /* Impedir gestos de touch no elemento iframe */
+      touch-action: none;
+    }
+    /* Overlay transparente com pointer-events:all na frente do iframe.
+       Intercepta TODOS os toques antes de chegarem ao iframe do YouTube.
+       Como o iframe tem pointer-events:none, o overlay é a única camada
+       que recebe eventos de input — e os cancela todos. */
     #touch-blocker {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       z-index: 9999;
       background: transparent;
-      /* pointer-events: none por padrão — ativado apenas para bloquear swipes */
-      pointer-events: none;
+      /* pointer-events: all — intercepta TODOS os toques */
+      pointer-events: all;
+      /* Impedir qualquer gesto nativo do browser */
+      touch-action: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      overscroll-behavior: none;
     }
   </style>
 </head>
@@ -771,7 +796,10 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   frameborder="0"
   scrolling="no"
 ></iframe>
-<!-- Overlay para interceptar swipes horizontais antes de chegarem ao iframe -->
+<!-- Overlay transparente com pointer-events:all que intercepta TODOS os
+     eventos de input antes de chegarem ao iframe do YouTube. O YouTube
+     nunca recebe toques, swipes (horizontais ou verticais), cliques, etc.
+     O player é controlado 100% via JavaScript injetado pelo Flutter. -->
 <div id="touch-blocker"></div>
 <script>
   // Helper: notificar Flutter via bridge nativo (instantâneo) com fallback console.log
@@ -855,54 +883,75 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     }
   }
 
-  // ── Bloqueio de touch/swipe no documento ─────────────────────────────────
-  // O YouTube interpreta swipes horizontais como gestos de controle (mini
-  // player, seek bar, etc.) e exibe badges/controles nativos mesmo com
-  // controls=0. Para evitar isso, bloqueamos todos os eventos de touch no
-  // document e no body, impedindo que cheguem ao iframe.
+  // ── Bloqueio total de input ─────────────────────────────────────────────────────
+  // Estratégia de defesa em profundidade para impedir que a UI nativa do
+  // YouTube (badges, logo, controles, seek bar) apareça por qualquer gesto:
   //
-  // Estratégia:
-  // 1. Bloquear touchstart/touchmove/touchend no document com preventDefault
-  //    e stopPropagation (captura na fase de captura para pegar antes do iframe)
-  // 2. Usar passive: false para poder chamar preventDefault()
-  // 3. Bloquear também touchcancel para limpar estado
+  // CAMADA 1 (CSS): iframe tem pointer-events:none e touch-action:none.
+  //   O iframe nunca recebe eventos de ponteiro diretamente.
   //
-  // IMPORTANTE: isso NÃO impede que o Flutter receba os eventos de touch,
-  // pois o Flutter processa os toques na camada nativa (Android View),
-  // ANTES de passá-los para a WebView. O bloqueio aqui é apenas dentro
-  // do contexto JavaScript da WebView.
+  // CAMADA 2 (CSS): #touch-blocker tem pointer-events:all e touch-action:none.
+  //   É uma barreira física transparente na frente do iframe que absorve
+  //   TODOS os toques antes de chegarem ao iframe.
+  //
+  // CAMADA 3 (JS): event listeners no document e no #touch-blocker com
+  //   capture:true e passive:false para cancelar qualquer evento residual.
+  //   Cobre: touch, mouse (sintetizado pelo Chromium), pointer (API moderna),
+  //   wheel (scroll), contextmenu, drag, gestos de zoom.
+  //
+  // IMPORTANTE: isso NÃO afeta o Flutter. Os toques são processados pela
+  // camada nativa Android ANTES de chegarem à WebView. O player é controlado
+  // 100% via JavaScript injetado pelo Flutter (window._nexusPlayer).
   (function() {
-    function blockTouch(e) {
-      // Bloquear completamente todos os eventos de touch dentro do iframe
-      // para impedir que o YouTube processe gestos de swipe.
+    function killEvent(e) {
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
+      return false;
     }
 
-    // Opções: capture=true para interceptar ANTES do iframe;
-    // passive=false para poder chamar preventDefault()
-    var opts = { capture: true, passive: false };
-    document.addEventListener('touchstart',  blockTouch, opts);
-    document.addEventListener('touchmove',   blockTouch, opts);
-    document.addEventListener('touchend',    blockTouch, opts);
-    document.addEventListener('touchcancel', blockTouch, opts);
+    var capOpts  = { capture: true, passive: false };
+    var capPassive = { capture: true, passive: true }; // para eventos que não permitem preventDefault
 
-    // Também bloquear no body e no iframe diretamente
-    document.body.addEventListener('touchstart',  blockTouch, opts);
-    document.body.addEventListener('touchmove',   blockTouch, opts);
-    document.body.addEventListener('touchend',    blockTouch, opts);
+    // ─ Touch events (horizontal + vertical + qualquer direção) ───────────
+    ['touchstart', 'touchmove', 'touchend', 'touchcancel'].forEach(function(ev) {
+      document.addEventListener(ev, killEvent, capOpts);
+      document.body.addEventListener(ev, killEvent, capOpts);
+    });
 
-    // Bloquear mouse events que o WebView pode sintetizar a partir de touch
-    // (alguns builds do Chromium convertem touch→mouse antes de enviar ao JS)
-    document.addEventListener('mousedown', function(e) { e.preventDefault(); e.stopPropagation(); }, { capture: true });
-    document.addEventListener('mousemove', function(e) { e.preventDefault(); e.stopPropagation(); }, { capture: true });
-    document.addEventListener('mouseup',   function(e) { e.preventDefault(); e.stopPropagation(); }, { capture: true });
+    // ─ Mouse events (sintetizados pelo Chromium a partir de touch) ────────
+    ['mousedown', 'mousemove', 'mouseup', 'mouseenter', 'mouseleave',
+     'mouseover', 'mouseout', 'click', 'dblclick', 'contextmenu'].forEach(function(ev) {
+      document.addEventListener(ev, killEvent, capOpts);
+    });
 
-    // Bloquear pointer events (API moderna)
-    document.addEventListener('pointerdown', function(e) { e.preventDefault(); e.stopPropagation(); }, { capture: true, passive: false });
-    document.addEventListener('pointermove', function(e) { e.preventDefault(); e.stopPropagation(); }, { capture: true, passive: false });
-    document.addEventListener('pointerup',   function(e) { e.preventDefault(); e.stopPropagation(); }, { capture: true, passive: false });
+    // ─ Pointer events (API moderna, usada pelo YouTube player) ──────────
+    ['pointerdown', 'pointermove', 'pointerup', 'pointercancel',
+     'pointerenter', 'pointerleave', 'pointerover', 'pointerout',
+     'gotpointercapture', 'lostpointercapture'].forEach(function(ev) {
+      document.addEventListener(ev, killEvent, capOpts);
+    });
+
+    // ─ Wheel / scroll (swipe vertical pode gerar scroll) ──────────────
+    document.addEventListener('wheel', killEvent, capOpts);
+    document.addEventListener('scroll', function(e) { e.stopPropagation(); }, capPassive);
+
+    // ─ Drag events ──────────────────────────────────────────────────
+    ['dragstart', 'drag', 'dragend', 'dragenter', 'dragleave',
+     'dragover', 'drop'].forEach(function(ev) {
+      document.addEventListener(ev, killEvent, capOpts);
+    });
+
+    // ─ Também no #touch-blocker (segunda linha de defesa) ──────────────
+    var blocker = document.getElementById('touch-blocker');
+    if (blocker) {
+      ['touchstart', 'touchmove', 'touchend', 'touchcancel',
+       'mousedown', 'mousemove', 'mouseup', 'click', 'dblclick',
+       'pointerdown', 'pointermove', 'pointerup', 'pointercancel',
+       'wheel', 'contextmenu'].forEach(function(ev) {
+        blocker.addEventListener(ev, killEvent, capOpts);
+      });
+    }
   })();
 </script>
 </body>
