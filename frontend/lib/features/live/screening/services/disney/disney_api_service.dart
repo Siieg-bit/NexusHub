@@ -97,15 +97,10 @@ class DisneyApiService {
 
   static Future<DisneyPage> _fetchPage(String pageId) async {
     final accessToken = await DisneyAuthService.getValidAccessToken();
-    final params = _commonParams()
-      ..addAll({
-        'pageId': pageId,
-        'pageSize': '24',
-        'setSize': '15',
-      });
 
-    final uri = Uri.parse('$_baseExplore/$_v14/page/').replace(
-      queryParameters: params,
+    final uri = Uri.parse(
+      '$_baseExplore/$_v14/page/$pageId'
+      '?disableSmartFocus=true&enchancedContainersLimit=24&limit=100',
     );
 
     debugPrint('[DisneyApi] fetchPage: $pageId');
@@ -124,15 +119,13 @@ class DisneyApiService {
   /// Equivalente ao endpoint `/explore/v1.4/search` do Rave.
   static Future<DisneySearchResult> search(String query) async {
     final accessToken = await DisneyAuthService.getValidAccessToken();
-    final params = _commonParams()
-      ..addAll({
-        'query': query,
-        'pageSize': '20',
-        'contentClass': 'movie,series',
-      });
 
-    final uri = Uri.parse('$_baseExplore/$_v14/search').replace(
-      queryParameters: params,
+    // Endpoint de busca: getSiteSearch do BAM SDK config v4
+    // GET /svc/search/DisneySearch/version/5.1/region/BR/audience/k-false,l-true/maturity/1850/language/pt-BR/query/{query}
+    final uri = Uri.parse(
+      'https://disney.content.edge.bamgrid.com/svc/search/DisneySearch'
+      '/version/5.1/region/$_region/audience/k-false,l-true'
+      '/maturity/1850/language/$_language/query/${Uri.encodeComponent(query)}',
     );
 
     debugPrint('[DisneyApi] search: "$query"');
@@ -151,14 +144,12 @@ class DisneyApiService {
   /// Equivalente ao endpoint `/explore/v1.3/season/{seriesId}` do Rave.
   static Future<List<DisneySeason>> fetchSeasons(String seriesId) async {
     final accessToken = await DisneyAuthService.getValidAccessToken();
-    final params = _commonParams()
-      ..addAll({
-        'seriesId': seriesId,
-        'pageSize': '30',
-      });
 
-    final uri = Uri.parse('$_baseExplore/$_v13/season/').replace(
-      queryParameters: params,
+    // Endpoint getDmcSeries do BAM SDK config v4
+    final uri = Uri.parse(
+      'https://disney.content.edge.bamgrid.com/svc/content/DmcSeries'
+      '/version/5.1/region/$_region/audience/k-false,l-true'
+      '/maturity/1850/language/$_language/encodedSeriesId/$seriesId',
     );
 
     debugPrint('[DisneyApi] fetchSeasons: $seriesId');
@@ -184,15 +175,13 @@ class DisneyApiService {
     int page = 1,
   }) async {
     final accessToken = await DisneyAuthService.getValidAccessToken();
-    final params = _commonParams()
-      ..addAll({
-        'seasonId': seasonId,
-        'pageSize': '30',
-        'page': page.toString(),
-      });
 
-    final uri = Uri.parse('$_baseExplore/$_v13/season/$seasonId').replace(
-      queryParameters: params,
+    // Endpoint getDmcEpisodes do BAM SDK config v4
+    final uri = Uri.parse(
+      'https://disney.content.edge.bamgrid.com/svc/content/DmcEpisodes'
+      '/version/5.1/region/$_region/audience/k-false,l-true'
+      '/maturity/1850/language/$_language'
+      '/seasonId/$seasonId/pageSize/30/page/$page',
     );
 
     debugPrint('[DisneyApi] fetchEpisodes: $seasonId (page $page)');
@@ -215,16 +204,15 @@ class DisneyApiService {
     bool isSeries = false,
   }) async {
     final accessToken = await DisneyAuthService.getValidAccessToken();
-    final params = _commonParams()
-      ..addAll({
-        'action': 'playback',
-        'refId': contentId,
-        'refIdType': isSeries ? 'series' : 'video',
-      });
 
+    // BAM SDK v4: GET /explore/v1.0/deeplink?refIdType=dmcContentId&refId={contentId}
+    // Rave smali: /deeplink?refId={id}&refIdType=dmcContentId (vídeo)
+    //             /deeplink?action=playback&refId={id}&refIdType=deeplinkId (série)
+    final refIdType = isSeries ? 'deeplinkId' : 'dmcContentId';
     final uri = Uri.parse(
-      'https://disney.api.edge.bamgrid.com/deeplink',
-    ).replace(queryParameters: params);
+      'https://disney.content.edge.bamgrid.com/explore/v1.0/deeplink'
+      '?refIdType=$refIdType&refId=$contentId',
+    );
 
     debugPrint('[DisneyApi] fetchDeepLink: $contentId');
     final response = await http.get(uri, headers: _headers(accessToken));
@@ -245,13 +233,11 @@ class DisneyApiService {
     String contentId,
   ) async {
     final accessToken = await DisneyAuthService.getValidAccessToken();
-    final params = _commonParams()
-      ..addAll({
-        'contentId': contentId,
-      });
 
-    final uri = Uri.parse('$_baseExplore/$_v12/playerExperience/').replace(
-      queryParameters: params,
+    // Rave usa: GET /explore/v1.2/playerExperience/{contentId}?region=BR&language=pt-BR
+    final uri = Uri.parse(
+      '$_baseExplore/$_v12/playerExperience/$contentId'
+      '?region=$_region&language=$_language',
     );
 
     debugPrint('[DisneyApi] fetchPlayerExperience: $contentId');
