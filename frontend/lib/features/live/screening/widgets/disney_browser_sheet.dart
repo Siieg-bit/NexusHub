@@ -41,6 +41,9 @@ class _DisneyBrowserSheetState extends ConsumerState<DisneyBrowserSheet>
   // ── Estado ────────────────────────────────────────────────────────────────
   DisneyPage? _homePage;
   List<DisneyContentItem> _searchResults = [];
+  // Continue Watching e Minha Lista (carregados em paralelo com a home)
+  List<DisneyContentItem> _continueWatching = [];
+  List<DisneyContentItem> _myList = [];
   bool _isLoading = true;
   bool _isSearching = false;
   bool _isCapturing = false;
@@ -81,8 +84,20 @@ class _DisneyBrowserSheetState extends ConsumerState<DisneyBrowserSheet>
   Future<void> _loadHomePage() async {
     setState(() { _isLoading = true; _error = null; });
     try {
-      final page = await DisneyApiService.fetchHomePage();
-      if (mounted) setState(() { _homePage = page; _isLoading = false; });
+      // Carregar home, continue watching e my list em paralelo (igual ao Rave)
+      final results = await Future.wait([
+        DisneyApiService.fetchHomePage(),
+        DisneyApiService.fetchContinueWatching(),
+        DisneyApiService.fetchMyList(),
+      ]);
+      if (mounted) {
+        setState(() {
+          _homePage = results[0] as DisneyPage;
+          _continueWatching = results[1] as List<DisneyContentItem>;
+          _myList = results[2] as List<DisneyContentItem>;
+          _isLoading = false;
+        });
+      }
     } on DisneyAuthException catch (e) {
       if (mounted) {
         setState(() { _error = e.message; _isLoading = false; });
@@ -404,11 +419,77 @@ class _DisneyBrowserSheetState extends ConsumerState<DisneyBrowserSheet>
 
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 32),
-      itemCount: containers.length,
+      // +2 para as seções fixas: Continue Watching e Minha Lista (se não vazias)
+      itemCount: containers.length
+          + (_continueWatching.isNotEmpty ? 1 : 0)
+          + (_myList.isNotEmpty ? 1 : 0),
       itemBuilder: (context, index) {
-        final container = containers[index];
+        int offset = 0;
+        // Seção "Continue Assistindo" — sempre no topo se não vazia
+        if (_continueWatching.isNotEmpty) {
+          if (index == 0) {
+            return _buildFixedSection(
+              title: 'Continue Assistindo',
+              items: _continueWatching,
+              icon: Icons.play_circle_outline_rounded,
+            );
+          }
+          offset++;
+        }
+        // Seção "Minha Lista" — logo abaixo do Continue Watching
+        if (_myList.isNotEmpty) {
+          if (index == offset) {
+            return _buildFixedSection(
+              title: 'Minha Lista',
+              items: _myList,
+              icon: Icons.bookmark_outline_rounded,
+            );
+          }
+          offset++;
+        }
+        // Restante do catálogo home
+        final container = containers[index - offset];
         return _buildSection(container);
       },
+    );
+  }
+
+  /// Seção fixa com ícone (Continue Watching / Minha Lista).
+  Widget _buildFixedSection({
+    required String title,
+    required List<DisneyContentItem> items,
+    required IconData icon,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+          child: Row(
+            children: [
+              Icon(icon, color: _disneyBlue, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 160,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: items.length,
+            itemBuilder: (context, i) => _buildContentCard(items[i]),
+          ),
+        ),
+      ],
     );
   }
 

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
 import 'disney_auth_service.dart';
 import 'disney_api_service.dart';
 import 'disney_models.dart';
@@ -15,6 +17,32 @@ import 'disney_models.dart';
 /// Baseado no fluxo `getManifest` → `fetchDeepLinkInfo` → `fetchDisneyStreams`
 /// do DisneyServer do Rave (extraído via engenharia reversa do APK).
 class DisneyPlaybackService {
+  // ── UUID de sessão único por dispositivo ──────────────────────────────────
+  // O Rave usa um UUID hardcoded, o que causa conflito entre usuários.
+  // O NexusHub gera um UUID único por dispositivo, persistido no secure storage.
+  // Isso é mais correto e evita que múltiplos usuários compartilhem o mesmo ID.
+  static const _storage = FlutterSecureStorage();
+  static const _kDeviceSessionId = 'disney_device_session_id';
+  static const _uuid = Uuid();
+  static String? _cachedSessionId;
+
+  /// Retorna o UUID de sessão único deste dispositivo.
+  /// Gerado na primeira chamada e persistido no secure storage.
+  static Future<String> _getDeviceSessionId() async {
+    if (_cachedSessionId != null) return _cachedSessionId!;
+    final stored = await _storage.read(key: _kDeviceSessionId);
+    if (stored != null && stored.isNotEmpty) {
+      _cachedSessionId = stored;
+      return stored;
+    }
+    // Gerar novo UUID v4 para este dispositivo
+    final newId = _uuid.v4();
+    await _storage.write(key: _kDeviceSessionId, value: newId);
+    _cachedSessionId = newId;
+    debugPrint('[DisneyPlayback] Novo device session ID gerado: $newId');
+    return newId;
+  }
+
   // ── Endpoints de playback (extraídos do DisneyServer.smali do Rave) ───────
 
   /// Endpoint principal de playback CTR (Clear Text Response).
@@ -30,29 +58,34 @@ class DisneyPlaybackService {
   // Este JSON é enviado no body do POST para o endpoint de playback.
   // Valores extraídos diretamente da string hardcoded no APK do Rave:
   // const-string v6, "\n        {\n            \"playback\": {\n..."
-  static Map<String, dynamic> _buildPlaybackBody(String playbackId) => {
-        'playback': {
-          'attributes': {
-            'resolution': {
-              'max': ['1280x720'],
-            },
-            'protocol': 'HTTPS',
-            'assetInsertionStrategy': 'SGAI',
-            'playbackInitiationContext': 'ONLINE',
-            'frameRates': [60],
-            'slugDuration': null,
+  static Future<Map<String, dynamic>> _buildPlaybackBody(String playbackId) async {
+    // UUID único por dispositivo (gerado uma vez e persistido no secure storage)
+    // O Rave usa um UUID hardcoded — o NexusHub usa um UUID único por dispositivo
+    // para evitar conflitos entre múltiplos usuários simultâneos.
+    final sessionId = await _getDeviceSessionId();
+    return {
+      'playback': {
+        'attributes': {
+          'resolution': {
+            'max': ['1280x720'],
           },
-          'adTracking': {
-            'limitAdTrackingEnabled': 'YES',
-            'deviceAdId': '00000000-0000-0000-0000-000000000000',
-          },
-          'tracking': {
-            // UUID fixo — o Rave usa um UUID hardcoded para sessão de playback
-            'playbackSessionId': 'cb9c63a5-dd85-41c5-b544-eca860b7c3a6',
-          },
+          'protocol': 'HTTPS',
+          'assetInsertionStrategy': 'SGAI',
+          'playbackInitiationContext': 'ONLINE',
+          'frameRates': [60],
+          'slugDuration': null,
         },
-        'playbackId': playbackId,
-      };
+        'adTracking': {
+          'limitAdTrackingEnabled': 'YES',
+          'deviceAdId': '00000000-0000-0000-0000-000000000000',
+        },
+        'tracking': {
+          'playbackSessionId': sessionId,
+        },
+      },
+      'playbackId': playbackId,
+    };
+  }
 
   // ── Headers de playback ───────────────────────────────────────────────────
   static Map<String, String> _playbackHeaders(String accessToken) => {
@@ -78,7 +111,18 @@ class DisneyPlaybackService {
   /// Retorna um [DisneyStream] com a URL do manifesto e a URL de licença.
   static Future<DisneyStream> resolveStream(String contentId) async {
     debugPrint('[DisneyPlayback] Resolvendo stream para contentId: $contentId');
+    return await _resolveWithRetry(contentId, retryCount: 0);
+  }
 
+  /// Resolve o stream com retry automático em caso de 401 (token expirado).
+  ///
+  /// Idêntico ao comportamento do Rave: quando o endpoint de playback retorna 401,
+  /// o token é renovado via refresh_token e a requisição é repetida automaticamente,
+  /// sem exibir erro ao usuário.
+  static Future<DisneyStream> _resolveWithRetry(
+    String contentId, {
+    required int retryCount,
+  }) async {
     final accessToken = await DisneyAuthService.getValidAccessToken();
 
     // Passo 1: Resolver o playbackId via deeplink
@@ -88,13 +132,28 @@ class DisneyPlaybackService {
       playbackId = deepLink.resourceId ?? deepLink.playbackId ?? contentId;
       debugPrint('[DisneyPlayback] playbackId resolvido: $playbackId');
     } catch (e) {
+      if (e is DisneyAuthException && e.isExpired && retryCount == 0) {
+        debugPrint('[DisneyPlayback] Token expirado no deeplink, renovando e tentando novamente...');
+        await DisneyAuthService.forceRefresh();
+        return _resolveWithRetry(contentId, retryCount: retryCount + 1);
+      }
       // Fallback: usar o contentId diretamente como playbackId
       debugPrint('[DisneyPlayback] Deeplink falhou, usando contentId como playbackId: $e');
       playbackId = contentId;
     }
 
     // Passo 2: Obter o manifesto via endpoint de playback
-    return await _fetchPlaybackStream(playbackId, accessToken);
+    try {
+      return await _fetchPlaybackStream(playbackId, accessToken);
+    } on DisneyAuthException catch (e) {
+      if (e.isExpired && retryCount == 0) {
+        // Token expirou durante o playback — renovar e tentar novamente (igual ao Rave)
+        debugPrint('[DisneyPlayback] Token expirado no playback, renovando e tentando novamente...');
+        await DisneyAuthService.forceRefresh();
+        return _resolveWithRetry(contentId, retryCount: retryCount + 1);
+      }
+      rethrow;
+    }
   }
 
   /// Resolve um contentId a partir de uma URL do Disney+.
@@ -172,7 +231,7 @@ class DisneyPlaybackService {
   ) async {
     debugPrint('[DisneyPlayback] Chamando endpoint de playback para: $playbackId');
 
-    final body = jsonEncode(_buildPlaybackBody(playbackId));
+    final body = jsonEncode(await _buildPlaybackBody(playbackId));
 
     http.Response response;
     try {

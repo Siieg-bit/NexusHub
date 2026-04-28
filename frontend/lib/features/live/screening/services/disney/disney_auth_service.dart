@@ -213,6 +213,17 @@ class DisneyAuthService {
 
   // ── Renovação de token ────────────────────────────────────────────────────
 
+  /// Força a renovação imediata do access_token, ignorando o cache de expiração.
+  ///
+  /// Usado pelo DisneyPlaybackService quando o servidor retorna 401 inesperado,
+  /// idêntico ao comportamento do Rave de renovar e repetir a requisição.
+  static Future<String> forceRefresh() async {
+    debugPrint('[DisneyAuth] Forçando renovação de token (401 recebido do servidor)...');
+    // Invalidar o cache de expiração para forçar renovação
+    await _storage.delete(key: _kTokenExpiry);
+    return await _refreshAccessToken();
+  }
+
   /// Renova o access_token usando o refresh_token via endpoint BAMGrid.
   ///
   /// Baseado no fluxo `exchangeTokens` do DisneyServer do Rave.

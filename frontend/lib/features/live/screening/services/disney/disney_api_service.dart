@@ -60,6 +60,41 @@ class DisneyApiService {
     return _fetchPage(pageId);
   }
 
+  /// Carrega a fila "Continue assistindo" do usuário.
+  ///
+  /// Equivalente ao endpoint `/explore/v1.4/page/continue-watching` do Rave.
+  /// Retorna uma lista de itens que o usuário já começou a assistir.
+  static Future<List<DisneyContentItem>> fetchContinueWatching() async {
+    try {
+      final page = await _fetchPage('continue-watching');
+      final items = <DisneyContentItem>[];
+      for (final container in page.containers) {
+        items.addAll(container.items);
+      }
+      return items;
+    } catch (e) {
+      debugPrint('[DisneyApi] fetchContinueWatching falhou: $e');
+      return [];
+    }
+  }
+
+  /// Carrega a watchlist ("Minha Lista") do usuário.
+  ///
+  /// Equivalente ao endpoint `/explore/v1.4/page/my-list` do Rave.
+  static Future<List<DisneyContentItem>> fetchMyList() async {
+    try {
+      final page = await _fetchPage('my-list');
+      final items = <DisneyContentItem>[];
+      for (final container in page.containers) {
+        items.addAll(container.items);
+      }
+      return items;
+    } catch (e) {
+      debugPrint('[DisneyApi] fetchMyList falhou: $e');
+      return [];
+    }
+  }
+
   static Future<DisneyPage> _fetchPage(String pageId) async {
     final accessToken = await DisneyAuthService.getValidAccessToken();
     final params = _commonParams()
