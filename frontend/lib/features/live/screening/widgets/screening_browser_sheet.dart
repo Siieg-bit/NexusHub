@@ -442,13 +442,15 @@ class _ScreeningBrowserSheetState
   Future<({String title, String? thumbnailUrl})?> _resolveMetadata(String url) async {
     final u = url.toLowerCase();
 
-    // ── YouTube / YouTube Live ────────────────────────────────────────────────────────
+    // ── YouTube / YouTube Live ────────────────────────────────────────────────
     if (u.contains('youtube') || u.contains('youtu.be')) {
-      final meta = await YouTubeStreamService.resolve(url);
+      // Usa resolveMetaOnly para não exigir HLS/MP4 — só busca título e thumbnail
+      // via Innertube. O resolve() completo lança exceção se não encontrar stream.
+      final meta = await YouTubeStreamService.resolveMetaOnly(url);
       return (title: meta.title, thumbnailUrl: meta.thumbnailUrl);
     }
 
-    // ── Twitch ─────────────────────────────────────────────────────────────────────────
+    // ── Twitch ────────────────────────────────────────────────────────────────
     if (u.contains('twitch.tv')) {
       final meta = await TwitchStreamService.resolveMetaOnly(url);
       return (title: meta.title, thumbnailUrl: meta.thumbnailUrl);

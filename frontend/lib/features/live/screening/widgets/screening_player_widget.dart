@@ -208,8 +208,13 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
           data: (resolution) => _buildPlayer(context, resolution),
         ),
 
-        // ── Camada 0b: Gradiente ambiente (apenas para embed WebView) ─────
-        if (resolutionAsync.valueOrNull?.type == StreamType.embed)
+        // ── Camada 0b: Gradiente ambiente (apenas para embed WebView não-live) ──
+        // Desativado para Twitch/Kick/YouTubeLive: o canvas sampling (drawImage)
+        // a cada 2s sobre um stream HLS ao vivo causa jank severo no Android.
+        if (resolutionAsync.valueOrNull?.type == StreamType.embed &&
+            resolutionAsync.valueOrNull?.platform != StreamPlatform.twitch &&
+            resolutionAsync.valueOrNull?.platform != StreamPlatform.kick &&
+            resolutionAsync.valueOrNull?.platform != StreamPlatform.youtubeLive)
           Positioned.fill(
             child: ScreeningAmbientGradient(
               key: _ambientGradientKey,

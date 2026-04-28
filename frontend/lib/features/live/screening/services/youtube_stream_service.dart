@@ -221,6 +221,52 @@ class YouTubeStreamService {
     );
   }
 
+  /// Resolve apenas metadados (título + thumbnail) de uma URL do YouTube.
+  ///
+  /// Ao contrário de [resolve], não exige que haja stream HLS/MP4 disponível.
+  /// Ideal para preencher título e thumbnail na fila sem iniciar o player.
+  static Future<({String title, String? thumbnailUrl, bool isLive})>
+      resolveMetaOnly(String url) async {
+    // Primeiro tenta via Innertube (mais preciso)
+    final videoId = extractVideoId(url);
+    if (videoId != null) {
+      try {
+        final playerData = await _fetchPlayerData(videoId);
+        final meta = _extractMeta(playerData);
+        debugPrint('[YouTube] MetaOnly: "${meta.title}" isLive=${meta.isLive}');
+        return (
+          title: meta.title,
+          thumbnailUrl: meta.thumbnail,
+          isLive: meta.isLive,
+        );
+      } catch (e) {
+        debugPrint('[YouTube] MetaOnly Innertube falhou, tentando oEmbed: $e');
+      }
+    }
+
+    // Fallback: oEmbed API pública do YouTube (não requer chave)
+    try {
+      final oEmbedUrl = Uri.parse(
+        'https://www.youtube.com/oembed?url=${Uri.encodeComponent(url)}&format=json',
+      );
+      final response = await http
+          .get(oEmbedUrl)
+          .timeout(const Duration(seconds: 6));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final title = data['title'] as String? ?? 'YouTube';
+        final thumbnail = data['thumbnail_url'] as String?;
+        debugPrint('[YouTube] MetaOnly oEmbed: "$title"');
+        return (title: title, thumbnailUrl: thumbnail, isLive: false);
+      }
+    } catch (e) {
+      debugPrint('[YouTube] MetaOnly oEmbed falhou: $e');
+    }
+
+    // Último fallback: título genérico
+    return (title: 'YouTube', thumbnailUrl: null, isLive: false);
+  }
+
   /// Verifica se uma URL é do YouTube.
   static bool canHandle(String url) {
     return url.contains('youtube.com') || url.contains('youtu.be');
