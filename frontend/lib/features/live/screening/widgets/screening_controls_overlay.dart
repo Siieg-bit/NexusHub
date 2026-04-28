@@ -187,7 +187,7 @@ class _ScreeningControlsOverlayState
                   ),
 
                   // ── Botão fullscreen (canto superior direito) ─────────────
-                  // Sempre visível quando há vídeo, independente de ser host.
+                  // Aparece/some junto com os controles (FadeTransition).
                   Positioned(
                     top: mq.padding.top + 8,
                     right: 12,
