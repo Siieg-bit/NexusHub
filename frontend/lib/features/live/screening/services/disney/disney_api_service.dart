@@ -24,16 +24,12 @@ class DisneyApiService {
   static const _maturityRating = 'TVPG';
 
   // ── Headers BAMGrid ───────────────────────────────────────────────────────
+  // O Rave usa apenas 3 headers nas chamadas de catálogo (getMetadataRequest do DisneyServer.smali):
+  // Authorization, Accept, Content-Type — sem X-BAMSDK-* nos endpoints /explore/.
   static Map<String, String> _headers(String accessToken) => {
         'Authorization': 'Bearer $accessToken',
-        'X-BAMSDK-Client-ID': 'disney-svod-3d9324fc',
-        'X-BAMSDK-Platform': 'android/google/handset',
-        'X-BAMSDK-Version': '8.3.3',
-        'X-Application-Version': '2.16.2-rc2.0',
-        'X-DSS-Edge-Accept': 'vnd.dss.edge+json; version=2',
         'Accept': 'application/json',
-        'Accept-Language': _language,
-        'X-BAMSDK-Device-ID': 'nexushub-android-device',
+        'Content-Type': 'application/json',
       };
 
   // ── Parâmetros comuns de query ────────────────────────────────────────────

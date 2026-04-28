@@ -23,10 +23,6 @@ class DisneyAuthService {
 
   // ── Credenciais BAM SDK (extraídas do APK do Rave via engenharia reversa) ─
   // Client-ID da plataforma Android SVOD do Disney+.
-  static const _bamClientId = 'disney-svod-3d9324fc';
-  static const _bamPlatform = 'android/google/handset';
-  static const _bamSdkVersion = '8.3.3';
-  static const _appVersion = '2.16.2-rc2.0';
 
   // API Key inicial (Bearer token para obter o access_token anônimo inicial).
   // Decodificado: "disney&android&1.0.0" + HMAC.
@@ -34,18 +30,15 @@ class DisneyAuthService {
       'Bearer ZGlzbmV5JmFuZHJvaWQmMS4wLjA.bkeb0m230uUhv8qrAXuNu39tbE_mD5EEhM_NAcohjyA';
 
   // ── Endpoints BAMGrid ─────────────────────────────────────────────────────
-  static const _tokenEndpoint = 'https://disney.api.edge.bamgrid.com/token';
+  static const _tokenEndpoint = 'https://global.edge.bamgrid.com/token';
   static const _bamSdkConfigUrl =
       'https://bam-sdk-configs.bamgrid.com/bam-sdk/v4.0/disney-svod-3d9324fc/android/v8.3.0/google/handset/prod.json';
 
   // ── Headers comuns BAMGrid ────────────────────────────────────────────────
+  // O Rave usa apenas 3 headers no exchange/token (extraído do DisneyService.smali):
+  // Authorization, Accept, Content-Type — sem X-BAMSDK-* no endpoint /token.
   static Map<String, String> _bamHeaders(String authorization) => {
         'Authorization': authorization,
-        'X-BAMSDK-Client-ID': _bamClientId,
-        'X-BAMSDK-Platform': _bamPlatform,
-        'X-BAMSDK-Version': _bamSdkVersion,
-        'X-Application-Version': _appVersion,
-        'X-DSS-Edge-Accept': 'vnd.dss.edge+json; version=2',
         'Accept': 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded',
       };
