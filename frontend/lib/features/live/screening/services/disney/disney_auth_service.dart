@@ -181,27 +181,10 @@ class DisneyAuthService {
         return false;
       }
 
-      debugPrint('[DisneyAuth] Tokens brutos extraídos do localStorage!');
-      // Passo 4: Fazer o exchange do token web para um token BAMGrid Android.
-      // O token extraído do localStorage é um token de sessão WEB — não tem
-      // permissão para usar os endpoints /explore/ da API BAMGrid.
-      // O Rave faz o exchange via POST /token com grant_type=refresh_token
-      // e platform=browser para obter um access_token BAMGrid válido.
-      if (refreshToken != null) {
-        debugPrint('[DisneyAuth] Fazendo exchange do token web → BAMGrid...');
-        try {
-          final exchanged = await _exchangeWebToken(refreshToken);
-          if (exchanged != null) {
-            accessToken = exchanged['access_token'] as String? ?? accessToken;
-            refreshToken = exchanged['refresh_token'] as String? ?? refreshToken;
-            debugPrint('[DisneyAuth] Exchange bem-sucedido! Token BAMGrid obtido.');
-          }
-        } catch (e) {
-          debugPrint('[DisneyAuth] Exchange falhou, usando token web direto: $e');
-          // Continuar com o token web — pode funcionar para alguns endpoints
-        }
-      }
-      debugPrint('[DisneyAuth] Tokens salvos com sucesso!');
+      debugPrint('[DisneyAuth] Tokens extraídos do localStorage! Salvando diretamente...');
+      // O Rave usa o access_token do localStorage DIRETAMENTE — sem exchange.
+      // O token no localStorage já é um token BAMGrid válido com escopos corretos.
+      // O exchange (via refresh_token) só é feito quando o token expira.
       // accessToken foi verificado como não-nulo na linha 186
       await _saveTokens(accessToken!, refreshToken);
       return true;

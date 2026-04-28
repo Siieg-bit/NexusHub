@@ -300,6 +300,8 @@ class _ScreeningBrowserSheetState
   String _detectedVideoUrl = '';
   // Disney+: controla se os tokens já foram extraídos do localStorage
   bool _disneyTokensExtracted = false;
+  // Guard para evitar execuções concorrentes do _handleDisneyLogin
+  bool _isExtractingDisneyTokens = false;
 
   late final ScreeningPlatform _platform;
   late final AnimationController _pulseController;
@@ -578,6 +580,10 @@ class _ScreeningBrowserSheetState
     InAppWebViewController controller,
     String currentUrl,
   ) async {
+    // Guard: evitar execuções concorrentes (onLoadStop pode disparar múltiplas vezes)
+    if (_isExtractingDisneyTokens || _disneyTokensExtracted) return;
+    _isExtractingDisneyTokens = true;
+    try {
     // Injetar o script disney.js em toda página do Disney+
     if (currentUrl.contains('disneyplus.com')) {
       try {
@@ -621,6 +627,9 @@ class _ScreeningBrowserSheetState
       if (mounted) setState(() => _disneyTokensExtracted = false);
     } else if (!success) {
       debugPrint('[Disney] Tokens não encontrados ainda, aguardando...');
+    }
+    } finally {
+      _isExtractingDisneyTokens = false;
     }
   }
 
