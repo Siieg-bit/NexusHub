@@ -188,7 +188,27 @@ class DisneyAuthService {
         return false;
       }
 
-      debugPrint('[DisneyAuth] Tokens extraídos com sucesso!');
+      debugPrint('[DisneyAuth] Tokens brutos extraídos do localStorage!');
+      // Passo 4: Fazer o exchange do token web para um token BAMGrid Android.
+      // O token extraído do localStorage é um token de sessão WEB — não tem
+      // permissão para usar os endpoints /explore/ da API BAMGrid.
+      // O Rave faz o exchange via POST /token com grant_type=refresh_token
+      // e platform=browser para obter um access_token BAMGrid válido.
+      if (refreshToken != null) {
+        debugPrint('[DisneyAuth] Fazendo exchange do token web → BAMGrid...');
+        try {
+          final exchanged = await _exchangeWebToken(refreshToken);
+          if (exchanged != null) {
+            accessToken = exchanged['access_token'] as String? ?? accessToken;
+            refreshToken = exchanged['refresh_token'] as String? ?? refreshToken;
+            debugPrint('[DisneyAuth] Exchange bem-sucedido! Token BAMGrid obtido.');
+          }
+        } catch (e) {
+          debugPrint('[DisneyAuth] Exchange falhou, usando token web direto: $e');
+          // Continuar com o token web — pode funcionar para alguns endpoints
+        }
+      }
+      debugPrint('[DisneyAuth] Tokens salvos com sucesso!');
       await _saveTokens(accessToken, refreshToken);
       return true;
     } catch (e) {
@@ -280,7 +300,7 @@ class DisneyAuthService {
           'grant_type': 'refresh_token',
           'latitude': '0',
           'longitude': '0',
-          'platform': 'android',
+          'platform': 'browser',
           'refresh_token': refreshToken,
         },
       );
@@ -322,6 +342,44 @@ class DisneyAuthService {
   }
 
   // ── Helpers privados ──────────────────────────────────────────────────────
+  /// Faz o exchange do token web (localStorage) para um token BAMGrid Android.
+  ///
+  /// Baseado no fluxo `exchangeTokens` do DisneyServer do Rave:
+  /// POST /token com grant_type=refresh_token e platform=browser
+  /// usando o Bearer API key hardcoded do app Android.
+  static Future<Map<String, dynamic>?> _exchangeWebToken(
+    String refreshToken,
+  ) async {
+    try {
+      final config = await _fetchBamSdkConfig();
+      final exchangeEndpoint = config?['services']?['token']?['client']
+          ?['endpoints']?['exchange']?['href'] as String?;
+      final endpoint =
+          exchangeEndpoint ?? 'https://global.edge.bamgrid.com/token';
+      debugPrint('[DisneyAuth] Exchange endpoint: $endpoint');
+      final response = await http.post(
+        Uri.parse(endpoint),
+        headers: _bamHeaders(_initialApiKey),
+        body: {
+          'grant_type': 'refresh_token',
+          'latitude': '0',
+          'longitude': '0',
+          'platform': 'browser',
+          'refresh_token': refreshToken,
+        },
+      );
+      debugPrint('[DisneyAuth] Exchange status: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        debugPrint('[DisneyAuth] Exchange falhou: ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      debugPrint('[DisneyAuth] Erro no exchange: $e');
+      return null;
+    }
+  }
 
   static Future<void> _saveTokens(
     String accessToken,
