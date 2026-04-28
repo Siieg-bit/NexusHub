@@ -57,6 +57,9 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
   bool _showControls = true;
   Timer? _controlsHideTimer;
 
+  // ── Modo imersivo (fullscreen apenas do player) ──────────────────────────────────
+  bool _isImmersive = false;
+
   // ── Animação de entrada ──────────────────────────────────────────────────────────
   bool _entryAnimationDone = false;
   bool _entryAnimationExiting = false;
@@ -182,6 +185,33 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
       _scheduleControlsHide();
     } else {
       _controlsHideTimer?.cancel();
+    }
+  }
+
+  // ── Fullscreen do player ───────────────────────────────────────────────────────
+
+  void _toggleImmersive() {
+    final entering = !_isImmersive;
+    setState(() => _isImmersive = entering);
+    if (entering) {
+      // Entrar em fullscreen: landscape + ocultar system UI
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    } else {
+      // Sair do fullscreen: restaurar portrait + system UI
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: SystemUiOverlay.values,
+      );
     }
   }
 
@@ -462,6 +492,8 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
         if (mounted) setState(() => _entryAnimationDone = true);
       },
       emojiRainKey: _emojiRainKey,
+      isImmersive: _isImmersive,
+      onToggleFullscreen: _toggleImmersive,
     );
   }
 

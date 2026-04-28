@@ -360,7 +360,16 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
                 .onWebViewLoading();
           },
           onLoadStop: (controller, url) async {
-            setState(() => _isLoading = false);
+            // Para YouTube: NÃO remover o overlay aqui.
+            // O overlay só é removido quando __YT_READY__ for recebido via
+            // console.log, garantindo que os controles nativos (badges, botões)
+            // já foram desabilitados pelo IFrame API antes de exibir o vídeo.
+            // Para outros embeds (Kick, Twitch, Vimeo): remover imediatamente.
+            final isYouTube = resolution.platform == StreamPlatform.youtube ||
+                resolution.platform == StreamPlatform.youtubeLive;
+            if (!isYouTube) {
+              if (mounted) setState(() => _isLoading = false);
+            }
             await _injectControlScript(controller);
             ref
                 .read(screeningPlayerProvider(widget.sessionId).notifier)
@@ -619,9 +628,16 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     if (!mounted) return;
     final notifier =
         ref.read(screeningPlayerProvider(widget.sessionId).notifier);
-    if (message.contains('__YT_PLAYING__') ||
+    if (message.contains('__YT_READY__')) {
+      // YouTube IFrame API pronto: controles nativos já foram desabilitados
+      // (controls=0 aplicado). Agora é seguro remover o overlay preto.
+      if (mounted && _isLoading) setState(() => _isLoading = false);
+    } else if (message.contains('__YT_PLAYING__') ||
         message.contains('__VIDEO_PLAYING__')) {
       notifier.onVideoPlaying();
+      // Garantia extra: se ainda estiver loading quando o vídeo começar a tocar,
+      // remover o overlay (fallback para embeds que não emitem __YT_READY__).
+      if (mounted && _isLoading) setState(() => _isLoading = false);
     } else if (message.contains('__YT_PAUSED__') ||
         message.contains('__VIDEO_PAUSED__')) {
       notifier.onVideoPaused();

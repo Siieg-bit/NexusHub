@@ -38,6 +38,10 @@ class ScreeningAdaptiveLayout extends ConsumerStatefulWidget {
   final VoidCallback onEntryAnimationComplete;
   /// Key local do EmojiRainOverlay da tela pai para disparar animações.
   final GlobalKey<EmojiRainOverlayState>? emojiRainKey;
+  /// Modo imersivo: player ocupa toda a tela (sem TopBar/Chat)
+  final bool isImmersive;
+  /// Callback para alternar o modo fullscreen do player
+  final VoidCallback? onToggleFullscreen;
 
   const ScreeningAdaptiveLayout({
     super.key,
@@ -50,6 +54,8 @@ class ScreeningAdaptiveLayout extends ConsumerStatefulWidget {
     required this.onMinimize,
     required this.onEntryAnimationComplete,
     this.emojiRainKey,
+    this.isImmersive = false,
+    this.onToggleFullscreen,
   });
 
   @override
@@ -95,6 +101,26 @@ class _ScreeningAdaptiveLayoutState
       builder: (context, orientation) {
         _handleOrientationChange(orientation);
 
+        // Modo imersivo: player em tela cheia sem TopBar/Chat.
+        // Força _PortraitLayout com isImmersive=true independentemente
+        // da orientação física do dispositivo.
+        if (widget.isImmersive) {
+          return _PortraitLayout(
+            sessionId: widget.sessionId,
+            threadId: widget.threadId,
+            showControls: widget.showControls,
+            entryAnimationDone: widget.entryAnimationDone,
+            entryAnimationExiting: widget.entryAnimationExiting,
+            onTap: widget.onTap,
+            onMinimize: widget.onMinimize,
+            onEntryAnimationComplete: widget.onEntryAnimationComplete,
+            roomTitle: roomState.title ?? 'Sala de Projeção',
+            emojiRainKey: widget.emojiRainKey,
+            isImmersive: true,
+            onToggleFullscreen: widget.onToggleFullscreen,
+          );
+        }
+
         if (orientation == Orientation.landscape) {
           return _LandscapeLayout(
             sessionId: widget.sessionId,
@@ -107,6 +133,7 @@ class _ScreeningAdaptiveLayoutState
             onEntryAnimationComplete: widget.onEntryAnimationComplete,
             roomTitle: roomState.title ?? 'Sala de Projeção',
             emojiRainKey: widget.emojiRainKey,
+            onToggleFullscreen: widget.onToggleFullscreen,
           );
         }
 
@@ -121,6 +148,8 @@ class _ScreeningAdaptiveLayoutState
           onEntryAnimationComplete: widget.onEntryAnimationComplete,
           roomTitle: roomState.title ?? 'Sala de Projeção',
           emojiRainKey: widget.emojiRainKey,
+          isImmersive: false,
+          onToggleFullscreen: widget.onToggleFullscreen,
         );
       },
     );
@@ -141,6 +170,8 @@ class _PortraitLayout extends ConsumerWidget {
   final VoidCallback onEntryAnimationComplete;
   final String roomTitle;
   final GlobalKey<EmojiRainOverlayState>? emojiRainKey;
+  final bool isImmersive;
+  final VoidCallback? onToggleFullscreen;
 
   const _PortraitLayout({
     required this.sessionId,
@@ -153,6 +184,8 @@ class _PortraitLayout extends ConsumerWidget {
     required this.onEntryAnimationComplete,
     required this.roomTitle,
     this.emojiRainKey,
+    this.isImmersive = false,
+    this.onToggleFullscreen,
   });
 
   @override
@@ -171,13 +204,89 @@ class _PortraitLayout extends ConsumerWidget {
         ? ref.watch(screeningAmbientColorProvider(sessionId))
         : Colors.black;
 
+    // ── Stack do player (reutilizado em portrait normal e imersivo) ─────────
+    final playerStack = Stack(
+      fit: StackFit.expand,
+      children: [
+        // Player WebView
+        AbsorbPointer(
+          absorbing: showControls,
+          child: ScreeningPlayerWidget(
+            sessionId: sessionId,
+            threadId: threadId,
+          ),
+        ),
+        // GestureDetector transparente para mostrar/esconder controles
+        Positioned.fill(
+          child: IgnorePointer(
+            ignoring: showControls,
+            child: GestureDetector(
+              onTap: onTap,
+              behavior: HitTestBehavior.translucent,
+            ),
+          ),
+        ),
+        // Controles de reprodução
+        Positioned.fill(
+          child: PointerInterceptor(
+            intercepting: showControls,
+            child: ScreeningControlsOverlay(
+              sessionId: sessionId,
+              threadId: threadId,
+              visible: showControls,
+              onMinimize: onMinimize,
+              onTapToDismiss: showControls ? onTap : null,
+              onToggleFullscreen: onToggleFullscreen,
+              isFullscreen: isImmersive,
+            ),
+          ),
+        ),
+        // SyncStatusBadge
+        if (sessionId.isNotEmpty)
+          Positioned(
+            top: 4,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: ScreeningSyncBadge(sessionId: sessionId),
+            ),
+          ),
+        // Overlay de vídeo encerrado
+        if (sessionId.isNotEmpty)
+          Positioned.fill(
+            child: PointerInterceptor(
+              intercepting: true,
+              child: ScreeningVideoEndedOverlay(
+                sessionId: sessionId,
+                threadId: threadId,
+              ),
+            ),
+          ),
+      ],
+    );
+
+    // ── Modo imersivo: player ocupa toda a tela (sem TopBar/Chat) ────────
+    if (isImmersive) {
+      return Stack(
+        children: [
+          Positioned.fill(child: playerStack),
+          if (!entryAnimationDone)
+            Positioned.fill(
+              child: ScreeningEntryAnimation(
+                isExiting: entryAnimationExiting,
+                onComplete: onEntryAnimationComplete,
+              ),
+            ),
+        ],
+      );
+    }
+
+    // ── Modo normal: Column com header + player + chat ───────────────────
     return Stack(
       children: [
-        // ── Estrutura principal: Column com header + vídeo + chat ────────
         Column(
           children: [
-            // ── Header (status bar + TopBar) — fundo sólido para cobrir
-            //    qualquer conteúdo que possa vazar por baixo ──────────────
+            // Header (status bar + TopBar)
             Container(
               height: headerH,
               color: Colors.black,
@@ -189,85 +298,17 @@ class _PortraitLayout extends ConsumerWidget {
                     sessionId: sessionId,
                     threadId: threadId,
                     onMinimize: onMinimize,
-                    // TopBar está fora do player, não precisa de padding.top
                     overrideTopPadding: 0,
                   ),
                 ),
               ),
             ),
-            // ── Área do Player (abaixo do header, altura fixa) ───────────
+            // Área do Player
             SizedBox(
               height: playerHeight,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // Player WebView
-                  // AbsorbPointer bloqueia toques na WebView quando os controles
-                  // estão visíveis, impedindo que a AndroidViewSurface (hybrid
-                  // composition) consuma os eventos antes do Flutter.
-                  AbsorbPointer(
-                    absorbing: showControls,
-                    child: ScreeningPlayerWidget(
-                      sessionId: sessionId,
-                      threadId: threadId,
-                    ),
-                  ),
-                  // GestureDetector transparente ACIMA da WebView para capturar
-                  // toques e mostrar/esconder os controles. Fica acima do
-                  // AbsorbPointer para receber toques mesmo quando showControls=false.
-                  // Quando showControls=true, o PointerInterceptor do overlay
-                  // captura os toques nos botões antes de chegar aqui.
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      ignoring: showControls,
-                      child: GestureDetector(
-                        onTap: onTap,
-                        behavior: HitTestBehavior.translucent,
-                      ),
-                    ),
-                  ),
-                  // Controles de reprodução (play/pause/seek) — overlay de fade
-                  // PointerInterceptor garante que os toques nos botões Flutter
-                  // sejam recebidos mesmo quando a WebView (AndroidViewSurface)
-                  // interceptaria os eventos no nível do sistema Android.
-                  Positioned.fill(
-                    child: PointerInterceptor(
-                      intercepting: showControls,
-                      child: ScreeningControlsOverlay(
-                        sessionId: sessionId,
-                        threadId: threadId,
-                        visible: showControls,
-                        onMinimize: onMinimize,
-                        // Toque na área transparente esconde os controles
-                        onTapToDismiss: showControls ? onTap : null,
-                      ),
-                    ),
-                  ),
-                  // SyncStatusBadge (topo do player)
-                  if (sessionId.isNotEmpty)
-                    Positioned(
-                      top: 4,
-                      left: 0,
-                      right: 0,
-                      child: IgnorePointer(
-                        child: ScreeningSyncBadge(sessionId: sessionId),
-                      ),
-                    ),
-                  // Overlay de vídeo encerrado
-                  if (sessionId.isNotEmpty)
-                    Positioned.fill(
-                      child: PointerInterceptor(
-                        intercepting: true,
-                        child: ScreeningVideoEndedOverlay(
-                          sessionId: sessionId,
-                          threadId: threadId,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+              child: playerStack,
             ),
-            // ── Área do Chat (resto da tela, gradiente dinâmico) ─────────
+            // Área do Chat
             Expanded(
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 800),
@@ -295,7 +336,7 @@ class _PortraitLayout extends ConsumerWidget {
             ),
           ],
         ),
-        // ── Animação de entrada (por cima de tudo) ───────────────────────
+        // Animação de entrada
         if (!entryAnimationDone)
           Positioned.fill(
             child: ScreeningEntryAnimation(
@@ -322,6 +363,7 @@ class _LandscapeLayout extends StatelessWidget {
   final VoidCallback onEntryAnimationComplete;
   final String roomTitle;
   final GlobalKey<EmojiRainOverlayState>? emojiRainKey;
+  final VoidCallback? onToggleFullscreen;
 
   const _LandscapeLayout({
     required this.sessionId,
@@ -334,6 +376,7 @@ class _LandscapeLayout extends StatelessWidget {
     required this.onEntryAnimationComplete,
     required this.roomTitle,
     this.emojiRainKey,
+    this.onToggleFullscreen,
   });
 
   @override
@@ -393,8 +436,9 @@ class _LandscapeLayout extends StatelessWidget {
                           threadId: threadId,
                           visible: showControls,
                           onMinimize: onMinimize,
-                          // Toque na área transparente esconde os controles
                           onTapToDismiss: showControls ? onTap : null,
+                          // Em landscape, o fullscreen já está ativo
+                          isFullscreen: true,
                         ),
                       ),
                     ),

@@ -25,6 +25,10 @@ class ScreeningControlsOverlay extends ConsumerStatefulWidget {
   /// Callback chamado quando o usuário toca na área transparente do overlay
   /// para esconder os controles (toggle off).
   final VoidCallback? onTapToDismiss;
+  /// Callback para alternar o modo fullscreen do player (chamado pelo pai)
+  final VoidCallback? onToggleFullscreen;
+  /// Estado atual do fullscreen (controlado pelo pai)
+  final bool isFullscreen;
 
   const ScreeningControlsOverlay({
     super.key,
@@ -33,6 +37,8 @@ class ScreeningControlsOverlay extends ConsumerStatefulWidget {
     required this.visible,
     required this.onMinimize,
     this.onTapToDismiss,
+    this.onToggleFullscreen,
+    this.isFullscreen = false,
   });
 
   @override
@@ -46,8 +52,7 @@ class _ScreeningControlsOverlayState
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
 
-  // Estado de fullscreen (landscape forçado)
-  bool _isFullscreen = false;
+  // Estado de fullscreen — agora controlado pelo pai via widget.isFullscreen
 
   @override
   void initState() {
@@ -76,37 +81,14 @@ class _ScreeningControlsOverlayState
 
   @override
   void dispose() {
-    // Restaurar orientação ao sair
-    if (_isFullscreen) {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-    }
     _animController.dispose();
     super.dispose();
   }
 
   void _toggleFullscreen() {
     HapticFeedback.selectionClick();
-    setState(() => _isFullscreen = !_isFullscreen);
-    if (_isFullscreen) {
-      // Forçar landscape
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-    } else {
-      // Restaurar todas as orientações
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-    }
+    // Delegar ao pai (ScreeningRoomScreen) que controla a orientação
+    widget.onToggleFullscreen?.call();
   }
 
   @override
@@ -115,14 +97,7 @@ class _ScreeningControlsOverlayState
     final mq = MediaQuery.of(context);
     final hasVideo = roomState.currentVideoUrl?.isNotEmpty == true;
 
-    // Atualizar estado de fullscreen com base na orientação atual
-    final isLandscape = mq.orientation == Orientation.landscape;
-    if (isLandscape != _isFullscreen) {
-      // Sincronizar estado interno com a orientação real do dispositivo
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() => _isFullscreen = isLandscape);
-      });
-    }
+    // isFullscreen vem do pai via widget.isFullscreen
 
     return Stack(
       children: [
@@ -209,7 +184,7 @@ class _ScreeningControlsOverlayState
                       sessionId: widget.sessionId,
                       threadId: widget.threadId,
                       onSeekAndBroadcast: _seekAndBroadcast,
-                      isFullscreen: _isFullscreen,
+                      isFullscreen: widget.isFullscreen,
                       onToggleFullscreen: _toggleFullscreen,
                     ),
                   ),
