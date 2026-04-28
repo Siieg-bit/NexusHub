@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -7,11 +8,13 @@ import 'package:http/http.dart' as http;
 /// Gerencia o ciclo de vida dos tokens de autenticação do Disney+.
 ///
 /// A Disney+ não oferece OAuth público para terceiros. O Rave (e este serviço)
-/// interceptam os tokens do localStorage após o login no WebView oficial da Disney.
+/// interceptam o device grant do localStorage após o login no WebView oficial
+/// da Disney e o trocam por um access_token real via BAMGrid.
 ///
 /// Fluxo:
 /// 1. O usuário faz login em `https://www.disneyplus.com/login` via WebView.
-/// 2. [extractAndSaveTokens] lê o localStorage e salva os tokens no secure storage.
+/// 2. [extractAndSaveTokens] lê o localStorage, extrai o device grant assertion
+///    e faz o exchange via POST /token para obter um access_token real.
 /// 3. [getValidAccessToken] retorna o access_token, renovando-o se necessário.
 class DisneyAuthService {
   static const _storage = FlutterSecureStorage();
@@ -19,24 +22,23 @@ class DisneyAuthService {
   // ── Chaves de armazenamento seguro ────────────────────────────────────────
   static const _kAccessToken = 'disney_access_token';
   static const _kRefreshToken = 'disney_refresh_token';
+  static const _kDeviceAssertion = 'disney_device_assertion';
   static const _kTokenExpiry = 'disney_token_expiry';
 
   // ── Credenciais BAM SDK (extraídas do APK do Rave via engenharia reversa) ─
-  // Client-ID da plataforma Android SVOD do Disney+.
-
-  // API Key inicial (Bearer token para obter o access_token anônimo inicial).
+  // API Key inicial (Bearer token para obter o access_token via device grant).
   // Decodificado: "disney&android&1.0.0" + HMAC.
   static const _initialApiKey =
       'Bearer ZGlzbmV5JmFuZHJvaWQmMS4wLjA.bkeb0m230uUhv8qrAXuNu39tbE_mD5EEhM_NAcohjyA';
 
+  // Chave do device grant no localStorage do Disney+
+  static const _deviceGrantKey =
+      '__bam_sdk_device_grant--disney-svod-3d9324fc_prod';
+
   // ── Endpoints BAMGrid ─────────────────────────────────────────────────────
   static const _tokenEndpoint = 'https://global.edge.bamgrid.com/token';
-  static const _bamSdkConfigUrl =
-      'https://bam-sdk-configs.bamgrid.com/bam-sdk/v4.0/disney-svod-3d9324fc/android/v8.3.0/google/handset/prod.json';
 
   // ── Headers comuns BAMGrid ────────────────────────────────────────────────
-  // O Rave usa apenas 3 headers no exchange/token (extraído do DisneyService.smali):
-  // Authorization, Accept, Content-Type — sem X-BAMSDK-* no endpoint /token.
   static Map<String, String> _bamHeaders(String authorization) => {
         'Authorization': authorization,
         'Accept': 'application/json',
@@ -70,123 +72,121 @@ class DisneyAuthService {
 ''';
 
   // ── Extração de tokens via WebView ────────────────────────────────────────
-  /// Extrai e salva os tokens de autenticação do localStorage do WebView.
+  /// Extrai o device grant do localStorage e faz o exchange para obter
+  /// um access_token real via BAMGrid.
   ///
-  /// Fluxo idêntico ao Rave (DisneyVideoGridFragment.extractLocalStorage):
-  /// 1. Serializa o localStorage completo com JSON.stringify
-  /// 2. Remove todos os backslashes (unescape de JSON aninhado) — IGUAL AO RAVE
-  /// 3. Aplica os regexes exatos do Rave: {"token":"(.*?)"} e {"refresh_token":"(.*?)"}
+  /// O Disney+ armazena no localStorage a chave:
+  ///   __bam_sdk_device_grant--disney-svod-3d9324fc_prod
+  /// com valor: {"grantType":"urn:ietf:params:oauth:grant-type:jwt-bearer",
+  ///              "assertion":"eyJ..."}
   ///
-  /// O Disney+ armazena os tokens dentro de valores JSON aninhados no localStorage,
-  /// ex: {"bam.api.token":"{\"token\":\"eyJ...\",\"refresh_token\":\"eyJ...\"}"}
-  /// Após remover os backslashes, o regex encontra os tokens corretamente.
+  /// O assertion é um JWT de dispositivo que é trocado por um access_token real
+  /// via POST /token com grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer.
   static Future<bool> extractAndSaveTokens(
     InAppWebViewController controller,
   ) async {
     try {
-      debugPrint('[DisneyAuth] Extraindo tokens do localStorage...');
+      debugPrint('[DisneyAuth] Extraindo device grant do localStorage...');
 
-      // Passo 1: Serializar o localStorage completo (igual ao Rave)
-      final lsRaw = await controller.evaluateJavascript(
-        source: 'JSON.stringify(window.localStorage)',
+      // Passo 1: Ler o device grant diretamente pela chave
+      final deviceGrantRaw = await controller.evaluateJavascript(
+        source: "localStorage.getItem('$_deviceGrantKey')",
       );
 
-      if (lsRaw == null || lsRaw == 'null' || lsRaw.toString().isEmpty) {
-        debugPrint('[DisneyAuth] localStorage vazio ou inacessível');
-        return false;
-      }
+      debugPrint('[DisneyAuth] deviceGrant raw: ${deviceGrantRaw?.toString().substring(0, deviceGrantRaw.toString().length.clamp(0, 200))}');
 
-      // Passo 2: Remover backslashes — EXATAMENTE como o Rave faz
-      // O Rave chama: Ll60/d0;->S(p1, "\\", "", false, 4, null)
-      // que é equivalente a string.replace("\", "")
-      final lsUnescaped = lsRaw.toString().replaceAll(r'\', '');
+      String? assertion;
+      String? grantType;
 
-      debugPrint('[DisneyAuth] localStorage (primeiros 500 chars): '
-          '${lsUnescaped.length > 500 ? lsUnescaped.substring(0, 500) : lsUnescaped}');
+      if (deviceGrantRaw != null &&
+          deviceGrantRaw != 'null' &&
+          deviceGrantRaw.toString().isNotEmpty) {
+        // O valor pode vir com aspas externas do evaluateJavascript
+        var raw = deviceGrantRaw.toString();
+        // Remover aspas externas se presentes
+        if (raw.startsWith('"') && raw.endsWith('"')) {
+          raw = raw.substring(1, raw.length - 1);
+        }
+        // Unescape de JSON aninhado (igual ao Rave: replace("\", ""))
+        raw = raw.replaceAll(r'\', '');
 
-      // Passo 3: Aplicar os regexes EXATOS do Rave
-      // Rave usa: Pattern.compile("\\{\"token\":\"(.*?)\"}")
-      // Equivalente Dart: RegExp(r'{"token":"(.*?)"}')
-      String? accessToken;
-      final tokenMatch = RegExp(r'{"token":"(.*?)"}').firstMatch(lsUnescaped);
-      if (tokenMatch != null &&
-          tokenMatch.group(1) != null &&
-          tokenMatch.group(1)!.isNotEmpty) {
-        accessToken = tokenMatch.group(1);
-        debugPrint('[DisneyAuth] access_token encontrado via regex Rave');
-      }
-
-      String? refreshToken;
-      final refreshMatch =
-          RegExp(r'{"refresh_token":"(.*?)"}').firstMatch(lsUnescaped);
-      if (refreshMatch != null &&
-          refreshMatch.group(1) != null &&
-          refreshMatch.group(1)!.isNotEmpty) {
-        refreshToken = refreshMatch.group(1);
-        debugPrint('[DisneyAuth] refresh_token encontrado via regex Rave');
-      }
-
-      // Fallback 1: regex mais permissivo para variações de formato
-      if (accessToken == null) {
-        final fallbackPatterns = [
-          RegExp(r'"token":"([^"]{20,})"'),
-          RegExp(r'"access_token":"([^"]{20,})"'),
-          RegExp(r'"bamAccessToken":"([^"]{20,})"'),
-        ];
-        for (final pattern in fallbackPatterns) {
-          final m = pattern.firstMatch(lsUnescaped);
-          if (m != null && m.group(1) != null && m.group(1)!.isNotEmpty) {
-            accessToken = m.group(1);
-            debugPrint('[DisneyAuth] access_token encontrado via fallback regex');
-            break;
+        try {
+          final grant = jsonDecode(raw) as Map<String, dynamic>;
+          assertion = grant['assertion'] as String?;
+          grantType = grant['grantType'] as String?;
+          debugPrint('[DisneyAuth] Device grant extraído: grantType=$grantType, assertion=${assertion?.substring(0, 20)}...');
+        } catch (e) {
+          debugPrint('[DisneyAuth] Erro ao parsear device grant JSON: $e');
+          // Tentar regex como fallback
+          final m = RegExp(r'"assertion":"(eyJ[^"]+)"').firstMatch(raw);
+          if (m != null) {
+            assertion = m.group(1);
+            grantType = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
+            debugPrint('[DisneyAuth] assertion extraído via regex fallback');
           }
         }
       }
 
-      // Fallback 2: acessar chaves diretamente no localStorage
-      if (accessToken == null) {
-        debugPrint('[DisneyAuth] Tentando acesso direto às chaves do localStorage...');
-        for (final key in [
-          'token',
-          'access_token',
-          'bamAccessToken',
-          'bam.api.token',
-        ]) {
-          final val = await controller.evaluateJavascript(
-            source: "localStorage.getItem('$key')",
-          );
-          if (val != null && val != 'null' && val.toString().length > 10) {
-            final cleaned =
-                val.toString().replaceAll('"', '').replaceAll(r'\', '');
-            // Se o valor for um JSON, tentar extrair o token de dentro
-            final innerMatch =
-                RegExp(r'{"token":"(.*?)"}').firstMatch(cleaned);
-            if (innerMatch != null) {
-              accessToken = innerMatch.group(1);
-            } else if (cleaned.startsWith('eyJ')) {
-              // JWT direto
-              accessToken = cleaned;
-            }
-            if (accessToken != null && accessToken.isNotEmpty) {
-              debugPrint(
-                  '[DisneyAuth] access_token encontrado via chave direta: $key');
-              break;
+      // Fallback: tentar serializar o localStorage completo e buscar o device grant
+      if (assertion == null) {
+        debugPrint('[DisneyAuth] Tentando via JSON.stringify do localStorage...');
+        final lsRaw = await controller.evaluateJavascript(
+          source: 'JSON.stringify(window.localStorage)',
+        );
+        if (lsRaw != null && lsRaw != 'null') {
+          final lsUnescaped = lsRaw.toString().replaceAll(r'\', '');
+          debugPrint('[DisneyAuth] localStorage (500 chars): ${lsUnescaped.length > 500 ? lsUnescaped.substring(0, 500) : lsUnescaped}');
+
+          // Buscar o assertion do device grant
+          final assertionMatch = RegExp(r'"assertion":"(eyJ[^"]+)"').firstMatch(lsUnescaped);
+          if (assertionMatch != null) {
+            assertion = assertionMatch.group(1);
+            grantType = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
+            debugPrint('[DisneyAuth] assertion encontrado via regex no localStorage completo');
+          }
+
+          // Também tentar pegar refresh_token para renovação futura
+          final refreshMatch = RegExp(r'"refresh_token":"(eyJ[^"]+)"').firstMatch(lsUnescaped);
+          if (refreshMatch != null) {
+            final refreshToken = refreshMatch.group(1);
+            if (refreshToken != null) {
+              await _storage.write(key: _kRefreshToken, value: refreshToken);
+              debugPrint('[DisneyAuth] refresh_token salvo como fallback');
             }
           }
         }
       }
 
-      if (accessToken == null) {
-        debugPrint('[DisneyAuth] access_token não encontrado no localStorage');
+      if (assertion == null) {
+        debugPrint('[DisneyAuth] Device grant assertion não encontrado no localStorage');
         return false;
       }
 
-      debugPrint('[DisneyAuth] Tokens extraídos do localStorage! Salvando diretamente...');
-      // O Rave usa o access_token do localStorage DIRETAMENTE — sem exchange.
-      // O token no localStorage já é um token BAMGrid válido com escopos corretos.
-      // O exchange (via refresh_token) só é feito quando o token expira.
-      // accessToken foi verificado como não-nulo na linha 186
-      await _saveTokens(accessToken!, refreshToken);
+      // Salvar o assertion para renovação futura
+      await _storage.write(key: _kDeviceAssertion, value: assertion);
+
+      // Passo 2: Fazer o exchange do device grant por um access_token real
+      debugPrint('[DisneyAuth] Fazendo exchange do device grant por access_token...');
+      final exchangeResult = await _exchangeDeviceGrant(
+        assertion: assertion,
+        grantType: grantType ?? 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      );
+
+      if (exchangeResult == null) {
+        debugPrint('[DisneyAuth] Exchange do device grant falhou');
+        return false;
+      }
+
+      final accessToken = exchangeResult['access_token'] as String?;
+      final refreshToken = exchangeResult['refresh_token'] as String?;
+
+      if (accessToken == null || accessToken.isEmpty) {
+        debugPrint('[DisneyAuth] access_token não retornado pelo exchange');
+        return false;
+      }
+
+      await _saveTokens(accessToken, refreshToken);
+      debugPrint('[DisneyAuth] Tokens salvos com sucesso! access_token: ${accessToken.substring(0, 20)}...');
       return true;
     } catch (e) {
       debugPrint('[DisneyAuth] Erro ao extrair tokens: $e');
@@ -229,6 +229,7 @@ class DisneyAuthService {
   static Future<void> logout() async {
     await _storage.delete(key: _kAccessToken);
     await _storage.delete(key: _kRefreshToken);
+    await _storage.delete(key: _kDeviceAssertion);
     await _storage.delete(key: _kTokenExpiry);
     debugPrint('[DisneyAuth] Tokens Disney+ removidos');
   }
@@ -236,120 +237,103 @@ class DisneyAuthService {
   // ── Renovação de token ────────────────────────────────────────────────────
 
   /// Força a renovação imediata do access_token, ignorando o cache de expiração.
-  ///
-  /// Usado pelo DisneyPlaybackService quando o servidor retorna 401 inesperado,
-  /// idêntico ao comportamento do Rave de renovar e repetir a requisição.
   static Future<String> forceRefresh() async {
-    debugPrint('[DisneyAuth] Forçando renovação de token (401 recebido do servidor)...');
-    // Invalidar o cache de expiração para forçar renovação
+    debugPrint('[DisneyAuth] Forçando renovação de token (401 recebido)...');
     await _storage.delete(key: _kTokenExpiry);
     return await _refreshAccessToken();
   }
 
-  /// Renova o access_token usando o refresh_token via endpoint BAMGrid.
-  ///
-  /// Baseado no fluxo `exchangeTokens` do DisneyServer do Rave.
+  /// Renova o access_token usando o refresh_token ou o device assertion.
   static Future<String> _refreshAccessToken() async {
+    // Tentar primeiro via refresh_token
     final refreshToken = await _storage.read(key: _kRefreshToken);
-    if (refreshToken == null) {
-      throw DisneyAuthException(
-        'Refresh token não encontrado. '
-        'Por favor, faça login novamente.',
-      );
-    }
-
-    debugPrint('[DisneyAuth] Renovando access_token via BAMGrid...');
-
-    try {
-      // Primeiro, obter a configuração do BAM SDK para pegar o endpoint de exchange
-      final config = await _fetchBamSdkConfig();
-      final exchangeEndpoint = config?['services']?['token']?['client']
-          ?['endpoints']?['exchange']?['href'] as String?;
-      final endpoint = exchangeEndpoint ?? _tokenEndpoint;
-
-      // POST para o endpoint de troca de token
-      // Campos baseados no DisneyService.smali do Rave:
-      // grant_type, latitude, longitude, platform, refresh_token
-      final response = await http.post(
-        Uri.parse(endpoint),
-        headers: _bamHeaders(_initialApiKey),
-        body: {
-          'grant_type': 'refresh_token',
-          'latitude': '0',
-          'longitude': '0',
-          'platform': 'browser',
-          'refresh_token': refreshToken,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final newAccessToken = data['access_token'] as String?;
-        final newRefreshToken = data['refresh_token'] as String?;
-
-        if (newAccessToken == null) {
-          throw DisneyAuthException('Resposta de renovação inválida');
-        }
-
-        await _saveTokens(newAccessToken, newRefreshToken ?? refreshToken);
-        debugPrint('[DisneyAuth] Token renovado com sucesso');
-        return newAccessToken;
-      } else if (response.statusCode == 400) {
-        // invalid_grant — token expirado ou revogado
-        final error = jsonDecode(response.body);
-        if (error['error'] == 'invalid_grant') {
-          await logout();
-          throw DisneyAuthException(
-            'Sessão Disney+ expirada. Por favor, faça login novamente.',
-            isExpired: true,
-          );
-        }
-        throw DisneyAuthException(
-          'Erro ao renovar token: ${response.body}',
+    if (refreshToken != null) {
+      debugPrint('[DisneyAuth] Renovando via refresh_token...');
+      try {
+        final response = await http.post(
+          Uri.parse(_tokenEndpoint),
+          headers: _bamHeaders(_initialApiKey),
+          body: {
+            'grant_type': 'refresh_token',
+            'latitude': '0',
+            'longitude': '0',
+            'platform': 'browser',
+            'refresh_token': refreshToken,
+          },
         );
-      } else {
-        throw DisneyAuthException(
-          'Erro HTTP ${response.statusCode} ao renovar token',
-        );
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body) as Map<String, dynamic>;
+          final newAccessToken = data['access_token'] as String?;
+          final newRefreshToken = data['refresh_token'] as String?;
+          if (newAccessToken != null) {
+            await _saveTokens(newAccessToken, newRefreshToken ?? refreshToken);
+            debugPrint('[DisneyAuth] Token renovado via refresh_token');
+            return newAccessToken;
+          }
+        } else if (response.statusCode == 400) {
+          debugPrint('[DisneyAuth] refresh_token inválido, tentando device assertion...');
+        }
+      } catch (e) {
+        debugPrint('[DisneyAuth] Erro ao renovar via refresh_token: $e');
       }
-    } catch (e) {
-      if (e is DisneyAuthException) rethrow;
-      throw DisneyAuthException('Falha ao renovar token Disney+: $e');
     }
+
+    // Fallback: usar o device assertion
+    final assertion = await _storage.read(key: _kDeviceAssertion);
+    if (assertion != null) {
+      debugPrint('[DisneyAuth] Renovando via device assertion...');
+      final result = await _exchangeDeviceGrant(
+        assertion: assertion,
+        grantType: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      );
+      if (result != null) {
+        final newToken = result['access_token'] as String?;
+        final newRefresh = result['refresh_token'] as String?;
+        if (newToken != null) {
+          await _saveTokens(newToken, newRefresh);
+          debugPrint('[DisneyAuth] Token renovado via device assertion');
+          return newToken;
+        }
+      }
+    }
+
+    await logout();
+    throw DisneyAuthException(
+      'Sessão Disney+ expirada. Por favor, faça login novamente.',
+      isExpired: true,
+    );
   }
 
   // ── Helpers privados ──────────────────────────────────────────────────────
-  /// Faz o exchange do token web (localStorage) para um token BAMGrid Android.
+
+  /// Faz o exchange do device grant assertion por um access_token real.
   ///
-  /// Baseado no fluxo `exchangeTokens` do DisneyServer do Rave:
-  /// POST /token com grant_type=refresh_token e platform=browser
-  /// usando o Bearer API key hardcoded do app Android.
-  static Future<Map<String, dynamic>?> _exchangeWebToken(
-    String refreshToken,
-  ) async {
+  /// POST /token com grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
+  static Future<Map<String, dynamic>?> _exchangeDeviceGrant({
+    required String assertion,
+    required String grantType,
+  }) async {
     try {
-      final config = await _fetchBamSdkConfig();
-      final exchangeEndpoint = config?['services']?['token']?['client']
-          ?['endpoints']?['exchange']?['href'] as String?;
-      final endpoint =
-          exchangeEndpoint ?? 'https://global.edge.bamgrid.com/token';
-      debugPrint('[DisneyAuth] Exchange endpoint: $endpoint');
+      debugPrint('[DisneyAuth] Exchange device grant → $_tokenEndpoint');
       final response = await http.post(
-        Uri.parse(endpoint),
+        Uri.parse(_tokenEndpoint),
         headers: _bamHeaders(_initialApiKey),
         body: {
-          'grant_type': 'refresh_token',
+          'grant_type': grantType,
           'latitude': '0',
           'longitude': '0',
           'platform': 'browser',
-          'refresh_token': refreshToken,
+          'assertion': assertion,
         },
       );
       debugPrint('[DisneyAuth] Exchange status: ${response.statusCode}');
       if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        debugPrint('[DisneyAuth] Exchange bem-sucedido! access_token: ${(data['access_token'] as String?)?.substring(0, 20)}...');
+        return data;
       } else {
-        debugPrint('[DisneyAuth] Exchange falhou: ${response.body}');
+        debugPrint('[DisneyAuth] Exchange falhou: ${response.body.substring(0, response.body.length.clamp(0, 300))}');
         return null;
       }
     } catch (e) {
@@ -371,25 +355,14 @@ class DisneyAuthService {
     await _storage.write(key: _kTokenExpiry, value: expiry.toIso8601String());
   }
 
-  static String? _extractTokenByRegex(String source, List<RegExp> patterns) {
-    for (final pattern in patterns) {
-      final match = pattern.firstMatch(source);
-      if (match != null && match.groupCount >= 1) {
-        final token = match.group(1);
-        if (token != null && token.isNotEmpty && token != 'null') {
-          return token;
-        }
-      }
-    }
-    return null;
-  }
-
   static Map<String, dynamic>? _cachedConfig;
 
   static Future<Map<String, dynamic>?> _fetchBamSdkConfig() async {
     if (_cachedConfig != null) return _cachedConfig;
     try {
-      final response = await http.get(Uri.parse(_bamSdkConfigUrl));
+      const configUrl =
+          'https://bam-sdk-configs.bamgrid.com/bam-sdk/v4.0/disney-svod-3d9324fc/android/v8.3.0/google/handset/prod.json';
+      final response = await http.get(Uri.parse(configUrl));
       if (response.statusCode == 200) {
         _cachedConfig = jsonDecode(response.body) as Map<String, dynamic>;
         return _cachedConfig;
