@@ -190,61 +190,78 @@ class ScreeningLoadingOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Conteúdo do overlay (spinner + texto)
+    final content = Container(
+      color: isInitialLoad
+          ? Colors.black
+          : Colors.black.withValues(alpha: 0.45),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 48,
+              height: 48,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: CircularProgressIndicator(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      strokeWidth: 2,
+                      value: 1.0,
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Carregando...',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (isInitialLoad) {
+      // Carregamento inicial: aparece INSTANTANEAMENTE (sem delay de animação)
+      // para cobrir badges nativos do YouTube desde o primeiro frame.
+      // Apenas a saída é animada (400ms fade-out suave).
+      return IgnorePointer(
+        ignoring: !visible,
+        child: AnimatedOpacity(
+          opacity: visible ? 1.0 : 0.0,
+          duration: visible
+              ? Duration.zero          // entrada: instantânea
+              : const Duration(milliseconds: 400), // saída: suave
+          child: content,
+        ),
+      );
+    }
+
+    // Buffering normal: animação de 300ms em ambas as direções.
     return AnimatedOpacity(
       opacity: visible ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 300),
       child: IgnorePointer(
         ignoring: !visible,
-        child: Container(
-          color: isInitialLoad
-              ? Colors.black
-              : Colors.black.withValues(alpha: 0.45),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Spinner com anel duplo
-                SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Anel externo lento
-                      SizedBox(
-                        width: 48,
-                        height: 48,
-                        child: CircularProgressIndicator(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          strokeWidth: 2,
-                          value: 1.0,
-                        ),
-                      ),
-                      // Anel interno rápido
-                      const SizedBox(
-                        width: 32,
-                        height: 32,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Carregando...',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        child: content,
       ),
     );
   }

@@ -161,6 +161,32 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
       screeningPlayerProvider(widget.sessionId).select((s) => s.isBuffering),
     );
 
+    // ── Detecção imediata de troca de vídeo ─────────────────────────────────
+    // Quando a URL muda (troca de vídeo na fila), o InAppWebView é recriado
+    // com nova key: ValueKey(url). Mas o _ScreeningPlayerWidgetState NÃO é
+    // recriado — o _isLoading pode ser false do carregamento anterior.
+    // O onWebViewCreated seta _isLoading=true, mas é assíncrono (chega depois
+    // do primeiro frame do novo InAppWebView).
+    //
+    // Solução: ref.listen detecta a mudança de URL e seta _isLoading=true
+    // IMEDIATAMENTE (síncrono, durante o build), antes do primeiro frame do
+    // novo InAppWebView. Isso garante que o overlay preto cobre os badges
+    // nativos do YouTube desde o frame zero.
+    ref.listen(
+      screeningRoomProvider(widget.threadId).select((s) => s.currentVideoUrl),
+      (previous, next) {
+        // O ref.listen do Riverpod é chamado FORA do ciclo de build (reativo),
+        // portanto chamar setState() aqui é seguro e imediato.
+        // Quando a URL muda (troca de vídeo), setar _isLoading=true
+        // IMEDIATAMENTE para que o overlay preto já esteja visível antes
+        // do primeiro frame do novo InAppWebView (que será recriado com
+        // nova key: ValueKey(url) no próximo rebuild).
+        if (previous != next && next != null && next.isNotEmpty && mounted) {
+          setState(() => _isLoading = true);
+        }
+      },
+    );
+
     if (videoUrl == null || videoUrl.isEmpty) {
       return _ScreeningEmptyState(isHost: isHost);
     }
