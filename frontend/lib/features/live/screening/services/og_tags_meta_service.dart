@@ -164,7 +164,7 @@ class OgTagsMetaService {
         .replaceAll('&#39;', "'")
         .replaceAll('&apos;', "'")
         .replaceAll('&nbsp;', ' ')
-        .replaceAll(RegExp(r'&#(\d+);'), (match) {
+        .replaceAllMapped(RegExp(r'&#(\d+);'), (match) {
           final code = int.tryParse(match.group(1) ?? '');
           return code != null ? String.fromCharCode(code) : match.group(0)!;
         });
