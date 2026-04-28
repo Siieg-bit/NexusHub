@@ -488,10 +488,12 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
               '.channel-info-content, .metadata-layout, .tw-title,',
               // Kick UI
               '.player-controls-wrapper, .player-header { display: none !important; }',
-              // Garantir que o video ocupe 100% da tela
+              // Garantir que o video ocupe 100% da tela sem cortar
+              // object-fit: contain preserva o aspect ratio (letterbox)
               'video { width: 100vw !important; height: 100vh !important;',
               '  position: fixed !important; top: 0 !important; left: 0 !important;',
-              '  object-fit: cover !important; z-index: 1 !important; }',
+              '  object-fit: contain !important; z-index: 1 !important;',
+              '  background: #000 !important; }',
               // Touch blocker sobre tudo
               'body::after { content: ""; position: fixed; top: 0; left: 0;',
               '  width: 100%; height: 100%; z-index: 99999;',
