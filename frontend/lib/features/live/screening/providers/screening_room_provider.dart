@@ -172,6 +172,10 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         currentVideoUrl: videoUrl,
         currentVideoTitle: videoTitle,
         participants: participants,
+        // Resetar a fila ao entrar/criar uma sala para evitar estado residual
+        // de sessões anteriores (o provider é family por threadId e persiste
+        // enquanto houver listeners ativos).
+        videoQueue: const [],
       );
       debugPrint('[ScreeningRoom] Estado atualizado para active. Iniciando Realtime e heartbeat...');
 
@@ -527,13 +531,23 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
   }
 
   /// Remove um vídeo da fila pelo índice e sincroniza via Broadcast.
+  /// Se o item removido for o vídeo atualmente em reprodução, limpa o player
+  /// (clearVideo) para que o vídeo pare imediatamente para todos os participantes.
   Future<void> removeFromQueue(int index) async {
     if (!state.isHost) return;
     final newQueue = [...state.videoQueue];
     if (index < 0 || index >= newQueue.length) return;
+    final removedItem = newQueue[index];
     newQueue.removeAt(index);
     state = state.copyWith(videoQueue: newQueue);
     _broadcastQueueUpdate(newQueue);
+    // Se o item removido é o vídeo atual no player, limpar o player
+    // para que o vídeo pare imediatamente para todos os participantes.
+    final removedUrl = removedItem['url'] ?? '';
+    final currentUrl = state.currentVideoUrl ?? '';
+    if (removedUrl.isNotEmpty && removedUrl == currentUrl) {
+      await clearVideo();
+    }
   }
 
   /// Reordena a fila via drag-and-drop e sincroniza via Broadcast.

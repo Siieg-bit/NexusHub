@@ -252,14 +252,14 @@ class _PortraitLayout extends ConsumerWidget {
             ),
           ),
         // Overlay de vídeo encerrado
+        // NOTA: o PointerInterceptor foi movido para dentro do ScreeningVideoEndedOverlay
+        // e só fica ativo quando hasEnded=true. Assim os controles (play/pause, seek)
+        // não são bloqueados quando o vídeo está em reprodução.
         if (sessionId.isNotEmpty)
           Positioned.fill(
-            child: PointerInterceptor(
-              intercepting: true,
-              child: ScreeningVideoEndedOverlay(
-                sessionId: sessionId,
-                threadId: threadId,
-              ),
+            child: ScreeningVideoEndedOverlay(
+              sessionId: sessionId,
+              threadId: threadId,
             ),
           ),
       ],
@@ -444,12 +444,9 @@ class _LandscapeLayout extends StatelessWidget {
                     ),
                   if (sessionId.isNotEmpty)
                     Positioned.fill(
-                      child: PointerInterceptor(
-                        intercepting: true,
-                        child: ScreeningVideoEndedOverlay(
-                          sessionId: sessionId,
-                          threadId: threadId,
-                        ),
+                      child: ScreeningVideoEndedOverlay(
+                        sessionId: sessionId,
+                        threadId: threadId,
                       ),
                     ),
                 ],

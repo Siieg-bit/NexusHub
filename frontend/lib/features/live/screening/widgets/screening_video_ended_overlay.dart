@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 import '../providers/screening_room_provider.dart';
 import '../providers/screening_player_provider.dart';
 import '../providers/screening_sync_provider.dart';
@@ -34,9 +35,15 @@ class ScreeningVideoEndedOverlay extends ConsumerWidget {
     final playerState = ref.watch(screeningPlayerProvider(sessionId));
     final roomState = ref.watch(screeningRoomProvider(threadId));
 
+    // Quando o vídeo não terminou, retornar SizedBox.shrink() SEM PointerInterceptor
+    // para não bloquear toques nos controles (play/pause, seek bar, etc.).
+    // IMPORTANTE: o PointerInterceptor(intercepting: true) no _PortraitLayout foi
+    // removido — agora o interceptor fica aqui, ativo apenas quando hasEnded=true.
     if (!playerState.hasEnded) return const SizedBox.shrink();
 
-    return AnimatedOpacity(
+    return PointerInterceptor(
+      intercepting: true,
+      child: AnimatedOpacity(
       opacity: playerState.hasEnded ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 500),
       child: Container(
@@ -154,10 +161,10 @@ class ScreeningVideoEndedOverlay extends ConsumerWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }
-
 // ── Botão de ação no estado de vídeo encerrado ────────────────────────────────
 
 class _EndedButton extends StatelessWidget {
