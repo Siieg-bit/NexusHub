@@ -307,7 +307,15 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         );
 
       case StreamType.embed:
-        // WebView com iframe embed.
+        // Para Twitch/Kick: carregar a URL do embed DIRETAMENTE no InAppWebView
+        // (sem HTML wrapper com iframe). Isso permite que o _injectControlScript
+        // acesse o DOM do player diretamente (document.querySelector('video'))
+        // sem a barreira cross-origin do iframe.
+        if (resolution.platform == StreamPlatform.twitch ||
+            resolution.platform == StreamPlatform.kick) {
+          return _buildDirectEmbedPlayer(context, resolution);
+        }
+        // Para YouTube/Vimeo/outros: HTML wrapper com iframe embed.
         // O player já está posicionado abaixo do TopBar no layout Flutter,
         // por isso não é necessário padding-top no HTML.
         //
@@ -412,6 +420,107 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
           },
         );
     }
+  }
+
+  /// Player direto para Twitch/Kick: carrega a URL do embed diretamente no
+  /// InAppWebView (sem HTML wrapper com iframe). O _injectControlScript acessa
+  /// o DOM do player diretamente via document.querySelector('video').
+  Widget _buildDirectEmbedPlayer(BuildContext context, StreamResolution resolution) {
+    final embedUrl = resolution.url;
+    final isLive = resolution.platform == StreamPlatform.twitch ||
+        resolution.platform == StreamPlatform.kick ||
+        resolution.platform == StreamPlatform.youtubeLive;
+    return InAppWebView(
+      key: ValueKey('direct_$embedUrl'),
+      initialUrlRequest: URLRequest(url: WebUri(embedUrl)),
+      initialSettings: InAppWebViewSettings(
+        javaScriptEnabled: true,
+        mediaPlaybackRequiresUserGesture: false,
+        allowsInlineMediaPlayback: true,
+        allowsAirPlayForMediaPlayback: true,
+        useHybridComposition: false,
+        supportZoom: false,
+        disableHorizontalScroll: true,
+        disableVerticalScroll: true,
+        transparentBackground: true,
+        // User-Agent mobile para Twitch/Kick (UI simplificada)
+        userAgent:
+            'Mozilla/5.0 (Linux; Android 13; Pixel 7) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/124.0.0.0 Mobile Safari/537.36',
+      ),
+      onWebViewCreated: (controller) {
+        if (mounted) setState(() => _isLoading = true);
+        _webViewController = controller;
+        final notifier = ref.read(screeningPlayerProvider(widget.sessionId).notifier);
+        notifier.registerWebViewController(controller);
+        notifier.setIsLive(isLive);
+        controller.addJavaScriptHandler(
+          handlerName: 'NexusPlayerBridge',
+          callback: (args) {
+            if (args.isEmpty || !mounted) return;
+            _handleBridgeEvent(
+              args[0].toString(),
+              args.length > 1 ? args[1] : null,
+            );
+          },
+        );
+      },
+      onLoadStart: (controller, url) {
+        setState(() => _isLoading = true);
+        ref.read(screeningPlayerProvider(widget.sessionId).notifier).onWebViewLoading();
+      },
+      onLoadStop: (controller, url) async {
+        if (mounted) setState(() => _isLoading = false);
+        // Injetar CSS para ocultar UI nativa da Twitch/Kick e bloquear toques
+        await controller.evaluateJavascript(source: r'''
+          (function() {
+            // Injetar CSS para ocultar UI nativa e bloquear toques
+            var style = document.createElement('style');
+            style.textContent = [
+              '* { touch-action: none !important; -webkit-user-select: none !important; }',
+              // Ocultar UI da Twitch: header, follow button, chat, controls
+              '.top-nav, .top-bar, .channel-header, .follow-btn, .tw-button,',
+              '[data-a-target="follow-button"], [data-a-target="subscribe-button"],',
+              '[data-a-target="gift-button"], .player-controls, .player-ui,',
+              '.player-overlay-background, .player-overlay, .player-button,',
+              '.player-seek-bar, .player-volume, .player-settings,',
+              '.channel-info-content, .metadata-layout, .tw-title,',
+              // Kick UI
+              '.player-controls-wrapper, .player-header { display: none !important; }',
+              // Garantir que o video ocupe 100% da tela
+              'video { width: 100vw !important; height: 100vh !important;',
+              '  position: fixed !important; top: 0 !important; left: 0 !important;',
+              '  object-fit: cover !important; z-index: 1 !important; }',
+              // Touch blocker sobre tudo
+              'body::after { content: ""; position: fixed; top: 0; left: 0;',
+              '  width: 100%; height: 100%; z-index: 99999;',
+              '  pointer-events: all; touch-action: none; }',
+            ].join(' ');
+            document.head.appendChild(style);
+            // Bloquear todos os eventos de touch no document
+            function killEvent(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+            }
+            var opts = { capture: true, passive: false };
+            document.addEventListener('touchstart',  killEvent, opts);
+            document.addEventListener('touchmove',   killEvent, opts);
+            document.addEventListener('touchend',    killEvent, opts);
+            document.addEventListener('touchcancel', killEvent, opts);
+            document.addEventListener('contextmenu', killEvent, opts);
+          })();
+        ''');
+        await _injectControlScript(controller);
+        final notifier = ref.read(screeningPlayerProvider(widget.sessionId).notifier);
+        notifier.markBridgeInjected();
+        notifier.onWebViewReady();
+      },
+      onConsoleMessage: (controller, msg) {
+        _handleConsoleMessage(msg.message);
+      },
+    );
   }
 
   /// Fallback: se a resolução falhar, tenta o embed direto da URL original.
@@ -609,53 +718,16 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         if (window._ytPlayer && window._nexusPlayer) {
           window._nexusPlayer._yt = window._ytPlayer;
         }
-        // Para Twitch embed: controle via postMessage (cross-origin).
-        // O <video> da Twitch está dentro do iframe e não é acessível via DOM.
-        // A Twitch Interactive Embeds API aceita postMessage para controle.
-        var twitchIframe = document.querySelector('iframe[src*="player.twitch.tv"]');
-        if (twitchIframe && !window._nexusTwitchReady) {
-          window._nexusTwitchReady = true;
-          // Desmutar após autoplay (muted=true foi necessário para autoplay funcionar)
-          function _twitchMsg(cmd, params) {
-            try {
-              twitchIframe.contentWindow.postMessage(
-                JSON.stringify({ eventName: cmd, params: params || {} }),
-                'https://player.twitch.tv'
-              );
-            } catch(e) {}
-          }
-          // Aguardar o player estar pronto antes de desmutar
-          setTimeout(function() { _twitchMsg('setMuted', { muted: false }); }, 1500);
-          setTimeout(function() { _twitchMsg('setMuted', { muted: false }); }, 3000);
-          // Sobrescrever _nexusPlayer para usar postMessage em vez de querySelector('video')
-          if (window._nexusPlayer) {
-            window._nexusPlayer.play = function() {
-              _twitchMsg('play', {});
-            };
-            window._nexusPlayer.pause = function() {
-              _twitchMsg('pause', {});
-            };
-            window._nexusPlayer.seek = function(seconds) {
-              _twitchMsg('seek', { position: seconds });
-            };
-          }
-          // Escutar eventos do player Twitch via postMessage
-          window.addEventListener('message', function(e) {
-            if (!e.origin.includes('twitch.tv')) return;
-            try {
-              var msg = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-              var ev = msg.eventName || '';
-              if (ev === 'playing' || ev === 'play') _bridge('VIDEO_PLAYING');
-              else if (ev === 'pause') _bridge('VIDEO_PAUSED');
-              else if (ev === 'ended') _bridge('VIDEO_ENDED');
-              else if (ev === 'buffering') _bridge('VIDEO_BUFFERING');
-              else if (ev === 'ready') {
-                _bridge('VIDEO_PLAYING');
-                // Player pronto: desmutar
-                _twitchMsg('setMuted', { muted: false });
-              }
-            } catch(e2) {}
-          });
+        // Para Twitch/Kick no modo direto: desmutar apos autoplay.
+        // muted=true foi necessario para autoplay funcionar no Chromium Android.
+        // Como o script roda no contexto do player (nao cross-origin),
+        // podemos desmutar diretamente via video.muted = false.
+        if (video && video.muted) {
+          // Tentar desmutar imediatamente
+          try { video.muted = false; } catch(e) {}
+          // Retry apos 1s e 2s caso o player ainda esteja inicializando
+          setTimeout(function() { try { if(video.muted) video.muted = false; } catch(e) {} }, 1000);
+          setTimeout(function() { try { if(video.muted) video.muted = false; } catch(e) {} }, 2000);
         }
       })();
     ''');
