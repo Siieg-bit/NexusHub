@@ -152,11 +152,13 @@ class StreamResolverService {
           // VOD: twitch.tv/videos/123456789
           if (url.contains('/videos/')) {
             return 'https://player.twitch.tv/?video=$twitchId'
-                '&parent=nexushub.app&parent=localhost&autoplay=true';
+                '&parent=nexushub.app&parent=localhost'
+                '&autoplay=true&muted=true&controls=false';
           }
           // Canal ao vivo: twitch.tv/channelname
           return 'https://player.twitch.tv/?channel=$twitchId'
-              '&parent=nexushub.app&parent=localhost&autoplay=true';
+              '&parent=nexushub.app&parent=localhost'
+              '&autoplay=true&muted=true&controls=false';
         }
         return null;
 

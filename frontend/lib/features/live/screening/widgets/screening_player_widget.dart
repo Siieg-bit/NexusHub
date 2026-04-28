@@ -609,6 +609,54 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         if (window._ytPlayer && window._nexusPlayer) {
           window._nexusPlayer._yt = window._ytPlayer;
         }
+        // Para Twitch embed: controle via postMessage (cross-origin).
+        // O <video> da Twitch está dentro do iframe e não é acessível via DOM.
+        // A Twitch Interactive Embeds API aceita postMessage para controle.
+        var twitchIframe = document.querySelector('iframe[src*="player.twitch.tv"]');
+        if (twitchIframe && !window._nexusTwitchReady) {
+          window._nexusTwitchReady = true;
+          // Desmutar após autoplay (muted=true foi necessário para autoplay funcionar)
+          function _twitchMsg(cmd, params) {
+            try {
+              twitchIframe.contentWindow.postMessage(
+                JSON.stringify({ eventName: cmd, params: params || {} }),
+                'https://player.twitch.tv'
+              );
+            } catch(e) {}
+          }
+          // Aguardar o player estar pronto antes de desmutar
+          setTimeout(function() { _twitchMsg('setMuted', { muted: false }); }, 1500);
+          setTimeout(function() { _twitchMsg('setMuted', { muted: false }); }, 3000);
+          // Sobrescrever _nexusPlayer para usar postMessage em vez de querySelector('video')
+          if (window._nexusPlayer) {
+            window._nexusPlayer.play = function() {
+              _twitchMsg('play', {});
+            };
+            window._nexusPlayer.pause = function() {
+              _twitchMsg('pause', {});
+            };
+            window._nexusPlayer.seek = function(seconds) {
+              _twitchMsg('seek', { position: seconds });
+            };
+          }
+          // Escutar eventos do player Twitch via postMessage
+          window.addEventListener('message', function(e) {
+            if (!e.origin.includes('twitch.tv')) return;
+            try {
+              var msg = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+              var ev = msg.eventName || '';
+              if (ev === 'playing' || ev === 'play') _bridge('VIDEO_PLAYING');
+              else if (ev === 'pause') _bridge('VIDEO_PAUSED');
+              else if (ev === 'ended') _bridge('VIDEO_ENDED');
+              else if (ev === 'buffering') _bridge('VIDEO_BUFFERING');
+              else if (ev === 'ready') {
+                _bridge('VIDEO_PLAYING');
+                // Player pronto: desmutar
+                _twitchMsg('setMuted', { muted: false });
+              }
+            } catch(e2) {}
+          });
+        }
       })();
     ''');
   }
@@ -691,11 +739,14 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
       }
     }
     if (u.contains('twitch.tv')) {
-      final match = RegExp(r'twitch\.tv/([a-zA-Z0-9_]+)').firstMatch(url);
+      final match = RegExp(r'twitch\.tv/(?:videos/)?(\d+|[a-zA-Z0-9_]+)').firstMatch(url);
       final channel = match?.group(1) ?? '';
       if (channel.isNotEmpty) {
-        return 'https://player.twitch.tv/?channel=$channel'
-            '&parent=nexushub.app&parent=localhost&autoplay=true';
+        final isVod = u.contains('/videos/');
+        final twitchParam = isVod ? 'video=$channel' : 'channel=$channel';
+        return 'https://player.twitch.tv/?$twitchParam'
+            '&parent=nexushub.app&parent=localhost'
+            '&autoplay=true&muted=true&controls=false';
       }
     }
     if (u.contains('vimeo.com')) {
