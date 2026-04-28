@@ -63,12 +63,6 @@ class _ScreeningAddVideoSheetState
       color: Color(0xFF1AB7EA),
     ),
     _PlatformTile(
-      id: 'dailymotion',
-      name: 'Dailymotion',
-      icon: Icons.movie_rounded,
-      color: Color(0xFF0066DC),
-    ),
-    _PlatformTile(
       id: 'drive',
       name: 'Drive',
       icon: Icons.folder_rounded,
@@ -87,12 +81,6 @@ class _ScreeningAddVideoSheetState
       color: Color(0xFFFF0000),
     ),
     // ── AVOD gratuito ──────────────────────────────────────────────────────
-    _PlatformTile(
-      id: 'tubi',
-      name: 'Tubi',
-      icon: Icons.tv_rounded,
-      color: Color(0xFFFA4B00),
-    ),
     _PlatformTile(
       id: 'pluto',
       name: 'Pluto TV',

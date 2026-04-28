@@ -175,17 +175,42 @@ class _ScreeningControlsOverlayState
                       ),
                     ),
 
-                  // ── Seek bar + botão fullscreen (bottom) ───────────────────
+                  // ── Seek bar (bottom) ─────────────────────────────────────
                   // Seek bar: apenas host e apenas para VOD (duration > 0).
-                  // Botão fullscreen: sempre visível quando há vídeo.
                   Positioned(
                     bottom: 0, left: 0, right: 0,
                     child: _BottomControlsConsumer(
                       sessionId: widget.sessionId,
                       threadId: widget.threadId,
                       onSeekAndBroadcast: _seekAndBroadcast,
-                      isFullscreen: widget.isFullscreen,
-                      onToggleFullscreen: _toggleFullscreen,
+                    ),
+                  ),
+
+                  // ── Botão fullscreen (canto superior direito) ─────────────
+                  // Sempre visível quando há vídeo, independente de ser host.
+                  Positioned(
+                    top: mq.padding.top + 8,
+                    right: 12,
+                    child: GestureDetector(
+                      onTap: _toggleFullscreen,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Icon(
+                          widget.isFullscreen
+                              ? Icons.fullscreen_exit_rounded
+                              : Icons.fullscreen_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -655,15 +680,11 @@ class _BottomControlsConsumer extends ConsumerWidget {
   final String sessionId;
   final String threadId;
   final void Function(Duration position, bool isPlaying) onSeekAndBroadcast;
-  final bool isFullscreen;
-  final VoidCallback onToggleFullscreen;
 
   const _BottomControlsConsumer({
     required this.sessionId,
     required this.threadId,
     required this.onSeekAndBroadcast,
-    required this.isFullscreen,
-    required this.onToggleFullscreen,
   });
 
   @override
@@ -684,52 +705,15 @@ class _BottomControlsConsumer extends ConsumerWidget {
         && duration > Duration.zero
         && !isLiveStream;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(0, 0, 0, mq.padding.bottom + 8),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // ── Seek bar (host + VOD) ─────────────────────────────────────
-          if (showSeekBar)
-            _SeekBar(
-              sessionId: sessionId,
-              position: position,
-              duration: duration,
-              onSeekAndBroadcast: (pos, _) => onSeekAndBroadcast(pos, isPlaying),
-            ),
+    if (!showSeekBar) return const SizedBox.shrink();
 
-          // ── Linha inferior: espaço + botão fullscreen ─────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                // Botão fullscreen (canto inferior direito)
-                GestureDetector(
-                  onTap: onToggleFullscreen,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.45),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Icon(
-                      isFullscreen
-                          ? Icons.fullscreen_exit_rounded
-                          : Icons.fullscreen_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+    return Padding(
+      padding: EdgeInsets.fromLTRB(0, 0, 0, mq.padding.bottom + 20),
+      child: _SeekBar(
+        sessionId: sessionId,
+        position: position,
+        duration: duration,
+        onSeekAndBroadcast: (pos, _) => onSeekAndBroadcast(pos, isPlaying),
       ),
     );
   }

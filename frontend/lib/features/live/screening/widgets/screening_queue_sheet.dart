@@ -450,10 +450,6 @@ class _QueueItemTile extends StatelessWidget {
       return _PlatformInfo(
           'Crunchyroll', const Color(0xFFF47521), Icons.animation_rounded);
     }
-    if (u.contains('tubitv')) {
-      return _PlatformInfo(
-          'Tubi', const Color(0xFFFA4B00), Icons.tv_rounded);
-    }
     if (u.contains('pluto.tv')) {
       return _PlatformInfo(
           'Pluto TV', const Color(0xFF00A0E3), Icons.satellite_alt_rounded);
@@ -465,10 +461,6 @@ class _QueueItemTile extends StatelessWidget {
     if (u.contains('supabase.co/storage')) {
       return _PlatformInfo(
           'Galeria', const Color(0xFF6C5CE7), Icons.video_library_rounded);
-    }
-    if (u.contains('dailymotion')) {
-      return _PlatformInfo(
-          'Dailymotion', const Color(0xFF0066DC), Icons.movie_rounded);
     }
     return _PlatformInfo('WEB', Colors.white38, Icons.language_rounded);
   }
@@ -729,15 +721,12 @@ class _PlatformPickerSheet extends ConsumerWidget {
         'kick', 'Kick', Icons.sports_esports_rounded, Color(0xFF53FC18)),
     _PlatformTile(
         'vimeo', 'Vimeo', Icons.videocam_rounded, Color(0xFF1AB7EA)),
-    _PlatformTile('dailymotion', 'Dailymotion', Icons.movie_rounded,
-        Color(0xFF0066DC)),
     _PlatformTile(
         'drive', 'Drive', Icons.folder_rounded, Color(0xFF4285F4)),
     _PlatformTile(
         'web', 'WEB', Icons.language_rounded, Color(0xFF888888)),
     _PlatformTile('youtube_live', 'YT Live', Icons.stream_rounded,
         Color(0xFFFF0000)),
-    _PlatformTile('tubi', 'Tubi', Icons.tv_rounded, Color(0xFFFA4B00)),
     _PlatformTile('pluto', 'Pluto TV', Icons.satellite_alt_rounded,
         Color(0xFF00A0E3)),
     _PlatformTile('netflix', 'Netflix', Icons.movie_filter_rounded,

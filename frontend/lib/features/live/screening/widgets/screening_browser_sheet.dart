@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/screening_room_provider.dart';
 import '../services/drm_relay_service.dart';
 import '../services/stream_resolver_service.dart';
+import '../services/youtube_stream_service.dart';
+import '../services/twitch_stream_service.dart';
 
 // =============================================================================
 // ScreeningBrowserSheet — Navegador integrado tematizado para seleção de vídeo
@@ -18,7 +20,7 @@ import '../services/stream_resolver_service.dart';
 // - Detecção automática de URL de vídeo com banner de confirmação
 // - Overlay de captura com feedback visual e haptic
 // - Suporte a todas as plataformas: YouTube, Twitch, Kick, Vimeo,
-//   Dailymotion, Google Drive, e URL direta (WEB)
+//   Google Drive, e URL direta (WEB)
 // =============================================================================
 
 // ── Modelo de plataforma ──────────────────────────────────────────────────────
@@ -95,14 +97,6 @@ final _kPlatforms = <String, ScreeningPlatform>{
       _VideoUrlPattern(RegExp(r'vimeo\.com/\d+')),
     ],
   ),
-  'dailymotion': ScreeningPlatform(
-    id: 'dailymotion',
-    displayName: 'Dailymotion',
-    initialUrl: 'https://www.dailymotion.com',
-    videoPatterns: [
-      _VideoUrlPattern(RegExp(r'dailymotion\.com/video/[a-zA-Z0-9]+')),
-    ],
-  ),
   'drive': ScreeningPlatform(
     id: 'drive',
     displayName: 'Google Drive',
@@ -173,7 +167,6 @@ class _ScreeningBrowserSheetState
     'twitch': Color(0xFF9146FF),
     'kick': Color(0xFF53FC18),
     'vimeo': Color(0xFF1AB7EA),
-    'dailymotion': Color(0xFF0066DC),
     'drive': Color(0xFF4285F4),
     'web': Color(0xFF6C63FF),
   };
@@ -277,10 +270,29 @@ class _ScreeningBrowserSheetState
         }
       }
 
-      final title = _inferTitle(url);
+      // Resolver metadados reais (título + thumbnail) antes de enfileirar.
+      // Para YouTube e Twitch usamos os serviços dedicados; para as demais
+      // plataformas mantemos o fallback com o nome genérico da plataforma.
+      String title = _inferTitle(url);
+      String? thumbnail;
+      try {
+        final u = url.toLowerCase();
+        if (u.contains('youtube') || u.contains('youtu.be')) {
+          final meta = await YouTubeStreamService.resolve(url);
+          title = meta.title.isNotEmpty ? meta.title : title;
+          thumbnail = meta.thumbnailUrl;
+        } else if (u.contains('twitch.tv')) {
+          final meta = await TwitchStreamService.resolveMetaOnly(url);
+          title = meta.title.isNotEmpty ? meta.title : title;
+          thumbnail = meta.thumbnailUrl;
+        }
+      } catch (e) {
+        debugPrint('[ScreeningBrowserSheet] Metadados não resolvidos: $e');
+        // Continua com o título genérico — não bloqueia o enfileiramento.
+      }
       final notifier = ref.read(screeningRoomProvider(widget.threadId).notifier);
       if (widget.addToQueue) {
-        await notifier.addToQueue(url: finalUrl, title: title);
+        await notifier.addToQueue(url: finalUrl, title: title, thumbnail: thumbnail);
         if (mounted) { HapticFeedback.lightImpact(); Navigator.of(context).pop(); }
       } else {
         await notifier.updateVideo(videoUrl: finalUrl, videoTitle: title);
@@ -302,13 +314,13 @@ class _ScreeningBrowserSheetState
     ));
   }
 
+  /// Título genérico de fallback (usado quando a resolução de metadados falha).
   String _inferTitle(String url) {
     final u = url.toLowerCase();
     if (u.contains('youtube')) return 'YouTube';
     if (u.contains('twitch')) return 'Twitch';
     if (u.contains('kick')) return 'Kick';
     if (u.contains('vimeo')) return 'Vimeo';
-    if (u.contains('dailymotion')) return 'Dailymotion';
     if (u.contains('drive.google')) return 'Google Drive';
     if (u.contains('netflix')) return 'Netflix';
     if (u.contains('disneyplus')) return 'Disney+';
