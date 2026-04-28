@@ -8,6 +8,11 @@ import '../services/drm_relay_service.dart';
 import '../services/stream_resolver_service.dart';
 import '../services/youtube_stream_service.dart';
 import '../services/twitch_stream_service.dart';
+import '../services/vimeo_meta_service.dart';
+import '../services/kick_meta_service.dart';
+import '../services/og_tags_meta_service.dart';
+import '../services/google_drive_stream_service.dart';
+import '../services/pluto_stream_service.dart';
 
 // =============================================================================
 // ScreeningBrowserSheet — Navegador integrado tematizado para seleção de vídeo
@@ -271,24 +276,18 @@ class _ScreeningBrowserSheetState
       }
 
       // Resolver metadados reais (título + thumbnail) antes de enfileirar.
-      // Para YouTube e Twitch usamos os serviços dedicados; para as demais
-      // plataformas mantemos o fallback com o nome genérico da plataforma.
+      // Cada plataforma usa seu serviço dedicado; OG tags como fallback universal.
+      // Em caso de falha, continua com o título genérico — não bloqueia.
       String title = _inferTitle(url);
       String? thumbnail;
       try {
-        final u = url.toLowerCase();
-        if (u.contains('youtube') || u.contains('youtu.be')) {
-          final meta = await YouTubeStreamService.resolve(url);
-          title = meta.title.isNotEmpty ? meta.title : title;
-          thumbnail = meta.thumbnailUrl;
-        } else if (u.contains('twitch.tv')) {
-          final meta = await TwitchStreamService.resolveMetaOnly(url);
-          title = meta.title.isNotEmpty ? meta.title : title;
+        final meta = await _resolveMetadata(url);
+        if (meta != null) {
+          if (meta.title.isNotEmpty) title = meta.title;
           thumbnail = meta.thumbnailUrl;
         }
       } catch (e) {
         debugPrint('[ScreeningBrowserSheet] Metadados não resolvidos: $e');
-        // Continua com o título genérico — não bloqueia o enfileiramento.
       }
       final notifier = ref.read(screeningRoomProvider(widget.threadId).notifier);
       if (widget.addToQueue) {
@@ -312,6 +311,67 @@ class _ScreeningBrowserSheetState
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       duration: const Duration(seconds: 4),
     ));
+  }
+
+  // ── Resolução de metadados por plataforma ─────────────────────────────────
+
+  /// Resolve título e thumbnail reais para qualquer plataforma.
+  /// Retorna null se não for possível resolver (a chamada deve usar o fallback).
+  Future<({String title, String? thumbnailUrl})?> _resolveMetadata(String url) async {
+    final u = url.toLowerCase();
+
+    // ── YouTube / YouTube Live ────────────────────────────────────────────────────────
+    if (u.contains('youtube') || u.contains('youtu.be')) {
+      final meta = await YouTubeStreamService.resolve(url);
+      return (title: meta.title, thumbnailUrl: meta.thumbnailUrl);
+    }
+
+    // ── Twitch ─────────────────────────────────────────────────────────────────────────
+    if (u.contains('twitch.tv')) {
+      final meta = await TwitchStreamService.resolveMetaOnly(url);
+      return (title: meta.title, thumbnailUrl: meta.thumbnailUrl);
+    }
+
+    // ── Kick ────────────────────────────────────────────────────────────────────────────
+    if (u.contains('kick.com')) {
+      final meta = await KickMetaService.resolve(url);
+      return (title: meta.title, thumbnailUrl: meta.thumbnailUrl);
+    }
+
+    // ── Vimeo ──────────────────────────────────────────────────────────────────────────
+    if (u.contains('vimeo.com')) {
+      final meta = await VimeoMetaService.resolve(url);
+      return (title: meta.title, thumbnailUrl: meta.thumbnailUrl);
+    }
+
+    // ── Google Drive ────────────────────────────────────────────────────────────────
+    if (u.contains('drive.google.com')) {
+      final meta = await GoogleDriveStreamService.resolve(url);
+      return (title: meta.title, thumbnailUrl: meta.thumbnailUrl);
+    }
+
+    // ── Pluto TV ───────────────────────────────────────────────────────────────────
+    if (u.contains('pluto.tv')) {
+      final meta = await PlutoStreamService.resolve(url);
+      return (title: meta.title, thumbnailUrl: meta.thumbnailUrl);
+    }
+
+    // ── Plataformas DRM + WEB genérico: OG tags via WebView (já carregado) ────────
+    // Netflix, Disney+, Prime Video, Max, Crunchyroll e qualquer URL direta.
+    // O WebView já está aberto na página correta, então lemos as OG tags via JS.
+    if (_webViewController != null) {
+      final meta = await OgTagsMetaService.resolveFromWebView(_webViewController!);
+      if (meta != null) {
+        return (title: meta.title, thumbnailUrl: meta.thumbnailUrl);
+      }
+    }
+    // Fallback HTTP para OG tags (ex: URL direta sem WebView)
+    final httpMeta = await OgTagsMetaService.resolveFromHttp(url);
+    if (httpMeta != null) {
+      return (title: httpMeta.title, thumbnailUrl: httpMeta.thumbnailUrl);
+    }
+
+    return null;
   }
 
   /// Título genérico de fallback (usado quando a resolução de metadados falha).
