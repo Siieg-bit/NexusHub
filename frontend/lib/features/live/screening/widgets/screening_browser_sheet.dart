@@ -37,6 +37,12 @@ class ScreeningPlatform {
   final List<_VideoUrlPattern> videoPatterns;
   final bool isDirectUrl;
   final bool isDrm;
+  /// URL para a página de login (quando não autenticado).
+  final String? loginUrl;
+  /// URL para a biblioteca/página de vídeos (quando já autenticado).
+  final String? loggedInUrl;
+  /// JavaScript que retorna `true` se o usuário está logado na página atual.
+  final String? loginCheckJs;
   const ScreeningPlatform({
     required this.id,
     required this.displayName,
@@ -44,6 +50,9 @@ class ScreeningPlatform {
     this.videoPatterns = const [],
     this.isDirectUrl = false,
     this.isDrm = false,
+    this.loginUrl,
+    this.loggedInUrl,
+    this.loginCheckJs,
   });
 }
 
@@ -97,7 +106,14 @@ final _kPlatforms = <String, ScreeningPlatform>{
   'vimeo': ScreeningPlatform(
     id: 'vimeo',
     displayName: 'Vimeo',
-    initialUrl: 'https://vimeo.com',
+    // Abre na biblioteca de vídeos do usuário se já logado,
+    // ou na página de login se não autenticado.
+    initialUrl: 'https://vimeo.com/login',
+    loginUrl: 'https://vimeo.com/login',
+    loggedInUrl: 'https://vimeo.com/manage/videos',
+    // Vimeo define `vimeo_user_id` no localStorage após login.
+    loginCheckJs: "localStorage.getItem('vimeo_user_id') !== null || "
+        "document.cookie.includes('vimeo') && !window.location.pathname.includes('/login')",
     videoPatterns: [
       _VideoUrlPattern(RegExp(r'vimeo\.com/\d+')),
     ],
@@ -105,7 +121,13 @@ final _kPlatforms = <String, ScreeningPlatform>{
   'drive': ScreeningPlatform(
     id: 'drive',
     displayName: 'Google Drive',
-    initialUrl: 'https://drive.google.com',
+    // Abre na página de vídeos do Drive se já logado,
+    // ou no login do Google se não autenticado.
+    initialUrl: 'https://accounts.google.com/ServiceLogin?service=wise&continue=https://drive.google.com/drive/my-drive',
+    loginUrl: 'https://accounts.google.com/ServiceLogin?service=wise&continue=https://drive.google.com/drive/my-drive',
+    loggedInUrl: 'https://drive.google.com/drive/my-drive',
+    // Google Drive: presença do cookie `DRIVE_STREAM` ou URL já no drive.google.com
+    loginCheckJs: "window.location.hostname === 'drive.google.com'",
     videoPatterns: [
       _VideoUrlPattern(RegExp(r'drive\.google\.com/file/d/[a-zA-Z0-9_-]+')),
     ],
@@ -403,6 +425,38 @@ class _ScreeningBrowserSheetState
   }
 
   // ── Navegação pela barra de endereço ─────────────────────────────────────
+
+  // ── Redirecionamento inteligente (login → biblioteca) ────────────────────────
+
+  /// Chamado após cada `onLoadStop`. Se a plataforma tem `loginCheckJs`
+  /// e o usuário acabou de fazer login (está na loginUrl mas já autenticado),
+  /// redireciona automaticamente para `loggedInUrl`.
+  /// Também: na primeira abertura, se já estiver logado, vai direto para
+  /// `loggedInUrl` em vez de ficar na página de login.
+  Future<void> _handleSmartRedirect(
+    InAppWebViewController controller,
+    String currentUrl,
+  ) async {
+    final loginUrl = _platform.loginUrl;
+    final loggedInUrl = _platform.loggedInUrl;
+    final checkJs = _platform.loginCheckJs;
+
+    if (loginUrl == null || loggedInUrl == null || checkJs == null) return;
+    // Não redirecionar se já está na página de vídeos ou em um vídeo específico
+    if (currentUrl.startsWith(loggedInUrl)) return;
+    if (_isVideoUrl(currentUrl)) return;
+
+    try {
+      final result = await controller.evaluateJavascript(source: '($checkJs) === true');
+      final isLoggedIn = result?.toString().trim() == 'true';
+      if (isLoggedIn && mounted) {
+        debugPrint('[SmartRedirect] ${_platform.id}: logado → $loggedInUrl');
+        controller.loadUrl(urlRequest: URLRequest(url: WebUri(loggedInUrl)));
+      }
+    } catch (e) {
+      debugPrint('[SmartRedirect] ${_platform.id}: JS check falhou: $e');
+    }
+  }
 
   void _onUrlBarTap() {
     setState(() {
@@ -776,6 +830,8 @@ class _ScreeningBrowserSheetState
             setState(() { _isLoading = false; _loadingProgress = 1.0; _canGoBack = back; _canGoForward = fwd; });
             _updateUrlBar(urlStr);
             if (_isVideoUrl(urlStr) && !_isCapturing) _markVideoDetected(urlStr);
+            // Redirecionar para a página correta após login (Vimeo, Drive, etc.)
+            await _handleSmartRedirect(c, urlStr);
           },
           onLoadError: (c, url, code, msg) {
             if (!mounted) return;
