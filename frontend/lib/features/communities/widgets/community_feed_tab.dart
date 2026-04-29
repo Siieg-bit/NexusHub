@@ -185,7 +185,7 @@ class _FeaturedTab extends ConsumerWidget {
                     crossAxisCount: 2,
                     crossAxisSpacing: r.s(8),
                     mainAxisSpacing: r.s(8),
-                    childAspectRatio: 0.82,
+                    childAspectRatio: 0.75,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (ctx, i) => _FeaturedPostCard(
@@ -796,6 +796,7 @@ class _FeaturedPostCardState extends ConsumerState<_FeaturedPostCard> {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               // Cover image
               ClipRRect(
