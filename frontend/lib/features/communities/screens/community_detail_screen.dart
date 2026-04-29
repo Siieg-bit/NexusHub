@@ -51,6 +51,7 @@ class CommunityDetailScreen extends ConsumerStatefulWidget {
 
 class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     with TickerProviderStateMixin {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late TabController _tabController;
   int _bottomIndex = 0; // 0=Home, 1=Online, 2=Create, 3=Chats, 4=Me
   bool _isDisposed = false;
@@ -498,7 +499,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             builder: (ctx) => Padding(
               padding: EdgeInsets.all(r.s(8)),
               child: GestureDetector(
-                onTap: () => AminoDrawerController.of(ctx)?.toggle(),
+                onTap: () => _scaffoldKey.currentState?.openDrawer(),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.3),
