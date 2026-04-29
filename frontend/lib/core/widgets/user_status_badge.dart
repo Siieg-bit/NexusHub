@@ -182,8 +182,17 @@ class _EditStatusSheetState extends ConsumerState<EditStatusSheet> {
       );
       widget.onSaved?.call(emoji, text);
       if (mounted) Navigator.of(context).pop();
-    } catch (e) {
+    } catch (e, stack) {
       debugPrint('[EditStatusSheet] save error: $e');
+      debugPrint('[EditStatusSheet] stack: $stack');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível salvar o status. Tente novamente.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -195,8 +204,17 @@ class _EditStatusSheetState extends ConsumerState<EditStatusSheet> {
       await SupabaseService.client.rpc('clear_user_status');
       widget.onSaved?.call(null, null);
       if (mounted) Navigator.of(context).pop();
-    } catch (e) {
+    } catch (e, stack) {
       debugPrint('[EditStatusSheet] clear error: $e');
+      debugPrint('[EditStatusSheet] stack: $stack');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível limpar o status. Tente novamente.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
