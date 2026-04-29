@@ -595,7 +595,7 @@ class CommunityFeedNotifier
       debugPrint('[post_provider] toggleLike error: $e');
       debugPrint('[post_provider] toggleLike stack: $stack');
       // Reverter em caso de erro
-      final revertList = [...(state.valueOrNull ?? [])]..[index] = post;
+      final revertList = List<PostModel>.from(state.valueOrNull ?? [])..[index] = post;
       state = AsyncData(revertList);
     }
   }

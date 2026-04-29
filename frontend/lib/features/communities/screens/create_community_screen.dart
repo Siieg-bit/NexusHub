@@ -6,7 +6,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/services/media_upload_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../../../core/l10n/strings_provider.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -651,9 +651,10 @@ class _CreateCommunityScreenState
             SizedBox(height: r.s(20)),
             _sectionTitle(r, theme, s.themeColor, Icons.color_lens_rounded),
             SizedBox(height: r.s(12)),
-            RgbColorPicker(
-              initialColor: _themeColor,
+            ColorPickerButton(
+              color: _themeColor,
               onColorChanged: (color) => setState(() => _themeColor = color),
+              title: 'Cor do Tema',
             ),
           ],
         ),
