@@ -1607,8 +1607,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
       ),
-      builder: (ctx) {
-        return DraggableScrollableSheet(
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          // Sincroniza o estado local do modal com o estado do widget pai
+          bool localRpgEnabled = _rpgModeEnabled;
+
+          return DraggableScrollableSheet(
           expand: false,
           initialChildSize: 0.6,
           minChildSize: 0.4,
@@ -1787,40 +1791,62 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   ],
 
                   // ── Seção RPG ──────────────────────────────────────────
-                  // Host sempre vê (para poder ativar/desativar)
-                  // Membros só veem quando o modo RPG está ativo
-                  if (isHost || _rpgModeEnabled) ...[  
+                  // Host vê sempre o toggle; quando ativo, todos veem o restante
+                  if (isHost || localRpgEnabled) ...[  
                     Divider(
                         color: Colors.white.withValues(alpha: 0.07),
                         height: r.s(16)),
                     _settingsSectionLabel(r, 'Modo RPG'),
-                    // Botão do host: sempre visível (toggle + painel)
+
+                    // Toggle — apenas o host vê (para ativar/desativar)
                     if (isHost)
-                      _settingsTile(
-                        r,
-                        Icons.admin_panel_settings_rounded,
-                        _rpgModeEnabled
-                            ? 'Painel RPG'
-                            : 'Ativar Modo RPG',
-                        () {
-                          Navigator.pop(ctx);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ChatRpgAdminScreen(
-                                  threadId: widget.threadId),
-                            ),
-                          ).then((_) {
-                            // Recarrega o estado do RPG ao voltar
-                            _loadThreadInfo();
-                          });
-                        },
-                      ),
-                    // Botão de personagem: apenas membros quando RPG ativo
-                    if (_rpgModeEnabled && !isHost)
-                      _settingsTile(
+                      _settingsToggleTile(
                         r,
                         Icons.shield_rounded,
+                        'Modo RPG',
+                        localRpgEnabled,
+                        (val) async {
+                          try {
+                            final res = await SupabaseService.rpc(
+                              'toggle_chat_rpg_mode',
+                              params: {
+                                'p_thread_id': widget.threadId,
+                                'p_enabled': val,
+                              },
+                            );
+                            if (res?['success'] == true && mounted) {
+                              // Atualiza o modal imediatamente
+                              setSheetState(() => localRpgEnabled = val);
+                              // Atualiza o estado do widget pai
+                              setState(() => _rpgModeEnabled = val);
+                            }
+                          } catch (e) {
+                            debugPrint('[ChatRoom] toggle RPG: $e');
+                          }
+                        },
+                      ),
+
+                    // Quando RPG ativo: painel do host + personagem para todos
+                    if (localRpgEnabled) ...[  
+                      if (isHost)
+                        _settingsTile(
+                          r,
+                          Icons.admin_panel_settings_rounded,
+                          'Painel RPG',
+                          () {
+                            Navigator.pop(ctx);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChatRpgAdminScreen(
+                                    threadId: widget.threadId),
+                              ),
+                            ).then((_) => _loadThreadInfo());
+                          },
+                        ),
+                      _settingsTile(
+                        r,
+                        Icons.person_rounded,
                         'Meu Personagem',
                         () {
                           Navigator.pop(ctx);
@@ -1833,23 +1859,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           );
                         },
                       ),
-                    // Co-host também acessa o personagem quando RPG ativo
-                    if (_rpgModeEnabled && isHost)
-                      _settingsTile(
-                        r,
-                        Icons.shield_rounded,
-                        'Meu Personagem',
-                        () {
-                          Navigator.pop(ctx);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ChatRpgScreen(
-                                  threadId: widget.threadId),
-                            ),
-                          );
-                        },
-                      ),
+                    ],
+
                     SizedBox(height: r.s(8)),
                   ],
 
@@ -1886,7 +1897,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             ),
           ),
         );
-      },
+        }, // fim StatefulBuilder.builder
+      ),
     );
   }
 
@@ -1934,6 +1946,41 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 color: Colors.grey[600], size: r.s(18)),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _settingsToggleTile(
+      Responsive r,
+      IconData icon,
+      String label,
+      bool value,
+      ValueChanged<bool> onChanged) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: r.s(10)),
+      decoration: BoxDecoration(
+        border: Border(
+            bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.grey[400], size: r.s(20)),
+          SizedBox(width: r.s(12)),
+          Expanded(
+            child: Text(label,
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(14))),
+          ),
+          Transform.scale(
+            scale: 0.85,
+            child: Switch.adaptive(
+              value: value,
+              onChanged: onChanged,
+              activeColor: context.nexusTheme.accentPrimary,
+            ),
+          ),
+        ],
       ),
     );
   }
