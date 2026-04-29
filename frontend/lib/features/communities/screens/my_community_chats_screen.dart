@@ -14,6 +14,8 @@ import '../../../core/providers/chat_provider.dart'
     show unreadCountProvider, unreadCountByCommunityProvider;
 import '../widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/providers/dm_invite_provider.dart';
+import '../providers/favorite_members_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 Map<String, dynamic>? _extractProfile(dynamic rawProfile) {
@@ -259,57 +261,10 @@ final communityMemberAvatarsProvider =
 });
 
 // =============================================================================
-// Provider: membros favoritos (follows do usuário que também são membros)
+// favoriteMembersProvider — reexportado do arquivo dedicado
+// (providers/favorite_members_provider.dart)
+// Mantido aqui apenas para não quebrar referências internas ao arquivo.
 // =============================================================================
-final favoriteMembersProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, String>(
-        (ref, communityId) async {
-  final userId = SupabaseService.currentUserId;
-  if (userId == null) return [];
-  // Buscar quem o usuário segue
-  final follows = await SupabaseService.table('follows')
-      .select(
-          'following_id, profiles!follows_following_id_fkey(id, nickname, icon_url)')
-      .eq('follower_id', userId)
-      .limit(30);
-  final rows = List<Map<String, dynamic>>.from(follows as List? ?? []);
-  if (rows.isEmpty) return rows;
-  // Enriquecer com dados locais de comunidade
-  try {
-    final followingIds = rows
-        .map((r) => r['following_id'] as String?)
-        .whereType<String>()
-        .toList();
-    if (followingIds.isNotEmpty) {
-      final memberships = await SupabaseService.table('community_members')
-          .select('user_id, local_nickname, local_icon_url')
-          .eq('community_id', communityId)
-          .inFilter('user_id', followingIds);
-      final localMap = <String, Map<String, dynamic>>{
-        for (final m in (memberships as List? ?? []))
-          (m['user_id'] as String): Map<String, dynamic>.from(m as Map),
-      };
-      for (final row in rows) {
-        final fid = row['following_id'] as String?;
-        if (fid == null) continue;
-        final membership = localMap[fid];
-        if (membership == null) continue;
-        final profile = row['profiles'] as Map<String, dynamic>?;
-        if (profile == null) continue;
-        final merged = Map<String, dynamic>.from(profile);
-        // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
-        final localNickname = (membership['local_nickname'] as String?)?.trim();
-        final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
-        merged['nickname'] = localNickname;
-        merged['icon_url'] = localIconUrl;
-        row['profiles'] = merged;
-      }
-    }
-  } catch (e) {
-    debugPrint('[favoriteMembersProvider] enrich error: $e');
-  }
-  return rows;
-});
 
 // =============================================================================
 // TELA: Meus Chats (dentro da comunidade)
@@ -354,7 +309,7 @@ class _MyCommunityChatsScreenState
     final membersAsync =
         ref.watch(communityMemberAvatarsProvider(widget.communityId));
     final favoritesAsync =
-        ref.watch(favoriteMembersProvider(widget.communityId));
+        ref.watch(favoriteMembersProvider(widget.communityId));  // novo provider dedicado
 
     return Scaffold(
       backgroundColor: context.nexusTheme.backgroundPrimary,
@@ -373,7 +328,7 @@ class _MyCommunityChatsScreenState
                   ref.invalidate(communityMyChatsProvider(widget.communityId));
                   ref.invalidate(
                       communityMemberAvatarsProvider(widget.communityId));
-                  ref.invalidate(favoriteMembersProvider(widget.communityId));
+                  ref.invalidate(favoriteMembersProvider(widget.communityId)); // novo provider
                   await Future.delayed(const Duration(milliseconds: 300));
                 },
                 child: ListView(
@@ -393,9 +348,8 @@ class _MyCommunityChatsScreenState
                     favoritesAsync.when(
                       loading: () => const SizedBox.shrink(),
                       error: (_, __) => const SizedBox.shrink(),
-                      data: (favorites) => favorites.isEmpty
-                          ? const SizedBox.shrink()
-                          : _buildFavoritesSection(r, favorites),
+                      data: (favorites) =>
+                          _buildFavoritesSection(r, favorites),
                     ),
                     // ── Meus Chats ──
                     chatsAsync.when(
@@ -677,11 +631,11 @@ class _MyCommunityChatsScreenState
   // MEUS MEMBROS FAVORITOS (horizontal scroll)
   // ---------------------------------------------------------------------------
   Widget _buildFavoritesSection(
-      Responsive r, List<Map<String, dynamic>> favorites) {
-    final s = getStrings();
+      Responsive r, List<FavoriteMember> favorites) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ── Cabeçalho da seção ──
         Padding(
           padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(8)),
           child: Row(
@@ -699,34 +653,74 @@ class _MyCommunityChatsScreenState
                   ),
                 ),
               ),
-              Icon(Icons.more_horiz_rounded,
-                  color: context.nexusTheme.textHint, size: r.s(20)),
             ],
           ),
         ),
+        // ── Scroll horizontal ──
         SizedBox(
-          height: r.s(90),
+          height: r.s(95),
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: r.s(12)),
-            itemCount: favorites.length,
+            // +1 para o botão "Adicionar" no início
+            itemCount: favorites.length + 1,
             itemBuilder: (context, index) {
-              final item = favorites[index];
-              final profile = item['profiles'] as Map<String, dynamic>? ?? {};
-              final nickname = profile['nickname'] as String? ?? s.member;
-              final iconUrl = profile['icon_url'] as String?;
-              final userId = item['following_id'] as String?;
+              // ── Botão "Adicionar" (sempre primeiro) ──
+              if (index == 0) {
+                return GestureDetector(
+                  onTap: () => _showAddFavoritePicker(),
+                  child: Container(
+                    width: r.s(64),
+                    margin: EdgeInsets.symmetric(horizontal: r.s(4)),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: r.s(52),
+                          height: r.s(52),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: context.nexusTheme.accentPrimary
+                                  .withValues(alpha: 0.5),
+                              width: 2,
+                              strokeAlign: BorderSide.strokeAlignInside,
+                            ),
+                            color: context.nexusTheme.surfacePrimary,
+                          ),
+                          child: Icon(
+                            Icons.add_rounded,
+                            color: context.nexusTheme.accentPrimary,
+                            size: r.s(26),
+                          ),
+                        ),
+                        SizedBox(height: r.s(4)),
+                        Text(
+                          'Adicionar',
+                          style: TextStyle(
+                            color: context.nexusTheme.accentPrimary,
+                            fontSize: r.fs(10),
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              // ── Avatar de favorito ──
+              final fav = favorites[index - 1];
               return GestureDetector(
-                onTap: () {
-                  if (userId != null) {
-                    context.push(
-                        '/community/${widget.communityId}/profile/$userId');
-                  }
-                },
+                onTap: () => _showFavoriteActions(fav),
                 child: Container(
                   width: r.s(64),
                   margin: EdgeInsets.symmetric(horizontal: r.s(4)),
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
                         width: r.s(52),
@@ -735,21 +729,22 @@ class _MyCommunityChatsScreenState
                           shape: BoxShape.circle,
                           color: context.nexusTheme.accentPrimary
                               .withValues(alpha: 0.3),
-                          image: iconUrl != null
+                          image: fav.iconUrl != null
                               ? DecorationImage(
-                                  image: CachedNetworkImageProvider(iconUrl),
+                                  image:
+                                      CachedNetworkImageProvider(fav.iconUrl!),
                                   fit: BoxFit.cover,
                                 )
                               : null,
                         ),
-                        child: iconUrl == null
+                        child: fav.iconUrl == null
                             ? Icon(Icons.person_rounded,
                                 color: Colors.white, size: r.s(26))
                             : null,
                       ),
                       SizedBox(height: r.s(4)),
                       Text(
-                        nickname,
+                        fav.nickname,
                         style: TextStyle(
                           color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(10),
@@ -773,6 +768,214 @@ class _MyCommunityChatsScreenState
         ),
       ],
     );
+  }
+
+  // ---------------------------------------------------------------------------
+  // AÇÕES DO FAVORITO (bottom sheet ao tocar no avatar)
+  // ---------------------------------------------------------------------------
+  Future<void> _showFavoriteActions(FavoriteMember fav) async {
+    final r = context.r;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: context.nexusTheme.surfacePrimary,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Alça
+            Container(
+              margin: EdgeInsets.only(top: r.s(10), bottom: r.s(4)),
+              width: r.s(36),
+              height: r.s(4),
+              decoration: BoxDecoration(
+                color: context.dividerClr,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Avatar + nome
+            Padding(
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
+              child: Row(
+                children: [
+                  Container(
+                    width: r.s(44),
+                    height: r.s(44),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: context.nexusTheme.accentPrimary
+                          .withValues(alpha: 0.3),
+                      image: fav.iconUrl != null
+                          ? DecorationImage(
+                              image: CachedNetworkImageProvider(fav.iconUrl!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: fav.iconUrl == null
+                        ? Icon(Icons.person_rounded,
+                            color: Colors.white, size: r.s(22))
+                        : null,
+                  ),
+                  SizedBox(width: r.s(12)),
+                  Expanded(
+                    child: Text(
+                      fav.nickname,
+                      style: TextStyle(
+                        color: context.nexusTheme.textPrimary,
+                        fontSize: r.fs(15),
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Divider(
+                color: context.dividerClr.withValues(alpha: 0.3), height: 1),
+            // Ver perfil
+            ListTile(
+              leading: Icon(Icons.person_outline_rounded,
+                  color: context.nexusTheme.textSecondary, size: r.s(22)),
+              title: Text(
+                'Ver perfil',
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(14)),
+              ),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                context.push(
+                    '/community/${widget.communityId}/profile/${fav.targetUserId}');
+              },
+            ),
+            // Abrir chat
+            ListTile(
+              leading: Icon(Icons.chat_bubble_outline_rounded,
+                  color: context.nexusTheme.textSecondary, size: r.s(22)),
+              title: Text(
+                'Abrir chat',
+                style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(14)),
+              ),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _openDm(fav.targetUserId);
+              },
+            ),
+            // Remover dos favoritos
+            ListTile(
+              leading: Icon(Icons.star_border_rounded,
+                  color: context.nexusTheme.error, size: r.s(22)),
+              title: Text(
+                'Remover dos favoritos',
+                style: TextStyle(
+                    color: context.nexusTheme.error, fontSize: r.fs(14)),
+              ),
+              onTap: () async {
+                Navigator.of(ctx).pop();
+                await ref
+                    .read(favoriteMembersProvider(widget.communityId).notifier)
+                    .remove(fav.targetUserId);
+              },
+            ),
+            SizedBox(height: r.s(8)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // PICKER: Adicionar membro favorito
+  // ---------------------------------------------------------------------------
+  Future<void> _showAddFavoritePicker() async {
+    final r = context.r;
+    // Buscar membros da comunidade para o picker
+    final membersRaw = await SupabaseService.table('community_members')
+        .select(
+            'user_id, local_nickname, local_icon_url, profiles!community_members_user_id_fkey(id, nickname, icon_url)')
+        .eq('community_id', widget.communityId)
+        .neq('user_id', SupabaseService.currentUserId ?? '')
+        .eq('is_banned', false)
+        .order('joined_at', ascending: false)
+        .limit(100);
+
+    final members = List<Map<String, dynamic>>.from(membersRaw as List? ?? []);
+    // Normalizar nickname/icon_url: preferir local, fallback global
+    for (final m in members) {
+      if (m['profiles'] is! Map) continue;
+      final profile = Map<String, dynamic>.from(m['profiles'] as Map);
+      final ln = (m['local_nickname'] as String?)?.trim();
+      final li = (m['local_icon_url'] as String?)?.trim();
+      if (ln != null && ln.isNotEmpty) profile['nickname'] = ln;
+      if (li != null && li.isNotEmpty) profile['icon_url'] = li;
+      m['profiles'] = profile;
+    }
+
+    if (!mounted) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+      ),
+      builder: (ctx) => _FavoritePickerSheet(
+        communityId: widget.communityId,
+        members: members,
+        onAdd: (userId) async {
+          final result = await ref
+              .read(favoriteMembersProvider(widget.communityId).notifier)
+              .add(userId);
+          if (!ctx.mounted) return;
+          if (!result.success) {
+            final msg = result.error == 'limit_reached'
+                ? 'Limite de 20 favoritos atingido.'
+                : result.error == 'target_not_a_member'
+                    ? 'Este usuário não é membro desta comunidade.'
+                    : 'Não foi possível adicionar o favorito.';
+            ScaffoldMessenger.of(ctx).showSnackBar(
+              SnackBar(content: Text(msg)),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // ABRIR DM COM FAVORITO
+  // ---------------------------------------------------------------------------
+  Future<void> _openDm(String targetUserId) async {
+    try {
+      final threadId = await DmInviteService()
+          .sendInvite(targetUserId, communityId: widget.communityId);
+      if (threadId == null || threadId.isEmpty) {
+        throw Exception('thread_id_not_returned');
+      }
+      if (!mounted) return;
+      context.push('/chat/$threadId');
+    } catch (e) {
+      if (!mounted) return;
+      final err = e.toString();
+      String msg = 'Erro ao abrir o chat. Tente novamente.';
+      if (err.contains('doesNotAcceptDMs')) {
+        msg = 'Este usuário não aceita mensagens diretas.';
+      } else if (err.contains('cannotDmYourself')) {
+        msg = 'Você não pode abrir um chat consigo mesmo.';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -828,6 +1031,248 @@ class _MyCommunityChatsScreenState
               communityId: widget.communityId,
             )),
       ],
+    );
+  }
+}
+
+// =============================================================================
+// _FavoritePickerSheet — Bottom sheet para selecionar membro a favoritar
+// =============================================================================
+class _FavoritePickerSheet extends ConsumerStatefulWidget {
+  final String communityId;
+  final List<Map<String, dynamic>> members;
+  final Future<void> Function(String userId) onAdd;
+
+  const _FavoritePickerSheet({
+    required this.communityId,
+    required this.members,
+    required this.onAdd,
+  });
+
+  @override
+  ConsumerState<_FavoritePickerSheet> createState() =>
+      _FavoritePickerSheetState();
+}
+
+class _FavoritePickerSheetState
+    extends ConsumerState<_FavoritePickerSheet> {
+  String _query = '';
+  final _ctrl = TextEditingController();
+  final Set<String> _adding = {};
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    final favState =
+        ref.watch(favoriteMembersProvider(widget.communityId));
+    final favIds = favState.valueOrNull
+            ?.map((f) => f.targetUserId)
+            .toSet() ??
+        {};
+
+    final filtered = _query.isEmpty
+        ? widget.members
+        : widget.members.where((m) {
+            final p = m['profiles'] as Map<String, dynamic>? ?? {};
+            final name = (p['nickname'] as String? ?? '').toLowerCase();
+            return name.contains(_query.toLowerCase());
+          }).toList();
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      maxChildSize: 0.92,
+      minChildSize: 0.4,
+      expand: false,
+      builder: (ctx, scrollCtrl) => Column(
+        children: [
+          // Alça
+          Container(
+            margin: EdgeInsets.only(top: r.s(10), bottom: r.s(4)),
+            width: r.s(36),
+            height: r.s(4),
+            decoration: BoxDecoration(
+              color: context.dividerClr,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          // Título
+          Padding(
+            padding:
+                EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+            child: Text(
+              'Adicionar Membro Favorito',
+              style: TextStyle(
+                color: context.nexusTheme.textPrimary,
+                fontSize: r.fs(15),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          // Busca
+          Container(
+            margin: EdgeInsets.symmetric(
+                horizontal: r.s(16), vertical: r.s(4)),
+            padding: EdgeInsets.symmetric(
+                horizontal: r.s(12), vertical: r.s(8)),
+            decoration: BoxDecoration(
+              color: context.nexusTheme.surfacePrimary,
+              borderRadius: BorderRadius.circular(r.s(24)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.search_rounded,
+                    color: context.nexusTheme.textHint,
+                    size: r.s(18)),
+                SizedBox(width: r.s(8)),
+                Expanded(
+                  child: TextField(
+                    controller: _ctrl,
+                    onChanged: (v) => setState(() => _query = v),
+                    style: TextStyle(
+                        color: context.nexusTheme.textPrimary,
+                        fontSize: r.fs(13)),
+                    decoration: InputDecoration(
+                      hintText: 'Buscar membro...',
+                      hintStyle: TextStyle(
+                          color: context.nexusTheme.textHint,
+                          fontSize: r.fs(13)),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(
+              color: context.dividerClr.withValues(alpha: 0.3),
+              height: 1),
+          // Lista de membros
+          Expanded(
+            child: filtered.isEmpty
+                ? Center(
+                    child: Text(
+                      'Nenhum membro encontrado.',
+                      style: TextStyle(
+                          color: context.nexusTheme.textHint,
+                          fontSize: r.fs(13)),
+                    ),
+                  )
+                : ListView.builder(
+                    controller: scrollCtrl,
+                    itemCount: filtered.length,
+                    itemBuilder: (_, i) {
+                      final m = filtered[i];
+                      final p =
+                          m['profiles'] as Map<String, dynamic>? ?? {};
+                      final userId = m['user_id'] as String? ?? '';
+                      final nickname =
+                          (p['nickname'] as String?)?.trim().isNotEmpty ==
+                                  true
+                              ? p['nickname'] as String
+                              : 'Membro';
+                      final iconUrl =
+                          (p['icon_url'] as String?)?.trim().isNotEmpty ==
+                                  true
+                              ? p['icon_url'] as String
+                              : null;
+                      final isFav = favIds.contains(userId);
+                      final isAdding = _adding.contains(userId);
+
+                      return ListTile(
+                        leading: Container(
+                          width: r.s(42),
+                          height: r.s(42),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: context.nexusTheme.accentPrimary
+                                .withValues(alpha: 0.3),
+                            image: iconUrl != null
+                                ? DecorationImage(
+                                    image:
+                                        CachedNetworkImageProvider(iconUrl),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: iconUrl == null
+                              ? Icon(Icons.person_rounded,
+                                  color: Colors.white, size: r.s(22))
+                              : null,
+                        ),
+                        title: Text(
+                          nickname,
+                          style: TextStyle(
+                            color: context.nexusTheme.textPrimary,
+                            fontSize: r.fs(14),
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: isFav
+                            ? Icon(Icons.star_rounded,
+                                color: context.nexusTheme.warning,
+                                size: r.s(22))
+                            : isAdding
+                                ? SizedBox(
+                                    width: r.s(22),
+                                    height: r.s(22),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color:
+                                          context.nexusTheme.accentPrimary,
+                                    ),
+                                  )
+                                : GestureDetector(
+                                    onTap: () async {
+                                      if (_adding.contains(userId)) return;
+                                      setState(
+                                          () => _adding.add(userId));
+                                      await widget.onAdd(userId);
+                                      if (mounted) {
+                                        setState(() =>
+                                            _adding.remove(userId));
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: r.s(12),
+                                          vertical: r.s(6)),
+                                      decoration: BoxDecoration(
+                                        color: context
+                                            .nexusTheme.accentPrimary,
+                                        borderRadius:
+                                            BorderRadius.circular(
+                                                r.s(20)),
+                                      ),
+                                      child: Text(
+                                        'Adicionar',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: r.fs(12),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                      );
+                    },
+                  ),
+          ),
+          SizedBox(
+              height: MediaQuery.of(context).padding.bottom + r.s(8)),
+        ],
+      ),
     );
   }
 }
