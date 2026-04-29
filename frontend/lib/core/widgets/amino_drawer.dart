@@ -1,14 +1,13 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// AminoDrawer — Drawer customizado com animação de sobreposição (overlay).
 ///
-/// O drawer desliza da esquerda e sobrepõe o conteúdo principal sem
-/// empurrá-lo ou redimensioná-lo. Um overlay escuro semitransparente
-/// cobre o conteúdo ao fundo quando o drawer está aberto.
-///
-/// Comportamento melhorado:
+/// Comportamento:
 ///   - Puxar da borda esquerda (72px) → segue o dedo em tempo real
+///   - Usa [EagerGestureRecognizer] para vencer a arena de gestos contra o
+///     TabBarView — resolve o conflito de swipe na área das abas.
 ///   - Arrastar de qualquer ponto quando aberto → fecha seguindo o dedo
 ///   - Velocidade de fling detectada → abre/fecha com snap
 ///   - Toque no overlay → fecha com animação
@@ -38,10 +37,6 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   bool _isOpen = false;
-
-  // Rastreia se estamos em modo de drag (para não competir com TabBarView)
-  bool _isDragging = false;
-  double _dragStartX = 0;
 
   bool get isOpen => _isOpen;
 
@@ -82,12 +77,10 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
 
   // ── Drag na zona de borda (para abrir) ────────────────────────────────────
   void _onEdgeDragStart(DragStartDetails details) {
-    _isDragging = true;
-    _dragStartX = details.globalPosition.dx;
+    // nada extra necessário
   }
 
   void _onEdgeDragUpdate(DragUpdateDetails details) {
-    if (!_isDragging) return;
     final delta = details.primaryDelta ?? 0;
     final effectiveMax = _effectiveMaxSlide;
     if (effectiveMax <= 0) return;
@@ -99,9 +92,7 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   }
 
   void _onEdgeDragEnd(DragEndDetails details) {
-    _isDragging = false;
     final velocity = details.primaryVelocity ?? 0;
-    // Fling para direita → abre; fling para esquerda → fecha
     if (velocity > 300 || (_animController.value > 0.4 && velocity >= 0)) {
       open();
     } else {
@@ -110,12 +101,7 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   }
 
   // ── Drag no overlay (para fechar quando aberto) ────────────────────────────
-  void _onOverlayDragStart(DragStartDetails details) {
-    _isDragging = true;
-  }
-
   void _onOverlayDragUpdate(DragUpdateDetails details) {
-    if (!_isDragging) return;
     final delta = details.primaryDelta ?? 0;
     final effectiveMax = _effectiveMaxSlide;
     if (effectiveMax <= 0) return;
@@ -124,7 +110,6 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   }
 
   void _onOverlayDragEnd(DragEndDetails details) {
-    _isDragging = false;
     final velocity = details.primaryVelocity ?? 0;
     if (velocity < -300 || _animController.value < 0.5) {
       close();
@@ -149,31 +134,42 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
         // ── Conteúdo principal (não se move) ──────────────────────────────────
         widget.child,
 
-        // ── Zona de borda esquerda (72px) — segue o dedo para abrir ──────────
-        // Só ativa quando o drawer está fechado (< 1% aberto)
+        // ── Zona de borda esquerda (72px) — usa RawGestureDetector com
+        //    HorizontalDragGestureRecognizer eager para vencer a arena de
+        //    gestos do TabBarView e do PageView. ────────────────────────────
         AnimatedBuilder(
           animation: _animController,
           builder: (context, child) {
-            if (_animController.value > 0.02) return const SizedBox.shrink();
+            // Quando o drawer já está aberto, a zona de borda não precisa
+            // competir — o overlay cuida do fechamento.
+            if (_animController.value > 0.05) return const SizedBox.shrink();
             return child!;
           },
           child: Positioned(
             left: 0,
             top: 0,
             bottom: 0,
-            width: 72.0, // área maior para facilitar o gesto
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onHorizontalDragStart: _onEdgeDragStart,
-              onHorizontalDragUpdate: _onEdgeDragUpdate,
-              onHorizontalDragEnd: _onEdgeDragEnd,
-              child: const SizedBox.expand(),
+            width: 72.0,
+            child: RawGestureDetector(
+              behavior: HitTestBehavior.opaque,
+              gestures: {
+                _EagerHorizontalDragRecognizer:
+                    GestureRecognizerFactoryWithHandlers<
+                        _EagerHorizontalDragRecognizer>(
+                  () => _EagerHorizontalDragRecognizer(),
+                  (instance) {
+                    instance
+                      ..onStart = _onEdgeDragStart
+                      ..onUpdate = _onEdgeDragUpdate
+                      ..onEnd = _onEdgeDragEnd;
+                  },
+                ),
+              },
             ),
           ),
         ),
 
         // ── Handle visual (indicador de puxão) ────────────────────────────────
-        // Barra fina na borda esquerda, visível quando fechado.
         Positioned(
           left: 3.0,
           top: 0,
@@ -212,7 +208,6 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
         ),
 
         // ── Overlay sobre o conteúdo quando aberto ────────────────────────────
-        // Toque fecha. Arrastar para esquerda fecha com drag contínuo.
         AnimatedBuilder(
           animation: _animController,
           builder: (context, _) {
@@ -220,7 +215,6 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
             final overlayBase = context.nexusTheme.overlayColor;
             return GestureDetector(
               onTap: close,
-              onHorizontalDragStart: _onOverlayDragStart,
               onHorizontalDragUpdate: _onOverlayDragUpdate,
               onHorizontalDragEnd: _onOverlayDragEnd,
               child: Container(
@@ -255,5 +249,18 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
         ),
       ],
     );
+  }
+}
+
+/// Reconhecedor de drag horizontal que se declara vencedor imediatamente
+/// na arena de gestos — resolve o conflito com TabBarView/PageView.
+class _EagerHorizontalDragRecognizer extends HorizontalDragGestureRecognizer {
+  _EagerHorizontalDragRecognizer() : super();
+
+  @override
+  void rejectGesture(int pointer) {
+    // Aceita o gesto mesmo quando rejeitado pela arena, garantindo que
+    // o drawer sempre receba os eventos quando o toque começa na borda.
+    acceptGesture(pointer);
   }
 }

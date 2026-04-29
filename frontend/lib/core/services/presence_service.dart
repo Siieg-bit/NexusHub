@@ -75,7 +75,7 @@ class PresenceService {
       final nowUtc = DateTime.now().toUtc();
       final payload = <String, dynamic>{
         'last_seen_at': nowUtc.toIso8601String(),
-        'online_status': (forceOnline || !isGhostMode) ? 1 : 2,
+        'online_status': (!isGhostMode) ? 1 : 2,
       };
 
       // O trigger trg_accumulate_online_minutes acumula os minutos
