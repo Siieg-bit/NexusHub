@@ -5820,4 +5820,10 @@ class AppStringsFr implements AppStrings {
   String get wikiCommentDeleteError => 'Impossible de supprimer le commentaire';
   @override
   String get wikiCommentCopied => 'Commentaire copié';
+  @override
+  String get myTitle => 'Mon Titre';
+  @override
+  String get communityInfo => 'Infos de la Communauté';
+  @override
+  String get management => 'GESTION';
 }

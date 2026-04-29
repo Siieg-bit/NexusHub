@@ -5820,4 +5820,10 @@ class AppStringsDe implements AppStrings {
   String get wikiCommentDeleteError => 'Kommentar konnte nicht gelöscht werden';
   @override
   String get wikiCommentCopied => 'Kommentar kopiert';
+  @override
+  String get myTitle => 'Mein Titel';
+  @override
+  String get communityInfo => 'Community-Info';
+  @override
+  String get management => 'VERWALTUNG';
 }

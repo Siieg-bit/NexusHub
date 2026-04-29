@@ -5818,4 +5818,10 @@ class AppStringsEs implements AppStrings {
   String get wikiCommentDeleteError => 'No se pudo eliminar el comentario';
   @override
   String get wikiCommentCopied => 'Comentario copiado';
+  @override
+  String get myTitle => 'Mi Título';
+  @override
+  String get communityInfo => 'Info de la Comunidad';
+  @override
+  String get management => 'GESTIÓN';
 }

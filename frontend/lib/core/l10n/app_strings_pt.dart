@@ -5949,4 +5949,10 @@ class AppStringsPt implements AppStrings {
   String get wikiCommentDeleteError => 'Não foi possível excluir o comentário';
   @override
   String get wikiCommentCopied => 'Comentário copiado';
+  @override
+  String get myTitle => 'Meu Título';
+  @override
+  String get communityInfo => 'Informações da Comunidade';
+  @override
+  String get management => 'GERENCIAMENTO';
 }

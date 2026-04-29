@@ -5895,4 +5895,10 @@ class AppStringsEn implements AppStrings {
   String get wikiCommentDeleteError => 'Could not delete comment';
   @override
   String get wikiCommentCopied => 'Comment copied';
+  @override
+  String get myTitle => 'My Title';
+  @override
+  String get communityInfo => 'Community Info';
+  @override
+  String get management => 'MANAGEMENT';
 }

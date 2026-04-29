@@ -5820,4 +5820,10 @@ class AppStringsKo implements AppStrings {
   String get wikiCommentDeleteError => '댓글을 삭제할 수 없습니다';
   @override
   String get wikiCommentCopied => '댓글이 복사되었습니다';
+  @override
+  String get myTitle => '내 칭호';
+  @override
+  String get communityInfo => '커뮤니티 정보';
+  @override
+  String get management => '관리';
 }

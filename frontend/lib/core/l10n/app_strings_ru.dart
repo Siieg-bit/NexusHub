@@ -5820,4 +5820,10 @@ class AppStringsRu implements AppStrings {
   String get wikiCommentDeleteError => 'Не удалось удалить комментарий';
   @override
   String get wikiCommentCopied => 'Комментарий скопирован';
+  @override
+  String get myTitle => 'Мой Титул';
+  @override
+  String get communityInfo => 'О сообществе';
+  @override
+  String get management => 'УПРАВЛЕНИЕ';
 }

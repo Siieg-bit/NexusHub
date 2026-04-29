@@ -36,7 +36,7 @@ final _pendingFlagsCountProvider =
 });
 
 // =============================================================================
-// COMMUNITY DRAWER — Réplica fiel do painel lateral do Amino Apps
+// COMMUNITY DRAWER — Painel lateral da comunidade
 // Totalmente tematizado via NexusThemeData
 // =============================================================================
 
@@ -60,6 +60,8 @@ class CommunityDrawer extends ConsumerStatefulWidget {
 
 class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   bool _isCheckingIn = false;
+  // Controla se a seção "Ver mais" está expandida
+  bool _seeMoreExpanded = false;
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -288,63 +290,48 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           if (ctrl != null && ctrl.isOpen) ctrl.close();
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (context.mounted) {
-              context.pushReplacement('/community/${community.id}');
+              context.go('/community/${community.id}');
             }
           });
         }
       },
-      child: Container(
-        margin: EdgeInsets.only(bottom: r.s(4)),
-        padding: EdgeInsets.symmetric(horizontal: r.s(4)),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: r.s(4), horizontal: r.s(6)),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
             Container(
-              width: r.s(42),
-              height: r.s(42),
+              width: r.s(38),
+              height: r.s(38),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(r.s(12)),
-                color: theme.surfaceSecondary,
+                borderRadius: BorderRadius.circular(r.s(10)),
+                border: isCurrent
+                    ? Border.all(color: theme.accentPrimary, width: 2)
+                    : null,
                 image: community.iconUrl != null
                     ? DecorationImage(
                         image: CachedNetworkImageProvider(community.iconUrl!),
                         fit: BoxFit.cover,
                       )
                     : null,
-                border: isCurrent
-                    ? Border.all(
-                        color: theme.accentPrimary,
-                        width: 2,
-                      )
-                    : Border.all(
-                        color: theme.borderSubtle,
-                        width: 1,
-                      ),
+                color: theme.overlayColor.withValues(alpha: 0.2),
               ),
-              child: community.iconUrl == null
-                  ? Center(
-                      child: Text(
-                        community.name.isNotEmpty
-                            ? community.name[0].toUpperCase()
-                            : '?',
-                        style: TextStyle(
-                          color: theme.textPrimary,
-                          fontSize: r.fs(16),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    )
-                  : null,
             ),
-            // Badge de não lidas — NexusBadge moderno
             if (unreadCount > 0)
               Positioned(
-                top: -4,
-                right: -4,
-                child: NexusBadge(
-                  count: unreadCount,
-                  color: theme.error,
-                  child: const SizedBox.shrink(),
+                top: -3,
+                right: -3,
+                child: Container(
+                  width: r.s(14),
+                  height: r.s(14),
+                  decoration: BoxDecoration(
+                    color: theme.error,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: theme.drawerSidebarBackground,
+                      width: 1.5,
+                    ),
+                  ),
                 ),
               ),
           ],
@@ -354,7 +341,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // HEADER — Fundo com imagem da comunidade
+  // HEADER
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildHeader(
@@ -369,25 +356,19 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 
     return Stack(
       children: [
-        // ── Fundo: imagem da comunidade ──────────────────────────────────
-        Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              color: themeColor.withValues(alpha: 0.9),
-              image: widget.community.bannerForContext('drawer') != null
-                  ? DecorationImage(
-                      image: CachedNetworkImageProvider(
-                          widget.community.bannerForContext('drawer')!),
-                      fit: BoxFit.cover,
-                    )
-                  : widget.community.iconUrl != null
-                      ? DecorationImage(
-                          image: CachedNetworkImageProvider(
-                              widget.community.iconUrl!),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-            ),
+        // ── Fundo (banner ou cor sólida) ─────────────────────────────────
+        Container(
+          width: double.infinity,
+          height: r.s(220),
+          decoration: BoxDecoration(
+            color: themeColor.withValues(alpha: 0.85),
+            image: widget.community.bannerUrl != null
+                ? DecorationImage(
+                    image: CachedNetworkImageProvider(
+                        widget.community.bannerUrl!),
+                    fit: BoxFit.cover,
+                  )
+                : null,
           ),
         ),
 
@@ -691,7 +672,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // ÁREA DO MENU
+  // ÁREA DO MENU — estrutura reorganizada
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildMenuArea(Responsive r, dynamic theme) {
@@ -701,8 +682,13 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(height: r.s(2)),
+          // ── 1. Itens principais ──────────────────────────────────────────
           _buildMainMenu(r, theme),
-          _buildSeeMore(r, theme),
+          // ── 2. Botão "Ver mais" + seção expansível ───────────────────────
+          _buildSeeMoreSection(r, theme),
+          // ── 3. Separador + itens pessoais do usuário ─────────────────────
+          _buildUserSection(r, theme),
+          // ── 4. Seção de gerenciamento (só staff) ─────────────────────────
           if (_isStaff) _buildStaffSection(r, theme),
           SizedBox(height: r.s(40)),
         ],
@@ -711,19 +697,22 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // MENU PRINCIPAL
+  // 1. MENU PRINCIPAL — itens sempre visíveis
+  //    Home · Meus Chats · Ranking · Membros · Wiki · Stories
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildMainMenu(Responsive r, dynamic theme) {
     final s = ref.read(stringsProvider);
     return Column(
       children: [
+        // Home
         _AminoDrawerTile(
           icon: Icons.home_rounded,
           iconColor: theme.accentPrimary,
           label: s.home2,
           onTap: () => _closeAndNavigate(() {}),
         ),
+        // Meus Chats
         _AminoDrawerTile(
           icon: Icons.chat_bubble_rounded,
           iconColor: theme.success,
@@ -736,17 +725,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             );
           }),
         ),
-        _AminoDrawerTile(
-          icon: Icons.forum_rounded,
-          iconColor: theme.success,
-          label: s.drawerPublicChatrooms,
-          onTap: () => _closeAndNavigate(() {
-            context.push('/create-public-chat', extra: {
-              'communityId': widget.community.id,
-              'communityName': widget.community.name,
-            });
-          }),
-        ),
+        // Ranking
         _AminoDrawerTile(
           icon: Icons.leaderboard_rounded,
           iconColor: theme.accentSecondary,
@@ -755,6 +734,16 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             context.push('/community/${widget.community.id}/leaderboard');
           }),
         ),
+        // Membros
+        _AminoDrawerTile(
+          icon: Icons.group_rounded,
+          iconColor: theme.accentPrimary,
+          label: s.drawerMembers,
+          onTap: () => _closeAndNavigate(() {
+            context.push('/community/${widget.community.id}/members');
+          }),
+        ),
+        // Wiki
         _AminoDrawerTile(
           icon: Icons.auto_stories_rounded,
           iconColor: theme.accentSecondary,
@@ -763,14 +752,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             context.push('/community/${widget.community.id}/wiki');
           }),
         ),
-        _AminoDrawerTile(
-          icon: Icons.folder_shared_rounded,
-          iconColor: theme.accentPrimary,
-          label: 'Shared Folder',
-          onTap: () => _closeAndNavigate(() {
-            context.push('/community/${widget.community.id}/shared-folder');
-          }),
-        ),
+        // Stories
         _AminoDrawerTile(
           icon: Icons.amp_stories_rounded,
           iconColor: theme.accentSecondary,
@@ -779,43 +761,29 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             context.push('/community/${widget.community.id}/stories');
           }),
         ),
-        // ── Roles RPG (só quando modo RPG ativo) ──
-        if (widget.community.rpgModeEnabled)
-          _AminoDrawerTile(
-            icon: Icons.shield_rounded,
-            iconColor: theme.accentPrimary,
-            label: 'Roles RPG',
-            onTap: () => _closeAndNavigate(() {
-              context.push('/community/${widget.community.id}/rpg-roles');
-            }),
-          ),
-        // ── Meu Título (acessível para todos os membros) ──
-        _AminoDrawerTile(
-          icon: Icons.workspace_premium_rounded,
-          iconColor: theme.accentSecondary,
-          label: 'Meu Título',
-          onTap: () => _closeAndNavigate(() {
-            context.push('/community/${widget.community.id}/my-title');
-          }),
-        ),
       ],
     );
   }
+
   // ═══════════════════════════════════════════════════════════════════════════
-  // SEE MORE....
+  // 2. "VER MAIS" — botão que expande inline com AnimatedSize
+  //    Shared Folder · Salas Públicas · Roles RPG · Meu Título
+  //    Posts Salvos · Informações da Comunidade
   // ═══════════════════════════════════════════════════════════════════════════
 
-  Widget _buildSeeMore(Responsive r, dynamic theme) {
+  Widget _buildSeeMoreSection(Responsive r, dynamic theme) {
     final s = ref.read(stringsProvider);
     return Column(
       children: [
+        // ── Divider sutil ────────────────────────────────────────────────
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
+          height: 0.5,
+          color: theme.divider,
+        ),
+        // ── Botão "Ver mais / Ver menos" ─────────────────────────────────
         GestureDetector(
-          onTap: () => _closeAndNavigate(() {
-            context.push(
-              '/community/${widget.community.id}/info',
-              extra: {'readOnly': true},
-            );
-          }),
+          onTap: () => setState(() => _seeMoreExpanded = !_seeMoreExpanded),
           behavior: HitTestBehavior.opaque,
           child: Padding(
             padding: EdgeInsets.symmetric(
@@ -826,42 +794,148 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               children: [
                 Expanded(
                   child: Text(
-                    'See More...',
+                    _seeMoreExpanded ? s.less : s.more,
                     style: TextStyle(
                       color: theme.textSecondary,
                       fontSize: r.fs(14),
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded,
-                    color: theme.iconSecondary, size: r.s(22)),
+                AnimatedRotation(
+                  turns: _seeMoreExpanded ? 0.25 : 0.0,
+                  duration: const Duration(milliseconds: 220),
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    color: theme.iconSecondary,
+                    size: r.s(22),
+                  ),
+                ),
               ],
             ),
           ),
         ),
-        // Divider sutil
+        // ── Seção expansível com AnimatedSize ────────────────────────────
+        AnimatedSize(
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          child: _seeMoreExpanded
+              ? Column(
+                  children: [
+                    // Shared Folder
+                    _AminoDrawerTile(
+                      icon: Icons.folder_shared_rounded,
+                      iconColor: theme.accentPrimary,
+                      label: s.sharedFolder,
+                      onTap: () => _closeAndNavigate(() {
+                        context.push(
+                            '/community/${widget.community.id}/shared-folder');
+                      }),
+                    ),
+                    // Salas Públicas
+                    _AminoDrawerTile(
+                      icon: Icons.forum_rounded,
+                      iconColor: theme.success,
+                      label: s.drawerPublicChatrooms,
+                      onTap: () => _closeAndNavigate(() {
+                        context.push('/create-public-chat', extra: {
+                          'communityId': widget.community.id,
+                          'communityName': widget.community.name,
+                        });
+                      }),
+                    ),
+                    // Roles RPG — só quando modo RPG ativo
+                    if (widget.community.rpgModeEnabled)
+                      _AminoDrawerTile(
+                        icon: Icons.shield_rounded,
+                        iconColor: theme.accentPrimary,
+                        label: 'Roles RPG',
+                        onTap: () => _closeAndNavigate(() {
+                          context.push(
+                              '/community/${widget.community.id}/rpg-roles');
+                        }),
+                      ),
+                    // Meu Título
+                    _AminoDrawerTile(
+                      icon: Icons.workspace_premium_rounded,
+                      iconColor: theme.accentSecondary,
+                      label: s.myTitle,
+                      onTap: () => _closeAndNavigate(() {
+                        context.push(
+                            '/community/${widget.community.id}/my-title');
+                      }),
+                    ),
+                    // Posts Salvos
+                    _AminoDrawerTile(
+                      icon: Icons.bookmark_rounded,
+                      iconColor: theme.error,
+                      label: s.savedPosts,
+                      onTap: () => _closeAndNavigate(() {
+                        context.push(
+                            '/community/${widget.community.id}/my-profile');
+                      }),
+                    ),
+                    // Informações da Comunidade
+                    _AminoDrawerTile(
+                      icon: Icons.info_outline_rounded,
+                      iconColor: theme.textSecondary,
+                      label: s.communityInfo,
+                      onTap: () => _closeAndNavigate(() {
+                        context.push(
+                          '/community/${widget.community.id}/info',
+                          extra: {'readOnly': true},
+                        );
+                      }),
+                    ),
+                  ],
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 3. SEÇÃO PESSOAL — Notificações · Configurações
+  //    Sempre visível, separada por divider
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildUserSection(Responsive r, dynamic theme) {
+    final s = ref.read(stringsProvider);
+    return Column(
+      children: [
         Container(
-          margin: EdgeInsets.symmetric(horizontal: r.s(16)),
+          margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
           height: 0.5,
           color: theme.divider,
         ),
-        SizedBox(height: r.s(4)),
+        // Notificações
+        Consumer(builder: (ctx, cref, _) {
+          final communityUnread = cref.watch(
+            unreadCommunityNotificationCountProvider(widget.community.id),
+          );
+          return _AminoDrawerTile(
+            icon: communityUnread > 0
+                ? Icons.notifications_rounded
+                : Icons.notifications_outlined,
+            iconColor:
+                communityUnread > 0 ? theme.error : theme.textSecondary,
+            label: s.notifications,
+            onTap: () => _closeAndNavigate(() {
+              context
+                  .push('/community/${widget.community.id}/notifications');
+            }),
+            badgeCount: communityUnread,
+          );
+        }),
+        // Configurações
         _AminoDrawerTile(
-          icon: Icons.group_rounded,
-          iconColor: theme.accentPrimary,
-          label: s.drawerMembers,
+          icon: Icons.manage_accounts_rounded,
+          iconColor: theme.textSecondary,
+          label: s.settings,
           onTap: () => _closeAndNavigate(() {
-            context.push('/community/${widget.community.id}/members');
-          }),
-        ),
-        _AminoDrawerTile(
-          icon: Icons.bookmark_rounded,
-          iconColor: theme.error,
-          label: 'Saved Posts',
-          onTap: () => _closeAndNavigate(() {
-            // Navega para o perfil do usuário DENTRO da comunidade (aba Saved Posts)
-            context.push('/community/${widget.community.id}/my-profile');
+            context.push('/settings');
           }),
         ),
       ],
@@ -869,7 +943,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // STAFF / GERENCIAMENTO
+  // 4. STAFF / GERENCIAMENTO — só para staff
+  //    Editar Comunidade · Transferir Liderança · Central de Denúncias
+  //    Estatísticas · Usuários Bloqueados
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildStaffSection(Responsive r, dynamic theme) {
@@ -885,7 +961,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         Padding(
           padding: EdgeInsets.fromLTRB(r.s(20), r.s(14), r.s(20), r.s(4)),
           child: Text(
-            'MANAGEMENT',
+            s.management,
             style: TextStyle(
               color: theme.textHint,
               fontSize: r.fs(10),
@@ -894,6 +970,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             ),
           ),
         ),
+        // Editar Comunidade (leader)
         if (_isLeader)
           _AminoDrawerTile(
             icon: Icons.settings_rounded,
@@ -903,15 +980,17 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               context.push('/community/${widget.community.id}/acm');
             }),
           ),
+        // Transferir Liderança (leader)
         if (_isLeader)
           _AminoDrawerTile(
             icon: Icons.swap_horiz_rounded,
             iconColor: theme.warning,
-            label: 'Transferir Liderança',
+            label: s.transferLeadership,
             onTap: () => _closeAndNavigate(() {
               _showTransferOwnershipDialog(context);
             }),
           ),
+        // Central de Denúncias (staff, com badge)
         if (_isStaff)
           Consumer(builder: (ctx, cref, _) {
             final pendingFlags = cref.watch(
@@ -920,23 +999,16 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             final count = pendingFlags.valueOrNull ?? 0;
             return _AminoDrawerTile(
               icon: Icons.flag_rounded,
-              iconColor: count > 0 ? theme.error : theme.error.withValues(alpha: 0.70),
+              iconColor:
+                  count > 0 ? theme.error : theme.error.withValues(alpha: 0.70),
               label: s.drawerFlagCenter,
               onTap: () => _closeAndNavigate(() {
                 context.push('/community/${widget.community.id}/flags');
               }),
               badgeCount: count > 0 ? count : null,
             );
-          })
-        else
-          _AminoDrawerTile(
-            icon: Icons.flag_rounded,
-            iconColor: theme.error,
-            label: s.drawerFlagCenter,
-            onTap: () => _closeAndNavigate(() {
-              context.push('/community/${widget.community.id}/flags');
-            }),
-          ),
+          }),
+        // Estatísticas (staff)
         _AminoDrawerTile(
           icon: Icons.analytics_rounded,
           iconColor: theme.accentPrimary,
@@ -945,45 +1017,16 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             context.push('/community/${widget.community.id}/acm');
           }),
         ),
-        // Separador antes das configurações
-        Container(
-          margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
-          height: 0.5,
-          color: theme.divider,
-        ),
-        // Configurações gerais do app acessíveis pelo drawer
-        Consumer(builder: (ctx, cref, _) {
-          final communityUnread = cref.watch(
-            unreadCommunityNotificationCountProvider(widget.community.id),
-          );
-          return _AminoDrawerTile(
-            icon: communityUnread > 0
-                ? Icons.notifications_rounded
-                : Icons.notifications_outlined,
-            iconColor: communityUnread > 0 ? theme.error : theme.textSecondary,
-            label: s.notifications,
+        // Usuários Bloqueados (leader)
+        if (_isLeader)
+          _AminoDrawerTile(
+            icon: Icons.block_rounded,
+            iconColor: theme.textSecondary,
+            label: s.blockedUsers,
             onTap: () => _closeAndNavigate(() {
-              context.push('/community/${widget.community.id}/notifications');
+              context.push('/settings/blocked-users');
             }),
-            badgeCount: communityUnread,
-          );
-        }),
-        _AminoDrawerTile(
-          icon: Icons.block_rounded,
-          iconColor: theme.textSecondary,
-          label: s.blockedUsers,
-          onTap: () => _closeAndNavigate(() {
-            context.push('/settings/blocked-users');
-          }),
-        ),
-        _AminoDrawerTile(
-          icon: Icons.manage_accounts_rounded,
-          iconColor: theme.textSecondary,
-          label: s.settings,
-          onTap: () => _closeAndNavigate(() {
-            context.push('/settings');
-          }),
-        ),
+          ),
       ],
     );
   }

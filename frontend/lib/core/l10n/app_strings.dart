@@ -3001,4 +3001,8 @@ abstract class AppStrings {
   String get wikiCommentDeleted;
   String get wikiCommentDeleteError;
   String get wikiCommentCopied;
+  // ── Community Drawer (reorganização) ──
+  String get myTitle;
+  String get communityInfo;
+  String get management;
 }

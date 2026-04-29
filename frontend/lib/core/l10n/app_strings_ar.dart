@@ -5819,4 +5819,10 @@ class AppStringsAr implements AppStrings {
   String get wikiCommentDeleteError => 'تعذر حذف التعليق';
   @override
   String get wikiCommentCopied => 'تم نسخ التعليق';
+  @override
+  String get myTitle => 'لقبي';
+  @override
+  String get communityInfo => 'معلومات المجتمع';
+  @override
+  String get management => 'الإدارة';
 }

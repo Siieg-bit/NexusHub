@@ -5818,4 +5818,10 @@ class AppStringsJa implements AppStrings {
   String get wikiCommentDeleteError => 'コメントを削除できませんでした';
   @override
   String get wikiCommentCopied => 'コメントをコピーしました';
+  @override
+  String get myTitle => '私のタイトル';
+  @override
+  String get communityInfo => 'コミュニティ情報';
+  @override
+  String get management => '管理';
 }
