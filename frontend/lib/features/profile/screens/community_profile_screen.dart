@@ -2863,13 +2863,14 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final myRole = _myMembership?['role'] as String? ?? 'member';
     // team_member (is_team_admin / is_team_moderator) é superior a qualquer
     // role de comunidade e tem acesso total de moderação.
-    final canManageRoles = !_isOwnProfile &&
-        (_viewerIsTeamMember ||
-            myRole == 'agent' ||
-            myRole == 'leader' ||
-            myRole == 'curator');
-    final canManageTitles = !_isOwnProfile &&
-        (_viewerIsTeamMember || myRole == 'agent' || myRole == 'leader');
+    // O menu de moderação aparece também no próprio perfil do moderador.
+    final canManageRoles =
+        _viewerIsTeamMember ||
+        myRole == 'agent' ||
+        myRole == 'leader' ||
+        myRole == 'curator';
+    final canManageTitles =
+        _viewerIsTeamMember || myRole == 'agent' || myRole == 'leader';
 
     // Itens do menu: cada item é um Map com icon, label, value e isDestructive
     // Usamos showMenu nativo do Flutter para o estilo dropdown.
