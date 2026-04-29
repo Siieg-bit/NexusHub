@@ -184,7 +184,7 @@ class _FeaturedTab extends ConsumerWidget {
                     crossAxisCount: 2,
                     crossAxisSpacing: r.s(8),
                     mainAxisSpacing: r.s(8),
-                    childAspectRatio: 0.78,
+                    childAspectRatio: 0.72,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (ctx, i) => _FeaturedPostCard(
@@ -779,7 +779,7 @@ class _FeaturedPostCard extends ConsumerWidget {
                 borderRadius:
                     BorderRadius.vertical(top: Radius.circular(r.s(12))),
                 child: AspectRatio(
-                  aspectRatio: 16 / 9,
+                  aspectRatio: 4 / 3,
                   child: hasImage
                       ? CachedNetworkImage(
                           imageUrl: thumb,
@@ -798,19 +798,17 @@ class _FeaturedPostCard extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Título
-                      Expanded(
-                        child: Text(
-                          post.title ?? post.content,
-                          style: TextStyle(
-                            color: context.nexusTheme.textPrimary,
-                            fontSize: r.fs(12),
-                            fontWeight: FontWeight.w600,
-                            height: 1.3,
-                          ),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
+                      // Título — 1 linha com ellipsis
+                      Text(
+                        post.title ?? post.content,
+                        style: TextStyle(
+                          color: context.nexusTheme.textPrimary,
+                          fontSize: r.fs(12),
+                          fontWeight: FontWeight.w600,
+                          height: 1.3,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
 
                       SizedBox(height: r.s(6)),
@@ -860,27 +858,35 @@ class _FeaturedPostCard extends ConsumerWidget {
 
                       SizedBox(height: r.s(4)),
 
-                      // Likes + Comentários
-                      Row(
-                        children: [
-                          Icon(Icons.favorite_rounded,
-                              size: r.s(11), color: context.nexusTheme.textHint),
-                          SizedBox(width: r.s(2)),
-                          Text(
-                            '${post.likesCount}',
-                            style: TextStyle(
-                                color: context.nexusTheme.textHint, fontSize: r.fs(10)),
-                          ),
-                          SizedBox(width: r.s(8)),
-                          Icon(Icons.chat_bubble_outline_rounded,
-                              size: r.s(11), color: context.nexusTheme.textHint),
-                          SizedBox(width: r.s(2)),
-                          Text(
-                            '${post.commentsCount}',
-                            style: TextStyle(
-                                color: context.nexusTheme.textHint, fontSize: r.fs(10)),
-                          ),
-                        ],
+                      // Likes + Comentários — botões maiores e clicaveis
+                      GestureDetector(
+                        onTap: () => context.push('/post/${post.id}'),
+                        behavior: HitTestBehavior.opaque,
+                        child: Row(
+                          children: [
+                            Icon(Icons.favorite_rounded,
+                                size: r.s(14), color: context.nexusTheme.textHint),
+                            SizedBox(width: r.s(3)),
+                            Text(
+                              '${post.likesCount}',
+                              style: TextStyle(
+                                  color: context.nexusTheme.textHint,
+                                  fontSize: r.fs(11),
+                                  fontWeight: FontWeight.w600),
+                            ),
+                            SizedBox(width: r.s(10)),
+                            Icon(Icons.chat_bubble_outline_rounded,
+                                size: r.s(14), color: context.nexusTheme.textHint),
+                            SizedBox(width: r.s(3)),
+                            Text(
+                              '${post.commentsCount}',
+                              style: TextStyle(
+                                  color: context.nexusTheme.textHint,
+                                  fontSize: r.fs(11),
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
