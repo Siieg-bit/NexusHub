@@ -1,17 +1,12 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// AminoDrawer — Drawer customizado com animação de sobreposição (overlay).
 ///
-/// Comportamento:
-///   - Puxar da borda esquerda (72px) → segue o dedo em tempo real
-///   - Usa [EagerGestureRecognizer] para vencer a arena de gestos contra o
-///     TabBarView — resolve o conflito de swipe na área das abas.
-///   - Arrastar de qualquer ponto quando aberto → fecha seguindo o dedo
-///   - Velocidade de fling detectada → abre/fecha com snap
-///   - Toque no overlay → fecha com animação
-///   - Botão de menu (toggle) → abre/fecha
+/// Abordagem de robustez máxima:
+/// Usa um [Listener] de baixo nível para detectar o início do toque na borda (72px).
+/// Se o toque começar na borda, o drawer "sequestra" o gesto antes que ele chegue
+/// ao TabBarView, garantindo fluidez total.
 class AminoDrawerController extends StatefulWidget {
   final Widget drawer;
   final Widget child;
@@ -24,7 +19,6 @@ class AminoDrawerController extends StatefulWidget {
     this.maxSlide = 300,
   });
 
-  /// Abre/fecha o drawer a partir de qualquer descendente
   static AminoDrawerControllerState? of(BuildContext context) {
     return context.findAncestorStateOfType<AminoDrawerControllerState>();
   }
@@ -37,6 +31,11 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   bool _isOpen = false;
+  
+  // Controle de drag manual via PointerEvents
+  bool _isDragging = false;
+  double _lastPointerX = 0;
+  bool _dragStartedInEdge = false;
 
   bool get isOpen => _isOpen;
 
@@ -67,55 +66,54 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     if (mounted) setState(() => _isOpen = false);
   }
 
-  void toggle() {
-    if (_isOpen) {
-      close();
+  void toggle() => _isOpen ? close() : open();
+
+  // ── Gerenciamento de Ponteiro de Baixo Nível ───────────────────────────────
+  
+  void _handlePointerDown(PointerDownEvent event) {
+    _lastPointerX = event.position.dx;
+    // Se estiver fechado, verifica se começou na borda (72px)
+    if (!_isOpen) {
+      _dragStartedInEdge = event.position.dx < 72.0;
     } else {
-      open();
+      // Se estiver aberto, qualquer toque no overlay ou drawer pode iniciar o drag
+      _dragStartedInEdge = true; 
+    }
+    _isDragging = false;
+  }
+
+  void _handlePointerMove(PointerMoveEvent event) {
+    final deltaX = event.position.dx - _lastPointerX;
+    _lastPointerX = event.position.dx;
+
+    // Se começou na borda e o movimento é horizontal significativo
+    if (!_isDragging && _dragStartedInEdge && deltaX.abs() > 2) {
+      _isDragging = true;
+    }
+
+    if (_isDragging) {
+      final effectiveMax = _effectiveMaxSlide;
+      if (effectiveMax > 0) {
+        _animController.value = (_animController.value + deltaX / effectiveMax).clamp(0.0, 1.0);
+        if (_animController.value > 0.01 && !_isOpen) {
+          setState(() => _isOpen = true);
+        }
+      }
     }
   }
 
-  // ── Drag na zona de borda (para abrir) ────────────────────────────────────
-  void _onEdgeDragStart(DragStartDetails details) {
-    // nada extra necessário
-  }
-
-  void _onEdgeDragUpdate(DragUpdateDetails details) {
-    final delta = details.primaryDelta ?? 0;
-    final effectiveMax = _effectiveMaxSlide;
-    if (effectiveMax <= 0) return;
-    _animController.value =
-        (_animController.value + delta / effectiveMax).clamp(0.0, 1.0);
-    if (_animController.value > 0.01 && !_isOpen) {
-      setState(() => _isOpen = true);
+  void _handlePointerUp(PointerUpEvent event) {
+    if (_isDragging) {
+      // Se soltar com velocidade ou mais da metade aberto, abre.
+      // Como não temos VelocityTracker fácil aqui, usamos posição.
+      if (_animController.value > 0.4) {
+        open();
+      } else {
+        close();
+      }
     }
-  }
-
-  void _onEdgeDragEnd(DragEndDetails details) {
-    final velocity = details.primaryVelocity ?? 0;
-    if (velocity > 300 || (_animController.value > 0.4 && velocity >= 0)) {
-      open();
-    } else {
-      close();
-    }
-  }
-
-  // ── Drag no overlay (para fechar quando aberto) ────────────────────────────
-  void _onOverlayDragUpdate(DragUpdateDetails details) {
-    final delta = details.primaryDelta ?? 0;
-    final effectiveMax = _effectiveMaxSlide;
-    if (effectiveMax <= 0) return;
-    _animController.value =
-        (_animController.value + delta / effectiveMax).clamp(0.0, 1.0);
-  }
-
-  void _onOverlayDragEnd(DragEndDetails details) {
-    final velocity = details.primaryVelocity ?? 0;
-    if (velocity < -300 || _animController.value < 0.5) {
-      close();
-    } else {
-      open();
-    }
+    _isDragging = false;
+    _dragStartedInEdge = false;
   }
 
   double get _effectiveMaxSlide {
@@ -129,138 +127,77 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     final screenWidth = MediaQuery.of(context).size.width;
     final effectiveMaxSlide = widget.maxSlide.clamp(0.0, screenWidth * 0.92);
 
-    return Stack(
-      children: [
-        // ── Conteúdo principal (não se move) ──────────────────────────────────
-        widget.child,
+    return Listener(
+      onPointerDown: _handlePointerDown,
+      onPointerMove: _handlePointerMove,
+      onPointerUp: _handlePointerUp,
+      behavior: HitTestBehavior.translucent,
+      child: Stack(
+        children: [
+          // Conteúdo Principal
+          widget.child,
 
-        // ── Zona de borda esquerda (72px) — usa RawGestureDetector com
-        //    HorizontalDragGestureRecognizer eager para vencer a arena de
-        //    gestos do TabBarView e do PageView. ────────────────────────────
-        AnimatedBuilder(
-          animation: _animController,
-          builder: (context, child) {
-            // Quando o drawer já está aberto, a zona de borda não precisa
-            // competir — o overlay cuida do fechamento.
-            if (_animController.value > 0.05) return const SizedBox.shrink();
-            return child!;
-          },
-          child: Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: 72.0,
-            child: RawGestureDetector(
-              behavior: HitTestBehavior.opaque,
-              gestures: {
-                _EagerHorizontalDragRecognizer:
-                    GestureRecognizerFactoryWithHandlers<
-                        _EagerHorizontalDragRecognizer>(
-                  () => _EagerHorizontalDragRecognizer(),
-                  (instance) {
-                    instance
-                      ..onStart = _onEdgeDragStart
-                      ..onUpdate = _onEdgeDragUpdate
-                      ..onEnd = _onEdgeDragEnd;
-                  },
-                ),
-              },
-            ),
-          ),
-        ),
-
-        // ── Handle visual (indicador de puxão) ────────────────────────────────
-        Positioned(
-          left: 3.0,
-          top: 0,
-          bottom: 0,
-          child: IgnorePointer(
-            child: AnimatedBuilder(
-              animation: _animController,
-              builder: (context, _) {
-                final opacity =
-                    (1.0 - _animController.value * 15.0).clamp(0.0, 1.0);
-                if (opacity == 0) return const SizedBox.shrink();
-                final handleColor = context.nexusTheme.appBarForeground;
-                return Center(
-                  child: Opacity(
-                    opacity: opacity,
-                    child: Container(
-                      width: 4.0,
-                      height: 52.0,
-                      decoration: BoxDecoration(
-                        color: handleColor.withValues(alpha: 0.4),
-                        borderRadius: BorderRadius.circular(3.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: context.nexusTheme.overlayColor
-                                .withValues(alpha: 0.25),
-                            blurRadius: 6.0,
-                          ),
-                        ],
-                      ),
+          // Overlay (Bloqueia toques no conteúdo quando aberto)
+          AnimatedBuilder(
+            animation: _animController,
+            builder: (context, _) {
+              if (_animController.value == 0) return const SizedBox.shrink();
+              return Positioned.fill(
+                child: GestureDetector(
+                  onTap: close,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    color: context.nexusTheme.overlayColor.withValues(
+                      alpha: context.nexusTheme.overlayOpacity * _animController.value,
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
-        ),
 
-        // ── Overlay sobre o conteúdo quando aberto ────────────────────────────
-        AnimatedBuilder(
-          animation: _animController,
-          builder: (context, _) {
-            if (_animController.value == 0) return const SizedBox.shrink();
-            final overlayBase = context.nexusTheme.overlayColor;
-            return GestureDetector(
-              onTap: close,
-              onHorizontalDragUpdate: _onOverlayDragUpdate,
-              onHorizontalDragEnd: _onOverlayDragEnd,
-              child: Container(
-                color: overlayBase.withValues(
-                    alpha: context.nexusTheme.overlayOpacity *
-                        _animController.value),
-              ),
-            );
-          },
-        ),
-
-        // ── Drawer (sobrepõe tudo, desliza da esquerda) ───────────────────────
-        AnimatedBuilder(
-          animation: _animController,
-          builder: (context, child) {
-            final offset = effectiveMaxSlide * (_animController.value - 1.0);
-            return Transform.translate(
-              offset: Offset(offset, 0),
-              child: child,
-            );
-          },
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: SizedBox(
-              width: effectiveMaxSlide,
-              child: Material(
-                type: MaterialType.transparency,
-                child: widget.drawer,
+          // Drawer
+          AnimatedBuilder(
+            animation: _animController,
+            builder: (context, child) {
+              final offset = effectiveMaxSlide * (_animController.value - 1.0);
+              return Transform.translate(
+                offset: Offset(offset, 0),
+                child: child,
+              );
+            },
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SizedBox(
+                width: effectiveMaxSlide,
+                child: Material(
+                  elevation: 16,
+                  type: MaterialType.transparency,
+                  child: widget.drawer,
+                ),
               ),
             ),
           ),
-        ),
-      ],
+          
+          // Handle Visual (Opcional, mas ajuda a UI)
+          if (!_isOpen)
+            Positioned(
+              left: 4,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: Container(
+                  width: 4,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
-  }
-}
-
-/// Reconhecedor de drag horizontal que se declara vencedor imediatamente
-/// na arena de gestos — resolve o conflito com TabBarView/PageView.
-class _EagerHorizontalDragRecognizer extends HorizontalDragGestureRecognizer {
-  _EagerHorizontalDragRecognizer() : super();
-
-  @override
-  void rejectGesture(int pointer) {
-    // Aceita o gesto mesmo quando rejeitado pela arena, garantindo que
-    // o drawer sempre receba os eventos quando o toque começa na borda.
-    acceptGesture(pointer);
   }
 }

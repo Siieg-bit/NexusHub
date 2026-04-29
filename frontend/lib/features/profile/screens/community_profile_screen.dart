@@ -14,7 +14,6 @@ import '../../../core/utils/helpers.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../../chat/widgets/chat_bubble.dart'; // AvatarWithFrame + AminoPlusBadge
 import '../../../core/widgets/amino_custom_title.dart';
-import '../../../core/widgets/level_progress_bar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../communities/widgets/community_create_menu.dart';
@@ -1578,31 +1577,6 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                ),
-
-                // ================================================================
-                // BARRA DE NÍVEL — progresso XP unificado
-                // ================================================================
-                SliverToBoxAdapter(
-                  child: Container(
-                    color: layeredBgColor,
-                    padding: EdgeInsets.fromLTRB(r.s(16), 0, r.s(16), r.s(12)),
-                    child: LevelProgressBar(
-                      reputation: reputation,
-                      level: level,
-                      s: s,
-                      onLevelTap: () => context.push('/all-rankings', extra: {
-                        'level': level,
-                        'reputation': reputation,
-                        'bannerUrl': _communityBannerUrl,
-                      }),
-                      onViewAllRankings: () => context.push('/all-rankings', extra: {
-                        'level': level,
-                        'reputation': reputation,
-                        'bannerUrl': _communityBannerUrl,
-                      }),
                     ),
                   ),
                 ),
