@@ -192,7 +192,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           SliverAppBar(
             expandedHeight: r.s(160),
             pinned: true,
-            backgroundColor: context.nexusTheme.accentPrimary,
+            forceElevated: innerBoxIsScrolled,
+            backgroundColor: const Color(0xFF0D47A1),
+            surfaceTintColor: Colors.transparent,
             iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
@@ -249,36 +251,45 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               ),
             ),
             // TabBar fixo no bottom do AppBar
-            bottom: TabBar(
-              controller: _tabController,
-              indicatorColor: Colors.amber,
-              indicatorWeight: 3,
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.white60,
-              labelStyle: TextStyle(
-                  fontWeight: FontWeight.w800, fontSize: r.fs(13)),
-              tabs: const [
-                Tab(
-                  icon: Icon(Icons.star_rounded, size: 18),
-                  text: 'Reputação',
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(kTextTabBarHeight),
+              child: ColoredBox(
+                color: const Color(0xFF0D47A1),
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorColor: Colors.amber,
+                  indicatorWeight: 3,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white60,
+                  dividerColor: Colors.transparent,
+                  labelStyle: TextStyle(
+                      fontWeight: FontWeight.w800, fontSize: r.fs(13)),
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                  tabs: const [
+                    Tab(
+                      icon: Icon(Icons.star_rounded, size: 18),
+                      text: 'Reputação',
+                    ),
+                    Tab(
+                      icon: Icon(Icons.access_time_rounded, size: 18),
+                      text: 'Online',
+                    ),
+                    Tab(
+                      icon: Icon(Icons.favorite_rounded, size: 18),
+                      text: 'Curtidas',
+                    ),
+                    Tab(
+                      icon: Icon(Icons.chat_bubble_rounded, size: 18),
+                      text: 'Comentários',
+                    ),
+                    Tab(
+                      icon: Icon(Icons.monetization_on_rounded, size: 18),
+                      text: 'Coins',
+                    ),
+                  ],
                 ),
-                Tab(
-                  icon: Icon(Icons.access_time_rounded, size: 18),
-                  text: 'Online',
-                ),
-                Tab(
-                  icon: Icon(Icons.favorite_rounded, size: 18),
-                  text: 'Curtidas',
-                ),
-                Tab(
-                  icon: Icon(Icons.chat_bubble_rounded, size: 18),
-                  text: 'Comentários',
-                ),
-                Tab(
-                  icon: Icon(Icons.monetization_on_rounded, size: 18),
-                  text: 'Coins',
-                ),
-              ],
+              ),
             ),
           ),
         ],
