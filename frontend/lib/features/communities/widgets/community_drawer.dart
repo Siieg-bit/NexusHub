@@ -859,16 +859,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                               '/community/${widget.community.id}/rpg-roles');
                         }),
                       ),
-                    // Meu Título — permite ao membro escolher um título para exibir no perfil
-                    _AminoDrawerTile(
-                      icon: Icons.workspace_premium_rounded,
-                      iconColor: theme.accentSecondary,
-                      label: s.myTitle,
-                      onTap: () => _closeAndNavigate(() {
-                        context.push(
-                            '/community/${widget.community.id}/my-title');
-                      }),
-                    ),
+                    // Meu Título: removido do drawer — já disponível na edição de perfil da comunidade
                     // Posts Salvos — abre diretamente na aba Saved Posts (index 2)
                     _AminoDrawerTile(
                       icon: Icons.bookmark_rounded,
