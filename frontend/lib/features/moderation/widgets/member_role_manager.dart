@@ -4,6 +4,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'manage_member_titles_sheet.dart';
 
 // =============================================================================
 // MemberRoleManager — Gerenciamento de Hierarquia e Títulos de Membros
@@ -976,308 +977,71 @@ class _MemberRoleManagerSheetState
                 }),
               ],
 
-              // ── SEÇÃO: TÍTULO CUSTOMIZADO ─────────────────────────────────
+              // ── SEÇÃO: GERENCIAR TÍTULOS ──────────────────────────────
               if (_canManageTitle) ...[
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                      r.s(20), r.s(16), r.s(20), r.s(8)),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'TÍTULO CUSTOMIZADO',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: r.fs(11),
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                      ),
-                      if (widget.currentTitle != null)
-                        TextButton(
-                          onPressed: _removeCustomTitle,
-                          child: Text('Remover',
-                              style: TextStyle(
-                                  color: Colors.red[400],
-                                  fontSize: r.fs(12))),
-                        ),
-                    ],
-                  ),
-                ),
-                if (!_showTitleEditor)
-                  InkWell(
-                    onTap: () => setState(() => _showTitleEditor = true),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: r.s(20), vertical: r.s(14)),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: r.s(36),
-                            height: r.s(36),
-                            decoration: BoxDecoration(
-                              color: context.nexusTheme.accentPrimary
-                                  .withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Icons.label_rounded,
-                                color: context.nexusTheme.accentPrimary,
-                                size: r.s(18)),
-                          ),
-                          SizedBox(width: r.s(14)),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.currentTitle != null
-                                      ? 'Editar: "${widget.currentTitle}"'
-                                      : _isSelf
-                                          ? 'Definir meu título'
-                                          : 'Dar Título Customizado',
-                                  style: TextStyle(
-                                    color: context.nexusTheme.accentPrimary,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: r.fs(14),
-                                  ),
-                                ),
-                                Text(
-                                  'Exibido no perfil do membro na comunidade',
-                                  style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontSize: r.fs(12)),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(Icons.chevron_right_rounded,
-                              color: Colors.grey[600]),
-                        ],
-                      ),
-                    ),
-                  )
-                else
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(
-                        r.s(20), 0, r.s(20), r.s(16)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                _sectionHeader('TÍTULOS CUSTOMIZADOS', r),
+                InkWell(
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final changed = await showManageMemberTitlesSheet(
+                      context: context,
+                      ref: ref,
+                      communityId: widget.communityId,
+                      targetUserId: widget.targetUserId,
+                      targetUserName: widget.targetUserName,
+                      callerRole: widget.callerRole,
+                    );
+                    if (changed == true) {
+                      // Sinaliza que algo mudou ao fechar o bottom sheet pai
+                    }
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(20), vertical: r.s(14)),
+                    child: Row(
                       children: [
-                        TextField(
-                          controller: _titleController,
-                          maxLength: 30,
-                          onChanged: (_) => setState(() {}),
-                          decoration: InputDecoration(
-                            labelText: 'Título',
-                            hintText: 'Ex: Fundador, Veterano, Artista...',
-                            filled: true,
-                            fillColor:
-                                Theme.of(context).scaffoldBackgroundColor,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(r.s(10)),
-                              borderSide: BorderSide.none,
-                            ),
-                            counterText: '',
+                        Container(
+                          width: r.s(36),
+                          height: r.s(36),
+                          decoration: BoxDecoration(
+                            color: context.nexusTheme.accentPrimary
+                                .withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
                           ),
+                          child: Icon(Icons.label_rounded,
+                              color: context.nexusTheme.accentPrimary,
+                              size: r.s(18)),
                         ),
-                        SizedBox(height: r.s(10)),
-
-                        // Color picker integrado
-                        Row(
-                          children: [
-                            Text('Cor do título',
+                        SizedBox(width: r.s(14)),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _isSelf
+                                    ? 'Gerenciar meus títulos'
+                                    : 'Gerenciar títulos',
+                                style: TextStyle(
+                                  color: context.nexusTheme.accentPrimary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: r.fs(14),
+                                ),
+                              ),
+                              Text(
+                                'Adicionar, editar ou remover títulos customizados',
                                 style: TextStyle(
                                     color: Colors.grey[500],
-                                    fontSize: r.fs(12))),
-                            const Spacer(),
-                            GestureDetector(
-                              onTap: () async {
-                                Color initial;
-                                try {
-                                  initial = Color(int.parse(
-                                      _selectedTitleColor
-                                          .replaceFirst('#', '0xFF')));
-                                } catch (_) {
-                                  initial = Colors.white;
-                                }
-                                final picked = await showRGBColorPicker(
-                                  context,
-                                  initialColor: initial,
-                                  title: 'Cor do Título',
-                                );
-                                if (picked != null && mounted) {
-                                  final hex =
-                                      '#${picked.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
-                                  setState(() => _selectedTitleColor = hex);
-                                }
-                              },
-                              child: Container(
-                                width: r.s(28),
-                                height: r.s(28),
-                                decoration: BoxDecoration(
-                                  color: () {
-                                    try {
-                                      return Color(int.parse(
-                                          _selectedTitleColor
-                                              .replaceFirst('#', '0xFF')));
-                                    } catch (_) {
-                                      return Colors.white;
-                                    }
-                                  }(),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      color: Colors.white38, width: 2),
-                                ),
+                                    fontSize: r.fs(12)),
                               ),
-                            ),
-                            SizedBox(width: r.s(8)),
-                            Text(
-                              _selectedTitleColor,
-                              style: TextStyle(
-                                  color: Colors.grey[400],
-                                  fontSize: r.fs(12),
-                                  fontFamily: 'monospace'),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: r.s(10)),
-
-                        // Paleta rápida
-                        Wrap(
-                          spacing: r.s(8),
-                          runSpacing: r.s(8),
-                          children: [
-                            '#FFFFFF', '#FFD600', '#FF6B35', '#7C4DFF',
-                            '#00BCD4', '#4CAF50', '#FF5722', '#E91E63',
-                          ].map((hex) {
-                            Color c;
-                            try {
-                              c = Color(int.parse(
-                                  hex.replaceFirst('#', '0xFF')));
-                            } catch (_) {
-                              c = Colors.white;
-                            }
-                            final isSelected = _selectedTitleColor == hex;
-                            return GestureDetector(
-                              onTap: () =>
-                                  setState(() => _selectedTitleColor = hex),
-                              child: Container(
-                                width: r.s(28),
-                                height: r.s(28),
-                                decoration: BoxDecoration(
-                                  color: c,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : Colors.transparent,
-                                    width: r.s(2.5),
-                                  ),
-                                  boxShadow: isSelected
-                                      ? [
-                                          BoxShadow(
-                                              color: c.withValues(alpha: 0.5),
-                                              blurRadius: 6)
-                                        ]
-                                      : null,
-                                ),
-                                child: isSelected
-                                    ? Icon(Icons.check_rounded,
-                                        color: c.computeLuminance() > 0.5
-                                            ? Colors.black
-                                            : Colors.white,
-                                        size: r.s(14))
-                                    : null,
-                              ),
-                            );
-                          }).toList(),
-                        ),
-
-                        SizedBox(height: r.s(12)),
-
-                        // Preview
-                        if (_titleController.text.isNotEmpty)
-                          Center(
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: r.s(12), vertical: r.s(6)),
-                              decoration: BoxDecoration(
-                                color: Colors.black26,
-                                borderRadius:
-                                    BorderRadius.circular(r.s(20)),
-                                border: Border.all(
-                                  color: () {
-                                    try {
-                                      return Color(int.parse(
-                                              _selectedTitleColor.replaceFirst(
-                                                  '#', '0xFF')))
-                                          .withValues(alpha: 0.5);
-                                    } catch (_) {
-                                      return Colors.white38;
-                                    }
-                                  }(),
-                                ),
-                              ),
-                              child: Text(
-                                _titleController.text,
-                                style: TextStyle(
-                                  color: () {
-                                    try {
-                                      return Color(int.parse(
-                                          _selectedTitleColor
-                                              .replaceFirst('#', '0xFF')));
-                                    } catch (_) {
-                                      return Colors.white;
-                                    }
-                                  }(),
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: r.fs(13),
-                                ),
-                              ),
-                            ),
+                            ],
                           ),
-
-                        SizedBox(height: r.s(16)),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () => setState(
-                                    () => _showTitleEditor = false),
-                                style: OutlinedButton.styleFrom(
-                                  side:
-                                      BorderSide(color: Colors.grey[700]!),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(r.s(10)),
-                                  ),
-                                ),
-                                child: const Text('Cancelar'),
-                              ),
-                            ),
-                            SizedBox(width: r.s(12)),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: _saveCustomTitle,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      context.nexusTheme.accentPrimary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(r.s(10)),
-                                  ),
-                                ),
-                                child: const Text('Salvar Título',
-                                    style:
-                                        TextStyle(color: Colors.white)),
-                              ),
-                            ),
-                          ],
                         ),
+                        Icon(Icons.chevron_right_rounded,
+                            color: Colors.grey[600]),
                       ],
                     ),
                   ),
+                ),
                 const Divider(height: 1, thickness: 0.5),
               ],
 

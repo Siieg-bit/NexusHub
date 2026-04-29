@@ -15,6 +15,7 @@ import '../widgets/rich_bio.dart';
 import '../widgets/frame_picker_sheet.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
+import '../../../core/widgets/amino_custom_title.dart';
 
 /// Editar Perfil da Comunidade — estilo Amino Apps.
 ///
@@ -57,12 +58,135 @@ class _EditCommunityProfileScreenState
   bool _isLoading = true;
   bool _isSaving = false;
 
+  // Títulos customizados do usuário nesta comunidade
+  List<Map<String, dynamic>> _myTitles = [];
+  bool _titlesLoaded = false;
+
   static const int _maxGalleryPhotos = 12;
 
   @override
   void initState() {
     super.initState();
     _loadCurrentProfile();
+    _loadMyTitles();
+  }
+
+  Future<void> _loadMyTitles() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return;
+    try {
+      final result = await SupabaseService.rpc('get_member_titles_full', params: {
+        'p_community_id': widget.communityId,
+        'p_user_id': userId,
+      });
+      if (!mounted) return;
+      final List<Map<String, dynamic>> titles = [];
+      if (result is List) {
+        for (final item in result) {
+          if (item is Map && item['is_role_badge'] != true) {
+            titles.add(Map<String, dynamic>.from(item));
+          }
+        }
+      }
+      setState(() {
+        _myTitles = titles;
+        _titlesLoaded = true;
+      });
+    } catch (e) {
+      debugPrint('[EditCommunityProfileScreen] _loadMyTitles error: $e');
+      if (mounted) setState(() => _titlesLoaded = true);
+    }
+  }
+
+  Future<void> _deleteMyTitle(Map<String, dynamic> title) async {
+    final titleText = title['title'] as String? ?? '';
+    final titleId = title['id'] as String?;
+    if (titleId == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: ctx.surfaceColor,
+        title: Text('Remover título?',
+            style: TextStyle(color: ctx.nexusTheme.textPrimary)),
+        content: Text(
+          'Deseja remover o título "$titleText"? Esta ação não pode ser desfeita.',
+          style: TextStyle(color: ctx.nexusTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red[700]),
+            child: const Text('Remover', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isSaving = true);
+    try {
+      await SupabaseService.rpc('delete_own_title', params: {
+        'p_title_id': titleId,
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Título "$titleText" removido.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      await _loadMyTitles();
+    } catch (e) {
+      debugPrint('[EditCommunityProfileScreen] _deleteMyTitle error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao remover título: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _reorderTitles(int oldIndex, int newIndex) async {
+    if (oldIndex == newIndex) return;
+    // Atualizar UI imediatamente
+    setState(() {
+      final item = _myTitles.removeAt(oldIndex);
+      final insertIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
+      _myTitles.insert(insertIndex, item);
+    });
+
+    // Persistir nova ordem via RPC
+    try {
+      final orderedIds = _myTitles.map((t) => t['id'] as String).toList();
+      await SupabaseService.rpc('reorder_member_titles', params: {
+        'p_community_id': widget.communityId,
+        'p_ordered_ids': orderedIds,
+      });
+    } catch (e) {
+      debugPrint('[EditCommunityProfileScreen] _reorderTitles error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao reordenar: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        // Recarregar para reverter
+        await _loadMyTitles();
+      }
+    }
   }
 
   Future<void> _loadCurrentProfile() async {
@@ -827,12 +951,105 @@ class _EditCommunityProfileScreenState
                           ),
                         ),
                         SizedBox(height: r.s(6)),
+                        // ── SEÇÃO: MEUS TÍTULOS CUSTOMIZADOS ─────────────────────
+                        if (_titlesLoaded && _myTitles.isNotEmpty)
+                          _buildMyTitlesSection(r),
                       ],
                     ),
                   ),
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildMyTitlesSection(Responsive r) {
+    return Padding(
+
+      padding: EdgeInsets.fromLTRB(r.s(16), 0, r.s(16), r.s(16)),
+      child: _SettingsSectionCard(
+        child: Padding(
+          padding: EdgeInsets.all(r.s(14)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SectionHeader(
+                icon: Icons.label_rounded,
+                iconColor: const Color(0xFF7C4DFF),
+                title: 'Meus Títulos',
+                subtitle: 'Reordene ou remova seus títulos nesta comunidade',
+              ),
+              SizedBox(height: r.s(12)),
+              Text(
+                'Arraste para reordenar. Títulos de cargo não podem ser removidos aqui.',
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: r.fs(11),
+                ),
+              ),
+              SizedBox(height: r.s(10)),
+              ReorderableListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _myTitles.length,
+                onReorder: _reorderTitles,
+                proxyDecorator: (child, index, animation) => Material(
+                  color: Colors.transparent,
+                  child: child,
+                ),
+                itemBuilder: (ctx, index) {
+                  final t = _myTitles[index];
+                  final titleText = t['title'] as String? ?? '';
+                  final colorHex = t['color'] as String? ?? '#7C4DFF';
+                  Color titleColor;
+                  try {
+                    titleColor = Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
+                  } catch (_) {
+                    titleColor = const Color(0xFF7C4DFF);
+                  }
+                  return Container(
+                    key: ValueKey(t['id'] ?? index),
+                    margin: EdgeInsets.only(bottom: r.s(6)),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.04),
+                      borderRadius: BorderRadius.circular(r.s(10)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.07),
+                      ),
+                    ),
+                    child: ListTile(
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: r.s(12),
+                        vertical: r.s(2),
+                      ),
+                      leading: Icon(
+                        Icons.drag_handle_rounded,
+                        color: Colors.grey[600],
+                        size: r.s(20),
+                      ),
+                      title: AminoCustomTitle(
+                        title: titleText,
+                        color: titleColor,
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(
+                          Icons.delete_outline_rounded,
+                          color: Colors.red[400],
+                          size: r.s(18),
+                        ),
+                        onPressed: _isSaving
+                            ? null
+                            : () => _deleteMyTitle(t),
+                        tooltip: 'Remover título',
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
