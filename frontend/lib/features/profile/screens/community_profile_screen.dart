@@ -455,14 +455,6 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       gallery: displayGallery,
     );
 
-    // Título do cargo (role title)
-    String? roleTitle;
-    if (role == 'leader' || role == 'agent') {
-      roleTitle = s.leader;
-    } else if (role == 'curator') {
-      roleTitle = s.curator;
-    }
-
     final viewerRole = (_myMembership?['role'] as String? ?? '').toLowerCase();
     final canViewHiddenProfile =
         _isOwnProfile || _viewerIsTeamMember || viewerRole == 'agent' || viewerRole == 'leader' || viewerRole == 'curator';
@@ -667,9 +659,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
 
     // Altura do FlexibleSpaceBar: varia conforme conteúdo
     // Base: 200 (banner) + avatar(96) + nome + level + tags + botões + conquistas
+    // O role badge agora faz parte de titles (is_role_badge), não precisa de espaço extra.
     final double expandedHeight = 420 +
-        (titles.isNotEmpty ? r.s(40) : 0) +
-        (roleTitle != null ? r.s(28) : 0);
+        (titles.isNotEmpty ? r.s(40) : 0);
 
     final effectiveBgColor =
         dynamicBgColor ?? context.nexusTheme.backgroundPrimary;
@@ -1164,38 +1156,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                   ],
                                 ),
                               ),
-                              // Role badge (Líder/Curador) — pill colorida abaixo do nível
-                              if (roleTitle != null) ...[
-                                SizedBox(height: r.s(5)),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: r.s(12), vertical: r.s(4)),
-                                  decoration: BoxDecoration(
-                                    color: (role == 'leader' || role == 'agent')
-                                        ? const Color(0xFF2DBE60).withValues(alpha: 0.20)
-                                        : const Color(0xFF2196F3).withValues(alpha: 0.20),
-                                    borderRadius: BorderRadius.circular(r.s(14)),
-                                    border: Border.all(
-                                      color: (role == 'leader' || role == 'agent')
-                                          ? const Color(0xFF2DBE60).withValues(alpha: 0.60)
-                                          : const Color(0xFF2196F3).withValues(alpha: 0.60),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    roleTitle,
-                                    style: TextStyle(
-                                      color: (role == 'leader' || role == 'agent')
-                                          ? const Color(0xFF2DBE60)
-                                          : const Color(0xFF2196F3),
-                                      fontSize: r.fs(11),
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.3,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              // Custom titles (tags/chips coloridas)
+                              // Badges e títulos customizados (inclui role badge via is_role_badge)
+                              // O sync_role_badge já insere o badge de cargo (Líder/Curador/Agente)
+                              // em custom_titles com is_role_badge=true — não renderizar manualmente.
                               if (titles.isNotEmpty)
                                 Padding(
                                   padding:
