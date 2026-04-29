@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import 'package:amino_clone/core/services/supabase_service.dart';
 import 'package:amino_clone/core/utils/responsive.dart';
+import '../../../core/widgets/rgb_color_picker.dart';
 
 // ── Providers ─────────────────────────────────────────────────────────────────
 
@@ -655,14 +656,26 @@ class _ChatRpgAdminScreenState extends ConsumerState<ChatRpgAdminScreen>
                     hint: '0',
                     keyboardType: TextInputType.number),
                 SizedBox(height: r.s(12)),
-                Text('Cor da Classe',
-                    style: TextStyle(
-                        color: context.nexusTheme.textSecondary,
-                        fontSize: r.fs(12))),
-                SizedBox(height: r.s(8)),
-                _colorPicker(r, selectedColor, (c) {
-                  setModalState(() => selectedColor = c);
-                }),
+                Row(
+                  children: [
+                    Text('Cor da Classe',
+                        style: TextStyle(
+                            color: context.nexusTheme.textSecondary,
+                            fontSize: r.fs(12))),
+                    const Spacer(),
+                    ColorPickerButton(
+                      color: _parseColor(selectedColor),
+                      title: 'Cor da Classe',
+                      label: selectedColor,
+                      size: 30,
+                      onColorChanged: (c) {
+                        final hex =
+                            '#${c.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
+                        setModalState(() => selectedColor = hex);
+                      },
+                    ),
+                  ],
+                ),
                 SizedBox(height: r.s(20)),
                 SizedBox(
                   width: double.infinity,
@@ -1034,48 +1047,6 @@ class _ChatRpgAdminScreenState extends ConsumerState<ChatRpgAdminScreen>
           ),
         ),
       ],
-    );
-  }
-
-  Widget _colorPicker(
-      Responsive r, String current, void Function(String) onSelect) {
-    const colors = [
-      '#7C4DFF', '#2196F3', '#4CAF50', '#FF5722',
-      '#FF9800', '#E91E63', '#00BCD4', '#9C27B0',
-      '#F44336', '#607D8B', '#795548', '#FFD700',
-    ];
-    return Wrap(
-      spacing: r.s(8),
-      runSpacing: r.s(8),
-      children: colors.map((c) {
-        final selected = current == c;
-        return GestureDetector(
-          onTap: () => onSelect(c),
-          child: Container(
-            width: r.s(32),
-            height: r.s(32),
-            decoration: BoxDecoration(
-              color: _parseColor(c),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: selected ? Colors.white : Colors.transparent,
-                width: 2.5,
-              ),
-              boxShadow: selected
-                  ? [
-                      BoxShadow(
-                          color: _parseColor(c).withValues(alpha: 0.5),
-                          blurRadius: 8)
-                    ]
-                  : null,
-            ),
-            child: selected
-                ? const Icon(Icons.check_rounded,
-                    color: Colors.white, size: 16)
-                : null,
-          ),
-        );
-      }).toList(),
     );
   }
 

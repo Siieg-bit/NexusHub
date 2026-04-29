@@ -760,46 +760,24 @@ final image = _pickedFiles_image.first.file;
                     itemBuilder: (_, i) {
                       // Último item: botão de cor personalizada RGB
                       if (i == _bgColors.length + _bgGradients.length) {
-                        return GestureDetector(
-                          onTap: () async {
-                            final currentColor = _selectedBgIndex < _bgColors.length
-                                ? _bgColors[_selectedBgIndex]
-                                : const Color(0xFF6C5CE7);
-                            final picked = await showRGBColorPicker(
-                              context,
-                              initialColor: currentColor,
-                              title: 'Cor de fundo',
-                            );
-                            if (picked != null && mounted) {
+                        final currentColor = _selectedBgIndex < _bgColors.length
+                            ? _bgColors[_selectedBgIndex]
+                            : const Color(0xFF6C5CE7);
+                        return Padding(
+                          padding: EdgeInsets.only(right: r.s(8)),
+                          child: ColorPickerButton(
+                            color: currentColor,
+                            title: 'Cor de fundo',
+                            size: 36,
+                            onColorChanged: (picked) {
+                              final hex =
+                                  '#${picked.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
                               setState(() {
                                 _bgColors.insert(0, picked);
-                                _bgHexCodes.insert(0, '#${picked.r.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${picked.g.round().toRadixString(16).padLeft(2, '0').toUpperCase()}${picked.b.round().toRadixString(16).padLeft(2, '0').toUpperCase()}');
+                                _bgHexCodes.insert(0, hex);
                                 _selectedBgIndex = 0;
                               });
-                            }
-                          },
-                          child: Container(
-                            width: r.s(36),
-                            height: r.s(36),
-                            margin: EdgeInsets.only(right: r.s(8)),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white38, width: 1.5),
-                              gradient: const SweepGradient(
-                                colors: [
-                                  Color(0xFFE53935), Color(0xFFE91E63),
-                                  Color(0xFF9C27B0), Color(0xFF3F51B5),
-                                  Color(0xFF2196F3), Color(0xFF4CAF50),
-                                  Color(0xFFFFEB3B), Color(0xFFFF9800),
-                                  Color(0xFFE53935),
-                                ],
-                              ),
-                            ),
-                            child: Icon(
-                              Icons.add_rounded,
-                              color: Colors.white,
-                              size: r.s(18),
-                            ),
+                            },
                           ),
                         );
                       }
