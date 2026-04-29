@@ -36,6 +36,8 @@ enum MediaBucket {
   communityProfileBackgrounds,
   /// Galeria de fotos local do usuário dentro de uma comunidade
   communityProfileGallery,
+  /// Banners globais da comunidade (banner principal, banners contextuais, capa)
+  communityBanners,
 }
 
 class UploadResult {
@@ -78,6 +80,8 @@ class MediaUploadService {
         return 'community-profile-backgrounds';
       case MediaBucket.communityProfileGallery:
         return 'community-profile-gallery';
+      case MediaBucket.communityBanners:
+        return 'community-banners';
     }
   }
 

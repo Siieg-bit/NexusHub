@@ -7,6 +7,9 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'dart:io';
+import 'package:image_cropper/image_cropper.dart';
+import '../../../core/services/media_upload_service.dart';
 
 /// ACM — Amino Community Manager.
 /// Gerenciamento de módulos (JSONB), Join Types, customização visual,
@@ -53,6 +56,14 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
   Map<String, dynamic> _homeLayout = {};
   // RPG Mode
   bool _rpgModeEnabled = false;
+
+  // Upload loading states
+  bool _uploadingIcon = false;
+  bool _uploadingBanner = false;
+  bool _uploadingBannerHeader = false;
+  bool _uploadingBannerDrawer = false;
+  bool _uploadingBannerCard = false;
+  bool _uploadingBannerInfo = false;
 
   // Stats (loaded from DB)
   int _newMembers7d = 0;
@@ -243,12 +254,104 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
     super.dispose();
   }
 
-  Color _parseColor(String hex) {
+   Color _parseColor(String hex) {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
     } catch (_) {
       return context.nexusTheme.accentPrimary;
     }
+  }
+
+  // ============================================================
+  // UPLOAD HELPERS
+  // ============================================================
+
+  /// Upload genérico para o bucket community-banners.
+  /// [folder] = 'icon' | 'banner' | 'banner_header' | etc.
+  /// [cropCircle] = true para ícone (crop circular 1:1).
+  Future<String?> _uploadCommunityAsset(
+    String folder, {
+    bool cropCircle = false,
+    bool isIcon = false,
+  }) async {
+    try {
+      final userId = SupabaseService.currentUserId ?? 'unknown';
+      final file = await MediaUploadService.pickImage(
+        context: context,
+        maxWidth: isIcon ? 512 : 1920,
+        maxHeight: isIcon ? 512 : 1080,
+      );
+      if (file == null || !mounted) return null;
+
+      final fileToUpload = cropCircle
+          ? await MediaUploadService.cropImage(
+                file,
+                aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+                useCircleCrop: true,
+                maxWidth: 512,
+                maxHeight: 512,
+              ) ??
+              file
+          : file;
+
+      final customPath =
+          '$userId/${widget.communityId}/$folder/${DateTime.now().millisecondsSinceEpoch}.webp';
+
+      final result = await MediaUploadService.uploadFile(
+        file: fileToUpload,
+        bucket: isIcon ? MediaBucket.communityIcons : MediaBucket.communityBanners,
+        customPath: customPath,
+        context: context,
+      );
+      return result?.url;
+    } catch (e) {
+      debugPrint('[acm_screen] upload error ($folder): $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao fazer upload. Tente novamente.'),
+            backgroundColor: context.nexusTheme.error,
+          ),
+        );
+      }
+      return null;
+    }
+  }
+
+  Future<void> _pickIcon() async {
+    setState(() => _uploadingIcon = true);
+    final url = await _uploadCommunityAsset('icon', cropCircle: true, isIcon: true);
+    if (mounted) setState(() { _uploadingIcon = false; if (url != null) _iconUrl = url; });
+  }
+
+  Future<void> _pickBanner() async {
+    setState(() => _uploadingBanner = true);
+    final url = await _uploadCommunityAsset('banner');
+    if (mounted) setState(() { _uploadingBanner = false; if (url != null) _bannerUrl = url; });
+  }
+
+  Future<void> _pickBannerHeader() async {
+    setState(() => _uploadingBannerHeader = true);
+    final url = await _uploadCommunityAsset('banner_header');
+    if (mounted) setState(() { _uploadingBannerHeader = false; if (url != null) _bannerHeaderUrl = url; });
+  }
+
+  Future<void> _pickBannerDrawer() async {
+    setState(() => _uploadingBannerDrawer = true);
+    final url = await _uploadCommunityAsset('banner_drawer');
+    if (mounted) setState(() { _uploadingBannerDrawer = false; if (url != null) _bannerDrawerUrl = url; });
+  }
+
+  Future<void> _pickBannerCard() async {
+    setState(() => _uploadingBannerCard = true);
+    final url = await _uploadCommunityAsset('banner_card');
+    if (mounted) setState(() { _uploadingBannerCard = false; if (url != null) _bannerCardUrl = url; });
+  }
+
+  Future<void> _pickBannerInfo() async {
+    setState(() => _uploadingBannerInfo = true);
+    final url = await _uploadCommunityAsset('banner_info');
+    if (mounted) setState(() { _uploadingBannerInfo = false; if (url != null) _bannerInfoUrl = url; });
   }
 
   @override
@@ -580,118 +683,28 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
 
         SizedBox(height: r.s(16)),
 
-        // Icon URL
-        Container(
-          padding: EdgeInsets.all(r.s(16)),
-          decoration: BoxDecoration(
-            color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(r.s(12)),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.image_rounded, color: context.nexusTheme.accentPrimary),
-                  SizedBox(width: r.s(12)),
-                  Text(s.communityIcon,
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                ],
-              ),
-              SizedBox(height: r.s(12)),
-              if (_iconUrl.isNotEmpty)
-                Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(r.s(16)),
-                    child: Image.network(_iconUrl,
-                        width: r.s(80),
-                        height: r.s(80),
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                              width: r.s(80),
-                              height: r.s(80),
-                              color: context.surfaceColor,
-                              child: const Icon(Icons.broken_image_rounded),
-                            )),
-                  ),
-                ),
-              SizedBox(height: r.s(8)),
-              TextField(
-                controller: TextEditingController(text: _iconUrl),
-                onChanged: (v) => setState(() => _iconUrl = v),
-                decoration: InputDecoration(
-                  hintText: s.iconImageUrl,
-                  prefixIcon: Icon(Icons.link_rounded, size: r.s(18)),
-                  filled: true,
-                  fillColor: context.nexusTheme.backgroundPrimary,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(r.s(8)),
-                    borderSide: BorderSide.none,
-                  ),
-                  isDense: true,
-                ),
-                style: TextStyle(fontSize: r.fs(13)),
-              ),
-            ],
-          ),
+        // Ícone da comunidade
+        _AcmImageUploadCard(
+          label: s.communityIcon,
+          icon: Icons.image_rounded,
+          imageUrl: _iconUrl,
+          isCircle: true,
+          isLoading: _uploadingIcon,
+          onPickImage: _pickIcon,
+          onRemove: _iconUrl.isNotEmpty ? () => setState(() => _iconUrl = '') : null,
         ),
 
         SizedBox(height: r.s(16)),
 
-        // Banner URL
-        Container(
-          padding: EdgeInsets.all(r.s(16)),
-          decoration: BoxDecoration(
-            color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(r.s(12)),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.panorama_rounded, color: context.nexusTheme.accentPrimary),
-                  SizedBox(width: r.s(12)),
-                  Text(s.bannerCover,
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                ],
-              ),
-              SizedBox(height: r.s(12)),
-              if (_bannerUrl.isNotEmpty)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(r.s(12)),
-                  child: Image.network(_bannerUrl,
-                      height: r.s(100),
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                            height: r.s(100),
-                            color: context.surfaceColor,
-                            child: const Center(
-                                child: Icon(Icons.broken_image_rounded)),
-                          )),
-                ),
-              SizedBox(height: r.s(8)),
-              TextField(
-                controller: TextEditingController(text: _bannerUrl),
-                onChanged: (v) => setState(() => _bannerUrl = v),
-                decoration: InputDecoration(
-                  hintText: s.bannerImageUrl,
-                  prefixIcon: Icon(Icons.link_rounded, size: r.s(18)),
-                  filled: true,
-                  fillColor: context.nexusTheme.backgroundPrimary,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(r.s(8)),
-                    borderSide: BorderSide.none,
-                  ),
-                  isDense: true,
-                ),
-                style: TextStyle(fontSize: r.fs(13)),
-              ),
-            ],
-          ),
+        // Banner principal
+        _AcmImageUploadCard(
+          label: s.bannerCover,
+          icon: Icons.panorama_rounded,
+          imageUrl: _bannerUrl,
+          isBanner: true,
+          isLoading: _uploadingBanner,
+          onPickImage: _pickBanner,
+          onRemove: _bannerUrl.isNotEmpty ? () => setState(() => _bannerUrl = '') : null,
         ),
       ],
     );
@@ -783,40 +796,54 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
         ),
         SizedBox(height: r.s(16)),
-        _bannerField(
-          label: 'Banner Padrão',
-          hint: 'URL do banner padrão (fallback)',
-          value: _bannerUrl,
-          onChanged: (v) => setState(() => _bannerUrl = v),
+        _AcmImageUploadCard(
+          label: 'Banner Padrão (fallback)',
           icon: Icons.panorama_rounded,
+          imageUrl: _bannerUrl,
+          isBanner: true,
+          isLoading: _uploadingBanner,
+          onPickImage: _pickBanner,
+          onRemove: _bannerUrl.isNotEmpty ? () => setState(() => _bannerUrl = '') : null,
         ),
-        _bannerField(
+        SizedBox(height: r.s(12)),
+        _AcmImageUploadCard(
           label: 'Banner do Header',
-          hint: 'URL do banner no topo da comunidade',
-          value: _bannerHeaderUrl,
-          onChanged: (v) => setState(() => _bannerHeaderUrl = v),
           icon: Icons.web_asset_rounded,
+          imageUrl: _bannerHeaderUrl,
+          isBanner: true,
+          isLoading: _uploadingBannerHeader,
+          onPickImage: _pickBannerHeader,
+          onRemove: _bannerHeaderUrl.isNotEmpty ? () => setState(() => _bannerHeaderUrl = '') : null,
         ),
-        _bannerField(
+        SizedBox(height: r.s(12)),
+        _AcmImageUploadCard(
           label: 'Banner do Drawer (Menu Lateral)',
-          hint: 'URL do banner no menu lateral',
-          value: _bannerDrawerUrl,
-          onChanged: (v) => setState(() => _bannerDrawerUrl = v),
           icon: Icons.menu_rounded,
+          imageUrl: _bannerDrawerUrl,
+          isBanner: true,
+          isLoading: _uploadingBannerDrawer,
+          onPickImage: _pickBannerDrawer,
+          onRemove: _bannerDrawerUrl.isNotEmpty ? () => setState(() => _bannerDrawerUrl = '') : null,
         ),
-        _bannerField(
+        SizedBox(height: r.s(12)),
+        _AcmImageUploadCard(
           label: 'Banner do Card (Lista de Comunidades)',
-          hint: 'URL do banner no card da lista',
-          value: _bannerCardUrl,
-          onChanged: (v) => setState(() => _bannerCardUrl = v),
           icon: Icons.grid_view_rounded,
+          imageUrl: _bannerCardUrl,
+          isBanner: true,
+          isLoading: _uploadingBannerCard,
+          onPickImage: _pickBannerCard,
+          onRemove: _bannerCardUrl.isNotEmpty ? () => setState(() => _bannerCardUrl = '') : null,
         ),
-        _bannerField(
+        SizedBox(height: r.s(12)),
+        _AcmImageUploadCard(
           label: 'Banner da Página de Informações',
-          hint: 'URL do banner na página de info/sobre',
-          value: _bannerInfoUrl,
-          onChanged: (v) => setState(() => _bannerInfoUrl = v),
           icon: Icons.info_outline_rounded,
+          imageUrl: _bannerInfoUrl,
+          isBanner: true,
+          isLoading: _uploadingBannerInfo,
+          onPickImage: _pickBannerInfo,
+          onRemove: _bannerInfoUrl.isNotEmpty ? () => setState(() => _bannerInfoUrl = '') : null,
         ),
         SizedBox(height: r.s(16)),
         // Modo de aplicação da cor
@@ -2256,6 +2283,242 @@ class _ContentField extends StatelessWidget {
             ),
             style: TextStyle(fontSize: r.fs(13)),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// WIDGET: Card de upload de imagem para o ACM
+// ============================================================
+class _AcmImageUploadCard extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final String imageUrl;
+  final bool isCircle;
+  final bool isBanner;
+  final bool isLoading;
+  final VoidCallback onPickImage;
+  final VoidCallback? onRemove;
+
+  const _AcmImageUploadCard({
+    required this.label,
+    required this.icon,
+    required this.imageUrl,
+    this.isCircle = false,
+    this.isBanner = false,
+    required this.isLoading,
+    required this.onPickImage,
+    this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    final theme = context.nexusTheme;
+    final hasImage = imageUrl.isNotEmpty;
+
+    return Container(
+      padding: EdgeInsets.all(r.s(16)),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(r.s(12)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Icon(icon, color: theme.accentPrimary, size: r.s(20)),
+              SizedBox(width: r.s(10)),
+              Expanded(
+                child: Text(label,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: r.fs(14))),
+              ),
+              if (hasImage && onRemove != null)
+                GestureDetector(
+                  onTap: onRemove,
+                  child: Container(
+                    padding: EdgeInsets.all(r.s(4)),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(r.s(6)),
+                    ),
+                    child: Icon(Icons.delete_outline_rounded,
+                        color: Colors.red, size: r.s(16)),
+                  ),
+                ),
+            ],
+          ),
+          SizedBox(height: r.s(12)),
+
+          // Preview + botão de upload
+          if (isCircle) ...[
+            Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Preview circular
+                  Container(
+                    width: r.s(90),
+                    height: r.s(90),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: theme.backgroundPrimary,
+                      border: Border.all(
+                        color: hasImage
+                            ? theme.accentPrimary.withValues(alpha: 0.4)
+                            : Colors.white.withValues(alpha: 0.1),
+                        width: 2,
+                      ),
+                      image: hasImage
+                          ? DecorationImage(
+                              image: NetworkImage(imageUrl),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: !hasImage
+                        ? Icon(Icons.add_photo_alternate_rounded,
+                            color: Colors.grey[600], size: r.s(28))
+                        : null,
+                  ),
+                  // Loading overlay
+                  if (isLoading)
+                    Container(
+                      width: r.s(90),
+                      height: r.s(90),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withValues(alpha: 0.5),
+                      ),
+                      child: Center(
+                        child: SizedBox(
+                          width: r.s(24),
+                          height: r.s(24),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            SizedBox(height: r.s(12)),
+            Center(
+              child: OutlinedButton.icon(
+                onPressed: isLoading ? null : onPickImage,
+                icon: Icon(Icons.upload_rounded, size: r.s(16)),
+                label: Text(hasImage ? 'Trocar imagem' : 'Fazer upload',
+                    style: TextStyle(fontSize: r.fs(13))),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: theme.accentPrimary,
+                  side: BorderSide(color: theme.accentPrimary.withValues(alpha: 0.5)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(20), vertical: r.s(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(r.s(8))),
+                ),
+              ),
+            ),
+          ] else ...[
+            // Preview banner
+            Stack(
+              children: [
+                GestureDetector(
+                  onTap: isLoading ? null : onPickImage,
+                  child: Container(
+                    height: r.s(110),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: theme.backgroundPrimary,
+                      borderRadius: BorderRadius.circular(r.s(10)),
+                      border: Border.all(
+                        color: hasImage
+                            ? theme.accentPrimary.withValues(alpha: 0.3)
+                            : Colors.white.withValues(alpha: 0.08),
+                        width: hasImage ? 1.5 : 1,
+                      ),
+                      image: hasImage
+                          ? DecorationImage(
+                              image: NetworkImage(imageUrl),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: !hasImage
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_photo_alternate_rounded,
+                                  color: Colors.grey[600], size: r.s(32)),
+                              SizedBox(height: r.s(6)),
+                              Text('Toque para fazer upload',
+                                  style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: r.fs(12))),
+                            ],
+                          )
+                        : null,
+                  ),
+                ),
+                // Loading overlay
+                if (isLoading)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(r.s(10)),
+                      ),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                // Botão de troca quando já tem imagem
+                if (hasImage && !isLoading)
+                  Positioned(
+                    bottom: r.s(8),
+                    right: r.s(8),
+                    child: GestureDetector(
+                      onTap: onPickImage,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: r.s(10), vertical: r.s(5)),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.7),
+                          borderRadius: BorderRadius.circular(r.s(6)),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.upload_rounded,
+                                color: Colors.white, size: r.s(13)),
+                            SizedBox(width: r.s(4)),
+                            Text('Trocar',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: r.fs(11),
+                                    fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ],
       ),
     );
