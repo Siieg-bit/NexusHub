@@ -11,6 +11,8 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Tela de busca dentro de uma comunidade específica.
 /// Permite pesquisar posts, membros, wiki e chats com filtros e autocomplete.
+/// Exibe resultados imediatamente ao abrir (sem precisar digitar),
+/// filtra conforme o usuário digita e suporta paginação infinita por scroll.
 class CommunitySearchScreen extends ConsumerStatefulWidget {
   final String communityId;
   final String communityName;
@@ -32,6 +34,12 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
 
+  // ScrollControllers para paginação por tab
+  final _postsScrollController = ScrollController();
+  final _membersScrollController = ScrollController();
+  final _wikisScrollController = ScrollController();
+  final _chatsScrollController = ScrollController();
+
   bool _isSearching = false;
   String _query = '';
   Timer? _suggestDebounce;
@@ -42,6 +50,25 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   List<Map<String, dynamic>> _members = [];
   List<Map<String, dynamic>> _wikis = [];
   List<Map<String, dynamic>> _chats = [];
+
+  // Paginação
+  static const int _pageSize = 20;
+
+  int _postsPage = 0;
+  bool _postsHasMore = true;
+  bool _postsLoadingMore = false;
+
+  int _membersPage = 0;
+  bool _membersHasMore = true;
+  bool _membersLoadingMore = false;
+
+  int _wikisPage = 0;
+  bool _wikisHasMore = true;
+  bool _wikisLoadingMore = false;
+
+  int _chatsPage = 0;
+  bool _chatsHasMore = true;
+  bool _chatsLoadingMore = false;
 
   // Sugestões de autocomplete
   List<String> _suggestions = [];
@@ -63,6 +90,15 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
         setState(() => _showSuggestions = true);
       }
     });
+
+    // Listeners de scroll para paginação infinita
+    _postsScrollController.addListener(_onPostsScroll);
+    _membersScrollController.addListener(_onMembersScroll);
+    _wikisScrollController.addListener(_onWikisScroll);
+    _chatsScrollController.addListener(_onChatsScroll);
+
+    // Carregar resultados padrão ao abrir
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadDefault());
   }
 
   @override
@@ -72,8 +108,445 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
     _focusNode.dispose();
     _suggestDebounce?.cancel();
     _searchDebounce?.cancel();
+    _postsScrollController.dispose();
+    _membersScrollController.dispose();
+    _wikisScrollController.dispose();
+    _chatsScrollController.dispose();
     super.dispose();
   }
+
+  // ─────────────────────────────────────────────
+  // SCROLL LISTENERS
+  // ─────────────────────────────────────────────
+
+  void _onPostsScroll() {
+    if (_postsScrollController.position.pixels >=
+        _postsScrollController.position.maxScrollExtent - 200) {
+      _loadMorePosts();
+    }
+  }
+
+  void _onMembersScroll() {
+    if (_membersScrollController.position.pixels >=
+        _membersScrollController.position.maxScrollExtent - 200) {
+      _loadMoreMembers();
+    }
+  }
+
+  void _onWikisScroll() {
+    if (_wikisScrollController.position.pixels >=
+        _wikisScrollController.position.maxScrollExtent - 200) {
+      _loadMoreWikis();
+    }
+  }
+
+  void _onChatsScroll() {
+    if (_chatsScrollController.position.pixels >=
+        _chatsScrollController.position.maxScrollExtent - 200) {
+      _loadMoreChats();
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // CARREGAMENTO PADRÃO (sem query)
+  // ─────────────────────────────────────────────
+
+  Future<void> _loadDefault() async {
+    if (!mounted) return;
+    setState(() {
+      _isSearching = true;
+      _postsPage = 0;
+      _membersPage = 0;
+      _wikisPage = 0;
+      _chatsPage = 0;
+      _postsHasMore = true;
+      _membersHasMore = true;
+      _wikisHasMore = true;
+      _chatsHasMore = true;
+    });
+
+    try {
+      // Posts padrão: mais recentes
+      dynamic postQuery = SupabaseService.table('posts')
+          .select(
+              'id, title, type, likes_count, comments_count, thumbnail_url, cover_image_url, author_id, created_at, '
+              'profiles!posts_author_id_fkey(id, nickname, icon_url, level)')
+          .eq('community_id', widget.communityId)
+          .eq('status', 'ok');
+
+      if (_postType != 'all') {
+        postQuery = postQuery.eq('type', _postType);
+      }
+      switch (_postFilter) {
+        case 'popular':
+          postQuery = postQuery.order('likes_count', ascending: false);
+          break;
+        case 'oldest':
+          postQuery = postQuery.order('created_at', ascending: true);
+          break;
+        default:
+          postQuery = postQuery.order('created_at', ascending: false);
+      }
+      final postRes = await postQuery.range(0, _pageSize - 1);
+      final rawPosts = List<Map<String, dynamic>>.from(postRes as List? ?? []);
+      await _enrichPostsWithLocalData(rawPosts);
+
+      // Membros padrão: por reputação
+      final memberRes = await SupabaseService.table('community_members')
+          .select(
+              'user_id, local_nickname, local_icon_url, role, '
+              'profiles!community_members_user_id_fkey(id, nickname, icon_url, level, reputation)')
+          .eq('community_id', widget.communityId)
+          .eq('is_banned', false)
+          .order('reputation', ascending: false)
+          .range(0, _pageSize - 1);
+      final rawMembers = _processMemberResults(memberRes as List? ?? []);
+
+      // Wikis padrão: por likes
+      final wikiRes = await SupabaseService.table('wiki_entries')
+          .select(
+              'id, title, content, cover_image_url, author_id, created_at, likes_count, views_count, '
+              'profiles!wiki_entries_author_id_fkey(id, nickname, icon_url)')
+          .eq('community_id', widget.communityId)
+          .eq('status', 'ok')
+          .order('likes_count', ascending: false)
+          .range(0, _pageSize - 1);
+      final rawWikis = List<Map<String, dynamic>>.from(wikiRes as List? ?? []);
+      await _enrichWikisWithLocalData(rawWikis);
+
+      // Chats padrão: por membros
+      final chatRes = await SupabaseService.table('chat_threads')
+          .select(
+              'id, title, description, icon_url, cover_image_url, members_count, '
+              'last_message_preview, last_message_at, category, is_announcement_only')
+          .eq('community_id', widget.communityId)
+          .eq('type', 'public')
+          .eq('status', 'ok')
+          .order('members_count', ascending: false)
+          .range(0, _pageSize - 1);
+      final rawChats = List<Map<String, dynamic>>.from(chatRes as List? ?? []);
+
+      if (mounted) {
+        setState(() {
+          _posts = rawPosts;
+          _members = rawMembers;
+          _wikis = rawWikis;
+          _chats = rawChats;
+          _postsHasMore = rawPosts.length == _pageSize;
+          _membersHasMore = rawMembers.length == _pageSize;
+          _wikisHasMore = rawWikis.length == _pageSize;
+          _chatsHasMore = rawChats.length == _pageSize;
+          _postsPage = 1;
+          _membersPage = 1;
+          _wikisPage = 1;
+          _chatsPage = 1;
+          _isSearching = false;
+        });
+      }
+    } catch (e, st) {
+      debugPrint('[community_search] _loadDefault erro: $e\n$st');
+      if (mounted) setState(() => _isSearching = false);
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // PAGINAÇÃO — LOAD MORE
+  // ─────────────────────────────────────────────
+
+  Future<void> _loadMorePosts() async {
+    if (_postsLoadingMore || !_postsHasMore || !mounted) return;
+    setState(() => _postsLoadingMore = true);
+    try {
+      final offset = _postsPage * _pageSize;
+      dynamic postQuery = SupabaseService.table('posts')
+          .select(
+              'id, title, type, likes_count, comments_count, thumbnail_url, cover_image_url, author_id, created_at, '
+              'profiles!posts_author_id_fkey(id, nickname, icon_url, level)')
+          .eq('community_id', widget.communityId)
+          .eq('status', 'ok');
+
+      if (_query.isNotEmpty) {
+        final pattern = '%$_query%';
+        postQuery =
+            postQuery.or('title.ilike.$pattern,content.ilike.$pattern');
+      }
+      if (_postType != 'all') {
+        postQuery = postQuery.eq('type', _postType);
+      }
+      switch (_postFilter) {
+        case 'popular':
+          postQuery = postQuery.order('likes_count', ascending: false);
+          break;
+        case 'oldest':
+          postQuery = postQuery.order('created_at', ascending: true);
+          break;
+        default:
+          postQuery = postQuery.order('created_at', ascending: false);
+      }
+      final res = await postQuery.range(offset, offset + _pageSize - 1);
+      final newPosts = List<Map<String, dynamic>>.from(res as List? ?? []);
+      await _enrichPostsWithLocalData(newPosts);
+      if (mounted) {
+        setState(() {
+          _posts.addAll(newPosts);
+          _postsHasMore = newPosts.length == _pageSize;
+          _postsPage++;
+          _postsLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('[community_search] _loadMorePosts erro: $e');
+      if (mounted) setState(() => _postsLoadingMore = false);
+    }
+  }
+
+  Future<void> _loadMoreMembers() async {
+    if (_membersLoadingMore || !_membersHasMore || !mounted) return;
+    setState(() => _membersLoadingMore = true);
+    try {
+      final offset = _membersPage * _pageSize;
+      List<dynamic> resA = [];
+      List<dynamic> resB = [];
+
+      if (_query.isNotEmpty) {
+        final pattern = '%$_query%';
+        resA = await SupabaseService.table('community_members')
+            .select(
+                'user_id, local_nickname, local_icon_url, role, '
+                'profiles!community_members_user_id_fkey(id, nickname, icon_url, level, reputation)')
+            .eq('community_id', widget.communityId)
+            .eq('is_banned', false)
+            .ilike('local_nickname', pattern)
+            .range(offset, offset + _pageSize - 1) as List;
+
+        final profileRes = await SupabaseService.table('profiles')
+            .select('id')
+            .ilike('nickname', pattern)
+            .limit(50);
+        final profileIds = (profileRes as List? ?? [])
+            .map((e) => (e as Map<String, dynamic>)['id'] as String?)
+            .whereType<String>()
+            .toList();
+        if (profileIds.isNotEmpty) {
+          resB = await SupabaseService.table('community_members')
+              .select(
+                  'user_id, local_nickname, local_icon_url, role, '
+                  'profiles!community_members_user_id_fkey(id, nickname, icon_url, level, reputation)')
+              .eq('community_id', widget.communityId)
+              .eq('is_banned', false)
+              .inFilter('user_id', profileIds)
+              .range(offset, offset + _pageSize - 1) as List;
+        }
+      } else {
+        resA = await SupabaseService.table('community_members')
+            .select(
+                'user_id, local_nickname, local_icon_url, role, '
+                'profiles!community_members_user_id_fkey(id, nickname, icon_url, level, reputation)')
+            .eq('community_id', widget.communityId)
+            .eq('is_banned', false)
+            .order('reputation', ascending: false)
+            .range(offset, offset + _pageSize - 1) as List;
+      }
+
+      final newMembers = _processMemberResults([...resA, ...resB]);
+      if (mounted) {
+        setState(() {
+          // Deduplicar por id
+          final existingIds = _members.map((m) => m['id']).toSet();
+          final unique =
+              newMembers.where((m) => !existingIds.contains(m['id'])).toList();
+          _members.addAll(unique);
+          _membersHasMore = newMembers.length == _pageSize;
+          _membersPage++;
+          _membersLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('[community_search] _loadMoreMembers erro: $e');
+      if (mounted) setState(() => _membersLoadingMore = false);
+    }
+  }
+
+  Future<void> _loadMoreWikis() async {
+    if (_wikisLoadingMore || !_wikisHasMore || !mounted) return;
+    setState(() => _wikisLoadingMore = true);
+    try {
+      final offset = _wikisPage * _pageSize;
+      dynamic wikiQuery = SupabaseService.table('wiki_entries')
+          .select(
+              'id, title, content, cover_image_url, author_id, created_at, likes_count, views_count, '
+              'profiles!wiki_entries_author_id_fkey(id, nickname, icon_url)')
+          .eq('community_id', widget.communityId)
+          .eq('status', 'ok');
+
+      if (_query.isNotEmpty) {
+        final pattern = '%$_query%';
+        wikiQuery =
+            wikiQuery.or('title.ilike.$pattern,content.ilike.$pattern');
+      }
+      wikiQuery = wikiQuery.order('likes_count', ascending: false);
+      final res = await wikiQuery.range(offset, offset + _pageSize - 1);
+      final newWikis = List<Map<String, dynamic>>.from(res as List? ?? []);
+      await _enrichWikisWithLocalData(newWikis);
+      if (mounted) {
+        setState(() {
+          _wikis.addAll(newWikis);
+          _wikisHasMore = newWikis.length == _pageSize;
+          _wikisPage++;
+          _wikisLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('[community_search] _loadMoreWikis erro: $e');
+      if (mounted) setState(() => _wikisLoadingMore = false);
+    }
+  }
+
+  Future<void> _loadMoreChats() async {
+    if (_chatsLoadingMore || !_chatsHasMore || !mounted) return;
+    setState(() => _chatsLoadingMore = true);
+    try {
+      final offset = _chatsPage * _pageSize;
+      dynamic chatQuery = SupabaseService.table('chat_threads')
+          .select(
+              'id, title, description, icon_url, cover_image_url, members_count, '
+              'last_message_preview, last_message_at, category, is_announcement_only')
+          .eq('community_id', widget.communityId)
+          .eq('type', 'public')
+          .eq('status', 'ok');
+
+      if (_query.isNotEmpty) {
+        final pattern = '%$_query%';
+        chatQuery =
+            chatQuery.or('title.ilike.$pattern,description.ilike.$pattern');
+      }
+      chatQuery = chatQuery.order('members_count', ascending: false);
+      final res = await chatQuery.range(offset, offset + _pageSize - 1);
+      final newChats = List<Map<String, dynamic>>.from(res as List? ?? []);
+      if (mounted) {
+        setState(() {
+          _chats.addAll(newChats);
+          _chatsHasMore = newChats.length == _pageSize;
+          _chatsPage++;
+          _chatsLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('[community_search] _loadMoreChats erro: $e');
+      if (mounted) setState(() => _chatsLoadingMore = false);
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // HELPERS DE ENRIQUECIMENTO
+  // ─────────────────────────────────────────────
+
+  Future<void> _enrichPostsWithLocalData(
+      List<Map<String, dynamic>> posts) async {
+    if (posts.isEmpty) return;
+    try {
+      final authorIds = posts
+          .map((p) => p['author_id'] as String?)
+          .whereType<String>()
+          .toSet()
+          .toList();
+      if (authorIds.isEmpty) return;
+      final memberships = await SupabaseService.table('community_members')
+          .select('user_id, local_nickname, local_icon_url')
+          .eq('community_id', widget.communityId)
+          .inFilter('user_id', authorIds);
+      final memberMap = <String, Map<String, dynamic>>{
+        for (final row in (memberships as List? ?? []))
+          (row['user_id'] as String): Map<String, dynamic>.from(row as Map),
+      };
+      for (final post in posts) {
+        final authorId = post['author_id'] as String?;
+        if (authorId == null) continue;
+        final membership = memberMap[authorId];
+        if (membership == null) continue;
+        final profiles = post['profiles'] as Map<String, dynamic>?;
+        if (profiles == null) continue;
+        final updated = Map<String, dynamic>.from(profiles);
+        final localNickname = (membership['local_nickname'] as String?)?.trim();
+        final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
+        if (localNickname != null && localNickname.isNotEmpty) {
+          updated['nickname'] = localNickname;
+        }
+        if (localIconUrl != null && localIconUrl.isNotEmpty) {
+          updated['icon_url'] = localIconUrl;
+        }
+        post['profiles'] = updated;
+      }
+    } catch (e) {
+      debugPrint('[community_search] _enrichPostsWithLocalData erro: $e');
+    }
+  }
+
+  Future<void> _enrichWikisWithLocalData(
+      List<Map<String, dynamic>> wikis) async {
+    if (wikis.isEmpty) return;
+    try {
+      final authorIds = wikis
+          .map((w) => w['author_id'] as String?)
+          .whereType<String>()
+          .toSet()
+          .toList();
+      if (authorIds.isEmpty) return;
+      final memberships = await SupabaseService.table('community_members')
+          .select('user_id, local_nickname, local_icon_url')
+          .eq('community_id', widget.communityId)
+          .inFilter('user_id', authorIds);
+      final localMap = <String, Map<String, dynamic>>{
+        for (final m in (memberships as List? ?? []))
+          (m['user_id'] as String): Map<String, dynamic>.from(m as Map),
+      };
+      for (final wiki in wikis) {
+        final authorId = wiki['author_id'] as String?;
+        if (authorId == null) continue;
+        final membership = localMap[authorId];
+        if (membership == null) continue;
+        final profile = wiki['profiles'] as Map<String, dynamic>?;
+        if (profile == null) continue;
+        final merged = Map<String, dynamic>.from(profile);
+        final localNickname = (membership['local_nickname'] as String?)?.trim();
+        final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
+        if (localNickname != null && localNickname.isNotEmpty) {
+          merged['nickname'] = localNickname;
+        }
+        if (localIconUrl != null && localIconUrl.isNotEmpty) {
+          merged['icon_url'] = localIconUrl;
+        }
+        wiki['profiles'] = merged;
+      }
+    } catch (e) {
+      debugPrint('[community_search] _enrichWikisWithLocalData erro: $e');
+    }
+  }
+
+  List<Map<String, dynamic>> _processMemberResults(List<dynamic> raw) {
+    final memberMap = <String, Map<String, dynamic>>{};
+    for (final e in raw) {
+      final uid = (e as Map<String, dynamic>)['user_id'] as String?;
+      if (uid != null) memberMap[uid] = e;
+    }
+    return memberMap.values.where((e) => e['profiles'] != null).map((e) {
+      final profile = Map<String, dynamic>.from(e['profiles'] as Map);
+      final localNickname = (e['local_nickname'] as String?)?.trim();
+      final localIconUrl = (e['local_icon_url'] as String?)?.trim();
+      if (localNickname != null && localNickname.isNotEmpty) {
+        profile['nickname'] = localNickname;
+      }
+      if (localIconUrl != null && localIconUrl.isNotEmpty) {
+        profile['icon_url'] = localIconUrl;
+      }
+      profile['role'] = e['role'];
+      return profile;
+    }).toList();
+  }
+
+  // ─────────────────────────────────────────────
+  // BUSCA COM QUERY
+  // ─────────────────────────────────────────────
 
   void _onSearchChanged(String value) {
     setState(() => _query = value);
@@ -81,14 +554,11 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
     _searchDebounce?.cancel();
     if (value.trim().isEmpty) {
       setState(() {
-        _posts = [];
-        _members = [];
-        _wikis = [];
-        _chats = [];
         _suggestions = [];
         _showSuggestions = true;
         _isSearching = false;
       });
+      _loadDefault();
       return;
     }
     // Debounce de 300ms para autocomplete
@@ -131,6 +601,14 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
     setState(() {
       _isSearching = true;
       _showSuggestions = false;
+      _postsPage = 0;
+      _membersPage = 0;
+      _wikisPage = 0;
+      _chatsPage = 0;
+      _postsHasMore = true;
+      _membersHasMore = true;
+      _wikisHasMore = true;
+      _chatsHasMore = true;
     });
 
     // Salvar no histórico
@@ -143,7 +621,6 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
       final pattern = '%$query%';
 
       // ── 1. POSTS ──────────────────────────────────────────────────────────
-      // Busca em title E content para cobrir mais resultados
       dynamic postQuery = SupabaseService.table('posts')
           .select(
               'id, title, type, likes_count, comments_count, thumbnail_url, cover_image_url, author_id, created_at, '
@@ -167,67 +644,14 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
           postQuery = postQuery.order('created_at', ascending: false);
       }
 
-      final postRes = await postQuery.limit(30);
+      final postRes = await postQuery.range(0, _pageSize - 1);
       final rawPosts =
           List<Map<String, dynamic>>.from(postRes as List? ?? []);
-
-      // Enriquecer posts com local_nickname/local_icon_url em batch
-      if (rawPosts.isNotEmpty) {
-        final authorIds = rawPosts
-            .map((p) => p['author_id'] as String?)
-            .whereType<String>()
-            .toSet()
-            .toList();
-        if (authorIds.isNotEmpty) {
-          try {
-            final memberships = await SupabaseService.table('community_members')
-                .select('user_id, local_nickname, local_icon_url')
-                .eq('community_id', widget.communityId)
-                .inFilter('user_id', authorIds);
-            final memberMap = <String, Map<String, dynamic>>{
-              for (final row in (memberships as List? ?? []))
-                (row['user_id'] as String):
-                    Map<String, dynamic>.from(row as Map),
-            };
-            for (final post in rawPosts) {
-              final authorId = post['author_id'] as String?;
-              if (authorId == null) continue;
-              final membership = memberMap[authorId];
-              if (membership == null) continue;
-              final localNickname =
-                  (membership['local_nickname'] as String?)?.trim();
-              final localIconUrl =
-                  (membership['local_icon_url'] as String?)?.trim();
-              final profiles = post['profiles'] as Map<String, dynamic>?;
-              if (profiles != null) {
-                final updated = Map<String, dynamic>.from(profiles);
-                if (localNickname != null && localNickname.isNotEmpty) {
-                  updated['nickname'] = localNickname;
-                }
-                if (localIconUrl != null && localIconUrl.isNotEmpty) {
-                  updated['icon_url'] = localIconUrl;
-                }
-                post['profiles'] = updated;
-              }
-            }
-          } catch (e) {
-            debugPrint('[community_search] enrich posts erro: $e');
-          }
-        }
-      }
+      await _enrichPostsWithLocalData(rawPosts);
 
       // ── 2. MEMBROS ────────────────────────────────────────────────────────
-      // CORREÇÃO: o Supabase não suporta .ilike() em colunas de tabelas
-      // relacionadas via foreign key. Usamos duas queries separadas e unimos:
-      //   Query A: busca por local_nickname (coluna local da community_members)
-      //   Query B: busca por nickname global (via join com profiles)
-      //            — feita com OR em coluna local para cobrir ambos os casos
-      //
-      // Para busca por nickname global, usamos RPC search_community_members
-      // que faz o JOIN no banco. Se não existir, fazemos fallback com duas queries.
       List<Map<String, dynamic>> memberResults = [];
       try {
-        // Query A: busca por local_nickname
         final resA = await SupabaseService.table('community_members')
             .select(
                 'user_id, local_nickname, local_icon_url, role, '
@@ -235,11 +659,8 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
             .eq('community_id', widget.communityId)
             .eq('is_banned', false)
             .ilike('local_nickname', pattern)
-            .limit(20);
+            .range(0, _pageSize - 1);
 
-        // Query B: busca por nickname global — precisa de RPC ou subquery
-        // Usamos uma abordagem alternativa: buscar IDs de profiles que batem
-        // e depois buscar community_members para esses IDs
         final profileRes = await SupabaseService.table('profiles')
             .select('id')
             .ilike('nickname', pattern)
@@ -258,40 +679,16 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
               .eq('community_id', widget.communityId)
               .eq('is_banned', false)
               .inFilter('user_id', profileIds)
-              .limit(20) as List;
+              .range(0, _pageSize - 1) as List;
         }
 
-        // Unir e deduplicar por user_id
-        final memberMap = <String, Map<String, dynamic>>{};
-        for (final e in [...(resA as List? ?? []), ...resB]) {
-          final uid = (e as Map<String, dynamic>)['user_id'] as String?;
-          if (uid != null) memberMap[uid] = e;
-        }
-
-        memberResults = memberMap.values
-            .where((e) => e['profiles'] != null)
-            .map((e) {
-          final profile =
-              Map<String, dynamic>.from(e['profiles'] as Map);
-          final localNickname = (e['local_nickname'] as String?)?.trim();
-          final localIconUrl = (e['local_icon_url'] as String?)?.trim();
-          // Usar local_nickname/icon_url apenas quando preenchidos
-          if (localNickname != null && localNickname.isNotEmpty) {
-            profile['nickname'] = localNickname;
-          }
-          if (localIconUrl != null && localIconUrl.isNotEmpty) {
-            profile['icon_url'] = localIconUrl;
-          }
-          profile['role'] = e['role'];
-          return profile;
-        }).toList();
+        memberResults =
+            _processMemberResults([...(resA as List? ?? []), ...resB]);
       } catch (e) {
         debugPrint('[community_search] members erro: $e');
       }
 
       // ── 3. WIKI ───────────────────────────────────────────────────────────
-      // CORREÇÃO: status = 'ok' (não 'approved')
-      // Busca em title E tags para cobrir mais resultados
       List<Map<String, dynamic>> wikiResults = [];
       try {
         final wikiRes = await SupabaseService.table('wiki_entries')
@@ -299,59 +696,18 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                 'id, title, content, cover_image_url, author_id, created_at, likes_count, views_count, '
                 'profiles!wiki_entries_author_id_fkey(id, nickname, icon_url)')
             .eq('community_id', widget.communityId)
-            .eq('status', 'ok') // CORRIGIDO: era 'approved'
+            .eq('status', 'ok')
             .or('title.ilike.$pattern,content.ilike.$pattern')
             .order('likes_count', ascending: false)
-            .limit(20);
+            .range(0, _pageSize - 1);
         wikiResults =
             List<Map<String, dynamic>>.from(wikiRes as List? ?? []);
-
-        // Enriquecer autores de wiki com dados locais em batch
-        if (wikiResults.isNotEmpty) {
-          final wikiAuthorIds = wikiResults
-              .map((w) => w['author_id'] as String?)
-              .whereType<String>()
-              .toSet()
-              .toList();
-          if (wikiAuthorIds.isNotEmpty) {
-            final wikiMemberships =
-                await SupabaseService.table('community_members')
-                    .select('user_id, local_nickname, local_icon_url')
-                    .eq('community_id', widget.communityId)
-                    .inFilter('user_id', wikiAuthorIds);
-            final wikiLocalMap = <String, Map<String, dynamic>>{
-              for (final m in (wikiMemberships as List? ?? []))
-                (m['user_id'] as String):
-                    Map<String, dynamic>.from(m as Map),
-            };
-            for (final wiki in wikiResults) {
-              final authorId = wiki['author_id'] as String?;
-              if (authorId == null) continue;
-              final membership = wikiLocalMap[authorId];
-              if (membership == null) continue;
-              final profile = wiki['profiles'] as Map<String, dynamic>?;
-              if (profile == null) continue;
-              final merged = Map<String, dynamic>.from(profile);
-              final localNickname =
-                  (membership['local_nickname'] as String?)?.trim();
-              final localIconUrl =
-                  (membership['local_icon_url'] as String?)?.trim();
-              if (localNickname != null && localNickname.isNotEmpty) {
-                merged['nickname'] = localNickname;
-              }
-              if (localIconUrl != null && localIconUrl.isNotEmpty) {
-                merged['icon_url'] = localIconUrl;
-              }
-              wiki['profiles'] = merged;
-            }
-          }
-        }
+        await _enrichWikisWithLocalData(wikiResults);
       } catch (e) {
         debugPrint('[community_search] wiki erro: $e');
       }
 
       // ── 4. CHATS ──────────────────────────────────────────────────────────
-      // Busca chats públicos da comunidade por title e description
       List<Map<String, dynamic>> chatResults = [];
       try {
         final chatRes = await SupabaseService.table('chat_threads')
@@ -363,7 +719,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
             .eq('status', 'ok')
             .or('title.ilike.$pattern,description.ilike.$pattern')
             .order('members_count', ascending: false)
-            .limit(20);
+            .range(0, _pageSize - 1);
         chatResults =
             List<Map<String, dynamic>>.from(chatRes as List? ?? []);
       } catch (e) {
@@ -376,6 +732,14 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
           _members = memberResults;
           _wikis = wikiResults;
           _chats = chatResults;
+          _postsHasMore = rawPosts.length == _pageSize;
+          _membersHasMore = memberResults.length == _pageSize;
+          _wikisHasMore = wikiResults.length == _pageSize;
+          _chatsHasMore = chatResults.length == _pageSize;
+          _postsPage = 1;
+          _membersPage = 1;
+          _wikisPage = 1;
+          _chatsPage = 1;
           _isSearching = false;
         });
       }
@@ -387,6 +751,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
 
   void _selectSuggestion(String suggestion) {
     _searchController.text = suggestion;
+    setState(() => _query = suggestion);
     _focusNode.unfocus();
     _performSearch(suggestion);
   }
@@ -533,26 +898,28 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   // TAB: POSTS
   // ─────────────────────────────────────────────
   Widget _buildPostsTab(Responsive r) {
-    final s = getStrings();
     return Column(
       children: [
         _buildPostFilters(r),
         Expanded(
-          child: _query.isEmpty
-              ? _buildEmptySearch(r, 'Busque posts nesta comunidade')
-              : _isSearching
-                  ? Center(
-                      child: CircularProgressIndicator(
-                          color: context.nexusTheme.accentPrimary))
-                  : _posts.isEmpty
-                      ? _buildNoResults(r, s.noPostFound)
-                      : ListView.builder(
-                          padding: EdgeInsets.symmetric(vertical: r.s(8)),
-                          cacheExtent: 500,
-                          itemCount: _posts.length,
-                          itemBuilder: (context, index) =>
-                              _buildPostTile(r, _posts[index]),
-                        ),
+          child: _isSearching && _posts.isEmpty
+              ? Center(
+                  child: CircularProgressIndicator(
+                      color: context.nexusTheme.accentPrimary))
+              : _posts.isEmpty
+                  ? _buildNoResults(r, 'Nenhum post encontrado')
+                  : ListView.builder(
+                      controller: _postsScrollController,
+                      padding: EdgeInsets.symmetric(vertical: r.s(8)),
+                      cacheExtent: 500,
+                      itemCount: _posts.length + (_postsHasMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == _posts.length) {
+                          return _buildLoadingIndicator(r);
+                        }
+                        return _buildPostTile(r, _posts[index]);
+                      },
+                    ),
         ),
       ],
     );
@@ -622,7 +989,11 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
               onTap: () {
                 setState(() => _postFilter = 'recent');
                 Navigator.pop(ctx);
-                if (_query.isNotEmpty) _performSearch(_query);
+                if (_query.isNotEmpty) {
+                  _performSearch(_query);
+                } else {
+                  _loadDefault();
+                }
               },
               r: r,
             ),
@@ -633,7 +1004,11 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
               onTap: () {
                 setState(() => _postFilter = 'popular');
                 Navigator.pop(ctx);
-                if (_query.isNotEmpty) _performSearch(_query);
+                if (_query.isNotEmpty) {
+                  _performSearch(_query);
+                } else {
+                  _loadDefault();
+                }
               },
               r: r,
             ),
@@ -644,7 +1019,11 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
               onTap: () {
                 setState(() => _postFilter = 'oldest');
                 Navigator.pop(ctx);
-                if (_query.isNotEmpty) _performSearch(_query);
+                if (_query.isNotEmpty) {
+                  _performSearch(_query);
+                } else {
+                  _loadDefault();
+                }
               },
               r: r,
             ),
@@ -688,7 +1067,11 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                 onTap: () {
                   setState(() => _postType = type.$1);
                   Navigator.pop(ctx);
-                  if (_query.isNotEmpty) _performSearch(_query);
+                  if (_query.isNotEmpty) {
+                    _performSearch(_query);
+                  } else {
+                    _loadDefault();
+                  }
                 },
                 r: r,
               ),
@@ -808,21 +1191,24 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   // ─────────────────────────────────────────────
   Widget _buildMembersTab(Responsive r) {
     final s = getStrings();
-    return _query.isEmpty
-        ? _buildEmptySearch(r, s.searchCommunityMembers)
-        : _isSearching
-            ? Center(
-                child: CircularProgressIndicator(
-                    color: context.nexusTheme.accentPrimary))
-            : _members.isEmpty
-                ? _buildNoResults(r, s.noMemberFound)
-                : ListView.builder(
-                    padding: EdgeInsets.symmetric(vertical: r.s(8)),
-                    cacheExtent: 500,
-                    itemCount: _members.length,
-                    itemBuilder: (context, index) =>
-                        _buildMemberTile(r, _members[index]),
-                  );
+    return _isSearching && _members.isEmpty
+        ? Center(
+            child: CircularProgressIndicator(
+                color: context.nexusTheme.accentPrimary))
+        : _members.isEmpty
+            ? _buildNoResults(r, s.noMemberFound)
+            : ListView.builder(
+                controller: _membersScrollController,
+                padding: EdgeInsets.symmetric(vertical: r.s(8)),
+                cacheExtent: 500,
+                itemCount: _members.length + (_membersHasMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == _members.length) {
+                    return _buildLoadingIndicator(r);
+                  }
+                  return _buildMemberTile(r, _members[index]);
+                },
+              );
   }
 
   Widget _buildMemberTile(Responsive r, Map<String, dynamic> member) {
@@ -917,22 +1303,24 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   // TAB: WIKI
   // ─────────────────────────────────────────────
   Widget _buildWikiTab(Responsive r) {
-    final s = getStrings();
-    return _query.isEmpty
-        ? _buildEmptySearch(r, s.searchWikiArticles)
-        : _isSearching
-            ? Center(
-                child: CircularProgressIndicator(
-                    color: context.nexusTheme.accentPrimary))
-            : _wikis.isEmpty
-                ? _buildNoResults(r, 'Nenhum artigo wiki encontrado')
-                : ListView.builder(
-                    padding: EdgeInsets.symmetric(vertical: r.s(8)),
-                    cacheExtent: 500,
-                    itemCount: _wikis.length,
-                    itemBuilder: (context, index) =>
-                        _buildWikiTile(r, _wikis[index]),
-                  );
+    return _isSearching && _wikis.isEmpty
+        ? Center(
+            child: CircularProgressIndicator(
+                color: context.nexusTheme.accentPrimary))
+        : _wikis.isEmpty
+            ? _buildNoResults(r, 'Nenhum artigo wiki encontrado')
+            : ListView.builder(
+                controller: _wikisScrollController,
+                padding: EdgeInsets.symmetric(vertical: r.s(8)),
+                cacheExtent: 500,
+                itemCount: _wikis.length + (_wikisHasMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == _wikis.length) {
+                    return _buildLoadingIndicator(r);
+                  }
+                  return _buildWikiTile(r, _wikis[index]);
+                },
+              );
   }
 
   Widget _buildWikiTile(Responsive r, Map<String, dynamic> wiki) {
@@ -1038,21 +1426,24 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   // TAB: CHATS
   // ─────────────────────────────────────────────
   Widget _buildChatsTab(Responsive r) {
-    return _query.isEmpty
-        ? _buildEmptySearch(r, 'Busque chats públicos desta comunidade')
-        : _isSearching
-            ? Center(
-                child: CircularProgressIndicator(
-                    color: context.nexusTheme.accentPrimary))
-            : _chats.isEmpty
-                ? _buildNoResults(r, 'Nenhum chat encontrado')
-                : ListView.builder(
-                    padding: EdgeInsets.symmetric(vertical: r.s(8)),
-                    cacheExtent: 500,
-                    itemCount: _chats.length,
-                    itemBuilder: (context, index) =>
-                        _buildChatTile(r, _chats[index]),
-                  );
+    return _isSearching && _chats.isEmpty
+        ? Center(
+            child: CircularProgressIndicator(
+                color: context.nexusTheme.accentPrimary))
+        : _chats.isEmpty
+            ? _buildNoResults(r, 'Nenhum chat encontrado')
+            : ListView.builder(
+                controller: _chatsScrollController,
+                padding: EdgeInsets.symmetric(vertical: r.s(8)),
+                cacheExtent: 500,
+                itemCount: _chats.length + (_chatsHasMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == _chats.length) {
+                    return _buildLoadingIndicator(r);
+                  }
+                  return _buildChatTile(r, _chats[index]);
+                },
+              );
   }
 
   Widget _buildChatTile(Responsive r, Map<String, dynamic> chat) {
@@ -1188,72 +1579,27 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   }
 
   // ─────────────────────────────────────────────
-  // ESTADOS VAZIOS
+  // INDICADOR DE LOADING (paginação)
   // ─────────────────────────────────────────────
-  Widget _buildEmptySearch(Responsive r, String message) {
-    final s = getStrings();
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.search_rounded,
-              color: context.nexusTheme.textHint, size: r.s(48)),
-          SizedBox(height: r.s(12)),
-          Text(
-            message,
-            style: TextStyle(
-                color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
-            textAlign: TextAlign.center,
+  Widget _buildLoadingIndicator(Responsive r) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: r.s(16)),
+      child: Center(
+        child: SizedBox(
+          width: r.s(24),
+          height: r.s(24),
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            color: context.nexusTheme.accentPrimary,
           ),
-          if (_recentSearches.isNotEmpty) ...[
-            SizedBox(height: r.s(24)),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    s.recentSearches,
-                    style: TextStyle(
-                      color: context.nexusTheme.textPrimary,
-                      fontSize: r.fs(13),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: r.s(8)),
-                  Wrap(
-                    spacing: r.s(8),
-                    runSpacing: r.s(6),
-                    children: _recentSearches
-                        .take(6)
-                        .map((term) => GestureDetector(
-                              onTap: () => _selectSuggestion(term),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: r.s(12), vertical: r.s(6)),
-                                decoration: BoxDecoration(
-                                  color: context.nexusTheme.surfacePrimary,
-                                  borderRadius: BorderRadius.circular(r.s(16)),
-                                ),
-                                child: Text(
-                                  term,
-                                  style: TextStyle(
-                                      color: context.nexusTheme.textSecondary,
-                                      fontSize: r.fs(12)),
-                                ),
-                              ),
-                            ))
-                        .toList(),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
 
+  // ─────────────────────────────────────────────
+  // ESTADO SEM RESULTADOS
+  // ─────────────────────────────────────────────
   Widget _buildNoResults(Responsive r, String message) {
     return Center(
       child: Column(
@@ -1267,14 +1613,16 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
             style: TextStyle(
                 color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
           ),
-          SizedBox(height: r.s(6)),
-          Text(
-            'para "$_query"',
-            style: TextStyle(
-                color: context.nexusTheme.textHint,
-                fontSize: r.fs(12),
-                fontStyle: FontStyle.italic),
-          ),
+          if (_query.isNotEmpty) ...[
+            SizedBox(height: r.s(6)),
+            Text(
+              'para "$_query"',
+              style: TextStyle(
+                  color: context.nexusTheme.textHint,
+                  fontSize: r.fs(12),
+                  fontStyle: FontStyle.italic),
+            ),
+          ],
         ],
       ),
     );
