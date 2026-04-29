@@ -820,9 +820,22 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
    Future<void> _loadMessages() async {
     // Cache-first: exibe mensagens do cache imediatamente (sem spinner)
+    // Aplica identidade local (local_icon_url) antes de renderizar para evitar
+    // flash do ícone global enquanto o servidor carrega.
     final cachedRaw = CacheService.getCachedMessages(widget.threadId);
     if (cachedRaw != null && cachedRaw.isNotEmpty && mounted && !_isDisposed) {
-      final cachedMsgs = cachedRaw.map((e) => MessageModel.fromJson(e)).toList();
+      final authorIds = cachedRaw
+          .map((e) => (e['author_id'] as String?) ?? '')
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList();
+      await _prefetchMemberCache(authorIds);
+      if (!mounted || _isDisposed) return;
+      final cachedMsgs = cachedRaw
+          .map((e) => MessageModel.fromJson(
+                _normalizeMessageAuthorIdentity(Map<String, dynamic>.from(e)),
+              ))
+          .toList();
       setState(() {
         _messages
           ..clear()
