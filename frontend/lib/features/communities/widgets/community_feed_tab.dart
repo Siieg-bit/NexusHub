@@ -12,6 +12,7 @@ import '../providers/community_detail_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/haptic_service.dart';
 import 'featured_members_section.dart';
 import '../../../core/widgets/reaction_picker.dart';
 
@@ -737,7 +738,7 @@ class _FeaturedHeroCardState extends ConsumerState<_FeaturedHeroCard> {
 }
 
 /// Card grande para posts em destaque (grid 2 colunas, estilo Amino)
-class _FeaturedPostCard extends ConsumerWidget {
+class _FeaturedPostCard extends ConsumerStatefulWidget {
   final PostModel post;
   final Color accent;
   final int index;
@@ -749,16 +750,61 @@ class _FeaturedPostCard extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+  ConsumerState<_FeaturedPostCard> createState() => _FeaturedPostCardState();
+}
+
+class _FeaturedPostCardState extends ConsumerState<_FeaturedPostCard> {
+  late PostModel _post;
+
+  @override
+  void initState() {
+    super.initState();
+    _post = widget.post;
+  }
+
+  Future<void> _toggleLike() async {
+    final wasLiked = _post.isLiked;
+    if (!wasLiked) {
+      HapticService.success();
+    } else {
+      HapticService.buttonPress();
+    }
+    setState(() {
+      _post = _post.copyWith(
+        isLiked: !wasLiked,
+        likesCount: _post.likesCount + (wasLiked ? -1 : 1),
+      );
+    });
+    try {
+      await SupabaseService.client.rpc('toggle_reaction_with_reputation', params: {
+        'p_community_id': _post.communityId,
+        'p_user_id': SupabaseService.currentUserId,
+        'p_post_id': _post.id,
+        'p_type': 'like',
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _post = _post.copyWith(
+            isLiked: wasLiked,
+            likesCount: _post.likesCount + (wasLiked ? 1 : -1),
+          );
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
     final r = context.r;
-    final thumb = post.coverImageUrl ?? post.mediaUrl;
+    final thumb = _post.coverImageUrl ?? _post.mediaUrl;
     final hasImage = thumb != null && thumb.isNotEmpty;
 
     return AminoAnimations.staggerItem(
-      index: index,
+      index: widget.index,
       child: AminoAnimations.cardPress(
-        onTap: () => context.push('/post/${post.id}'),
+        onTap: () => context.push('/post/${_post.id}'),
         child: Container(
           decoration: BoxDecoration(
             color: context.surfaceColor,
@@ -785,9 +831,9 @@ class _FeaturedPostCard extends ConsumerWidget {
                           imageUrl: thumb,
                           fit: BoxFit.cover,
                           errorWidget: (_, __, ___) =>
-                              _PlaceholderCover(accent: accent),
+                              _PlaceholderCover(accent: widget.accent),
                         )
-                      : _PlaceholderCover(accent: accent),
+                      : _PlaceholderCover(accent: widget.accent),
                 ),
               ),
 
@@ -800,7 +846,7 @@ class _FeaturedPostCard extends ConsumerWidget {
                     children: [
                       // Título — 1 linha com ellipsis
                       Text(
-                        post.title ?? post.content,
+                        _post.title ?? _post.content,
                         style: TextStyle(
                           color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(12),
@@ -813,20 +859,18 @@ class _FeaturedPostCard extends ConsumerWidget {
 
                       SizedBox(height: r.s(6)),
 
-                      // Autor + stats
-                      // local_nickname e local_icon_url sempre preenchidos desde o join (migration 093)
+                      // Autor
                       Builder(builder: (context) {
                         final featuredAvatarUrl =
-                            post.authorLocalIconUrl?.trim().isNotEmpty == true
-                                ? post.authorLocalIconUrl!.trim()
+                            _post.authorLocalIconUrl?.trim().isNotEmpty == true
+                                ? _post.authorLocalIconUrl!.trim()
                                 : null;
                         final featuredNickname =
-                            post.authorLocalNickname?.trim().isNotEmpty == true
-                                ? post.authorLocalNickname!.trim()
+                            _post.authorLocalNickname?.trim().isNotEmpty == true
+                                ? _post.authorLocalNickname!.trim()
                                 : s.user;
                         return Row(
                           children: [
-                            // Avatar do autor
                             if (featuredAvatarUrl != null)
                               ClipOval(
                                 child: CachedNetworkImage(
@@ -858,35 +902,70 @@ class _FeaturedPostCard extends ConsumerWidget {
 
                       SizedBox(height: r.s(4)),
 
-                      // Likes + Comentários — botões maiores e clicaveis
-                      GestureDetector(
-                        onTap: () => context.push('/post/${post.id}'),
-                        behavior: HitTestBehavior.opaque,
-                        child: Row(
-                          children: [
-                            Icon(Icons.favorite_rounded,
-                                size: r.s(14), color: context.nexusTheme.textHint),
-                            SizedBox(width: r.s(3)),
-                            Text(
-                              '${post.likesCount}',
-                              style: TextStyle(
-                                  color: context.nexusTheme.textHint,
-                                  fontSize: r.fs(11),
-                                  fontWeight: FontWeight.w600),
+                      // Likes + Comentários — ações inline
+                      Row(
+                        children: [
+                          // Botão de curtir
+                          GestureDetector(
+                            onTap: _toggleLike,
+                            behavior: HitTestBehavior.opaque,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: r.s(4), horizontal: r.s(2)),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _post.isLiked
+                                        ? Icons.favorite_rounded
+                                        : Icons.favorite_border_rounded,
+                                    size: r.s(14),
+                                    color: _post.isLiked
+                                        ? Colors.redAccent
+                                        : context.nexusTheme.textHint,
+                                  ),
+                                  SizedBox(width: r.s(3)),
+                                  Text(
+                                    '${_post.likesCount}',
+                                    style: TextStyle(
+                                        color: _post.isLiked
+                                            ? Colors.redAccent
+                                            : context.nexusTheme.textHint,
+                                        fontSize: r.fs(11),
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
                             ),
-                            SizedBox(width: r.s(10)),
-                            Icon(Icons.chat_bubble_outline_rounded,
-                                size: r.s(14), color: context.nexusTheme.textHint),
-                            SizedBox(width: r.s(3)),
-                            Text(
-                              '${post.commentsCount}',
-                              style: TextStyle(
-                                  color: context.nexusTheme.textHint,
-                                  fontSize: r.fs(11),
-                                  fontWeight: FontWeight.w600),
+                          ),
+                          SizedBox(width: r.s(10)),
+                          // Botão de comentar — abre post com foco no campo
+                          GestureDetector(
+                            onTap: () => context.push(
+                                '/post/${_post.id}?scrollToComments=true'),
+                            behavior: HitTestBehavior.opaque,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: r.s(4), horizontal: r.s(2)),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.chat_bubble_outline_rounded,
+                                      size: r.s(14),
+                                      color: context.nexusTheme.textHint),
+                                  SizedBox(width: r.s(3)),
+                                  Text(
+                                    '${_post.commentsCount}',
+                                    style: TextStyle(
+                                        color: context.nexusTheme.textHint,
+                                        fontSize: r.fs(11),
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
