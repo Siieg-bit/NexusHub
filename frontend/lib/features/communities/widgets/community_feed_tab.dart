@@ -655,8 +655,8 @@ class _FeaturedHeroCardState extends ConsumerState<_FeaturedHeroCard> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withValues(alpha: hasImage ? 0.08 : 0.02),
-                Colors.black.withValues(alpha: 0.88),
+                Colors.black.withValues(alpha: 0.0),
+                Colors.black.withValues(alpha: hasImage ? 0.45 : 0.02),
               ],
             ),
           ),
