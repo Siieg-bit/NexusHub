@@ -9,6 +9,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/widgets/rgb_color_picker.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:amino_clone/config/nexus_theme_data.dart';
 import 'package:image_cropper/image_cropper.dart';
 
 // ============================================================
@@ -268,7 +269,7 @@ class _CreateCommunityScreenState
 
   // ── Top bar ──────────────────────────────────────────────
   Widget _buildTopBar(BuildContext context, Responsive r,
-      NexusThemeExtension theme, AppStrings s, List<String> stepTitles) {
+      NexusThemeData theme, AppStrings s, List<String> stepTitles) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
       child: Row(
@@ -313,7 +314,7 @@ class _CreateCommunityScreenState
   }
 
   // ── Barra de progresso ───────────────────────────────────
-  Widget _buildProgressBar(Responsive r, NexusThemeExtension theme) {
+  Widget _buildProgressBar(Responsive r, NexusThemeData theme) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: r.s(16)),
       child: Row(
@@ -341,7 +342,7 @@ class _CreateCommunityScreenState
 
   // ── Etapa 1: Identidade ──────────────────────────────────
   Widget _buildStep1Identity(
-      Responsive r, NexusThemeExtension theme, AppStrings s) {
+      Responsive r, NexusThemeData theme, AppStrings s) {
     return Form(
       key: _formKeys[0],
       child: SingleChildScrollView(
@@ -416,7 +417,7 @@ class _CreateCommunityScreenState
 
   // ── Etapa 2: Sobre ───────────────────────────────────────
   Widget _buildStep2About(
-      Responsive r, NexusThemeExtension theme, AppStrings s) {
+      Responsive r, NexusThemeData theme, AppStrings s) {
     return Form(
       key: _formKeys[1],
       child: SingleChildScrollView(
@@ -541,7 +542,7 @@ class _CreateCommunityScreenState
 
   // ── Etapa 3: Configurações ───────────────────────────────
   Widget _buildStep3Settings(
-      Responsive r, NexusThemeExtension theme, AppStrings s) {
+      Responsive r, NexusThemeData theme, AppStrings s) {
     return Form(
       key: _formKeys[2],
       child: SingleChildScrollView(
@@ -652,8 +653,10 @@ class _CreateCommunityScreenState
             _sectionTitle(r, theme, s.themeColor, Icons.color_lens_rounded),
             SizedBox(height: r.s(12)),
             ColorPickerButton(
-              color: _themeColor,
-              onColorChanged: (color) => setState(() => _themeColor = color),
+              color: _parseColor(_themeColor),
+              onColorChanged: (color) => setState(() {
+                _themeColor = '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+              }),
               title: 'Cor do Tema',
             ),
           ],
@@ -664,7 +667,7 @@ class _CreateCommunityScreenState
 
   // ── Etapa 4: Regras ──────────────────────────────────────
   Widget _buildStep4Rules(
-      Responsive r, NexusThemeExtension theme, AppStrings s) {
+      Responsive r, NexusThemeData theme, AppStrings s) {
     return Form(
       key: _formKeys[3],
       child: SingleChildScrollView(
@@ -770,7 +773,7 @@ class _CreateCommunityScreenState
 
   // ── Etapa 5: Preview ─────────────────────────────────────
   Widget _buildStep5Preview(
-      Responsive r, NexusThemeExtension theme, AppStrings s) {
+      Responsive r, NexusThemeData theme, AppStrings s) {
     final accentColor = _parseColor(_themeColor);
     final name = _nameController.text.trim().isEmpty
         ? 'Nome da Comunidade'
@@ -891,7 +894,7 @@ class _CreateCommunityScreenState
     );
   }
 
-  Widget _buildSummaryCard(Responsive r, NexusThemeExtension theme,
+  Widget _buildSummaryCard(Responsive r, NexusThemeData theme,
       AppStrings s, Color accentColor) {
     final joinLabels = {
       'open': 'Aberta',
@@ -964,7 +967,7 @@ class _CreateCommunityScreenState
 
   // ── Botões de navegação ──────────────────────────────────
   Widget _buildNavButtons(
-      Responsive r, NexusThemeExtension theme, AppStrings s) {
+      Responsive r, NexusThemeData theme, AppStrings s) {
     final isLast = _currentStep == _totalSteps - 1;
     return Container(
       padding: EdgeInsets.all(r.s(16)),
@@ -1054,7 +1057,7 @@ class _CreateCommunityScreenState
 
   // ── Helpers de UI ────────────────────────────────────────
   Widget _sectionTitle(
-      Responsive r, NexusThemeExtension theme, String title, IconData icon) {
+      Responsive r, NexusThemeData theme, String title, IconData icon) {
     return Row(
       children: [
         Icon(icon, color: theme.accentPrimary, size: r.s(20)),
@@ -1077,7 +1080,7 @@ class _CreateCommunityScreenState
     required String hint,
     required IconData icon,
     required Responsive r,
-    required NexusThemeExtension theme,
+    required NexusThemeData theme,
     int maxLines = 1,
     int? maxLength,
     String? Function(String?)? validator,
@@ -1128,7 +1131,7 @@ class _CreateCommunityScreenState
     required List<(String, String)> items,
     required void Function(String) onChanged,
     required Responsive r,
-    required NexusThemeExtension theme,
+    required NexusThemeData theme,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -1167,7 +1170,7 @@ class _CreateCommunityScreenState
     required List<(String, String, String, IconData)> options,
     required void Function(String) onChanged,
     required Responsive r,
-    required NexusThemeExtension theme,
+    required NexusThemeData theme,
   }) {
     return Column(
       children: options.map((opt) {
@@ -1248,7 +1251,7 @@ class _ImageUploadCard extends StatelessWidget {
   final VoidCallback onPickImage;
   final VoidCallback? onRemove;
   final Responsive r;
-  final NexusThemeExtension theme;
+  final NexusThemeData theme;
   /// Especificações de tamanho exibidas abaixo do label.
   final String? sizeSpec;
 
