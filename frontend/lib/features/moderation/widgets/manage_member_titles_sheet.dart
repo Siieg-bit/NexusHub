@@ -77,11 +77,6 @@ class _ManageMemberTitlesSheetState
   String _selectedColor = '#7C4DFF';
 
   static const int _maxTitles = 20;
-  static const List<String> _quickColors = [
-    '#7C4DFF', '#2DBE60', '#2196F3', '#FF6B35',
-    '#FFD600', '#E91E63', '#00BCD4', '#FF5722',
-    '#FFFFFF', '#9E9E9E', '#FF1744', '#00E676',
-  ];
 
   @override
   void initState() {
@@ -597,7 +592,7 @@ class _ManageMemberTitlesSheetState
         ),
         SizedBox(height: r.s(12)),
 
-        // Seletor de cor
+        // Seletor de cor avançado (mesmo picker dos editores de bio/post)
         Row(
           children: [
             Text(
@@ -605,75 +600,18 @@ class _ManageMemberTitlesSheetState
               style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
             ),
             const Spacer(),
-            GestureDetector(
-              onTap: () async {
-                final picked = await showRGBColorPicker(
-                  context,
-                  initialColor: previewColor,
-                  title: 'Cor do Título',
-                );
-                if (picked != null && mounted) {
-                  final hex =
-                      '#${picked.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
-                  setState(() => _selectedColor = hex);
-                }
+            ColorPickerButton(
+              color: previewColor,
+              title: 'Cor do Título',
+              label: _selectedColor,
+              size: 30,
+              onColorChanged: (picked) {
+                final hex =
+                    '#${picked.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
+                setState(() => _selectedColor = hex);
               },
-              child: Container(
-                width: r.s(28),
-                height: r.s(28),
-                decoration: BoxDecoration(
-                  color: previewColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white38, width: 2),
-                ),
-              ),
-            ),
-            SizedBox(width: r.s(8)),
-            Text(
-              _selectedColor,
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: r.fs(12),
-                fontFamily: 'monospace',
-              ),
             ),
           ],
-        ),
-        SizedBox(height: r.s(10)),
-
-        // Paleta rápida
-        Wrap(
-          spacing: r.s(8),
-          runSpacing: r.s(8),
-          children: _quickColors.map((hex) {
-            final c = _parseColor(hex);
-            final isSelected = _selectedColor.toUpperCase() == hex.toUpperCase();
-            return GestureDetector(
-              onTap: () => setState(() => _selectedColor = hex),
-              child: Container(
-                width: r.s(28),
-                height: r.s(28),
-                decoration: BoxDecoration(
-                  color: c,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected ? Colors.white : Colors.transparent,
-                    width: r.s(2.5),
-                  ),
-                  boxShadow: isSelected
-                      ? [BoxShadow(color: c.withValues(alpha: 0.5), blurRadius: 6)]
-                      : null,
-                ),
-                child: isSelected
-                    ? Icon(
-                        Icons.check_rounded,
-                        color: c.computeLuminance() > 0.5 ? Colors.black : Colors.white,
-                        size: r.s(14),
-                      )
-                    : null,
-              ),
-            );
-          }).toList(),
         ),
         SizedBox(height: r.s(14)),
 
