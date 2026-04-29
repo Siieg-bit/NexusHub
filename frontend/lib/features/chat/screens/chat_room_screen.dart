@@ -45,6 +45,8 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/emoji_rain_overlay.dart';
 import '../../../core/services/haptic_service.dart';
 import 'roleplay_screen.dart';
+import 'chat_rpg_screen.dart';
+import 'chat_rpg_admin_screen.dart';
 import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 // screening_room_screen.dart — navegação via GoRouter ('/screening-room/:threadId')
 
@@ -209,6 +211,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   String? _callerRole; // 'host', 'co_host', 'member'
   bool _isAnnouncementOnly = false;
   bool _isReadOnly = false;
+  bool _rpgModeEnabled = false;
   String? _bigNote;
   String? _bigNoteAuthorId;
   bool _bigNoteDismissed = false;
@@ -960,7 +963,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       final userId = SupabaseService.currentUserId;
       // Capa do chat + host_id + co_hosts (tudo em uma query só)
       final threadData = await SupabaseService.table('chat_threads')
-          .select('cover_image_url, is_announcement_only, is_read_only, host_id, co_hosts, big_note, big_note_author_id, is_temporary, temp_expires_at, match_interests')
+          .select('cover_image_url, is_announcement_only, is_read_only, host_id, co_hosts, big_note, big_note_author_id, is_temporary, temp_expires_at, match_interests, rpg_mode_enabled')
           .eq('id', widget.threadId)
           .single();
       if (mounted && !_isDisposed) {
@@ -972,6 +975,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           _isAnnouncementOnly =
               threadData['is_announcement_only'] as bool? ?? false;
            _isReadOnly = threadData['is_read_only'] as bool? ?? false;
+          _rpgModeEnabled = threadData['rpg_mode_enabled'] as bool? ?? false;
           _bigNote = threadData['big_note'] as String?;
           _bigNoteAuthorId = threadData['big_note_author_id'] as String?;
           _bigNoteDismissed = false;
@@ -1779,6 +1783,52 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       },
                       isDestructive: !_isChatDisabled,
                     ),
+                    SizedBox(height: r.s(8)),
+                  ],
+
+                  // ── Seção RPG ──────────────────────────────────────────
+                  if (_rpgModeEnabled || isHost) ...[  
+                    Divider(
+                        color: Colors.white.withValues(alpha: 0.07),
+                        height: r.s(16)),
+                    _settingsSectionLabel(r, 'Modo RPG'),
+                    if (_rpgModeEnabled)
+                      _settingsTile(
+                        r,
+                        Icons.shield_rounded,
+                        'Meu Personagem',
+                        () {
+                          Navigator.pop(ctx);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatRpgScreen(
+                                  threadId: widget.threadId),
+                            ),
+                          );
+                        },
+                      ),
+                    if (isHost)
+                      _settingsTile(
+                        r,
+                        Icons.admin_panel_settings_rounded,
+                        _rpgModeEnabled
+                            ? 'Painel RPG'
+                            : 'Ativar Modo RPG',
+                        () {
+                          Navigator.pop(ctx);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatRpgAdminScreen(
+                                  threadId: widget.threadId),
+                            ),
+                          ).then((_) {
+                            // Recarrega o estado do RPG ao voltar
+                            _loadThreadInfo();
+                          });
+                        },
+                      ),
                     SizedBox(height: r.s(8)),
                   ],
 

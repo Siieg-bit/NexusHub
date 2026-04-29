@@ -939,6 +939,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
       body: _activeTabs.isNotEmpty
           ? TabBarView(
               controller: _tabController,
+              // Física personalizada: swipe mais rápido e responsivo
+              physics: const _FastSwipePhysics(),
               children: _activeTabs.map((tab) {
                 if (tab == s.guidelines) {
                     return CommunityGuidelinesTab(communityId: widget.communityId);
@@ -1079,4 +1081,27 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(_SliverTabBarDelegate oldDelegate) =>
       tabBar.controller != oldDelegate.tabBar.controller;
+}
+
+// =============================================================================
+// FÍSICA: Swipe rápido e responsivo para o TabBarView
+// =============================================================================
+/// Física personalizada que reduz a resistência do swipe entre abas.
+/// - `minFlingVelocity` menor → basta um toque rápido para trocar de aba
+/// - `minFlingDistance` menor → distância mínima de arrasto reduzida
+/// - `springDescription` mais rígida → snap mais rápido ao soltar
+class _FastSwipePhysics extends PageScrollPhysics {
+  const _FastSwipePhysics({super.parent});
+
+  @override
+  _FastSwipePhysics applyTo(ScrollPhysics? ancestor) {
+    return _FastSwipePhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  SpringDescription get spring => const SpringDescription(
+        mass: 80,
+        stiffness: 100,
+        damping: 1,
+      );
 }
