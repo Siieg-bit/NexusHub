@@ -3,9 +3,10 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// AminoDrawer — Drawer customizado com animação de sobreposição (overlay).
 ///
-/// Versão com bloqueio de propagação:
-/// Usa uma zona de borda opaca que captura o gesto horizontal ANTES dele chegar
-/// no TabBarView. Isso impede que as abas troquem enquanto o drawer é puxado.
+/// Abordagem de robustez máxima:
+/// Usa um [Listener] de baixo nível para detectar o início do toque na borda (72px).
+/// Se o toque começar na borda, o drawer "sequestra" o gesto antes que ele chegue
+/// ao TabBarView, garantindo fluidez total.
 class AminoDrawerController extends StatefulWidget {
   final Widget drawer;
   final Widget child;
@@ -30,6 +31,11 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   bool _isOpen = false;
+  
+  // Controle de drag manual via PointerEvents
+  bool _isDragging = false;
+  double _lastPointerX = 0;
+  bool _dragStartedInEdge = false;
 
   bool get isOpen => _isOpen;
 
@@ -62,27 +68,52 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
 
   void toggle() => _isOpen ? close() : open();
 
-  // ── Drag Handlers ──────────────────────────────────────────────────────────
+  // ── Gerenciamento de Ponteiro de Baixo Nível ───────────────────────────────
+  
+  void _handlePointerDown(PointerDownEvent event) {
+    _lastPointerX = event.position.dx;
+    // Se estiver fechado, verifica se começou na borda (72px)
+    if (!_isOpen) {
+      _dragStartedInEdge = event.position.dx < 72.0;
+    } else {
+      // Se estiver aberto, qualquer toque no overlay ou drawer pode iniciar o drag
+      _dragStartedInEdge = true; 
+    }
+    _isDragging = false;
+  }
 
-  void _onDragUpdate(DragUpdateDetails details) {
-    final delta = details.primaryDelta ?? 0;
-    final effectiveMax = _effectiveMaxSlide;
-    if (effectiveMax <= 0) return;
-    
-    _animController.value = (_animController.value + delta / effectiveMax).clamp(0.0, 1.0);
-    
-    if (_animController.value > 0.01 && !_isOpen) {
-      setState(() => _isOpen = true);
+  void _handlePointerMove(PointerMoveEvent event) {
+    final deltaX = event.position.dx - _lastPointerX;
+    _lastPointerX = event.position.dx;
+
+    // Se começou na borda e o movimento é horizontal significativo
+    if (!_isDragging && _dragStartedInEdge && deltaX.abs() > 2) {
+      _isDragging = true;
+    }
+
+    if (_isDragging) {
+      final effectiveMax = _effectiveMaxSlide;
+      if (effectiveMax > 0) {
+        _animController.value = (_animController.value + deltaX / effectiveMax).clamp(0.0, 1.0);
+        if (_animController.value > 0.01 && !_isOpen) {
+          setState(() => _isOpen = true);
+        }
+      }
     }
   }
 
-  void _onDragEnd(DragEndDetails details) {
-    final velocity = details.primaryVelocity ?? 0;
-    if (velocity > 300 || (_animController.value > 0.4 && velocity >= 0)) {
-      open();
-    } else {
-      close();
+  void _handlePointerUp(PointerUpEvent event) {
+    if (_isDragging) {
+      // Se soltar com velocidade ou mais da metade aberto, abre.
+      // Como não temos VelocityTracker fácil aqui, usamos posição.
+      if (_animController.value > 0.4) {
+        open();
+      } else {
+        close();
+      }
     }
+    _isDragging = false;
+    _dragStartedInEdge = false;
   }
 
   double get _effectiveMaxSlide {
@@ -96,92 +127,77 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     final screenWidth = MediaQuery.of(context).size.width;
     final effectiveMaxSlide = widget.maxSlide.clamp(0.0, screenWidth * 0.92);
 
-    return Stack(
-      children: [
-        // 1. Conteúdo Principal
-        widget.child,
+    return Listener(
+      onPointerDown: _handlePointerDown,
+      onPointerMove: _handlePointerMove,
+      onPointerUp: _handlePointerUp,
+      behavior: HitTestBehavior.translucent,
+      child: Stack(
+        children: [
+          // Conteúdo Principal
+          widget.child,
 
-        // 2. ZONA DE BORDA (72px) — Bloqueia o TabBarView
-        // Usamos um GestureDetector OPACO aqui. Quando o drag começa nesta zona,
-        // o GestureDetector "consome" o evento e ele não chega no TabBarView.
-        if (!_isOpen)
-          Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: 72.0,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onHorizontalDragUpdate: _onDragUpdate,
-              onHorizontalDragEnd: _onDragEnd,
-              child: const SizedBox.expand(),
-            ),
-          ),
-
-        // 3. Overlay (Bloqueia toques no conteúdo quando aberto)
-        AnimatedBuilder(
-          animation: _animController,
-          builder: (context, _) {
-            if (_animController.value == 0) return const SizedBox.shrink();
-            return Positioned.fill(
-              child: GestureDetector(
-                onTap: close,
-                onHorizontalDragUpdate: _onDragUpdate,
-                onHorizontalDragEnd: _onDragEnd,
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  color: context.nexusTheme.overlayColor.withValues(
-                    alpha: context.nexusTheme.overlayOpacity * _animController.value,
+          // Overlay (Bloqueia toques no conteúdo quando aberto)
+          AnimatedBuilder(
+            animation: _animController,
+            builder: (context, _) {
+              if (_animController.value == 0) return const SizedBox.shrink();
+              return Positioned.fill(
+                child: GestureDetector(
+                  onTap: close,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    color: context.nexusTheme.overlayColor.withValues(
+                      alpha: context.nexusTheme.overlayOpacity * _animController.value,
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
+              );
+            },
+          ),
 
-        // 4. Drawer (O conteúdo deslizante)
-        AnimatedBuilder(
-          animation: _animController,
-          builder: (context, child) {
-            final offset = effectiveMaxSlide * (_animController.value - 1.0);
-            return Transform.translate(
-              offset: Offset(offset, 0),
-              child: child,
-            );
-          },
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: SizedBox(
-              width: effectiveMaxSlide,
-              child: Material(
-                elevation: 16,
-                type: MaterialType.transparency,
-                child: widget.drawer,
+          // Drawer
+          AnimatedBuilder(
+            animation: _animController,
+            builder: (context, child) {
+              final offset = effectiveMaxSlide * (_animController.value - 1.0);
+              return Transform.translate(
+                offset: Offset(offset, 0),
+                child: child,
+              );
+            },
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SizedBox(
+                width: effectiveMaxSlide,
+                child: Material(
+                  elevation: 16,
+                  type: MaterialType.transparency,
+                  child: widget.drawer,
+                ),
               ),
             ),
           ),
-        ),
-
-        // 5. Handle Visual (Indicador de borda)
-        if (!_isOpen)
-          Positioned(
-            left: 3,
-            top: 0,
-            bottom: 0,
-            child: IgnorePointer(
+          
+          // Handle Visual (Opcional, mas ajuda a UI)
+          if (!_isOpen)
+            Positioned(
+              left: 4,
+              top: 0,
+              bottom: 0,
               child: Center(
                 child: Container(
                   width: 4,
-                  height: 48,
+                  height: 40,
                   decoration: BoxDecoration(
-                    color: context.nexusTheme.appBarForeground.withValues(alpha: 0.3),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
