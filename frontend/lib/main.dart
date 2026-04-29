@@ -230,6 +230,10 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
     ref.watch(cosmeticsInvalidatorProvider);
     final nexusTheme = ref.watch(nexusThemeProvider);
     final currentLocale = ref.watch(localeProvider);
+    // Sincroniza o cache global de strings sempre que o idioma muda.
+    // Isso garante que getStrings() retorne as strings corretas em services,
+    // models e widgets StatefulWidget que não usam ref.watch(stringsProvider).
+    updateGlobalStrings(currentLocale);
 
     // Manter edge-to-edge com contraste e legibilidade adequados em Android 15/16.
     // O SystemUiOverlayStyle é derivado do baseMode do tema NexusHub ativo,

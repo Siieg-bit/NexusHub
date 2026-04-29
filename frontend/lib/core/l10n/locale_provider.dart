@@ -126,13 +126,18 @@ final stringsProvider = Provider<AppStrings>((ref) {
   return locale.strings;
 });
 
-/// Helper estático para acessar strings em contextos sem ref (services, utils).
-/// Lê o idioma salvo no Hive e retorna as strings correspondentes.
-AppStrings getStrings() {
-  try {
-    final box = Hive.box<String>('settings');
-    final code = box.get('locale');
-    if (code != null) return AppLocale.fromCode(code).strings;
-  } catch (_) {}
-  return AppLocale.fromSystem().strings;
+/// Cache global das strings do idioma atual.
+/// Atualizado pelo [localeProvider] via [updateGlobalStrings] sempre que o
+/// idioma muda — garante que [getStrings()] retorne o idioma correto em
+/// services, models e widgets sem ref, sem precisar de pull-to-refresh.
+AppStrings _currentStrings = AppLocale.fromSystem().strings;
+
+/// Atualiza o cache global de strings. Deve ser chamado sempre que o
+/// [localeProvider] mudar (ver main.dart / _AppState).
+void updateGlobalStrings(AppLocale locale) {
+  _currentStrings = locale.strings;
 }
+
+/// Helper estático para acessar strings em contextos sem ref (services, utils).
+/// Retorna o cache reativo — atualizado automaticamente quando o idioma muda.
+AppStrings getStrings() => _currentStrings;

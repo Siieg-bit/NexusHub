@@ -56,6 +56,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   List<CommunityModel> _newCommunities = [];
   List<Map<String, dynamic>> _forYouPosts = [];
   bool _isLoading = true;
+  /// IDs das comunidades das quais o usuário já é membro.
+  /// Usado para ocultar o botão "Entrar" nos cards do Discover.
+  Set<String> _myCommunityIds = {};
 
   // Dados do usuário para a top bar
   // _avatarUrl removido: agora usa currentUserAvatarProvider (atualização em tempo real)
@@ -93,6 +96,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             .where((e) => e['communities'] != null)
             .map((e) => CommunityModel.fromJson(e['communities']))
             .toList();
+        // Registrar IDs para ocultar botão "Entrar" nos cards do Discover
+        _myCommunityIds = _myCommunities.map((c) => c.id).toSet();
       }
 
       // Comunidades recomendadas
@@ -437,7 +442,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           _buildSectionHeader(s.recommendedCommunities,
                               onSeeAll: () => context.push('/communities')),
                           ..._recommendedCommunities.map(
-                            (c) => _RecommendedCommunityTile(community: c),
+                            (c) => _RecommendedCommunityTile(
+                              community: c,
+                              isMember: _myCommunityIds.contains(c.id),
+                            ),
                           ),
 
                           SizedBox(height: r.s(20)),
@@ -588,23 +596,46 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 ],
                               ),
                             ),
-                            // Botão Join
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: r.s(16), vertical: r.s(8)),
-                              decoration: BoxDecoration(
-                                color: context.nexusTheme.accentPrimary,
-                                borderRadius: BorderRadius.circular(r.s(20)),
-                              ),
-                              child: Text(
-                                s.joinCommunity,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: r.fs(12),
-                                  fontWeight: FontWeight.w700,
+                            // Botão Join — oculto se já for membro
+                            if (!_myCommunityIds.contains(community.id))
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(16), vertical: r.s(8)),
+                                decoration: BoxDecoration(
+                                  color: context.nexusTheme.accentPrimary,
+                                  borderRadius:
+                                      BorderRadius.circular(r.s(20)),
+                                ),
+                                child: Text(
+                                  s.joinCommunity,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: r.fs(12),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              )
+                            else
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(12), vertical: r.s(6)),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  borderRadius:
+                                      BorderRadius.circular(r.s(20)),
+                                  border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.5),
+                                      width: 1),
+                                ),
+                                child: Text(
+                                  'Membro',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: r.fs(11),
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                       ),
@@ -1248,11 +1279,18 @@ class _ForYouPostTile extends ConsumerWidget {
 /// Tile de comunidade recomendada — Estilo Amino (lista vertical)
 class _RecommendedCommunityTile extends ConsumerWidget {
   final CommunityModel community;
-  const _RecommendedCommunityTile({required this.community});
+  /// Indica se o usuário já é membro desta comunidade.
+  /// Quando true, o botão "Entrar" é substituído por um badge "Membro".
+  final bool isMember;
+
+  const _RecommendedCommunityTile({
+    required this.community,
+    this.isMember = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: () => context.push('/community/${community.id}'),
@@ -1295,27 +1333,49 @@ class _RecommendedCommunityTile extends ConsumerWidget {
                   Text(
                     '${formatCount(community.membersCount)} membros',
                     style: TextStyle(
-                        color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
+                        color: context.nexusTheme.textSecondary,
+                        fontSize: r.fs(12)),
                   ),
                 ],
               ),
             ),
-            // Botão Entrar
-            Container(
-              padding:
-                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(7)),
-              decoration: BoxDecoration(
-                color: context.nexusTheme.accentPrimary,
-                borderRadius: BorderRadius.circular(r.s(20)),
+            // Botão Entrar — substituído por badge "Membro" se já ingressou
+            if (!isMember)
+              Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(16), vertical: r.s(7)),
+                decoration: BoxDecoration(
+                  color: context.nexusTheme.accentPrimary,
+                  borderRadius: BorderRadius.circular(r.s(20)),
+                ),
+                child: Text(
+                  s.joinCommunity,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: r.fs(12),
+                      fontWeight: FontWeight.w700),
+                ),
+              )
+            else
+              Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(12), vertical: r.s(6)),
+                decoration: BoxDecoration(
+                  color: context.nexusTheme.accentPrimary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(r.s(20)),
+                  border: Border.all(
+                      color: context.nexusTheme.accentPrimary
+                          .withValues(alpha: 0.4),
+                      width: 1),
+                ),
+                child: Text(
+                  'Membro',
+                  style: TextStyle(
+                      color: context.nexusTheme.accentPrimary,
+                      fontSize: r.fs(11),
+                      fontWeight: FontWeight.w600),
+                ),
               ),
-              child: Text(
-                s.joinCommunity,
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: r.fs(12),
-                    fontWeight: FontWeight.w700),
-              ),
-            ),
           ],
         ),
       ),
