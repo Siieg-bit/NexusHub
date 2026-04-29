@@ -1057,7 +1057,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                           ),
                                 );
                               }),
-                              SizedBox(height: r.s(10)),
+                              SizedBox(height: r.s(6)),
 
                               // Nome + badge Amino+
                               Row(
@@ -1088,7 +1088,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                   ],
                                 ],
                               ),
-                              SizedBox(height: r.s(6)),
+                              SizedBox(height: r.s(4)),
 
                               // Level badge — novo design: círculo colorido (Lv+número)
                               // projeta à esquerda de pill cinza com título do nível
@@ -1107,6 +1107,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                               // Badges e títulos customizados (inclui role badge via is_role_badge)
                               // O sync_role_badge já insere o badge de cargo (Líder/Curador/Agente)
                               // em custom_titles com is_role_badge=true — não renderizar manualmente.
+                              if (titles.isNotEmpty) SizedBox(height: r.s(10)),
                               if (titles.isNotEmpty)
                                 Padding(
                                   padding:
@@ -1272,7 +1273,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                     ),
                                   ],
                                 ),
-                              SizedBox(height: r.s(12)),
+                              SizedBox(height: r.s(8)),
 
                               // ── CONQUISTAS + MOEDAS BAR (dentro do banner) ──
                               Padding(
@@ -1396,7 +1397,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                   ],
                                 ),
                               ),
-                              SizedBox(height: r.s(12)),
+                              SizedBox(height: r.s(0)),
                             ],
                           ),
                         ),
@@ -1412,7 +1413,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                   child: Container(
                     color: layeredBgColor,
                     padding:
-                        EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
+                        EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(8)),
                     child: Row(
                       children: [
                         // Reputação
@@ -1512,7 +1513,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                 // ================================================================
                 SliverToBoxAdapter(
                   child: Container(
-                    margin: EdgeInsets.fromLTRB(0, r.s(4), 0, 0),
+                    margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
                     padding:
                         EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(12)),
                     decoration: BoxDecoration(
