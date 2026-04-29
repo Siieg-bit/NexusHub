@@ -33,9 +33,10 @@ class _CommunityVoiceRoomsState extends ConsumerState<CommunityVoiceRooms> {
   Future<void> _loadRooms() async {
     try {
       // Busca call_sessions ativas (voice ou stage) cujo thread pertence à comunidade
+      // CORREÇÃO: chat_threads usa 'title' em vez de 'name'
       final response = await SupabaseService.table('call_sessions')
           .select(
-              '*, chat_threads!call_sessions_thread_id_fkey(id, name, community_id), profiles!call_sessions_host_id_fkey(id, nickname, icon_url)')
+              '*, chat_threads!call_sessions_thread_id_fkey(id, title, community_id), profiles!call_sessions_host_id_fkey(id, nickname, icon_url)')
           .eq('status', 'active')
           .inFilter('type', ['voice', 'stage'])
           .order('started_at', ascending: false)
@@ -66,7 +67,7 @@ class _CommunityVoiceRoomsState extends ConsumerState<CommunityVoiceRooms> {
     final sessionId = room['id'] as String;
     final threadId = (room['chat_threads'] as Map<String, dynamic>?)?['id'] as String?;
     final channelName = room['channel_name'] as String? ?? sessionId;
-    final title = (room['chat_threads'] as Map<String, dynamic>?)?['name'] as String? ?? 'Sala de Voz';
+    final title = (room['chat_threads'] as Map<String, dynamic>?)?['title'] as String? ?? 'Sala de Voz';
 
     if (!mounted) return;
 
@@ -168,7 +169,7 @@ class _VoiceRoomCard extends StatelessWidget {
     final isStage = type == 'stage';
     final thread = room['chat_threads'] as Map<String, dynamic>?;
     final host = room['profiles'] as Map<String, dynamic>?;
-    final title = thread?['name'] as String? ?? 'Sala de Voz';
+    final title = thread?['title'] as String? ?? 'Sala de Voz';
     final hostName = host?['nickname'] as String? ?? 'Anônimo';
     final participantCount = room['participant_count'] as int? ?? 0;
 
