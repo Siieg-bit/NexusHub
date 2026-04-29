@@ -100,7 +100,7 @@ class _FeaturedTab extends ConsumerWidget {
     final primaryFeatured =
         featuredPosts.isNotEmpty ? featuredPosts.first : null;
     final secondaryFeatured = featuredPosts.length > 1
-        ? featuredPosts.skip(1).take(4).toList()
+        ? featuredPosts.skip(1).take(8).toList()
         : <PostModel>[];
     final rotatedFeaturedPosts = <PostModel>[
       ...featuredPosts.skip(5),
