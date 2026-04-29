@@ -81,53 +81,55 @@ class LevelBadge extends StatelessWidget {
       );
     }
 
-    return SizedBox(
-      height: circleSize,
-      child: Stack(
-        alignment: Alignment.centerLeft,
-        clipBehavior: Clip.none,
-        children: [
-          // ── Pill cinza escura (fundo) ──────────────────────────────────────
-          Padding(
-            padding: EdgeInsets.only(left: overlap),
-            child: Container(
-              height: pillHeight,
-              padding: EdgeInsets.only(
-                left: pillPaddingLeft,
-                right: pillPaddingRight,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(pillHeight / 2),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.12),
-                  width: 1,
+    return IntrinsicWidth(
+      child: SizedBox(
+        height: circleSize,
+        child: Stack(
+          alignment: Alignment.centerLeft,
+          clipBehavior: Clip.none,
+          children: [
+            // ── Pill cinza escura (fundo) ─────────────────────────────────────────────────────
+            Padding(
+              padding: EdgeInsets.only(left: overlap),
+              child: Container(
+                height: pillHeight,
+                padding: EdgeInsets.only(
+                  left: pillPaddingLeft,
+                  right: pillPaddingRight,
                 ),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.90),
-                  fontSize: titleFontSize,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.2,
-                  height: 1,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(pillHeight / 2),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    width: 1,
+                  ),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                alignment: Alignment.center,
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.90),
+                    fontSize: titleFontSize,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                    height: 1,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ),
-          ),
 
-          // ── Círculo colorido (projeta à esquerda) ─────────────────────────
-          _buildCircle(
-            levelColor: levelColor,
-            circleSize: circleSize,
-            lvFontSize: lvFontSize,
-            numFontSize: numFontSize,
-          ),
-        ],
+            // ── Círculo colorido (projeta à esquerda) ─────────────────────
+            _buildCircle(
+              levelColor: levelColor,
+              circleSize: circleSize,
+              lvFontSize: lvFontSize,
+              numFontSize: numFontSize,
+            ),
+          ],
+        ),
       ),
     );
   }
