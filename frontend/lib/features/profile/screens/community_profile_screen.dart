@@ -42,11 +42,14 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 class CommunityProfileScreen extends ConsumerStatefulWidget {
   final String userId;
   final String communityId;
+  /// Índice da aba inicial: 0 = Posts, 1 = Wall, 2 = Saved Posts
+  final int initialTab;
 
   const CommunityProfileScreen({
     super.key,
     required this.userId,
     required this.communityId,
+    this.initialTab = 0,
   });
 
   @override
@@ -89,7 +92,11 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: widget.initialTab.clamp(0, 2),
+    );
     _loadProfile();
   }
 

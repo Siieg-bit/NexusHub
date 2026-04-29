@@ -342,10 +342,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/community/:communityId/my-profile',
         name: 'community-my-profile',
-        builder: (context, state) => CommunityProfileScreen(
-          communityId: state.pathParameters['communityId']!,
-          userId: SupabaseService.currentUserId ?? '',
-        ),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CommunityProfileScreen(
+            communityId: state.pathParameters['communityId']!,
+            userId: SupabaseService.currentUserId ?? '',
+            initialTab: (extra['initialTab'] as int?) ?? 0,
+          );
+        },
       ),
 
       // ====================================================================

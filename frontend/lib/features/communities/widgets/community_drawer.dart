@@ -839,10 +839,13 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                       iconColor: theme.success,
                       label: s.drawerPublicChatrooms,
                       onTap: () => _closeAndNavigate(() {
-                        context.push('/create-public-chat', extra: {
-                          'communityId': widget.community.id,
-                          'communityName': widget.community.name,
-                        });
+                        context.push(
+                          '/community/${widget.community.id}/my-chats',
+                          extra: {
+                            'communityId': widget.community.id,
+                            'communityName': widget.community.name,
+                          },
+                        );
                       }),
                     ),
                     // Roles RPG — só quando modo RPG ativo
@@ -856,24 +859,18 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                               '/community/${widget.community.id}/rpg-roles');
                         }),
                       ),
-                    // Meu Título
-                    _AminoDrawerTile(
-                      icon: Icons.workspace_premium_rounded,
-                      iconColor: theme.accentSecondary,
-                      label: s.myTitle,
-                      onTap: () => _closeAndNavigate(() {
-                        context.push(
-                            '/community/${widget.community.id}/my-title');
-                      }),
-                    ),
-                    // Posts Salvos
+                    // Meu Título — só exibe se a comunidade tiver títulos selecionáveis
+                    // (a RPC get_selectable_titles ainda não está no banco; item removido por ora)
+                    // Posts Salvos — abre diretamente na aba Saved Posts (index 2)
                     _AminoDrawerTile(
                       icon: Icons.bookmark_rounded,
                       iconColor: theme.error,
                       label: s.savedPosts,
                       onTap: () => _closeAndNavigate(() {
                         context.push(
-                            '/community/${widget.community.id}/my-profile');
+                          '/community/${widget.community.id}/my-profile',
+                          extra: {'initialTab': 2},
+                        );
                       }),
                     ),
                     // Informações da Comunidade
@@ -923,8 +920,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                 communityUnread > 0 ? theme.error : theme.textSecondary,
             label: s.notifications,
             onTap: () => _closeAndNavigate(() {
-              context
-                  .push('/community/${widget.community.id}/notifications');
+              context.push('/settings/notifications');
             }),
             badgeCount: communityUnread,
           );
