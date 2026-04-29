@@ -165,15 +165,20 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
       _chatsHasMore = true;
     });
 
+    // Cada aba tem seu próprio try/catch para que um erro numa não derrube as outras
+    List<Map<String, dynamic>> rawPosts = [];
+    List<Map<String, dynamic>> rawMembers = [];
+    List<Map<String, dynamic>> rawWikis = [];
+    List<Map<String, dynamic>> rawChats = [];
+
+    // ── POSTS ──────────────────────────────────────────────────────────────
     try {
-      // Posts padrão: mais recentes
       dynamic postQuery = SupabaseService.table('posts')
           .select(
-              'id, title, type, likes_count, comments_count, thumbnail_url, cover_image_url, author_id, created_at, '
+              'id, title, type, likes_count, comments_count, cover_image_url, author_id, created_at, '
               'profiles!posts_author_id_fkey(id, nickname, icon_url, level)')
           .eq('community_id', widget.communityId)
           .eq('status', 'ok');
-
       if (_postType != 'all') {
         postQuery = postQuery.eq('type', _postType);
       }
@@ -188,21 +193,29 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
           postQuery = postQuery.order('created_at', ascending: false);
       }
       final postRes = await postQuery.range(0, _pageSize - 1);
-      final rawPosts = List<Map<String, dynamic>>.from(postRes as List? ?? []);
+      rawPosts = List<Map<String, dynamic>>.from(postRes as List? ?? []);
       await _enrichPostsWithLocalData(rawPosts);
+    } catch (e) {
+      debugPrint('[community_search] _loadDefault posts erro: $e');
+    }
 
-      // Membros padrão: por reputação
+    // ── MEMBROS ────────────────────────────────────────────────────────────
+    try {
       final memberRes = await SupabaseService.table('community_members')
           .select(
               'user_id, local_nickname, local_icon_url, role, '
               'profiles!community_members_user_id_fkey(id, nickname, icon_url, level, reputation)')
           .eq('community_id', widget.communityId)
           .eq('is_banned', false)
-          .order('reputation', ascending: false)
+          .order('local_reputation', ascending: false)
           .range(0, _pageSize - 1);
-      final rawMembers = _processMemberResults(memberRes as List? ?? []);
+      rawMembers = _processMemberResults(memberRes as List? ?? []);
+    } catch (e) {
+      debugPrint('[community_search] _loadDefault members erro: $e');
+    }
 
-      // Wikis padrão: por likes
+    // ── WIKIS ──────────────────────────────────────────────────────────────
+    try {
       final wikiRes = await SupabaseService.table('wiki_entries')
           .select(
               'id, title, content, cover_image_url, author_id, created_at, likes_count, views_count, '
@@ -211,10 +224,14 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
           .eq('status', 'ok')
           .order('likes_count', ascending: false)
           .range(0, _pageSize - 1);
-      final rawWikis = List<Map<String, dynamic>>.from(wikiRes as List? ?? []);
+      rawWikis = List<Map<String, dynamic>>.from(wikiRes as List? ?? []);
       await _enrichWikisWithLocalData(rawWikis);
+    } catch (e) {
+      debugPrint('[community_search] _loadDefault wikis erro: $e');
+    }
 
-      // Chats padrão: por membros
+    // ── CHATS ──────────────────────────────────────────────────────────────
+    try {
       final chatRes = await SupabaseService.table('chat_threads')
           .select(
               'id, title, description, icon_url, cover_image_url, members_count, '
@@ -224,28 +241,27 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
           .eq('status', 'ok')
           .order('members_count', ascending: false)
           .range(0, _pageSize - 1);
-      final rawChats = List<Map<String, dynamic>>.from(chatRes as List? ?? []);
+      rawChats = List<Map<String, dynamic>>.from(chatRes as List? ?? []);
+    } catch (e) {
+      debugPrint('[community_search] _loadDefault chats erro: $e');
+    }
 
-      if (mounted) {
-        setState(() {
-          _posts = rawPosts;
-          _members = rawMembers;
-          _wikis = rawWikis;
-          _chats = rawChats;
-          _postsHasMore = rawPosts.length == _pageSize;
-          _membersHasMore = rawMembers.length == _pageSize;
-          _wikisHasMore = rawWikis.length == _pageSize;
-          _chatsHasMore = rawChats.length == _pageSize;
-          _postsPage = 1;
-          _membersPage = 1;
-          _wikisPage = 1;
-          _chatsPage = 1;
-          _isSearching = false;
-        });
-      }
-    } catch (e, st) {
-      debugPrint('[community_search] _loadDefault erro: $e\n$st');
-      if (mounted) setState(() => _isSearching = false);
+    if (mounted) {
+      setState(() {
+        _posts = rawPosts;
+        _members = rawMembers;
+        _wikis = rawWikis;
+        _chats = rawChats;
+        _postsHasMore = rawPosts.length == _pageSize;
+        _membersHasMore = rawMembers.length == _pageSize;
+        _wikisHasMore = rawWikis.length == _pageSize;
+        _chatsHasMore = rawChats.length == _pageSize;
+        _postsPage = 1;
+        _membersPage = 1;
+        _wikisPage = 1;
+        _chatsPage = 1;
+        _isSearching = false;
+      });
     }
   }
 
@@ -260,7 +276,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
       final offset = _postsPage * _pageSize;
       dynamic postQuery = SupabaseService.table('posts')
           .select(
-              'id, title, type, likes_count, comments_count, thumbnail_url, cover_image_url, author_id, created_at, '
+              'id, title, type, likes_count, comments_count, cover_image_url, author_id, created_at, '
               'profiles!posts_author_id_fkey(id, nickname, icon_url, level)')
           .eq('community_id', widget.communityId)
           .eq('status', 'ok');
@@ -344,7 +360,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                 'profiles!community_members_user_id_fkey(id, nickname, icon_url, level, reputation)')
             .eq('community_id', widget.communityId)
             .eq('is_banned', false)
-            .order('reputation', ascending: false)
+            .order('local_reputation', ascending: false)
             .range(offset, offset + _pageSize - 1) as List;
       }
 
@@ -623,7 +639,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
       // ── 1. POSTS ──────────────────────────────────────────────────────────
       dynamic postQuery = SupabaseService.table('posts')
           .select(
-              'id, title, type, likes_count, comments_count, thumbnail_url, cover_image_url, author_id, created_at, '
+              'id, title, type, likes_count, comments_count, cover_image_url, author_id, created_at, '
               'profiles!posts_author_id_fkey(id, nickname, icon_url, level)')
           .eq('community_id', widget.communityId)
           .eq('status', 'ok')
