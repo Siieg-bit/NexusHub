@@ -660,25 +660,6 @@ class _FeaturedHeroCardState extends ConsumerState<_FeaturedHeroCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Badge "Destaque principal"
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: r.s(10),
-                  vertical: r.s(6),
-                ),
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.92),
-                  borderRadius: BorderRadius.circular(r.s(999)),
-                ),
-                child: Text(
-                  'Destaque principal',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: r.fs(11),
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
               const Spacer(),
               // Título do post
               Text(
