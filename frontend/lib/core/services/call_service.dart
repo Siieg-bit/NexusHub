@@ -64,6 +64,7 @@ extension StageRoleX on StageRole {
 class CallSession {
   final String id;
   final String threadId;
+  final String? communityId;
   final CallType type;
   final String creatorId;
   final String status;
@@ -72,6 +73,7 @@ class CallSession {
   const CallSession({
     required this.id,
     required this.threadId,
+    this.communityId,
     required this.type,
     required this.creatorId,
     required this.status,
@@ -79,9 +81,15 @@ class CallSession {
   });
 
   factory CallSession.fromJson(Map<String, dynamic> json) {
+    // community_id pode vir diretamente (quando a query faz join com chat_threads)
+    // ou via o mapa aninhado 'chat_threads' (quando select inclui o relacionamento)
+    final threadMap = json['chat_threads'] as Map<String, dynamic>?;
+    final communityId = (json['community_id'] as String?) ??
+        (threadMap?['community_id'] as String?);
     return CallSession(
       id: json['id'] as String? ?? '',
       threadId: json['thread_id'] as String? ?? '',
+      communityId: communityId?.trim().isEmpty == true ? null : communityId?.trim(),
       type: _parseType(json['type'] as String? ?? 'voice'),
       // Suporta tanto creator_id quanto host_id (banco tem ambos)
       creatorId:
@@ -408,21 +416,17 @@ class CallService {
 
       final sessionId = result['session_id'] as String;
 
-      // Buscar a sessão completa
+          // Buscar a sessão completa incluindo community_id via join
       final res = await SupabaseService.table('call_sessions')
-          .select()
+          .select('*, chat_threads!call_sessions_thread_id_fkey(community_id)')
           .eq('id', sessionId)
           .single();
-
       final session = CallSession.fromJson(res);
       activeCall = session;
-
       // Inicializar Agora e entrar no canal
       await _joinAgoraChannel(session);
-
       // Inscrever no Realtime via RealtimeService (com retry automático)
       _subscribeToCall(session.id);
-
       return session;
     } catch (e, st) {
       _recordFailure(
@@ -483,12 +487,11 @@ class CallService {
         return null;
       }
 
-      // Buscar sessão completa
+      // Buscar sessão completa incluindo community_id via join
       final res = await SupabaseService.table('call_sessions')
-          .select()
+          .select('*, chat_threads!call_sessions_thread_id_fkey(community_id)')
           .eq('id', callSessionId)
           .single();
-
       final session = CallSession.fromJson(res);
       activeCall = session;
 
@@ -543,7 +546,7 @@ class CallService {
       // (criadas antes da coluna status existir), o que causa call_already_active
       // no RPC mas não é detectado pelo Flutter com .eq('status','active').
       final res = await SupabaseService.table('call_sessions')
-          .select()
+          .select('*, chat_threads!call_sessions_thread_id_fkey(community_id)')
           .eq('thread_id', threadId)
           .or('status.eq.active,and(status.is.null,is_active.eq.true)')
           .order('created_at', ascending: false)
@@ -958,27 +961,45 @@ class CallService {
           .select()
           .eq('call_session_id', call.id)
           .eq('status', 'connected');
-
       final participants = List<Map<String, dynamic>>.from(res as List? ?? []);
       if (participants.isEmpty) return participants;
-
       final userIds = participants
           .map((row) => row['user_id'] as String?)
           .whereType<String>()
           .toSet()
           .toList();
-
       if (userIds.isEmpty) return participants;
-
+      // Buscar perfis globais
       final profilesRes = await SupabaseService.table('profiles')
           .select('id, nickname, icon_url, amino_id')
           .inFilter('id', userIds);
-
       final profiles = {
         for (final row in List<Map<String, dynamic>>.from(profilesRes as List? ?? []))
-          (row['id'] as String?) ?? '': row,
+          (row['id'] as String?) ?? '': Map<String, dynamic>.from(row),
       };
-
+      // Sobrescrever com identidade local quando o chat pertence a uma comunidade
+      final communityId = call.communityId;
+      if (communityId != null && communityId.isNotEmpty) {
+        final membershipsRes = await SupabaseService.table('community_members')
+            .select('user_id, local_nickname, local_icon_url')
+            .eq('community_id', communityId)
+            .inFilter('user_id', userIds);
+        for (final m in List<Map<String, dynamic>>.from(
+            membershipsRes as List? ?? [])) {
+          final uid = m['user_id'] as String?;
+          if (uid == null) continue;
+          final profile = profiles[uid] ?? {};
+          final localNick = (m['local_nickname'] as String?)?.trim();
+          final localIcon = (m['local_icon_url'] as String?)?.trim();
+          if (localNick != null && localNick.isNotEmpty) {
+            profile['nickname'] = localNick;
+          }
+          if (localIcon != null && localIcon.isNotEmpty) {
+            profile['icon_url'] = localIcon;
+          }
+          profiles[uid] = profile;
+        }
+      }
       return participants.map((participant) {
         final userId = participant['user_id'] as String? ?? '';
         return {

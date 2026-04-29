@@ -85,9 +85,6 @@ class _CallScreenState extends ConsumerState<CallScreen>
   final List<MessageModel> _messages = [];
   bool _isSendingMessage = false;
   String? _chatChannelName;
-  // Cache de identidade local para mensagens do chat da call
-  String? _callCommunityId;
-  Map<String, Map<String, dynamic>> _callMemberCache = {};
 
   // ── Animação split ↔ tela cheia ──
   late AnimationController _splitAnimCtrl;
@@ -202,58 +199,10 @@ class _CallScreenState extends ConsumerState<CallScreen>
   // ── Participantes ──────────────────────────────────────────────────────────
 
   Future<void> _loadParticipants() async {
+    // CallService.getParticipants() já aplica local_icon_url/local_nickname
+    // via CallSession.communityId — sem query extra aqui.
     final p = await CallService.getParticipants();
     if (!mounted) return;
-    // Aplicar identidade local (local_icon_url / local_nickname) quando o chat
-    // pertence a uma comunidade — evita exibir o ícone global na call.
-    try {
-      final threadRes = await SupabaseService.table('chat_threads')
-          .select('community_id')
-          .eq('id', widget.session.threadId)
-          .maybeSingle();
-      final communityId = threadRes?['community_id'] as String?;
-      if (communityId != null && communityId.isNotEmpty) {
-        final userIds = p
-            .map((row) => row['user_id'] as String?)
-            .whereType<String>()
-            .toList();
-        if (userIds.isNotEmpty) {
-          final memberships = await SupabaseService.table('community_members')
-              .select('user_id, local_nickname, local_icon_url')
-              .eq('community_id', communityId)
-              .inFilter('user_id', userIds);
-          final memberMap = {
-            for (final m in List<Map<String, dynamic>>.from(
-                memberships as List? ?? []))
-              (m['user_id'] as String? ?? ''): m,
-          };
-          final enriched = p.map((participant) {
-            final uid = participant['user_id'] as String? ?? '';
-            final membership = memberMap[uid];
-            if (membership == null) return participant;
-            final profile = Map<String, dynamic>.from(
-              (participant['profiles'] as Map<String, dynamic>?) ?? {},
-            );
-            final localNick =
-                (membership['local_nickname'] as String?)?.trim();
-            final localIcon =
-                (membership['local_icon_url'] as String?)?.trim();
-            if (localNick != null && localNick.isNotEmpty) {
-              profile['nickname'] = localNick;
-            }
-            if (localIcon != null && localIcon.isNotEmpty) {
-              profile['icon_url'] = localIcon;
-            }
-            return {...participant, 'profiles': profile};
-          }).toList();
-          if (!mounted) return;
-          setState(() => _participants = enriched);
-          return;
-        }
-      }
-    } catch (e) {
-      debugPrint('[CallScreen] _loadParticipants local identity error: $e');
-    }
     setState(() => _participants = p);
   }
 
@@ -269,55 +218,9 @@ class _CallScreenState extends ConsumerState<CallScreen>
 
   // ── Chat ───────────────────────────────────────────────────────────────────
 
-  /// Aplica local_icon_url/local_nickname sobre um profile de mensagem.
-  Map<String, dynamic> _applyLocalIdentityToProfile(
-      Map<String, dynamic> profile, String authorId) {
-    final membership = _callMemberCache[authorId];
-    if (membership == null) return profile;
-    final merged = Map<String, dynamic>.from(profile);
-    final localNick = (membership['local_nickname'] as String?)?.trim();
-    final localIcon = (membership['local_icon_url'] as String?)?.trim();
-    if (localNick != null && localNick.isNotEmpty) merged['nickname'] = localNick;
-    if (localIcon != null && localIcon.isNotEmpty) merged['icon_url'] = localIcon;
-    return merged;
-  }
 
-  Future<void> _prefetchCallMemberCache(List<String> userIds) async {
-    final communityId = _callCommunityId;
-    if (communityId == null || communityId.isEmpty) return;
-    final missing = userIds
-        .where((id) => id.isNotEmpty && !_callMemberCache.containsKey(id))
-        .toSet()
-        .toList();
-    if (missing.isEmpty) return;
-    try {
-      final rows = await SupabaseService.table('community_members')
-          .select('user_id, local_nickname, local_icon_url')
-          .eq('community_id', communityId)
-          .inFilter('user_id', missing);
-      for (final row in List<Map<String, dynamic>>.from(rows as List? ?? [])) {
-        final uid = row['user_id'] as String?;
-        if (uid != null) _callMemberCache[uid] = Map<String, dynamic>.from(row);
-      }
-      for (final id in missing) {
-        _callMemberCache.putIfAbsent(id, () => {});
-      }
-    } catch (e) {
-      debugPrint('[CallScreen] _prefetchCallMemberCache error: $e');
-    }
-  }
 
   Future<void> _loadMessages() async {
-    // Garantir que o community_id está carregado para aplicar identidade local
-    if (_callCommunityId == null) {
-      try {
-        final threadRes = await SupabaseService.table('chat_threads')
-            .select('community_id')
-            .eq('id', widget.session.threadId)
-            .maybeSingle();
-        _callCommunityId = threadRes?['community_id'] as String?;
-      } catch (_) {}
-    }
     try {
       final res = await SupabaseService.table('chat_messages')
           .select(
@@ -326,24 +229,44 @@ class _CallScreenState extends ConsumerState<CallScreen>
           .order('created_at', ascending: false)
           .limit(50);
       final raw = List<Map<String, dynamic>>.from(res as List? ?? []);
-      // Pré-carregar identidades locais em batch
-      final authorIds = raw
-          .map((e) => (e['author_id'] as String?) ?? '')
-          .where((id) => id.isNotEmpty)
-          .toSet()
-          .toList();
-      await _prefetchCallMemberCache(authorIds);
+      // Enriquecer perfis com identidade local em batch via CallSession.communityId
+      final communityId = widget.session.communityId;
+      Map<String, Map<String, dynamic>> memberCache = {};
+      if (communityId != null && communityId.isNotEmpty) {
+        final authorIds = raw
+            .map((e) => (e['author_id'] as String?) ?? '')
+            .where((id) => id.isNotEmpty)
+            .toSet()
+            .toList();
+        if (authorIds.isNotEmpty) {
+          try {
+            final membershipsRes = await SupabaseService.table('community_members')
+                .select('user_id, local_nickname, local_icon_url')
+                .eq('community_id', communityId)
+                .inFilter('user_id', authorIds);
+            for (final m in List<Map<String, dynamic>>.from(
+                membershipsRes as List? ?? [])) {
+              final uid = m['user_id'] as String?;
+              if (uid != null) memberCache[uid] = Map<String, dynamic>.from(m);
+            }
+          } catch (_) {}
+        }
+      }
       final normalized = raw.map((e) {
         final map = Map<String, dynamic>.from(e);
         final authorId = (map['author_id'] as String?) ?? '';
         if (map['profiles'] != null) {
-          final enriched = _applyLocalIdentityToProfile(
-            Map<String, dynamic>.from(map['profiles'] as Map),
-            authorId,
-          );
-          map['sender'] = enriched;
-          map['author'] = enriched;
-          map['profiles'] = enriched;
+          final profile = Map<String, dynamic>.from(map['profiles'] as Map);
+          final membership = memberCache[authorId];
+          if (membership != null) {
+            final localNick = (membership['local_nickname'] as String?)?.trim();
+            final localIcon = (membership['local_icon_url'] as String?)?.trim();
+            if (localNick != null && localNick.isNotEmpty) profile['nickname'] = localNick;
+            if (localIcon != null && localIcon.isNotEmpty) profile['icon_url'] = localIcon;
+          }
+          map['sender'] = profile;
+          map['author'] = profile;
+          map['profiles'] = profile;
         }
         return MessageModel.fromJson(map);
       }).toList().reversed.toList();
@@ -386,11 +309,23 @@ class _CallScreenState extends ConsumerState<CallScreen>
                 profile = Map<String, dynamic>.from(res);
               } catch (_) {}
             }
-            // Aplicar identidade local se disponível
-            if (authorId != null) {
-              await _prefetchCallMemberCache([authorId]);
-              if (profile != null) {
-                profile = _applyLocalIdentityToProfile(profile, authorId);
+            // Aplicar identidade local via CallSession.communityId
+            if (authorId != null && profile != null) {
+              final communityId = widget.session.communityId;
+              if (communityId != null && communityId.isNotEmpty) {
+                try {
+                  final membership = await SupabaseService.table('community_members')
+                      .select('local_nickname, local_icon_url')
+                      .eq('community_id', communityId)
+                      .eq('user_id', authorId)
+                      .maybeSingle();
+                  if (membership != null) {
+                    final localNick = (membership['local_nickname'] as String?)?.trim();
+                    final localIcon = (membership['local_icon_url'] as String?)?.trim();
+                    if (localNick != null && localNick.isNotEmpty) profile!['nickname'] = localNick;
+                    if (localIcon != null && localIcon.isNotEmpty) profile!['icon_url'] = localIcon;
+                  }
+                } catch (_) {}
               }
             }
             final map = Map<String, dynamic>.from(newRow);
