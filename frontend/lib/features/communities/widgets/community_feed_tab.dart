@@ -185,7 +185,7 @@ class _FeaturedTab extends ConsumerWidget {
                     crossAxisCount: 2,
                     crossAxisSpacing: r.s(8),
                     mainAxisSpacing: r.s(8),
-                    childAspectRatio: 0.72,
+                    childAspectRatio: 0.82,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (ctx, i) => _FeaturedPostCard(
@@ -838,12 +838,12 @@ class _FeaturedPostCardState extends ConsumerState<_FeaturedPostCard> {
               ),
 
               // Conteúdo
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.all(r.s(8)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+              Padding(
+                padding: EdgeInsets.all(r.s(8)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                       // Título — 1 linha com ellipsis
                       Text(
                         _post.title ?? _post.content,
@@ -967,8 +967,7 @@ class _FeaturedPostCardState extends ConsumerState<_FeaturedPostCard> {
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                   ],
                 ),
               ),
             ],
@@ -978,7 +977,6 @@ class _FeaturedPostCardState extends ConsumerState<_FeaturedPostCard> {
     );
   }
 }
-
 /// Placeholder colorido quando não há imagem de capa
 class _PlaceholderCover extends ConsumerWidget {
   final Color accent;
