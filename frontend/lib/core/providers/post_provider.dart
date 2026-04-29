@@ -551,25 +551,52 @@ class CommunityFeedNotifier
     }
   }
 
-  Future<void> toggleLike(String postId) async {
+  /// Faz toggle de uma reaction em um post.
+  /// [reactionType] pode ser 'like', 'love', 'haha', 'wow', 'sad', 'angry' ou null (remover).
+  /// Se null, remove a reaction atual do usuário.
+  Future<void> toggleLike(String postId, {String? reactionType}) async {
+    final current = state.valueOrNull ?? [];
+    final index = current.indexWhere((p) => p.id == postId);
+    if (index < 0) return;
+
+    final post = current[index];
+    final prevReaction = post.myReactionType;
+    final prevLikes = post.likesCount;
+    final effectiveType = reactionType ?? prevReaction ?? 'like';
+    final isRemoving = reactionType == null && prevReaction != null;
+    final isAdding = reactionType != null && prevReaction == null;
+    final isChanging = reactionType != null && prevReaction != null && reactionType != prevReaction;
+
+    // Atualização otimista
+    final optimistic = post.copyWith(
+      isLiked: !isRemoving,
+      myReactionType: isRemoving ? null : effectiveType,
+      clearReaction: isRemoving,
+      likesCount: isAdding
+          ? prevLikes + 1
+          : isRemoving
+              ? prevLikes - 1
+              : prevLikes,
+    );
+    final optimisticList = [...current]..[index] = optimistic;
+    state = AsyncData(optimisticList);
+
     try {
-      await SupabaseService.client.rpc('toggle_post_like', params: {
-        'p_post_id': postId,
-      });
-      final current = state.valueOrNull ?? [];
-      final index = current.indexWhere((p) => p.id == postId);
-      if (index >= 0) {
-        final post = current[index];
-        final updated = post.copyWith(
-          likesCount: post.isLiked ? post.likesCount - 1 : post.likesCount + 1,
-          isLiked: !post.isLiked,
-        );
-        final newList = [...current];
-        newList[index] = updated;
-        state = AsyncData(newList);
-      }
-    } catch (e) {
+      await SupabaseService.client.rpc(
+        'toggle_reaction_with_reputation',
+        params: {
+          'p_community_id': post.communityId,
+          'p_user_id': SupabaseService.currentUserId,
+          'p_post_id': postId,
+          'p_type': effectiveType,
+        },
+      );
+    } catch (e, stack) {
       debugPrint('[post_provider] toggleLike error: $e');
+      debugPrint('[post_provider] toggleLike stack: $stack');
+      // Reverter em caso de erro
+      final revertList = [...(state.valueOrNull ?? [])]..[index] = post;
+      state = AsyncData(revertList);
     }
   }
 

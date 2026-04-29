@@ -248,12 +248,15 @@ class _PostCardState extends ConsumerState<PostCard>
       _likeController.forward(from: 0);
     }
     try {
-      await SupabaseService.client.rpc('toggle_like_with_reputation', params: {
+      await SupabaseService.client.rpc('toggle_reaction_with_reputation', params: {
         'p_community_id': _post.communityId,
         'p_user_id': SupabaseService.currentUserId,
         'p_post_id': _post.id,
+        'p_type': 'like',
       });
-    } catch (_) {
+    } catch (e, stack) {
+      debugPrint('[post_card] _toggleLike error: $e');
+      debugPrint('[post_card] _toggleLike stack: $stack');
       if (mounted) {
         setState(() {
           _post = _post.copyWith(
@@ -294,7 +297,9 @@ class _PostCardState extends ConsumerState<PostCard>
         'p_post_id': _post.id,
         'p_type': reactionType ?? prevReaction ?? 'like',
       });
-    } catch (_) {
+    } catch (e, stack) {
+      debugPrint('[post_card] _toggleReaction error: $e');
+      debugPrint('[post_card] _toggleReaction stack: $stack');
       if (mounted) {
         setState(() {
           _post = _post.copyWith(
