@@ -897,17 +897,42 @@ class _MyCommunityChatsScreenState
   // ---------------------------------------------------------------------------
   Future<void> _showAddFavoritePicker() async {
     final r = context.r;
-    // Buscar membros da comunidade para o picker
-    final membersRaw = await SupabaseService.table('community_members')
-        .select(
-            'user_id, local_nickname, local_icon_url, profiles!community_members_user_id_fkey(id, nickname, icon_url)')
-        .eq('community_id', widget.communityId)
-        .neq('user_id', SupabaseService.currentUserId ?? '')
-        .eq('is_banned', false)
-        .order('joined_at', ascending: false)
-        .limit(100);
+    final currentUserId = SupabaseService.currentUserId ?? '';
 
-    final members = List<Map<String, dynamic>>.from(membersRaw as List? ?? []);
+    // 1. Buscar quem o usuário atual segue nesta comunidade
+    List<String> followingIds = [];
+    try {
+      final followsRes = await SupabaseService.table('follows')
+          .select('following_id')
+          .eq('follower_id', currentUserId)
+          .eq('community_id', widget.communityId);
+      followingIds = (followsRes as List? ?? [])
+          .map((e) => (e as Map<String, dynamic>)['following_id'] as String? ?? '')
+          .where((id) => id.isNotEmpty)
+          .toList();
+    } catch (e) {
+      debugPrint('[FavoritePicker] follows erro: $e');
+    }
+
+    // 2. Buscar apenas os membros que o usuário segue na comunidade
+    List<Map<String, dynamic>> members = [];
+    if (followingIds.isNotEmpty) {
+      try {
+        final membersRaw = await SupabaseService.table('community_members')
+            .select(
+                'user_id, local_nickname, local_icon_url, profiles!community_members_user_id_fkey(id, nickname, icon_url)')
+            .eq('community_id', widget.communityId)
+            .neq('user_id', currentUserId)
+            .eq('is_banned', false)
+            .inFilter('user_id', followingIds)
+            .order('joined_at', ascending: false)
+            .limit(100);
+        members = List<Map<String, dynamic>>.from(membersRaw as List? ?? []);
+      } catch (e) {
+        debugPrint('[FavoritePicker] members erro: $e');
+      }
+    }
+    // followingIds vazio → members permanece [] e o sheet mostrará lista vazia
     // Normalizar nickname/icon_url: preferir local, fallback global
     for (final m in members) {
       if (m['profiles'] is! Map) continue;

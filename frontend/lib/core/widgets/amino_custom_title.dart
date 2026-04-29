@@ -26,16 +26,16 @@ class AminoCustomTitle extends StatelessWidget {
     // Team Member: fundo transparente, borda branca
     if (isTeamMember) {
       return Container(
-        padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(3)),
+        padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(5)),
         decoration: BoxDecoration(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(r.s(12)),
+          borderRadius: BorderRadius.circular(r.s(14)),
           border: Border.all(color: Colors.white.withValues(alpha: 0.7), width: 1.0),
         ),
         child: Text(
           title,
           style: TextStyle(
-            fontSize: r.fs(10),
+            fontSize: r.fs(13),
             fontWeight: FontWeight.w700,
             color: Colors.white,
             letterSpacing: 0.3,
@@ -48,10 +48,10 @@ class AminoCustomTitle extends StatelessWidget {
     final textColor = color.computeLuminance() > 0.55 ? Colors.black87 : Colors.white;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(3)),
+      padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(5)),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(r.s(12)),
+        borderRadius: BorderRadius.circular(r.s(14)),
         border: Border.all(
           color: borderColor.withValues(alpha: 0.45),
           width: 0.8,
@@ -67,7 +67,7 @@ class AminoCustomTitle extends StatelessWidget {
       child: Text(
         title,
         style: TextStyle(
-          fontSize: r.fs(10),
+          fontSize: r.fs(13),
           fontWeight: FontWeight.w700,
           color: textColor,
           letterSpacing: 0.3,
@@ -195,8 +195,8 @@ class AminoCustomTitleList extends StatelessWidget {
     final hasMore = titles.length > maxVisible;
 
     return Wrap(
-      spacing: r.s(5),
-      runSpacing: r.s(5),
+      spacing: r.s(6),
+      runSpacing: r.s(6),
       alignment: WrapAlignment.center,
       children: [
         ...visible.map((t) {
@@ -215,10 +215,10 @@ class AminoCustomTitleList extends StatelessWidget {
           GestureDetector(
             onTap: () => _showAllTitles(context, titles),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(3)),
+              padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(5)),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(r.s(12)),
+                borderRadius: BorderRadius.circular(r.s(14)),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.20),
                   width: 0.8,
@@ -227,7 +227,7 @@ class AminoCustomTitleList extends StatelessWidget {
               child: Text(
                 '•••',
                 style: TextStyle(
-                  fontSize: r.fs(10),
+                  fontSize: r.fs(12),
                   fontWeight: FontWeight.w700,
                   color: Colors.white.withValues(alpha: 0.75),
                   letterSpacing: 1.5,
