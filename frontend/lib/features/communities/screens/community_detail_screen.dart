@@ -287,6 +287,40 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                 style: TextStyle(color: context.nexusTheme.textSecondary))),
       ),
       data: (community) {
+        // ── Redirect para não-membros ──────────────────────────────────────────
+        // Se o membership ainda está carregando, aguarda sem redirecionar.
+        // Quando carregado: se não é membro, redireciona para /info.
+        // Isso garante que qualquer deep link ou tap em card que caia em
+        // /community/:id primeiro mostre a tela de informações para quem
+        // ainda não ingressou na comunidade.
+        if (membershipAsync.isLoading) {
+          return Scaffold(
+            backgroundColor: context.nexusTheme.backgroundPrimary,
+            body: SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              child: const CommunityHeaderSkeleton(),
+            ),
+          );
+        }
+        final membership = membershipAsync.valueOrNull;
+        final isMember = membership != null;
+        if (!isMember) {
+          // Usar WidgetsBinding para redirecionar após o frame atual
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) {
+              context.replace('/community/${widget.communityId}/info');
+            }
+          });
+          // Exibe skeleton enquanto aguarda o redirect
+          return Scaffold(
+            backgroundColor: context.nexusTheme.backgroundPrimary,
+            body: SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              child: const CommunityHeaderSkeleton(),
+            ),
+          );
+        }
+        // ── Membro confirmado: renderiza a tela completa ───────────────────────
         // Prioridade de tema: cor da comunidade só sobrescreve se o usuário
         // estiver usando o tema padrão (principal). Se ele selecionou outro
         // tema, esse tema deve ser priorizado.
@@ -295,8 +329,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         final themeColor = isDefaultTheme
             ? _parseColor(community.themeColor)
             : context.nexusTheme.accentPrimary;
-        final membership = membershipAsync.valueOrNull;
-        final isMember = membership != null;
         final userRole = membership?['role'] as String?;
         final layout = layoutAsync.valueOrNull ?? defaultLayout;
 
