@@ -542,7 +542,7 @@ final image = _pickedFiles_image.first.file;
     final prevReaction = postData?.myReactionType;
     final effectiveType = reactionType ?? prevReaction ?? 'like';
     final params = {
-      'p_community_id': postData?.communityId,
+      'p_community_id': (postData?.communityId?.isNotEmpty == true) ? postData!.communityId : null,
       'p_user_id': currentUserId,
       'p_post_id': widget.postId,
       'p_type': effectiveType,
@@ -663,7 +663,7 @@ final image = _pickedFiles_image.first.file;
 
     final params = {
       'p_original_post_id': post.id,
-      'p_community_id': post.communityId,
+      'p_community_id': post.communityId.isNotEmpty ? post.communityId : null,
       'p_content': repostComment,
     };
 

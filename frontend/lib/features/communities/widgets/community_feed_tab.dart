@@ -596,7 +596,7 @@ class _FeaturedHeroCardState extends ConsumerState<_FeaturedHeroCard> {
     });
     try {
       await SupabaseService.client.rpc('toggle_reaction_with_reputation', params: {
-        'p_community_id': _post.communityId,
+        'p_community_id': _post.communityId.isNotEmpty ? _post.communityId : null,
         'p_user_id': SupabaseService.currentUserId,
         'p_post_id': _post.id,
         'p_type': reactionType ?? prevReaction ?? 'like',
@@ -754,7 +754,7 @@ class _FeaturedPostCardState extends ConsumerState<_FeaturedPostCard> {
     });
     try {
       await SupabaseService.client.rpc('toggle_reaction_with_reputation', params: {
-        'p_community_id': _post.communityId,
+        'p_community_id': _post.communityId.isNotEmpty ? _post.communityId : null,
         'p_user_id': SupabaseService.currentUserId,
         'p_post_id': _post.id,
         'p_type': 'like',
