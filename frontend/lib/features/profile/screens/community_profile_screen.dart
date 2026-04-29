@@ -78,6 +78,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   Map<String, dynamic>?
       _myMembership; // membership do usuário logado na comunidade
 
+  // Key para calcular a posição do dropdown de opções
+  final GlobalKey _optionsButtonKey = GlobalKey();
+
   // Banner rotativo
   int _bannerIndex = 0;
   Timer? _bannerTimer;
@@ -468,6 +471,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           title: Text(displayName),
           actions: [
             IconButton(
+              key: _optionsButtonKey,
               icon: const Icon(Icons.more_vert),
               onPressed: () => _showOptions(context),
             ),
@@ -816,6 +820,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                       ),
                     ),
                     IconButton(
+                      key: _optionsButtonKey,
                       icon: Icon(Icons.more_horiz_rounded,
                           color: Colors.white, size: r.s(22)),
                       onPressed: () => _showOptions(context),
@@ -2830,300 +2835,275 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   // ============================================================================
   // OPTIONS BOTTOM SHEET
   // ============================================================================
-  void _showOptions(BuildContext context) {
+  // Calcula a posição do botão de opções para o dropdown
+  RelativeRect _optionsButtonRect() {
+    final renderBox =
+        _optionsButtonKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) {
+      // Fallback: canto superior direito
+      return const RelativeRect.fromLTRB(1000, 60, 8, 0);
+    }
+    final overlay = Navigator.of(context).overlay!.context.findRenderObject()
+        as RenderBox;
+    return RelativeRect.fromRect(
+      Rect.fromPoints(
+        renderBox.localToGlobal(Offset.zero, ancestor: overlay),
+        renderBox.localToGlobal(
+            renderBox.size.bottomRight(Offset.zero),
+            ancestor: overlay),
+      ),
+      Offset.zero & overlay.size,
+    );
+  }
+
+  Future<void> _showOptions(BuildContext context) async {
     final s = getStrings();
     final r = context.r;
-    showModalBottomSheet(
+
+    final myRole = _myMembership?['role'] as String? ?? 'member';
+    // team_member (is_team_admin / is_team_moderator) é superior a qualquer
+    // role de comunidade e tem acesso total de moderação.
+    final canManageRoles = !_isOwnProfile &&
+        (_viewerIsTeamMember ||
+            myRole == 'agent' ||
+            myRole == 'leader' ||
+            myRole == 'curator');
+    final canManageTitles = !_isOwnProfile &&
+        (_viewerIsTeamMember || myRole == 'agent' || myRole == 'leader');
+
+    // Itens do menu: cada item é um Map com icon, label, value e isDestructive
+    // Usamos showMenu nativo do Flutter para o estilo dropdown.
+    final items = <PopupMenuEntry<String>>[];
+
+    // ── AÇÕES SOCIAIS ──────────────────────────────────────────────────
+    if (!_isOwnProfile) {
+      items.add(_menuItem(
+        value: 'dm',
+        icon: Icons.chat_bubble_outline_rounded,
+        label: 'Enviar mensagem',
+        r: r,
+      ));
+    }
+    items.add(_menuItem(
+      value: 'share',
+      icon: Icons.share_rounded,
+      label: s.shareProfile,
+      r: r,
+    ));
+
+    // ── MODERAÇÃO ───────────────────────────────────────────────────
+    if (canManageRoles) {
+      items.add(const PopupMenuDivider(height: 1));
+      items.add(_menuItem(
+        value: 'moderation',
+        icon: Icons.manage_accounts_rounded,
+        label: 'Opções de moderação',
+        r: r,
+      ));
+      if (canManageTitles) {
+        items.add(_menuItem(
+          value: 'titles',
+          icon: Icons.label_rounded,
+          label: 'Gerenciar títulos',
+          r: r,
+        ));
+      }
+      if ((_membership?['is_hidden'] as bool?) == true) {
+        items.add(_menuItem(
+          value: 'unhide',
+          icon: Icons.visibility_rounded,
+          label: 'Desocultar perfil',
+          r: r,
+        ));
+      }
+    }
+
+    // ── AÇÕES DESTRUTIVAS ─────────────────────────────────────────────
+    if (!_isOwnProfile) {
+      items.add(const PopupMenuDivider(height: 1));
+      items.add(_menuItem(
+        value: 'report',
+        icon: Icons.flag_rounded,
+        label: s.report,
+        r: r,
+        isDestructive: true,
+      ));
+      final isBlocked = ref.read(isBlockedProvider(widget.userId));
+      items.add(_menuItem(
+        value: 'block',
+        icon: isBlocked ? Icons.lock_open_rounded : Icons.block_rounded,
+        label: isBlocked ? s.unblockAction : s.block,
+        r: r,
+        isDestructive: true,
+      ));
+    }
+
+    final selected = await showMenu<String>(
       context: context,
-      backgroundColor: context.surfaceColor,
-      useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      position: _optionsButtonRect(),
+      elevation: 10,
+      color: context.nexusTheme.surfacePrimary,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(r.s(14)),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
       ),
-      builder: (ctx) {
-        final myRole = _myMembership?['role'] as String? ?? 'member';
-        // Líderes (agent/leader) podem moderar; curadores têm acesso parcial.
-        final canManageRoles = !_isOwnProfile &&
-            (myRole == 'agent' || myRole == 'leader' || myRole == 'curator');
-        // Apenas agent/leader podem gerenciar títulos customizados.
-        final canManageTitles = !_isOwnProfile &&
-            (myRole == 'agent' || myRole == 'leader');
+      items: items,
+    );
 
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            r.s(16),
-            r.s(16),
-            r.s(16),
-            r.s(16) + MediaQuery.of(ctx).viewPadding.bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Handle
-              Container(
-                width: r.s(36),
-                height: r.s(4),
-                margin: EdgeInsets.only(bottom: r.s(16)),
-                decoration: BoxDecoration(
-                  color: Colors.grey[700],
-                  borderRadius: BorderRadius.circular(2),
-                ),
+    if (!mounted || selected == null) return;
+
+    switch (selected) {
+      case 'dm':
+        _openDm(context);
+        break;
+
+      case 'share':
+        final link =
+            'https://nexushub.app/community/${widget.communityId}/profile/${widget.userId}';
+        Clipboard.setData(ClipboardData(text: link));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(s.profileLinkCopied),
+            backgroundColor: context.nexusTheme.accentPrimary,
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
+        break;
+
+      case 'moderation':
+        final targetRole = _membership?['role'] as String? ?? 'member';
+        final targetName = _user?.nickname ?? 'Membro';
+        String? currentTitle;
+        try {
+          final titleRes = await SupabaseService.table('member_titles')
+              .select('title')
+              .eq('community_id', widget.communityId)
+              .eq('user_id', widget.userId)
+              .maybeSingle();
+          currentTitle = titleRes?['title'] as String?;
+        } catch (_) {}
+        if (!mounted) return;
+        final changed = await showMemberRoleManager(
+          context: context,
+          ref: ref,
+          communityId: widget.communityId,
+          targetUserId: widget.userId,
+          targetUserName: targetName,
+          currentRole: targetRole,
+          currentTitle: currentTitle,
+          membershipData: Map<String, dynamic>.from(_membership ?? {}),
+          callerRole: _viewerIsTeamMember ? 'agent' : myRole,
+        );
+        if (changed == true && mounted) _loadProfile();
+        break;
+
+      case 'titles':
+        final titleTargetName = _user?.nickname ?? 'Membro';
+        final titlesChanged = await showManageMemberTitlesSheet(
+          context: context,
+          ref: ref,
+          communityId: widget.communityId,
+          targetUserId: widget.userId,
+          targetUserName: titleTargetName,
+          callerRole: _viewerIsTeamMember ? 'agent' : myRole,
+        );
+        if (titlesChanged == true && mounted) _loadProfile();
+        break;
+
+      case 'unhide':
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogCtx) => AlertDialog(
+            backgroundColor: context.surfaceColor,
+            title: Text('Desocultar perfil',
+                style: TextStyle(color: context.nexusTheme.textPrimary)),
+            content: Text(
+              'Deseja restaurar a visibilidade deste perfil para todos os membros?',
+              style: TextStyle(color: context.nexusTheme.textSecondary),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogCtx, false),
+                child: Text('Cancelar',
+                    style: TextStyle(color: Colors.grey[500])),
               ),
-
-              // ── SEÇÃO: AÇÕES SOCIAIS ──────────────────────────────────────────
-              if (!_isOwnProfile)
-                _optionTile(
-                  Icons.chat_bubble_outline_rounded,
-                  'Enviar mensagem',
-                  () {
-                    Navigator.pop(ctx);
-                    _openDm(context);
-                  },
-                ),
-              _optionTile(
-                Icons.share_rounded,
-                s.shareProfile,
-                () {
-                  Navigator.pop(ctx);
-                  final link =
-                      'https://nexushub.app/community/${widget.communityId}/profile/${widget.userId}';
-                  Clipboard.setData(ClipboardData(text: link));
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(s.profileLinkCopied),
-                        backgroundColor: context.nexusTheme.accentPrimary,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
-                },
+              TextButton(
+                onPressed: () => Navigator.pop(dialogCtx, true),
+                child: const Text('Desocultar'),
               ),
-
-              // ── SEPARADOR: MODERAÇÃO ─────────────────────────────────────────
-              if (canManageRoles) ...
-              [
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: r.s(6)),
-                  child: Divider(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    height: 1,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(bottom: r.s(6)),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'MODERAÇÃO',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: r.fs(10),
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                  ),
-                ),
-                // Opções de moderação (cargo, ban, advertência, ocultar perfil...)
-                _optionTile(
-                  Icons.manage_accounts_rounded,
-                  'Opções de moderação',
-                  () async {
-                    Navigator.pop(ctx);
-                    final targetRole =
-                        _membership?['role'] as String? ?? 'member';
-                    final targetName = _user?.nickname ?? 'Membro';
-                    String? currentTitle;
-                    try {
-                      final titleRes =
-                          await SupabaseService.table('member_titles')
-                              .select('title')
-                              .eq('community_id', widget.communityId)
-                              .eq('user_id', widget.userId)
-                              .maybeSingle();
-                      currentTitle = titleRes?['title'] as String?;
-                    } catch (_) {}
-                    if (!mounted) return;
-                    final changed = await showMemberRoleManager(
-                      context: context,
-                      ref: ref,
-                      communityId: widget.communityId,
-                      targetUserId: widget.userId,
-                      targetUserName: targetName,
-                      currentRole: targetRole,
-                      currentTitle: currentTitle,
-                      membershipData:
-                          Map<String, dynamic>.from(_membership ?? {}),
-                      callerRole: myRole,
-                    );
-                    if (changed == true && mounted) {
-                      _loadProfile();
-                    }
-                  },
-                ),
-                // Gerenciar títulos customizados (apenas agent/leader)
-                if (canManageTitles)
-                  _optionTile(
-                    Icons.label_rounded,
-                    'Gerenciar títulos',
-                    () async {
-                      Navigator.pop(ctx);
-                      final targetName = _user?.nickname ?? 'Membro';
-                      final changed = await showManageMemberTitlesSheet(
-                        context: context,
-                        ref: ref,
-                        communityId: widget.communityId,
-                        targetUserId: widget.userId,
-                        targetUserName: targetName,
-                        callerRole: myRole,
-                      );
-                      if (changed == true && mounted) {
-                        _loadProfile();
-                      }
-                    },
-                  ),
-                // Desocultar perfil (apenas quando oculto)
-                if ((_membership?['is_hidden'] as bool?) == true)
-                  _optionTile(
-                    Icons.visibility_rounded,
-                    'Desocultar perfil',
-                    () async {
-                      Navigator.pop(ctx);
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (dialogCtx) => AlertDialog(
-                          backgroundColor: context.surfaceColor,
-                          title: Text(
-                            'Desocultar perfil',
-                            style: TextStyle(
-                                color: context.nexusTheme.textPrimary),
-                          ),
-                          content: Text(
-                            'Deseja restaurar a visibilidade deste perfil para todos os membros?',
-                            style: TextStyle(
-                                color: context.nexusTheme.textSecondary),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(dialogCtx, false),
-                              child: Text('Cancelar',
-                                  style:
-                                      TextStyle(color: Colors.grey[500])),
-                            ),
-                            TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(dialogCtx, true),
-                              child: const Text('Desocultar'),
-                            ),
-                          ],
-                        ),
-                      );
-                      if (confirmed != true || !mounted) return;
-                      try {
-                        await SupabaseService.table('community_members')
-                            .update({'is_hidden': false})
-                            .eq('community_id', widget.communityId)
-                            .eq('user_id', widget.userId);
-                        await _loadProfile();
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content:
-                                const Text('Perfil desocultado com sucesso'),
-                            backgroundColor:
-                                context.nexusTheme.accentPrimary,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      } catch (e) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Erro ao desocultar: $e'),
-                            backgroundColor: Colors.red,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      }
-                    },
-                  ),
-              ],
-
-              // ── SEPARADOR: AÇÕES DESTRUTIVAS ────────────────────────────────
-              if (!_isOwnProfile) ...
-              [
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: r.s(6)),
-                  child: Divider(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    height: 1,
-                  ),
-                ),
-                // Denúncia — agora conectada ao ReportDialog real
-                _optionTile(
-                  Icons.flag_rounded,
-                  s.report,
-                  () {
-                    Navigator.pop(ctx);
-                    ReportDialog.show(
-                      context,
-                      communityId: widget.communityId,
-                      targetUserId: widget.userId,
-                    );
-                  },
-                  isDestructive: true,
-                ),
-                // Bloquear / Desbloquear
-                Consumer(
-                  builder: (ctx2, ref2, _) {
-                    final isBlocked =
-                        ref2.watch(isBlockedProvider(widget.userId));
-                    return _optionTile(
-                      isBlocked
-                          ? Icons.lock_open_rounded
-                          : Icons.block_rounded,
-                      isBlocked ? s.unblockAction : s.block,
-                      () async {
-                        Navigator.pop(ctx);
-                        await _handleBlockToggle(isBlocked);
-                      },
-                      isDestructive: true,
-                    );
-                  },
-                ),
-              ],
             ],
           ),
         );
-      },
-    );
+        if (confirmed != true || !mounted) return;
+        try {
+          await SupabaseService.table('community_members')
+              .update({'is_hidden': false})
+              .eq('community_id', widget.communityId)
+              .eq('user_id', widget.userId);
+          await _loadProfile();
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text('Perfil desocultado com sucesso'),
+            backgroundColor: context.nexusTheme.accentPrimary,
+            behavior: SnackBarBehavior.floating,
+          ));
+        } catch (e) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Erro ao desocultar: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
+        break;
+
+      case 'report':
+        ReportDialog.show(
+          context,
+          communityId: widget.communityId,
+          targetUserId: widget.userId,
+        );
+        break;
+
+      case 'block':
+        final isBlocked = ref.read(isBlockedProvider(widget.userId));
+        await _handleBlockToggle(isBlocked);
+        break;
+    }
   }
 
-  Widget _optionTile(IconData icon, String label, VoidCallback onTap,
-      {bool isDestructive = false}) {
-    final r = context.r;
-    final color = isDestructive ? context.nexusTheme.error : Colors.grey[400];
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: r.s(12)),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: r.s(20)),
-            SizedBox(width: r.s(12)),
-            Text(label,
-                style: TextStyle(
-                    color: color,
-                    fontSize: r.fs(14),
-                    fontWeight: FontWeight.w500)),
-          ],
-        ),
+  /// Constrói um item de menu com ícone e label no estilo do projeto.
+  PopupMenuItem<String> _menuItem({
+    required String value,
+    required IconData icon,
+    required String label,
+    required Responsive r,
+    bool isDestructive = false,
+  }) {
+    final color = isDestructive
+        ? context.nexusTheme.error
+        : context.nexusTheme.textPrimary;
+    return PopupMenuItem<String>(
+      value: value,
+      padding: EdgeInsets.symmetric(
+          horizontal: r.s(16), vertical: r.s(4)),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: r.s(20)),
+          SizedBox(width: r.s(12)),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: r.fs(14),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
+
 
   // ============================================================================
   // HELPERS
