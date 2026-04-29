@@ -349,67 +349,69 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         final welcomeBanner =
             layout['welcome_banner'] as Map<String, dynamic>? ?? {};
 
-        final screenWidth = MediaQuery.of(context).size.width;
-        return AminoDrawerController(
-          maxSlide: screenWidth * 0.92,
-          drawer: CommunityDrawer(
-            community: community,
-            currentUser: ref.watch(currentUserProvider),
-            userRole: userRole,
-            membership: membership,
+        return Scaffold(
+          key: _scaffoldKey, // Precisamos adicionar uma GlobalKey<ScaffoldState>
+          backgroundColor: context.nexusTheme.backgroundPrimary,
+          drawer: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.85,
+            child: CommunityDrawer(
+              community: community,
+              currentUser: ref.watch(currentUserProvider),
+              userRole: userRole,
+              membership: membership,
+            ),
           ),
-          child: Scaffold(
-            backgroundColor: context.nexusTheme.backgroundPrimary,
-            // extendBody: true faz o conteúdo passar por baixo do nav flutuante
-            extendBody: true,
-            body: _bottomIndex == 0
-                ? _buildHomePage(community, themeColor, isMember, userRole,
-                    layout, visible, welcomeBanner)
-                : _bottomIndex == 1
-                    ? CommunityOnlineTab(community: community)
-                    : _buildHomePage(community, themeColor, isMember, userRole,
-                        layout, visible, welcomeBanner),
-            // Floating capsule nav — só aparece nas páginas iniciais (membro)
-            bottomNavigationBar: isMember
-                ? AminoBottomNavBar(
-                    currentIndex: _bottomIndex,
-                    showOnline: showOnline,
-                    showCreate: showCreate,
-                    onlineCount:
-                        ref.watch(onlineCountProvider(widget.communityId)),
-                    // Avatares dos membros online (até 3)
-                    onlineAvatars: () {
-                      final membersAsync = ref
-                          .watch(communityMembersProvider(widget.communityId));
-                      final onlineIds = ref
-                              .watch(
-                                  communityPresenceProvider(widget.communityId))
-                              .valueOrNull ??
-                          {};
-                      final members = membersAsync.valueOrNull ?? [];
-                      return members
-                          .where((m) =>
-                              onlineIds.contains(m['user_id'] as String?))
-                          .take(3)
-                          .map((m) {
-                        final p = m['profiles'] as Map<String, dynamic>? ?? {};
-                        return p['icon_url'] as String?;
-                      }).toList();
-                    }(),
-                    showChatUnreadBadge: (ref
-                                .watch(unreadCountByCommunityProvider)
-                                .valueOrNull?[widget.communityId] ??
-                            0) >
-                        0,
-                    // Usa o avatar local da comunidade se o usuário tiver
-                    // definido um, senão cai no avatar global.
-                    avatarUrl: ref
-                            .watch(communityLocalAvatarProvider(
-                                widget.communityId))
+          // Permite puxar o drawer da borda com facilidade
+          drawerEdgeDragWidth: 72.0,
+          // extendBody: true faz o conteúdo passar por baixo do nav flutuante
+          extendBody: true,
+          body: _bottomIndex == 0
+              ? _buildHomePage(community, themeColor, isMember, userRole,
+                  layout, visible, welcomeBanner)
+              : _bottomIndex == 1
+                  ? CommunityOnlineTab(community: community)
+                  : _buildHomePage(community, themeColor, isMember, userRole,
+                      layout, visible, welcomeBanner),
+          // Floating capsule nav — só aparece nas páginas iniciais (membro)
+          bottomNavigationBar: isMember
+              ? AminoBottomNavBar(
+                  currentIndex: _bottomIndex,
+                  showOnline: showOnline,
+                  showCreate: showCreate,
+                  onlineCount:
+                      ref.watch(onlineCountProvider(widget.communityId)),
+                  // Avatares dos membros online (até 3)
+                  onlineAvatars: () {
+                    final membersAsync = ref
+                        .watch(communityMembersProvider(widget.communityId));
+                    final onlineIds = ref
+                            .watch(
+                                communityPresenceProvider(widget.communityId))
                             .valueOrNull ??
-                        ref.watch(currentUserAvatarProvider),
-                    onMenuTap: () =>
-                        AminoDrawerController.of(context)?.toggle(),
+                        {};
+                    final members = membersAsync.valueOrNull ?? [];
+                    return members
+                        .where((m) =>
+                            onlineIds.contains(m['user_id'] as String?))
+                        .take(3)
+                        .map((m) {
+                      final p = m['profiles'] as Map<String, dynamic>? ?? {};
+                      return p['icon_url'] as String?;
+                    }).toList();
+                  }(),
+                  showChatUnreadBadge: (ref
+                              .watch(unreadCountByCommunityProvider)
+                              .valueOrNull?[widget.communityId] ??
+                          0) >
+                      0,
+                  // Usa o avatar local da comunidade se o usuário tiver
+                  // definido um, senão cai no avatar global.
+                  avatarUrl: ref
+                          .watch(communityLocalAvatarProvider(
+                              widget.communityId))
+                          .valueOrNull ??
+                      ref.watch(currentUserAvatarProvider),
+                  onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
                     onOnlineTap: () => _showOnlineMembersSheet(
                       context,
                       ref,
@@ -465,7 +467,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     ),
                   )
                 : null,
-          ),
         );
       },
     );
