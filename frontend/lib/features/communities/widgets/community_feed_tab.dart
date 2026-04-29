@@ -623,10 +623,13 @@ class _FeaturedHeroCardState extends ConsumerState<_FeaturedHeroCard> {
     final imageUrl = _post.coverImageUrl ?? _post.mediaUrl;
     final hasImage = imageUrl != null && imageUrl.isNotEmpty;
 
-    return AminoAnimations.cardPress(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final side = constraints.maxWidth;
+        return AminoAnimations.cardPress(
       onTap: () => context.push('/post/${_post.id}'),
       child: Container(
-        height: r.s(240),
+        height: side,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(r.s(20)),
           border: Border.all(color: accent.withValues(alpha: 0.28)),
@@ -662,33 +665,6 @@ class _FeaturedHeroCardState extends ConsumerState<_FeaturedHeroCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Spacer(),
-              // Título do post
-              Text(
-                _post.title?.trim().isNotEmpty == true
-                    ? _post.title!.trim()
-                    : _post.content,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: r.fs(18),
-                  fontWeight: FontWeight.w900,
-                  height: 1.15,
-                ),
-              ),
-              SizedBox(height: r.s(6)),
-              // Prévia do conteúdo
-              Text(
-                _post.content,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.75),
-                  fontSize: r.fs(12),
-                  height: 1.35,
-                ),
-              ),
-              SizedBox(height: r.s(10)),
               // ── Barra de ações ──
               Row(
                 children: [
@@ -731,12 +707,13 @@ class _FeaturedHeroCardState extends ConsumerState<_FeaturedHeroCard> {
               ),
             ],
           ),
-        ),
+         ),
       ),
+    );
+      },
     );
   }
 }
-
 /// Card grande para posts em destaque (grid 2 colunas, estilo Amino)
 class _FeaturedPostCard extends ConsumerStatefulWidget {
   final PostModel post;
