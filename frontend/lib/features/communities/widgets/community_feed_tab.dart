@@ -185,7 +185,7 @@ class _FeaturedTab extends ConsumerWidget {
                     crossAxisCount: 2,
                     crossAxisSpacing: r.s(8),
                     mainAxisSpacing: r.s(8),
-                    childAspectRatio: 0.75,
+                    childAspectRatio: 0.78,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (ctx, i) => _FeaturedPostCard(
@@ -629,7 +629,7 @@ class _FeaturedHeroCardState extends ConsumerState<_FeaturedHeroCard> {
         return AminoAnimations.cardPress(
       onTap: () => context.push('/post/${_post.id}'),
       child: Container(
-        height: side,
+        height: side * 0.75,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(r.s(20)),
           border: Border.all(color: accent.withValues(alpha: 0.28)),
