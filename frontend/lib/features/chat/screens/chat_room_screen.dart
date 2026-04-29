@@ -1787,27 +1787,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   ],
 
                   // ── Seção RPG ──────────────────────────────────────────
-                  if (_rpgModeEnabled || isHost) ...[  
+                  // Host sempre vê (para poder ativar/desativar)
+                  // Membros só veem quando o modo RPG está ativo
+                  if (isHost || _rpgModeEnabled) ...[  
                     Divider(
                         color: Colors.white.withValues(alpha: 0.07),
                         height: r.s(16)),
                     _settingsSectionLabel(r, 'Modo RPG'),
-                    if (_rpgModeEnabled)
-                      _settingsTile(
-                        r,
-                        Icons.shield_rounded,
-                        'Meu Personagem',
-                        () {
-                          Navigator.pop(ctx);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ChatRpgScreen(
-                                  threadId: widget.threadId),
-                            ),
-                          );
-                        },
-                      ),
+                    // Botão do host: sempre visível (toggle + painel)
                     if (isHost)
                       _settingsTile(
                         r,
@@ -1827,6 +1814,40 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                             // Recarrega o estado do RPG ao voltar
                             _loadThreadInfo();
                           });
+                        },
+                      ),
+                    // Botão de personagem: apenas membros quando RPG ativo
+                    if (_rpgModeEnabled && !isHost)
+                      _settingsTile(
+                        r,
+                        Icons.shield_rounded,
+                        'Meu Personagem',
+                        () {
+                          Navigator.pop(ctx);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatRpgScreen(
+                                  threadId: widget.threadId),
+                            ),
+                          );
+                        },
+                      ),
+                    // Co-host também acessa o personagem quando RPG ativo
+                    if (_rpgModeEnabled && isHost)
+                      _settingsTile(
+                        r,
+                        Icons.shield_rounded,
+                        'Meu Personagem',
+                        () {
+                          Navigator.pop(ctx);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatRpgScreen(
+                                  threadId: widget.threadId),
+                            ),
+                          );
                         },
                       ),
                     SizedBox(height: r.s(8)),
