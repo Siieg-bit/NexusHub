@@ -732,37 +732,86 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                     onPressed: () => context.pop(),
                   ),
                   actions: [
-                    // Online indicator — texto direto estilo Amino (sem chip)
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: r.s(8),
-                          height: r.s(8),
-                          decoration: BoxDecoration(
-                            color: isOnline
-                                ? const Color(0xFF4CAF50)
-                                : Colors.grey[500],
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        SizedBox(width: r.s(5)),
-                        Text(
-                          presenceLabel,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: r.fs(13),
-                            fontWeight: FontWeight.w600,
-                            shadows: const [
-                              Shadow(
-                                color: Colors.black54,
-                                blurRadius: 4,
+                    // Online indicator — clicável para alternar presença (apenas perfil próprio)
+                    GestureDetector(
+                      onTap: _isOwnProfile
+                          ? (_isUpdatingManualPresence ? null : _toggleManualPresence)
+                          : null,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: r.s(_isOwnProfile ? 8 : 0),
+                            vertical: r.s(_isOwnProfile ? 4 : 0)),
+                        decoration: _isOwnProfile
+                            ? BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(r.s(20)),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.28),
+                                  width: 1,
+                                ),
+                              )
+                            : null,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_isUpdatingManualPresence && _isOwnProfile)
+                              SizedBox(
+                                width: r.s(8),
+                                height: r.s(8),
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 1.5,
+                                  color: Colors.white,
+                                ),
+                              )
+                            else
+                              Container(
+                                width: r.s(8),
+                                height: r.s(8),
+                                decoration: BoxDecoration(
+                                  color: isOnline
+                                      ? const Color(0xFF4CAF50)
+                                      : Colors.grey[500],
+                                  shape: BoxShape.circle,
+                                  boxShadow: isOnline
+                                      ? [
+                                          BoxShadow(
+                                            color: const Color(0xFF4CAF50)
+                                                .withValues(alpha: 0.7),
+                                            blurRadius: 5,
+                                            spreadRadius: 1,
+                                          )
+                                        ]
+                                      : null,
+                                ),
+                              ),
+                            SizedBox(width: r.s(5)),
+                            Text(
+                              presenceLabel,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: r.fs(13),
+                                fontWeight: FontWeight.w600,
+                                shadows: const [
+                                  Shadow(
+                                    color: Colors.black54,
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (_isOwnProfile) ...[  
+                              SizedBox(width: r.s(3)),
+                              Icon(
+                                Icons.unfold_more_rounded,
+                                color: Colors.white.withValues(alpha: 0.65),
+                                size: r.s(13),
                               ),
                             ],
-                          ),
+                            SizedBox(width: r.s(4)),
+                          ],
                         ),
-                        SizedBox(width: r.s(4)),
-                      ],
+                      ),
                     ),
                     IconButton(
                       icon: Icon(Icons.more_horiz_rounded,
@@ -1033,7 +1082,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                               ),
                               SizedBox(height: r.s(6)),
 
-                              // Level badge — dois containers separados: [lv13] [Best Wizzard]
+                              // Level badge — barrinha unificada: [lv 13 | Best Wizzard]
                               // Clicável: abre tela de todos os rankings
                               GestureDetector(
                                 onTap: () =>
@@ -1042,62 +1091,104 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                   'reputation': reputation,
                                   'bannerUrl': _communityBannerUrl,
                                 }),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // Badge roxo/azul com "lv" + número
-                                    Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: r.s(8), vertical: r.s(4)),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.getLevelColor(level),
-                                        borderRadius:
-                                            BorderRadius.circular(r.s(14)),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(r.s(20)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppTheme.getLevelColor(level)
+                                            .withValues(alpha: 0.45),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
                                       ),
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(r.s(20)),
+                                    child: IntrinsicHeight(
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
                                         children: [
-                                          Text(
-                                            s.drawerLvLabel,
-                                            style: TextStyle(
-                                              color: Colors.white
-                                                  .withValues(alpha: 0.85),
-                                              fontSize: r.fs(10),
-                                              fontWeight: FontWeight.w600,
+                                          // Segmento esquerdo: número do nível com gradiente
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: r.s(10), vertical: r.s(5)),
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  AppTheme.getLevelColor(level),
+                                                  AppTheme.getLevelColor(level)
+                                                      .withValues(alpha: 0.75),
+                                                ],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  s.drawerLvLabel,
+                                                  style: TextStyle(
+                                                    color: Colors.white
+                                                        .withValues(alpha: 0.80),
+                                                    fontSize: r.fs(9),
+                                                    fontWeight: FontWeight.w700,
+                                                    letterSpacing: 0.5,
+                                                    height: 1,
+                                                  ),
+                                                ),
+                                                SizedBox(width: r.s(2)),
+                                                Text(
+                                                  '$level',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: r.fs(15),
+                                                    fontWeight: FontWeight.w900,
+                                                    height: 1,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                          Text(
-                                            '$level',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: r.fs(14),
-                                              fontWeight: FontWeight.w900,
+                                          // Divisor vertical
+                                          Container(
+                                            width: 1,
+                                            color: Colors.white.withValues(alpha: 0.25),
+                                          ),
+                                          // Segmento direito: nome do nível com fundo semi-transparente
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: r.s(10), vertical: r.s(5)),
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  AppTheme.getLevelColor(level)
+                                                      .withValues(alpha: 0.55),
+                                                  AppTheme.getLevelColor(level)
+                                                      .withValues(alpha: 0.30),
+                                                ],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              title,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: r.fs(12),
+                                                fontWeight: FontWeight.w700,
+                                                letterSpacing: 0.2,
+                                                height: 1,
+                                              ),
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    SizedBox(width: r.s(6)),
-                                    // Badge cinza escuro com título do level
-                                    Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: r.s(10),
-                                          vertical: r.s(4)),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[800],
-                                        borderRadius:
-                                            BorderRadius.circular(r.s(14)),
-                                      ),
-                                      child: Text(
-                                        title,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: r.fs(12),
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ),
 
@@ -1138,110 +1229,46 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
 
                               // Botão Editar (próprio) / Friends + Chat (outro)
                               if (_isOwnProfile)
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () => context
-                                          .push(
-                                              '/community/${widget.communityId}/profile/edit')
-                                          .then((_) => _loadProfile()),
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: r.s(28),
-                                            vertical: r.s(9)),
-                                        decoration: BoxDecoration(
+                                Center(
+                                  child: GestureDetector(
+                                    onTap: () => context
+                                        .push(
+                                            '/community/${widget.communityId}/profile/edit')
+                                        .then((_) => _loadProfile()),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: r.s(32),
+                                          vertical: r.s(9)),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.1),
+                                        borderRadius:
+                                            BorderRadius.circular(r.s(6)),
+                                        border: Border.all(
                                           color: Colors.white
-                                              .withValues(alpha: 0.1),
-                                          borderRadius:
-                                              BorderRadius.circular(r.s(6)),
-                                          border: Border.all(
-                                            color: Colors.white
-                                                .withValues(alpha: 0.35),
-                                            width: 1.5,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(Icons.edit_rounded,
-                                                size: r.s(14),
-                                                color: Colors.white),
-                                            SizedBox(width: r.s(6)),
-                                            Text(
-                                              s.edit,
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: r.fs(14),
-                                              ),
-                                            ),
-                                          ],
+                                              .withValues(alpha: 0.35),
+                                          width: 1.5,
                                         ),
                                       ),
-                                    ),
-                                    SizedBox(width: r.s(10)),
-                                    GestureDetector(
-                                      onTap: _isUpdatingManualPresence
-                                          ? null
-                                          : _toggleManualPresence,
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: r.s(18),
-                                            vertical: r.s(9)),
-                                        decoration: BoxDecoration(
-                                          color: isManualOffline
-                                              ? Colors.grey
-                                                  .withValues(alpha: 0.20)
-                                              : const Color(0xFF4CAF50)
-                                                  .withValues(alpha: 0.18),
-                                          borderRadius:
-                                              BorderRadius.circular(r.s(6)),
-                                          border: Border.all(
-                                            color: isManualOffline
-                                                ? Colors.grey.shade400
-                                                : const Color(0xFF4CAF50),
-                                            width: 1.4,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            if (_isUpdatingManualPresence)
-                                              SizedBox(
-                                                width: r.s(14),
-                                                height: r.s(14),
-                                                child:
-                                                    const CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                  color: Colors.white,
-                                                ),
-                                              )
-                                            else
-                                              Icon(
-                                                isManualOffline
-                                                    ? Icons
-                                                        .visibility_off_rounded
-                                                    : Icons.circle,
-                                                size: r.s(14),
-                                                color: Colors.white,
-                                              ),
-                                            SizedBox(width: r.s(6)),
-                                            Text(
-                                              isManualOffline
-                                                  ? 'Aparecer online'
-                                                  : 'Ficar offline',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: r.fs(13),
-                                              ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.edit_rounded,
+                                              size: r.s(14),
+                                              color: Colors.white),
+                                          SizedBox(width: r.s(6)),
+                                          Text(
+                                            s.edit,
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: r.fs(14),
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ],
+                                  ),
                                 )
                               else
                                 Row(
