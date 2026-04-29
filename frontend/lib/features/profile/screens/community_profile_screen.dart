@@ -14,6 +14,7 @@ import '../../../core/utils/helpers.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../../chat/widgets/chat_bubble.dart'; // AvatarWithFrame + AminoPlusBadge
 import '../../../core/widgets/amino_custom_title.dart';
+import '../../../core/widgets/level_badge.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../communities/widgets/community_create_menu.dart';
@@ -1089,7 +1090,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                               ),
                               SizedBox(height: r.s(6)),
 
-                              // Level badge — estilo Amino: [🔷 12] + [Mítico]
+                              // Level badge — novo design: círculo colorido (Lv+número)
+                              // projeta à esquerda de pill cinza com título do nível
                               GestureDetector(
                                 onTap: () =>
                                     context.push('/all-rankings', extra: {
@@ -1097,63 +1099,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                   'reputation': reputation,
                                   'bannerUrl': _communityBannerUrl,
                                 }),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // Ícone quadrado colorido com número do nível
-                                    Container(
-                                      width: r.s(28),
-                                      height: r.s(28),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.getLevelColor(level),
-                                        borderRadius: BorderRadius.circular(r.s(6)),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: AppTheme.getLevelColor(level)
-                                                .withValues(alpha: 0.55),
-                                            blurRadius: 6,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        '$level',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: r.fs(13),
-                                          fontWeight: FontWeight.w900,
-                                          height: 1,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(width: r.s(6)),
-                                    // Pill com nome do nível
-                                    Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: r.s(10), vertical: r.s(5)),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.getLevelColor(level)
-                                            .withValues(alpha: 0.18),
-                                        borderRadius: BorderRadius.circular(r.s(14)),
-                                        border: Border.all(
-                                          color: AppTheme.getLevelColor(level)
-                                              .withValues(alpha: 0.50),
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        title,
-                                        style: TextStyle(
-                                          color: AppTheme.getLevelColor(level),
-                                          fontSize: r.fs(12),
-                                          fontWeight: FontWeight.w700,
-                                          letterSpacing: 0.2,
-                                          height: 1,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                child: LevelBadge(
+                                  level: level,
+                                  size: LevelBadgeSize.medium,
                                 ),
                               ),
                               // Badges e títulos customizados (inclui role badge via is_role_badge)
