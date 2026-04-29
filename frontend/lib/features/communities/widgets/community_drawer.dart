@@ -840,7 +840,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                       label: s.drawerPublicChatrooms,
                       onTap: () => _closeAndNavigate(() {
                         context.push(
-                          '/community/${widget.community.id}/my-chats',
+                          '/community/${widget.community.id}/public-chats',
                           extra: {
                             'communityId': widget.community.id,
                             'communityName': widget.community.name,
@@ -859,8 +859,16 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                               '/community/${widget.community.id}/rpg-roles');
                         }),
                       ),
-                    // Meu Título — só exibe se a comunidade tiver títulos selecionáveis
-                    // (a RPC get_selectable_titles ainda não está no banco; item removido por ora)
+                    // Meu Título — permite ao membro escolher um título para exibir no perfil
+                    _AminoDrawerTile(
+                      icon: Icons.workspace_premium_rounded,
+                      iconColor: theme.accentSecondary,
+                      label: s.myTitle,
+                      onTap: () => _closeAndNavigate(() {
+                        context.push(
+                            '/community/${widget.community.id}/my-title');
+                      }),
+                    ),
                     // Posts Salvos — abre diretamente na aba Saved Posts (index 2)
                     _AminoDrawerTile(
                       icon: Icons.bookmark_rounded,

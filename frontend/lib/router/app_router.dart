@@ -100,6 +100,7 @@ import '../features/stickers/screens/sticker_creator_screen.dart';
 import '../features/stickers/screens/create_pack_screen.dart';
 import '../features/stickers/screens/sticker_explore_screen.dart';
 import '../features/profile/screens/edit_community_profile_screen.dart';
+import '../features/communities/screens/community_public_chats_screen.dart';
 import 'shell_screen.dart';
 import '../features/stories/screens/story_viewer_screen.dart';
 import '../core/screens/short_code_redirect_screen.dart';
@@ -325,6 +326,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             // cadastrado clicando no ícone/nome). Impede o redirect automático
             // de volta para /community/:id.
             readOnly: extra['readOnly'] as bool? ?? false,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/community/:communityId/public-chats',
+        name: 'community-public-chats',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CommunityPublicChatsScreen(
+            communityId: state.pathParameters['communityId']!,
+            communityName: extra['communityName'] as String? ?? '',
           );
         },
       ),
