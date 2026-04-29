@@ -362,8 +362,9 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               membership: membership,
             ),
           ),
-          // Permite puxar o drawer da borda com facilidade
-          drawerEdgeDragWidth: 72.0,
+          // Zona de captura da borda reduzida (44px) — menos área acidental,
+          // mas ainda confortável para abrir com swipe intencional.
+          drawerEdgeDragWidth: 44.0,
           // extendBody: true faz o conteúdo passar por baixo do nav flutuante
           extendBody: true,
           body: _bottomIndex == 0
@@ -1089,9 +1090,8 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
 // FÍSICA: Swipe rápido e responsivo para o TabBarView
 // =============================================================================
 /// Física personalizada que reduz a resistência do swipe entre abas.
-/// - `minFlingVelocity` menor → basta um toque rápido para trocar de aba
-/// - `minFlingDistance` menor → distância mínima de arrasto reduzida
-/// - `springDescription` mais rígida → snap mais rápido ao soltar
+/// - `spring` com massa baixa e stiffness alta → snap rápido e leve ao soltar
+/// - Herda o comportamento de fling do [PageScrollPhysics] (threshold nativo)
 class _FastSwipePhysics extends PageScrollPhysics {
   const _FastSwipePhysics({super.parent});
 
@@ -1102,8 +1102,10 @@ class _FastSwipePhysics extends PageScrollPhysics {
 
   @override
   SpringDescription get spring => const SpringDescription(
-        mass: 80,
-        stiffness: 100,
+        // Massa baixa (era 80) + stiffness alta = resposta rápida e leve.
+        // O usuário sente que a aba "voa" para a posição ao soltar.
+        mass: 30,
+        stiffness: 200,
         damping: 1,
       );
 }
