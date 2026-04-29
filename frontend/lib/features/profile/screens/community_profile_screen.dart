@@ -274,7 +274,15 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         final followingRes = group2[1] as PostgrestResponse;
         _followingCount = followingRes.count ?? 0;
 
-        if (!_isOwnProfile && group2.length > 2) {
+        if (_isOwnProfile) {
+          // No próprio perfil: _membership já é o membership do viewer;
+          // reutilizá-lo como _myMembership e buscar is_team_* do próprio perfil.
+          _myMembership = _membership;
+          // _user já foi carregado no grupo 1 com o perfil global do usuário.
+          if (_user != null) {
+            _viewerIsTeamMember = _user!.isTeamMember;
+          }
+        } else if (group2.length > 2) {
           _myMembership = group2[2] as Map<String, dynamic>?;
           final viewerProfileRes = group2[3] as Map<String, dynamic>?;
           if (viewerProfileRes != null) {
