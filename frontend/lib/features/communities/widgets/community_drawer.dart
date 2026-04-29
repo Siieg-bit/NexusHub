@@ -356,23 +356,24 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 
     return Stack(
       children: [
-        // ── Fundo (banner ou cor sólida) ─────────────────────────────────
-        Container(
-          width: double.infinity,
-          height: r.s(220),
-          decoration: BoxDecoration(
-            color: themeColor.withValues(alpha: 0.85),
-            image: widget.community.bannerUrl != null
-                ? DecorationImage(
-                    image: CachedNetworkImageProvider(
-                        widget.community.bannerUrl!),
-                    fit: BoxFit.cover,
-                  )
-                : null,
+        // ── Fundo (banner ou cor sólida) — preenche toda a altura do Stack ───────
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              color: themeColor.withValues(alpha: 0.85),
+              image: widget.community.bannerUrl != null
+                  ? DecorationImage(
+                      image: CachedNetworkImageProvider(
+                          widget.community.bannerUrl!),
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topCenter,
+                    )
+                  : null,
+            ),
           ),
         ),
 
-        // ── Gradiente escuro adaptativo ao tema ──────────────────────────
+        // ── Gradiente escuro adaptativo ao tema ──────────────────────────────────
         Positioned.fill(
           child: Container(
             decoration: BoxDecoration(
