@@ -354,7 +354,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
           key: _scaffoldKey, // Precisamos adicionar uma GlobalKey<ScaffoldState>
           backgroundColor: context.nexusTheme.backgroundPrimary,
           drawer: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.85,
+            width: MediaQuery.of(context).size.width * 0.90,
             child: CommunityDrawer(
               community: community,
               currentUser: ref.watch(currentUserProvider),
