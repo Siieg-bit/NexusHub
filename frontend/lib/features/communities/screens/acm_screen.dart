@@ -692,6 +692,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           isLoading: _uploadingIcon,
           onPickImage: _pickIcon,
           onRemove: _iconUrl.isNotEmpty ? () => setState(() => _iconUrl = '') : null,
+          sizeSpec: '512 × 512 px · 1:1 · Máx. 2 MB · JPG/PNG/WebP',
         ),
 
         SizedBox(height: r.s(16)),
@@ -705,6 +706,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           isLoading: _uploadingBanner,
           onPickImage: _pickBanner,
           onRemove: _bannerUrl.isNotEmpty ? () => setState(() => _bannerUrl = '') : null,
+          sizeSpec: '1920 × 1080 px · 16:9 · Máx. 5 MB · JPG/PNG/WebP',
         ),
       ],
     );
@@ -804,6 +806,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           isLoading: _uploadingBanner,
           onPickImage: _pickBanner,
           onRemove: _bannerUrl.isNotEmpty ? () => setState(() => _bannerUrl = '') : null,
+          sizeSpec: '1920 × 1080 px · 16:9 · Máx. 5 MB · JPG/PNG/WebP',
         ),
         SizedBox(height: r.s(12)),
         _AcmImageUploadCard(
@@ -814,6 +817,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           isLoading: _uploadingBannerHeader,
           onPickImage: _pickBannerHeader,
           onRemove: _bannerHeaderUrl.isNotEmpty ? () => setState(() => _bannerHeaderUrl = '') : null,
+          sizeSpec: '1920 × 400 px · ~5:1 · Máx. 5 MB · JPG/PNG/WebP',
         ),
         SizedBox(height: r.s(12)),
         _AcmImageUploadCard(
@@ -824,6 +828,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           isLoading: _uploadingBannerDrawer,
           onPickImage: _pickBannerDrawer,
           onRemove: _bannerDrawerUrl.isNotEmpty ? () => setState(() => _bannerDrawerUrl = '') : null,
+          sizeSpec: '800 × 300 px · ~8:3 · Máx. 3 MB · JPG/PNG/WebP',
         ),
         SizedBox(height: r.s(12)),
         _AcmImageUploadCard(
@@ -834,6 +839,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           isLoading: _uploadingBannerCard,
           onPickImage: _pickBannerCard,
           onRemove: _bannerCardUrl.isNotEmpty ? () => setState(() => _bannerCardUrl = '') : null,
+          sizeSpec: '800 × 450 px · 16:9 · Máx. 3 MB · JPG/PNG/WebP',
         ),
         SizedBox(height: r.s(12)),
         _AcmImageUploadCard(
@@ -844,6 +850,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
           isLoading: _uploadingBannerInfo,
           onPickImage: _pickBannerInfo,
           onRemove: _bannerInfoUrl.isNotEmpty ? () => setState(() => _bannerInfoUrl = '') : null,
+          sizeSpec: '1920 × 600 px · ~3:1 · Máx. 5 MB · JPG/PNG/WebP',
         ),
         SizedBox(height: r.s(16)),
         // Modo de aplicação da cor
@@ -2301,6 +2308,9 @@ class _AcmImageUploadCard extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onPickImage;
   final VoidCallback? onRemove;
+  /// Especificações de tamanho exibidas abaixo do label.
+  /// Ex: '1920 × 1080 px · 16:9 · Máx. 5 MB · JPG/PNG/WebP'
+  final String? sizeSpec;
 
   const _AcmImageUploadCard({
     required this.label,
@@ -2311,6 +2321,7 @@ class _AcmImageUploadCard extends StatelessWidget {
     required this.isLoading,
     required this.onPickImage,
     this.onRemove,
+    this.sizeSpec,
   });
 
   @override
@@ -2331,13 +2342,54 @@ class _AcmImageUploadCard extends StatelessWidget {
         children: [
           // Header
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: theme.accentPrimary, size: r.s(20)),
+              Padding(
+                padding: EdgeInsets.only(top: r.s(1)),
+                child: Icon(icon, color: theme.accentPrimary, size: r.s(20)),
+              ),
               SizedBox(width: r.s(10)),
               Expanded(
-                child: Text(label,
-                    style: TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: r.fs(14))),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: r.fs(14))),
+                    if (sizeSpec != null) ...[  
+                      SizedBox(height: r.s(3)),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: r.s(7), vertical: r.s(3)),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(r.s(4)),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.08)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.straighten_rounded,
+                                size: r.s(10), color: Colors.grey[500]),
+                            SizedBox(width: r.s(4)),
+                            Flexible(
+                              child: Text(
+                                sizeSpec!,
+                                style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: r.fs(10),
+                                    fontFamily: 'monospace',
+                                    letterSpacing: 0.2),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
               if (hasImage && onRemove != null)
                 GestureDetector(

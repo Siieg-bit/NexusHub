@@ -367,6 +367,7 @@ class _CreateCommunityScreenState
                   _bannerUrl.isNotEmpty ? () => setState(() => _bannerUrl = '') : null,
               r: r,
               theme: theme,
+              sizeSpec: '1920 × 1080 px · 16:9 · Máx. 5 MB · JPG/PNG/WebP',
             ),
             SizedBox(height: r.s(16)),
             _ImageUploadCard(
@@ -380,6 +381,7 @@ class _CreateCommunityScreenState
                   _iconUrl.isNotEmpty ? () => setState(() => _iconUrl = '') : null,
               r: r,
               theme: theme,
+              sizeSpec: '512 × 512 px · 1:1 · Máx. 2 MB · JPG/PNG/WebP',
             ),
             SizedBox(height: r.s(20)),
             _buildTextField(
@@ -1246,6 +1248,8 @@ class _ImageUploadCard extends StatelessWidget {
   final VoidCallback? onRemove;
   final Responsive r;
   final NexusThemeExtension theme;
+  /// Especificações de tamanho exibidas abaixo do label.
+  final String? sizeSpec;
 
   const _ImageUploadCard({
     required this.label,
@@ -1258,6 +1262,7 @@ class _ImageUploadCard extends StatelessWidget {
     this.onRemove,
     required this.r,
     required this.theme,
+    this.sizeSpec,
   });
 
   @override
@@ -1274,15 +1279,56 @@ class _ImageUploadCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: theme.accentPrimary, size: r.s(18)),
+              Padding(
+                padding: EdgeInsets.only(top: r.s(1)),
+                child: Icon(icon, color: theme.accentPrimary, size: r.s(18)),
+              ),
               SizedBox(width: r.s(8)),
               Expanded(
-                child: Text(label,
-                    style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: r.fs(14),
-                        color: theme.textPrimary)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: r.fs(14),
+                            color: theme.textPrimary)),
+                    if (sizeSpec != null) ...[  
+                      SizedBox(height: r.s(3)),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: r.s(7), vertical: r.s(3)),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(r.s(4)),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.08)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.straighten_rounded,
+                                size: r.s(10), color: Colors.grey[500]),
+                            SizedBox(width: r.s(4)),
+                            Flexible(
+                              child: Text(
+                                sizeSpec!,
+                                style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: r.fs(10),
+                                    fontFamily: 'monospace',
+                                    letterSpacing: 0.2),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
               if (hasImage && onRemove != null)
                 GestureDetector(
