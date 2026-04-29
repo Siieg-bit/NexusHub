@@ -1082,8 +1082,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                               ),
                               SizedBox(height: r.s(6)),
 
-                              // Level badge — barrinha unificada: [lv 13 | Best Wizzard]
-                              // Clicável: abre tela de todos os rankings
+                              // Level badge — estilo Amino: [🔷 12] + [Mítico]
                               GestureDetector(
                                 onTap: () =>
                                     context.push('/all-rankings', extra: {
@@ -1091,130 +1090,96 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                   'reputation': reputation,
                                   'bannerUrl': _communityBannerUrl,
                                 }),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(r.s(20)),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppTheme.getLevelColor(level)
-                                            .withValues(alpha: 0.45),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(r.s(20)),
-                                    child: IntrinsicHeight(
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                                        children: [
-                                          // Segmento esquerdo: número do nível com gradiente
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: r.s(10), vertical: r.s(5)),
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  AppTheme.getLevelColor(level),
-                                                  AppTheme.getLevelColor(level)
-                                                      .withValues(alpha: 0.75),
-                                                ],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                              ),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              crossAxisAlignment: CrossAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  s.drawerLvLabel,
-                                                  style: TextStyle(
-                                                    color: Colors.white
-                                                        .withValues(alpha: 0.80),
-                                                    fontSize: r.fs(9),
-                                                    fontWeight: FontWeight.w700,
-                                                    letterSpacing: 0.5,
-                                                    height: 1,
-                                                  ),
-                                                ),
-                                                SizedBox(width: r.s(2)),
-                                                Text(
-                                                  '$level',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: r.fs(15),
-                                                    fontWeight: FontWeight.w900,
-                                                    height: 1,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          // Divisor vertical
-                                          Container(
-                                            width: 1,
-                                            color: Colors.white.withValues(alpha: 0.25),
-                                          ),
-                                          // Segmento direito: nome do nível com fundo semi-transparente
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: r.s(10), vertical: r.s(5)),
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  AppTheme.getLevelColor(level)
-                                                      .withValues(alpha: 0.55),
-                                                  AppTheme.getLevelColor(level)
-                                                      .withValues(alpha: 0.30),
-                                                ],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                              ),
-                                            ),
-                                            child: Text(
-                                              title,
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: r.fs(12),
-                                                fontWeight: FontWeight.w700,
-                                                letterSpacing: 0.2,
-                                                height: 1,
-                                              ),
-                                            ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Ícone quadrado colorido com número do nível
+                                    Container(
+                                      width: r.s(28),
+                                      height: r.s(28),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.getLevelColor(level),
+                                        borderRadius: BorderRadius.circular(r.s(6)),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppTheme.getLevelColor(level)
+                                                .withValues(alpha: 0.55),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 2),
                                           ),
                                         ],
                                       ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        '$level',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: r.fs(13),
+                                          fontWeight: FontWeight.w900,
+                                          height: 1,
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                    SizedBox(width: r.s(6)),
+                                    // Pill com nome do nível
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: r.s(10), vertical: r.s(5)),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.getLevelColor(level)
+                                            .withValues(alpha: 0.18),
+                                        borderRadius: BorderRadius.circular(r.s(14)),
+                                        border: Border.all(
+                                          color: AppTheme.getLevelColor(level)
+                                              .withValues(alpha: 0.50),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        title,
+                                        style: TextStyle(
+                                          color: AppTheme.getLevelColor(level),
+                                          fontSize: r.fs(12),
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.2,
+                                          height: 1,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-
-                              // Role badge (Líder/Curador) separado
+                              // Role badge (Líder/Curador) — pill colorida abaixo do nível
                               if (roleTitle != null) ...[
-                                SizedBox(height: r.s(4)),
+                                SizedBox(height: r.s(5)),
                                 Container(
                                   padding: EdgeInsets.symmetric(
-                                      horizontal: r.s(10), vertical: r.s(4)),
+                                      horizontal: r.s(12), vertical: r.s(4)),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.15),
-                                    borderRadius:
-                                        BorderRadius.circular(r.s(12)),
+                                    color: (role == 'leader' || role == 'agent')
+                                        ? const Color(0xFF2DBE60).withValues(alpha: 0.20)
+                                        : const Color(0xFF2196F3).withValues(alpha: 0.20),
+                                    borderRadius: BorderRadius.circular(r.s(14)),
+                                    border: Border.all(
+                                      color: (role == 'leader' || role == 'agent')
+                                          ? const Color(0xFF2DBE60).withValues(alpha: 0.60)
+                                          : const Color(0xFF2196F3).withValues(alpha: 0.60),
+                                      width: 1,
+                                    ),
                                   ),
                                   child: Text(
                                     roleTitle,
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: (role == 'leader' || role == 'agent')
+                                          ? const Color(0xFF2DBE60)
+                                          : const Color(0xFF2196F3),
                                       fontSize: r.fs(11),
                                       fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.3,
                                     ),
                                   ),
                                 ),
                               ],
-                              SizedBox(height: r.s(8)),
-
                               // Custom titles (tags/chips coloridas)
                               if (titles.isNotEmpty)
                                 Padding(
