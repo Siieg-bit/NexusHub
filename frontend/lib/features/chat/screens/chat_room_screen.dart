@@ -1593,9 +1593,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final r = context.r;
     final threadType = _threadInfo?['type'] as String? ?? 'public';
     final isPublic = threadType == 'public';
-    final isHost = _callerRole == 'host' || _callerRole == 'co_host';
     final userId = SupabaseService.currentUserId;
     final hostId = _threadInfo?['host_id'] as String?;
+    final coHosts = (_threadInfo?['co_hosts'] as List?)?.map((e) => e.toString()).toSet() ?? {};
+    // Fallback duplo: _callerRole (carregado assincronamente) OU comparação
+    // direta com host_id/co_hosts do threadInfo (evita falha quando _callerRole
+    // ainda não foi resolvido ou quando host_id não coincide por timing)
+    final isHost = _callerRole == 'host' ||
+        _callerRole == 'co_host' ||
+        (userId != null && userId == hostId) ||
+        (userId != null && coHosts.contains(userId));
     final currentUser = ref.read(currentUserProvider);
     final canDelete = (userId != null && userId == hostId) ||
         (currentUser?.isTeamMember ?? false);
