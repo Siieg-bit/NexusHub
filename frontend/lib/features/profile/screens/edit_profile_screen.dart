@@ -272,14 +272,35 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         );
         context.pop();
       }
-    } catch (e) {
+    } catch (e, stack) {
+      // Log detalhado para facilitar debug — visível no flutter run / logcat
+      debugPrint('[EditProfileScreen._saveProfile] ERRO ao salvar perfil:');
+      debugPrint('  erro: $e');
+      debugPrint('  stack: $stack');
       if (mounted) {
-        final isDuplicate = e.toString().contains('duplicate') ||
-            e.toString().contains('unique') ||
-            e.toString().contains('23505');
+        final errStr = e.toString();
+        final isDuplicate = errStr.contains('duplicate') ||
+            errStr.contains('unique') ||
+            errStr.contains('23505');
+        final isColumnMissing = errStr.contains('column') &&
+            errStr.contains('does not exist');
+        final isPermission = errStr.contains('permission denied') ||
+            errStr.contains('42501');
+        String message;
+        if (isDuplicate) {
+          message = s.aminoIdInUse;
+        } else if (isColumnMissing) {
+          // Coluna faltando no banco — erro de migration
+          message = 'Erro de configuração do servidor. Contate o suporte.';
+          debugPrint('[EditProfileScreen] ATENÇÃO: coluna faltando no banco — verifique as migrations: $errStr');
+        } else if (isPermission) {
+          message = 'Sem permissão para atualizar o perfil.';
+        } else {
+          message = s.tryAgainGeneric;
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isDuplicate ? s.aminoIdInUse : s.tryAgainGeneric),
+            content: Text(message),
             backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -317,7 +338,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           _originalAvatarUrl = url;
         }
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('[EditProfileScreen._pickAndUploadAvatar] ERRO ao fazer upload do avatar:');
+      debugPrint('  erro: $e');
+      debugPrint('  stack: $stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
