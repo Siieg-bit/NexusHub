@@ -811,7 +811,10 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
       children: [
         GestureDetector(
           onTap: () => _closeAndNavigate(() {
-            context.push('/community/${widget.community.id}/info');
+            context.push(
+              '/community/${widget.community.id}/info',
+              extra: {'readOnly': true},
+            );
           }),
           behavior: HitTestBehavior.opaque,
           child: Padding(

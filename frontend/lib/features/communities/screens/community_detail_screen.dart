@@ -714,6 +714,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                           child: GestureDetector(
                             onTap: () => context.push(
                               '/community/${widget.communityId}/info',
+                              extra: {'readOnly': true},
                             ),
                             child: Container(
                               width: r.s(62),
@@ -754,6 +755,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                               GestureDetector(
                                 onTap: () => context.push(
                                   '/community/${widget.communityId}/info',
+                                  extra: {'readOnly': true},
                                 ),
                                 child: Text(
                                   community.name,

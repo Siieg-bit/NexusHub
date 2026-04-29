@@ -317,9 +317,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/community/:communityId/info',
         name: 'community-info',
-        builder: (context, state) => CommunityInfoScreen(
-          communityId: state.pathParameters['communityId']!,
-        ),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CommunityInfoScreen(
+            communityId: state.pathParameters['communityId']!,
+            // readOnly=true quando acessado de dentro da comunidade (membro já
+            // cadastrado clicando no ícone/nome). Impede o redirect automático
+            // de volta para /community/:id.
+            readOnly: extra['readOnly'] as bool? ?? false,
+          );
+        },
       ),
       GoRoute(
         path: '/community/:communityId/my-chats',

@@ -24,8 +24,16 @@ import '../../auth/providers/auth_provider.dart';
 // =============================================================================
 class CommunityInfoScreen extends ConsumerStatefulWidget {
   final String communityId;
+  /// Quando [readOnly] é true, a tela exibe as informações da comunidade sem
+  /// redirecionar membros já cadastrados de volta para /community/:id.
+  /// Use este modo ao abrir a tela a partir de dentro da própria comunidade.
+  final bool readOnly;
 
-  const CommunityInfoScreen({super.key, required this.communityId});
+  const CommunityInfoScreen({
+    super.key,
+    required this.communityId,
+    this.readOnly = false,
+  });
 
   @override
   ConsumerState<CommunityInfoScreen> createState() =>
@@ -345,8 +353,10 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen>
       error: (e, _) => _buildError(context, e.toString()),
       data: (community) {
         final isMember = membershipAsync.valueOrNull != null;
-        // Se já é membro, redireciona para a tela da comunidade
-        if (isMember) {
+        // Se já é membro E não estamos em modo readOnly, redireciona para a
+        // tela da comunidade. Em modo readOnly (acessado de dentro da comunidade)
+        // exibe as informações normalmente sem redirecionar.
+        if (isMember && !widget.readOnly) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (context.mounted) {
               context.replace('/community/${widget.communityId}');
@@ -764,7 +774,13 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen>
       onTapUp: (_) {
         _joinController.reverse();
         if (isMember) {
-          context.replace('/community/${community.id}');
+          // Em modo readOnly (acessado de dentro da comunidade), apenas fecha
+          // a tela de volta para a comunidade. Caso contrário, navega para ela.
+          if (widget.readOnly) {
+            Navigator.of(context).pop();
+          } else {
+            context.replace('/community/${community.id}');
+          }
         } else {
           _joinCommunity(community);
         }
