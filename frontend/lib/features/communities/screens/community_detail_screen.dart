@@ -532,50 +532,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             ),
           ),
           actions: [
-            // Botão de Convite Destacado (Estilo Kyodo)
-            if (isMember)
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: r.s(10)),
-                child: GestureDetector(
-                  onTap: () => _handleInvite(community.name),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: r.s(12)),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          themeColor,
-                          themeColor.withValues(alpha: 0.8),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(r.s(20)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: themeColor.withValues(alpha: 0.4),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.person_add_alt_1_rounded,
-                            color: Colors.white, size: r.s(16)),
-                        SizedBox(width: r.s(4)),
-                        Text(
-                          'CONVIDAR',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: r.fs(11),
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             SizedBox(width: r.s(8)),
             // Share
             GestureDetector(
