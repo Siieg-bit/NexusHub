@@ -952,7 +952,9 @@ class _EditCommunityProfileScreenState
                         ),
                         SizedBox(height: r.s(6)),
                         // ── SEÇÃO: MEUS TÍTULOS CUSTOMIZADOS ─────────────────────
-                        if (_titlesLoaded && _myTitles.isNotEmpty)
+                        // Exibe sempre que os títulos foram carregados,
+                        // inclusive quando a lista está vazia (estado vazio amigável).
+                        if (_titlesLoaded)
                           _buildMyTitlesSection(r),
                       ],
                     ),
@@ -965,8 +967,7 @@ class _EditCommunityProfileScreenState
 
   Widget _buildMyTitlesSection(Responsive r) {
     return Padding(
-
-      padding: EdgeInsets.fromLTRB(r.s(16), 0, r.s(16), r.s(16)),
+      padding: EdgeInsets.fromLTRB(0, 0, 0, r.s(16)),
       child: _SettingsSectionCard(
         child: Padding(
           padding: EdgeInsets.all(r.s(14)),
@@ -980,72 +981,113 @@ class _EditCommunityProfileScreenState
                 subtitle: 'Reordene ou remova seus títulos nesta comunidade',
               ),
               SizedBox(height: r.s(12)),
-              Text(
-                'Arraste para reordenar. Títulos de cargo não podem ser removidos aqui.',
-                style: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: r.fs(11),
-                ),
-              ),
-              SizedBox(height: r.s(10)),
-              ReorderableListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _myTitles.length,
-                onReorder: _reorderTitles,
-                proxyDecorator: (child, index, animation) => Material(
-                  color: Colors.transparent,
-                  child: child,
-                ),
-                itemBuilder: (ctx, index) {
-                  final t = _myTitles[index];
-                  final titleText = t['title'] as String? ?? '';
-                  final colorHex = t['color'] as String? ?? '#7C4DFF';
-                  Color titleColor;
-                  try {
-                    titleColor = Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
-                  } catch (_) {
-                    titleColor = const Color(0xFF7C4DFF);
-                  }
-                  return Container(
-                    key: ValueKey(t['id'] ?? index),
-                    margin: EdgeInsets.only(bottom: r.s(6)),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.04),
-                      borderRadius: BorderRadius.circular(r.s(10)),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.07),
-                      ),
-                    ),
-                    child: ListTile(
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: r.s(12),
-                        vertical: r.s(2),
-                      ),
-                      leading: Icon(
-                        Icons.drag_handle_rounded,
-                        color: Colors.grey[600],
-                        size: r.s(20),
-                      ),
-                      title: AminoCustomTitle(
-                        title: titleText,
-                        color: titleColor,
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(
-                          Icons.delete_outline_rounded,
-                          color: Colors.red[400],
-                          size: r.s(18),
+              if (_myTitles.isEmpty)
+                // Estado vazio: informa o membro que ele ainda não tem títulos
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(
+                      vertical: r.s(20), horizontal: r.s(12)),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.03),
+                    borderRadius: BorderRadius.circular(r.s(12)),
+                    border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.06)),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.label_off_rounded,
+                          color: Colors.grey[600], size: r.s(32)),
+                      SizedBox(height: r.s(8)),
+                      Text(
+                        'Nenhum título ainda',
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: r.fs(13),
+                          fontWeight: FontWeight.w500,
                         ),
-                        onPressed: _isSaving
-                            ? null
-                            : () => _deleteMyTitle(t),
-                        tooltip: 'Remover título',
                       ),
-                    ),
-                  );
-                },
-              ),
+                      SizedBox(height: r.s(4)),
+                      Text(
+                        'Títulos concedidos pelos líderes aparecerão aqui.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: r.fs(11),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else ...
+              [
+                Text(
+                  'Arraste para reordenar. Títulos de cargo não podem ser removidos aqui.',
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: r.fs(11),
+                  ),
+                ),
+                SizedBox(height: r.s(10)),
+                ReorderableListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _myTitles.length,
+                  onReorder: _reorderTitles,
+                  proxyDecorator: (child, index, animation) => Material(
+                    color: Colors.transparent,
+                    child: child,
+                  ),
+                  itemBuilder: (ctx, index) {
+                    final t = _myTitles[index];
+                    final titleText = t['title'] as String? ?? '';
+                    final colorHex = t['color'] as String? ?? '#7C4DFF';
+                    Color titleColor;
+                    try {
+                      titleColor =
+                          Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
+                    } catch (_) {
+                      titleColor = const Color(0xFF7C4DFF);
+                    }
+                    return Container(
+                      key: ValueKey(t['id'] ?? index),
+                      margin: EdgeInsets.only(bottom: r.s(6)),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(r.s(10)),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.07),
+                        ),
+                      ),
+                      child: ListTile(
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: r.s(12),
+                          vertical: r.s(2),
+                        ),
+                        leading: Icon(
+                          Icons.drag_handle_rounded,
+                          color: Colors.grey[600],
+                          size: r.s(20),
+                        ),
+                        title: AminoCustomTitle(
+                          title: titleText,
+                          color: titleColor,
+                        ),
+                        trailing: IconButton(
+                          icon: Icon(
+                            Icons.delete_outline_rounded,
+                            color: Colors.red[400],
+                            size: r.s(18),
+                          ),
+                          onPressed: _isSaving
+                              ? null
+                              : () => _deleteMyTitle(t),
+                          tooltip: 'Remover título',
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ],
           ),
         ),

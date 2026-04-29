@@ -23,6 +23,8 @@ import '../providers/profile_providers.dart';
 import '../widgets/wall_comment_sheet.dart';
 import '../widgets/rich_bio.dart';
 import '../../moderation/widgets/member_role_manager.dart';
+import '../../moderation/widgets/manage_member_titles_sheet.dart';
+import '../../moderation/widgets/report_dialog.dart';
 import '../../../core/widgets/image_viewer.dart';
 import 'bio_and_wall_screen.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
@@ -2840,13 +2842,24 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       ),
       builder: (ctx) {
         final myRole = _myMembership?['role'] as String? ?? 'member';
+        // Líderes (agent/leader) podem moderar; curadores têm acesso parcial.
         final canManageRoles = !_isOwnProfile &&
             (myRole == 'agent' || myRole == 'leader' || myRole == 'curator');
+        // Apenas agent/leader podem gerenciar títulos customizados.
+        final canManageTitles = !_isOwnProfile &&
+            (myRole == 'agent' || myRole == 'leader');
+
         return Padding(
-          padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(16) + MediaQuery.of(ctx).viewPadding.bottom),
+          padding: EdgeInsets.fromLTRB(
+            r.s(16),
+            r.s(16),
+            r.s(16),
+            r.s(16) + MediaQuery.of(ctx).viewPadding.bottom,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Handle
               Container(
                 width: r.s(36),
                 height: r.s(4),
@@ -2856,7 +2869,63 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              if (canManageRoles)
+
+              // ── SEÇÃO: AÇÕES SOCIAIS ──────────────────────────────────────────
+              if (!_isOwnProfile)
+                _optionTile(
+                  Icons.chat_bubble_outline_rounded,
+                  'Enviar mensagem',
+                  () {
+                    Navigator.pop(ctx);
+                    _openDm(context);
+                  },
+                ),
+              _optionTile(
+                Icons.share_rounded,
+                s.shareProfile,
+                () {
+                  Navigator.pop(ctx);
+                  final link =
+                      'https://nexushub.app/community/${widget.communityId}/profile/${widget.userId}';
+                  Clipboard.setData(ClipboardData(text: link));
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(s.profileLinkCopied),
+                        backgroundColor: context.nexusTheme.accentPrimary,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
+              ),
+
+              // ── SEPARADOR: MODERAÇÃO ─────────────────────────────────────────
+              if (canManageRoles) ...
+              [
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: r.s(6)),
+                  child: Divider(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    height: 1,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(bottom: r.s(6)),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'MODERAÇÃO',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: r.fs(10),
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ),
+                ),
+                // Opções de moderação (cargo, ban, advertência, ocultar perfil...)
                 _optionTile(
                   Icons.manage_accounts_rounded,
                   'Opções de moderação',
@@ -2884,18 +2953,38 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                       targetUserName: targetName,
                       currentRole: targetRole,
                       currentTitle: currentTitle,
-                      callerRole: _myMembership?['role'] as String? ??
-                          (_isOwnProfile
-                              ? (_membership?['role'] as String? ?? 'member')
-                              : 'member'),
+                      membershipData:
+                          Map<String, dynamic>.from(_membership ?? {}),
+                      callerRole: myRole,
                     );
                     if (changed == true && mounted) {
                       _loadProfile();
                     }
                   },
                 ),
-              if (!_isOwnProfile) ...[
-                if ((_membership?['is_hidden'] as bool?) == true && canManageRoles)
+                // Gerenciar títulos customizados (apenas agent/leader)
+                if (canManageTitles)
+                  _optionTile(
+                    Icons.label_rounded,
+                    'Gerenciar títulos',
+                    () async {
+                      Navigator.pop(ctx);
+                      final targetName = _user?.nickname ?? 'Membro';
+                      final changed = await showManageMemberTitlesSheet(
+                        context: context,
+                        ref: ref,
+                        communityId: widget.communityId,
+                        targetUserId: widget.userId,
+                        targetUserName: targetName,
+                        callerRole: myRole,
+                      );
+                      if (changed == true && mounted) {
+                        _loadProfile();
+                      }
+                    },
+                  ),
+                // Desocultar perfil (apenas quando oculto)
+                if ((_membership?['is_hidden'] as bool?) == true)
                   _optionTile(
                     Icons.visibility_rounded,
                     'Desocultar perfil',
@@ -2904,17 +2993,28 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                       final confirmed = await showDialog<bool>(
                         context: context,
                         builder: (dialogCtx) => AlertDialog(
-                          title: const Text('Desocultar perfil'),
-                          content: const Text(
+                          backgroundColor: context.surfaceColor,
+                          title: Text(
+                            'Desocultar perfil',
+                            style: TextStyle(
+                                color: context.nexusTheme.textPrimary),
+                          ),
+                          content: Text(
                             'Deseja restaurar a visibilidade deste perfil para todos os membros?',
+                            style: TextStyle(
+                                color: context.nexusTheme.textSecondary),
                           ),
                           actions: [
                             TextButton(
-                              onPressed: () => Navigator.pop(dialogCtx, false),
-                              child: const Text('Cancelar'),
+                              onPressed: () =>
+                                  Navigator.pop(dialogCtx, false),
+                              child: Text('Cancelar',
+                                  style:
+                                      TextStyle(color: Colors.grey[500])),
                             ),
                             TextButton(
-                              onPressed: () => Navigator.pop(dialogCtx, true),
+                              onPressed: () =>
+                                  Navigator.pop(dialogCtx, true),
                               child: const Text('Desocultar'),
                             ),
                           ],
@@ -2930,8 +3030,10 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                         if (!mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('Perfil desocultado com sucesso'),
-                            backgroundColor: context.nexusTheme.accentPrimary,
+                            content:
+                                const Text('Perfil desocultado com sucesso'),
+                            backgroundColor:
+                                context.nexusTheme.accentPrimary,
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
@@ -2947,15 +3049,41 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                       }
                     },
                   ),
-                _optionTile(Icons.flag_rounded, s.report, () {
-                  Navigator.pop(ctx);
-                }, isDestructive: true),
+              ],
+
+              // ── SEPARADOR: AÇÕES DESTRUTIVAS ────────────────────────────────
+              if (!_isOwnProfile) ...
+              [
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: r.s(6)),
+                  child: Divider(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    height: 1,
+                  ),
+                ),
+                // Denúncia — agora conectada ao ReportDialog real
+                _optionTile(
+                  Icons.flag_rounded,
+                  s.report,
+                  () {
+                    Navigator.pop(ctx);
+                    ReportDialog.show(
+                      context,
+                      communityId: widget.communityId,
+                      targetUserId: widget.userId,
+                    );
+                  },
+                  isDestructive: true,
+                ),
+                // Bloquear / Desbloquear
                 Consumer(
                   builder: (ctx2, ref2, _) {
                     final isBlocked =
                         ref2.watch(isBlockedProvider(widget.userId));
                     return _optionTile(
-                      isBlocked ? Icons.lock_open_rounded : Icons.block_rounded,
+                      isBlocked
+                          ? Icons.lock_open_rounded
+                          : Icons.block_rounded,
                       isBlocked ? s.unblockAction : s.block,
                       () async {
                         Navigator.pop(ctx);
@@ -2966,21 +3094,6 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                   },
                 ),
               ],
-              _optionTile(Icons.share_rounded, s.shareProfile, () {
-                Navigator.pop(ctx);
-                final link =
-                    'https://nexushub.app/community/${widget.communityId}/profile/${widget.userId}';
-                Clipboard.setData(ClipboardData(text: link));
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(s.profileLinkCopied),
-                      backgroundColor: context.nexusTheme.accentPrimary,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              }),
             ],
           ),
         );
