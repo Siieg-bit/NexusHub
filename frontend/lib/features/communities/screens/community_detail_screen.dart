@@ -367,13 +367,32 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
           drawerEdgeDragWidth: 44.0,
           // extendBody: true faz o conteúdo passar por baixo do nav flutuante
           extendBody: true,
-          body: _bottomIndex == 0
-              ? _buildHomePage(community, themeColor, isMember, userRole,
-                  layout, visible, welcomeBanner)
-              : _bottomIndex == 1
-                  ? CommunityOnlineTab(community: community)
-                  : _buildHomePage(community, themeColor, isMember, userRole,
-                      layout, visible, welcomeBanner),
+          body: Stack(
+            children: [
+              // Conteúdo principal da comunidade
+              _bottomIndex == 0
+                  ? _buildHomePage(community, themeColor, isMember, userRole,
+                      layout, visible, welcomeBanner)
+                  : _bottomIndex == 1
+                      ? CommunityOnlineTab(community: community)
+                      : _buildHomePage(community, themeColor, isMember,
+                          userRole, layout, visible, welcomeBanner),
+              // Handle visual — alça de porta na borda esquerda
+              // Indica ao usuário que pode puxar para abrir o menu lateral.
+              // Desaparece quando o drawer está aberto.
+              if (isMember)
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: IgnorePointer(
+                    child: Center(
+                      child: _DrawerEdgeHandle(),
+                    ),
+                  ),
+                ),
+            ],
+          ),
           // Floating capsule nav — só aparece nas páginas iniciais (membro)
           bottomNavigationBar: isMember
               ? AminoBottomNavBar(
@@ -1108,4 +1127,63 @@ class _FastSwipePhysics extends PageScrollPhysics {
         stiffness: 200,
         damping: 1,
       );
+}
+
+// =============================================================================
+// DRAWER EDGE HANDLE — Alça de Porta
+// =============================================================================
+/// Handle visual na borda esquerda da tela da comunidade.
+/// Indica ao usuário que pode puxar para abrir o menu lateral.
+/// Usa IgnorePointer para não interferir com o drawerEdgeDragWidth do Scaffold.
+class _DrawerEdgeHandle extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 20,
+      height: 56,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: const BorderRadius.only(
+          topRight: Radius.circular(10),
+          bottomRight: Radius.circular(10),
+        ),
+        border: Border(
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.18), width: 1),
+          right: BorderSide(color: Colors.white.withValues(alpha: 0.18), width: 1),
+          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.18), width: 1),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 6,
+            offset: const Offset(2, 0),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _HandleLine(),
+          const SizedBox(height: 4),
+          _HandleLine(),
+          const SizedBox(height: 4),
+          _HandleLine(),
+        ],
+      ),
+    );
+  }
+}
+
+class _HandleLine extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 10,
+      height: 2,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(1),
+      ),
+    );
+  }
 }
