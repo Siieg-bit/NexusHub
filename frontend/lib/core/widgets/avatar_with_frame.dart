@@ -23,21 +23,17 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 ///
 /// ## Indicadores de Estado
 ///
-/// O widget suporta quatro estados visuais mutuamente exclusivos por prioridade:
+/// O widget suporta três estados visuais mutuamente exclusivos por prioridade:
 ///
 /// 1. **Call/Projeção ativa** ([hasActiveCall] = true): Borda glow verde pulsante.
 ///    Indica que o usuário está em uma call ou projeção pública em andamento.
-///    Tem prioridade máxima — sobrepõe todos os outros indicadores.
+///    Tem prioridade máxima — sobrepõe o anel de story.
 ///
 /// 2. **Story não visto** ([hasActiveStory] = true): Anel gradiente laranja/rosa.
 ///    Indica que o usuário tem stories ativos não visualizados pelo viewer atual.
 ///    Exibido apenas quando não há call ativa.
 ///
-/// 3. **Wiki canonizada** ([hasCanonicalWiki] = true): Anel gradiente dourado.
-///    Indica que o usuário é autor de pelo menos uma wiki canonizada por curador.
-///    Exibido apenas quando não há call ativa nem story não visto.
-///
-/// 4. **Nenhum indicador**: Borda sutil branca com 10% de opacidade.
+/// 3. **Nenhum indicador**: Borda sutil branca com 10% de opacidade.
 ///
 /// Essa hierarquia garante que não haja conflito visual entre os dois anéis.
 class AvatarWithFrame extends ConsumerStatefulWidget {
@@ -87,13 +83,6 @@ class AvatarWithFrame extends ConsumerStatefulWidget {
   /// projeção em vez do ícone de microfone no badge de call.
   final bool isScreeningRoom;
 
-  /// Indica se o usuário é autor de pelo menos uma wiki canonizada.
-  ///
-  /// Quando `true` e não há call ativa nem story não visto, exibe um anel
-  /// gradiente dourado ao redor do avatar — símbolo de reconhecimento por
-  /// contribuição canônica à comunidade.
-  final bool hasCanonicalWiki;
-
   const AvatarWithFrame({
     super.key,
     this.avatarUrl,
@@ -106,7 +95,6 @@ class AvatarWithFrame extends ConsumerStatefulWidget {
     this.hasActiveStory = false,
     this.hasActiveCall = false,
     this.isScreeningRoom = false,
-    this.hasCanonicalWiki = false,
   });
 
   @override
@@ -165,16 +153,14 @@ class _AvatarWithFrameState extends ConsumerState<AvatarWithFrame>
 
     // Prioridade de indicadores:
     // 1. Call ativa (glow verde pulsante) — máxima prioridade
-    // 2. Story não visto (anel gradiente laranja/rosa) — só quando não há call
-    // 3. Wiki canonizada (anel gradiente dourado) — só quando não há call nem story
-    // 4. Nenhum (borda sutil)
+    // 2. Story não visto (anel gradiente) — só quando não há call
+    // 3. Nenhum (borda sutil)
     //
     // Quando há moldura (hasFrame=true), o anel fica entre o avatar e a moldura,
     // pois o anel (size+8~10px) é menor que o frame (size×1.4). A moldura
     // continua visível por cima — comportamento elegante sem conflito.
     final showCallRing = widget.hasActiveCall;
     final showStoryRing = widget.hasActiveStory && !widget.hasActiveCall;
-    final showCanonRing = widget.hasCanonicalWiki && !widget.hasActiveCall && !widget.hasActiveStory;
 
     final innerWidget = GestureDetector(
       onTap: widget.onTap,
@@ -218,28 +204,6 @@ class _AvatarWithFrameState extends ConsumerState<AvatarWithFrame>
                 ),
               ),
 
-            // ── Anel de wiki canonizada (dourado, menor prioridade) ──
-            if (showCanonRing)
-              Center(
-                child: Container(
-                  width: storyRingSize,
-                  height: storyRingSize,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [
-                        Color(0xFFFFD700), // ouro puro
-                        Color(0xFFFFA000), // âmbar dourado
-                        Color(0xFFFFE57F), // ouro claro
-                        Color(0xFFFFB300), // ouro escuro
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                ),
-              ),
-
             // ── Anel de story (camada inferior, quando ativo e sem call) ──
             if (showStoryRing)
               Center(
@@ -271,15 +235,15 @@ class _AvatarWithFrameState extends ConsumerState<AvatarWithFrame>
                   color: context.surfaceColor,
                   // Borda separadora entre o avatar e o anel de status:
                   // - Sem anel e sem frame: borda sutil branca (10% opacidade)
-                  // - Com anel (story, call ou wiki): borda backgroundPrimary para
+                  // - Com anel (story ou call): borda backgroundPrimary para
                   //   criar separação visual entre o avatar e o anel colorido
                   // - Com frame e sem anel: sem borda (a moldura já separa)
-                  border: (!showStoryRing && !showCallRing && !showCanonRing && !hasFrame)
+                  border: (!showStoryRing && !showCallRing && !hasFrame)
                       ? Border.all(
                           color: Colors.white.withValues(alpha: 0.10),
                           width: 1.5,
                         )
-                      : (showStoryRing || showCallRing || showCanonRing)
+                      : (showStoryRing || showCallRing)
                           ? Border.all(
                               color: context.nexusTheme.backgroundPrimary,
                               width: 2.5,

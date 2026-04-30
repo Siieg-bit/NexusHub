@@ -375,27 +375,6 @@ final equippedItemsProvider =
 // a mesma moldura global do usuário (is_equipped em user_purchases).
 // Usar sempre equippedItemsProvider para exibir a moldura em qualquer contexto.
 
-/// Provider que verifica se um usuário possui pelo menos uma wiki canonizada.
-///
-/// Retorna `true` se o usuário tem ao menos uma entrada em wiki_entries com
-/// is_canonical = true e status = 'ok'. Usado para exibir a borda dourada
-/// no avatar do perfil.
-final userHasCanonicalWikiProvider =
-    FutureProvider.family<bool, String>((ref, userId) async {
-  if (userId.isEmpty) return false;
-  try {
-    final response = await SupabaseService.table('wiki_entries')
-        .select('id')
-        .eq('author_id', userId)
-        .eq('is_canonical', true)
-        .eq('status', 'ok')
-        .limit(1);
-    return (response as List?)?.isNotEmpty == true;
-  } catch (_) {
-    return false;
-  }
-});
-
 /// Provider que verifica se um usuário específico está em uma call ativa (pública).
 final userActiveCallProvider = FutureProvider.family<Map<String, dynamic>?, String>((ref, userId) async {
   if (userId.isEmpty) return null;

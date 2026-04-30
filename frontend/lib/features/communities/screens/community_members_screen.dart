@@ -466,8 +466,6 @@ class _MemberAvatarWithIndicators extends ConsumerWidget {
     final hasActiveCall = activeCallData != null;
     final isScreeningRoom = hasActiveCall &&
         (activeCallData?['type'] as String? ?? '') == 'screening_room';
-    final hasCanonicalWiki =
-        ref.watch(userHasCanonicalWikiProvider(userId!)).valueOrNull == true;
 
     return CosmeticAvatar(
       userId: userId,
@@ -477,7 +475,6 @@ class _MemberAvatarWithIndicators extends ConsumerWidget {
       hasActiveStory: hasActiveStory,
       hasActiveCall: hasActiveCall,
       isScreeningRoom: isScreeningRoom,
-      hasCanonicalWiki: hasCanonicalWiki,
       onTap: hasActiveCall && activeCallData != null
           ? () {
               final threadId = activeCallData['thread_id'] as String? ?? '';

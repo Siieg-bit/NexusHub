@@ -84,7 +84,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final currentUser = ref.watch(currentUserProvider);
     final isOwnProfile = currentUser?.id == widget.userId;
     final isBlocked = ref.watch(isBlockedProvider(widget.userId));
-    // Indicadores de estado: story não visto, call/projeção ativa e wiki canonizada
+    // Indicadores de estado: story não visto e call/projeção ativa
     final hasActiveStory = !isOwnProfile &&
         ref.watch(userHasActiveStoryProvider(widget.userId)).valueOrNull == true;
     final activeCallData = !isOwnProfile
@@ -93,8 +93,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final hasActiveCall = activeCallData != null;
     final isScreeningRoom = hasActiveCall &&
         (activeCallData?['type'] as String? ?? '') == 'screening_room';
-    final hasCanonicalWiki =
-        ref.watch(userHasCanonicalWikiProvider(widget.userId)).valueOrNull == true;
 
     return profileAsync.when(
       loading: () => Scaffold(
@@ -295,7 +293,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           hasActiveStory: hasActiveStory,
                           hasActiveCall: hasActiveCall,
                           isScreeningRoom: isScreeningRoom,
-                          hasCanonicalWiki: hasCanonicalWiki,
                           onTap: () {
                             // Prioridade 1: Redirecionar para call/projeção pública ativa
                             if (hasActiveCall && activeCallData != null) {
