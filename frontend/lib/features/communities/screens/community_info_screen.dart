@@ -4,13 +4,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/community_shared_providers.dart';
 import '../providers/community_detail_providers.dart';
+import '../widgets/community_share_card_sheet.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/deep_link_service.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
@@ -139,14 +139,9 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen>
               label: 'Compartilhar comunidade',
               onTap: () {
                 Navigator.pop(ctx);
-                final link = community.link ??
-                    'https://nexushub.app/community/${community.endpoint ?? community.id}';
-                DeepLinkService.shareUrl(
-                  type: 'community',
-                  targetId: community.id,
-                  title: community.name,
-                  text:
-                      'Confira a comunidade ${community.name} no NexusHub!\n$link',
+                CommunityShareCardSheet.show(
+                  context,
+                  community: community,
                 );
               },
             ),
