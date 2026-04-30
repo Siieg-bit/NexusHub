@@ -6095,4 +6095,11 @@ class AppStringsAr implements AppStrings {
   String get reportCategorySelfHarmDesc => 'محتوى عن إيذاء النفس أو الانتحار';
   String get reportCategoryOther => 'أخرى';
   String get reportCategoryOtherDesc => 'سبب آخر غير مدرج';
+
+  @override
+  String get reportResponsibleUse => 'استخدم الإبلاغ بمسؤولية. قد تؤدي البلاغات الكاذبة إلى عقوبات.';
+  @override
+  String get reportDetailsRequiredHint => 'يرجى وصف المشكلة بمزيد من التفاصيل...';
+  @override
+  String get requiresDetails => 'يتطلب تفاصيل';
 }

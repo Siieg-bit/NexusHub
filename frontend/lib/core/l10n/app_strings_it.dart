@@ -6096,4 +6096,11 @@ class AppStringsIt implements AppStrings {
   String get reportCategorySelfHarmDesc => 'Contenuto su autolesionismo o suicidio';
   String get reportCategoryOther => 'Altro';
   String get reportCategoryOtherDesc => 'Un altro motivo non elencato';
+
+  @override
+  String get reportResponsibleUse => 'Usa le segnalazioni in modo responsabile. Le segnalazioni false possono comportare sanzioni.';
+  @override
+  String get reportDetailsRequiredHint => 'Per favore, descrivi il problema in modo più dettagliato...';
+  @override
+  String get requiresDetails => 'Richiede dettagli';
 }

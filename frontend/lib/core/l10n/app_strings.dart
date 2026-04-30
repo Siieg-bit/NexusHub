@@ -3180,4 +3180,8 @@ abstract class AppStrings {
   String get reportCategorySelfHarmDesc;
   String get reportCategoryOther;
   String get reportCategoryOtherDesc;
+
+  String get reportResponsibleUse;
+  String get reportDetailsRequiredHint;
+  String get requiresDetails;
 }

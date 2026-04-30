@@ -6096,4 +6096,11 @@ class AppStringsKo implements AppStrings {
   String get reportCategorySelfHarmDesc => '자해 또는 자살에 관한 콘텐츠';
   String get reportCategoryOther => '기타';
   String get reportCategoryOtherDesc => '목록에 없는 다른 이유';
+
+  @override
+  String get reportResponsibleUse => '신고를 책임감 있게 사용하세요. 허위 신고는 제재로 이어질 수 있습니다.';
+  @override
+  String get reportDetailsRequiredHint => '문제에 대해 더 자세히 설명해 주세요...';
+  @override
+  String get requiresDetails => '세부 정보 필요';
 }

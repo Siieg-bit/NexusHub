@@ -6094,4 +6094,11 @@ class AppStringsJa implements AppStrings {
   String get reportCategorySelfHarmDesc => '自傷行為や自殺に関するコンテンツ';
   String get reportCategoryOther => 'その他';
   String get reportCategoryOtherDesc => 'リストにない別の理由';
+
+  @override
+  String get reportResponsibleUse => '報告は責任を持って使用してください。虚偽の報告はペナルティにつながる場合があります。';
+  @override
+  String get reportDetailsRequiredHint => '問題についてより詳しく説明してください...';
+  @override
+  String get requiresDetails => '詳細が必要';
 }

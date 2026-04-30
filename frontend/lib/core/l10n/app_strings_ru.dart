@@ -6096,4 +6096,11 @@ class AppStringsRu implements AppStrings {
   String get reportCategorySelfHarmDesc => 'Контент о самоповреждении или суициде';
   String get reportCategoryOther => 'Другое';
   String get reportCategoryOtherDesc => 'Другая причина, не указанная в списке';
+
+  @override
+  String get reportResponsibleUse => 'Используйте жалобы ответственно. Ложные жалобы могут повлечь санкции.';
+  @override
+  String get reportDetailsRequiredHint => 'Пожалуйста, опишите проблему подробнее...';
+  @override
+  String get requiresDetails => 'Требуются подробности';
 }

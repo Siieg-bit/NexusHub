@@ -6225,4 +6225,11 @@ class AppStringsPt implements AppStrings {
   String get reportCategorySelfHarmDesc => 'Conteúdo sobre automutilação ou suicídio';
   String get reportCategoryOther => 'Outro';
   String get reportCategoryOtherDesc => 'Outro motivo não listado';
+
+  @override
+  String get reportResponsibleUse => 'Use a denúncia de forma responsável. Denúncias falsas podem resultar em penalidades.';
+  @override
+  String get reportDetailsRequiredHint => 'Por favor, descreva o problema com mais detalhes...';
+  @override
+  String get requiresDetails => 'Requer detalhes';
 }

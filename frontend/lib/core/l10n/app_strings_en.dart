@@ -6171,4 +6171,11 @@ class AppStringsEn implements AppStrings {
   String get reportCategorySelfHarmDesc => 'Content about self-harm or suicide';
   String get reportCategoryOther => 'Other';
   String get reportCategoryOtherDesc => 'Another reason not listed';
+
+  @override
+  String get reportResponsibleUse => 'Use reports responsibly. False reports may result in penalties.';
+  @override
+  String get reportDetailsRequiredHint => 'Please describe the issue in more detail...';
+  @override
+  String get requiresDetails => 'Requires details';
 }
