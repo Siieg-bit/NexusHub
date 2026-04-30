@@ -2029,7 +2029,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Widget _settingsTile(
-      Responsive r, IconData icon, String label, VoidCallback onTap) {     {bool isDestructive = false}) {
+      Responsive r, IconData icon, String label, VoidCallback onTap,
+      {bool isDestructive = false}) {
     final color = isDestructive ? context.nexusTheme.error : Colors.grey[400]!;
     return GestureDetector(
       onTap: onTap,
