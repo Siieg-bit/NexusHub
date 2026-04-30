@@ -217,13 +217,41 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
     return Padding(
       padding: EdgeInsets.only(right: r.s(12)),
       child: GestureDetector(
-        onTap: () {
-          Navigator.of(context).push(MaterialPageRoute(
+        onTap: () async {
+          await Navigator.of(context).push(MaterialPageRoute(
             builder: (_) => StoryViewerScreen(
               stories: stories,
               authorProfile: profile ?? {},
             ),
           ));
+          // Ao fechar o viewer, re-verificar quais stories foram vistas
+          // e atualizar has_unviewed no estado local imediatamente
+          if (!mounted) return;
+          final currentUserId = SupabaseService.currentUserId;
+          if (currentUserId == null) return;
+          try {
+            final storyIds = stories
+                .map((s) => s['id'] as String?)
+                .whereType<String>()
+                .toList();
+            if (storyIds.isEmpty) return;
+            final viewedRes = await SupabaseService.table('story_views')
+                .select('story_id')
+                .eq('viewer_id', currentUserId)
+                .inFilter('story_id', storyIds);
+            final viewedIds = ((viewedRes as List?) ?? [])
+                .map((v) => v['story_id'] as String?)
+                .whereType<String>()
+                .toSet();
+            final stillHasUnviewed =
+                stories.any((s) => !viewedIds.contains(s['id'] as String?));
+            if (!mounted) return;
+            setState(() {
+              group['has_unviewed'] = stillHasUnviewed;
+            });
+          } catch (e) {
+            debugPrint('[story_carousel] refresh after view error: \$e');
+          }
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,
