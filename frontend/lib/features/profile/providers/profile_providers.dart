@@ -374,3 +374,21 @@ final equippedItemsProvider =
 // da comunidade ou pelo inventário/loja) chama equip_store_item e altera
 // a mesma moldura global do usuário (is_equipped em user_purchases).
 // Usar sempre equippedItemsProvider para exibir a moldura em qualquer contexto.
+
+/// Provider que verifica se um usuário específico está em uma call ativa (pública).
+final userActiveCallProvider = FutureProvider.family<Map<String, dynamic>?, String>((ref, userId) async {
+  if (userId.isEmpty) return null;
+  try {
+    final response = await SupabaseService.rpc('get_user_active_call', params: {'p_user_id': userId});
+    if (response != null) {
+      if (response is Map<String, dynamic>) {
+        return response;
+      } else if (response is Map) {
+        return Map<String, dynamic>.from(response);
+      }
+    }
+    return null;
+  } catch (_) {
+    return null;
+  }
+});

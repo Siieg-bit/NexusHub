@@ -9,10 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/call_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../providers/profile_providers.dart';
 
 /// Tela de Conexões dentro do contexto de uma comunidade.
 /// Usa local_nickname e local_icon_url dos membros da comunidade.
@@ -231,11 +233,18 @@ class _CommunityFollowersScreenState
                 context.push(
                     '/community/${widget.communityId}/profile/$userId');
               },
-              leading: CosmeticAvatar(
-                userId: userId,
-                avatarUrl: avatarUrl,
-                size: r.s(48),
-              ),
+              leading: userId != null
+                  ? _CommunityAvatarWithIndicators(
+                      userId: userId,
+                      avatarUrl: avatarUrl,
+                      size: r.s(48),
+                      communityId: widget.communityId,
+                    )
+                  : CosmeticAvatar(
+                      userId: userId,
+                      avatarUrl: avatarUrl,
+                      size: r.s(48),
+                    ),
               title: Text(
                 nickname,
                 style: TextStyle(
@@ -255,6 +264,59 @@ class _CommunityFollowersScreenState
           );
         },
       ),
+    );
+  }
+}
+
+/// Widget auxiliar que combina CosmeticAvatar com indicadores de story e call
+/// para a lista de seguidores/seguindo dentro de uma comunidade.
+class _CommunityAvatarWithIndicators extends ConsumerWidget {
+  final String userId;
+  final String? avatarUrl;
+  final double size;
+  final String communityId;
+
+  const _CommunityAvatarWithIndicators({
+    required this.userId,
+    required this.avatarUrl,
+    required this.size,
+    required this.communityId,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hasActiveStory =
+        ref.watch(userHasActiveStoryProvider(userId)).valueOrNull == true;
+    final activeCallData =
+        ref.watch(userActiveCallProvider(userId)).valueOrNull;
+    final hasActiveCall = activeCallData != null;
+    final isScreeningRoom = hasActiveCall &&
+        (activeCallData?['type'] as String? ?? '') == 'screening_room';
+
+    return CosmeticAvatar(
+      userId: userId,
+      avatarUrl: avatarUrl,
+      size: size,
+      hasActiveStory: hasActiveStory,
+      hasActiveCall: hasActiveCall,
+      isScreeningRoom: isScreeningRoom,
+      onTap: hasActiveCall && activeCallData != null
+          ? () {
+              final threadId = activeCallData['thread_id'] as String? ?? '';
+              final sessionId = activeCallData['id'] as String? ?? '';
+              if (threadId.isNotEmpty) {
+                if (isScreeningRoom) {
+                  context.push('/screening-room/$threadId?sessionId=$sessionId');
+                } else {
+                  CallService.joinCallSession(sessionId).then((session) {
+                    if (session != null && context.mounted) {
+                      context.push('/call/${session.id}', extra: session);
+                    }
+                  });
+                }
+              }
+            }
+          : null,
     );
   }
 }

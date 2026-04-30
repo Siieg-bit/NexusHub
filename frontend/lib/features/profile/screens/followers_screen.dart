@@ -2,10 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/call_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../providers/profile_providers.dart';
 
 /// Tela de Seguidores / Seguindo — Lista de conexões sociais.
 class FollowersScreen extends ConsumerStatefulWidget {
@@ -167,11 +169,17 @@ class _FollowersScreenState extends ConsumerState<FollowersScreen>
                 if (!mounted) return;
                 if (userId != null) context.push('/user/$userId');
               },
-              leading: CosmeticAvatar(
-                userId: userId,
-                avatarUrl: avatarUrl,
-                size: r.s(48),
-              ),
+              leading: userId != null
+                  ? _AvatarWithIndicators(
+                      userId: userId,
+                      avatarUrl: avatarUrl,
+                      size: r.s(48),
+                    )
+                  : CosmeticAvatar(
+                      userId: userId,
+                      avatarUrl: avatarUrl,
+                      size: r.s(48),
+                    ),
               title: Text(
                 nickname,
                 style: TextStyle(
@@ -191,6 +199,57 @@ class _FollowersScreenState extends ConsumerState<FollowersScreen>
           );
         },
       ),
+    );
+  }
+}
+
+/// Widget auxiliar que combina CosmeticAvatar com indicadores de story e call.
+/// Encapsula a lógica de providers para não poluir o itemBuilder da lista.
+class _AvatarWithIndicators extends ConsumerWidget {
+  final String userId;
+  final String? avatarUrl;
+  final double size;
+
+  const _AvatarWithIndicators({
+    required this.userId,
+    required this.avatarUrl,
+    required this.size,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hasActiveStory =
+        ref.watch(userHasActiveStoryProvider(userId)).valueOrNull == true;
+    final activeCallData =
+        ref.watch(userActiveCallProvider(userId)).valueOrNull;
+    final hasActiveCall = activeCallData != null;
+    final isScreeningRoom = hasActiveCall &&
+        (activeCallData?['type'] as String? ?? '') == 'screening_room';
+
+    return CosmeticAvatar(
+      userId: userId,
+      avatarUrl: avatarUrl,
+      size: size,
+      hasActiveStory: hasActiveStory,
+      hasActiveCall: hasActiveCall,
+      isScreeningRoom: isScreeningRoom,
+      onTap: hasActiveCall && activeCallData != null
+          ? () {
+              final threadId = activeCallData['thread_id'] as String? ?? '';
+              final sessionId = activeCallData['id'] as String? ?? '';
+              if (threadId.isNotEmpty) {
+                if (isScreeningRoom) {
+                  context.push('/screening-room/$threadId?sessionId=$sessionId');
+                } else {
+                  CallService.joinCallSession(sessionId).then((session) {
+                    if (session != null && context.mounted) {
+                      context.push('/call/${session.id}', extra: session);
+                    }
+                  });
+                }
+              }
+            }
+          : null,
     );
   }
 }

@@ -8,6 +8,8 @@ import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/widgets/user_status_badge.dart';
+import '../../../core/services/call_service.dart';
+import '../../profile/providers/profile_providers.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
@@ -358,12 +360,13 @@ class _MemberTile extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              // Avatar com frame e indicador online
-              CosmeticAvatar(
+              // Avatar com frame, indicador online, story e call ativa
+              _MemberAvatarWithIndicators(
                 userId: userId,
                 avatarUrl: avatarUrl,
                 size: r.s(44),
                 showOnline: isOnline,
+                communityId: communityId,
               ),
               SizedBox(width: r.s(12)),
               // Info
@@ -424,6 +427,71 @@ class _MemberTile extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Widget auxiliar que combina CosmeticAvatar com indicadores de story e call
+/// para a lista de membros da comunidade.
+class _MemberAvatarWithIndicators extends ConsumerWidget {
+  final String? userId;
+  final String? avatarUrl;
+  final double size;
+  final bool showOnline;
+  final String communityId;
+
+  const _MemberAvatarWithIndicators({
+    required this.userId,
+    required this.avatarUrl,
+    required this.size,
+    required this.showOnline,
+    required this.communityId,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (userId == null || userId!.isEmpty) {
+      return CosmeticAvatar(
+        userId: userId,
+        avatarUrl: avatarUrl,
+        size: size,
+        showOnline: showOnline,
+      );
+    }
+
+    final hasActiveStory =
+        ref.watch(userHasActiveStoryProvider(userId!)).valueOrNull == true;
+    final activeCallData =
+        ref.watch(userActiveCallProvider(userId!)).valueOrNull;
+    final hasActiveCall = activeCallData != null;
+    final isScreeningRoom = hasActiveCall &&
+        (activeCallData?['type'] as String? ?? '') == 'screening_room';
+
+    return CosmeticAvatar(
+      userId: userId,
+      avatarUrl: avatarUrl,
+      size: size,
+      showOnline: showOnline,
+      hasActiveStory: hasActiveStory,
+      hasActiveCall: hasActiveCall,
+      isScreeningRoom: isScreeningRoom,
+      onTap: hasActiveCall && activeCallData != null
+          ? () {
+              final threadId = activeCallData['thread_id'] as String? ?? '';
+              final sessionId = activeCallData['id'] as String? ?? '';
+              if (threadId.isNotEmpty) {
+                if (isScreeningRoom) {
+                  context.push('/screening-room/$threadId?sessionId=$sessionId');
+                } else {
+                  CallService.joinCallSession(sessionId).then((session) {
+                    if (session != null && context.mounted) {
+                      context.push('/call/${session.id}', extra: session);
+                    }
+                  });
+                }
+              }
+            }
+          : null,
     );
   }
 }

@@ -13,6 +13,7 @@ import '../../../core/services/presence_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../../chat/widgets/chat_bubble.dart'; // AvatarWithFrame + AminoPlusBadge
+import '../../../core/services/call_service.dart';
 import '../../../core/widgets/amino_custom_title.dart';
 import '../../../core/widgets/level_badge.dart';
 import '../../../core/utils/responsive.dart';
@@ -77,6 +78,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   bool _isFollowingMe = false; // o outro usuário me segue (amizade mútua)
   bool _isTogglingFollow = false; // evita double-tap
   bool _hasActiveStory = false; // usuário tem story ativo nesta comunidade
+  Map<String, dynamic>? _activeCallData; // dados da call ativa pública do usuário
   String _communityName = '';
   String? _communityBannerUrl;
 
@@ -221,6 +223,23 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       _userPosts = List<Map<String, dynamic>>.from(group1[3] as List? ?? []);
       _wikiEntries = List<Map<String, dynamic>>.from(group1[4] as List? ?? []);
       _hasActiveStory = ((group1[5] as List?)?.length ?? 0) > 0;
+
+      // Buscar call ativa do usuário (apenas para perfis de terceiros)
+      if (!_isOwnProfile) {
+        try {
+          final callData = await SupabaseService.rpc(
+            'get_user_active_call',
+            params: {'p_user_id': widget.userId},
+          );
+          if (callData != null && callData is Map) {
+            _activeCallData = Map<String, dynamic>.from(callData);
+          } else {
+            _activeCallData = null;
+          }
+        } catch (_) {
+          _activeCallData = null;
+        }
+      }
 
       if (_isOwnProfile) {
         await CommunityProfileService.ensureMyCommunityProfile(
@@ -1051,6 +1070,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                         .watch(equippedItemsProvider(widget.userId))
                                         .valueOrNull ??
                                     {};
+                                final hasActiveCall = _activeCallData != null;
+                                final isScreeningRoom = hasActiveCall &&
+                                    (_activeCallData?['type'] as String? ?? '') == 'screening_room';
                                 return AvatarWithFrame(
                                   avatarUrl: displayAvatar,
                                   frameUrl: frameData['frame_url'] as String?,
@@ -1059,15 +1081,37 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                   size: r.s(96),
                                   showAminoPlus: isPremium,
                                   hasActiveStory: _hasActiveStory,
-                                  onTap: profileMediaUrls.isEmpty
-                                      ? null
-                                      : () => _openProfileMediaViewer(
-                                            context,
-                                            mediaUrls: profileMediaUrls,
-                                            initialUrl: displayAvatar,
-                                            heroTag:
-                                                'community-profile-media-${widget.communityId}-${widget.userId}',
-                                          ),
+                                  hasActiveCall: hasActiveCall,
+                                  isScreeningRoom: isScreeningRoom,
+                                  onTap: () {
+                                    // Prioridade 1: Redirecionar para call/projeção pública ativa
+                                    if (hasActiveCall && _activeCallData != null) {
+                                      final threadId = _activeCallData!['thread_id'] as String? ?? '';
+                                      final sessionId = _activeCallData!['id'] as String? ?? '';
+                                      if (threadId.isNotEmpty) {
+                                        if (isScreeningRoom) {
+                                          context.push('/screening-room/$threadId?sessionId=$sessionId');
+                                        } else {
+                                          CallService.joinCallSession(sessionId).then((session) {
+                                            if (session != null && context.mounted) {
+                                              context.push('/call/${session.id}', extra: session);
+                                            }
+                                          });
+                                        }
+                                      }
+                                      return;
+                                    }
+                                    // Prioridade 2: Abrir galeria de mídia do perfil
+                                    if (profileMediaUrls.isNotEmpty) {
+                                      _openProfileMediaViewer(
+                                        context,
+                                        mediaUrls: profileMediaUrls,
+                                        initialUrl: displayAvatar,
+                                        heroTag:
+                                            'community-profile-media-${widget.communityId}-${widget.userId}',
+                                      );
+                                    }
+                                  },
                                 );
                               }),
                               SizedBox(height: r.s(6)),

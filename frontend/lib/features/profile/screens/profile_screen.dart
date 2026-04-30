@@ -6,6 +6,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/services/iap_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/widgets/chat_bubble.dart'; // AvatarWithFrame, AminoPlusBadge
+import '../../../core/widgets/cosmetic_avatar.dart';
+import '../../../core/services/call_service.dart';
 import '../../../core/utils/responsive.dart';
 
 // Extracted providers & widgets
@@ -82,6 +84,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final currentUser = ref.watch(currentUserProvider);
     final isOwnProfile = currentUser?.id == widget.userId;
     final isBlocked = ref.watch(isBlockedProvider(widget.userId));
+    // Indicadores de estado: story não visto e call/projeção ativa
+    final hasActiveStory = !isOwnProfile &&
+        ref.watch(userHasActiveStoryProvider(widget.userId)).valueOrNull == true;
+    final activeCallData = !isOwnProfile
+        ? ref.watch(userActiveCallProvider(widget.userId)).valueOrNull
+        : null;
+    final hasActiveCall = activeCallData != null;
+    final isScreeningRoom = hasActiveCall &&
+        (activeCallData?['type'] as String? ?? '') == 'screening_room';
 
     return profileAsync.when(
       loading: () => Scaffold(
@@ -279,14 +290,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           size: r.s(80),
                           showAminoPlus: isAminoPlus,
                           isFrameAnimated: frameIsAnimated,
-                          onTap: (user.iconUrl?.trim().isNotEmpty ?? false)
-                              ? () => showMediaViewer(
-                                    context,
-                                    mediaUrls: [user.iconUrl!.trim()],
-                                    initialIndex: 0,
-                                    heroTag: 'profile-avatar-${user.id}',
-                                  )
-                              : null,
+                          hasActiveStory: hasActiveStory,
+                          hasActiveCall: hasActiveCall,
+                          isScreeningRoom: isScreeningRoom,
+                          onTap: () {
+                            // Prioridade 1: Redirecionar para call/projeção pública ativa
+                            if (hasActiveCall && activeCallData != null) {
+                              final threadId = activeCallData['thread_id'] as String? ?? '';
+                              final sessionId = activeCallData['id'] as String? ?? '';
+                              if (threadId.isNotEmpty) {
+                                if (isScreeningRoom) {
+                                  context.push('/screening-room/$threadId?sessionId=$sessionId');
+                                } else {
+                                  // Para call de voz/vídeo, tentar entrar na sessão existente
+                                  CallService.joinCallSession(sessionId).then((session) {
+                                    if (session != null && context.mounted) {
+                                      context.push('/call/${session.id}', extra: session);
+                                    }
+                                  });
+                                }
+                              }
+                              return;
+                            }
+                            // Prioridade 2: Abrir visualizador de imagem do avatar
+                            if (user.iconUrl?.trim().isNotEmpty ?? false) {
+                              showMediaViewer(
+                                context,
+                                mediaUrls: [user.iconUrl!.trim()],
+                                initialIndex: 0,
+                                heroTag: 'profile-avatar-${user.id}',
+                              );
+                            }
+                          },
                         ),
                         const Spacer(),
                         Padding(
