@@ -5698,7 +5698,6 @@ class AppStringsIt implements AppStrings {
   @override
   String get reorder => 'Riordina';
   @override
-  String get reportSent => 'Rapporto inviato';
   @override
   String get reportUser => 'Segnala utente';
   @override
@@ -6038,4 +6037,63 @@ class AppStringsIt implements AppStrings {
   String get reportAlreadySent => 'Hai già segnalato questo contenuto.';
   @override
   String get reportSendError => 'Errore nell\'invio della segnalazione. Riprova.';
+
+  String get appealStatusAccepted => 'Accettato';
+  String get appealStatusRejected => 'Rifiutato';
+  String get appealStatusCancelled => 'Annullato';
+  String get appealStatusPending => 'In attesa';
+  String get appealYourReason => 'Il tuo motivo';
+  String get appealReviewerNote => 'Nota del revisore';
+  String get appealReviewedAt => 'Esaminato il';
+  String get appealCancel => 'Annulla ricorso';
+  String get appealCancelledSuccess => 'Ricorso annullato con successo.';
+  String get appealSubmittedTitle => 'Ricorso inviato!';
+  String get appealSubmittedSubtitle => 'Il nostro team lo esaminerà presto.';
+  String get backToAppeals => 'Torna ai ricorsi';
+  String get appealSubmitTitle => 'Nuovo ricorso';
+  String get appealTargetCommunity => 'Comunità di destinazione';
+  String get appealWarning => 'Puoi inviare solo un ricorso per ban.';
+  String get appealAdditionalLabel => 'Informazioni aggiuntive';
+  String get appealAdditionalHint2 => 'Aggiungi prove, link o contesto extra';
+  String get appealAdditionalHint => 'Opzionale';
+  String get appealSubmitButton => 'Invia ricorso';
+  String get securityTabOverview => 'Panoramica';
+  String get securityTabSessions => 'Sessioni';
+  String get securityTabActivity => 'Attività';
+  String get securitySettings => 'Impostazioni di sicurezza';
+  String get securityEmailVerification => 'Verifica e-mail';
+  String get securityEmailVerified => 'E-mail verificata';
+  String get securityEmailNotVerified => 'E-mail non verificata';
+  String get securityChangePassword => 'Cambia password';
+  String get securityChangePasswordSubtitle => 'Ti consigliamo di cambiarla periodicamente';
+  String get featureComingSoon => 'Prossimamente!';
+  String get securityActiveSessions => 'Sessioni attive';
+  String get securityActiveSessionsSubtitle => 'Dispositivi connessi al tuo account';
+  String get securityActivityLog => 'Registro attività';
+  String get securityActivityLogSubtitle => 'Cronologia degli accessi ed eventi';
+  String get securityNoSessions => 'Nessuna sessione attiva trovata.';
+  String get unknownDevice => 'Dispositivo sconosciuto';
+  String get securityCurrentSession => 'Sessione corrente';
+  String get securityNoActivity => 'Nessuna attività registrata.';
+  String get insufficientPermissions => 'Permessi insufficienti';
+  String get reportCategorySexual => 'Contenuto sessuale';
+  String get reportCategorySexualDesc => 'Nudità o contenuto sessuale esplicito';
+  String get reportCategoryBullying => 'Molestie';
+  String get reportCategoryBullyingDesc => 'Bullismo o molestie agli utenti';
+  String get reportCategoryHate => 'Incitamento all\'odio';
+  String get reportCategoryHateDesc => 'Contenuto discriminatorio o offensivo';
+  String get reportCategoryViolence => 'Violenza';
+  String get reportCategoryViolenceDesc => 'Minacce o contenuto violento';
+  String get reportCategorySpam => 'Spam';
+  String get reportCategorySpamDesc => 'Spam, truffe o contenuto ingannevole';
+  String get reportCategoryMisinfo => 'Disinformazione';
+  String get reportCategoryMisinfoDesc => 'Notizie false o informazioni ingannevoli';
+  String get reportCategoryArtTheft => 'Furto d\'arte';
+  String get reportCategoryArtTheftDesc => 'Uso non autorizzato di opere d\'arte';
+  String get reportCategoryImpersonation => 'Furto d\'identità';
+  String get reportCategoryImpersonationDesc => 'Fingere di essere qualcun altro';
+  String get reportCategorySelfHarm => 'Autolesionismo';
+  String get reportCategorySelfHarmDesc => 'Contenuto su autolesionismo o suicidio';
+  String get reportCategoryOther => 'Altro';
+  String get reportCategoryOtherDesc => 'Un altro motivo non elencato';
 }

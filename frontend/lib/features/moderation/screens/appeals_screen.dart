@@ -71,7 +71,7 @@ class AppealsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildError(BuildContext context, Responsive r, NexusThemeExtension theme,
+  Widget _buildError(BuildContext context, Responsive r, NexusThemeData theme,
       dynamic s, WidgetRef ref, Object e) {
     return Center(
       child: Column(
@@ -91,7 +91,7 @@ class AppealsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmpty(BuildContext context, Responsive r, NexusThemeExtension theme, dynamic s) {
+  Widget _buildEmpty(BuildContext context, Responsive r, NexusThemeData theme, dynamic s) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(r.s(32)),
@@ -131,7 +131,7 @@ class AppealsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildList(BuildContext context, Responsive r, NexusThemeExtension theme,
+  Widget _buildList(BuildContext context, Responsive r, NexusThemeData theme,
       dynamic s, List<Map<String, dynamic>> appeals, WidgetRef ref) {
     return ListView(
       padding: EdgeInsets.all(r.s(16)),
@@ -410,7 +410,7 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
     );
   }
 
-  Widget _communityPlaceholder(Responsive r, NexusThemeExtension theme) {
+  Widget _communityPlaceholder(Responsive r, NexusThemeData theme) {
     return Container(
       width: r.s(44),
       height: r.s(44),
@@ -806,7 +806,7 @@ class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  final NexusThemeExtension theme;
+  final NexusThemeData theme;
   final Responsive r;
   final Color? valueColor;
 

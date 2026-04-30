@@ -5212,7 +5212,6 @@ class AppStringsEn implements AppStrings {
   @override
   String get reportDetails => 'reportDetails';
   @override
-  String get reportSent => 'reportSent';
   @override
   String get reportSentSuccess => 'reportSentSuccess';
   @override
@@ -6113,4 +6112,63 @@ class AppStringsEn implements AppStrings {
   String get reportAlreadySent => 'You have already reported this content.';
   @override
   String get reportSendError => 'Error sending report. Please try again.';
+
+  String get appealStatusAccepted => 'Accepted';
+  String get appealStatusRejected => 'Rejected';
+  String get appealStatusCancelled => 'Cancelled';
+  String get appealStatusPending => 'Pending';
+  String get appealYourReason => 'Your reason';
+  String get appealReviewerNote => 'Reviewer note';
+  String get appealReviewedAt => 'Reviewed at';
+  String get appealCancel => 'Cancel appeal';
+  String get appealCancelledSuccess => 'Appeal cancelled successfully.';
+  String get appealSubmittedTitle => 'Appeal submitted!';
+  String get appealSubmittedSubtitle => 'Our team will review it shortly.';
+  String get backToAppeals => 'Back to appeals';
+  String get appealSubmitTitle => 'New appeal';
+  String get appealTargetCommunity => 'Target community';
+  String get appealWarning => 'You can only submit one appeal per ban.';
+  String get appealAdditionalLabel => 'Additional information';
+  String get appealAdditionalHint2 => 'Add evidence, links or extra context';
+  String get appealAdditionalHint => 'Optional';
+  String get appealSubmitButton => 'Submit appeal';
+  String get securityTabOverview => 'Overview';
+  String get securityTabSessions => 'Sessions';
+  String get securityTabActivity => 'Activity';
+  String get securitySettings => 'Security settings';
+  String get securityEmailVerification => 'Email verification';
+  String get securityEmailVerified => 'Email verified';
+  String get securityEmailNotVerified => 'Email not verified';
+  String get securityChangePassword => 'Change password';
+  String get securityChangePasswordSubtitle => 'We recommend changing it periodically';
+  String get featureComingSoon => 'Coming soon!';
+  String get securityActiveSessions => 'Active sessions';
+  String get securityActiveSessionsSubtitle => 'Devices connected to your account';
+  String get securityActivityLog => 'Activity log';
+  String get securityActivityLogSubtitle => 'History of logins and events';
+  String get securityNoSessions => 'No active sessions found.';
+  String get unknownDevice => 'Unknown device';
+  String get securityCurrentSession => 'Current session';
+  String get securityNoActivity => 'No activity recorded.';
+  String get insufficientPermissions => 'Insufficient permissions';
+  String get reportCategorySexual => 'Sexual content';
+  String get reportCategorySexualDesc => 'Nudity or explicit sexual content';
+  String get reportCategoryBullying => 'Harassment';
+  String get reportCategoryBullyingDesc => 'Bullying or harassment of users';
+  String get reportCategoryHate => 'Hate speech';
+  String get reportCategoryHateDesc => 'Discriminatory or offensive content';
+  String get reportCategoryViolence => 'Violence';
+  String get reportCategoryViolenceDesc => 'Threats or violent content';
+  String get reportCategorySpam => 'Spam';
+  String get reportCategorySpamDesc => 'Spam, scams or misleading content';
+  String get reportCategoryMisinfo => 'Misinformation';
+  String get reportCategoryMisinfoDesc => 'Fake news or misleading information';
+  String get reportCategoryArtTheft => 'Art theft';
+  String get reportCategoryArtTheftDesc => 'Unauthorized use of artwork';
+  String get reportCategoryImpersonation => 'Impersonation';
+  String get reportCategoryImpersonationDesc => 'Pretending to be someone else';
+  String get reportCategorySelfHarm => 'Self-harm';
+  String get reportCategorySelfHarmDesc => 'Content about self-harm or suicide';
+  String get reportCategoryOther => 'Other';
+  String get reportCategoryOtherDesc => 'Another reason not listed';
 }

@@ -259,7 +259,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
     );
   }
 
-  Widget _buildSuccess(Responsive r, NexusThemeExtension theme) {
+  Widget _buildSuccess(Responsive r, NexusThemeData theme) {
     final s = getStrings();
     return SizedBox(
       key: const ValueKey('success'),
@@ -303,7 +303,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
     );
   }
 
-  Widget _buildForm(Responsive r, NexusThemeExtension theme, dynamic s) {
+  Widget _buildForm(Responsive r, NexusThemeData theme, dynamic s) {
     final categories = _getCategories();
     final cat = _selected;
 

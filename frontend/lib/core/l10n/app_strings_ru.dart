@@ -4049,7 +4049,6 @@ class AppStringsRu implements AppStrings {
   @override
   String get reportDetails => 'Подробности отчета';
   @override
-  String get reportSent => 'Отчет отправлен';
   @override
   String get reportSentSuccess => 'Отчет отправлен успешно';
   @override
@@ -6038,4 +6037,63 @@ class AppStringsRu implements AppStrings {
   String get reportAlreadySent => 'Вы уже пожаловались на этот контент.';
   @override
   String get reportSendError => 'Ошибка при отправке жалобы. Попробуйте снова.';
+
+  String get appealStatusAccepted => 'Принята';
+  String get appealStatusRejected => 'Отклонена';
+  String get appealStatusCancelled => 'Отменена';
+  String get appealStatusPending => 'На рассмотрении';
+  String get appealYourReason => 'Ваша причина';
+  String get appealReviewerNote => 'Заметка проверяющего';
+  String get appealReviewedAt => 'Рассмотрено';
+  String get appealCancel => 'Отменить апелляцию';
+  String get appealCancelledSuccess => 'Апелляция успешно отменена.';
+  String get appealSubmittedTitle => 'Апелляция подана!';
+  String get appealSubmittedSubtitle => 'Наша команда рассмотрит её в ближайшее время.';
+  String get backToAppeals => 'Вернуться к апелляциям';
+  String get appealSubmitTitle => 'Новая апелляция';
+  String get appealTargetCommunity => 'Целевое сообщество';
+  String get appealWarning => 'Вы можете подать только одну апелляцию на бан.';
+  String get appealAdditionalLabel => 'Дополнительная информация';
+  String get appealAdditionalHint2 => 'Добавьте доказательства, ссылки или дополнительный контекст';
+  String get appealAdditionalHint => 'Необязательно';
+  String get appealSubmitButton => 'Подать апелляцию';
+  String get securityTabOverview => 'Обзор';
+  String get securityTabSessions => 'Сессии';
+  String get securityTabActivity => 'Активность';
+  String get securitySettings => 'Настройки безопасности';
+  String get securityEmailVerification => 'Подтверждение e-mail';
+  String get securityEmailVerified => 'E-mail подтверждён';
+  String get securityEmailNotVerified => 'E-mail не подтверждён';
+  String get securityChangePassword => 'Изменить пароль';
+  String get securityChangePasswordSubtitle => 'Рекомендуем менять периодически';
+  String get featureComingSoon => 'Скоро!';
+  String get securityActiveSessions => 'Активные сессии';
+  String get securityActiveSessionsSubtitle => 'Устройства, подключённые к вашему аккаунту';
+  String get securityActivityLog => 'Журнал активности';
+  String get securityActivityLogSubtitle => 'История входов и событий';
+  String get securityNoSessions => 'Активные сессии не найдены.';
+  String get unknownDevice => 'Неизвестное устройство';
+  String get securityCurrentSession => 'Текущая сессия';
+  String get securityNoActivity => 'Активность не зафиксирована.';
+  String get insufficientPermissions => 'Недостаточно прав';
+  String get reportCategorySexual => 'Сексуальный контент';
+  String get reportCategorySexualDesc => 'Обнажённость или откровенный сексуальный контент';
+  String get reportCategoryBullying => 'Домогательство';
+  String get reportCategoryBullyingDesc => 'Буллинг или домогательство к пользователям';
+  String get reportCategoryHate => 'Язык ненависти';
+  String get reportCategoryHateDesc => 'Дискриминационный или оскорбительный контент';
+  String get reportCategoryViolence => 'Насилие';
+  String get reportCategoryViolenceDesc => 'Угрозы или насильственный контент';
+  String get reportCategorySpam => 'Спам';
+  String get reportCategorySpamDesc => 'Спам, мошенничество или вводящий в заблуждение контент';
+  String get reportCategoryMisinfo => 'Дезинформация';
+  String get reportCategoryMisinfoDesc => 'Фейковые новости или вводящая в заблуждение информация';
+  String get reportCategoryArtTheft => 'Кража арта';
+  String get reportCategoryArtTheftDesc => 'Несанкционированное использование произведений искусства';
+  String get reportCategoryImpersonation => 'Самозванство';
+  String get reportCategoryImpersonationDesc => 'Выдавать себя за другого человека';
+  String get reportCategorySelfHarm => 'Самоповреждение';
+  String get reportCategorySelfHarmDesc => 'Контент о самоповреждении или суициде';
+  String get reportCategoryOther => 'Другое';
+  String get reportCategoryOtherDesc => 'Другая причина, не указанная в списке';
 }

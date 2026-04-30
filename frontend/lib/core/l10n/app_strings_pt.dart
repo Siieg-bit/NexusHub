@@ -5266,7 +5266,6 @@ class AppStringsPt implements AppStrings {
   @override
   String get reportDetails => 'reportDetails';
   @override
-  String get reportSent => 'reportSent';
   @override
   String get reportSentSuccess => 'reportSentSuccess';
   @override
@@ -6167,4 +6166,63 @@ class AppStringsPt implements AppStrings {
   String get reportAlreadySent => 'Você já denunciou este conteúdo.';
   @override
   String get reportSendError => 'Erro ao enviar denúncia. Tente novamente.';
+
+  String get appealStatusAccepted => 'Aceita';
+  String get appealStatusRejected => 'Rejeitada';
+  String get appealStatusCancelled => 'Cancelada';
+  String get appealStatusPending => 'Pendente';
+  String get appealYourReason => 'Seu motivo';
+  String get appealReviewerNote => 'Nota do revisor';
+  String get appealReviewedAt => 'Revisado em';
+  String get appealCancel => 'Cancelar apelação';
+  String get appealCancelledSuccess => 'Apelação cancelada com sucesso.';
+  String get appealSubmittedTitle => 'Apelação enviada!';
+  String get appealSubmittedSubtitle => 'Nossa equipe irá analisar em breve.';
+  String get backToAppeals => 'Voltar às apelações';
+  String get appealSubmitTitle => 'Nova apelação';
+  String get appealTargetCommunity => 'Comunidade alvo';
+  String get appealWarning => 'Você só pode enviar uma apelação por banimento.';
+  String get appealAdditionalLabel => 'Informações adicionais';
+  String get appealAdditionalHint2 => 'Adicione evidências, links ou contexto extra';
+  String get appealAdditionalHint => 'Opcional';
+  String get appealSubmitButton => 'Enviar apelação';
+  String get securityTabOverview => 'Visão geral';
+  String get securityTabSessions => 'Sessões';
+  String get securityTabActivity => 'Atividade';
+  String get securitySettings => 'Configurações de segurança';
+  String get securityEmailVerification => 'Verificação de e-mail';
+  String get securityEmailVerified => 'E-mail verificado';
+  String get securityEmailNotVerified => 'E-mail não verificado';
+  String get securityChangePassword => 'Alterar senha';
+  String get securityChangePasswordSubtitle => 'Recomendamos trocar periodicamente';
+  String get featureComingSoon => 'Em breve!';
+  String get securityActiveSessions => 'Sessões ativas';
+  String get securityActiveSessionsSubtitle => 'Dispositivos conectados à sua conta';
+  String get securityActivityLog => 'Registro de atividade';
+  String get securityActivityLogSubtitle => 'Histórico de acessos e eventos';
+  String get securityNoSessions => 'Nenhuma sessão ativa encontrada.';
+  String get unknownDevice => 'Dispositivo desconhecido';
+  String get securityCurrentSession => 'Sessão atual';
+  String get securityNoActivity => 'Nenhuma atividade registrada.';
+  String get insufficientPermissions => 'Permissões insuficientes';
+  String get reportCategorySexual => 'Conteúdo sexual';
+  String get reportCategorySexualDesc => 'Nudez ou conteúdo sexual explícito';
+  String get reportCategoryBullying => 'Assédio';
+  String get reportCategoryBullyingDesc => 'Bullying ou assédio a usuários';
+  String get reportCategoryHate => 'Discurso de ódio';
+  String get reportCategoryHateDesc => 'Conteúdo discriminatório ou ofensivo';
+  String get reportCategoryViolence => 'Violência';
+  String get reportCategoryViolenceDesc => 'Ameaças ou conteúdo violento';
+  String get reportCategorySpam => 'Spam';
+  String get reportCategorySpamDesc => 'Spam, golpes ou conteúdo enganoso';
+  String get reportCategoryMisinfo => 'Desinformação';
+  String get reportCategoryMisinfoDesc => 'Notícias falsas ou informações enganosas';
+  String get reportCategoryArtTheft => 'Roubo de arte';
+  String get reportCategoryArtTheftDesc => 'Uso não autorizado de obras de arte';
+  String get reportCategoryImpersonation => 'Falsidade ideológica';
+  String get reportCategoryImpersonationDesc => 'Fingir ser outra pessoa';
+  String get reportCategorySelfHarm => 'Automutilação';
+  String get reportCategorySelfHarmDesc => 'Conteúdo sobre automutilação ou suicídio';
+  String get reportCategoryOther => 'Outro';
+  String get reportCategoryOtherDesc => 'Outro motivo não listado';
 }

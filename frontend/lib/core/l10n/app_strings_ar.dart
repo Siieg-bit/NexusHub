@@ -5407,7 +5407,6 @@ class AppStringsAr implements AppStrings {
   @override
   String get reportDetails => 'تفاصيل التقرير';
   @override
-  String get reportSent => 'تم إرسال التقرير';
   @override
   String get reportSubmittedSuccess => 'تم إرسال التقرير بنجاح';
   @override
@@ -6037,4 +6036,63 @@ class AppStringsAr implements AppStrings {
   String get reportAlreadySent => 'لقد أبلغت بالفعل عن هذا المحتوى.';
   @override
   String get reportSendError => 'خطأ في إرسال البلاغ. يرجى المحاولة مرة أخرى.';
+
+  String get appealStatusAccepted => 'مقبول';
+  String get appealStatusRejected => 'مرفوض';
+  String get appealStatusCancelled => 'ملغى';
+  String get appealStatusPending => 'قيد الانتظار';
+  String get appealYourReason => 'سببك';
+  String get appealReviewerNote => 'ملاحظة المراجع';
+  String get appealReviewedAt => 'تمت المراجعة في';
+  String get appealCancel => 'إلغاء الطعن';
+  String get appealCancelledSuccess => 'تم إلغاء الطعن بنجاح.';
+  String get appealSubmittedTitle => 'تم إرسال الطعن!';
+  String get appealSubmittedSubtitle => 'سيراجعه فريقنا قريبًا.';
+  String get backToAppeals => 'العودة إلى الطعون';
+  String get appealSubmitTitle => 'طعن جديد';
+  String get appealTargetCommunity => 'المجتمع المستهدف';
+  String get appealWarning => 'يمكنك تقديم طعن واحد فقط لكل حظر.';
+  String get appealAdditionalLabel => 'معلومات إضافية';
+  String get appealAdditionalHint2 => 'أضف أدلة أو روابط أو سياقًا إضافيًا';
+  String get appealAdditionalHint => 'اختياري';
+  String get appealSubmitButton => 'إرسال الطعن';
+  String get securityTabOverview => 'نظرة عامة';
+  String get securityTabSessions => 'الجلسات';
+  String get securityTabActivity => 'النشاط';
+  String get securitySettings => 'إعدادات الأمان';
+  String get securityEmailVerification => 'التحقق من البريد الإلكتروني';
+  String get securityEmailVerified => 'البريد الإلكتروني محقق';
+  String get securityEmailNotVerified => 'البريد الإلكتروني غير محقق';
+  String get securityChangePassword => 'تغيير كلمة المرور';
+  String get securityChangePasswordSubtitle => 'نوصي بتغييرها بشكل دوري';
+  String get featureComingSoon => 'قريبًا!';
+  String get securityActiveSessions => 'الجلسات النشطة';
+  String get securityActiveSessionsSubtitle => 'الأجهزة المتصلة بحسابك';
+  String get securityActivityLog => 'سجل النشاط';
+  String get securityActivityLogSubtitle => 'سجل تسجيلات الدخول والأحداث';
+  String get securityNoSessions => 'لم يتم العثور على جلسات نشطة.';
+  String get unknownDevice => 'جهاز غير معروف';
+  String get securityCurrentSession => 'الجلسة الحالية';
+  String get securityNoActivity => 'لم يتم تسجيل أي نشاط.';
+  String get insufficientPermissions => 'صلاحيات غير كافية';
+  String get reportCategorySexual => 'محتوى جنسي';
+  String get reportCategorySexualDesc => 'عري أو محتوى جنسي صريح';
+  String get reportCategoryBullying => 'مضايقة';
+  String get reportCategoryBullyingDesc => 'تنمر أو مضايقة المستخدمين';
+  String get reportCategoryHate => 'خطاب كراهية';
+  String get reportCategoryHateDesc => 'محتوى تمييزي أو مسيء';
+  String get reportCategoryViolence => 'عنف';
+  String get reportCategoryViolenceDesc => 'تهديدات أو محتوى عنيف';
+  String get reportCategorySpam => 'بريد مزعج';
+  String get reportCategorySpamDesc => 'بريد مزعج أو احتيال أو محتوى مضلل';
+  String get reportCategoryMisinfo => 'معلومات مضللة';
+  String get reportCategoryMisinfoDesc => 'أخبار كاذبة أو معلومات مضللة';
+  String get reportCategoryArtTheft => 'سرقة الفن';
+  String get reportCategoryArtTheftDesc => 'استخدام غير مصرح به للأعمال الفنية';
+  String get reportCategoryImpersonation => 'انتحال الشخصية';
+  String get reportCategoryImpersonationDesc => 'التظاهر بأنك شخص آخر';
+  String get reportCategorySelfHarm => 'إيذاء النفس';
+  String get reportCategorySelfHarmDesc => 'محتوى عن إيذاء النفس أو الانتحار';
+  String get reportCategoryOther => 'أخرى';
+  String get reportCategoryOtherDesc => 'سبب آخر غير مدرج';
 }

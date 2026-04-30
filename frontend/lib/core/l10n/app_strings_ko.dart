@@ -5492,7 +5492,6 @@ class AppStringsKo implements AppStrings {
   @override
   String get reportBug2 => '버그2 신고';
   @override
-  String get reportSent => '보고서가 전송되었습니다.';
   @override
   String get reportSentSuccess => '보고서 전송 성공';
   @override
@@ -6038,4 +6037,63 @@ class AppStringsKo implements AppStrings {
   String get reportAlreadySent => '이미 이 콘텐츠를 신고했습니다.';
   @override
   String get reportSendError => '신고 전송 중 오류가 발생했습니다. 다시 시도해주세요.';
+
+  String get appealStatusAccepted => '수락됨';
+  String get appealStatusRejected => '거부됨';
+  String get appealStatusCancelled => '취소됨';
+  String get appealStatusPending => '대기 중';
+  String get appealYourReason => '이유';
+  String get appealReviewerNote => '검토자 메모';
+  String get appealReviewedAt => '검토 날짜';
+  String get appealCancel => '이의 취소';
+  String get appealCancelledSuccess => '이의가 성공적으로 취소되었습니다.';
+  String get appealSubmittedTitle => '이의가 제출되었습니다!';
+  String get appealSubmittedSubtitle => '팀이 곧 검토할 것입니다.';
+  String get backToAppeals => '이의 목록으로 돌아가기';
+  String get appealSubmitTitle => '새 이의';
+  String get appealTargetCommunity => '대상 커뮤니티';
+  String get appealWarning => '밴당 하나의 이의만 제출할 수 있습니다.';
+  String get appealAdditionalLabel => '추가 정보';
+  String get appealAdditionalHint2 => '증거, 링크 또는 추가 컨텍스트 추가';
+  String get appealAdditionalHint => '선택 사항';
+  String get appealSubmitButton => '이의 제출';
+  String get securityTabOverview => '개요';
+  String get securityTabSessions => '세션';
+  String get securityTabActivity => '활동';
+  String get securitySettings => '보안 설정';
+  String get securityEmailVerification => '이메일 인증';
+  String get securityEmailVerified => '이메일 인증됨';
+  String get securityEmailNotVerified => '이메일 미인증';
+  String get securityChangePassword => '비밀번호 변경';
+  String get securityChangePasswordSubtitle => '정기적으로 변경하는 것을 권장합니다';
+  String get featureComingSoon => '곧 출시!';
+  String get securityActiveSessions => '활성 세션';
+  String get securityActiveSessionsSubtitle => '계정에 연결된 기기';
+  String get securityActivityLog => '활동 로그';
+  String get securityActivityLogSubtitle => '로그인 및 이벤트 기록';
+  String get securityNoSessions => '활성 세션이 없습니다.';
+  String get unknownDevice => '알 수 없는 기기';
+  String get securityCurrentSession => '현재 세션';
+  String get securityNoActivity => '기록된 활동이 없습니다.';
+  String get insufficientPermissions => '권한이 부족합니다';
+  String get reportCategorySexual => '성적 콘텐츠';
+  String get reportCategorySexualDesc => '나체 또는 노골적인 성적 콘텐츠';
+  String get reportCategoryBullying => '괴롭힘';
+  String get reportCategoryBullyingDesc => '사용자에 대한 괴롭힘 또는 따돌림';
+  String get reportCategoryHate => '혐오 발언';
+  String get reportCategoryHateDesc => '차별적이거나 공격적인 콘텐츠';
+  String get reportCategoryViolence => '폭력';
+  String get reportCategoryViolenceDesc => '위협 또는 폭력적인 콘텐츠';
+  String get reportCategorySpam => '스팸';
+  String get reportCategorySpamDesc => '스팸, 사기 또는 오해의 소지가 있는 콘텐츠';
+  String get reportCategoryMisinfo => '허위 정보';
+  String get reportCategoryMisinfoDesc => '가짜 뉴스 또는 오해의 소지가 있는 정보';
+  String get reportCategoryArtTheft => '아트 도용';
+  String get reportCategoryArtTheftDesc => '예술 작품의 무단 사용';
+  String get reportCategoryImpersonation => '사칭';
+  String get reportCategoryImpersonationDesc => '다른 사람인 척하기';
+  String get reportCategorySelfHarm => '자해';
+  String get reportCategorySelfHarmDesc => '자해 또는 자살에 관한 콘텐츠';
+  String get reportCategoryOther => '기타';
+  String get reportCategoryOtherDesc => '목록에 없는 다른 이유';
 }

@@ -2653,7 +2653,6 @@ abstract class AppStrings {
   String get report2;
   String get reportBug2;
   String get reportDetails;
-  String get reportSent;
   String get reportSentSuccess;
   String get reportSubmittedSuccess;
   String get reportSummary;
@@ -3115,4 +3114,70 @@ abstract class AppStrings {
   String get reportSentDesc;
   String get reportAlreadySent;
   String get reportSendError;
+
+// ── Appeals ──────────────────────────────────────────────────────────────
+  String get appealStatusAccepted;
+  String get appealStatusRejected;
+  String get appealStatusCancelled;
+  String get appealStatusPending;
+  String get appealYourReason;
+  String get appealReviewerNote;
+  String get appealReviewedAt;
+  String get appealCancel;
+  String get appealCancelledSuccess;
+  String get appealSubmittedTitle;
+  String get appealSubmittedSubtitle;
+  String get backToAppeals;
+  String get appealSubmitTitle;
+  String get appealTargetCommunity;
+  String get appealWarning;
+  String get appealAdditionalLabel;
+  String get appealAdditionalHint2;
+  String get appealAdditionalHint;
+  String get appealSubmitButton;
+
+  // ── Security Center ───────────────────────────────────────────────────────
+  String get securityTabOverview;
+  String get securityTabSessions;
+  String get securityTabActivity;
+  String get securitySettings;
+  String get securityEmailVerification;
+  String get securityEmailVerified;
+  String get securityEmailNotVerified;
+  String get securityChangePassword;
+  String get securityChangePasswordSubtitle;
+  String get featureComingSoon;
+  String get securityActiveSessions;
+  String get securityActiveSessionsSubtitle;
+  String get securityActivityLog;
+  String get securityActivityLogSubtitle;
+  String get securityNoSessions;
+  String get unknownDevice;
+  String get securityCurrentSession;
+  String get securityNoActivity;
+
+  // ── Management Logs ───────────────────────────────────────────────────────
+  String get insufficientPermissions;
+
+  // ── Report Dialog ─────────────────────────────────────────────────────────
+  String get reportCategorySexual;
+  String get reportCategorySexualDesc;
+  String get reportCategoryBullying;
+  String get reportCategoryBullyingDesc;
+  String get reportCategoryHate;
+  String get reportCategoryHateDesc;
+  String get reportCategoryViolence;
+  String get reportCategoryViolenceDesc;
+  String get reportCategorySpam;
+  String get reportCategorySpamDesc;
+  String get reportCategoryMisinfo;
+  String get reportCategoryMisinfoDesc;
+  String get reportCategoryArtTheft;
+  String get reportCategoryArtTheftDesc;
+  String get reportCategoryImpersonation;
+  String get reportCategoryImpersonationDesc;
+  String get reportCategorySelfHarm;
+  String get reportCategorySelfHarmDesc;
+  String get reportCategoryOther;
+  String get reportCategoryOtherDesc;
 }

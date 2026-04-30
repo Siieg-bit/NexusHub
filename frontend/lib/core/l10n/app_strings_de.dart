@@ -5096,7 +5096,6 @@ class AppStringsDe implements AppStrings {
   @override
   String get reportDetails => 'Berichtsdetails';
   @override
-  String get reportSent => 'Bericht gesendet';
   @override
   String get reportSentSuccess => 'Bericht erfolgreich gesendet';
   @override
@@ -6038,4 +6037,63 @@ class AppStringsDe implements AppStrings {
   String get reportAlreadySent => 'Du hast diesen Inhalt bereits gemeldet.';
   @override
   String get reportSendError => 'Fehler beim Senden der Meldung. Bitte versuche es erneut.';
+
+  String get appealStatusAccepted => 'Akzeptiert';
+  String get appealStatusRejected => 'Abgelehnt';
+  String get appealStatusCancelled => 'Abgebrochen';
+  String get appealStatusPending => 'Ausstehend';
+  String get appealYourReason => 'Dein Grund';
+  String get appealReviewerNote => 'Anmerkung des Prüfers';
+  String get appealReviewedAt => 'Geprüft am';
+  String get appealCancel => 'Einspruch abbrechen';
+  String get appealCancelledSuccess => 'Einspruch erfolgreich abgebrochen.';
+  String get appealSubmittedTitle => 'Einspruch eingereicht!';
+  String get appealSubmittedSubtitle => 'Unser Team wird es bald prüfen.';
+  String get backToAppeals => 'Zurück zu Einsprüchen';
+  String get appealSubmitTitle => 'Neuer Einspruch';
+  String get appealTargetCommunity => 'Ziel-Community';
+  String get appealWarning => 'Du kannst nur einen Einspruch pro Sperre einreichen.';
+  String get appealAdditionalLabel => 'Zusätzliche Informationen';
+  String get appealAdditionalHint2 => 'Beweise, Links oder zusätzlichen Kontext hinzufügen';
+  String get appealAdditionalHint => 'Optional';
+  String get appealSubmitButton => 'Einspruch einreichen';
+  String get securityTabOverview => 'Übersicht';
+  String get securityTabSessions => 'Sitzungen';
+  String get securityTabActivity => 'Aktivität';
+  String get securitySettings => 'Sicherheitseinstellungen';
+  String get securityEmailVerification => 'E-Mail-Verifizierung';
+  String get securityEmailVerified => 'E-Mail verifiziert';
+  String get securityEmailNotVerified => 'E-Mail nicht verifiziert';
+  String get securityChangePassword => 'Passwort ändern';
+  String get securityChangePasswordSubtitle => 'Wir empfehlen, es regelmäßig zu ändern';
+  String get featureComingSoon => 'Demnächst!';
+  String get securityActiveSessions => 'Aktive Sitzungen';
+  String get securityActiveSessionsSubtitle => 'Mit deinem Konto verbundene Geräte';
+  String get securityActivityLog => 'Aktivitätsprotokoll';
+  String get securityActivityLogSubtitle => 'Verlauf von Anmeldungen und Ereignissen';
+  String get securityNoSessions => 'Keine aktiven Sitzungen gefunden.';
+  String get unknownDevice => 'Unbekanntes Gerät';
+  String get securityCurrentSession => 'Aktuelle Sitzung';
+  String get securityNoActivity => 'Keine Aktivität aufgezeichnet.';
+  String get insufficientPermissions => 'Unzureichende Berechtigungen';
+  String get reportCategorySexual => 'Sexueller Inhalt';
+  String get reportCategorySexualDesc => 'Nacktheit oder explizit sexueller Inhalt';
+  String get reportCategoryBullying => 'Belästigung';
+  String get reportCategoryBullyingDesc => 'Mobbing oder Belästigung von Nutzern';
+  String get reportCategoryHate => 'Hassrede';
+  String get reportCategoryHateDesc => 'Diskriminierender oder beleidigender Inhalt';
+  String get reportCategoryViolence => 'Gewalt';
+  String get reportCategoryViolenceDesc => 'Drohungen oder gewalttätiger Inhalt';
+  String get reportCategorySpam => 'Spam';
+  String get reportCategorySpamDesc => 'Spam, Betrug oder irreführender Inhalt';
+  String get reportCategoryMisinfo => 'Fehlinformation';
+  String get reportCategoryMisinfoDesc => 'Fake News oder irreführende Informationen';
+  String get reportCategoryArtTheft => 'Kunstdiebstahl';
+  String get reportCategoryArtTheftDesc => 'Unbefugte Nutzung von Kunstwerken';
+  String get reportCategoryImpersonation => 'Identitätsbetrug';
+  String get reportCategoryImpersonationDesc => 'Sich als jemand anderen ausgeben';
+  String get reportCategorySelfHarm => 'Selbstverletzung';
+  String get reportCategorySelfHarmDesc => 'Inhalte über Selbstverletzung oder Suizid';
+  String get reportCategoryOther => 'Sonstiges';
+  String get reportCategoryOtherDesc => 'Ein anderer nicht aufgeführter Grund';
 }

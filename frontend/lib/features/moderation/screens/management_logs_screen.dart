@@ -146,7 +146,7 @@ class ManagementLogsScreen extends ConsumerWidget {
   }
 
   Widget _buildEmpty(BuildContext context, Responsive r,
-      NexusThemeExtension theme, dynamic s) {
+      NexusThemeData theme, dynamic s) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -172,7 +172,7 @@ class ManagementLogsScreen extends ConsumerWidget {
 class _StatsRow extends StatelessWidget {
   final Map<String, dynamic> stats;
   final Responsive r;
-  final NexusThemeExtension theme;
+  final NexusThemeData theme;
   final dynamic s;
 
   const _StatsRow(
@@ -255,7 +255,7 @@ class _StatsRow extends StatelessWidget {
 
 class _FilterChips extends ConsumerWidget {
   final Responsive r;
-  final NexusThemeExtension theme;
+  final NexusThemeData theme;
   final dynamic s;
 
   const _FilterChips(
@@ -320,7 +320,7 @@ class _LogEntry extends StatefulWidget {
   final Map<String, dynamic> log;
   final String communityId;
   final Responsive r;
-  final NexusThemeExtension theme;
+  final NexusThemeData theme;
   final dynamic s;
 
   const _LogEntry({
@@ -595,7 +595,7 @@ class _LogEntryState extends State<_LogEntry> {
 class _DetailRow extends StatelessWidget {
   final String label;
   final String value;
-  final NexusThemeExtension theme;
+  final NexusThemeData theme;
   final Responsive r;
 
   const _DetailRow({
@@ -637,7 +637,7 @@ class _ContentLink extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
-  final NexusThemeExtension theme;
+  final NexusThemeData theme;
   final Responsive r;
 
   const _ContentLink({

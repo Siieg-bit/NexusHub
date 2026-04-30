@@ -5135,7 +5135,6 @@ class AppStringsJa implements AppStrings {
   @override
   String get reportDetails => 'reportDetails';
   @override
-  String get reportSent => 'reportSent';
   @override
   String get reportSentSuccess => 'reportSentSuccess';
   @override
@@ -6036,4 +6035,63 @@ class AppStringsJa implements AppStrings {
   String get reportAlreadySent => 'このコンテンツはすでに報告済みです。';
   @override
   String get reportSendError => '報告の送信中にエラーが発生しました。もう一度お試しください。';
+
+  String get appealStatusAccepted => '承認済み';
+  String get appealStatusRejected => '却下';
+  String get appealStatusCancelled => 'キャンセル';
+  String get appealStatusPending => '保留中';
+  String get appealYourReason => 'あなたの理由';
+  String get appealReviewerNote => 'レビュアーのメモ';
+  String get appealReviewedAt => 'レビュー日';
+  String get appealCancel => '申し立てをキャンセル';
+  String get appealCancelledSuccess => '申し立てが正常にキャンセルされました。';
+  String get appealSubmittedTitle => '申し立てを送信しました！';
+  String get appealSubmittedSubtitle => 'チームがまもなく確認します。';
+  String get backToAppeals => '申し立て一覧に戻る';
+  String get appealSubmitTitle => '新しい申し立て';
+  String get appealTargetCommunity => '対象コミュニティ';
+  String get appealWarning => 'バンごとに申し立ては1件のみ送信できます。';
+  String get appealAdditionalLabel => '追加情報';
+  String get appealAdditionalHint2 => '証拠、リンク、または追加のコンテキストを追加';
+  String get appealAdditionalHint => '任意';
+  String get appealSubmitButton => '申し立てを送信';
+  String get securityTabOverview => '概要';
+  String get securityTabSessions => 'セッション';
+  String get securityTabActivity => 'アクティビティ';
+  String get securitySettings => 'セキュリティ設定';
+  String get securityEmailVerification => 'メール確認';
+  String get securityEmailVerified => 'メール確認済み';
+  String get securityEmailNotVerified => 'メール未確認';
+  String get securityChangePassword => 'パスワードを変更';
+  String get securityChangePasswordSubtitle => '定期的に変更することをお勧めします';
+  String get featureComingSoon => '近日公開！';
+  String get securityActiveSessions => 'アクティブセッション';
+  String get securityActiveSessionsSubtitle => 'アカウントに接続されているデバイス';
+  String get securityActivityLog => 'アクティビティログ';
+  String get securityActivityLogSubtitle => 'ログインとイベントの履歴';
+  String get securityNoSessions => 'アクティブなセッションが見つかりません。';
+  String get unknownDevice => '不明なデバイス';
+  String get securityCurrentSession => '現在のセッション';
+  String get securityNoActivity => 'アクティビティが記録されていません。';
+  String get insufficientPermissions => '権限が不足しています';
+  String get reportCategorySexual => '性的コンテンツ';
+  String get reportCategorySexualDesc => '裸体または露骨な性的コンテンツ';
+  String get reportCategoryBullying => 'ハラスメント';
+  String get reportCategoryBullyingDesc => 'ユーザーへのいじめやハラスメント';
+  String get reportCategoryHate => 'ヘイトスピーチ';
+  String get reportCategoryHateDesc => '差別的または攻撃的なコンテンツ';
+  String get reportCategoryViolence => '暴力';
+  String get reportCategoryViolenceDesc => '脅迫または暴力的なコンテンツ';
+  String get reportCategorySpam => 'スパム';
+  String get reportCategorySpamDesc => 'スパム、詐欺、または誤解を招くコンテンツ';
+  String get reportCategoryMisinfo => '誤情報';
+  String get reportCategoryMisinfoDesc => 'フェイクニュースや誤解を招く情報';
+  String get reportCategoryArtTheft => '盗作';
+  String get reportCategoryArtTheftDesc => 'アートワークの無断使用';
+  String get reportCategoryImpersonation => 'なりすまし';
+  String get reportCategoryImpersonationDesc => '他人のふりをすること';
+  String get reportCategorySelfHarm => '自傷行為';
+  String get reportCategorySelfHarmDesc => '自傷行為や自殺に関するコンテンツ';
+  String get reportCategoryOther => 'その他';
+  String get reportCategoryOtherDesc => 'リストにない別の理由';
 }

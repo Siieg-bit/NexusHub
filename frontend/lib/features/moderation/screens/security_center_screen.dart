@@ -535,7 +535,7 @@ class _SecurityScoreCard extends StatelessWidget {
   final int level;
   final bool has2fa;
   final Responsive r;
-  final NexusThemeExtension theme;
+  final NexusThemeData theme;
   final dynamic s;
 
   const _SecurityScoreCard({
@@ -638,7 +638,7 @@ class _SecuritySettingTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final Widget trailing;
-  final NexusThemeExtension theme;
+  final NexusThemeData theme;
   final Responsive r;
   final VoidCallback? onTap;
 
@@ -695,7 +695,7 @@ class _SecuritySettingTile extends StatelessWidget {
 
 class _SecurityTipsCard extends StatelessWidget {
   final Responsive r;
-  final NexusThemeExtension theme;
+  final NexusThemeData theme;
   final dynamic s;
 
   const _SecurityTipsCard(
@@ -763,7 +763,7 @@ class _SecurityTipsCard extends StatelessWidget {
 class _RevokeButton extends ConsumerStatefulWidget {
   final String sessionId;
   final Responsive r;
-  final NexusThemeExtension theme;
+  final NexusThemeData theme;
   final dynamic s;
 
   const _RevokeButton({

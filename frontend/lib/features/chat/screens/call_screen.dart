@@ -380,11 +380,9 @@ class _CallScreenState extends ConsumerState<CallScreen>
   // ── Message Actions ────────────────────────────────────────────────────────
 
   Future<void> _showMessageActions(MessageModel message) async {
-    final userId = SupabaseService.currentUserId;
     final currentUser = ref.read(currentUserProvider);
-    final myStageRole = _myParticipant?['stage_role'] as String? ?? 'listener';
-    final canModerate = myStageRole == 'host' ||
-        myStageRole == 'co_host' ||
+    final canModerate = _myRole.isHost ||
+        _myRole == StageRole.speaker ||
         (currentUser?.isTeamMember ?? false);
     final action = await ChatMessageActionsSheet.show(
       context,
@@ -449,7 +447,7 @@ class _CallScreenState extends ConsumerState<CallScreen>
         if (mounted) {
           await ReportDialog.show(
             context,
-            communityId: widget.session.communityId,
+            communityId: widget.session.communityId ?? '',
             targetMessageId: message.id,
           );
         }
@@ -480,7 +478,7 @@ class _CallScreenState extends ConsumerState<CallScreen>
               ));
             }
           }
-        } else if (widget.session.communityId != null) {
+        } else if (widget.session.communityId != null && widget.session.communityId!.isNotEmpty) {
           final actionId = switch (modAction) {
             ModerationQuickAction.warn => 'warn',
             ModerationQuickAction.mute => 'mute',
@@ -489,7 +487,7 @@ class _CallScreenState extends ConsumerState<CallScreen>
           };
           if (mounted) {
             context.push(
-              '/community/${widget.session.communityId}/mod-action',
+              '/community/${widget.session.communityId!}/mod-action',
               extra: {
                 'targetUserId': message.authorId,
                 'preselectedAction': actionId,

@@ -448,7 +448,7 @@ class ModerationQuickSheet extends StatelessWidget {
   Widget _buildActionTile(
     BuildContext context,
     Responsive r,
-    NexusThemeExtension theme,
+    NexusThemeData theme,
     _ModAction a,
   ) {
     return InkWell(
