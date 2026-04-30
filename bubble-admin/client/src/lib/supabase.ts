@@ -1,9 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = "https://ylvzqqvcanzzswjkqeya.supabase.co";
-// Anon key JWT legada — obrigatória para que auth.uid() seja propagado
-// corretamente nas RPCs SECURITY DEFINER do painel admin.
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsdnpxcXZjYW56enN3amtxZXlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NTk3MDYsImV4cCI6MjA5MDEzNTcwNn0.eoHEl-w8bac2Q-jxjBvmXr118ZzuGC0uwmsCES7r7hA";
+// Publishable key — chave pública válida para o cliente web.
+// As legacy keys foram desabilitadas em 30/03/2026.
+const SUPABASE_ANON_KEY = "sb_publishable_HYsYzaF8DuBgXpqJAICJ1Q_b73GLUeb";
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,

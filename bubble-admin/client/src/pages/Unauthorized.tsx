@@ -29,8 +29,7 @@ export default function Unauthorized() {
           className="text-[#9CA3AF] text-sm mb-6"
           style={{ fontFamily: "'DM Mono', monospace" }}
         >
-          Sua conta não tem permissão de Team Member (is_team_admin ou
-          is_team_moderator).
+          Sua conta não possui um cargo de equipe NexusHub. Entre em contato com o Founder para obter acesso.
         </p>
         <Button
           onClick={signOut}
