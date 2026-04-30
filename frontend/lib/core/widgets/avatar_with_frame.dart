@@ -155,8 +155,12 @@ class _AvatarWithFrameState extends ConsumerState<AvatarWithFrame>
     // 1. Call ativa (glow verde pulsante) — máxima prioridade
     // 2. Story não visto (anel gradiente) — só quando não há call
     // 3. Nenhum (borda sutil)
-    final showCallRing = widget.hasActiveCall && !hasFrame;
-    final showStoryRing = widget.hasActiveStory && !widget.hasActiveCall && !hasFrame;
+    //
+    // Quando há moldura (hasFrame=true), o anel fica entre o avatar e a moldura,
+    // pois o anel (size+8~10px) é menor que o frame (size×1.4). A moldura
+    // continua visível por cima — comportamento elegante sem conflito.
+    final showCallRing = widget.hasActiveCall;
+    final showStoryRing = widget.hasActiveStory && !widget.hasActiveCall;
 
     final innerWidget = GestureDetector(
       onTap: widget.onTap,
@@ -229,12 +233,17 @@ class _AvatarWithFrameState extends ConsumerState<AvatarWithFrame>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: context.surfaceColor,
-                  border: !hasFrame && !showStoryRing && !showCallRing
+                  // Borda separadora entre o avatar e o anel de status:
+                  // - Sem anel e sem frame: borda sutil branca (10% opacidade)
+                  // - Com anel (story ou call): borda backgroundPrimary para
+                  //   criar separação visual entre o avatar e o anel colorido
+                  // - Com frame e sem anel: sem borda (a moldura já separa)
+                  border: (!showStoryRing && !showCallRing && !hasFrame)
                       ? Border.all(
                           color: Colors.white.withValues(alpha: 0.10),
                           width: 1.5,
                         )
-                      : (showStoryRing || showCallRing) && !hasFrame
+                      : (showStoryRing || showCallRing)
                           ? Border.all(
                               color: context.nexusTheme.backgroundPrimary,
                               width: 2.5,
