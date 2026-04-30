@@ -62,6 +62,7 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
   final ScrollController _scrollController = ScrollController();
   RealtimeChannel? _reactionChannel;
   bool _showEmojiPicker = false;
+  bool _showFab = false;
   Future<bool>? _canModerateFuture;
 
   @override
@@ -390,48 +391,37 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
                     () => _showEmojiPicker = !_showEmojiPicker),
               ),
               const SizedBox(width: 6),
+              // Galeria de imagens — sempre visível
               _ActionIconButton(
                 icon: Icons.image_outlined,
                 onTap: _pickAndSendImage,
               ),
               const SizedBox(width: 6),
-              _ActionIconButton(
-                icon: Icons.sticky_note_2_outlined,
-                onTap: _pickAndSendSticker,
+              // FAB "+" — agrupa sticker, moderação e vídeo (host)
+              _MoreActionsFab(
+                isOpen: _showFab,
+                onToggle: () => setState(() => _showFab = !_showFab),
+                onClose: () => setState(() => _showFab = false),
+                onSticker: _pickAndSendSticker,
+                onModerate: _canModerateFuture != null
+                    ? () async {
+                        final can = await _canModerateFuture;
+                        if (can == true) _openModerationSheet();
+                      }
+                    : null,
+                isHost: roomState.isHost,
+                onAddVideo: roomState.isHost
+                    ? () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => ScreeningAddVideoSheet(
+                            sessionId: widget.sessionId,
+                            threadId: widget.threadId,
+                          ),
+                        )
+                    : null,
               ),
-              if (_canModerateFuture != null)
-                FutureBuilder<bool>(
-                  future: _canModerateFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.data != true) return const SizedBox.shrink();
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(width: 6),
-                        _ActionIconButton(
-                          icon: Icons.shield_outlined,
-                          onTap: _openModerationSheet,
-                        ),
-                        const SizedBox(width: 6),
-                      ],
-                    );
-                  },
-                ),
-              // Botão de adicionar vídeo (apenas para host)
-              if (roomState.isHost) ...[
-                _ActionIconButton(
-                  icon: Icons.video_library_outlined,
-                  onTap: () => showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) => ScreeningAddVideoSheet(
-                      sessionId: widget.sessionId,
-                      threadId: widget.threadId,
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
         ),
@@ -934,6 +924,184 @@ class _ChatInputState extends State<_ChatInput> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── MoreActionsFab ───────────────────────────────────────────────────────────
+// FAB "+" que expande verticalmente mostrando ações extras (sticker, moderação,
+// adicionar vídeo). Mantém a barra inferior limpa, exibindo apenas emoji e galeria.
+// =============================================================================
+class _MoreActionsFab extends StatelessWidget {
+  final bool isOpen;
+  final VoidCallback onToggle;
+  final VoidCallback onClose;
+  final VoidCallback onSticker;
+  final Future<void> Function()? onModerate;
+  final bool isHost;
+  final VoidCallback? onAddVideo;
+
+  const _MoreActionsFab({
+    required this.isOpen,
+    required this.onToggle,
+    required this.onClose,
+    required this.onSticker,
+    this.onModerate,
+    required this.isHost,
+    this.onAddVideo,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        // Botão principal "+"
+        GestureDetector(
+          onTap: onToggle,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isOpen
+                  ? Colors.white.withValues(alpha: 0.25)
+                  : Colors.white.withValues(alpha: 0.10),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: isOpen ? 0.40 : 0.18),
+              ),
+            ),
+            child: AnimatedRotation(
+              turns: isOpen ? 0.125 : 0,
+              duration: const Duration(milliseconds: 200),
+              child: const Icon(Icons.add_rounded, color: Colors.white70, size: 20),
+            ),
+          ),
+        ),
+        // Menu expandido — posicionado acima do botão
+        if (isOpen)
+          Positioned(
+            bottom: 46,
+            child: _FabMenu(
+              onClose: onClose,
+              onSticker: onSticker,
+              onModerate: onModerate,
+              isHost: isHost,
+              onAddVideo: onAddVideo,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+// ── _FabMenu ──────────────────────────────────────────────────────────────────
+class _FabMenu extends StatelessWidget {
+  final VoidCallback onClose;
+  final VoidCallback onSticker;
+  final Future<void> Function()? onModerate;
+  final bool isHost;
+  final VoidCallback? onAddVideo;
+
+  const _FabMenu({
+    required this.onClose,
+    required this.onSticker,
+    this.onModerate,
+    required this.isHost,
+    this.onAddVideo,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _FabMenuItem(
+            icon: Icons.sticky_note_2_outlined,
+            label: 'Sticker',
+            onTap: () {
+              onClose();
+              onSticker();
+            },
+          ),
+          if (onModerate != null) ...[
+            const SizedBox(height: 4),
+            _FabMenuItem(
+              icon: Icons.shield_outlined,
+              label: 'Moderar',
+              onTap: () {
+                onClose();
+                onModerate!();
+              },
+            ),
+          ],
+          if (isHost && onAddVideo != null) ...[
+            const SizedBox(height: 4),
+            _FabMenuItem(
+              icon: Icons.video_library_outlined,
+              label: 'Vídeo',
+              onTap: () {
+                onClose();
+                onAddVideo!();
+              },
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── _FabMenuItem ──────────────────────────────────────────────────────────────
+class _FabMenuItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _FabMenuItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: Colors.white70, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );

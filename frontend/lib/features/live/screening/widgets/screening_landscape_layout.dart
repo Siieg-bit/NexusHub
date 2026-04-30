@@ -194,7 +194,7 @@ class _PortraitLayout extends ConsumerWidget {
     // Altura da status bar do sistema
     final statusBarH = mq.padding.top;
     // Altura do TopBar (ícones + padding interno de 4px em cima e embaixo)
-    const topBarH = 52.0;
+    const topBarH = 62.0;
     // Altura total do bloco superior: status bar + topbar
     final headerH = statusBarH + topBarH;
     // Altura do player: 40% da tela, clampada. O player fica ABAIXO do header.
