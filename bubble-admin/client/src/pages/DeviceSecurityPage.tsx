@@ -291,53 +291,19 @@ export default function DeviceSecurityPage() {
 
   const loadDevices = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("device_fingerprints")
-      .select(`
-        id, user_id, device_id, device_model, os_version, ip_address,
-        is_banned, banned_reason, first_seen_at, last_seen_at,
-        profile:profiles!user_id(nickname, amino_id, avatar_url, is_banned)
-      `)
-      .order("last_seen_at", { ascending: false })
-      .limit(500);
-
+    const { data, error } = await supabase.rpc("admin_get_device_fingerprints");
     if (!error && data) {
-      // Agrupar por device_id
-      const grouped: Record<string, DeviceGroup> = {};
-      for (const fp of data as DeviceFingerprint[]) {
-        if (!grouped[fp.device_id]) {
-          grouped[fp.device_id] = {
-            device_id: fp.device_id,
-            device_model: fp.device_model,
-            os_version: fp.os_version,
-            fingerprints: [],
-            has_banned: false,
-            account_count: 0,
-          };
-        }
-        grouped[fp.device_id].fingerprints.push(fp);
-        if (fp.is_banned || fp.profile?.is_banned) {
-          grouped[fp.device_id].has_banned = true;
-        }
-        grouped[fp.device_id].account_count++;
-      }
-      setDevices(Object.values(grouped).sort((a, b) => b.account_count - a.account_count));
+      setDevices((data as DeviceGroup[]).sort((a, b) => b.account_count - a.account_count));
+    } else if (error) {
+      console.error("Erro ao carregar dispositivos:", error.message);
     }
     setLoading(false);
   }, []);
 
   const loadBans = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("bans")
-      .select(`
-        id, user_id, community_id, reason, is_permanent, is_active, created_at,
-        profile:profiles!user_id(nickname, amino_id),
-        community:communities!community_id(name)
-      `)
-      .eq("is_active", true)
-      .order("created_at", { ascending: false })
-      .limit(100);
+    const { data, error } = await supabase.rpc("admin_get_active_bans");
     if (!error && data) setBans(data as BanRecord[]);
+    else if (error) console.error("Erro ao carregar bans:", error.message);
   }, []);
 
   useEffect(() => {
@@ -348,10 +314,10 @@ export default function DeviceSecurityPage() {
   async function handleBanDevice(deviceId: string) {
     if (!banReason.trim()) { toast.error("Informe o motivo do ban."); return; }
     setBanning(true);
-    const { error } = await supabase
-      .from("device_fingerprints")
-      .update({ is_banned: true, banned_reason: banReason })
-      .eq("device_id", deviceId);
+    const { error } = await supabase.rpc("admin_ban_device", {
+      p_device_id: deviceId,
+      p_reason: banReason,
+    });
     if (error) { toast.error("Erro ao banir dispositivo."); setBanning(false); return; }
     toast.success("Dispositivo banido com sucesso!");
     setBanTarget(null);

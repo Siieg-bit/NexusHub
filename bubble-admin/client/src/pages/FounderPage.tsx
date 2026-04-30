@@ -92,9 +92,9 @@ function AssignRoleModal({
     }
     setLoading(true);
     try {
-      const { error } = await supabase.rpc("set_team_role", {
+      const { error } = await supabase.rpc("admin_set_team_role", {
         p_target_user_id: member.id,
-        p_new_role: selectedRole,
+        p_role: selectedRole,
       });
       if (error) throw error;
       toast.success(`Cargo de ${displayName} atualizado para ${selectedRole ? TEAM_ROLE_CONFIG[selectedRole].label : "Nenhum"}`);
@@ -114,7 +114,7 @@ function AssignRoleModal({
     }
     setLoading(true);
     try {
-      const { error } = await supabase.rpc("set_team_role", { p_target_user_id: member.id, p_new_role: null });
+      const { error } = await supabase.rpc("admin_set_team_role", { p_target_user_id: member.id, p_role: null });
       if (error) throw error;
       toast.success(`Cargo de ${displayName} removido.`);
       onSuccess();
@@ -214,11 +214,7 @@ function TeamSection({ callerRole }: { callerRole: TeamRole }) {
   const loadMembers = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, nickname, amino_id, icon_url, team_role, team_rank, is_team_admin, is_team_moderator, created_at, last_seen_at")
-        .gt("team_rank", 0)
-        .order("team_rank", { ascending: false });
+      const { data, error } = await supabase.rpc("admin_get_team_members");
       if (error) throw error;
       setMembers((data as TeamMember[]) || []);
     } catch {
@@ -234,11 +230,7 @@ function TeamSection({ callerRole }: { callerRole: TeamRole }) {
     if (!addSearch.trim()) return;
     setAddLoading(true);
     try {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, nickname, amino_id, icon_url, team_role, team_rank, is_team_admin, is_team_moderator, created_at, last_seen_at")
-        .or(`amino_id.ilike.%${addSearch}%,nickname.ilike.%${addSearch}%`)
-        .limit(5);
+      const { data } = await supabase.rpc("admin_search_users", { p_query: addSearch, p_limit: 5 });
       setAddResults((data as TeamMember[]) || []);
     } finally {
       setAddLoading(false);
@@ -901,25 +893,16 @@ function PlatformStatsSection() {
     async function load() {
       setLoading(true);
       try {
-        const [users, communities, posts, transactions, team] = await Promise.all([
-          supabase.from("profiles").select("id", { count: "exact", head: true }),
-          supabase.from("communities").select("id", { count: "exact", head: true }),
-          supabase.from("posts").select("id", { count: "exact", head: true }),
-          supabase.from("coin_transactions").select("id", { count: "exact", head: true }),
-          supabase.from("profiles").select("id", { count: "exact", head: true }).gt("team_rank", 0),
-        ]);
-        const yesterday = new Date(Date.now() - 86400000).toISOString();
-        const { count: activeToday } = await supabase
-          .from("profiles")
-          .select("id", { count: "exact", head: true })
-          .gte("last_seen_at", yesterday);
+        const { data: statsData, error: statsErr } = await supabase.rpc("admin_get_platform_stats");
+        if (statsErr) throw statsErr;
+        const s = statsData as PlatformStats;
         setStats({
-          total_users: users.count ?? 0,
-          active_today: activeToday ?? 0,
-          total_communities: communities.count ?? 0,
-          total_posts: posts.count ?? 0,
-          total_transactions: transactions.count ?? 0,
-          team_members: team.count ?? 0,
+          total_users: s.total_users ?? 0,
+          active_today: s.active_today ?? 0,
+          total_communities: s.total_communities ?? 0,
+          total_posts: s.total_posts ?? 0,
+          total_transactions: s.total_transactions ?? 0,
+          team_members: s.team_members ?? 0,
         });
       } catch {
         toast.error("Erro ao carregar estatísticas");
@@ -983,24 +966,11 @@ function SecurityLogsSection() {
     async function load() {
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from("security_logs")
-          .select("id, user_id, event_type, ip_address, created_at, details, user:profiles!user_id(nickname, amino_id)")
-          .order("created_at", { ascending: false })
-          .limit(30);
+        const { data, error } = await supabase.rpc("admin_get_moderation_logs", { p_limit: 30, p_offset: 0 });
         if (error) throw error;
-        setLogs(data || []);
+        setLogs((data as SecurityLog[]) || []);
       } catch {
-        try {
-          const { data } = await supabase
-            .from("auth_audit_log")
-            .select("id, user_id, event_type, ip_address, created_at, details")
-            .order("created_at", { ascending: false })
-            .limit(30);
-          setLogs((data as SecurityLog[]) || []);
-        } catch {
-          setLogs([]);
-        }
+        setLogs([]);
       } finally {
         setLoading(false);
       }

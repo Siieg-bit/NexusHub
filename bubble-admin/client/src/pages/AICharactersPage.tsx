@@ -99,16 +99,28 @@ function CharacterModal({
     setSaving(true);
     try {
       if (character) {
-        const { error } = await supabase
-          .from("ai_characters")
-          .update({ ...form })
-          .eq("id", character.id);
+        const { error } = await supabase.rpc("admin_update_ai_character", {
+          p_id: character.id,
+          p_name: form.name.trim(),
+          p_description: form.description.trim(),
+          p_system_prompt: form.system_prompt.trim(),
+          p_tags: form.tags,
+          p_language: form.language,
+          p_avatar_url: form.avatar_url || null,
+          p_is_active: form.is_active,
+        });
         if (error) throw error;
         toast.success("Personagem atualizado!");
       } else {
-        const { error } = await supabase
-          .from("ai_characters")
-          .insert([{ ...form }]);
+        const { error } = await supabase.rpc("admin_create_ai_character", {
+          p_name: form.name.trim(),
+          p_description: form.description.trim(),
+          p_system_prompt: form.system_prompt.trim(),
+          p_tags: form.tags,
+          p_language: form.language,
+          p_avatar_url: form.avatar_url || null,
+          p_is_active: form.is_active,
+        });
         if (error) throw error;
         toast.success("Personagem criado!");
       }
@@ -530,9 +542,7 @@ export default function AICharactersPage() {
   const load = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from("ai_characters")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .rpc("admin_get_ai_characters");
     if (!error && data) setCharacters(data as AICharacter[]);
     setLoading(false);
   }, []);
@@ -541,16 +551,14 @@ export default function AICharactersPage() {
 
   async function handleToggle(char: AICharacter) {
     const { error } = await supabase
-      .from("ai_characters")
-      .update({ is_active: !char.is_active })
-      .eq("id", char.id);
+      .rpc("admin_toggle_ai_character", { p_id: char.id, p_active: !char.is_active });
     if (error) { toast.error("Erro ao alterar status."); return; }
     toast.success(char.is_active ? "Personagem desativado." : "Personagem ativado!");
     load();
   }
 
   async function handleDelete(char: AICharacter) {
-    const { error } = await supabase.from("ai_characters").delete().eq("id", char.id);
+    const { error } = await supabase.rpc("admin_delete_ai_character", { p_id: char.id });
     if (error) { toast.error("Erro ao excluir."); return; }
     toast.success("Personagem excluído.");
     setDeleteTarget(null);

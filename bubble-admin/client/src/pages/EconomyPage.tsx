@@ -163,64 +163,58 @@ export default function EconomyPage() {
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      // Transactions
-      const { data: txData } = await supabase
-        .from("coin_transactions")
-        .select("id, user_id, amount, source, description, created_at, profile:profiles!user_id(nickname, amino_id, avatar_url)")
+      // Transactions via RPC (bypassa RLS)
+      const { data: txData, error: txErr } = await supabase.rpc("admin_get_coin_transactions", {
+        p_limit: 200, p_offset: 0,
+      });
+      if (txErr) console.error("Erro transactions:", txErr.message);
+
+      const txList = (txData as CoinTx[]) ?? [];
+      setTransactions(txList);
+
+      const earned = txList.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+      const spent = Math.abs(txList.filter((t) => t.amount < 0).reduce((s, t) => s + t.amount, 0));
+      const checkinCoins = txList.filter((t) => t.source === "checkin").reduce((s, t) => s + t.amount, 0);
+      const lotteryCoins = txList.filter((t) => t.source === "lottery").reduce((s, t) => s + t.amount, 0);
+      const uniqueUsers = new Set(txList.map((t) => t.user_id)).size;
+
+      // Lottery via RPC
+      const { data: lotteryResult } = await supabase.rpc("admin_get_lottery_stats");
+      const lotteryLogs = (lotteryResult as { recent_logs?: LotteryLog[] })?.recent_logs ?? [];
+      setLotteryLogs(lotteryLogs);
+
+      // IAP e Tips — sem RPC dedicada ainda, tentativa direta
+      const { data: iapData } = await supabase
+        .from("iap_receipts")
+        .select("id, user_id, platform, store_product_id, amount_cents, currency, coins_credited, is_validated, created_at")
         .order("created_at", { ascending: false })
-        .limit(200);
+        .limit(100);
+      const iapList = (iapData as IapReceipt[]) ?? [];
+      setIapReceipts(iapList);
+      const iapRevenue = iapList.filter((r) => r.is_validated).reduce((s, r) => s + r.amount_cents, 0);
 
-      if (txData) {
-        setTransactions(txData as CoinTx[]);
-        // Calcular stats
-        const earned = txData.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0);
-        const spent = Math.abs(txData.filter((t) => t.amount < 0).reduce((s, t) => s + t.amount, 0));
-        const checkinCoins = txData.filter((t) => t.source === "checkin").reduce((s, t) => s + t.amount, 0);
-        const lotteryCoins = txData.filter((t) => t.source === "lottery").reduce((s, t) => s + t.amount, 0);
-        const uniqueUsers = new Set(txData.map((t) => t.user_id)).size;
+      const { data: tipsData } = await supabase
+        .from("tips")
+        .select("id, sender_id, receiver_id, amount, created_at")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      const tipsList = (tipsData as Tip[]) ?? [];
+      setTips(tipsList);
+      const totalTips = tipsList.reduce((s, t) => s + t.amount, 0);
 
-        // IAP
-        const { data: iapData } = await supabase
-          .from("iap_receipts")
-          .select("id, user_id, platform, store_product_id, amount_cents, currency, coins_credited, is_validated, created_at, profile:profiles!user_id(nickname, amino_id)")
-          .order("created_at", { ascending: false })
-          .limit(100);
-
-        if (iapData) setIapReceipts(iapData as IapReceipt[]);
-        const iapRevenue = (iapData ?? []).filter((r) => r.is_validated).reduce((s, r) => s + r.amount_cents, 0);
-
-        // Tips
-        const { data: tipsData } = await supabase
-          .from("tips")
-          .select("id, sender_id, receiver_id, amount, created_at, sender:profiles!sender_id(nickname, amino_id), receiver:profiles!receiver_id(nickname, amino_id)")
-          .order("created_at", { ascending: false })
-          .limit(100);
-
-        if (tipsData) setTips(tipsData as Tip[]);
-        const totalTips = (tipsData ?? []).reduce((s, t) => s + t.amount, 0);
-
-        // Lottery
-        const { data: lotteryData } = await supabase
-          .from("lottery_logs")
-          .select("id, user_id, award_type, coins_won, played_at, profile:profiles!user_id(nickname, amino_id)")
-          .order("played_at", { ascending: false })
-          .limit(100);
-
-        if (lotteryData) setLotteryLogs(lotteryData as LotteryLog[]);
-
-        setStats({
-          totalCoinsInCirculation: earned - spent,
-          totalCoinsSpent: spent,
-          totalCoinsEarned: earned,
-          totalIapRevenueCents: iapRevenue,
-          totalTips,
-          totalLotteryCoins: lotteryCoins,
-          totalCheckinCoins: checkinCoins,
-          totalTransactions: txData.length,
-          activeUsers: uniqueUsers,
-        });
-      }
-    } catch (e) {
+      setStats({
+        totalCoinsInCirculation: earned - spent,
+        totalCoinsSpent: spent,
+        totalCoinsEarned: earned,
+        totalIapRevenueCents: iapRevenue,
+        totalTips,
+        totalLotteryCoins: lotteryCoins,
+        totalCheckinCoins: checkinCoins,
+        totalTransactions: txList.length,
+        activeUsers: uniqueUsers,
+      });
+    } catch (e: unknown) {
+      console.error("Erro ao carregar dados de economia:", e);
       toast.error("Erro ao carregar dados de economia.");
     }
     setLoading(false);
