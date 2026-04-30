@@ -18,11 +18,29 @@ import 'manage_member_titles_sheet.dart';
 //   - Transferência de título de Líder Fundador (agent → outro leader)
 //   - Suporte a auto-gerenciamento (líder atribuindo título a si mesmo)
 //
-// Hierarquia de permissões:
-//   agent  → pode gerenciar qualquer um, incluindo leaders
-//   leader → pode gerenciar moderators/curators/members
-//   curator/moderator → sem acesso a este widget
+// Hierarquia de permissões (rank numérico):
+//   team_admin (5) → modera TODOS os cargos
+//   team_mod   (4) → modera todos os cargos de comunidade
+//   agent      (3) → Líder Fundador: modera leader e abaixo
+//   leader     (2) → Líder normal: modera curator e abaixo
+//   curator    (1) → modera apenas member
+//   member     (0) → sem poder de moderação
+//
+// Regra universal: ninguém pode moderar alguém de rank igual ou superior.
 // =============================================================================
+
+/// Retorna o rank numérico de um role string para comparações hierárquicas.
+int _rankOf(String role) {
+  switch (role) {
+    case 'team_admin': return 5;
+    case 'team_mod':   return 4;
+    case 'agent':      return 3;
+    case 'leader':     return 2;
+    case 'curator':    return 1;
+    case 'moderator':  return 1; // legado, equivale a curator
+    default:           return 0;
+  }
+}
 
 /// Exibe o gerenciador de cargo/título de um membro como bottom sheet.
 Future<bool?> showMemberRoleManager({
@@ -95,42 +113,46 @@ class _MemberRoleManagerSheetState
   bool get _isSelf =>
       widget.targetUserId == SupabaseService.currentUserId;
 
+  // ── Ranks numéricos ────────────────────────────────────────────────────────
+  int get _callerRank => _rankOf(widget.callerRole);
+  int get _targetRank => _rankOf(widget.currentRole);
+
+  // O caller pode gerenciar cargos se seu rank for superior ao do alvo
+  // e tiver pelo menos rank de leader (2) para alterar cargos.
   bool get _canManageRoles =>
       !_isSelf &&
-      (widget.callerRole == 'agent' ||
-          (widget.callerRole == 'leader' &&
-              widget.currentRole != 'agent' &&
-              widget.currentRole != 'leader'));
+      _callerRank >= 2 &&
+      _callerRank > _targetRank;
 
+  // Pode advertir/dar strike se tiver rank >= 1 (curator) e rank > alvo.
+  // curator (rank 1) só pode advertir member (rank 0).
   bool get _canIssueWarnings =>
       !_isSelf &&
-      (widget.callerRole == 'agent' ||
-          (widget.callerRole == 'leader' &&
-              widget.currentRole != 'agent' &&
-              widget.currentRole != 'leader') ||
-          (widget.callerRole == 'curator' && widget.currentRole == 'member'));
+      _callerRank >= 1 &&
+      _callerRank > _targetRank &&
+      (_callerRank > 1 || _targetRank == 0);
 
   bool get _canHideProfile => _canIssueWarnings;
 
+  // Pode banir se tiver rank >= 2 (leader) e rank > alvo.
   bool get _canBanMember =>
       !_isSelf &&
-      (widget.callerRole == 'agent' ||
-          (widget.callerRole == 'leader' &&
-              widget.currentRole != 'agent' &&
-              widget.currentRole != 'leader'));
+      _callerRank >= 2 &&
+      _callerRank > _targetRank;
 
   bool get _canBanAndPunish =>
       _canIssueWarnings || _canHideProfile || _canBanMember;
 
+  // Pode transferir o título de fundador se for agent (rank 3) ou team member (rank 4+)
+  // e o alvo for leader (rank 2).
   bool get _canTransferFounder =>
       !_isSelf &&
-      widget.callerRole == 'agent' &&
+      _callerRank >= 3 &&
       widget.currentRole == 'leader';
 
-  // Auto-título: líder pode atribuir título a si mesmo
+  // Auto-título: leader ou superior pode atribuir título a si mesmo
   bool get _canSelfTitle =>
-      _isSelf &&
-      (widget.callerRole == 'agent' || widget.callerRole == 'leader');
+      _isSelf && _callerRank >= 2;
 
   bool get _canManageTitle => _canManageRoles || _canSelfTitle;
 

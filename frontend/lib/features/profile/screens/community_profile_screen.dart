@@ -68,6 +68,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   bool _isInitialLoading = true;
   bool _savedPostsLoaded = false;
   bool _viewerIsTeamMember = false;
+  bool _viewerIsTeamAdmin  = false;
+  bool _viewerIsTeamMod    = false;
   bool _isUpdatingManualPresence = false;
   int _followersCount = 0;
   int _followingCount = 0;
@@ -289,6 +291,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           // _user já foi carregado no grupo 1 com o perfil global do usuário.
           if (_user != null) {
             _viewerIsTeamMember = _user!.isTeamMember;
+            _viewerIsTeamAdmin  = _user!.isTeamAdmin;
+            _viewerIsTeamMod    = _user!.isTeamModerator;
           }
         } else if (group2.length > 2) {
           _myMembership = group2[2] as Map<String, dynamic>?;
@@ -299,6 +303,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
               ...viewerProfileRes,
             });
             _viewerIsTeamMember = viewerProfile.isTeamMember;
+            _viewerIsTeamAdmin  = viewerProfile.isTeamAdmin;
+            _viewerIsTeamMod    = viewerProfile.isTeamModerator;
           }
           _isFollowing = ((group2[4] as List?)?.length ?? 0) > 0;
           _isFollowingMe = ((group2[5] as List?)?.length ?? 0) > 0;
@@ -2794,16 +2800,48 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final r = context.r;
 
     final myRole = _myMembership?['role'] as String? ?? 'member';
-    // team_member (is_team_admin / is_team_moderator) é superior a qualquer
-    // role de comunidade e tem acesso total de moderação.
-    // O menu de moderação aparece também no próprio perfil do moderador.
-    final canManageRoles =
-        _viewerIsTeamMember ||
-        myRole == 'agent' ||
-        myRole == 'leader' ||
-        myRole == 'curator';
-    final canManageTitles =
-        _viewerIsTeamMember || myRole == 'agent' || myRole == 'leader';
+
+    // ── Calcular ranks do caller e do alvo ────────────────────────────────
+    // Hierarquia: team_admin(5) > team_mod(4) > agent(3) > leader(2) > curator(1) > member(0)
+    int callerRank;
+    if (_viewerIsTeamAdmin) {
+      callerRank = 5;
+    } else if (_viewerIsTeamMod) {
+      callerRank = 4;
+    } else {
+      callerRank = switch (myRole) {
+        'agent'   => 3,
+        'leader'  => 2,
+        'curator' => 1,
+        _         => 0,
+      };
+    }
+
+    // Rank do alvo (usuário sendo visualizado)
+    final targetCommunityRole = (_membership?['role'] as String? ?? 'member');
+    final targetIsTeamAdmin = _user?.isTeamAdmin ?? false;
+    final targetIsTeamMod   = _user?.isTeamModerator ?? false;
+    int targetRank;
+    if (targetIsTeamAdmin) {
+      targetRank = 5;
+    } else if (targetIsTeamMod) {
+      targetRank = 4;
+    } else {
+      targetRank = switch (targetCommunityRole) {
+        'agent'   => 3,
+        'leader'  => 2,
+        'curator' => 1,
+        _         => 0,
+      };
+    }
+
+    // Só pode moderar se o caller tiver rank estritamente maior que o alvo
+    final canModerateTarget = !_isOwnProfile && callerRank > targetRank;
+
+    // Curador (rank 1) também pode ver o menu de moderação (para advertir membros)
+    final canModerateMenu = canModerateTarget && callerRank >= 1;
+    // Pode gerenciar títulos: rank >= 2 (leader ou superior)
+    final canManageTitles = canModerateTarget && callerRank >= 2;
 
     // Itens do menu: cada item é um Map com icon, label, value e isDestructive
     // Usamos showMenu nativo do Flutter para o estilo dropdown.
@@ -2825,8 +2863,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       r: r,
     ));
 
-    // ── MODERAÇÃO ───────────────────────────────────────────────────
-    if (canManageRoles) {
+    // ── MODERAÇÃO ───────────────────────────────────────────────
+    if (canModerateMenu) {
       items.add(const PopupMenuDivider(height: 1));
       items.add(_menuItem(
         value: 'moderation',
@@ -2926,7 +2964,11 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           currentRole: targetRole,
           currentTitle: currentTitle,
           membershipData: Map<String, dynamic>.from(_membership ?? {}),
-          callerRole: _viewerIsTeamMember ? 'agent' : myRole,
+          callerRole: _viewerIsTeamAdmin
+              ? 'team_admin'
+              : _viewerIsTeamMod
+                  ? 'team_mod'
+                  : myRole,
         );
         if (changed == true && mounted) _loadProfile();
         break;
@@ -2939,7 +2981,11 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           communityId: widget.communityId,
           targetUserId: widget.userId,
           targetUserName: titleTargetName,
-          callerRole: _viewerIsTeamMember ? 'agent' : myRole,
+          callerRole: _viewerIsTeamAdmin
+              ? 'team_admin'
+              : _viewerIsTeamMod
+                  ? 'team_mod'
+                  : myRole,
         );
         if (titlesChanged == true && mounted) _loadProfile();
         break;
