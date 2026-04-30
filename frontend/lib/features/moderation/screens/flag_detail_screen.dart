@@ -108,6 +108,27 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
   }
 
   void _showResolveDialog(String action) {
+    // Determinar o tipo de conteúdo denunciado a partir do snapshot ou da flag
+    final snap = _detail?['snapshot'] as Map<String, dynamic>?;
+    final flag = _detail?['flag'] as Map<String, dynamic>? ?? {};
+    final contentType = (snap?['content_type'] as String?)?.trim() ?? '';
+
+    // Derivar tipo a partir dos campos target_* da flag quando snapshot não tem content_type
+    final String resolvedType;
+    if (contentType.isNotEmpty) {
+      resolvedType = contentType;
+    } else if ((flag['target_comment_id'] as String?) != null) {
+      resolvedType = 'comment';
+    } else if ((flag['target_chat_message_id'] as String?) != null) {
+      resolvedType = 'chat_message';
+    } else if ((flag['target_post_id'] as String?) != null) {
+      resolvedType = 'post';
+    } else if ((flag['target_user_id'] as String?) != null) {
+      resolvedType = 'user';
+    } else {
+      resolvedType = 'post'; // fallback
+    }
+
     final noteController = TextEditingController();
     bool moderateContent = false;
     String? moderateAction;
@@ -117,6 +138,151 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) {
           final r = ctx.r;
+
+          // ── Chips contextuais por tipo de conteúdo ──────────────────────
+          List<Widget> contentActionChips() {
+            switch (resolvedType) {
+              case 'post':
+                return [
+                  _ActionChip(
+                    label: 'Apenas registrar',
+                    selected: !moderateContent,
+                    onTap: () => setS(() { moderateContent = false; moderateAction = null; }),
+                  ),
+                  SizedBox(height: r.s(6)),
+                  _ActionChip(
+                    label: 'Desabilitar post',
+                    selected: moderateContent && moderateAction == 'delete_content',
+                    color: ctx.nexusTheme.error,
+                    onTap: () => setS(() { moderateContent = true; moderateAction = 'delete_content'; }),
+                  ),
+                  SizedBox(height: r.s(6)),
+                  _ActionChip(
+                    label: 'Advertir usuário',
+                    selected: moderateContent && moderateAction == 'warn',
+                    color: ctx.nexusTheme.warning,
+                    onTap: () => setS(() { moderateContent = true; moderateAction = 'warn'; }),
+                  ),
+                  SizedBox(height: r.s(6)),
+                  _ActionChip(
+                    label: 'Banir usuário',
+                    selected: moderateContent && moderateAction == 'ban',
+                    color: ctx.nexusTheme.error,
+                    onTap: () => setS(() { moderateContent = true; moderateAction = 'ban'; }),
+                  ),
+                ];
+              case 'comment':
+                return [
+                  _ActionChip(
+                    label: 'Apenas registrar',
+                    selected: !moderateContent,
+                    onTap: () => setS(() { moderateContent = false; moderateAction = null; }),
+                  ),
+                  SizedBox(height: r.s(6)),
+                  _ActionChip(
+                    label: 'Deletar comentário',
+                    selected: moderateContent && moderateAction == 'delete_comment',
+                    color: ctx.nexusTheme.error,
+                    onTap: () => setS(() { moderateContent = true; moderateAction = 'delete_comment'; }),
+                  ),
+                  SizedBox(height: r.s(6)),
+                  _ActionChip(
+                    label: 'Advertir usuário',
+                    selected: moderateContent && moderateAction == 'warn',
+                    color: ctx.nexusTheme.warning,
+                    onTap: () => setS(() { moderateContent = true; moderateAction = 'warn'; }),
+                  ),
+                  SizedBox(height: r.s(6)),
+                  _ActionChip(
+                    label: 'Silenciar usuário',
+                    selected: moderateContent && moderateAction == 'silence_member',
+                    color: ctx.nexusTheme.warning,
+                    onTap: () => setS(() { moderateContent = true; moderateAction = 'silence_member'; }),
+                  ),
+                ];
+              case 'chat_message':
+                return [
+                  _ActionChip(
+                    label: 'Apenas registrar',
+                    selected: !moderateContent,
+                    onTap: () => setS(() { moderateContent = false; moderateAction = null; }),
+                  ),
+                  SizedBox(height: r.s(6)),
+                  _ActionChip(
+                    label: 'Remover mensagem',
+                    selected: moderateContent && moderateAction == 'delete_chat_message',
+                    color: ctx.nexusTheme.error,
+                    onTap: () => setS(() { moderateContent = true; moderateAction = 'delete_chat_message'; }),
+                  ),
+                  SizedBox(height: r.s(6)),
+                  _ActionChip(
+                    label: 'Silenciar usuário',
+                    selected: moderateContent && moderateAction == 'silence_member',
+                    color: ctx.nexusTheme.warning,
+                    onTap: () => setS(() { moderateContent = true; moderateAction = 'silence_member'; }),
+                  ),
+                  SizedBox(height: r.s(6)),
+                  _ActionChip(
+                    label: 'Banir usuário',
+                    selected: moderateContent && moderateAction == 'ban',
+                    color: ctx.nexusTheme.error,
+                    onTap: () => setS(() { moderateContent = true; moderateAction = 'ban'; }),
+                  ),
+                ];
+              case 'user':
+                return [
+                  _ActionChip(
+                    label: 'Apenas registrar',
+                    selected: !moderateContent,
+                    onTap: () => setS(() { moderateContent = false; moderateAction = null; }),
+                  ),
+                  SizedBox(height: r.s(6)),
+                  _ActionChip(
+                    label: 'Advertir usuário',
+                    selected: moderateContent && moderateAction == 'warn',
+                    color: ctx.nexusTheme.warning,
+                    onTap: () => setS(() { moderateContent = true; moderateAction = 'warn'; }),
+                  ),
+                  SizedBox(height: r.s(6)),
+                  _ActionChip(
+                    label: 'Silenciar usuário',
+                    selected: moderateContent && moderateAction == 'silence_member',
+                    color: ctx.nexusTheme.warning,
+                    onTap: () => setS(() { moderateContent = true; moderateAction = 'silence_member'; }),
+                  ),
+                  SizedBox(height: r.s(6)),
+                  _ActionChip(
+                    label: 'Banir usuário',
+                    selected: moderateContent && moderateAction == 'ban',
+                    color: ctx.nexusTheme.error,
+                    onTap: () => setS(() { moderateContent = true; moderateAction = 'ban'; }),
+                  ),
+                ];
+              default: // wiki, story, etc.
+                return [
+                  _ActionChip(
+                    label: 'Apenas registrar',
+                    selected: !moderateContent,
+                    onTap: () => setS(() { moderateContent = false; moderateAction = null; }),
+                  ),
+                  SizedBox(height: r.s(6)),
+                  _ActionChip(
+                    label: 'Remover conteúdo',
+                    selected: moderateContent && moderateAction == 'delete_content',
+                    color: ctx.nexusTheme.error,
+                    onTap: () => setS(() { moderateContent = true; moderateAction = 'delete_content'; }),
+                  ),
+                  SizedBox(height: r.s(6)),
+                  _ActionChip(
+                    label: 'Advertir usuário',
+                    selected: moderateContent && moderateAction == 'warn',
+                    color: ctx.nexusTheme.warning,
+                    onTap: () => setS(() { moderateContent = true; moderateAction = 'warn'; }),
+                  ),
+                ];
+            }
+          }
+
           return AlertDialog(
             backgroundColor: ctx.surfaceColor,
             title: Text(
@@ -148,34 +314,7 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
                             fontWeight: FontWeight.w600,
                             fontSize: r.fs(13))),
                     SizedBox(height: r.s(8)),
-                    _ActionChip(
-                      label: 'Apenas registrar',
-                      selected: !moderateContent,
-                      onTap: () => setS(() {
-                        moderateContent = false;
-                        moderateAction = null;
-                      }),
-                    ),
-                    SizedBox(height: r.s(6)),
-                    _ActionChip(
-                      label: 'Desabilitar post',
-                      selected: moderateContent && moderateAction == 'delete',
-                      color: context.nexusTheme.error,
-                      onTap: () => setS(() {
-                        moderateContent = true;
-                        moderateAction = 'delete';
-                      }),
-                    ),
-                    SizedBox(height: r.s(6)),
-                    _ActionChip(
-                      label: 'Advertir usuário',
-                      selected: moderateContent && moderateAction == 'warn',
-                      color: context.nexusTheme.warning,
-                      onTap: () => setS(() {
-                        moderateContent = true;
-                        moderateAction = 'warn';
-                      }),
-                    ),
+                    ...contentActionChips(),
                   ],
                 ],
               ),
