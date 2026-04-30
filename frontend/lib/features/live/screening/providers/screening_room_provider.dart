@@ -367,7 +367,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
     }
   }
 
-  Future<bool> _canModerate() async {
+  Future<bool> canModerate() async {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return false;
     if (state.isHost || state.hostUserId == userId) return true;
@@ -379,16 +379,19 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
       if (thread == null) return false;
       if (thread['host_id'] == userId) return true;
       final coHosts = thread['co_hosts'];
-      if (coHosts is List) return coHosts.map((e) => e.toString()).contains(userId);
+      if (coHosts is List) {
+        return coHosts.map((e) => e.toString()).contains(userId);
+      }
+      if (coHosts is String) return coHosts == userId;
     } catch (e) {
       debugPrint('[ScreeningRoom] canModerate error: $e');
     }
     return false;
   }
 
-  Future<void> kickParticipant(String targetUserId) async {
-    if (state.sessionId == null || targetUserId == state.hostUserId) return;
-    if (!await _canModerate()) return;
+  Future<bool> kickParticipant(String targetUserId) async {
+    if (state.sessionId == null || targetUserId == state.hostUserId) return false;
+    if (!await canModerate()) return false;
 
     try {
       final result = await SupabaseService.rpc(
@@ -400,7 +403,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         },
       );
       final data = result as Map<String, dynamic>? ?? {};
-      if (data['success'] != true) return;
+      if (data['success'] != true) return false;
 
       _channel?.sendBroadcastMessage(
         event: 'moderation_action',
@@ -414,14 +417,16 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
       final updated =
           state.participants.where((p) => p.userId != targetUserId).toList();
       state = state.copyWith(participants: updated);
+      return true;
     } catch (e) {
       debugPrint('[ScreeningRoom] kickParticipant error: $e');
+      return false;
     }
   }
 
-  Future<void> muteParticipant(String targetUserId) async {
-    if (state.sessionId == null || targetUserId == state.hostUserId) return;
-    if (!await _canModerate()) return;
+  Future<bool> muteParticipant(String targetUserId) async {
+    if (state.sessionId == null || targetUserId == state.hostUserId) return false;
+    if (!await canModerate()) return false;
 
     try {
       final result = await SupabaseService.rpc(
@@ -433,7 +438,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         },
       );
       final data = result as Map<String, dynamic>? ?? {};
-      if (data['success'] != true) return;
+      if (data['success'] != true) return false;
 
       _channel?.sendBroadcastMessage(
         event: 'moderation_action',
@@ -444,8 +449,10 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
           'ts': DateTime.now().millisecondsSinceEpoch,
         },
       );
+      return true;
     } catch (e) {
       debugPrint('[ScreeningRoom] muteParticipant error: $e');
+      return false;
     }
   }
 

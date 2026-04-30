@@ -8,6 +8,8 @@
 //   4. Confirmação ao concluir
 // =============================================================================
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,11 +53,13 @@ class _ScreeningLocalVideoSheetState
     final file = await LocalVideoService.pickVideo();
     if (file == null || !mounted) return;
 
-    final bytes = await file.readAsBytes();
+    final fileSizeBytes = await File(file.path).length();
+    if (!mounted) return;
+
     setState(() {
       _selectedFile = file;
       _selectedFileName = LocalVideoService.cleanFileName(file.name);
-      _selectedFileSizeBytes = bytes.length;
+      _selectedFileSizeBytes = fileSizeBytes;
       _errorMessage = null;
     });
   }
@@ -85,7 +89,8 @@ class _ScreeningLocalVideoSheetState
           setState(() {
             _uploadProgress = progress.progress;
             _uploadStatus = switch (progress.status) {
-              'uploading' => 'Enviando vídeo... ${(progress.progress * 100).toInt()}%',
+              'uploading' when progress.progress < 0.1 => 'Preparando vídeo...',
+              'uploading' => 'Enviando vídeo... mantenha a tela aberta',
               'done' => 'Concluído!',
               'error' => 'Erro no upload',
               _ => 'Processando...',
@@ -132,6 +137,8 @@ class _ScreeningLocalVideoSheetState
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
     final bottomPad = mq.viewInsets.bottom + mq.padding.bottom + 24;
+    final isUploadIndeterminate =
+        _isUploading && _uploadProgress >= 0.1 && _uploadProgress < 1.0;
 
     return Container(
       padding: EdgeInsets.only(bottom: bottomPad),
@@ -252,7 +259,9 @@ class _ScreeningLocalVideoSheetState
                         ),
                       ),
                       Text(
-                        '${(_uploadProgress * 100).toInt()}%',
+                        isUploadIndeterminate
+                            ? 'Enviando'
+                            : '${(_uploadProgress * 100).toInt()}%',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 13,
@@ -265,7 +274,7 @@ class _ScreeningLocalVideoSheetState
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
-                      value: _uploadProgress,
+                      value: isUploadIndeterminate ? null : _uploadProgress,
                       backgroundColor: Colors.white12,
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Color(0xFF6C5CE7),

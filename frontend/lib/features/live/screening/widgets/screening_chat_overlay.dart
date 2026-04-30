@@ -62,11 +62,28 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
   final ScrollController _scrollController = ScrollController();
   RealtimeChannel? _reactionChannel;
   bool _showEmojiPicker = false;
+  Future<bool>? _canModerateFuture;
 
   @override
   void initState() {
     super.initState();
     _subscribeToReactions();
+    _refreshModerationPermission();
+  }
+
+  @override
+  void didUpdateWidget(covariant ScreeningChatOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.threadId != widget.threadId ||
+        oldWidget.sessionId != widget.sessionId) {
+      _refreshModerationPermission();
+    }
+  }
+
+  void _refreshModerationPermission() {
+    _canModerateFuture = ref
+        .read(screeningRoomProvider(widget.threadId).notifier)
+        .canModerate();
   }
 
   @override
@@ -156,7 +173,24 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
     _scrollToBottom();
   }
 
+  void _showModerationError() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Não foi possível aplicar esta ação de moderação.'),
+      ),
+    );
+  }
+
   Future<void> _openModerationSheet() async {
+    final canModerate = await ref
+        .read(screeningRoomProvider(widget.threadId).notifier)
+        .canModerate();
+    if (!mounted || !canModerate) {
+      _showModerationError();
+      return;
+    }
+
     final roomState = ref.read(screeningRoomProvider(widget.threadId));
     final currentUserId = SupabaseService.currentUserId;
     final participants = roomState.participants
@@ -226,23 +260,25 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
                           spacing: 8,
                           children: [
                             TextButton.icon(
-                              onPressed: () {
-                                ref
+                              onPressed: () async {
+                                final success = await ref
                                     .read(screeningRoomProvider(widget.threadId)
                                         .notifier)
                                     .muteParticipant(participant.userId);
-                                Navigator.of(ctx).pop();
+                                if (ctx.mounted) Navigator.of(ctx).pop();
+                                if (!success) _showModerationError();
                               },
                               icon: const Icon(Icons.mic_off_rounded, size: 16),
                               label: const Text('Mutar'),
                             ),
                             TextButton.icon(
-                              onPressed: () {
-                                ref
+                              onPressed: () async {
+                                final success = await ref
                                     .read(screeningRoomProvider(widget.threadId)
                                         .notifier)
                                     .kickParticipant(participant.userId);
-                                Navigator.of(ctx).pop();
+                                if (ctx.mounted) Navigator.of(ctx).pop();
+                                if (!success) _showModerationError();
                               },
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.redAccent,
@@ -363,12 +399,24 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
                 icon: Icons.sticky_note_2_outlined,
                 onTap: _pickAndSendSticker,
               ),
-              const SizedBox(width: 6),
-              _ActionIconButton(
-                icon: Icons.shield_outlined,
-                onTap: _openModerationSheet,
-              ),
-              const SizedBox(width: 6),
+              if (_canModerateFuture != null)
+                FutureBuilder<bool>(
+                  future: _canModerateFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.data != true) return const SizedBox.shrink();
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(width: 6),
+                        _ActionIconButton(
+                          icon: Icons.shield_outlined,
+                          onTap: _openModerationSheet,
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                    );
+                  },
+                ),
               // Botão de adicionar vídeo (apenas para host)
               if (roomState.isHost) ...[
                 _ActionIconButton(

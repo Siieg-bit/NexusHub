@@ -880,16 +880,21 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   /// Constrói o HTML wrapper para o embed do player.
   /// O player já está posicionado abaixo do TopBar no layout Flutter.
   String _buildHtmlWrapper(String embedUrl) {
-    // Determina se é URL do YouTube para incluir a IFrame API
+    // Determina se é URL do YouTube para incluir a IFrame API.
     final isYouTube = embedUrl.contains('youtube') || embedUrl.contains('youtu.be');
+    final isGoogleDrive = embedUrl.contains('drive.google.com');
     final ytApiScript = isYouTube
         ? '<script src="https://www.youtube.com/iframe_api"></script>'
         : '';
-    // O touch-blocker bloqueia os controles nativos de TODOS os players embed.
-    // O NexusHub controla o player via JS injetado (window._nexusPlayer),
-    // portanto nenhum player deve receber toques diretos do usuário.
-    // Isso impede que gestos ativem a UI nativa do YouTube, Twitch, Kick, Vimeo.
-    const needsTouchBlocker = true;
+    // A maioria dos embeds é controlada por JS do NexusHub e deve ter os toques
+    // bloqueados. Google Drive é exceção: o preview autenticado nem sempre
+    // inicia por autoplay e pode exigir toque direto no botão nativo de play.
+    final needsTouchBlocker = !isGoogleDrive;
+    final iframePointerEvents = needsTouchBlocker ? 'none' : 'auto';
+    final iframeTouchAction = needsTouchBlocker ? 'none' : 'auto';
+    final touchBlockerHtml = needsTouchBlocker
+        ? '<div id="touch-blocker"></div>'
+        : '';
     return '''<!DOCTYPE html>
 <html>
 <head>
@@ -914,8 +919,8 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
       /* Todos os players: pointer-events:none.
          O NexusHub controla via JS injetado (window._nexusPlayer),
          nunca via interacao direta do usuario com o iframe. */
-      pointer-events: none;
-      touch-action: none;
+      pointer-events: $iframePointerEvents;
+      touch-action: $iframeTouchAction;
     }
     /* Touch-blocker: ativo para TODOS os embeds.
        Bloqueia controles nativos de YouTube, Twitch, Kick, Vimeo etc. */
@@ -947,7 +952,7 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
      eventos de input antes de chegarem ao iframe do YouTube. O YouTube
      nunca recebe toques, swipes (horizontais ou verticais), cliques, etc.
      O player é controlado 100% via JavaScript injetado pelo Flutter. -->
-<div id="touch-blocker"></div>
+$touchBlockerHtml
 <script>
   // Helper: notificar Flutter via bridge nativo (instantâneo) com fallback console.log
   function _ytBridge(event, data) {
