@@ -10,6 +10,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/mini_room_overlay.dart';
 import '../../../core/widgets/emoji_rain_overlay.dart';
 import '../../../core/services/haptic_service.dart';
+import '../../moderation/widgets/report_dialog.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Sala de Projeção — sala de exibição coletiva de vídeos/streams.
@@ -1593,7 +1594,17 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
         final isMe = msg['user_id'] == SupabaseService.currentUserId;
         final username = msg['username'] as String? ?? 'Usuário';
         final avatarUrl = msg['avatar_url'] as String?;
-        return Padding(
+        final msgId = msg['id'] as String?;
+        return GestureDetector(
+          onLongPress: isMe || msgId == null
+              ? null
+              : () => ReportDialog.show(
+                    context,
+                    entityId: msgId,
+                    entityType: 'message',
+                    communityId: null,
+                  ),
+          child: Padding(
           padding: EdgeInsets.only(bottom: r.s(6)),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -1661,6 +1672,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
               ),
               if (isMe) SizedBox(width: r.s(6)),
             ],
+          ),
           ),
         );
       },

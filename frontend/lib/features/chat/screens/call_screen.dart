@@ -13,6 +13,7 @@ import '../../../core/utils/responsive.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/mini_room_overlay.dart';
+import '../../moderation/widgets/report_dialog.dart';
 
 // ============================================================================
 // CallScreen — Tela de chamada reformada.
@@ -1307,7 +1308,16 @@ class _ChatBubble extends ConsumerWidget {
     final nickname = message.author?.nickname ?? 'Usuário';
     final iconUrl = message.author?.iconUrl;
 
-    return Padding(
+    return GestureDetector(
+      onLongPress: isMe
+          ? null
+          : () => ReportDialog.show(
+                context,
+                entityId: message.id,
+                entityType: 'message',
+                communityId: null,
+              ),
+      child: Padding(
       padding: EdgeInsets.only(bottom: r.s(8)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1371,16 +1381,10 @@ class _ChatBubble extends ConsumerWidget {
               ],
             ),
           ),
-          if (isMe) ...[
-            SizedBox(width: r.s(6)),
-            CosmeticAvatar(
-              userId: message.authorId,
-              avatarUrl: iconUrl,
-              size: r.s(28),
-            ),
-          ],
+          if (isMe) ...[SizedBox(width: r.s(6)), CosmeticAvatar(userId: message.authorId, avatarUrl: iconUrl, size: r.s(28))],
         ],
       ),
+    ),
     );
   }
 }
