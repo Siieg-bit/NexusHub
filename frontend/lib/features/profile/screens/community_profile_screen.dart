@@ -1573,6 +1573,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                   avatarUrl: displayAvatar,
                                   bio: displayBio,
                                   isOwnProfile: _isOwnProfile,
+                                  wallCommentsCount: _membership?['wall_comments_count'] as int? ?? 0,
                                 ),
                               ),
                             ),
@@ -1669,7 +1670,12 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                             '${s.posts}${_userPosts.isNotEmpty ? ' ${_userPosts.length}' : ''}',
                           ),
                         ),
-                        Tab(text: s.wall),
+                        Tab(
+                          child: Builder(builder: (context) {
+                            final wallCount = _membership?['wall_comments_count'] as int? ?? 0;
+                            return Text(wallCount > 0 ? '${s.wall} $wallCount' : s.wall);
+                          }),
+                        ),
                         Tab(text: s.savedPosts),
                       ],
                     ),

@@ -16,6 +16,7 @@ class BioAndWallScreen extends ConsumerStatefulWidget {
   final String? avatarUrl;
   final String bio;
   final bool isOwnProfile;
+  final int wallCommentsCount;
 
   const BioAndWallScreen({
     super.key,
@@ -25,6 +26,7 @@ class BioAndWallScreen extends ConsumerStatefulWidget {
     this.avatarUrl,
     required this.bio,
     required this.isOwnProfile,
+    this.wallCommentsCount = 0,
   });
 
   @override
@@ -94,7 +96,7 @@ class _BioAndWallScreenState extends ConsumerState<BioAndWallScreen>
               TextStyle(fontWeight: FontWeight.w500, fontSize: r.fs(14)),
           tabs: [
             Tab(text: s.biography),
-            Tab(text: s.wall),
+            Tab(text: widget.wallCommentsCount > 0 ? '${s.wall} ${widget.wallCommentsCount}' : s.wall),
           ],
         ),
       ),

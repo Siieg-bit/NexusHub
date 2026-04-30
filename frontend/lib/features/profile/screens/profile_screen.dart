@@ -793,7 +793,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       indicatorSize: TabBarIndicatorSize.label,
                       tabs: [
                         Tab(text: s.stories),
-                        Tab(text: s.wall),
+                        Tab(text: user.wallCommentsCount > 0 ? '${s.wall} ${user.wallCommentsCount}' : s.wall),
                       ],
                     ),
                   ),

@@ -35,6 +35,7 @@ class UserModel {
   final int joinedCommunitiesCount; // era communities_count
   final int followersCount;
   final int followingCount;
+  final int wallCommentsCount;
 
   // Check-in global
   final int consecutiveCheckinDays;
@@ -88,6 +89,7 @@ class UserModel {
     this.joinedCommunitiesCount = 0,
     this.followersCount = 0,
     this.followingCount = 0,
+    this.wallCommentsCount = 0,
     this.consecutiveCheckinDays = 0,
     this.lastCheckinAt,
     this.brokenStreaks = 0,
@@ -192,6 +194,7 @@ class UserModel {
       joinedCommunitiesCount: (json['joined_communities_count'] as num?)?.toInt() ?? 0,
       followersCount: (json['followers_count'] as num?)?.toInt() ?? 0,
       followingCount: (json['following_count'] as num?)?.toInt() ?? 0,
+      wallCommentsCount: (json['wall_comments_count'] as num?)?.toInt() ?? 0,
       consecutiveCheckinDays: (json['consecutive_checkin_days'] as num?)?.toInt() ?? 0,
       lastCheckinAt: json['last_checkin_at'] != null
           ? DateTime.tryParse(json['last_checkin_at'] as String)
@@ -280,6 +283,7 @@ class UserModel {
       joinedCommunitiesCount: joinedCommunitiesCount,
       followersCount: followersCount,
       followingCount: followingCount,
+      wallCommentsCount: wallCommentsCount,
       consecutiveCheckinDays: consecutiveCheckinDays,
       lastCheckinAt: lastCheckinAt,
       brokenStreaks: brokenStreaks,
