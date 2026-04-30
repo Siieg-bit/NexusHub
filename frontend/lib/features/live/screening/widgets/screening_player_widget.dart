@@ -828,9 +828,12 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
       if (id.isNotEmpty) {
         // origin= deve bater com o baseUrl do InAppWebView ('https://nexushub.app').
         // controls=0 oculta os controles nativos do YouTube.
+        // iv_load_policy=3: desativa info cards e anotações (badges nativos)
+        // disablekb=1: desativa atalhos de teclado nativos do YouTube
         return 'https://www.youtube.com/embed/$id'
             '?autoplay=1&mute=0&rel=0&modestbranding=1'
             '&playsinline=1&enablejsapi=1&controls=0'
+            '&iv_load_policy=3&disablekb=1'
             '&origin=https://nexushub.app';
       }
     }
@@ -936,6 +939,20 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
       user-select: none;
       overscroll-behavior: none;
     }
+    /* Overlay de pausa: cobre o iframe quando o vídeo está pausado para
+       ocultar badges/end-cards nativos do YouTube. É completamente
+       transparente (rgba 0,0,0,0) por padrão e fica opaco ao pausar. */
+    #pause-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 9998;
+      background: rgba(0, 0, 0, 0);
+      pointer-events: none;
+      transition: background 0.25s ease;
+    }
+    #pause-overlay.paused {
+      background: rgba(0, 0, 0, 0.85);
+    }
   </style>
 </head>
 <body>
@@ -948,6 +965,8 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   frameborder="0"
   scrolling="no"
 ></iframe>
+<!-- Overlay de pausa: cobre badges/end-cards nativos do YouTube quando pausado -->
+<div id="pause-overlay"></div>
 <!-- Overlay transparente com pointer-events:all que intercepta TODOS os
      eventos de input antes de chegarem ao iframe do YouTube. O YouTube
      nunca recebe toques, swipes (horizontais ou verticais), cliques, etc.
@@ -1010,23 +1029,32 @@ $touchBlockerHtml
             },
             onStateChange: function(e) {
               // -1=unstarted, 0=ended, 1=playing, 2=paused, 3=buffering
+              var overlay = document.getElementById('pause-overlay');
               if (e.data === 1) {
                 _ytBridge('YT_PLAYING');
                 _startYtPositionPolling(e.target);
+                // Remover overlay de pausa ao retomar reprodução
+                if (overlay) overlay.classList.remove('paused');
                 // Notificar duração ao iniciar reprodução
                 var dur = Math.floor(e.target.getDuration() * 1000);
                 if (dur > 0) _ytBridge('VIDEO_DURATION', dur);
               } else if (e.data === 2) {
                 _ytBridge('YT_PAUSED');
                 _stopYtPositionPolling();
+                // Ativar overlay de pausa para ocultar badges/end-cards nativos
+                if (overlay) overlay.classList.add('paused');
                 // Notificar posição final ao pausar
                 var pos = Math.floor(e.target.getCurrentTime() * 1000);
                 if (pos >= 0) _ytBridge('VIDEO_POSITION', pos);
               } else if (e.data === 3) {
                 _ytBridge('YT_BUFFERING');
+                // Remover overlay ao bufferizar (vídeo vai retomar)
+                if (overlay) overlay.classList.remove('paused');
               } else if (e.data === 0) {
                 _ytBridge('VIDEO_ENDED');
                 _stopYtPositionPolling();
+                // Ativar overlay ao terminar para ocultar end-cards
+                if (overlay) overlay.classList.add('paused');
               }
             }
           }

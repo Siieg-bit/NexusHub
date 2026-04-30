@@ -8,6 +8,11 @@ import '../../../../core/widgets/emoji_rain_overlay.dart';
 // Detecta a orientação via OrientationBuilder e alterna entre os dois layouts.
 // Quando em landscape, o SystemChrome oculta a status bar para maximizar
 // o espaço do player.
+//
+// FIX: O ScreeningPlayerWidget é criado UMA ÚNICA VEZ no State e passado como
+// parâmetro para os layouts filhos. Isso evita que o player seja destruído e
+// recriado ao alternar entre portrait normal e fullscreen (isImmersive), o que
+// causava o reinício do vídeo.
 // =============================================================================
 
 import 'package:flutter/material.dart';
@@ -67,6 +72,21 @@ class _ScreeningAdaptiveLayoutState
     extends ConsumerState<ScreeningAdaptiveLayout> {
   Orientation? _lastOrientation;
 
+  /// O player é criado UMA ÚNICA VEZ e reutilizado em todos os layouts.
+  /// Isso evita que o WebView seja destruído/recriado ao alternar entre
+  /// portrait normal ↔ fullscreen (isImmersive) ↔ landscape.
+  late final Widget _playerWidget;
+
+  @override
+  void initState() {
+    super.initState();
+    _playerWidget = ScreeningPlayerWidget(
+      key: ValueKey(widget.sessionId),
+      sessionId: widget.sessionId,
+      threadId: widget.threadId,
+    );
+  }
+
   void _handleOrientationChange(Orientation orientation) {
     if (_lastOrientation == orientation) return;
     _lastOrientation = orientation;
@@ -118,6 +138,7 @@ class _ScreeningAdaptiveLayoutState
             emojiRainKey: widget.emojiRainKey,
             isImmersive: true,
             onToggleFullscreen: widget.onToggleFullscreen,
+            playerWidget: _playerWidget,
           );
         }
 
@@ -134,6 +155,7 @@ class _ScreeningAdaptiveLayoutState
             roomTitle: roomState.title ?? 'Sala de Projeção',
             emojiRainKey: widget.emojiRainKey,
             onToggleFullscreen: widget.onToggleFullscreen,
+            playerWidget: _playerWidget,
           );
         }
 
@@ -150,6 +172,7 @@ class _ScreeningAdaptiveLayoutState
           emojiRainKey: widget.emojiRainKey,
           isImmersive: false,
           onToggleFullscreen: widget.onToggleFullscreen,
+          playerWidget: _playerWidget,
         );
       },
     );
@@ -172,6 +195,8 @@ class _PortraitLayout extends ConsumerWidget {
   final GlobalKey<EmojiRainOverlayState>? emojiRainKey;
   final bool isImmersive;
   final VoidCallback? onToggleFullscreen;
+  /// Player widget persistente passado pelo State pai para evitar recriação.
+  final Widget playerWidget;
 
   const _PortraitLayout({
     required this.sessionId,
@@ -183,6 +208,7 @@ class _PortraitLayout extends ConsumerWidget {
     required this.onMinimize,
     required this.onEntryAnimationComplete,
     required this.roomTitle,
+    required this.playerWidget,
     this.emojiRainKey,
     this.isImmersive = false,
     this.onToggleFullscreen,
@@ -208,20 +234,13 @@ class _PortraitLayout extends ConsumerWidget {
     final playerStack = Stack(
       fit: StackFit.expand,
       children: [
-        // Player WebView
-        // key: ValueKey(sessionId) garante que o widget é recriado completamente
-        // quando o sessionId muda (nova sessão), descartando o WebView anterior
-        // e evitando que o vídeo da sessão anterior persista.
+        // Player WebView — widget persistente passado pelo State pai.
         // RepaintBoundary isola o player: quando o teclado abre, controles aparecem
         // ou outros widgets são redesenhados, o player NÃO é redesenhado junto.
         RepaintBoundary(
           child: AbsorbPointer(
             absorbing: showControls,
-            child: ScreeningPlayerWidget(
-              key: ValueKey(sessionId),
-              sessionId: sessionId,
-              threadId: threadId,
-            ),
+            child: playerWidget,
           ),
         ),
         // GestureDetector transparente para mostrar/esconder controles
@@ -372,6 +391,8 @@ class _LandscapeLayout extends StatelessWidget {
   final String roomTitle;
   final GlobalKey<EmojiRainOverlayState>? emojiRainKey;
   final VoidCallback? onToggleFullscreen;
+  /// Player widget persistente passado pelo State pai para evitar recriação.
+  final Widget playerWidget;
 
   const _LandscapeLayout({
     required this.sessionId,
@@ -383,6 +404,7 @@ class _LandscapeLayout extends StatelessWidget {
     required this.onMinimize,
     required this.onEntryAnimationComplete,
     required this.roomTitle,
+    required this.playerWidget,
     this.emojiRainKey,
     this.onToggleFullscreen,
   });
@@ -402,11 +424,7 @@ class _LandscapeLayout extends StatelessWidget {
                   RepaintBoundary(
                     child: AbsorbPointer(
                       absorbing: showControls,
-                      child: ScreeningPlayerWidget(
-                        key: ValueKey(sessionId),
-                        sessionId: sessionId,
-                        threadId: threadId,
-                      ),
+                      child: playerWidget,
                     ),
                   ),
                   // GestureDetector transparente ACIMA da WebView

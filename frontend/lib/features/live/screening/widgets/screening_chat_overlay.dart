@@ -908,8 +908,8 @@ class _ChatInputState extends State<_ChatInput> {
                     disabledBorder: InputBorder.none,
                     // Fundo transparente para não sobrepor o container pai
                     filled: false,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16),
+                    contentPadding: const EdgeInsets.fromLTRB(16, 0, 4, 0),
+                    isCollapsed: true,
                   ),
                   onSubmitted: (_) => _handleSend(),
                   textInputAction: TextInputAction.send,

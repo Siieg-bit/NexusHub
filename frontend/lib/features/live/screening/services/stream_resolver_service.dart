@@ -137,9 +137,12 @@ class StreamResolverService {
           // origin= deve bater com o baseUrl do InAppWebView ('https://nexushub.app').
           // Não usar youtube.com como baseUrl pois causa erro 152-4 (embed bloqueado).
           // controls=0 oculta os controles nativos do YouTube (usamos os do Flutter).
+          // iv_load_policy=3: desativa info cards e anotações (badges nativos ao pausar)
+          // disablekb=1: desativa atalhos de teclado nativos do YouTube
           return 'https://www.youtube.com/embed/$id'
               '?autoplay=1&mute=0&rel=0&modestbranding=1'
               '&playsinline=1&enablejsapi=1&controls=0'
+              '&iv_load_policy=3&disablekb=1'
               '&origin=https://nexushub.app';
         }
         return null;
