@@ -715,7 +715,6 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
         // Texto puro: RPC existente com reputação
         await SupabaseService.rpc('create_comment_with_reputation', params: {
           'p_community_id': _communityId,
-          'p_author_id':    userId,
           'p_content':      textContent,
           'p_wiki_id':      widget.wikiId,
           'p_parent_id':    _replyingToComment?.id,

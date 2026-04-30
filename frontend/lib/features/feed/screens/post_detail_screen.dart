@@ -447,7 +447,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen>
       } else {
         await SupabaseService.rpc('create_comment_with_reputation', params: {
           'p_community_id': communityId,
-          'p_author_id': userId,
           'p_content': textContent,
           'p_post_id': widget.postId,
           'p_parent_id': _replyingToComment?.id,
