@@ -5,8 +5,8 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Mapa de tipo de reaction → emoji e cor
 const kReactionMeta = {
-  'like':  {'emoji': '👍', 'label': 'Curtir',   'color': Color(0xFF2196F3)},
-  'love':  {'emoji': '❤️', 'label': 'Amei',     'color': Color(0xFFE91E63)},
+  'like':  {'emoji': '❤️', 'label': 'Curtir',   'color': Color(0xFFE91E63)},
+  'love':  {'emoji': '😍', 'label': 'Amei',     'color': Color(0xFFE91E63)},
   'haha':  {'emoji': '😂', 'label': 'Haha',     'color': Color(0xFFFF9800)},
   'wow':   {'emoji': '😮', 'label': 'Uau',      'color': Color(0xFFFF9800)},
   'sad':   {'emoji': '😢', 'label': 'Triste',   'color': Color(0xFF2196F3)},
@@ -15,7 +15,7 @@ const kReactionMeta = {
 
 /// Retorna o emoji correspondente ao tipo de reaction.
 String reactionEmoji(String? type) =>
-    (kReactionMeta[type]?['emoji'] as String?) ?? '👍';
+    (kReactionMeta[type]?['emoji'] as String?) ?? '❤️';
 
 /// Retorna a cor correspondente ao tipo de reaction.
 Color reactionColor(String? type, Color fallback) =>
@@ -23,7 +23,7 @@ Color reactionColor(String? type, Color fallback) =>
 
 /// Widget que exibe o botão de reaction com suporte a long-press para picker.
 ///
-/// - Tap simples: toggle 'like' (comportamento padrão)
+/// - Tap simples: toggle 'like' (coração)
 /// - Long press: abre o picker de reactions
 class ReactionButton extends StatefulWidget {
   final String? currentReaction; // tipo atual ou null
@@ -76,7 +76,6 @@ class _ReactionButtonState extends State<ReactionButton>
     final renderBox = context.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
     final offset = renderBox.localToGlobal(Offset.zero);
-    final r = context.r;
 
     _overlayEntry = OverlayEntry(
       builder: (ctx) => _ReactionPickerOverlay(
@@ -114,6 +113,9 @@ class _ReactionButtonState extends State<ReactionButton>
         ? reactionColor(reactionType, context.nexusTheme.accentPrimary)
         : Colors.grey[500]!;
 
+    // 'like' usa ícone vetorial de coração; demais reactions usam emoji.
+    final bool useVectorIcon = !hasReaction || reactionType == 'like';
+
     return GestureDetector(
       onTap: _onTap,
       onLongPress: _showPicker,
@@ -121,25 +123,37 @@ class _ReactionButtonState extends State<ReactionButton>
         scale: _scaleAnim,
         child: Row(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              transitionBuilder: (child, anim) => ScaleTransition(
-                scale: anim,
-                child: child,
+            SizedBox(
+              width: r.s(22),
+              height: r.s(22),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                transitionBuilder: (child, anim) => ScaleTransition(
+                  scale: anim,
+                  child: child,
+                ),
+                child: useVectorIcon
+                    ? Icon(
+                        hasReaction
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        key: ValueKey('heart_$hasReaction'),
+                        size: r.s(22),
+                        color: color,
+                      )
+                    : Center(
+                        child: Text(
+                          reactionEmoji(reactionType),
+                          key: ValueKey(reactionType),
+                          style: TextStyle(
+                            fontSize: r.fs(17),
+                            height: 1.0,
+                          ),
+                        ),
+                      ),
               ),
-              child: hasReaction
-                  ? Text(
-                      reactionEmoji(reactionType),
-                      key: ValueKey(reactionType),
-                      style: TextStyle(fontSize: r.fs(18)),
-                    )
-                  : Icon(
-                      Icons.thumb_up_outlined,
-                      key: const ValueKey('thumb'),
-                      size: r.s(18),
-                      color: color,
-                    ),
             ),
             if (widget.totalCount > 0) ...[
               SizedBox(width: r.s(4)),
