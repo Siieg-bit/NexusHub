@@ -34,7 +34,6 @@ class AppealsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(stringsProvider);
     final r = context.r;
-    final theme = context.nexusTheme;
     final appealsAsync = ref.watch(myAppealsProvider);
 
     return Scaffold(
@@ -187,7 +186,6 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final theme = context.nexusTheme;
     final s = ref.watch(stringsProvider);
     final appeal = widget.appeal;
 
@@ -528,7 +526,6 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
   Widget build(BuildContext context) {
     final s = ref.watch(stringsProvider);
     final r = context.r;
-    final theme = context.nexusTheme;
 
     if (_submitted) {
       return Scaffold(

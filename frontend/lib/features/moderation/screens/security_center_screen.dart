@@ -76,7 +76,6 @@ class _SecurityCenterScreenState extends ConsumerState<SecurityCenterScreen>
   Widget build(BuildContext context) {
     final s = ref.watch(stringsProvider);
     final r = context.r;
-    final theme = context.nexusTheme;
 
     return Scaffold(
       backgroundColor: context.nexusTheme.backgroundPrimary,
@@ -139,7 +138,6 @@ class _OverviewTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(stringsProvider);
     final r = context.r;
-    final theme = context.nexusTheme;
     final overviewAsync = ref.watch(securityOverviewProvider);
 
     return overviewAsync.when(
@@ -260,7 +258,6 @@ class _SessionsTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(stringsProvider);
     final r = context.r;
-    final theme = context.nexusTheme;
     final overviewAsync = ref.watch(securityOverviewProvider);
 
     return overviewAsync.when(
@@ -432,7 +429,6 @@ class _ActivityTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(stringsProvider);
     final r = context.r;
-    final theme = context.nexusTheme;
     final eventsAsync = ref.watch(securityEventsProvider);
 
     return eventsAsync.when(
@@ -533,13 +529,16 @@ class _ActivityTab extends ConsumerWidget {
 
   (IconData, Color, String) _eventTypeInfo(String type, dynamic s) {
     return switch (type) {
-      'login' => (Icons.login_rounded, const Color(0xFF4CAF50), s.securityEventLogin),
+      'login_success' || 'login' => (Icons.login_rounded, const Color(0xFF4CAF50), s.securityEventLogin),
       'logout' => (Icons.logout_rounded, const Color(0xFF9E9E9E), s.securityEventLogout),
-      'password_change' => (Icons.lock_reset_rounded, const Color(0xFFFF9800), s.securityEventPasswordChange),
-      'email_change' => (Icons.email_rounded, const Color(0xFF2196F3), s.securityEventEmailChange),
-      'failed_login' => (Icons.warning_rounded, const Color(0xFFF44336), s.securityEventFailedLogin),
+      'password_changed' || 'password_change' => (Icons.lock_reset_rounded, const Color(0xFFFF9800), s.securityEventPasswordChange),
+      'email_changed' || 'email_change' => (Icons.email_rounded, const Color(0xFF2196F3), s.securityEventEmailChange),
+      'login_failed' || 'failed_login' => (Icons.warning_rounded, const Color(0xFFF44336), s.securityEventFailedLogin),
       'session_revoked' => (Icons.block_rounded, const Color(0xFFE91E63), s.securityEventSessionRevoked),
       'account_locked' => (Icons.lock_rounded, const Color(0xFFF44336), s.securityEventAccountLocked),
+      'two_factor_enabled' => (Icons.verified_user_rounded, const Color(0xFF4CAF50), s.securityEventTwoFactorEnabled),
+      'two_factor_disabled' => (Icons.gpp_bad_rounded, const Color(0xFFFF9800), s.securityEventTwoFactorDisabled),
+      'suspicious_activity' => (Icons.report_problem_rounded, const Color(0xFFF44336), s.securityEventSuspiciousLogin),
       _ => (Icons.info_rounded, const Color(0xFF9E9E9E), type),
     };
   }
@@ -565,9 +564,10 @@ class _SecurityScoreCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, label, icon) = switch (level) {
-      >= 80 => (context.nexusTheme.success, s.securityLevelHigh, Icons.security_rounded),
-      >= 50 => (const Color(0xFFFF9800), s.securityLevelMedium, Icons.shield_rounded),
-      _ => (context.nexusTheme.error, s.securityLevelLow, Icons.shield_outlined),
+      1 => (context.nexusTheme.success, s.securityLevelHigh, Icons.security_rounded),
+      2 => (const Color(0xFFFF9800), s.securityLevelMedium, Icons.shield_rounded),
+      3 => (context.nexusTheme.error, s.securityLevelLow, Icons.shield_outlined),
+      _ => (context.nexusTheme.textSecondary, s.securityEventUnknown, Icons.shield_outlined),
     };
 
     return Container(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../core/services/supabase_service.dart';
@@ -72,7 +71,6 @@ class ManagementLogsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(stringsProvider);
     final r = context.r;
-    final theme = context.nexusTheme;
     final filter = ref.watch(_logsFilterProvider);
     final statsAsync = ref.watch(managementLogsStatsProvider(communityId));
     final logsAsync = ref.watch(managementLogsProvider((communityId, filter)));
@@ -356,15 +354,14 @@ class _LogEntryState extends State<_LogEntry> {
   Widget build(BuildContext context) {
     final log = widget.log;
     final r = widget.r;
-    final theme = context.nexusTheme;
     final s = widget.s;
 
     final action = log['action'] as String? ?? 'unknown';
     final severity = log['severity'] as String? ?? 'low';
-    final actorName = log['actor_name'] as String? ?? s.unknownUser;
-    final actorIcon = log['actor_icon'] as String?;
+    final actorName = log['actor_nickname'] as String? ?? s.unknownUser;
+    final actorIcon = log['actor_avatar'] as String?;
     final actorId = log['actor_id'] as String?;
-    final targetName = log['target_user_name'] as String?;
+    final targetName = log['target_nickname'] as String?;
     final targetId = log['target_user_id'] as String?;
     final reason = log['reason'] as String?;
     final isAutomated = log['is_automated'] as bool? ?? false;
