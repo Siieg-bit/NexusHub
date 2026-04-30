@@ -5825,4 +5825,216 @@ class AppStringsAr implements AppStrings {
   String get communityInfo => 'معلومات المجتمع';
   @override
   String get management => 'الإدارة';
+  @override
+  String get appealsTitle => 'الطعون';
+  @override
+  String get appealsSubtitle => 'تقديم طعن ضد الحظر في المجتمعات';
+  @override
+  String get appealsSettingsSubtitle => 'الطعن ضد الحظر';
+  @override
+  String get appealsEmpty => 'لا توجد طعون';
+  @override
+  String get appealsEmptyDesc => 'ليس لديك طعون نشطة في الوقت الحالي.';
+  @override
+  String get appealsPending => 'قيد المراجعة';
+  @override
+  String get appealsApproved => 'مقبول';
+  @override
+  String get appealsRejected => 'مرفوض';
+  @override
+  String get appealsStatusPending => 'قيد المراجعة';
+  @override
+  String get appealsStatusApproved => 'مقبول';
+  @override
+  String get appealsStatusRejected => 'مرفوض';
+  @override
+  String get submitAppeal => 'تقديم طعن';
+  @override
+  String get submitAppealTitle => 'طعن جديد';
+  @override
+  String get appealReasonLabel => 'سبب الطعن';
+  @override
+  String get appealReasonHint => 'اشرح لماذا تعتقد أن الحظر كان غير عادل...';
+  @override
+  String get appealReasonTooShort => 'يرجى كتابة 20 حرفًا على الأقل.';
+  @override
+  String get appealSubmitted => 'تم تقديم الطعن!';
+  @override
+  String get appealSubmittedDesc => 'سيتم مراجعة طعنك من قبل فريق الإشراف.';
+  @override
+  String get appealAlreadyPending => 'لديك بالفعل طعن قيد المراجعة لهذا المجتمع.';
+  @override
+  String get appealNotBanned => 'أنت لست محظورًا في هذا المجتمع.';
+  @override
+  String get appealCommunity => 'المجتمع';
+  @override
+  String get appealBanReason => 'سبب الحظر';
+  @override
+  String get appealBanDate => 'تاريخ الحظر';
+  @override
+  String get appealPermanent => 'دائم';
+  @override
+  String get appealExpires => 'ينتهي';
+  @override
+  String get appealReviewedBy => 'تمت المراجعة بواسطة';
+  @override
+  String get appealReviewNote => 'ملاحظة المراجعة';
+  @override
+  String get securityCenterTitle => 'مركز الأمان';
+  @override
+  String get securityCenterSubtitle => 'راقب النشاط وحماية حسابك';
+  @override
+  String get securityEventsTitle => 'النشاط الأخير';
+  @override
+  String get securityEventsEmpty => 'لا يوجد نشاط أخير مسجل.';
+  @override
+  String get securityEventLogin => 'تسجيل الدخول';
+  @override
+  String get securityEventPasswordChange => 'تم تغيير كلمة المرور';
+  @override
+  String get securityEventEmailChange => 'تم تغيير البريد الإلكتروني';
+  @override
+  String get securityEventTwoFactorEnabled => 'تم تفعيل التحقق بخطوتين';
+  @override
+  String get securityEventTwoFactorDisabled => 'تم تعطيل التحقق بخطوتين';
+  @override
+  String get securityEventSuspiciousLogin => 'تم اكتشاف تسجيل دخول مشبوه';
+  @override
+  String get securityEventAccountLocked => 'تم تأمين الحساب مؤقتًا';
+  @override
+  String get securityEventUnknown => 'حدث أمني';
+  @override
+  String get securitySettingsTitle => 'إعدادات الأمان';
+  @override
+  String get securityTwoFactor => 'التحقق بخطوتين';
+  @override
+  String get securityTwoFactorDesc => 'أضف طبقة حماية إضافية';
+  @override
+  String get securityLoginAlerts => 'تنبيهات تسجيل الدخول';
+  @override
+  String get securityLoginAlertsDesc => 'إشعار عند تسجيل الدخول من جهاز جديد';
+  @override
+  String get securitySuspiciousAlerts => 'التنبيهات المشبوهة';
+  @override
+  String get securitySuspiciousAlertsDesc => 'إشعار بالنشاط غير المعتاد';
+  @override
+  String get securityActiveSessionsTitle => 'الجلسات النشطة';
+  @override
+  String get securityActiveSessionsDesc => 'إدارة الأجهزة المتصلة بحسابك';
+  @override
+  String get securityCurrentDevice => 'الجهاز الحالي';
+  @override
+  String get securityTerminateSession => 'إنهاء الجلسة';
+  @override
+  String get securityTerminateAllSessions => 'إنهاء جميع الجلسات';
+  @override
+  String get securityTerminateConfirm => 'هل تريد إنهاء هذه الجلسة؟';
+  @override
+  String get securitySessionTerminated => 'تم إنهاء الجلسة';
+  @override
+  String get securityAllSessionsTerminated => 'تم إنهاء جميع الجلسات';
+  @override
+  String get managementLogsTitle => 'سجلات الإشراف';
+  @override
+  String get managementLogsEmpty => 'لا توجد إجراءات إشراف مسجلة.';
+  @override
+  String get managementLogsTotalActions => 'الإجمالي';
+  @override
+  String get managementLogsBans => 'الحظر';
+  @override
+  String get managementLogsPendingFlags => 'البلاغات';
+  @override
+  String get managementLogsPendingAppeals => 'الطعون';
+  @override
+  String get logReason => 'السبب';
+  @override
+  String get logDuration => 'المدة';
+  @override
+  String get logDurationPermanent => 'دائم';
+  @override
+  String get logDurationHours => 'ساعات';
+  @override
+  String get logExpiresAt => 'ينتهي';
+  @override
+  String get logTargetPost => 'عرض المنشور';
+  @override
+  String get logTargetUser => 'عرض الملف الشخصي';
+  @override
+  String get logAutomated => 'تلقائي';
+  @override
+  String get actionBan => 'حظر';
+  @override
+  String get actionUnban => 'رفع الحظر';
+  @override
+  String get actionWarn => 'تحذير';
+  @override
+  String get actionMute => 'كتم';
+  @override
+  String get actionUnmute => 'إلغاء الكتم';
+  @override
+  String get actionDeletePost => 'تم حذف المنشور';
+  @override
+  String get actionDeleteContent => 'تم حذف المحتوى';
+  @override
+  String get actionPinPost => 'تم تثبيت المنشور';
+  @override
+  String get actionUnpinPost => 'تم إلغاء تثبيت المنشور';
+  @override
+  String get actionApproveFlag => 'تم قبول البلاغ';
+  @override
+  String get actionDismissFlag => 'تم رفض البلاغ';
+  @override
+  String get actionAcceptAppeal => 'تم قبول الطعن';
+  @override
+  String get actionRejectAppeal => 'تم رفض الطعن';
+  @override
+  String get filterAll => 'الكل';
+  @override
+  String get filterBan => 'الحظر';
+  @override
+  String get filterWarn => 'التحذيرات';
+  @override
+  String get filterDeletePost => 'الحذف';
+  @override
+  String get filterMute => 'الكتم';
+  @override
+  String get filterUnban => 'رفع الحظر';
+  @override
+  String get reportDialogTitle => 'الإبلاغ عن محتوى';
+  @override
+  String get reportDialogSubtitle => 'اختر سبب البلاغ';
+  @override
+  String get reportReasonSexualContent => 'محتوى جنسي';
+  @override
+  String get reportReasonHarassment => 'مضايقة أو تنمر';
+  @override
+  String get reportReasonHateSpeech => 'خطاب كراهية';
+  @override
+  String get reportReasonViolence => 'عنف أو تهديدات';
+  @override
+  String get reportReasonSpam => 'رسائل مزعجة أو احتيال';
+  @override
+  String get reportReasonMisinformation => 'معلومات مضللة';
+  @override
+  String get reportReasonSelfHarm => 'إيذاء النفس أو الانتحار';
+  @override
+  String get reportReasonIllegalContent => 'محتوى غير قانوني';
+  @override
+  String get reportReasonOther => 'سبب آخر';
+  @override
+  String get reportDetailsLabel => 'تفاصيل إضافية';
+  @override
+  String get reportDetailsHint => 'صف المشكلة بمزيد من التفاصيل (اختياري)...';
+  @override
+  String get reportDetailsRequired => 'يرجى وصف المشكلة.';
+  @override
+  String get reportSending => 'جارٍ إرسال البلاغ...';
+  @override
+  String get reportSent => 'تم إرسال البلاغ!';
+  @override
+  String get reportSentDesc => 'سيراجعه فريقنا قريبًا.';
+  @override
+  String get reportAlreadySent => 'لقد أبلغت بالفعل عن هذا المحتوى.';
+  @override
+  String get reportSendError => 'خطأ في إرسال البلاغ. يرجى المحاولة مرة أخرى.';
 }

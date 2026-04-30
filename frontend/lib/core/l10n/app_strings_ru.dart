@@ -5826,4 +5826,216 @@ class AppStringsRu implements AppStrings {
   String get communityInfo => 'О сообществе';
   @override
   String get management => 'УПРАВЛЕНИЕ';
+  @override
+  String get appealsTitle => 'Апелляции';
+  @override
+  String get appealsSubtitle => 'Подать апелляцию против банов в сообществах';
+  @override
+  String get appealsSettingsSubtitle => 'Апелляции против банов';
+  @override
+  String get appealsEmpty => 'Нет апелляций';
+  @override
+  String get appealsEmptyDesc => 'У вас нет активных апелляций на данный момент.';
+  @override
+  String get appealsPending => 'На рассмотрении';
+  @override
+  String get appealsApproved => 'Одобрена';
+  @override
+  String get appealsRejected => 'Отклонена';
+  @override
+  String get appealsStatusPending => 'На рассмотрении';
+  @override
+  String get appealsStatusApproved => 'Одобрена';
+  @override
+  String get appealsStatusRejected => 'Отклонена';
+  @override
+  String get submitAppeal => 'Подать апелляцию';
+  @override
+  String get submitAppealTitle => 'Новая апелляция';
+  @override
+  String get appealReasonLabel => 'Причина апелляции';
+  @override
+  String get appealReasonHint => 'Объясните, почему считаете бан несправедливым...';
+  @override
+  String get appealReasonTooShort => 'Пожалуйста, напишите не менее 20 символов.';
+  @override
+  String get appealSubmitted => 'Апелляция подана!';
+  @override
+  String get appealSubmittedDesc => 'Ваша апелляция будет рассмотрена командой модераторов.';
+  @override
+  String get appealAlreadyPending => 'У вас уже есть апелляция на рассмотрении для этого сообщества.';
+  @override
+  String get appealNotBanned => 'Вы не заблокированы в этом сообществе.';
+  @override
+  String get appealCommunity => 'Сообщество';
+  @override
+  String get appealBanReason => 'Причина бана';
+  @override
+  String get appealBanDate => 'Дата бана';
+  @override
+  String get appealPermanent => 'Постоянный';
+  @override
+  String get appealExpires => 'Истекает';
+  @override
+  String get appealReviewedBy => 'Рассмотрено';
+  @override
+  String get appealReviewNote => 'Примечание';
+  @override
+  String get securityCenterTitle => 'Центр безопасности';
+  @override
+  String get securityCenterSubtitle => 'Мониторинг активности и защита аккаунта';
+  @override
+  String get securityEventsTitle => 'Последняя активность';
+  @override
+  String get securityEventsEmpty => 'Нет записей о последней активности.';
+  @override
+  String get securityEventLogin => 'Вход в систему';
+  @override
+  String get securityEventPasswordChange => 'Пароль изменён';
+  @override
+  String get securityEventEmailChange => 'Email изменён';
+  @override
+  String get securityEventTwoFactorEnabled => 'Двухфакторная аутентификация включена';
+  @override
+  String get securityEventTwoFactorDisabled => 'Двухфакторная аутентификация отключена';
+  @override
+  String get securityEventSuspiciousLogin => 'Обнаружен подозрительный вход';
+  @override
+  String get securityEventAccountLocked => 'Аккаунт временно заблокирован';
+  @override
+  String get securityEventUnknown => 'Событие безопасности';
+  @override
+  String get securitySettingsTitle => 'Настройки безопасности';
+  @override
+  String get securityTwoFactor => 'Двухфакторная аутентификация';
+  @override
+  String get securityTwoFactorDesc => 'Добавьте дополнительный уровень защиты';
+  @override
+  String get securityLoginAlerts => 'Уведомления о входе';
+  @override
+  String get securityLoginAlertsDesc => 'Уведомлять при входе с нового устройства';
+  @override
+  String get securitySuspiciousAlerts => 'Подозрительные уведомления';
+  @override
+  String get securitySuspiciousAlertsDesc => 'Уведомлять о необычной активности';
+  @override
+  String get securityActiveSessionsTitle => 'Активные сессии';
+  @override
+  String get securityActiveSessionsDesc => 'Управление устройствами, подключёнными к аккаунту';
+  @override
+  String get securityCurrentDevice => 'Текущее устройство';
+  @override
+  String get securityTerminateSession => 'Завершить сессию';
+  @override
+  String get securityTerminateAllSessions => 'Завершить все сессии';
+  @override
+  String get securityTerminateConfirm => 'Завершить эту сессию?';
+  @override
+  String get securitySessionTerminated => 'Сессия завершена';
+  @override
+  String get securityAllSessionsTerminated => 'Все сессии завершены';
+  @override
+  String get managementLogsTitle => 'Журнал модерации';
+  @override
+  String get managementLogsEmpty => 'Нет записей о действиях модерации.';
+  @override
+  String get managementLogsTotalActions => 'Всего';
+  @override
+  String get managementLogsBans => 'Баны';
+  @override
+  String get managementLogsPendingFlags => 'Жалобы';
+  @override
+  String get managementLogsPendingAppeals => 'Апелляции';
+  @override
+  String get logReason => 'Причина';
+  @override
+  String get logDuration => 'Длительность';
+  @override
+  String get logDurationPermanent => 'Постоянно';
+  @override
+  String get logDurationHours => 'часов';
+  @override
+  String get logExpiresAt => 'Истекает';
+  @override
+  String get logTargetPost => 'Посмотреть пост';
+  @override
+  String get logTargetUser => 'Посмотреть профиль';
+  @override
+  String get logAutomated => 'Автоматически';
+  @override
+  String get actionBan => 'Бан';
+  @override
+  String get actionUnban => 'Разбан';
+  @override
+  String get actionWarn => 'Предупреждение';
+  @override
+  String get actionMute => 'Мут';
+  @override
+  String get actionUnmute => 'Снятие мута';
+  @override
+  String get actionDeletePost => 'Пост удалён';
+  @override
+  String get actionDeleteContent => 'Контент удалён';
+  @override
+  String get actionPinPost => 'Пост закреплён';
+  @override
+  String get actionUnpinPost => 'Пост откреплён';
+  @override
+  String get actionApproveFlag => 'Жалоба одобрена';
+  @override
+  String get actionDismissFlag => 'Жалоба отклонена';
+  @override
+  String get actionAcceptAppeal => 'Апелляция принята';
+  @override
+  String get actionRejectAppeal => 'Апелляция отклонена';
+  @override
+  String get filterAll => 'Все';
+  @override
+  String get filterBan => 'Баны';
+  @override
+  String get filterWarn => 'Предупреждения';
+  @override
+  String get filterDeletePost => 'Удаления';
+  @override
+  String get filterMute => 'Муты';
+  @override
+  String get filterUnban => 'Разбаны';
+  @override
+  String get reportDialogTitle => 'Пожаловаться на контент';
+  @override
+  String get reportDialogSubtitle => 'Выберите причину жалобы';
+  @override
+  String get reportReasonSexualContent => 'Сексуальный контент';
+  @override
+  String get reportReasonHarassment => 'Домогательства или травля';
+  @override
+  String get reportReasonHateSpeech => 'Язык ненависти';
+  @override
+  String get reportReasonViolence => 'Насилие или угрозы';
+  @override
+  String get reportReasonSpam => 'Спам или мошенничество';
+  @override
+  String get reportReasonMisinformation => 'Дезинформация';
+  @override
+  String get reportReasonSelfHarm => 'Самоповреждение или суицид';
+  @override
+  String get reportReasonIllegalContent => 'Незаконный контент';
+  @override
+  String get reportReasonOther => 'Другая причина';
+  @override
+  String get reportDetailsLabel => 'Дополнительные детали';
+  @override
+  String get reportDetailsHint => 'Опишите проблему подробнее (необязательно)...';
+  @override
+  String get reportDetailsRequired => 'Пожалуйста, опишите проблему.';
+  @override
+  String get reportSending => 'Отправка жалобы...';
+  @override
+  String get reportSent => 'Жалоба отправлена!';
+  @override
+  String get reportSentDesc => 'Наша команда рассмотрит её в ближайшее время.';
+  @override
+  String get reportAlreadySent => 'Вы уже пожаловались на этот контент.';
+  @override
+  String get reportSendError => 'Ошибка при отправке жалобы. Попробуйте снова.';
 }

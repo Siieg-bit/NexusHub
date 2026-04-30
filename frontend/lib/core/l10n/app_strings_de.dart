@@ -5826,4 +5826,216 @@ class AppStringsDe implements AppStrings {
   String get communityInfo => 'Community-Info';
   @override
   String get management => 'VERWALTUNG';
+  @override
+  String get appealsTitle => 'Einsprüche';
+  @override
+  String get appealsSubtitle => 'Einspruch gegen Community-Sperren einlegen';
+  @override
+  String get appealsSettingsSubtitle => 'Gegen Sperren Einspruch einlegen';
+  @override
+  String get appealsEmpty => 'Keine Einsprüche';
+  @override
+  String get appealsEmptyDesc => 'Du hast derzeit keine aktiven Einsprüche.';
+  @override
+  String get appealsPending => 'Ausstehend';
+  @override
+  String get appealsApproved => 'Genehmigt';
+  @override
+  String get appealsRejected => 'Abgelehnt';
+  @override
+  String get appealsStatusPending => 'In Prüfung';
+  @override
+  String get appealsStatusApproved => 'Genehmigt';
+  @override
+  String get appealsStatusRejected => 'Abgelehnt';
+  @override
+  String get submitAppeal => 'Einspruch einreichen';
+  @override
+  String get submitAppealTitle => 'Neuer Einspruch';
+  @override
+  String get appealReasonLabel => 'Grund des Einspruchs';
+  @override
+  String get appealReasonHint => 'Erkläre, warum du die Sperre für ungerechtfertigt hältst...';
+  @override
+  String get appealReasonTooShort => 'Bitte schreibe mindestens 20 Zeichen.';
+  @override
+  String get appealSubmitted => 'Einspruch eingereicht!';
+  @override
+  String get appealSubmittedDesc => 'Dein Einspruch wird vom Moderationsteam geprüft.';
+  @override
+  String get appealAlreadyPending => 'Du hast bereits einen ausstehenden Einspruch für diese Community.';
+  @override
+  String get appealNotBanned => 'Du bist in dieser Community nicht gesperrt.';
+  @override
+  String get appealCommunity => 'Community';
+  @override
+  String get appealBanReason => 'Sperrgrund';
+  @override
+  String get appealBanDate => 'Sperrdatum';
+  @override
+  String get appealPermanent => 'Dauerhaft';
+  @override
+  String get appealExpires => 'Läuft ab';
+  @override
+  String get appealReviewedBy => 'Geprüft von';
+  @override
+  String get appealReviewNote => 'Prüfnotiz';
+  @override
+  String get securityCenterTitle => 'Sicherheitszentrum';
+  @override
+  String get securityCenterSubtitle => 'Aktivitäten überwachen und Konto schützen';
+  @override
+  String get securityEventsTitle => 'Letzte Aktivität';
+  @override
+  String get securityEventsEmpty => 'Keine kürzliche Aktivität aufgezeichnet.';
+  @override
+  String get securityEventLogin => 'Anmeldung';
+  @override
+  String get securityEventPasswordChange => 'Passwort geändert';
+  @override
+  String get securityEventEmailChange => 'E-Mail geändert';
+  @override
+  String get securityEventTwoFactorEnabled => 'Zwei-Faktor-Authentifizierung aktiviert';
+  @override
+  String get securityEventTwoFactorDisabled => 'Zwei-Faktor-Authentifizierung deaktiviert';
+  @override
+  String get securityEventSuspiciousLogin => 'Verdächtige Anmeldung erkannt';
+  @override
+  String get securityEventAccountLocked => 'Konto vorübergehend gesperrt';
+  @override
+  String get securityEventUnknown => 'Sicherheitsereignis';
+  @override
+  String get securitySettingsTitle => 'Sicherheitseinstellungen';
+  @override
+  String get securityTwoFactor => 'Zwei-Faktor-Authentifizierung';
+  @override
+  String get securityTwoFactorDesc => 'Füge eine zusätzliche Schutzebene hinzu';
+  @override
+  String get securityLoginAlerts => 'Anmeldewarnungen';
+  @override
+  String get securityLoginAlertsDesc => 'Benachrichtigen bei Anmeldung von neuem Gerät';
+  @override
+  String get securitySuspiciousAlerts => 'Verdächtige Warnungen';
+  @override
+  String get securitySuspiciousAlertsDesc => 'Über ungewöhnliche Aktivitäten benachrichtigen';
+  @override
+  String get securityActiveSessionsTitle => 'Aktive Sitzungen';
+  @override
+  String get securityActiveSessionsDesc => 'Mit deinem Konto verbundene Geräte verwalten';
+  @override
+  String get securityCurrentDevice => 'Aktuelles Gerät';
+  @override
+  String get securityTerminateSession => 'Sitzung beenden';
+  @override
+  String get securityTerminateAllSessions => 'Alle Sitzungen beenden';
+  @override
+  String get securityTerminateConfirm => 'Möchtest du diese Sitzung beenden?';
+  @override
+  String get securitySessionTerminated => 'Sitzung beendet';
+  @override
+  String get securityAllSessionsTerminated => 'Alle Sitzungen wurden beendet';
+  @override
+  String get managementLogsTitle => 'Moderationsprotokoll';
+  @override
+  String get managementLogsEmpty => 'Keine Moderationsaktionen aufgezeichnet.';
+  @override
+  String get managementLogsTotalActions => 'Gesamt';
+  @override
+  String get managementLogsBans => 'Sperren';
+  @override
+  String get managementLogsPendingFlags => 'Meldungen';
+  @override
+  String get managementLogsPendingAppeals => 'Einsprüche';
+  @override
+  String get logReason => 'Grund';
+  @override
+  String get logDuration => 'Dauer';
+  @override
+  String get logDurationPermanent => 'Dauerhaft';
+  @override
+  String get logDurationHours => 'Stunden';
+  @override
+  String get logExpiresAt => 'Läuft ab';
+  @override
+  String get logTargetPost => 'Beitrag anzeigen';
+  @override
+  String get logTargetUser => 'Profil anzeigen';
+  @override
+  String get logAutomated => 'Automatisch';
+  @override
+  String get actionBan => 'Sperre';
+  @override
+  String get actionUnban => 'Entsperrung';
+  @override
+  String get actionWarn => 'Verwarnung';
+  @override
+  String get actionMute => 'Stummschaltung';
+  @override
+  String get actionUnmute => 'Stummschaltung aufheben';
+  @override
+  String get actionDeletePost => 'Beitrag entfernt';
+  @override
+  String get actionDeleteContent => 'Inhalt entfernt';
+  @override
+  String get actionPinPost => 'Beitrag angeheftet';
+  @override
+  String get actionUnpinPost => 'Beitrag abgeheftet';
+  @override
+  String get actionApproveFlag => 'Meldung genehmigt';
+  @override
+  String get actionDismissFlag => 'Meldung abgewiesen';
+  @override
+  String get actionAcceptAppeal => 'Einspruch akzeptiert';
+  @override
+  String get actionRejectAppeal => 'Einspruch abgelehnt';
+  @override
+  String get filterAll => 'Alle';
+  @override
+  String get filterBan => 'Sperren';
+  @override
+  String get filterWarn => 'Verwarnungen';
+  @override
+  String get filterDeletePost => 'Entfernungen';
+  @override
+  String get filterMute => 'Stummschaltungen';
+  @override
+  String get filterUnban => 'Entsperrungen';
+  @override
+  String get reportDialogTitle => 'Inhalt melden';
+  @override
+  String get reportDialogSubtitle => 'Wähle den Grund für deine Meldung';
+  @override
+  String get reportReasonSexualContent => 'Sexueller Inhalt';
+  @override
+  String get reportReasonHarassment => 'Belästigung oder Mobbing';
+  @override
+  String get reportReasonHateSpeech => 'Hassrede';
+  @override
+  String get reportReasonViolence => 'Gewalt oder Drohungen';
+  @override
+  String get reportReasonSpam => 'Spam oder Betrug';
+  @override
+  String get reportReasonMisinformation => 'Fehlinformation';
+  @override
+  String get reportReasonSelfHarm => 'Selbstverletzung oder Suizid';
+  @override
+  String get reportReasonIllegalContent => 'Illegaler Inhalt';
+  @override
+  String get reportReasonOther => 'Anderer Grund';
+  @override
+  String get reportDetailsLabel => 'Zusätzliche Details';
+  @override
+  String get reportDetailsHint => 'Beschreibe das Problem genauer (optional)...';
+  @override
+  String get reportDetailsRequired => 'Bitte beschreibe das Problem.';
+  @override
+  String get reportSending => 'Meldung wird gesendet...';
+  @override
+  String get reportSent => 'Meldung gesendet!';
+  @override
+  String get reportSentDesc => 'Unser Team wird es in Kürze prüfen.';
+  @override
+  String get reportAlreadySent => 'Du hast diesen Inhalt bereits gemeldet.';
+  @override
+  String get reportSendError => 'Fehler beim Senden der Meldung. Bitte versuche es erneut.';
 }

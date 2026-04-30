@@ -820,6 +820,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   _SectionLabel(title: s.security),
                   _SettingsGroup(items: [
                     _SettingsItem(
+                      icon: Icons.shield_rounded,
+                      title: s.securityCenterTitle,
+                      subtitle: s.securityCenterSubtitle,
+                      onTap: () => context.push('/security-center'),
+                    ),
+                    _SettingsItem(
                       icon: Icons.block_rounded,
                       title: s.blockedUsers2,
                       onTap: () => context.push('/settings/blocked-users'),
@@ -834,6 +840,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       icon: Icons.devices_rounded,
                       title: s.connectedDevices,
                       onTap: () => context.push('/settings/devices'),
+                    ),
+                    _SettingsItem(
+                      icon: Icons.gavel_rounded,
+                      title: s.appealsTitle,
+                      subtitle: s.appealsSettingsSubtitle,
+                      onTap: () => context.push('/appeals'),
                     ),
                   ]),
                   SizedBox(height: r.s(20)),

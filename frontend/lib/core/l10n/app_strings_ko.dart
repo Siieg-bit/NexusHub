@@ -5826,4 +5826,216 @@ class AppStringsKo implements AppStrings {
   String get communityInfo => '커뮤니티 정보';
   @override
   String get management => '관리';
+  @override
+  String get appealsTitle => '이의 신청';
+  @override
+  String get appealsSubtitle => '커뮤니티 차단에 이의를 신청하세요';
+  @override
+  String get appealsSettingsSubtitle => '차단에 이의 신청';
+  @override
+  String get appealsEmpty => '이의 신청 없음';
+  @override
+  String get appealsEmptyDesc => '현재 활성 이의 신청이 없습니다.';
+  @override
+  String get appealsPending => '대기 중';
+  @override
+  String get appealsApproved => '승인됨';
+  @override
+  String get appealsRejected => '거부됨';
+  @override
+  String get appealsStatusPending => '검토 중';
+  @override
+  String get appealsStatusApproved => '승인됨';
+  @override
+  String get appealsStatusRejected => '거부됨';
+  @override
+  String get submitAppeal => '이의 신청 제출';
+  @override
+  String get submitAppealTitle => '새 이의 신청';
+  @override
+  String get appealReasonLabel => '이의 신청 사유';
+  @override
+  String get appealReasonHint => '차단이 부당하다고 생각하는 이유를 설명하세요...';
+  @override
+  String get appealReasonTooShort => '최소 20자를 입력해주세요.';
+  @override
+  String get appealSubmitted => '이의 신청이 제출되었습니다!';
+  @override
+  String get appealSubmittedDesc => '모더레이션 팀이 검토할 것입니다.';
+  @override
+  String get appealAlreadyPending => '이 커뮤니티에 대한 이의 신청이 이미 대기 중입니다.';
+  @override
+  String get appealNotBanned => '이 커뮤니티에서 차단되지 않았습니다.';
+  @override
+  String get appealCommunity => '커뮤니티';
+  @override
+  String get appealBanReason => '차단 사유';
+  @override
+  String get appealBanDate => '차단 날짜';
+  @override
+  String get appealPermanent => '영구';
+  @override
+  String get appealExpires => '만료';
+  @override
+  String get appealReviewedBy => '검토자';
+  @override
+  String get appealReviewNote => '검토 메모';
+  @override
+  String get securityCenterTitle => '보안 센터';
+  @override
+  String get securityCenterSubtitle => '활동을 모니터링하고 계정을 보호하세요';
+  @override
+  String get securityEventsTitle => '최근 활동';
+  @override
+  String get securityEventsEmpty => '최근 활동이 없습니다.';
+  @override
+  String get securityEventLogin => '로그인';
+  @override
+  String get securityEventPasswordChange => '비밀번호 변경';
+  @override
+  String get securityEventEmailChange => '이메일 변경';
+  @override
+  String get securityEventTwoFactorEnabled => '2단계 인증 활성화';
+  @override
+  String get securityEventTwoFactorDisabled => '2단계 인증 비활성화';
+  @override
+  String get securityEventSuspiciousLogin => '의심스러운 로그인 감지';
+  @override
+  String get securityEventAccountLocked => '계정 일시 잠금';
+  @override
+  String get securityEventUnknown => '보안 이벤트';
+  @override
+  String get securitySettingsTitle => '보안 설정';
+  @override
+  String get securityTwoFactor => '2단계 인증';
+  @override
+  String get securityTwoFactorDesc => '추가 보호 레이어 추가';
+  @override
+  String get securityLoginAlerts => '로그인 알림';
+  @override
+  String get securityLoginAlertsDesc => '새 기기에서 로그인 시 알림';
+  @override
+  String get securitySuspiciousAlerts => '의심스러운 알림';
+  @override
+  String get securitySuspiciousAlertsDesc => '비정상적인 활동 알림';
+  @override
+  String get securityActiveSessionsTitle => '활성 세션';
+  @override
+  String get securityActiveSessionsDesc => '계정에 연결된 기기 관리';
+  @override
+  String get securityCurrentDevice => '현재 기기';
+  @override
+  String get securityTerminateSession => '세션 종료';
+  @override
+  String get securityTerminateAllSessions => '모든 세션 종료';
+  @override
+  String get securityTerminateConfirm => '이 세션을 종료하시겠습니까?';
+  @override
+  String get securitySessionTerminated => '세션이 종료되었습니다';
+  @override
+  String get securityAllSessionsTerminated => '모든 세션이 종료되었습니다';
+  @override
+  String get managementLogsTitle => '모더레이션 로그';
+  @override
+  String get managementLogsEmpty => '기록된 모더레이션 작업이 없습니다.';
+  @override
+  String get managementLogsTotalActions => '총계';
+  @override
+  String get managementLogsBans => '차단';
+  @override
+  String get managementLogsPendingFlags => '신고';
+  @override
+  String get managementLogsPendingAppeals => '이의 신청';
+  @override
+  String get logReason => '사유';
+  @override
+  String get logDuration => '기간';
+  @override
+  String get logDurationPermanent => '영구';
+  @override
+  String get logDurationHours => '시간';
+  @override
+  String get logExpiresAt => '만료';
+  @override
+  String get logTargetPost => '게시물 보기';
+  @override
+  String get logTargetUser => '프로필 보기';
+  @override
+  String get logAutomated => '자동';
+  @override
+  String get actionBan => '차단';
+  @override
+  String get actionUnban => '차단 해제';
+  @override
+  String get actionWarn => '경고';
+  @override
+  String get actionMute => '음소거';
+  @override
+  String get actionUnmute => '음소거 해제';
+  @override
+  String get actionDeletePost => '게시물 삭제';
+  @override
+  String get actionDeleteContent => '콘텐츠 삭제';
+  @override
+  String get actionPinPost => '게시물 고정';
+  @override
+  String get actionUnpinPost => '게시물 고정 해제';
+  @override
+  String get actionApproveFlag => '신고 승인';
+  @override
+  String get actionDismissFlag => '신고 기각';
+  @override
+  String get actionAcceptAppeal => '이의 신청 수락';
+  @override
+  String get actionRejectAppeal => '이의 신청 거부';
+  @override
+  String get filterAll => '전체';
+  @override
+  String get filterBan => '차단';
+  @override
+  String get filterWarn => '경고';
+  @override
+  String get filterDeletePost => '삭제';
+  @override
+  String get filterMute => '음소거';
+  @override
+  String get filterUnban => '차단 해제';
+  @override
+  String get reportDialogTitle => '콘텐츠 신고';
+  @override
+  String get reportDialogSubtitle => '신고 사유를 선택하세요';
+  @override
+  String get reportReasonSexualContent => '성적 콘텐츠';
+  @override
+  String get reportReasonHarassment => '괴롭힘 또는 따돌림';
+  @override
+  String get reportReasonHateSpeech => '혐오 발언';
+  @override
+  String get reportReasonViolence => '폭력 또는 위협';
+  @override
+  String get reportReasonSpam => '스팸 또는 사기';
+  @override
+  String get reportReasonMisinformation => '허위 정보';
+  @override
+  String get reportReasonSelfHarm => '자해 또는 자살';
+  @override
+  String get reportReasonIllegalContent => '불법 콘텐츠';
+  @override
+  String get reportReasonOther => '기타 사유';
+  @override
+  String get reportDetailsLabel => '추가 세부 정보';
+  @override
+  String get reportDetailsHint => '문제를 더 자세히 설명하세요 (선택사항)...';
+  @override
+  String get reportDetailsRequired => '문제를 설명해주세요.';
+  @override
+  String get reportSending => '신고 전송 중...';
+  @override
+  String get reportSent => '신고가 전송되었습니다!';
+  @override
+  String get reportSentDesc => '팀이 곧 검토할 것입니다.';
+  @override
+  String get reportAlreadySent => '이미 이 콘텐츠를 신고했습니다.';
+  @override
+  String get reportSendError => '신고 전송 중 오류가 발생했습니다. 다시 시도해주세요.';
 }

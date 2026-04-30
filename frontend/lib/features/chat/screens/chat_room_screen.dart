@@ -33,6 +33,7 @@ import '../widgets/nine_slice_bubble.dart';
 import '../widgets/chat_background_picker.dart';
 import '../widgets/chat_cover_picker.dart';
 import '../widgets/chat_moderation_sheet.dart';
+import '../../moderation/widgets/report_dialog.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
 import 'chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
@@ -3056,12 +3057,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         }
         break;
       case ChatMessageAction.report:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(s.reportSubmittedThankYou),
-            backgroundColor: context.nexusTheme.accentPrimary,
-          ),
-        );
+        final _reportCommunityId = _threadInfo?['community_id'] as String?;
+        if (_reportCommunityId != null && mounted) {
+          await ReportDialog.show(
+            context,
+            communityId: _reportCommunityId,
+            targetMessageId: message.id,
+          );
+        }
         break;
     }
   }

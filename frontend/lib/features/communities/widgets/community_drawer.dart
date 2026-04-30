@@ -1004,6 +1004,16 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               badgeCount: count > 0 ? count : null,
             );
           }),
+        // Logs de Moderação (staff)
+        if (_isStaff)
+          _AminoDrawerTile(
+            icon: Icons.history_rounded,
+            iconColor: theme.textSecondary,
+            label: s.managementLogsTitle,
+            onTap: () => _closeAndNavigate(() {
+              context.push('/community/${widget.community.id}/management-logs');
+            }),
+          ),
         // Estatísticas (staff)
         _AminoDrawerTile(
           icon: Icons.analytics_rounded,

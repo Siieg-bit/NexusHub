@@ -5824,4 +5824,216 @@ class AppStringsJa implements AppStrings {
   String get communityInfo => 'コミュニティ情報';
   @override
   String get management => '管理';
+  @override
+  String get appealsTitle => '異議申し立て';
+  @override
+  String get appealsSubtitle => 'コミュニティのBANに異議を申し立てる';
+  @override
+  String get appealsSettingsSubtitle => 'BANへの異議申し立て';
+  @override
+  String get appealsEmpty => '異議申し立てなし';
+  @override
+  String get appealsEmptyDesc => '現在アクティブな異議申し立てはありません。';
+  @override
+  String get appealsPending => '審査中';
+  @override
+  String get appealsApproved => '承認済み';
+  @override
+  String get appealsRejected => '却下済み';
+  @override
+  String get appealsStatusPending => '審査中';
+  @override
+  String get appealsStatusApproved => '承認済み';
+  @override
+  String get appealsStatusRejected => '却下済み';
+  @override
+  String get submitAppeal => '異議を申し立てる';
+  @override
+  String get submitAppealTitle => '新しい異議申し立て';
+  @override
+  String get appealReasonLabel => '申し立て理由';
+  @override
+  String get appealReasonHint => 'なぜBANが不当だと思うか説明してください...';
+  @override
+  String get appealReasonTooShort => '少なくとも20文字入力してください。';
+  @override
+  String get appealSubmitted => '異議申し立てを送信しました！';
+  @override
+  String get appealSubmittedDesc => 'モデレーションチームが審査します。';
+  @override
+  String get appealAlreadyPending => 'このコミュニティへの異議申し立てが既に審査中です。';
+  @override
+  String get appealNotBanned => 'このコミュニティではBANされていません。';
+  @override
+  String get appealCommunity => 'コミュニティ';
+  @override
+  String get appealBanReason => 'BAN理由';
+  @override
+  String get appealBanDate => 'BAN日';
+  @override
+  String get appealPermanent => '永久';
+  @override
+  String get appealExpires => '期限';
+  @override
+  String get appealReviewedBy => '審査者';
+  @override
+  String get appealReviewNote => '審査メモ';
+  @override
+  String get securityCenterTitle => 'セキュリティセンター';
+  @override
+  String get securityCenterSubtitle => 'アカウントの活動を監視して保護する';
+  @override
+  String get securityEventsTitle => '最近のアクティビティ';
+  @override
+  String get securityEventsEmpty => '最近のアクティビティはありません。';
+  @override
+  String get securityEventLogin => 'ログイン';
+  @override
+  String get securityEventPasswordChange => 'パスワード変更';
+  @override
+  String get securityEventEmailChange => 'メール変更';
+  @override
+  String get securityEventTwoFactorEnabled => '二段階認証を有効化';
+  @override
+  String get securityEventTwoFactorDisabled => '二段階認証を無効化';
+  @override
+  String get securityEventSuspiciousLogin => '不審なログインを検出';
+  @override
+  String get securityEventAccountLocked => 'アカウントが一時的にロック';
+  @override
+  String get securityEventUnknown => 'セキュリティイベント';
+  @override
+  String get securitySettingsTitle => 'セキュリティ設定';
+  @override
+  String get securityTwoFactor => '二段階認証';
+  @override
+  String get securityTwoFactorDesc => '追加の保護レイヤーを追加';
+  @override
+  String get securityLoginAlerts => 'ログインアラート';
+  @override
+  String get securityLoginAlertsDesc => '新しいデバイスからのログイン時に通知';
+  @override
+  String get securitySuspiciousAlerts => '不審なアラート';
+  @override
+  String get securitySuspiciousAlertsDesc => '異常なアクティビティを通知';
+  @override
+  String get securityActiveSessionsTitle => 'アクティブセッション';
+  @override
+  String get securityActiveSessionsDesc => 'アカウントに接続されたデバイスを管理';
+  @override
+  String get securityCurrentDevice => '現在のデバイス';
+  @override
+  String get securityTerminateSession => 'セッションを終了';
+  @override
+  String get securityTerminateAllSessions => 'すべてのセッションを終了';
+  @override
+  String get securityTerminateConfirm => 'このセッションを終了しますか？';
+  @override
+  String get securitySessionTerminated => 'セッションを終了しました';
+  @override
+  String get securityAllSessionsTerminated => 'すべてのセッションを終了しました';
+  @override
+  String get managementLogsTitle => 'モデレーションログ';
+  @override
+  String get managementLogsEmpty => 'モデレーションアクションはありません。';
+  @override
+  String get managementLogsTotalActions => '合計';
+  @override
+  String get managementLogsBans => 'BAN';
+  @override
+  String get managementLogsPendingFlags => '報告';
+  @override
+  String get managementLogsPendingAppeals => '異議申し立て';
+  @override
+  String get logReason => '理由';
+  @override
+  String get logDuration => '期間';
+  @override
+  String get logDurationPermanent => '永久';
+  @override
+  String get logDurationHours => '時間';
+  @override
+  String get logExpiresAt => '期限';
+  @override
+  String get logTargetPost => '投稿を見る';
+  @override
+  String get logTargetUser => 'プロフィールを見る';
+  @override
+  String get logAutomated => '自動';
+  @override
+  String get actionBan => 'BAN';
+  @override
+  String get actionUnban => 'BAN解除';
+  @override
+  String get actionWarn => '警告';
+  @override
+  String get actionMute => 'ミュート';
+  @override
+  String get actionUnmute => 'ミュート解除';
+  @override
+  String get actionDeletePost => '投稿削除';
+  @override
+  String get actionDeleteContent => 'コンテンツ削除';
+  @override
+  String get actionPinPost => '投稿固定';
+  @override
+  String get actionUnpinPost => '投稿固定解除';
+  @override
+  String get actionApproveFlag => '報告承認';
+  @override
+  String get actionDismissFlag => '報告却下';
+  @override
+  String get actionAcceptAppeal => '異議承認';
+  @override
+  String get actionRejectAppeal => '異議却下';
+  @override
+  String get filterAll => 'すべて';
+  @override
+  String get filterBan => 'BAN';
+  @override
+  String get filterWarn => '警告';
+  @override
+  String get filterDeletePost => '削除';
+  @override
+  String get filterMute => 'ミュート';
+  @override
+  String get filterUnban => 'BAN解除';
+  @override
+  String get reportDialogTitle => 'コンテンツを報告';
+  @override
+  String get reportDialogSubtitle => '報告理由を選択してください';
+  @override
+  String get reportReasonSexualContent => 'セクシュアルコンテンツ';
+  @override
+  String get reportReasonHarassment => 'ハラスメントまたはいじめ';
+  @override
+  String get reportReasonHateSpeech => 'ヘイトスピーチ';
+  @override
+  String get reportReasonViolence => '暴力または脅迫';
+  @override
+  String get reportReasonSpam => 'スパムまたは詐欺';
+  @override
+  String get reportReasonMisinformation => '誤情報';
+  @override
+  String get reportReasonSelfHarm => '自傷または自殺';
+  @override
+  String get reportReasonIllegalContent => '違法コンテンツ';
+  @override
+  String get reportReasonOther => 'その他の理由';
+  @override
+  String get reportDetailsLabel => '追加の詳細';
+  @override
+  String get reportDetailsHint => '問題の詳細を説明してください（任意）...';
+  @override
+  String get reportDetailsRequired => '問題を説明してください。';
+  @override
+  String get reportSending => '報告を送信中...';
+  @override
+  String get reportSent => '報告を送信しました！';
+  @override
+  String get reportSentDesc => 'チームがまもなく確認します。';
+  @override
+  String get reportAlreadySent => 'このコンテンツはすでに報告済みです。';
+  @override
+  String get reportSendError => '報告の送信中にエラーが発生しました。もう一度お試しください。';
 }

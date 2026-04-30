@@ -5826,4 +5826,216 @@ class AppStringsFr implements AppStrings {
   String get communityInfo => 'Infos de la Communauté';
   @override
   String get management => 'GESTION';
+  @override
+  String get appealsTitle => 'Appels';
+  @override
+  String get appealsSubtitle => 'Faire appel contre des bannissements';
+  @override
+  String get appealsSettingsSubtitle => 'Faire appel contre des bannissements';
+  @override
+  String get appealsEmpty => 'Aucun appel';
+  @override
+  String get appealsEmptyDesc => 'Vous n\'avez pas d\'appels actifs pour le moment.';
+  @override
+  String get appealsPending => 'En attente';
+  @override
+  String get appealsApproved => 'Approuvé';
+  @override
+  String get appealsRejected => 'Rejeté';
+  @override
+  String get appealsStatusPending => 'En cours d\'examen';
+  @override
+  String get appealsStatusApproved => 'Approuvé';
+  @override
+  String get appealsStatusRejected => 'Rejeté';
+  @override
+  String get submitAppeal => 'Soumettre un appel';
+  @override
+  String get submitAppealTitle => 'Nouvel appel';
+  @override
+  String get appealReasonLabel => 'Motif de l\'appel';
+  @override
+  String get appealReasonHint => 'Expliquez pourquoi vous pensez que le bannissement était injuste...';
+  @override
+  String get appealReasonTooShort => 'Veuillez écrire au moins 20 caractères.';
+  @override
+  String get appealSubmitted => 'Appel soumis !';
+  @override
+  String get appealSubmittedDesc => 'Votre appel sera examiné par l\'équipe de modération.';
+  @override
+  String get appealAlreadyPending => 'Vous avez déjà un appel en attente pour cette communauté.';
+  @override
+  String get appealNotBanned => 'Vous n\'êtes pas banni dans cette communauté.';
+  @override
+  String get appealCommunity => 'Communauté';
+  @override
+  String get appealBanReason => 'Raison du bannissement';
+  @override
+  String get appealBanDate => 'Date du bannissement';
+  @override
+  String get appealPermanent => 'Permanent';
+  @override
+  String get appealExpires => 'Expire';
+  @override
+  String get appealReviewedBy => 'Examiné par';
+  @override
+  String get appealReviewNote => 'Note d\'examen';
+  @override
+  String get securityCenterTitle => 'Centre de Sécurité';
+  @override
+  String get securityCenterSubtitle => 'Surveillez l\'activité et protégez votre compte';
+  @override
+  String get securityEventsTitle => 'Activité Récente';
+  @override
+  String get securityEventsEmpty => 'Aucune activité récente enregistrée.';
+  @override
+  String get securityEventLogin => 'Connexion';
+  @override
+  String get securityEventPasswordChange => 'Mot de passe modifié';
+  @override
+  String get securityEventEmailChange => 'Email modifié';
+  @override
+  String get securityEventTwoFactorEnabled => 'Authentification à deux facteurs activée';
+  @override
+  String get securityEventTwoFactorDisabled => 'Authentification à deux facteurs désactivée';
+  @override
+  String get securityEventSuspiciousLogin => 'Connexion suspecte détectée';
+  @override
+  String get securityEventAccountLocked => 'Compte temporairement bloqué';
+  @override
+  String get securityEventUnknown => 'Événement de sécurité';
+  @override
+  String get securitySettingsTitle => 'Paramètres de Sécurité';
+  @override
+  String get securityTwoFactor => 'Authentification à deux facteurs';
+  @override
+  String get securityTwoFactorDesc => 'Ajoutez une couche de protection supplémentaire';
+  @override
+  String get securityLoginAlerts => 'Alertes de connexion';
+  @override
+  String get securityLoginAlertsDesc => 'Notifier lors d\'une connexion depuis un nouvel appareil';
+  @override
+  String get securitySuspiciousAlerts => 'Alertes suspectes';
+  @override
+  String get securitySuspiciousAlertsDesc => 'Notifier en cas d\'activité inhabituelle';
+  @override
+  String get securityActiveSessionsTitle => 'Sessions Actives';
+  @override
+  String get securityActiveSessionsDesc => 'Gérez les appareils connectés à votre compte';
+  @override
+  String get securityCurrentDevice => 'Appareil actuel';
+  @override
+  String get securityTerminateSession => 'Terminer la session';
+  @override
+  String get securityTerminateAllSessions => 'Terminer toutes les sessions';
+  @override
+  String get securityTerminateConfirm => 'Voulez-vous terminer cette session ?';
+  @override
+  String get securitySessionTerminated => 'Session terminée';
+  @override
+  String get securityAllSessionsTerminated => 'Toutes les sessions ont été terminées';
+  @override
+  String get managementLogsTitle => 'Journaux de Modération';
+  @override
+  String get managementLogsEmpty => 'Aucune action de modération enregistrée.';
+  @override
+  String get managementLogsTotalActions => 'Total';
+  @override
+  String get managementLogsBans => 'Bannissements';
+  @override
+  String get managementLogsPendingFlags => 'Signalements';
+  @override
+  String get managementLogsPendingAppeals => 'Appels';
+  @override
+  String get logReason => 'Raison';
+  @override
+  String get logDuration => 'Durée';
+  @override
+  String get logDurationPermanent => 'Permanent';
+  @override
+  String get logDurationHours => 'heures';
+  @override
+  String get logExpiresAt => 'Expire';
+  @override
+  String get logTargetPost => 'Voir la publication';
+  @override
+  String get logTargetUser => 'Voir le profil';
+  @override
+  String get logAutomated => 'Automatique';
+  @override
+  String get actionBan => 'Bannissement';
+  @override
+  String get actionUnban => 'Débannissement';
+  @override
+  String get actionWarn => 'Avertissement';
+  @override
+  String get actionMute => 'Mise en sourdine';
+  @override
+  String get actionUnmute => 'Réactivation';
+  @override
+  String get actionDeletePost => 'Publication supprimée';
+  @override
+  String get actionDeleteContent => 'Contenu supprimé';
+  @override
+  String get actionPinPost => 'Publication épinglée';
+  @override
+  String get actionUnpinPost => 'Publication désépinglée';
+  @override
+  String get actionApproveFlag => 'Signalement approuvé';
+  @override
+  String get actionDismissFlag => 'Signalement rejeté';
+  @override
+  String get actionAcceptAppeal => 'Appel accepté';
+  @override
+  String get actionRejectAppeal => 'Appel rejeté';
+  @override
+  String get filterAll => 'Tous';
+  @override
+  String get filterBan => 'Bannissements';
+  @override
+  String get filterWarn => 'Avertissements';
+  @override
+  String get filterDeletePost => 'Suppressions';
+  @override
+  String get filterMute => 'Mises en sourdine';
+  @override
+  String get filterUnban => 'Débannissements';
+  @override
+  String get reportDialogTitle => 'Signaler du contenu';
+  @override
+  String get reportDialogSubtitle => 'Sélectionnez le motif de votre signalement';
+  @override
+  String get reportReasonSexualContent => 'Contenu sexuel';
+  @override
+  String get reportReasonHarassment => 'Harcèlement ou intimidation';
+  @override
+  String get reportReasonHateSpeech => 'Discours haineux';
+  @override
+  String get reportReasonViolence => 'Violence ou menaces';
+  @override
+  String get reportReasonSpam => 'Spam ou arnaque';
+  @override
+  String get reportReasonMisinformation => 'Désinformation';
+  @override
+  String get reportReasonSelfHarm => 'Automutilation ou suicide';
+  @override
+  String get reportReasonIllegalContent => 'Contenu illégal';
+  @override
+  String get reportReasonOther => 'Autre raison';
+  @override
+  String get reportDetailsLabel => 'Détails supplémentaires';
+  @override
+  String get reportDetailsHint => 'Décrivez le problème plus en détail (optionnel)...';
+  @override
+  String get reportDetailsRequired => 'Veuillez décrire le problème.';
+  @override
+  String get reportSending => 'Envoi du signalement...';
+  @override
+  String get reportSent => 'Signalement envoyé !';
+  @override
+  String get reportSentDesc => 'Notre équipe l\'examinera sous peu.';
+  @override
+  String get reportAlreadySent => 'Vous avez déjà signalé ce contenu.';
+  @override
+  String get reportSendError => 'Erreur lors de l\'envoi du signalement. Veuillez réessayer.';
 }

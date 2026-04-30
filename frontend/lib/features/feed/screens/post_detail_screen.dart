@@ -2117,6 +2117,15 @@ class _CommentTileState extends ConsumerState<_CommentTile> {
       case 'delete':
         await widget.onDelete?.call(widget.comment);
         break;
+      case 'report':
+        if (widget.communityId != null && mounted) {
+          await ReportDialog.show(
+            context,
+            communityId: widget.communityId!,
+            targetCommentId: widget.comment.id,
+          );
+        }
+        break;
       default:
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2209,6 +2218,17 @@ class _CommentTileState extends ConsumerState<_CommentTile> {
                               const PopupMenuItem<String>(
                                 value: 'delete',
                                 child: Text('Excluir comentário'),
+                              ),
+                            if (!isOwner)
+                              const PopupMenuItem<String>(
+                                value: 'report',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.flag_rounded, size: 16, color: Color(0xFFF44336)),
+                                    SizedBox(width: 8),
+                                    Text('Denunciar', style: TextStyle(color: Color(0xFFF44336))),
+                                  ],
+                                ),
                               ),
                           ],
                         ),

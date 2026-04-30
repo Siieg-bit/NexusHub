@@ -89,6 +89,9 @@ import '../features/moderation/screens/edit_guidelines_screen.dart';
 import '../features/moderation/screens/admin_reports_screen.dart';
 import '../features/moderation/screens/moderation_center_screen.dart';
 import '../features/moderation/screens/flag_detail_screen.dart';
+import '../features/moderation/screens/appeals_screen.dart';
+import '../features/moderation/screens/security_center_screen.dart';
+import '../features/moderation/screens/management_logs_screen.dart';
 import '../features/stories/screens/create_story_screen.dart';
 import '../features/stories/screens/community_stories_screen.dart';
 // Nova Sala de Projeção refatorada (Fase 1)
@@ -709,6 +712,43 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             currentGuidelines: extra['guidelines'] as String?,
           );
         },
+      ),
+      // ====================================================================
+      // APELAÇÕES DE BANIMENTO
+      // ====================================================================
+      GoRoute(
+        path: '/appeals',
+        name: 'appeals',
+        builder: (context, state) => const AppealsScreen(),
+      ),
+      GoRoute(
+        path: '/appeals/submit',
+        name: 'submit-appeal',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return SubmitAppealScreen(
+            communityId: extra['communityId'] as String? ?? '',
+            communityName: extra['communityName'] as String? ?? '',
+          );
+        },
+      ),
+      // ====================================================================
+      // CENTRO DE SEGURANÇA
+      // ====================================================================
+      GoRoute(
+        path: '/security-center',
+        name: 'security-center',
+        builder: (context, state) => const SecurityCenterScreen(),
+      ),
+      // ====================================================================
+      // LOGS DE MODERAÇÃO
+      // ====================================================================
+      GoRoute(
+        path: '/community/:communityId/management-logs',
+        name: 'management-logs',
+        builder: (context, state) => ManagementLogsScreen(
+          communityId: state.pathParameters['communityId']!,
+        ),
       ),
       GoRoute(
         path: '/admin',
