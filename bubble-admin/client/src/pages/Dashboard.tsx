@@ -31,6 +31,9 @@ import AchievementsPage from "./AchievementsPage";
 import { HorizontalStretchEditor } from "@/components/HorizontalStretchEditor";
 import BroadcastPage from "./BroadcastPage";
 import FounderPage from "./FounderPage";
+import AICharactersPage from "./AICharactersPage";
+import DeviceSecurityPage from "./DeviceSecurityPage";
+import EconomyPage from "./EconomyPage";
 
 // ─── Tipos e Constantes ───────────────────────────────────────────────────────
 
@@ -2993,8 +2996,11 @@ export default function Dashboard() {
       case "broadcast":      return <BroadcastPage />;
       case "transactions":   return <TransactionsPage />;
       case "settings":       return <SettingsPage />;
-      case "founder":        return <FounderPage />;
-      default:               return <OverviewPage />;
+      case "founder":          return <FounderPage />;
+      case "ai-characters":    return <AICharactersPage />;
+      case "device-security":  return <DeviceSecurityPage />;
+      case "economy":          return <EconomyPage />;
+      default:                 return <OverviewPage />;
     }
   }
 

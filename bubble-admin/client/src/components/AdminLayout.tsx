@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, ShoppingBag, MessageSquare, Frame, Smile,
   Palette, Users, ArrowLeftRight, Settings, LogOut, Menu, X,
-  Zap, ChevronRight, Search, Shield, Globe, Trophy, Bell, Crown
+  Zap, ChevronRight, Search, Shield, Globe, Trophy, Bell, Crown,
+  Bot, Fingerprint, BarChart3
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { TEAM_ROLE_CONFIG } from "@/lib/supabase";
@@ -22,7 +23,10 @@ export type AdminSection =
   | "broadcast"
   | "transactions"
   | "settings"
-  | "founder";
+  | "founder"
+  | "ai-characters"
+  | "device-security"
+  | "economy";
 
 interface AdminLayoutProps {
   activeSection: AdminSection;
@@ -62,6 +66,14 @@ const navGroups = [
       { id: "achievements" as AdminSection, icon: Trophy, label: "Conquistas", hex: "#FBBF24", rgb: "251,191,36" },
       { id: "broadcast" as AdminSection, icon: Bell, label: "Broadcast", hex: "#F97316", rgb: "249,115,22" },
       { id: "settings" as AdminSection, icon: Settings, label: "Configurações", hex: "#94A3B8", rgb: "148,163,184" },
+    ],
+  },
+  {
+    label: "Avançado",
+    items: [
+      { id: "ai-characters" as AdminSection, icon: Bot, label: "AI Studio", hex: "#8B5CF6", rgb: "139,92,246" },
+      { id: "device-security" as AdminSection, icon: Fingerprint, label: "Device Security", hex: "#EF4444", rgb: "239,68,68" },
+      { id: "economy" as AdminSection, icon: BarChart3, label: "Economy", hex: "#22C55E", rgb: "34,197,94" },
     ],
   },
 ];
