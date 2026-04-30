@@ -8,11 +8,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../config/nexus_theme_extension.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/services/deep_link_service.dart';
+import '../../../core/services/social_share_service.dart';
 import '../../../core/utils/responsive.dart';
 
 class CommunityShareCardSheet extends StatefulWidget {
@@ -94,22 +94,29 @@ class _CommunityShareCardSheetState extends State<CommunityShareCardSheet> {
     return file.writeAsBytes(bytes, flush: true);
   }
 
-  Future<void> _share(String shareUrl, {required String channel}) async {
+  Future<void> _share(
+    String shareUrl, {
+    required String target,
+    required String channel,
+  }) async {
     if (_isSharing) return;
     HapticFeedback.selectionClick();
     setState(() => _isSharing = true);
     try {
       final imageFile = await _captureCardAsPng();
-      await Share.shareXFiles(
-        [
-          XFile(
-            imageFile.path,
-            mimeType: 'image/png',
-            name: 'nexushub-$_safeFileSlug.png',
-          ),
-        ],
+      final usedNativeTarget = await SocialShareService.shareCommunityCard(
+        target: target,
+        imageFile: imageFile,
         text: _shareText(shareUrl),
+        url: shareUrl,
         subject: widget.community.name,
+      );
+      if (!mounted || usedNativeTarget) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$channel não estava disponível. Abri o compartilhamento geral.'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     } catch (e) {
       if (!mounted) return;
@@ -150,6 +157,8 @@ class _CommunityShareCardSheetState extends State<CommunityShareCardSheet> {
               id: widget.community.id,
             );
         final shareUrl = snapshot.data ?? fallbackUrl;
+        final actionWidth =
+            (MediaQuery.of(context).size.width - r.s(56)) / 2;
 
         return Container(
           decoration: BoxDecoration(
@@ -224,43 +233,124 @@ class _CommunityShareCardSheetState extends State<CommunityShareCardSheet> {
                   ),
                 ),
                 SizedBox(height: r.s(10)),
-                Row(
+                Wrap(
+                  spacing: r.s(10),
+                  runSpacing: r.s(10),
                   children: [
-                    Expanded(
+                    SizedBox(
+                      width: actionWidth,
+                      child: _ShareActionButton(
+                        icon: Icons.play_circle_fill_rounded,
+                        label: 'Stories',
+                        color: const Color(0xFFE1306C),
+                        enabled: !_isSharing,
+                        onTap: () => _share(
+                          shareUrl,
+                          target: SocialShareTarget.instagramStories,
+                          channel: 'Instagram Stories',
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: actionWidth,
                       child: _ShareActionButton(
                         icon: Icons.camera_alt_rounded,
                         label: 'Instagram',
                         color: const Color(0xFFE1306C),
                         enabled: !_isSharing,
-                        onTap: () => _share(shareUrl, channel: 'Instagram'),
+                        onTap: () => _share(
+                          shareUrl,
+                          target: SocialShareTarget.instagramFeed,
+                          channel: 'Instagram',
+                        ),
                       ),
                     ),
-                    SizedBox(width: r.s(10)),
-                    Expanded(
+                    SizedBox(
+                      width: actionWidth,
                       child: _ShareActionButton(
                         icon: Icons.chat_rounded,
                         label: 'WhatsApp',
                         color: const Color(0xFF25D366),
                         enabled: !_isSharing,
-                        onTap: () => _share(shareUrl, channel: 'WhatsApp'),
+                        onTap: () => _share(
+                          shareUrl,
+                          target: SocialShareTarget.whatsapp,
+                          channel: 'WhatsApp',
+                        ),
                       ),
                     ),
-                  ],
-                ),
-                SizedBox(height: r.s(10)),
-                Row(
-                  children: [
-                    Expanded(
+                    SizedBox(
+                      width: actionWidth,
+                      child: _ShareActionButton(
+                        icon: Icons.send_rounded,
+                        label: 'Telegram',
+                        color: const Color(0xFF229ED9),
+                        enabled: !_isSharing,
+                        onTap: () => _share(
+                          shareUrl,
+                          target: SocialShareTarget.telegram,
+                          channel: 'Telegram',
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: actionWidth,
+                      child: _ShareActionButton(
+                        icon: Icons.facebook_rounded,
+                        label: 'Facebook',
+                        color: const Color(0xFF1877F2),
+                        enabled: !_isSharing,
+                        onTap: () => _share(
+                          shareUrl,
+                          target: SocialShareTarget.facebook,
+                          channel: 'Facebook',
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: actionWidth,
+                      child: _ShareActionButton(
+                        icon: Icons.forum_rounded,
+                        label: 'Messenger',
+                        color: const Color(0xFF0084FF),
+                        enabled: !_isSharing,
+                        onTap: () => _share(
+                          shareUrl,
+                          target: SocialShareTarget.messenger,
+                          channel: 'Messenger',
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: actionWidth,
+                      child: _ShareActionButton(
+                        icon: Icons.alternate_email_rounded,
+                        label: 'X / Twitter',
+                        color: const Color(0xFF111111),
+                        enabled: !_isSharing,
+                        onTap: () => _share(
+                          shareUrl,
+                          target: SocialShareTarget.twitter,
+                          channel: 'X/Twitter',
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: actionWidth,
                       child: _ShareActionButton(
                         icon: Icons.ios_share_rounded,
                         label: 'Mais apps',
                         color: theme.accentPrimary,
                         enabled: !_isSharing,
-                        onTap: () => _share(shareUrl, channel: 'outros apps'),
+                        onTap: () => _share(
+                          shareUrl,
+                          target: SocialShareTarget.more,
+                          channel: 'outros apps',
+                        ),
                       ),
                     ),
-                    SizedBox(width: r.s(10)),
-                    Expanded(
+                    SizedBox(
+                      width: actionWidth,
                       child: _ShareActionButton(
                         icon: Icons.link_rounded,
                         label: 'Copiar link',
