@@ -1004,8 +1004,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               badgeCount: count > 0 ? count : null,
             );
           }),
-        // Logs de Moderação (staff)
-        if (_isStaff)
+        // Logs de Moderação (apenas líder e acima)
+        if (_isLeader)
           _AminoDrawerTile(
             icon: Icons.history_rounded,
             iconColor: theme.textSecondary,
