@@ -19,25 +19,41 @@ final _logsFilterProvider = StateProvider.autoDispose<String>((ref) => 'all');
 final managementLogsStatsProvider =
     FutureProvider.autoDispose.family<Map<String, dynamic>, String>(
   (ref, communityId) async {
-    final result = await SupabaseService.rpc('get_management_logs_stats',
-        params: {'p_community_id': communityId});
-    return Map<String, dynamic>.from(result as Map? ?? {});
+    try {
+      debugPrint('[ManagementLogs] get_management_logs_stats communityId=$communityId');
+      final result = await SupabaseService.rpc('get_management_logs_stats',
+          params: {'p_community_id': communityId});
+      debugPrint('[ManagementLogs] stats OK: $result');
+      return Map<String, dynamic>.from(result as Map? ?? {});
+    } catch (e, stack) {
+      debugPrint('[ManagementLogs] ❌ stats ERROR: $e');
+      debugPrint('[ManagementLogs] stack: $stack');
+      rethrow;
+    }
   },
 );
 
 final managementLogsProvider =
     FutureProvider.autoDispose.family<List<Map<String, dynamic>>, (String, String)>(
   (ref, args) async {
-    final (communityId, filter) = args;
-    final result = await SupabaseService.rpc('get_management_logs', params: {
-      'p_community_id': communityId,
-      'p_action_filter': filter,
-      'p_limit': 50,
-      'p_offset': 0,
-    });
-    return List<Map<String, dynamic>>.from(
-      (result as List? ?? []).map((e) => Map<String, dynamic>.from(e as Map)),
-    );
+    try {
+      final (communityId, filter) = args;
+      debugPrint('[ManagementLogs] get_management_logs communityId=$communityId filter=$filter');
+      final result = await SupabaseService.rpc('get_management_logs', params: {
+        'p_community_id': communityId,
+        'p_action_filter': filter,
+        'p_limit': 50,
+        'p_offset': 0,
+      });
+      debugPrint('[ManagementLogs] logs OK: ${(result as List?)?.length ?? 0} entries');
+      return List<Map<String, dynamic>>.from(
+        (result as List? ?? []).map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+    } catch (e, stack) {
+      debugPrint('[ManagementLogs] ❌ logs ERROR: $e');
+      debugPrint('[ManagementLogs] stack: $stack');
+      rethrow;
+    }
   },
 );
 
@@ -94,7 +110,10 @@ class ManagementLogsScreen extends ConsumerWidget {
           // Stats
           statsAsync.when(
             loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (e, stack) {
+              debugPrint('[ManagementLogs] ❌ statsAsync error: $e');
+              return const SizedBox.shrink();
+            },
             data: (stats) => _StatsRow(stats: stats, r: r, s: s),
           ),
 
@@ -106,24 +125,26 @@ class ManagementLogsScreen extends ConsumerWidget {
             child: logsAsync.when(
               loading: () =>
                   const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.error_outline_rounded,
-                        color: context.nexusTheme.error, size: r.s(48)),
-                    SizedBox(height: r.s(12)),
-                    Text(
-                      e.toString().contains('insufficient_permissions')
-                          ? s.insufficientPermissions
-                          : s.anErrorOccurredTryAgain,
-                      style: TextStyle(
-                          color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
+              error: (e, stack) {
+                debugPrint('[ManagementLogs] ❌ logsAsync error: $e');
+                debugPrint('[ManagementLogs] stack: $stack');
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.error_outline_rounded,
+                          color: context.nexusTheme.error, size: r.s(48)),
+                      SizedBox(height: r.s(12)),
+                      Text(
+                        'Erro: $e',
+                        style: TextStyle(
+                            color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                );
+              },
               data: (logs) => logs.isEmpty
                   ? _buildEmpty(context, r, s)
                   : ListView.builder(

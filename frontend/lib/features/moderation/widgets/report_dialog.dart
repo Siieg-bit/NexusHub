@@ -228,13 +228,19 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
         await Future.delayed(const Duration(milliseconds: 1800));
         if (mounted) Navigator.pop(context);
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('[ReportDialog] ❌ ERROR submitting flag');
+      debugPrint('[ReportDialog] communityId: ${widget.communityId}');
+      debugPrint('[ReportDialog] flag_type: $_selectedId');
+      debugPrint('[ReportDialog] error: $e');
+      debugPrint('[ReportDialog] stack: $stack');
       if (mounted) {
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.anErrorOccurredTryAgain),
+            content: Text('Erro: $e'),
             backgroundColor: context.nexusTheme.error,
+            duration: const Duration(seconds: 10),
           ),
         );
       }

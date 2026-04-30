@@ -14,18 +14,32 @@ import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 final securityOverviewProvider = FutureProvider.autoDispose<Map<String, dynamic>>(
   (ref) async {
-    final result = await SupabaseService.rpc('get_security_overview');
-    return Map<String, dynamic>.from(result as Map? ?? {});
+    try {
+      final result = await SupabaseService.rpc('get_security_overview');
+      debugPrint('[SecurityCenter] get_security_overview OK: $result');
+      return Map<String, dynamic>.from(result as Map? ?? {});
+    } catch (e, stack) {
+      debugPrint('[SecurityCenter] ❌ get_security_overview ERROR: $e');
+      debugPrint('[SecurityCenter] stack: $stack');
+      rethrow;
+    }
   },
 );
 
 final securityEventsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>(
   (ref) async {
-    final result = await SupabaseService.rpc('get_security_events',
-        params: {'p_limit': 20, 'p_offset': 0});
-    return List<Map<String, dynamic>>.from(
-      (result as List? ?? []).map((e) => Map<String, dynamic>.from(e as Map)),
-    );
+    try {
+      final result = await SupabaseService.rpc('get_security_events',
+          params: {'p_limit': 20, 'p_offset': 0});
+      debugPrint('[SecurityCenter] get_security_events OK: ${(result as List?)?.length ?? 0} events');
+      return List<Map<String, dynamic>>.from(
+        (result as List? ?? []).map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+    } catch (e, stack) {
+      debugPrint('[SecurityCenter] ❌ get_security_events ERROR: $e');
+      debugPrint('[SecurityCenter] stack: $stack');
+      rethrow;
+    }
   },
 );
 
@@ -130,17 +144,22 @@ class _OverviewTab extends ConsumerWidget {
 
     return overviewAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline_rounded, color: context.nexusTheme.error, size: r.s(48)),
-            SizedBox(height: r.s(12)),
-            Text(s.anErrorOccurredTryAgain,
-                style: TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(14))),
-          ],
-        ),
-      ),
+      error: (e, stack) {
+        debugPrint('[SecurityCenter] ❌ OverviewTab error: $e');
+        debugPrint('[SecurityCenter] stack: $stack');
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.error_outline_rounded, color: context.nexusTheme.error, size: r.s(48)),
+              SizedBox(height: r.s(12)),
+              Text('Erro: $e',
+                  style: TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
+                  textAlign: TextAlign.center),
+            ],
+          ),
+        );
+      },
       data: (overview) {
         final securityLevel = (overview['security_level'] as num?)?.toInt() ?? 0;
         final has2fa = overview['has_2fa'] as bool? ?? false;
@@ -246,10 +265,15 @@ class _SessionsTab extends ConsumerWidget {
 
     return overviewAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(
-        child: Text(s.anErrorOccurredTryAgain,
-            style: TextStyle(color: context.nexusTheme.textSecondary)),
-      ),
+      error: (e, stack) {
+        debugPrint('[SecurityCenter] ❌ SessionsTab error: $e');
+        debugPrint('[SecurityCenter] stack: $stack');
+        return Center(
+          child: Text('Erro: $e',
+              style: TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(12)),
+              textAlign: TextAlign.center),
+        );
+      },
       data: (overview) {
         final sessions = List<Map<String, dynamic>>.from(
           ((overview['active_sessions'] as List?) ?? [])
