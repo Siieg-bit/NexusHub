@@ -6100,6 +6100,49 @@ class AppStringsEn implements AppStrings {
   String get filterMute => 'Mutes';
   @override
   String get filterUnban => 'Unbans';
+
+  @override
+  String get filterKick => 'Kicks';
+  @override
+  String get filterStrike => 'Strikes';
+  @override
+  String get filterUnmute => 'Unmutes';
+  @override
+  String get filterDeleteContent => 'Content removed';
+  @override
+  String get filterHidePost => 'Hidden posts';
+  @override
+  String get filterUnhidePost => 'Unhidden posts';
+  @override
+  String get filterPinPost => 'Pinned posts';
+  @override
+  String get filterUnpinPost => 'Unpinned posts';
+  @override
+  String get filterFeaturePost => 'Featured posts';
+  @override
+  String get filterUnfeaturePost => 'Unfeatured posts';
+  @override
+  String get filterPromote => 'Promotions';
+  @override
+  String get filterDemote => 'Demotions';
+  @override
+  String get filterWikiApprove => 'Wiki approved';
+  @override
+  String get filterWikiReject => 'Wiki rejected';
+  @override
+  String get filterCanonizeWiki => 'Wiki canonized';
+  @override
+  String get filterDecanonizeWiki => 'Wiki decanonized';
+  @override
+  String get filterTransferAgent => 'Agent transferred';
+  @override
+  String get filterApproveFlag => 'Flag approved';
+  @override
+  String get filterDismissFlag => 'Flag dismissed';
+  @override
+  String get filterAcceptAppeal => 'Appeal accepted';
+  @override
+  String get filterRejectAppeal => 'Appeal rejected';
   @override
   String get reportDialogTitle => 'Report content';
   @override

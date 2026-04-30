@@ -6023,6 +6023,49 @@ class AppStringsJa implements AppStrings {
   String get filterMute => 'ミュート';
   @override
   String get filterUnban => 'BAN解除';
+
+  @override
+  String get filterKick => 'キック';
+  @override
+  String get filterStrike => 'ストライク';
+  @override
+  String get filterUnmute => 'ミュート解除';
+  @override
+  String get filterDeleteContent => 'コンテンツ削除';
+  @override
+  String get filterHidePost => '投稿非表示';
+  @override
+  String get filterUnhidePost => '投稿再表示';
+  @override
+  String get filterPinPost => '投稿固定';
+  @override
+  String get filterUnpinPost => '投稿固定解除';
+  @override
+  String get filterFeaturePost => '投稿特集';
+  @override
+  String get filterUnfeaturePost => '特集解除';
+  @override
+  String get filterPromote => '昇格';
+  @override
+  String get filterDemote => '降格';
+  @override
+  String get filterWikiApprove => 'Wiki承認';
+  @override
+  String get filterWikiReject => 'Wiki拒否';
+  @override
+  String get filterCanonizeWiki => 'Wiki正典化';
+  @override
+  String get filterDecanonizeWiki => 'Wiki正典解除';
+  @override
+  String get filterTransferAgent => 'エージェント移転';
+  @override
+  String get filterApproveFlag => '報告承認';
+  @override
+  String get filterDismissFlag => '報告却下';
+  @override
+  String get filterAcceptAppeal => '異議申し立て承認';
+  @override
+  String get filterRejectAppeal => '異議申し立て拒否';
   @override
   String get reportDialogTitle => 'コンテンツを報告';
   @override

@@ -6025,6 +6025,49 @@ class AppStringsDe implements AppStrings {
   String get filterMute => 'Stummschaltungen';
   @override
   String get filterUnban => 'Entsperrungen';
+
+  @override
+  String get filterKick => 'Rauswürfe';
+  @override
+  String get filterStrike => 'Verwarnungen';
+  @override
+  String get filterUnmute => 'Stummschaltungen aufgehoben';
+  @override
+  String get filterDeleteContent => 'Inhalt gelöscht';
+  @override
+  String get filterHidePost => 'Beiträge ausgeblendet';
+  @override
+  String get filterUnhidePost => 'Beiträge eingeblendet';
+  @override
+  String get filterPinPost => 'Beiträge angeheftet';
+  @override
+  String get filterUnpinPost => 'Beiträge abgeheftet';
+  @override
+  String get filterFeaturePost => 'Beiträge hervorgehoben';
+  @override
+  String get filterUnfeaturePost => 'Hervorhebungen entfernt';
+  @override
+  String get filterPromote => 'Beförderungen';
+  @override
+  String get filterDemote => 'Degradierungen';
+  @override
+  String get filterWikiApprove => 'Wiki genehmigt';
+  @override
+  String get filterWikiReject => 'Wiki abgelehnt';
+  @override
+  String get filterCanonizeWiki => 'Wiki kanonisiert';
+  @override
+  String get filterDecanonizeWiki => 'Wiki dekanonisiert';
+  @override
+  String get filterTransferAgent => 'Agent übertragen';
+  @override
+  String get filterApproveFlag => 'Meldung genehmigt';
+  @override
+  String get filterDismissFlag => 'Meldung abgelehnt';
+  @override
+  String get filterAcceptAppeal => 'Einspruch akzeptiert';
+  @override
+  String get filterRejectAppeal => 'Einspruch abgelehnt';
   @override
   String get reportDialogTitle => 'Inhalt melden';
   @override

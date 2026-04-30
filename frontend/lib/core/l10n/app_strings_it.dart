@@ -6025,6 +6025,49 @@ class AppStringsIt implements AppStrings {
   String get filterMute => 'Silenziamenti';
   @override
   String get filterUnban => 'Revoche ban';
+
+  @override
+  String get filterKick => 'Espulsioni';
+  @override
+  String get filterStrike => 'Strike';
+  @override
+  String get filterUnmute => 'Riattivazioni audio';
+  @override
+  String get filterDeleteContent => 'Contenuto rimosso';
+  @override
+  String get filterHidePost => 'Post nascosti';
+  @override
+  String get filterUnhidePost => 'Post rivelati';
+  @override
+  String get filterPinPost => 'Post bloccati';
+  @override
+  String get filterUnpinPost => 'Post sbloccati';
+  @override
+  String get filterFeaturePost => 'Post in evidenza';
+  @override
+  String get filterUnfeaturePost => 'Evidenze rimosse';
+  @override
+  String get filterPromote => 'Promozioni';
+  @override
+  String get filterDemote => 'Retrocessioni';
+  @override
+  String get filterWikiApprove => 'Wiki approvata';
+  @override
+  String get filterWikiReject => 'Wiki rifiutata';
+  @override
+  String get filterCanonizeWiki => 'Wiki canonizzata';
+  @override
+  String get filterDecanonizeWiki => 'Wiki decanonizzata';
+  @override
+  String get filterTransferAgent => 'Agente trasferito';
+  @override
+  String get filterApproveFlag => 'Segnalazione approvata';
+  @override
+  String get filterDismissFlag => 'Segnalazione respinta';
+  @override
+  String get filterAcceptAppeal => 'Appello accettato';
+  @override
+  String get filterRejectAppeal => 'Appello rifiutato';
   @override
   String get reportDialogTitle => 'Segnala contenuto';
   @override

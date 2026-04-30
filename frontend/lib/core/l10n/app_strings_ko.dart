@@ -6025,6 +6025,49 @@ class AppStringsKo implements AppStrings {
   String get filterMute => '음소거';
   @override
   String get filterUnban => '차단 해제';
+
+  @override
+  String get filterKick => '추방';
+  @override
+  String get filterStrike => '경고';
+  @override
+  String get filterUnmute => '음소거 해제';
+  @override
+  String get filterDeleteContent => '콘텐츠 삭제';
+  @override
+  String get filterHidePost => '게시물 숨김';
+  @override
+  String get filterUnhidePost => '게시물 표시';
+  @override
+  String get filterPinPost => '게시물 고정';
+  @override
+  String get filterUnpinPost => '게시물 고정 해제';
+  @override
+  String get filterFeaturePost => '게시물 추천';
+  @override
+  String get filterUnfeaturePost => '추천 취소';
+  @override
+  String get filterPromote => '승진';
+  @override
+  String get filterDemote => '강등';
+  @override
+  String get filterWikiApprove => '위키 승인';
+  @override
+  String get filterWikiReject => '위키 거부';
+  @override
+  String get filterCanonizeWiki => '위키 정전화';
+  @override
+  String get filterDecanonizeWiki => '위키 정전 해제';
+  @override
+  String get filterTransferAgent => '에이전트 이전';
+  @override
+  String get filterApproveFlag => '신고 승인';
+  @override
+  String get filterDismissFlag => '신고 기각';
+  @override
+  String get filterAcceptAppeal => '이의 수락';
+  @override
+  String get filterRejectAppeal => '이의 거부';
   @override
   String get reportDialogTitle => '콘텐츠 신고';
   @override

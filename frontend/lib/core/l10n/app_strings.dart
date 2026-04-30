@@ -3107,6 +3107,27 @@ abstract class AppStrings {
   String get filterDeletePost;
   String get filterMute;
   String get filterUnban;
+  String get filterKick;
+  String get filterStrike;
+  String get filterUnmute;
+  String get filterDeleteContent;
+  String get filterHidePost;
+  String get filterUnhidePost;
+  String get filterPinPost;
+  String get filterUnpinPost;
+  String get filterFeaturePost;
+  String get filterUnfeaturePost;
+  String get filterPromote;
+  String get filterDemote;
+  String get filterWikiApprove;
+  String get filterWikiReject;
+  String get filterCanonizeWiki;
+  String get filterDecanonizeWiki;
+  String get filterTransferAgent;
+  String get filterApproveFlag;
+  String get filterDismissFlag;
+  String get filterAcceptAppeal;
+  String get filterRejectAppeal;
   // ── Report Dialog ──
   String get reportDialogTitle;
   String get reportDialogSubtitle;

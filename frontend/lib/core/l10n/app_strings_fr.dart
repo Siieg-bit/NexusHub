@@ -6025,6 +6025,49 @@ class AppStringsFr implements AppStrings {
   String get filterMute => 'Mises en sourdine';
   @override
   String get filterUnban => 'Débannissements';
+
+  @override
+  String get filterKick => 'Expulsions';
+  @override
+  String get filterStrike => 'Avertissements';
+  @override
+  String get filterUnmute => 'Démutages';
+  @override
+  String get filterDeleteContent => 'Contenu supprimé';
+  @override
+  String get filterHidePost => 'Posts masqués';
+  @override
+  String get filterUnhidePost => 'Posts réaffichés';
+  @override
+  String get filterPinPost => 'Posts épinglés';
+  @override
+  String get filterUnpinPost => 'Posts désépinglés';
+  @override
+  String get filterFeaturePost => 'Posts mis en avant';
+  @override
+  String get filterUnfeaturePost => 'Mises en avant retirées';
+  @override
+  String get filterPromote => 'Promotions';
+  @override
+  String get filterDemote => 'Rétrogradations';
+  @override
+  String get filterWikiApprove => 'Wiki approuvé';
+  @override
+  String get filterWikiReject => 'Wiki rejeté';
+  @override
+  String get filterCanonizeWiki => 'Wiki canonisé';
+  @override
+  String get filterDecanonizeWiki => 'Wiki décanonisé';
+  @override
+  String get filterTransferAgent => 'Agent transféré';
+  @override
+  String get filterApproveFlag => 'Signalement approuvé';
+  @override
+  String get filterDismissFlag => 'Signalement rejeté';
+  @override
+  String get filterAcceptAppeal => 'Appel accepté';
+  @override
+  String get filterRejectAppeal => 'Appel rejeté';
   @override
   String get reportDialogTitle => 'Signaler du contenu';
   @override

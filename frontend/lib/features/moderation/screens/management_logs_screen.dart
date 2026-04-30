@@ -62,18 +62,113 @@ final managementLogsProvider =
 
 /// Logs de Moderação — histórico de ações de moderação de uma comunidade.
 /// Acessível apenas por staff (leader, curator, agent, moderator, admin).
-class ManagementLogsScreen extends ConsumerWidget {
+class ManagementLogsScreen extends ConsumerStatefulWidget {
   final String communityId;
 
   const ManagementLogsScreen({super.key, required this.communityId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ManagementLogsScreen> createState() => _ManagementLogsScreenState();
+}
+
+class _ManagementLogsScreenState extends ConsumerState<ManagementLogsScreen> {
+  final ScrollController _scrollController = ScrollController();
+  final List<Map<String, dynamic>> _logs = [];
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  static const int _pageSize = 50;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMore();
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+    setState(() => _isLoadingMore = true);
+    try {
+      final filter = ref.read(_logsFilterProvider);
+      final result = await SupabaseService.rpc('get_management_logs', params: {
+        'p_community_id': widget.communityId,
+        'p_action_filter': filter,
+        'p_limit': _pageSize,
+        'p_offset': _logs.length,
+      });
+      final newItems = List<Map<String, dynamic>>.from(
+        (result as List? ?? []).map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+      if (mounted) {
+        setState(() {
+          _logs.addAll(newItems);
+          _hasMore = newItems.length == _pageSize;
+          _isLoadingMore = false;
+        });
+      }
+    } catch (e, stack) {
+      debugPrint('[ManagementLogs] ❌ loadMore ERROR: $e');
+      debugPrint('[ManagementLogs] stack: $stack');
+      if (mounted) setState(() => _isLoadingMore = false);
+    }
+  }
+
+  void _resetAndFilter(String newFilter) {
+    setState(() {
+      _logs.clear();
+      _hasMore = true;
+      _isLoadingMore = false;
+    });
+    ref.read(_logsFilterProvider.notifier).state = newFilter;
+    ref.invalidate(managementLogsProvider((widget.communityId, newFilter)));
+  }
+
+  void _refresh() {
+    final filter = ref.read(_logsFilterProvider);
+    setState(() {
+      _logs.clear();
+      _hasMore = true;
+      _isLoadingMore = false;
+    });
+    ref.invalidate(managementLogsStatsProvider(widget.communityId));
+    ref.invalidate(managementLogsProvider((widget.communityId, filter)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final s = ref.watch(stringsProvider);
     final r = context.r;
     final filter = ref.watch(_logsFilterProvider);
-    final statsAsync = ref.watch(managementLogsStatsProvider(communityId));
-    final logsAsync = ref.watch(managementLogsProvider((communityId, filter)));
+    final statsAsync = ref.watch(managementLogsStatsProvider(widget.communityId));
+    final logsAsync = ref.watch(managementLogsProvider((widget.communityId, filter)));
+
+    // Quando o provider retorna a primeira página, popular _logs
+    ref.listen<AsyncValue<List<Map<String, dynamic>>>>(
+      managementLogsProvider((widget.communityId, filter)),
+      (prev, next) {
+        next.whenData((firstPage) {
+          if (mounted && _logs.isEmpty) {
+            setState(() {
+              _logs.addAll(firstPage);
+              _hasMore = firstPage.length == _pageSize;
+            });
+          }
+        });
+      },
+    );
 
     return Scaffold(
       backgroundColor: context.nexusTheme.backgroundPrimary,
@@ -95,11 +190,7 @@ class ManagementLogsScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: Icon(Icons.refresh_rounded, color: context.nexusTheme.textSecondary),
-            onPressed: () {
-              ref.invalidate(managementLogsStatsProvider(communityId));
-              ref.invalidate(
-                  managementLogsProvider((communityId, filter)));
-            },
+            onPressed: _refresh,
           ),
         ],
       ),
@@ -115,17 +206,23 @@ class ManagementLogsScreen extends ConsumerWidget {
             data: (stats) => _StatsRow(stats: stats, r: r, s: s),
           ),
 
-          // Filtros
-          _FilterChips(r: r, s: s),
+          // Filtros — todos os tipos de moderação
+          _FilterChips(
+            r: r,
+            s: s,
+            onFilterChanged: _resetAndFilter,
+          ),
 
           // Lista
           Expanded(
             child: logsAsync.when(
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
+              loading: () => _logs.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : _buildList(context, r, s),
               error: (e, stack) {
                 debugPrint('[ManagementLogs] ❌ logsAsync error: $e');
                 debugPrint('[ManagementLogs] stack: $stack');
+                if (_logs.isNotEmpty) return _buildList(context, r, s);
                 return Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -143,23 +240,35 @@ class ManagementLogsScreen extends ConsumerWidget {
                   ),
                 );
               },
-              data: (logs) => logs.isEmpty
+              data: (_) => _logs.isEmpty
                   ? _buildEmpty(context, r, s)
-                  : ListView.builder(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: r.s(16), vertical: r.s(8)),
-                      itemCount: logs.length,
-                      itemBuilder: (ctx, i) => _LogEntry(
-                        log: logs[i],
-                        communityId: communityId,
-                        r: r,
-                        s: s,
-                      ),
-                    ),
+                  : _buildList(context, r, s),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildList(BuildContext context, Responsive r, dynamic s) {
+    return ListView.builder(
+      controller: _scrollController,
+      padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+      itemCount: _logs.length + (_isLoadingMore ? 1 : 0),
+      itemBuilder: (ctx, i) {
+        if (i == _logs.length) {
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: r.s(16)),
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        }
+        return _LogEntry(
+          log: _logs[i],
+          communityId: widget.communityId,
+          r: r,
+          s: s,
+        );
+      },
     );
   }
 
@@ -265,26 +374,56 @@ class _StatsRow extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Filter Chips
+// Filter Chips — todos os 27 tipos de moderação
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _FilterChips extends ConsumerWidget {
   final Responsive r;
   final dynamic s;
+  final void Function(String) onFilterChanged;
 
-  const _FilterChips(
-      {required this.r, required this.s});
+  const _FilterChips({
+    required this.r,
+    required this.s,
+    required this.onFilterChanged,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final current = ref.watch(_logsFilterProvider);
     final filters = [
-      ('all', s.filterAll),
-      ('ban', s.filterBan),
-      ('warn', s.filterWarn),
-      ('delete_post', s.filterDeletePost),
-      ('mute', s.filterMute),
-      ('unban', s.filterUnban),
+      ('all',               s.filterAll),
+      // Ações contra usuários
+      ('ban',               s.filterBan),
+      ('unban',             s.filterUnban),
+      ('warn',              s.filterWarn),
+      ('strike',            s.filterStrike),
+      ('kick',              s.filterKick),
+      ('mute',              s.filterMute),
+      ('unmute',            s.filterUnmute),
+      // Ações em conteúdo
+      ('delete_post',       s.filterDeletePost),
+      ('delete_content',    s.filterDeleteContent),
+      ('hide_post',         s.filterHidePost),
+      ('unhide_post',       s.filterUnhidePost),
+      ('pin_post',          s.filterPinPost),
+      ('unpin_post',        s.filterUnpinPost),
+      ('feature_post',      s.filterFeaturePost),
+      ('unfeature_post',    s.filterUnfeaturePost),
+      // Cargos e equipe
+      ('promote',           s.filterPromote),
+      ('demote',            s.filterDemote),
+      ('transfer_agent',    s.filterTransferAgent),
+      // Wiki
+      ('wiki_approve',      s.filterWikiApprove),
+      ('wiki_reject',       s.filterWikiReject),
+      ('canonize_wiki',     s.filterCanonizeWiki),
+      ('decanonize_wiki',   s.filterDecanonizeWiki),
+      // Denúncias e apelações
+      ('approve_flag',      s.filterApproveFlag),
+      ('dismiss_flag',      s.filterDismissFlag),
+      ('accept_appeal',     s.filterAcceptAppeal),
+      ('reject_appeal',     s.filterRejectAppeal),
     ];
 
     return SizedBox(
@@ -297,8 +436,7 @@ class _FilterChips extends ConsumerWidget {
           final (value, label) = filters[i];
           final isSelected = current == value;
           return GestureDetector(
-            onTap: () =>
-                ref.read(_logsFilterProvider.notifier).state = value,
+            onTap: () => onFilterChanged(value),
             child: Container(
               margin: EdgeInsets.only(right: r.s(8)),
               padding: EdgeInsets.symmetric(
@@ -362,7 +500,6 @@ class _LogEntryState extends State<_LogEntry> {
     final actorIcon = log['actor_avatar'] as String?;
     final actorId = log['actor_id'] as String?;
     final targetName = log['target_nickname'] as String?;
-    final targetId = log['target_user_id'] as String?;
     final reason = log['reason'] as String?;
     final isAutomated = log['is_automated'] as bool? ?? false;
     final createdAt = log['created_at'] != null
@@ -373,13 +510,12 @@ class _LogEntryState extends State<_LogEntry> {
         ? DateTime.tryParse(log['expires_at'] as String)
         : null;
 
-    final (actionColor, actionIcon, actionLabel) =
-        _actionInfo(action, s);
+    final (actionColor, actionIcon, actionLabel) = _actionInfo(action, s);
     final severityColor = switch (severity) {
       'critical' => const Color(0xFFF44336),
-      'high' => const Color(0xFFFF5722),
-      'medium' => const Color(0xFFFF9800),
-      _ => const Color(0xFF4CAF50),
+      'high'     => const Color(0xFFFF5722),
+      'medium'   => const Color(0xFFFF9800),
+      _          => const Color(0xFF4CAF50),
     };
 
     return Container(
@@ -423,8 +559,7 @@ class _LogEntryState extends State<_LogEntry> {
                                   horizontal: r.s(8), vertical: r.s(2)),
                               decoration: BoxDecoration(
                                 color: actionColor.withValues(alpha: 0.12),
-                                borderRadius:
-                                    BorderRadius.circular(r.s(20)),
+                                borderRadius: BorderRadius.circular(r.s(20)),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -451,8 +586,7 @@ class _LogEntryState extends State<_LogEntry> {
                                 decoration: BoxDecoration(
                                   color: context.nexusTheme.textSecondary
                                       .withValues(alpha: 0.1),
-                                  borderRadius:
-                                      BorderRadius.circular(r.s(20)),
+                                  borderRadius: BorderRadius.circular(r.s(20)),
                                 ),
                                 child: Text(
                                   s.logAutomated,
@@ -474,8 +608,7 @@ class _LogEntryState extends State<_LogEntry> {
                             children: [
                               TextSpan(
                                 text: actorName,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600),
+                                style: const TextStyle(fontWeight: FontWeight.w600),
                               ),
                               if (targetName != null) ...[
                                 TextSpan(
@@ -485,8 +618,7 @@ class _LogEntryState extends State<_LogEntry> {
                                 ),
                                 TextSpan(
                                   text: targetName,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w600),
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
                                 ),
                               ],
                             ],
@@ -523,11 +655,7 @@ class _LogEntryState extends State<_LogEntry> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (reason != null && reason.isNotEmpty) ...[
-                    _DetailRow(
-                      label: s.logReason,
-                      value: reason,
-                      r: r,
-                    ),
+                    _DetailRow(label: s.logReason, value: reason, r: r),
                     SizedBox(height: r.s(8)),
                   ],
                   if (durationHours != null) ...[
@@ -548,13 +676,12 @@ class _LogEntryState extends State<_LogEntry> {
                     ),
                     SizedBox(height: r.s(8)),
                   ],
-                  // Links para conteúdo alvo
                   if (log['target_post_id'] != null)
                     _ContentLink(
                       label: s.logTargetPost,
                       icon: Icons.article_rounded,
-                      onTap: () => context.push(
-                          '/post/${log['target_post_id']}'),
+                      onTap: () =>
+                          context.push('/post/${log['target_post_id']}'),
                       r: r,
                     ),
                   if (log['target_user_id'] != null)
@@ -642,7 +769,9 @@ class _DetailRow extends StatelessWidget {
           child: Text(
             value,
             style: TextStyle(
-                fontSize: r.fs(12), color: context.nexusTheme.textPrimary, height: 1.4),
+                fontSize: r.fs(12),
+                color: context.nexusTheme.textPrimary,
+                height: 1.4),
           ),
         ),
       ],
@@ -669,8 +798,7 @@ class _ContentLink extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: EdgeInsets.only(bottom: r.s(6)),
-        padding: EdgeInsets.symmetric(
-            horizontal: r.s(10), vertical: r.s(6)),
+        padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
         decoration: BoxDecoration(
           color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(r.s(8)),

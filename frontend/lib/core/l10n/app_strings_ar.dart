@@ -6024,6 +6024,49 @@ class AppStringsAr implements AppStrings {
   String get filterMute => 'الكتم';
   @override
   String get filterUnban => 'رفع الحظر';
+
+  @override
+  String get filterKick => 'الطرد';
+  @override
+  String get filterStrike => 'الإنذارات';
+  @override
+  String get filterUnmute => 'رفع الكتم';
+  @override
+  String get filterDeleteContent => 'المحتوى المحذوف';
+  @override
+  String get filterHidePost => 'المنشورات المخفية';
+  @override
+  String get filterUnhidePost => 'المنشورات المُعادة';
+  @override
+  String get filterPinPost => 'المنشورات المثبتة';
+  @override
+  String get filterUnpinPost => 'المنشورات المُلغى تثبيتها';
+  @override
+  String get filterFeaturePost => 'المنشورات المميزة';
+  @override
+  String get filterUnfeaturePost => 'إزالة التمييز';
+  @override
+  String get filterPromote => 'الترقيات';
+  @override
+  String get filterDemote => 'التخفيضات';
+  @override
+  String get filterWikiApprove => 'ويكي موافق عليها';
+  @override
+  String get filterWikiReject => 'ويكي مرفوضة';
+  @override
+  String get filterCanonizeWiki => 'ويكي مُعتمدة';
+  @override
+  String get filterDecanonizeWiki => 'ويكي غير مُعتمدة';
+  @override
+  String get filterTransferAgent => 'وكيل محوَّل';
+  @override
+  String get filterApproveFlag => 'بلاغ موافق عليه';
+  @override
+  String get filterDismissFlag => 'بلاغ مرفوض';
+  @override
+  String get filterAcceptAppeal => 'طعن مقبول';
+  @override
+  String get filterRejectAppeal => 'طعن مرفوض';
   @override
   String get reportDialogTitle => 'الإبلاغ عن محتوى';
   @override

@@ -6025,6 +6025,49 @@ class AppStringsRu implements AppStrings {
   String get filterMute => 'Муты';
   @override
   String get filterUnban => 'Разбаны';
+
+  @override
+  String get filterKick => 'Исключения';
+  @override
+  String get filterStrike => 'Страйки';
+  @override
+  String get filterUnmute => 'Снятие мута';
+  @override
+  String get filterDeleteContent => 'Удалённый контент';
+  @override
+  String get filterHidePost => 'Скрытые посты';
+  @override
+  String get filterUnhidePost => 'Восстановленные посты';
+  @override
+  String get filterPinPost => 'Закреплённые посты';
+  @override
+  String get filterUnpinPost => 'Откреплённые посты';
+  @override
+  String get filterFeaturePost => 'Избранные посты';
+  @override
+  String get filterUnfeaturePost => 'Снятые с избранного';
+  @override
+  String get filterPromote => 'Повышения';
+  @override
+  String get filterDemote => 'Понижения';
+  @override
+  String get filterWikiApprove => 'Вики одобрена';
+  @override
+  String get filterWikiReject => 'Вики отклонена';
+  @override
+  String get filterCanonizeWiki => 'Вики канонизирована';
+  @override
+  String get filterDecanonizeWiki => 'Вики деканонизирована';
+  @override
+  String get filterTransferAgent => 'Агент передан';
+  @override
+  String get filterApproveFlag => 'Жалоба одобрена';
+  @override
+  String get filterDismissFlag => 'Жалоба отклонена';
+  @override
+  String get filterAcceptAppeal => 'Апелляция принята';
+  @override
+  String get filterRejectAppeal => 'Апелляция отклонена';
   @override
   String get reportDialogTitle => 'Пожаловаться на контент';
   @override

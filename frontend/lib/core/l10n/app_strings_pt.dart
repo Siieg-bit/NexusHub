@@ -6154,6 +6154,49 @@ class AppStringsPt implements AppStrings {
   String get filterMute => 'Silenciamentos';
   @override
   String get filterUnban => 'Desbanimentos';
+
+  @override
+  String get filterKick => 'Expulsões';
+  @override
+  String get filterStrike => 'Strikes';
+  @override
+  String get filterUnmute => 'Dessilenciamentos';
+  @override
+  String get filterDeleteContent => 'Conteúdo removido';
+  @override
+  String get filterHidePost => 'Posts ocultados';
+  @override
+  String get filterUnhidePost => 'Posts reexibidos';
+  @override
+  String get filterPinPost => 'Posts fixados';
+  @override
+  String get filterUnpinPost => 'Posts desafixados';
+  @override
+  String get filterFeaturePost => 'Posts destacados';
+  @override
+  String get filterUnfeaturePost => 'Destaques removidos';
+  @override
+  String get filterPromote => 'Promoções';
+  @override
+  String get filterDemote => 'Rebaixamentos';
+  @override
+  String get filterWikiApprove => 'Wiki aprovada';
+  @override
+  String get filterWikiReject => 'Wiki rejeitada';
+  @override
+  String get filterCanonizeWiki => 'Wiki canonizada';
+  @override
+  String get filterDecanonizeWiki => 'Wiki descanonizada';
+  @override
+  String get filterTransferAgent => 'Agente transferido';
+  @override
+  String get filterApproveFlag => 'Denúncia aprovada';
+  @override
+  String get filterDismissFlag => 'Denúncia dispensada';
+  @override
+  String get filterAcceptAppeal => 'Apelação aceita';
+  @override
+  String get filterRejectAppeal => 'Apelação rejeitada';
   @override
   String get reportDialogTitle => 'Denunciar conteúdo';
   @override
