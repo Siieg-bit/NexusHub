@@ -3908,7 +3908,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get changeNickname => 'changeNickname';
   @override
-  String get changePassword => 'changePassword';
+  String get changePassword => 'Alterar senha';
   @override
   String get changePhoto => 'changePhoto';
   @override
@@ -4304,7 +4304,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get emailSent => 'emailSent';
   @override
-  String get emailVerified => 'emailVerified';
+  String get emailVerified => 'E-mail verificado';
   @override
   String get empty => 'empty';
   @override
@@ -4818,15 +4818,15 @@ class AppStringsPt implements AppStrings {
   @override
   String get nameYourCommunity => 'nameYourCommunity';
   @override
-  String get newPassword => 'newPassword';
+  String get newPassword => 'Nova senha';
   @override
-  String get newPasswordConfirmation => 'newPasswordConfirmation';
+  String get newPasswordConfirmation => 'Confirmar nova senha';
   @override
-  String get newPasswordConfirmationHint => 'newPasswordConfirmationHint';
+  String get newPasswordConfirmationHint => 'Repita a nova senha';
   @override
-  String get newPasswordHint => 'newPasswordHint';
+  String get newPasswordHint => 'Mínimo 8 caracteres';
   @override
-  String get newPasswordIsRequired => 'newPasswordIsRequired';
+  String get newPasswordIsRequired => 'A nova senha é obrigatória';
   @override
   String get newTag => 'newTag';
   @override
@@ -5012,9 +5012,9 @@ class AppStringsPt implements AppStrings {
   @override
   String get password2 => 'password2';
   @override
-  String get passwordChanged => 'passwordChanged';
+  String get passwordChanged => 'Senha alterada';
   @override
-  String get passwordChangedSuccess => 'passwordChangedSuccess';
+  String get passwordChangedSuccess => 'Sua senha foi alterada com sucesso.';
   @override
   String get passwordDoNotMatch => 'passwordDoNotMatch';
   @override
@@ -5303,7 +5303,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get resendEmail => 'resendEmail';
   @override
-  String get resendVerificationEmail => 'resendVerificationEmail';
+  String get resendVerificationEmail => 'Reenviar e-mail de verificação';
   @override
   String get reset => 'reset';
   @override
@@ -6338,4 +6338,22 @@ class AppStringsPt implements AppStrings {
   String get securityTip2 => 'Use uma senha forte e única para o NexusHub.';
   @override
   String get securityTip3 => 'Verifique regularmente os dispositivos conectados à sua conta.';
+  @override
+  String get securityVerifyEmailTitle => 'Verificar e-mail';
+  @override
+  String get securityVerifyEmailSubtitle => 'Enviaremos um link de verificação para o seu e-mail cadastrado.';
+  @override
+  String get securityVerifyEmailSentTitle => 'E-mail enviado!';
+  @override
+  String get securityVerifyEmailSentBody => 'Verifique sua caixa de entrada e clique no link de verificação.';
+  @override
+  String get securityVerifyEmailResend => 'Reenviar e-mail';
+  @override
+  String get securityVerifyEmailResendIn => 'Reenviar em {seconds}s';
+  @override
+  String get securityVerifyEmailAlreadyVerified => 'Seu e-mail já está verificado.';
+  @override
+  String get securityPasswordChangeTitle => 'Alterar senha';
+  @override
+  String get securityPasswordChangeSubtitle => 'Recomendamos usar uma senha forte e única.';
 }

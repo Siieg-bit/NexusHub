@@ -6209,4 +6209,22 @@ class AppStringsKo implements AppStrings {
   String get securityTip2 => 'NexusHub에 강력하고 고유한 비밀번호를 사용하세요.';
   @override
   String get securityTip3 => '계정에 연결된 기기를 정기적으로 확인하세요.';
+  @override
+  String get securityVerifyEmailTitle => '이메일 인증';
+  @override
+  String get securityVerifyEmailSubtitle => '등록된 이메일로 인증 링크를 보내드립니다.';
+  @override
+  String get securityVerifyEmailSentTitle => '이메일이 전송되었습니다!';
+  @override
+  String get securityVerifyEmailSentBody => '받은 편지함을 확인하고 인증 링크를 클릭하세요.';
+  @override
+  String get securityVerifyEmailResend => '이메일 재전송';
+  @override
+  String get securityVerifyEmailResendIn => '{seconds}초 후 재전송';
+  @override
+  String get securityVerifyEmailAlreadyVerified => '이메일이 이미 인증되었습니다.';
+  @override
+  String get securityPasswordChangeTitle => '비밀번호 변경';
+  @override
+  String get securityPasswordChangeSubtitle => '강력하고 고유한 비밀번호 사용을 권장합니다.';
 }

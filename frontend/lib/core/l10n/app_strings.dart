@@ -3239,4 +3239,15 @@ abstract class AppStrings {
   String get securityTip1;
   String get securityTip2;
   String get securityTip3;
+
+  // Security Center — Email Verification & Password Change
+  String get securityVerifyEmailTitle;
+  String get securityVerifyEmailSubtitle;
+  String get securityVerifyEmailSentTitle;
+  String get securityVerifyEmailSentBody;
+  String get securityVerifyEmailResend;
+  String get securityVerifyEmailResendIn;
+  String get securityVerifyEmailAlreadyVerified;
+  String get securityPasswordChangeTitle;
+  String get securityPasswordChangeSubtitle;
 }

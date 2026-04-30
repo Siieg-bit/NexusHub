@@ -6209,4 +6209,22 @@ class AppStringsDe implements AppStrings {
   String get securityTip2 => 'Verwende ein starkes, einzigartiges Passwort für NexusHub.';
   @override
   String get securityTip3 => 'Überprüfe regelmäßig die mit deinem Konto verbundenen Geräte.';
+  @override
+  String get securityVerifyEmailTitle => 'E-Mail verifizieren';
+  @override
+  String get securityVerifyEmailSubtitle => 'Wir senden einen Bestätigungslink an deine registrierte E-Mail.';
+  @override
+  String get securityVerifyEmailSentTitle => 'E-Mail gesendet!';
+  @override
+  String get securityVerifyEmailSentBody => 'Überprüfe deinen Posteingang und klicke auf den Bestätigungslink.';
+  @override
+  String get securityVerifyEmailResend => 'E-Mail erneut senden';
+  @override
+  String get securityVerifyEmailResendIn => 'Erneut senden in {seconds}s';
+  @override
+  String get securityVerifyEmailAlreadyVerified => 'Deine E-Mail ist bereits verifiziert.';
+  @override
+  String get securityPasswordChangeTitle => 'Passwort ändern';
+  @override
+  String get securityPasswordChangeSubtitle => 'Wir empfehlen ein starkes und einzigartiges Passwort.';
 }

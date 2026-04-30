@@ -3777,7 +3777,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get changeNickname => 'changeNickname';
   @override
-  String get changePassword => 'changePassword';
+  String get changePassword => 'パスワードを変更';
   @override
   String get changePhoto => 'changePhoto';
   @override
@@ -4173,7 +4173,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get emailSent => 'emailSent';
   @override
-  String get emailVerified => 'emailVerified';
+  String get emailVerified => 'メール確認済み';
   @override
   String get empty => 'empty';
   @override
@@ -4687,15 +4687,15 @@ class AppStringsJa implements AppStrings {
   @override
   String get nameYourCommunity => 'nameYourCommunity';
   @override
-  String get newPassword => 'newPassword';
+  String get newPassword => '新しいパスワード';
   @override
-  String get newPasswordConfirmation => 'newPasswordConfirmation';
+  String get newPasswordConfirmation => '新しいパスワードを確認';
   @override
-  String get newPasswordConfirmationHint => 'newPasswordConfirmationHint';
+  String get newPasswordConfirmationHint => '新しいパスワードを繰り返す';
   @override
-  String get newPasswordHint => 'newPasswordHint';
+  String get newPasswordHint => '最低8文字';
   @override
-  String get newPasswordIsRequired => 'newPasswordIsRequired';
+  String get newPasswordIsRequired => '新しいパスワードは必須です';
   @override
   String get newTag => 'newTag';
   @override
@@ -4881,9 +4881,9 @@ class AppStringsJa implements AppStrings {
   @override
   String get password2 => 'password2';
   @override
-  String get passwordChanged => 'passwordChanged';
+  String get passwordChanged => 'パスワードが変更されました';
   @override
-  String get passwordChangedSuccess => 'passwordChangedSuccess';
+  String get passwordChangedSuccess => 'パスワードが正常に変更されました。';
   @override
   String get passwordDoNotMatch => 'passwordDoNotMatch';
   @override
@@ -5172,7 +5172,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get resendEmail => 'resendEmail';
   @override
-  String get resendVerificationEmail => 'resendVerificationEmail';
+  String get resendVerificationEmail => '確認メールを再送信';
   @override
   String get reset => 'reset';
   @override
@@ -6207,4 +6207,22 @@ class AppStringsJa implements AppStrings {
   String get securityTip2 => 'NexusHubには強力で一意のパスワードを使用してください。';
   @override
   String get securityTip3 => 'アカウントに接続されているデバイスを定期的に確認してください。';
+  @override
+  String get securityVerifyEmailTitle => 'メールを確認';
+  @override
+  String get securityVerifyEmailSubtitle => '登録済みメールアドレスに確認リンクを送信します。';
+  @override
+  String get securityVerifyEmailSentTitle => 'メールを送信しました！';
+  @override
+  String get securityVerifyEmailSentBody => '受信トレイを確認し、確認リンクをクリックしてください。';
+  @override
+  String get securityVerifyEmailResend => 'メールを再送信';
+  @override
+  String get securityVerifyEmailResendIn => '{seconds}秒後に再送信';
+  @override
+  String get securityVerifyEmailAlreadyVerified => 'メールはすでに確認済みです。';
+  @override
+  String get securityPasswordChangeTitle => 'パスワードを変更';
+  @override
+  String get securityPasswordChangeSubtitle => '強力でユニークなパスワードの使用をお勧めします。';
 }

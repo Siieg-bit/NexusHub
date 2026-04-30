@@ -6208,4 +6208,22 @@ class AppStringsAr implements AppStrings {
   String get securityTip2 => 'استخدم كلمة مرور قوية وفريدة لـ NexusHub.';
   @override
   String get securityTip3 => 'تحقق بانتظام من الأجهزة المتصلة بحسابك.';
+  @override
+  String get securityVerifyEmailTitle => 'التحقق من البريد الإلكتروني';
+  @override
+  String get securityVerifyEmailSubtitle => 'سنرسل رابط التحقق إلى بريدك الإلكتروني المسجل.';
+  @override
+  String get securityVerifyEmailSentTitle => 'تم إرسال البريد الإلكتروني!';
+  @override
+  String get securityVerifyEmailSentBody => 'تحقق من صندوق الوارد وانقر على رابط التحقق.';
+  @override
+  String get securityVerifyEmailResend => 'إعادة إرسال البريد الإلكتروني';
+  @override
+  String get securityVerifyEmailResendIn => 'إعادة الإرسال خلال {seconds}ث';
+  @override
+  String get securityVerifyEmailAlreadyVerified => 'بريدك الإلكتروني محقق بالفعل.';
+  @override
+  String get securityPasswordChangeTitle => 'تغيير كلمة المرور';
+  @override
+  String get securityPasswordChangeSubtitle => 'نوصي باستخدام كلمة مرور قوية وفريدة.';
 }

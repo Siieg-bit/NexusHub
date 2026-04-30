@@ -6209,4 +6209,22 @@ class AppStringsRu implements AppStrings {
   String get securityTip2 => 'Используйте надёжный и уникальный пароль для NexusHub.';
   @override
   String get securityTip3 => 'Регулярно проверяйте устройства, подключённые к вашему аккаунту.';
+  @override
+  String get securityVerifyEmailTitle => 'Подтвердить email';
+  @override
+  String get securityVerifyEmailSubtitle => 'Мы отправим ссылку подтверждения на ваш зарегистрированный email.';
+  @override
+  String get securityVerifyEmailSentTitle => 'Email отправлен!';
+  @override
+  String get securityVerifyEmailSentBody => 'Проверьте входящие и нажмите на ссылку подтверждения.';
+  @override
+  String get securityVerifyEmailResend => 'Отправить повторно';
+  @override
+  String get securityVerifyEmailResendIn => 'Повторно через {seconds}с';
+  @override
+  String get securityVerifyEmailAlreadyVerified => 'Ваш email уже подтверждён.';
+  @override
+  String get securityPasswordChangeTitle => 'Изменить пароль';
+  @override
+  String get securityPasswordChangeSubtitle => 'Рекомендуем использовать надёжный и уникальный пароль.';
 }

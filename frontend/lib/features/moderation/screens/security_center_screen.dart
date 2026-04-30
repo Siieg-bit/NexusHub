@@ -161,6 +161,8 @@ class _OverviewTab extends ConsumerWidget {
       data: (overview) {
         final securityLevel = (overview['security_level'] as num?)?.toInt() ?? 0;
         final has2fa = overview['has_2fa'] as bool? ?? false;
+        final isEmailVerified =
+            SupabaseService.client.auth.currentUser?.emailConfirmedAt != null;
 
         return ListView(
           padding: EdgeInsets.all(r.s(16)),
@@ -188,13 +190,16 @@ class _OverviewTab extends ConsumerWidget {
             _SecuritySettingTile(
               icon: Icons.email_rounded,
               title: s.securityEmailVerification,
-              subtitle: has2fa ? s.securityEmailVerified : s.securityEmailNotVerified,
-              trailing: has2fa
+              subtitle: isEmailVerified
+                  ? s.securityEmailVerified
+                  : s.securityEmailNotVerified,
+              trailing: isEmailVerified
                   ? Icon(Icons.check_circle_rounded,
                       color: context.nexusTheme.success, size: r.s(20))
                   : Icon(Icons.warning_rounded,
                       color: context.nexusTheme.error, size: r.s(20)),
               r: r,
+              onTap: () => context.pushNamed('email-verification'),
             ),
             _SecuritySettingTile(
               icon: Icons.lock_rounded,
@@ -203,11 +208,7 @@ class _OverviewTab extends ConsumerWidget {
               trailing: Icon(Icons.chevron_right_rounded,
                   color: context.nexusTheme.textSecondary, size: r.s(20)),
               r: r,
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(s.featureComingSoon)),
-                );
-              },
+              onTap: () => context.pushNamed('change-password'),
             ),
             _SecuritySettingTile(
               icon: Icons.devices_rounded,

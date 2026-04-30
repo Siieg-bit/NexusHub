@@ -91,6 +91,7 @@ import '../features/moderation/screens/moderation_center_screen.dart';
 import '../features/moderation/screens/flag_detail_screen.dart';
 import '../features/moderation/screens/appeals_screen.dart';
 import '../features/moderation/screens/security_center_screen.dart';
+import '../features/moderation/screens/email_verification_screen.dart';
 import '../features/moderation/screens/management_logs_screen.dart';
 import '../features/stories/screens/create_story_screen.dart';
 import '../features/stories/screens/community_stories_screen.dart';
@@ -739,6 +740,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/security-center',
         name: 'security-center',
         builder: (context, state) => const SecurityCenterScreen(),
+      ),
+      GoRoute(
+        path: '/security-center/email-verification',
+        name: 'email-verification',
+        builder: (context, state) => const EmailVerificationScreen(),
       ),
       // ====================================================================
       // LOGS DE MODERAÇÃO
