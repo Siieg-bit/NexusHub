@@ -359,71 +359,91 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
             onClose: () => setState(() => _showEmojiPicker = false),
           ),
         // ── Barra inferior: microfone + input estilo Rave ──────────────────
-        Container(
-          padding: EdgeInsets.fromLTRB(12, 8, 12, bottomPad),
-          decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.06),
-                width: 0.5,
-              ),
-            ),
-          ),
-          child: Row(
-            children: [
-              // Botão de microfone grande e circular
-              _MicButton(sessionId: widget.sessionId),
-              const SizedBox(width: 10),
-              // Campo de chat estilo Rave
-              Expanded(
-                child: _ChatInput(
-                  controller: _textController,
-                  onSend: _sendMessage,
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Menu do FAB — renderizado acima da barra, fora do Row
+            if (_showFab)
+              Positioned(
+                bottom: 64 + bottomPad,
+                right: 12,
+                child: _FabMenu(
+                  onClose: () => setState(() => _showFab = false),
+                  onSticker: () {
+                    setState(() => _showFab = false);
+                    _pickAndSendSticker();
+                  },
+                  onModerate: _canModerateFuture != null
+                      ? () async {
+                          setState(() => _showFab = false);
+                          final can = await _canModerateFuture;
+                          if (can == true) _openModerationSheet();
+                        }
+                      : null,
+                  isHost: roomState.isHost,
+                  onAddVideo: roomState.isHost
+                      ? () {
+                          setState(() => _showFab = false);
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (_) => ScreeningAddVideoSheet(
+                              sessionId: widget.sessionId,
+                              threadId: widget.threadId,
+                            ),
+                          );
+                        }
+                      : null,
                 ),
               ),
-              // Botão de reação (emoji) — toggle do seletor de cascata
-              const SizedBox(width: 8),
-              _ActionIconButton(
-                icon: _showEmojiPicker
-                    ? Icons.close_rounded
-                    : Icons.add_reaction_outlined,
-                onTap: () => setState(
-                    () => _showEmojiPicker = !_showEmojiPicker),
+            Container(
+              padding: EdgeInsets.fromLTRB(12, 8, 12, bottomPad),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.06),
+                    width: 0.5,
+                  ),
+                ),
               ),
-              const SizedBox(width: 6),
-              // Galeria de imagens — sempre visível
-              _ActionIconButton(
-                icon: Icons.image_outlined,
-                onTap: _pickAndSendImage,
+              child: Row(
+                children: [
+                  // Botão de microfone grande e circular
+                  _MicButton(sessionId: widget.sessionId),
+                  const SizedBox(width: 10),
+                  // Campo de chat estilo Rave
+                  Expanded(
+                    child: _ChatInput(
+                      controller: _textController,
+                      onSend: _sendMessage,
+                    ),
+                  ),
+                  // Botão de reação (emoji) — toggle do seletor de cascata
+                  const SizedBox(width: 8),
+                  _ActionIconButton(
+                    icon: _showEmojiPicker
+                        ? Icons.close_rounded
+                        : Icons.add_reaction_outlined,
+                    onTap: () => setState(
+                        () => _showEmojiPicker = !_showEmojiPicker),
+                  ),
+                  const SizedBox(width: 6),
+                  // Galeria de imagens — sempre visível
+                  _ActionIconButton(
+                    icon: Icons.image_outlined,
+                    onTap: _pickAndSendImage,
+                  ),
+                  const SizedBox(width: 6),
+                  // FAB "+" — toggle do menu
+                  _FabToggleButton(
+                    isOpen: _showFab,
+                    onToggle: () => setState(() => _showFab = !_showFab),
+                  ),
+                ],
               ),
-              const SizedBox(width: 6),
-              // FAB "+" — agrupa sticker, moderação e vídeo (host)
-              _MoreActionsFab(
-                isOpen: _showFab,
-                onToggle: () => setState(() => _showFab = !_showFab),
-                onClose: () => setState(() => _showFab = false),
-                onSticker: _pickAndSendSticker,
-                onModerate: _canModerateFuture != null
-                    ? () async {
-                        final can = await _canModerateFuture;
-                        if (can == true) _openModerationSheet();
-                      }
-                    : null,
-                isHost: roomState.isHost,
-                onAddVideo: roomState.isHost
-                    ? () => showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (_) => ScreeningAddVideoSheet(
-                            sessionId: widget.sessionId,
-                            threadId: widget.threadId,
-                          ),
-                        )
-                    : null,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ],
     );
@@ -930,71 +950,42 @@ class _ChatInputState extends State<_ChatInput> {
   }
 }
 
-// ── MoreActionsFab ───────────────────────────────────────────────────────────
-// FAB "+" que expande verticalmente mostrando ações extras (sticker, moderação,
-// adicionar vídeo). Mantém a barra inferior limpa, exibindo apenas emoji e galeria.
+// ── _FabToggleButton ─────────────────────────────────────────────────────────
+// Apenas o botão "+" que abre/fecha o menu FAB. O menu em si é renderizado
+// no Stack pai (nível do Column) para não ser cortado pelo Row.
 // =============================================================================
-class _MoreActionsFab extends StatelessWidget {
+class _FabToggleButton extends StatelessWidget {
   final bool isOpen;
   final VoidCallback onToggle;
-  final VoidCallback onClose;
-  final VoidCallback onSticker;
-  final Future<void> Function()? onModerate;
-  final bool isHost;
-  final VoidCallback? onAddVideo;
 
-  const _MoreActionsFab({
+  const _FabToggleButton({
     required this.isOpen,
     required this.onToggle,
-    required this.onClose,
-    required this.onSticker,
-    this.onModerate,
-    required this.isHost,
-    this.onAddVideo,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.center,
-      children: [
-        // Botão principal "+"
-        GestureDetector(
-          onTap: onToggle,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isOpen
-                  ? Colors.white.withValues(alpha: 0.25)
-                  : Colors.white.withValues(alpha: 0.10),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: isOpen ? 0.40 : 0.18),
-              ),
-            ),
-            child: AnimatedRotation(
-              turns: isOpen ? 0.125 : 0,
-              duration: const Duration(milliseconds: 200),
-              child: const Icon(Icons.add_rounded, color: Colors.white70, size: 20),
-            ),
+    return GestureDetector(
+      onTap: onToggle,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isOpen
+              ? Colors.white.withValues(alpha: 0.25)
+              : Colors.white.withValues(alpha: 0.10),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: isOpen ? 0.40 : 0.18),
           ),
         ),
-        // Menu expandido — posicionado acima do botão
-        if (isOpen)
-          Positioned(
-            bottom: 46,
-            child: _FabMenu(
-              onClose: onClose,
-              onSticker: onSticker,
-              onModerate: onModerate,
-              isHost: isHost,
-              onAddVideo: onAddVideo,
-            ),
-          ),
-      ],
+        child: AnimatedRotation(
+          turns: isOpen ? 0.125 : 0,
+          duration: const Duration(milliseconds: 200),
+          child: const Icon(Icons.add_rounded, color: Colors.white70, size: 20),
+        ),
+      ),
     );
   }
 }

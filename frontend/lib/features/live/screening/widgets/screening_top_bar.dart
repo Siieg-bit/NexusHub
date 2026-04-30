@@ -301,76 +301,89 @@ class _MembersPanelSheet extends ConsumerWidget {
     final participants = ref.watch(
       screeningRoomProvider(threadId).select((s) => s.participants),
     );
-    return SafeArea(
-      child: Container(
-        width: 240,
-        height: double.infinity,
-        margin: const EdgeInsets.only(top: 8, bottom: 8, right: 8),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.72),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.10),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.5),
-              blurRadius: 24,
-              offset: const Offset(-4, 0),
+    final screenWidth = MediaQuery.of(context).size.width;
+    final panelWidth = (screenWidth * 0.72).clamp(200.0, 260.0);
+    return Material(
+      type: MaterialType.transparency,
+      child: SafeArea(
+        child: Container(
+          width: panelWidth,
+          height: double.infinity,
+          margin: const EdgeInsets.only(top: 8, bottom: 8, right: 8),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.72),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.10),
             ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.people_rounded, color: Colors.white70, size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Participantes (\${participants.length})',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () => Navigator.of(context).pop(),
-                        child: const Icon(Icons.close_rounded, color: Colors.white54, size: 20),
-                      ),
-                    ],
-                  ),
-                ),
-                Divider(color: Colors.white.withValues(alpha: 0.08), height: 1),
-                // Lista de participantes
-                Expanded(
-                  child: participants.isEmpty
-                      ? const Center(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 24,
+                offset: const Offset(-4, 0),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.people_rounded, color: Colors.white70, size: 18),
+                        const SizedBox(width: 8),
+                        Flexible(
                           child: Text(
-                            'Nenhum participante',
-                            style: TextStyle(color: Colors.white38, fontSize: 13),
+                            'Participantes (${participants.length})',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.3,
+                              decoration: TextDecoration.none,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          itemCount: participants.length,
-                          itemBuilder: (context, index) {
-                            final p = participants[index];
-                            return _MemberTile(participant: p);
-                          },
                         ),
-                ),
-              ],
+                        const Spacer(),
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: const Icon(Icons.close_rounded, color: Colors.white54, size: 20),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(color: Colors.white.withValues(alpha: 0.08), height: 1),
+                  // Lista de participantes
+                  Expanded(
+                    child: participants.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'Nenhum participante',
+                              style: TextStyle(
+                                color: Colors.white38,
+                                fontSize: 13,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            itemCount: participants.length,
+                            itemBuilder: (context, index) {
+                              final p = participants[index];
+                              return _MemberTile(participant: p);
+                            },
+                          ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -419,6 +432,7 @@ class _MemberTile extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
+                decoration: TextDecoration.none,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
