@@ -65,25 +65,25 @@ class _SecurityCenterScreenState extends ConsumerState<SecurityCenterScreen>
     final theme = context.nexusTheme;
 
     return Scaffold(
-      backgroundColor: theme.backgroundPrimary,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: theme.backgroundPrimary,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: theme.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded, color: context.nexusTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: Text(
           s.securityCenterTitle,
           style: TextStyle(
-            color: theme.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontWeight: FontWeight.w700,
             fontSize: r.fs(18),
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh_rounded, color: theme.textSecondary),
+            icon: Icon(Icons.refresh_rounded, color: context.nexusTheme.textSecondary),
             onPressed: () {
               ref.invalidate(securityOverviewProvider);
               ref.invalidate(securityEventsProvider);
@@ -92,9 +92,9 @@ class _SecurityCenterScreenState extends ConsumerState<SecurityCenterScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: theme.accentPrimary,
-          unselectedLabelColor: theme.textSecondary,
-          indicatorColor: theme.accentPrimary,
+          labelColor: context.nexusTheme.accentPrimary,
+          unselectedLabelColor: context.nexusTheme.textSecondary,
+          indicatorColor: context.nexusTheme.accentPrimary,
           labelStyle: TextStyle(
               fontSize: r.fs(13), fontWeight: FontWeight.w600),
           tabs: [
@@ -134,10 +134,10 @@ class _OverviewTab extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, color: theme.error, size: r.s(48)),
+            Icon(Icons.error_outline_rounded, color: context.nexusTheme.error, size: r.s(48)),
             SizedBox(height: r.s(12)),
             Text(s.anErrorOccurredTryAgain,
-                style: TextStyle(color: theme.textSecondary, fontSize: r.fs(14))),
+                style: TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(14))),
           ],
         ),
       ),
@@ -153,7 +153,6 @@ class _OverviewTab extends ConsumerWidget {
               level: securityLevel,
               has2fa: has2fa,
               r: r,
-              theme: theme,
               s: s,
             ),
             SizedBox(height: r.s(16)),
@@ -164,7 +163,7 @@ class _OverviewTab extends ConsumerWidget {
               style: TextStyle(
                 fontSize: r.fs(13),
                 fontWeight: FontWeight.w700,
-                color: theme.textSecondary,
+                color: context.nexusTheme.textSecondary,
                 letterSpacing: 0.5,
               ),
             ),
@@ -175,20 +174,18 @@ class _OverviewTab extends ConsumerWidget {
               subtitle: has2fa ? s.securityEmailVerified : s.securityEmailNotVerified,
               trailing: has2fa
                   ? Icon(Icons.check_circle_rounded,
-                      color: theme.success, size: r.s(20))
+                      color: context.nexusTheme.success, size: r.s(20))
                   : Icon(Icons.warning_rounded,
-                      color: theme.error, size: r.s(20)),
-              theme: theme,
-              r: r,
+                      color: context.nexusTheme.error, size: r.s(20)),
+              theme: r: r,
             ),
             _SecuritySettingTile(
               icon: Icons.lock_rounded,
               title: s.securityChangePassword,
               subtitle: s.securityChangePasswordSubtitle,
               trailing: Icon(Icons.chevron_right_rounded,
-                  color: theme.textSecondary, size: r.s(20)),
-              theme: theme,
-              r: r,
+                  color: context.nexusTheme.textSecondary, size: r.s(20)),
+              theme: r: r,
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(s.featureComingSoon)),
@@ -200,9 +197,8 @@ class _OverviewTab extends ConsumerWidget {
               title: s.securityActiveSessions,
               subtitle: s.securityActiveSessionsSubtitle,
               trailing: Icon(Icons.chevron_right_rounded,
-                  color: theme.textSecondary, size: r.s(20)),
-              theme: theme,
-              r: r,
+                  color: context.nexusTheme.textSecondary, size: r.s(20)),
+              theme: r: r,
               onTap: () {
                 // Navega para a aba de sessões
                 final tabCtrl = context
@@ -216,9 +212,8 @@ class _OverviewTab extends ConsumerWidget {
               title: s.securityActivityLog,
               subtitle: s.securityActivityLogSubtitle,
               trailing: Icon(Icons.chevron_right_rounded,
-                  color: theme.textSecondary, size: r.s(20)),
-              theme: theme,
-              r: r,
+                  color: context.nexusTheme.textSecondary, size: r.s(20)),
+              theme: r: r,
               onTap: () {
                 final tabCtrl = context
                     .findAncestorStateOfType<_SecurityCenterScreenState>()
@@ -229,7 +224,7 @@ class _OverviewTab extends ConsumerWidget {
             SizedBox(height: r.s(16)),
 
             // Dicas de segurança
-            _SecurityTipsCard(r: r, theme: theme, s: s),
+            _SecurityTipsCard(r: r, s: s),
           ],
         );
       },
@@ -253,7 +248,7 @@ class _SessionsTab extends ConsumerWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
         child: Text(s.anErrorOccurredTryAgain,
-            style: TextStyle(color: theme.textSecondary)),
+            style: TextStyle(color: context.nexusTheme.textSecondary)),
       ),
       data: (overview) {
         final sessions = List<Map<String, dynamic>>.from(
@@ -267,11 +262,11 @@ class _SessionsTab extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.devices_rounded,
-                    color: theme.textSecondary, size: r.s(48)),
+                    color: context.nexusTheme.textSecondary, size: r.s(48)),
                 SizedBox(height: r.s(12)),
                 Text(s.securityNoSessions,
                     style: TextStyle(
-                        color: theme.textSecondary, fontSize: r.fs(14))),
+                        color: context.nexusTheme.textSecondary, fontSize: r.fs(14))),
               ],
             ),
           );
@@ -302,11 +297,11 @@ class _SessionsTab extends ConsumerWidget {
               margin: EdgeInsets.only(bottom: r.s(10)),
               padding: EdgeInsets.all(r.s(14)),
               decoration: BoxDecoration(
-                color: theme.surfacePrimary,
+                color: context.nexusTheme.surfacePrimary,
                 borderRadius: BorderRadius.circular(r.s(14)),
                 border: isCurrent
                     ? Border.all(
-                        color: theme.accentPrimary.withValues(alpha: 0.4))
+                        color: context.nexusTheme.accentPrimary.withValues(alpha: 0.4))
                     : null,
               ),
               child: Row(
@@ -316,14 +311,14 @@ class _SessionsTab extends ConsumerWidget {
                     height: r.s(44),
                     decoration: BoxDecoration(
                       color: isCurrent
-                          ? theme.accentPrimary.withValues(alpha: 0.12)
-                          : theme.surfaceSecondary,
+                          ? context.nexusTheme.accentPrimary.withValues(alpha: 0.12)
+                          : context.nexusTheme.surfaceSecondary,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(deviceIcon,
                         color: isCurrent
-                            ? theme.accentPrimary
-                            : theme.textSecondary,
+                            ? context.nexusTheme.accentPrimary
+                            : context.nexusTheme.textSecondary,
                         size: r.s(22)),
                   ),
                   SizedBox(width: r.s(12)),
@@ -339,7 +334,7 @@ class _SessionsTab extends ConsumerWidget {
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: r.fs(14),
-                                  color: theme.textPrimary,
+                                  color: context.nexusTheme.textPrimary,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -350,7 +345,7 @@ class _SessionsTab extends ConsumerWidget {
                                 padding: EdgeInsets.symmetric(
                                     horizontal: r.s(8), vertical: r.s(2)),
                                 decoration: BoxDecoration(
-                                  color: theme.accentPrimary
+                                  color: context.nexusTheme.accentPrimary
                                       .withValues(alpha: 0.12),
                                   borderRadius:
                                       BorderRadius.circular(r.s(20)),
@@ -358,7 +353,7 @@ class _SessionsTab extends ConsumerWidget {
                                 child: Text(
                                   s.securityCurrentSession,
                                   style: TextStyle(
-                                    color: theme.accentPrimary,
+                                    color: context.nexusTheme.accentPrimary,
                                     fontSize: r.fs(10),
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -372,7 +367,7 @@ class _SessionsTab extends ConsumerWidget {
                                 .join(' · '),
                             style: TextStyle(
                                 fontSize: r.fs(12),
-                                color: theme.textSecondary),
+                                color: context.nexusTheme.textSecondary),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -381,7 +376,7 @@ class _SessionsTab extends ConsumerWidget {
                             timeago.format(lastActive, locale: 'pt_BR'),
                             style: TextStyle(
                                 fontSize: r.fs(11),
-                                color: theme.textSecondary),
+                                color: context.nexusTheme.textSecondary),
                           ),
                       ],
                     ),
@@ -391,7 +386,6 @@ class _SessionsTab extends ConsumerWidget {
                     _RevokeButton(
                       sessionId: session['id'] as String,
                       r: r,
-                      theme: theme,
                       s: s,
                     ),
                   ],
@@ -421,7 +415,7 @@ class _ActivityTab extends ConsumerWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
         child: Text(s.anErrorOccurredTryAgain,
-            style: TextStyle(color: theme.textSecondary)),
+            style: TextStyle(color: context.nexusTheme.textSecondary)),
       ),
       data: (events) {
         if (events.isEmpty) {
@@ -430,11 +424,11 @@ class _ActivityTab extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.history_rounded,
-                    color: theme.textSecondary, size: r.s(48)),
+                    color: context.nexusTheme.textSecondary, size: r.s(48)),
                 SizedBox(height: r.s(12)),
                 Text(s.securityNoActivity,
                     style: TextStyle(
-                        color: theme.textSecondary, fontSize: r.fs(14))),
+                        color: context.nexusTheme.textSecondary, fontSize: r.fs(14))),
               ],
             ),
           );
@@ -458,7 +452,7 @@ class _ActivityTab extends ConsumerWidget {
               margin: EdgeInsets.only(bottom: r.s(8)),
               padding: EdgeInsets.all(r.s(12)),
               decoration: BoxDecoration(
-                color: theme.surfacePrimary,
+                color: context.nexusTheme.surfacePrimary,
                 borderRadius: BorderRadius.circular(r.s(12)),
               ),
               child: Row(
@@ -482,7 +476,7 @@ class _ActivityTab extends ConsumerWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: r.fs(13),
-                            color: theme.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                           ),
                         ),
                         if (ip != null || location != null)
@@ -491,7 +485,7 @@ class _ActivityTab extends ConsumerWidget {
                                 .join(' · '),
                             style: TextStyle(
                                 fontSize: r.fs(11),
-                                color: theme.textSecondary),
+                                color: context.nexusTheme.textSecondary),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -502,7 +496,7 @@ class _ActivityTab extends ConsumerWidget {
                     Text(
                       timeago.format(createdAt, locale: 'pt_BR'),
                       style: TextStyle(
-                          fontSize: r.fs(11), color: theme.textSecondary),
+                          fontSize: r.fs(11), color: context.nexusTheme.textSecondary),
                     ),
                 ],
               ),
@@ -535,23 +529,21 @@ class _SecurityScoreCard extends StatelessWidget {
   final int level;
   final bool has2fa;
   final Responsive r;
-  final NexusThemeData theme;
   final dynamic s;
 
   const _SecurityScoreCard({
     required this.level,
     required this.has2fa,
     required this.r,
-    required this.theme,
     required this.s,
   });
 
   @override
   Widget build(BuildContext context) {
     final (color, label, icon) = switch (level) {
-      >= 80 => (theme.success, s.securityLevelHigh, Icons.security_rounded),
+      >= 80 => (context.nexusTheme.success, s.securityLevelHigh, Icons.security_rounded),
       >= 50 => (const Color(0xFFFF9800), s.securityLevelMedium, Icons.shield_rounded),
-      _ => (theme.error, s.securityLevelLow, Icons.shield_outlined),
+      _ => (context.nexusTheme.error, s.securityLevelLow, Icons.shield_outlined),
     };
 
     return Container(
@@ -587,7 +579,7 @@ class _SecurityScoreCard extends StatelessWidget {
                 Text(
                   s.securityScoreTitle,
                   style: TextStyle(
-                      fontSize: r.fs(12), color: theme.textSecondary),
+                      fontSize: r.fs(12), color: context.nexusTheme.textSecondary),
                 ),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -604,7 +596,7 @@ class _SecurityScoreCard extends StatelessWidget {
                     Text(
                       '/100',
                       style: TextStyle(
-                          fontSize: r.fs(14), color: theme.textSecondary),
+                          fontSize: r.fs(14), color: context.nexusTheme.textSecondary),
                     ),
                   ],
                 ),
@@ -638,7 +630,6 @@ class _SecuritySettingTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final Widget trailing;
-  final NexusThemeData theme;
   final Responsive r;
   final VoidCallback? onTap;
 
@@ -647,7 +638,6 @@ class _SecuritySettingTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.trailing,
-    required this.theme,
     required this.r,
     this.onTap,
   });
@@ -657,7 +647,7 @@ class _SecuritySettingTile extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: r.s(8)),
       decoration: BoxDecoration(
-        color: theme.surfacePrimary,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(12)),
       ),
       child: ListTile(
@@ -666,22 +656,22 @@ class _SecuritySettingTile extends StatelessWidget {
           width: r.s(38),
           height: r.s(38),
           decoration: BoxDecoration(
-            color: theme.accentPrimary.withValues(alpha: 0.1),
+            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: theme.accentPrimary, size: r.s(18)),
+          child: Icon(icon, color: context.nexusTheme.accentPrimary, size: r.s(18)),
         ),
         title: Text(
           title,
           style: TextStyle(
             fontSize: r.fs(14),
             fontWeight: FontWeight.w600,
-            color: theme.textPrimary,
+            color: context.nexusTheme.textPrimary,
           ),
         ),
         subtitle: Text(
           subtitle,
-          style: TextStyle(fontSize: r.fs(12), color: theme.textSecondary),
+          style: TextStyle(fontSize: r.fs(12), color: context.nexusTheme.textSecondary),
         ),
         trailing: trailing,
         contentPadding:
@@ -695,11 +685,10 @@ class _SecuritySettingTile extends StatelessWidget {
 
 class _SecurityTipsCard extends StatelessWidget {
   final Responsive r;
-  final NexusThemeData theme;
   final dynamic s;
 
   const _SecurityTipsCard(
-      {required this.r, required this.theme, required this.s});
+      {required this.r, required this.s});
 
   @override
   Widget build(BuildContext context) {
@@ -712,7 +701,7 @@ class _SecurityTipsCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(r.s(14)),
       decoration: BoxDecoration(
-        color: theme.surfacePrimary,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(14)),
       ),
       child: Column(
@@ -728,7 +717,7 @@ class _SecurityTipsCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: r.fs(13),
                   fontWeight: FontWeight.w700,
-                  color: theme.textPrimary,
+                  color: context.nexusTheme.textPrimary,
                 ),
               ),
             ],
@@ -740,14 +729,14 @@ class _SecurityTipsCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.check_circle_outline_rounded,
-                        color: theme.success, size: r.s(14)),
+                        color: context.nexusTheme.success, size: r.s(14)),
                     SizedBox(width: r.s(8)),
                     Expanded(
                       child: Text(
                         tip,
                         style: TextStyle(
                             fontSize: r.fs(12),
-                            color: theme.textSecondary,
+                            color: context.nexusTheme.textSecondary,
                             height: 1.4),
                       ),
                     ),
@@ -763,13 +752,11 @@ class _SecurityTipsCard extends StatelessWidget {
 class _RevokeButton extends ConsumerStatefulWidget {
   final String sessionId;
   final Responsive r;
-  final NexusThemeData theme;
   final dynamic s;
 
   const _RevokeButton({
     required this.sessionId,
     required this.r,
-    required this.theme,
     required this.s,
   });
 
@@ -787,11 +774,11 @@ class _RevokeButtonState extends ConsumerState<_RevokeButton> {
             width: widget.r.s(18),
             height: widget.r.s(18),
             child: CircularProgressIndicator(
-                strokeWidth: 2, color: widget.theme.error),
+                strokeWidth: 2, color: widget.context.nexusTheme.error),
           )
         : IconButton(
             icon: Icon(Icons.logout_rounded,
-                color: widget.theme.error, size: widget.r.s(20)),
+                color: widget.context.nexusTheme.error, size: widget.r.s(20)),
             tooltip: widget.s.securityRevokeSession,
             onPressed: _revoke,
           );
@@ -807,7 +794,7 @@ class _RevokeButtonState extends ConsumerState<_RevokeButton> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(widget.s.securitySessionRevoked),
-            backgroundColor: widget.theme.success,
+            backgroundColor: widget.context.nexusTheme.success,
           ),
         );
       }
@@ -816,7 +803,7 @@ class _RevokeButtonState extends ConsumerState<_RevokeButton> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(widget.s.anErrorOccurredTryAgain),
-            backgroundColor: widget.theme.error,
+            backgroundColor: widget.context.nexusTheme.error,
           ),
         );
       }

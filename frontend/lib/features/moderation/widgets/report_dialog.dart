@@ -249,17 +249,17 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
 
     return Container(
       decoration: BoxDecoration(
-        color: theme.backgroundSecondary,
+        color: context.nexusTheme.backgroundSecondary,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
-        child: _submitted ? _buildSuccess(r, theme) : _buildForm(r, theme, s),
+        child: _submitted ? _buildSuccess(r) : _buildForm(r, s),
       ),
     );
   }
 
-  Widget _buildSuccess(Responsive r, NexusThemeData theme) {
+  Widget _buildSuccess(Responsive r) {
     final s = getStrings();
     return SizedBox(
       key: const ValueKey('success'),
@@ -275,10 +275,10 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
                 width: r.s(72),
                 height: r.s(72),
                 decoration: BoxDecoration(
-                  color: theme.success.withValues(alpha: 0.15),
+                  color: context.nexusTheme.success.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.check_rounded, color: theme.success, size: r.s(40)),
+                child: Icon(Icons.check_rounded, color: context.nexusTheme.success, size: r.s(40)),
               ),
             ),
             SizedBox(height: r.s(20)),
@@ -287,14 +287,14 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
               style: TextStyle(
                 fontSize: r.fs(18),
                 fontWeight: FontWeight.w700,
-                color: theme.textPrimary,
+                color: context.nexusTheme.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: r.s(8)),
             Text(
               s.reportSubmittedThanks,
-              style: TextStyle(fontSize: r.fs(14), color: theme.textSecondary, height: 1.4),
+              style: TextStyle(fontSize: r.fs(14), color: context.nexusTheme.textSecondary, height: 1.4),
               textAlign: TextAlign.center,
             ),
           ],
@@ -303,7 +303,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
     );
   }
 
-  Widget _buildForm(Responsive r, NexusThemeData theme, dynamic s) {
+  Widget _buildForm(Responsive r, dynamic s) {
     final categories = _getCategories();
     final cat = _selected;
 
@@ -324,7 +324,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
               width: r.s(40),
               height: r.s(4),
               decoration: BoxDecoration(
-                color: theme.divider,
+                color: context.nexusTheme.divider,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -336,10 +336,10 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
                 width: r.s(40),
                 height: r.s(40),
                 decoration: BoxDecoration(
-                  color: theme.error.withValues(alpha: 0.12),
+                  color: context.nexusTheme.error.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.flag_rounded, color: theme.error, size: r.s(20)),
+                child: Icon(Icons.flag_rounded, color: context.nexusTheme.error, size: r.s(20)),
               ),
               SizedBox(width: r.s(12)),
               Expanded(
@@ -351,12 +351,12 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: r.fs(17),
-                        color: theme.textPrimary,
+                        color: context.nexusTheme.textPrimary,
                       ),
                     ),
                     Text(
                       s.selectReportReason,
-                      style: TextStyle(fontSize: r.fs(12), color: theme.textSecondary),
+                      style: TextStyle(fontSize: r.fs(12), color: context.nexusTheme.textSecondary),
                     ),
                   ],
                 ),
@@ -386,19 +386,19 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
                   decoration: BoxDecoration(
                     color: isSelected
                         ? c.color.withValues(alpha: 0.15)
-                        : theme.surfacePrimary,
+                        : context.nexusTheme.surfacePrimary,
                     borderRadius: BorderRadius.circular(r.s(12)),
                     border: Border.all(
                       color: isSelected
                           ? c.color.withValues(alpha: 0.6)
-                          : theme.divider.withValues(alpha: 0.3),
+                          : context.nexusTheme.divider.withValues(alpha: 0.3),
                       width: isSelected ? 1.5 : 1,
                     ),
                   ),
                   child: Row(
                     children: [
                       Icon(c.icon,
-                          color: isSelected ? c.color : theme.textSecondary,
+                          color: isSelected ? c.color : context.nexusTheme.textSecondary,
                           size: r.s(18)),
                       SizedBox(width: r.s(8)),
                       Expanded(
@@ -407,7 +407,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
                           style: TextStyle(
                             fontSize: r.fs(12),
                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                            color: isSelected ? c.color : theme.textPrimary,
+                            color: isSelected ? c.color : context.nexusTheme.textPrimary,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -437,7 +437,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
                     child: Text(
                       cat.description,
                       style: TextStyle(
-                          fontSize: r.fs(12), color: theme.textSecondary, height: 1.4),
+                          fontSize: r.fs(12), color: context.nexusTheme.textSecondary, height: 1.4),
                     ),
                   ),
                 ],
@@ -449,22 +449,22 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
             controller: _detailsController,
             maxLines: 3,
             maxLength: 500,
-            style: TextStyle(fontSize: r.fs(13), color: theme.textPrimary),
+            style: TextStyle(fontSize: r.fs(13), color: context.nexusTheme.textPrimary),
             decoration: InputDecoration(
               hintText: cat?.requiresDetails == true
                   ? s.reportDetailsRequiredHint
                   : s.additionalDetailsHint,
-              hintStyle: TextStyle(fontSize: r.fs(13), color: theme.textSecondary),
+              hintStyle: TextStyle(fontSize: r.fs(13), color: context.nexusTheme.textSecondary),
               filled: true,
-              fillColor: theme.surfacePrimary,
-              counterStyle: TextStyle(fontSize: r.fs(11), color: theme.textSecondary),
+              fillColor: context.nexusTheme.surfacePrimary,
+              counterStyle: TextStyle(fontSize: r.fs(11), color: context.nexusTheme.textSecondary),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(12)),
                 borderSide: BorderSide.none,
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(12)),
-                borderSide: BorderSide(color: theme.accentPrimary.withValues(alpha: 0.5)),
+                borderSide: BorderSide(color: context.nexusTheme.accentPrimary.withValues(alpha: 0.5)),
               ),
             ),
           ),
@@ -476,9 +476,9 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
               onPressed: _isSubmitting ? null : _submit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: _selectedId != null
-                    ? (_selected?.color ?? theme.error)
-                    : theme.surfacePrimary,
-                disabledBackgroundColor: theme.surfacePrimary,
+                    ? (_selected?.color ?? context.nexusTheme.error)
+                    : context.nexusTheme.surfacePrimary,
+                disabledBackgroundColor: context.nexusTheme.surfacePrimary,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(14)),
@@ -512,7 +512,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog>
           Center(
             child: Text(
               s.reportResponsibleUse,
-              style: TextStyle(fontSize: r.fs(11), color: theme.textSecondary),
+              style: TextStyle(fontSize: r.fs(11), color: context.nexusTheme.textSecondary),
               textAlign: TextAlign.center,
             ),
           ),

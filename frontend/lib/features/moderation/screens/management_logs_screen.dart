@@ -62,25 +62,25 @@ class ManagementLogsScreen extends ConsumerWidget {
     final logsAsync = ref.watch(managementLogsProvider((communityId, filter)));
 
     return Scaffold(
-      backgroundColor: theme.backgroundPrimary,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: theme.backgroundPrimary,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: theme.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded, color: context.nexusTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: Text(
           s.managementLogsTitle,
           style: TextStyle(
-            color: theme.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontWeight: FontWeight.w700,
             fontSize: r.fs(18),
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh_rounded, color: theme.textSecondary),
+            icon: Icon(Icons.refresh_rounded, color: context.nexusTheme.textSecondary),
             onPressed: () {
               ref.invalidate(managementLogsStatsProvider(communityId));
               ref.invalidate(
@@ -95,11 +95,11 @@ class ManagementLogsScreen extends ConsumerWidget {
           statsAsync.when(
             loading: () => const SizedBox.shrink(),
             error: (_, __) => const SizedBox.shrink(),
-            data: (stats) => _StatsRow(stats: stats, r: r, theme: theme, s: s),
+            data: (stats) => _StatsRow(stats: stats, r: r, s: s),
           ),
 
           // Filtros
-          _FilterChips(r: r, theme: theme, s: s),
+          _FilterChips(r: r, s: s),
 
           // Lista
           Expanded(
@@ -111,21 +111,21 @@ class ManagementLogsScreen extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.error_outline_rounded,
-                        color: theme.error, size: r.s(48)),
+                        color: context.nexusTheme.error, size: r.s(48)),
                     SizedBox(height: r.s(12)),
                     Text(
                       e.toString().contains('insufficient_permissions')
                           ? s.insufficientPermissions
                           : s.anErrorOccurredTryAgain,
                       style: TextStyle(
-                          color: theme.textSecondary, fontSize: r.fs(14)),
+                          color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
                       textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
               data: (logs) => logs.isEmpty
-                  ? _buildEmpty(context, r, theme, s)
+                  ? _buildEmpty(context, r, s)
                   : ListView.builder(
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(16), vertical: r.s(8)),
@@ -134,7 +134,6 @@ class ManagementLogsScreen extends ConsumerWidget {
                         log: logs[i],
                         communityId: communityId,
                         r: r,
-                        theme: theme,
                         s: s,
                       ),
                     ),
@@ -145,19 +144,18 @@ class ManagementLogsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmpty(BuildContext context, Responsive r,
-      NexusThemeData theme, dynamic s) {
+  Widget _buildEmpty(BuildContext context, Responsive r, dynamic s) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.history_rounded,
-              color: theme.textSecondary, size: r.s(48)),
+              color: context.nexusTheme.textSecondary, size: r.s(48)),
           SizedBox(height: r.s(12)),
           Text(
             s.managementLogsEmpty,
             style: TextStyle(
-                color: theme.textSecondary, fontSize: r.fs(14)),
+                color: context.nexusTheme.textSecondary, fontSize: r.fs(14)),
           ),
         ],
       ),
@@ -172,13 +170,11 @@ class ManagementLogsScreen extends ConsumerWidget {
 class _StatsRow extends StatelessWidget {
   final Map<String, dynamic> stats;
   final Responsive r;
-  final NexusThemeData theme;
   final dynamic s;
 
   const _StatsRow(
       {required this.stats,
       required this.r,
-      required this.theme,
       required this.s});
 
   @override
@@ -214,7 +210,7 @@ class _StatsRow extends StatelessWidget {
       margin: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), 0),
       padding: EdgeInsets.all(r.s(12)),
       decoration: BoxDecoration(
-        color: theme.surfacePrimary,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(14)),
       ),
       child: Row(
@@ -229,13 +225,13 @@ class _StatsRow extends StatelessWidget {
                         style: TextStyle(
                           fontSize: r.fs(16),
                           fontWeight: FontWeight.w800,
-                          color: theme.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                         ),
                       ),
                       Text(
                         item.$3,
                         style: TextStyle(
-                            fontSize: r.fs(10), color: theme.textSecondary),
+                            fontSize: r.fs(10), color: context.nexusTheme.textSecondary),
                         textAlign: TextAlign.center,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -255,11 +251,10 @@ class _StatsRow extends StatelessWidget {
 
 class _FilterChips extends ConsumerWidget {
   final Responsive r;
-  final NexusThemeData theme;
   final dynamic s;
 
   const _FilterChips(
-      {required this.r, required this.theme, required this.s});
+      {required this.r, required this.s});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -291,8 +286,8 @@ class _FilterChips extends ConsumerWidget {
                   horizontal: r.s(12), vertical: r.s(4)),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? theme.accentPrimary
-                    : theme.surfacePrimary,
+                    ? context.nexusTheme.accentPrimary
+                    : context.nexusTheme.surfacePrimary,
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: Text(
@@ -301,7 +296,7 @@ class _FilterChips extends ConsumerWidget {
                   fontSize: r.fs(12),
                   fontWeight:
                       isSelected ? FontWeight.w600 : FontWeight.normal,
-                  color: isSelected ? Colors.white : theme.textSecondary,
+                  color: isSelected ? Colors.white : context.nexusTheme.textSecondary,
                 ),
               ),
             ),
@@ -320,14 +315,12 @@ class _LogEntry extends StatefulWidget {
   final Map<String, dynamic> log;
   final String communityId;
   final Responsive r;
-  final NexusThemeData theme;
   final dynamic s;
 
   const _LogEntry({
     required this.log,
     required this.communityId,
     required this.r,
-    required this.theme,
     required this.s,
   });
 
@@ -342,7 +335,7 @@ class _LogEntryState extends State<_LogEntry> {
   Widget build(BuildContext context) {
     final log = widget.log;
     final r = widget.r;
-    final theme = widget.theme;
+    final theme = context.nexusTheme;
     final s = widget.s;
 
     final action = log['action'] as String? ?? 'unknown';
@@ -374,7 +367,7 @@ class _LogEntryState extends State<_LogEntry> {
     return Container(
       margin: EdgeInsets.only(bottom: r.s(8)),
       decoration: BoxDecoration(
-        color: theme.surfacePrimary,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(14)),
         border: Border(
           left: BorderSide(color: severityColor, width: 3),
@@ -438,7 +431,7 @@ class _LogEntryState extends State<_LogEntry> {
                                 padding: EdgeInsets.symmetric(
                                     horizontal: r.s(6), vertical: r.s(2)),
                                 decoration: BoxDecoration(
-                                  color: theme.textSecondary
+                                  color: context.nexusTheme.textSecondary
                                       .withValues(alpha: 0.1),
                                   borderRadius:
                                       BorderRadius.circular(r.s(20)),
@@ -446,7 +439,7 @@ class _LogEntryState extends State<_LogEntry> {
                                 child: Text(
                                   s.logAutomated,
                                   style: TextStyle(
-                                    color: theme.textSecondary,
+                                    color: context.nexusTheme.textSecondary,
                                     fontSize: r.fs(10),
                                   ),
                                 ),
@@ -459,7 +452,7 @@ class _LogEntryState extends State<_LogEntry> {
                           text: TextSpan(
                             style: TextStyle(
                                 fontSize: r.fs(13),
-                                color: theme.textPrimary),
+                                color: context.nexusTheme.textPrimary),
                             children: [
                               TextSpan(
                                 text: actorName,
@@ -470,7 +463,7 @@ class _LogEntryState extends State<_LogEntry> {
                                 TextSpan(
                                   text: ' → ',
                                   style: TextStyle(
-                                      color: theme.textSecondary),
+                                      color: context.nexusTheme.textSecondary),
                                 ),
                                 TextSpan(
                                   text: targetName,
@@ -486,7 +479,7 @@ class _LogEntryState extends State<_LogEntry> {
                             timeago.format(createdAt, locale: 'pt_BR'),
                             style: TextStyle(
                                 fontSize: r.fs(11),
-                                color: theme.textSecondary),
+                                color: context.nexusTheme.textSecondary),
                           ),
                       ],
                     ),
@@ -495,7 +488,7 @@ class _LogEntryState extends State<_LogEntry> {
                     _expanded
                         ? Icons.keyboard_arrow_up_rounded
                         : Icons.keyboard_arrow_down_rounded,
-                    color: theme.textSecondary,
+                    color: context.nexusTheme.textSecondary,
                     size: r.s(18),
                   ),
                 ],
@@ -505,7 +498,7 @@ class _LogEntryState extends State<_LogEntry> {
 
           // Detalhes expandidos
           if (_expanded) ...[
-            Divider(height: 1, color: theme.divider),
+            Divider(height: 1, color: context.nexusTheme.divider),
             Padding(
               padding: EdgeInsets.all(r.s(12)),
               child: Column(
@@ -515,8 +508,7 @@ class _LogEntryState extends State<_LogEntry> {
                     _DetailRow(
                       label: s.logReason,
                       value: reason,
-                      theme: theme,
-                      r: r,
+                      theme: r: r,
                     ),
                     SizedBox(height: r.s(8)),
                   ],
@@ -526,8 +518,7 @@ class _LogEntryState extends State<_LogEntry> {
                       value: durationHours >= 8760
                           ? s.logDurationPermanent
                           : '$durationHours ${s.logDurationHours}',
-                      theme: theme,
-                      r: r,
+                      theme: r: r,
                     ),
                     SizedBox(height: r.s(8)),
                   ],
@@ -535,8 +526,7 @@ class _LogEntryState extends State<_LogEntry> {
                     _DetailRow(
                       label: s.logExpiresAt,
                       value: timeago.format(expiresAt, locale: 'pt_BR'),
-                      theme: theme,
-                      r: r,
+                      theme: r: r,
                     ),
                     SizedBox(height: r.s(8)),
                   ],
@@ -547,8 +537,7 @@ class _LogEntryState extends State<_LogEntry> {
                       icon: Icons.article_rounded,
                       onTap: () => context.push(
                           '/post/${log['target_post_id']}'),
-                      theme: theme,
-                      r: r,
+                      theme: r: r,
                     ),
                   if (log['target_user_id'] != null)
                     _ContentLink(
@@ -556,8 +545,7 @@ class _LogEntryState extends State<_LogEntry> {
                       icon: Icons.person_rounded,
                       onTap: () => context.push(
                           '/community/${widget.communityId}/profile/${log['target_user_id']}'),
-                      theme: theme,
-                      r: r,
+                      theme: r: r,
                     ),
                 ],
               ),
@@ -595,13 +583,11 @@ class _LogEntryState extends State<_LogEntry> {
 class _DetailRow extends StatelessWidget {
   final String label;
   final String value;
-  final NexusThemeData theme;
   final Responsive r;
 
   const _DetailRow({
     required this.label,
     required this.value,
-    required this.theme,
     required this.r,
   });
 
@@ -617,7 +603,7 @@ class _DetailRow extends StatelessWidget {
             style: TextStyle(
               fontSize: r.fs(11),
               fontWeight: FontWeight.w600,
-              color: theme.textSecondary,
+              color: context.nexusTheme.textSecondary,
             ),
           ),
         ),
@@ -625,7 +611,7 @@ class _DetailRow extends StatelessWidget {
           child: Text(
             value,
             style: TextStyle(
-                fontSize: r.fs(12), color: theme.textPrimary, height: 1.4),
+                fontSize: r.fs(12), color: context.nexusTheme.textPrimary, height: 1.4),
           ),
         ),
       ],
@@ -637,14 +623,12 @@ class _ContentLink extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
-  final NexusThemeData theme;
   final Responsive r;
 
   const _ContentLink({
     required this.label,
     required this.icon,
     required this.onTap,
-    required this.theme,
     required this.r,
   });
 
@@ -657,25 +641,25 @@ class _ContentLink extends StatelessWidget {
         padding: EdgeInsets.symmetric(
             horizontal: r.s(10), vertical: r.s(6)),
         decoration: BoxDecoration(
-          color: theme.accentPrimary.withValues(alpha: 0.08),
+          color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(r.s(8)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: theme.accentPrimary, size: r.s(14)),
+            Icon(icon, color: context.nexusTheme.accentPrimary, size: r.s(14)),
             SizedBox(width: r.s(6)),
             Text(
               label,
               style: TextStyle(
-                color: theme.accentPrimary,
+                color: context.nexusTheme.accentPrimary,
                 fontSize: r.fs(12),
                 fontWeight: FontWeight.w500,
               ),
             ),
             SizedBox(width: r.s(4)),
             Icon(Icons.open_in_new_rounded,
-                color: theme.accentPrimary, size: r.s(12)),
+                color: context.nexusTheme.accentPrimary, size: r.s(12)),
           ],
         ),
       ),

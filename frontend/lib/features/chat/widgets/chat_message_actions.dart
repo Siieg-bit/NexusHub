@@ -344,7 +344,7 @@ class ModerationQuickSheet extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: theme.surfaceSecondary,
+        color: context.nexusTheme.surfaceSecondary,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.08),
@@ -393,7 +393,7 @@ class ModerationQuickSheet extends StatelessWidget {
                       Text(
                         'Moderar usuário',
                         style: TextStyle(
-                          color: theme.textPrimary,
+                          color: context.nexusTheme.textPrimary,
                           fontSize: r.fs(15),
                           fontWeight: FontWeight.w700,
                         ),
@@ -401,7 +401,7 @@ class ModerationQuickSheet extends StatelessWidget {
                       Text(
                         '@$targetUserNickname',
                         style: TextStyle(
-                          color: theme.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           fontSize: r.fs(12),
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -438,7 +438,7 @@ class ModerationQuickSheet extends StatelessWidget {
             SizedBox(height: r.s(8)),
 
             // Ações
-            ...actions.map((a) => _buildActionTile(context, r, theme, a)),
+            ...actions.map((a) => _buildActionTile(context, r, a)),
           ],
         ),
       ),
@@ -448,7 +448,6 @@ class ModerationQuickSheet extends StatelessWidget {
   Widget _buildActionTile(
     BuildContext context,
     Responsive r,
-    NexusThemeData theme,
     _ModAction a,
   ) {
     return InkWell(
@@ -477,7 +476,7 @@ class ModerationQuickSheet extends StatelessWidget {
                     style: TextStyle(
                       color: a.action == ModerationQuickAction.ban
                           ? a.color
-                          : theme.textPrimary,
+                          : context.nexusTheme.textPrimary,
                       fontSize: r.fs(14),
                       fontWeight: FontWeight.w600,
                     ),
@@ -485,7 +484,7 @@ class ModerationQuickSheet extends StatelessWidget {
                   Text(
                     a.description,
                     style: TextStyle(
-                      color: theme.textSecondary,
+                      color: context.nexusTheme.textSecondary,
                       fontSize: r.fs(11),
                     ),
                   ),
@@ -494,7 +493,7 @@ class ModerationQuickSheet extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: theme.textHint,
+              color: context.nexusTheme.textHint,
               size: r.s(18),
             ),
           ],

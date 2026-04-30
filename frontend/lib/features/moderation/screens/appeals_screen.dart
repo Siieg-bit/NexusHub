@@ -38,49 +38,49 @@ class AppealsScreen extends ConsumerWidget {
     final appealsAsync = ref.watch(myAppealsProvider);
 
     return Scaffold(
-      backgroundColor: theme.backgroundPrimary,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: theme.backgroundPrimary,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: theme.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded, color: context.nexusTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: Text(
           s.appealsTitle,
           style: TextStyle(
-            color: theme.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontWeight: FontWeight.w700,
             fontSize: r.fs(18),
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh_rounded, color: theme.textSecondary),
+            icon: Icon(Icons.refresh_rounded, color: context.nexusTheme.textSecondary),
             onPressed: () => ref.invalidate(myAppealsProvider),
           ),
         ],
       ),
       body: appealsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => _buildError(context, r, theme, s, ref, e),
+        error: (e, _) => _buildError(context, r, s, ref, e),
         data: (appeals) => appeals.isEmpty
-            ? _buildEmpty(context, r, theme, s)
-            : _buildList(context, r, theme, s, appeals, ref),
+            ? _buildEmpty(context, r, s)
+            : _buildList(context, r, s, appeals, ref),
       ),
     );
   }
 
-  Widget _buildError(BuildContext context, Responsive r, NexusThemeData theme,
+  Widget _buildError(BuildContext context, Responsive r,
       dynamic s, WidgetRef ref, Object e) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline_rounded, color: theme.error, size: r.s(48)),
+          Icon(Icons.error_outline_rounded, color: context.nexusTheme.error, size: r.s(48)),
           SizedBox(height: r.s(12)),
           Text(s.anErrorOccurredTryAgain,
-              style: TextStyle(color: theme.textSecondary, fontSize: r.fs(14))),
+              style: TextStyle(color: context.nexusTheme.textSecondary, fontSize: r.fs(14))),
           SizedBox(height: r.s(16)),
           ElevatedButton(
             onPressed: () => ref.invalidate(myAppealsProvider),
@@ -91,7 +91,7 @@ class AppealsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmpty(BuildContext context, Responsive r, NexusThemeData theme, dynamic s) {
+  Widget _buildEmpty(BuildContext context, Responsive r, dynamic s) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(r.s(32)),
@@ -102,11 +102,11 @@ class AppealsScreen extends ConsumerWidget {
               width: r.s(80),
               height: r.s(80),
               decoration: BoxDecoration(
-                color: theme.accentPrimary.withValues(alpha: 0.1),
+                color: context.nexusTheme.accentPrimary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.gavel_rounded,
-                  color: theme.accentPrimary, size: r.s(40)),
+                  color: context.nexusTheme.accentPrimary, size: r.s(40)),
             ),
             SizedBox(height: r.s(20)),
             Text(
@@ -114,7 +114,7 @@ class AppealsScreen extends ConsumerWidget {
               style: TextStyle(
                 fontSize: r.fs(18),
                 fontWeight: FontWeight.w700,
-                color: theme.textPrimary,
+                color: context.nexusTheme.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -122,7 +122,7 @@ class AppealsScreen extends ConsumerWidget {
             Text(
               s.appealsEmptySubtitle,
               style: TextStyle(
-                  fontSize: r.fs(14), color: theme.textSecondary, height: 1.5),
+                  fontSize: r.fs(14), color: context.nexusTheme.textSecondary, height: 1.5),
               textAlign: TextAlign.center,
             ),
           ],
@@ -131,7 +131,7 @@ class AppealsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildList(BuildContext context, Responsive r, NexusThemeData theme,
+  Widget _buildList(BuildContext context, Responsive r,
       dynamic s, List<Map<String, dynamic>> appeals, WidgetRef ref) {
     return ListView(
       padding: EdgeInsets.all(r.s(16)),
@@ -140,20 +140,20 @@ class AppealsScreen extends ConsumerWidget {
         Container(
           padding: EdgeInsets.all(r.s(14)),
           decoration: BoxDecoration(
-            color: theme.accentPrimary.withValues(alpha: 0.08),
+            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(r.s(12)),
-            border: Border.all(color: theme.accentPrimary.withValues(alpha: 0.2)),
+            border: Border.all(color: context.nexusTheme.accentPrimary.withValues(alpha: 0.2)),
           ),
           child: Row(
             children: [
               Icon(Icons.info_outline_rounded,
-                  color: theme.accentPrimary, size: r.s(18)),
+                  color: context.nexusTheme.accentPrimary, size: r.s(18)),
               SizedBox(width: r.s(10)),
               Expanded(
                 child: Text(
                   s.appealsInfoBanner,
                   style: TextStyle(
-                      fontSize: r.fs(12), color: theme.textSecondary, height: 1.4),
+                      fontSize: r.fs(12), color: context.nexusTheme.textSecondary, height: 1.4),
                 ),
               ),
             ],
@@ -205,16 +205,16 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
         : null;
 
     final (statusColor, statusIcon, statusLabel) = switch (status) {
-      'accepted' => (theme.success, Icons.check_circle_rounded, s.appealStatusAccepted),
-      'rejected' => (theme.error, Icons.cancel_rounded, s.appealStatusRejected),
-      'cancelled' => (theme.textSecondary, Icons.remove_circle_rounded, s.appealStatusCancelled),
+      'accepted' => (context.nexusTheme.success, Icons.check_circle_rounded, s.appealStatusAccepted),
+      'rejected' => (context.nexusTheme.error, Icons.cancel_rounded, s.appealStatusRejected),
+      'cancelled' => (context.nexusTheme.textSecondary, Icons.remove_circle_rounded, s.appealStatusCancelled),
       _ => (const Color(0xFFFF9800), Icons.hourglass_top_rounded, s.appealStatusPending),
     };
 
     return Container(
       margin: EdgeInsets.only(bottom: r.s(12)),
       decoration: BoxDecoration(
-        color: theme.surfacePrimary,
+        color: context.nexusTheme.surfacePrimary,
         borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(
           color: statusColor.withValues(alpha: 0.2),
@@ -240,9 +240,9 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
                             width: r.s(44),
                             height: r.s(44),
                             fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) => _communityPlaceholder(r, theme),
+                            errorWidget: (_, __, ___) => _communityPlaceholder(r),
                           )
-                        : _communityPlaceholder(r, theme),
+                        : _communityPlaceholder(r),
                   ),
                   SizedBox(width: r.s(12)),
                   Expanded(
@@ -254,7 +254,7 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: r.fs(15),
-                            color: theme.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -264,7 +264,7 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
                           Text(
                             timeago.format(createdAt, locale: 'pt_BR'),
                             style: TextStyle(
-                                fontSize: r.fs(12), color: theme.textSecondary),
+                                fontSize: r.fs(12), color: context.nexusTheme.textSecondary),
                           ),
                       ],
                     ),
@@ -299,7 +299,7 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
                     _expanded
                         ? Icons.keyboard_arrow_up_rounded
                         : Icons.keyboard_arrow_down_rounded,
-                    color: theme.textSecondary,
+                    color: context.nexusTheme.textSecondary,
                     size: r.s(20),
                   ),
                 ],
@@ -309,7 +309,7 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
 
           // Conteúdo expandido
           if (_expanded) ...[
-            Divider(height: 1, color: theme.divider),
+            Divider(height: 1, color: context.nexusTheme.divider),
             Padding(
               padding: EdgeInsets.all(r.s(14)),
               child: Column(
@@ -321,9 +321,8 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
                       icon: Icons.block_rounded,
                       label: s.appealBanReason,
                       value: banReason,
-                      theme: theme,
-                      r: r,
-                      valueColor: theme.error,
+                      theme: r: r,
+                      valueColor: context.nexusTheme.error,
                     ),
                     SizedBox(height: r.s(10)),
                   ],
@@ -333,8 +332,7 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
                     icon: Icons.edit_note_rounded,
                     label: s.appealYourReason,
                     value: reason,
-                    theme: theme,
-                    r: r,
+                    theme: r: r,
                   ),
 
                   // Nota do revisor
@@ -344,11 +342,10 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
                       icon: Icons.rate_review_rounded,
                       label: s.appealReviewerNote,
                       value: reviewerNote,
-                      theme: theme,
-                      r: r,
+                      theme: r: r,
                       valueColor: status == 'accepted'
-                          ? theme.success
-                          : theme.error,
+                          ? context.nexusTheme.success
+                          : context.nexusTheme.error,
                     ),
                   ],
 
@@ -358,12 +355,12 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
                     Row(
                       children: [
                         Icon(Icons.schedule_rounded,
-                            size: r.s(14), color: theme.textSecondary),
+                            size: r.s(14), color: context.nexusTheme.textSecondary),
                         SizedBox(width: r.s(6)),
                         Text(
                           '${s.appealReviewedAt}: ${timeago.format(reviewedAt, locale: 'pt_BR')}',
                           style: TextStyle(
-                              fontSize: r.fs(12), color: theme.textSecondary),
+                              fontSize: r.fs(12), color: context.nexusTheme.textSecondary),
                         ),
                       ],
                     ),
@@ -383,17 +380,17 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
                                 width: r.s(14),
                                 height: r.s(14),
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: theme.error),
+                                    strokeWidth: 2, color: context.nexusTheme.error),
                               )
                             : Icon(Icons.cancel_outlined,
-                                size: r.s(16), color: theme.error),
+                                size: r.s(16), color: context.nexusTheme.error),
                         label: Text(
                           s.appealCancel,
-                          style: TextStyle(color: theme.error, fontSize: r.fs(13)),
+                          style: TextStyle(color: context.nexusTheme.error, fontSize: r.fs(13)),
                         ),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
-                              color: theme.error.withValues(alpha: 0.4)),
+                              color: context.nexusTheme.error.withValues(alpha: 0.4)),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(r.s(10)),
                           ),
@@ -410,12 +407,12 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
     );
   }
 
-  Widget _communityPlaceholder(Responsive r, NexusThemeData theme) {
+  Widget _communityPlaceholder(Responsive r) {
     return Container(
       width: r.s(44),
       height: r.s(44),
-      color: theme.surfaceSecondary,
-      child: Icon(Icons.group_rounded, color: theme.textSecondary, size: r.s(22)),
+      color: context.nexusTheme.surfaceSecondary,
+      child: Icon(Icons.group_rounded, color: context.nexusTheme.textSecondary, size: r.s(22)),
     );
   }
 
@@ -535,7 +532,7 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
 
     if (_submitted) {
       return Scaffold(
-        backgroundColor: theme.backgroundPrimary,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         body: Center(
           child: Padding(
             padding: EdgeInsets.all(r.s(32)),
@@ -546,11 +543,11 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
                   width: r.s(80),
                   height: r.s(80),
                   decoration: BoxDecoration(
-                    color: theme.success.withValues(alpha: 0.15),
+                    color: context.nexusTheme.success.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.check_rounded,
-                      color: theme.success, size: r.s(44)),
+                      color: context.nexusTheme.success, size: r.s(44)),
                 ),
                 SizedBox(height: r.s(20)),
                 Text(
@@ -558,7 +555,7 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
                   style: TextStyle(
                     fontSize: r.fs(20),
                     fontWeight: FontWeight.w700,
-                    color: theme.textPrimary,
+                    color: context.nexusTheme.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -566,14 +563,14 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
                 Text(
                   s.appealSubmittedSubtitle,
                   style: TextStyle(
-                      fontSize: r.fs(14), color: theme.textSecondary, height: 1.5),
+                      fontSize: r.fs(14), color: context.nexusTheme.textSecondary, height: 1.5),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: r.s(24)),
                 ElevatedButton(
                   onPressed: () => context.pop(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.accentPrimary,
+                    backgroundColor: context.nexusTheme.accentPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(r.s(12)),
                     ),
@@ -589,18 +586,18 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
     }
 
     return Scaffold(
-      backgroundColor: theme.backgroundPrimary,
+      backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: theme.backgroundPrimary,
+        backgroundColor: context.nexusTheme.backgroundPrimary,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.close_rounded, color: theme.textPrimary),
+          icon: Icon(Icons.close_rounded, color: context.nexusTheme.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: Text(
           s.appealSubmitTitle,
           style: TextStyle(
-            color: theme.textPrimary,
+            color: context.nexusTheme.textPrimary,
             fontWeight: FontWeight.w700,
             fontSize: r.fs(18),
           ),
@@ -615,13 +612,13 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
             Container(
               padding: EdgeInsets.all(r.s(14)),
               decoration: BoxDecoration(
-                color: theme.surfacePrimary,
+                color: context.nexusTheme.surfacePrimary,
                 borderRadius: BorderRadius.circular(r.s(12)),
               ),
               child: Row(
                 children: [
                   Icon(Icons.group_rounded,
-                      color: theme.accentPrimary, size: r.s(20)),
+                      color: context.nexusTheme.accentPrimary, size: r.s(20)),
                   SizedBox(width: r.s(10)),
                   Expanded(
                     child: Column(
@@ -630,14 +627,14 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
                         Text(
                           s.appealTargetCommunity,
                           style: TextStyle(
-                              fontSize: r.fs(11), color: theme.textSecondary),
+                              fontSize: r.fs(11), color: context.nexusTheme.textSecondary),
                         ),
                         Text(
                           widget.communityName,
                           style: TextStyle(
                             fontSize: r.fs(15),
                             fontWeight: FontWeight.w600,
-                            color: theme.textPrimary,
+                            color: context.nexusTheme.textPrimary,
                           ),
                         ),
                       ],
@@ -668,7 +665,7 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
                       s.appealWarning,
                       style: TextStyle(
                           fontSize: r.fs(12),
-                          color: theme.textSecondary,
+                          color: context.nexusTheme.textSecondary,
                           height: 1.4),
                     ),
                   ),
@@ -683,7 +680,7 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
               style: TextStyle(
                 fontSize: r.fs(14),
                 fontWeight: FontWeight.w600,
-                color: theme.textPrimary,
+                color: context.nexusTheme.textPrimary,
               ),
             ),
             SizedBox(height: r.s(8)),
@@ -691,15 +688,15 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
               controller: _reasonController,
               maxLines: 5,
               maxLength: 1000,
-              style: TextStyle(fontSize: r.fs(14), color: theme.textPrimary),
+              style: TextStyle(fontSize: r.fs(14), color: context.nexusTheme.textPrimary),
               decoration: InputDecoration(
                 hintText: s.appealReasonHint,
                 hintStyle: TextStyle(
-                    fontSize: r.fs(13), color: theme.textSecondary),
+                    fontSize: r.fs(13), color: context.nexusTheme.textSecondary),
                 filled: true,
-                fillColor: theme.surfacePrimary,
+                fillColor: context.nexusTheme.surfacePrimary,
                 counterStyle: TextStyle(
-                    fontSize: r.fs(11), color: theme.textSecondary),
+                    fontSize: r.fs(11), color: context.nexusTheme.textSecondary),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide.none,
@@ -707,7 +704,7 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide(
-                      color: theme.accentPrimary.withValues(alpha: 0.5)),
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.5)),
                 ),
               ),
             ),
@@ -719,28 +716,28 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
               style: TextStyle(
                 fontSize: r.fs(14),
                 fontWeight: FontWeight.w600,
-                color: theme.textPrimary,
+                color: context.nexusTheme.textPrimary,
               ),
             ),
             SizedBox(height: r.s(4)),
             Text(
               s.appealAdditionalHint2,
-              style: TextStyle(fontSize: r.fs(12), color: theme.textSecondary),
+              style: TextStyle(fontSize: r.fs(12), color: context.nexusTheme.textSecondary),
             ),
             SizedBox(height: r.s(8)),
             TextField(
               controller: _additionalController,
               maxLines: 3,
               maxLength: 500,
-              style: TextStyle(fontSize: r.fs(14), color: theme.textPrimary),
+              style: TextStyle(fontSize: r.fs(14), color: context.nexusTheme.textPrimary),
               decoration: InputDecoration(
                 hintText: s.appealAdditionalHint,
                 hintStyle: TextStyle(
-                    fontSize: r.fs(13), color: theme.textSecondary),
+                    fontSize: r.fs(13), color: context.nexusTheme.textSecondary),
                 filled: true,
-                fillColor: theme.surfacePrimary,
+                fillColor: context.nexusTheme.surfacePrimary,
                 counterStyle: TextStyle(
-                    fontSize: r.fs(11), color: theme.textSecondary),
+                    fontSize: r.fs(11), color: context.nexusTheme.textSecondary),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide.none,
@@ -748,7 +745,7 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide(
-                      color: theme.accentPrimary.withValues(alpha: 0.5)),
+                      color: context.nexusTheme.accentPrimary.withValues(alpha: 0.5)),
                 ),
               ),
             ),
@@ -760,7 +757,7 @@ class _SubmitAppealScreenState extends ConsumerState<SubmitAppealScreen> {
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.accentPrimary,
+                  backgroundColor: context.nexusTheme.accentPrimary,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(r.s(14)),
@@ -806,7 +803,6 @@ class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  final NexusThemeData theme;
   final Responsive r;
   final Color? valueColor;
 
@@ -814,7 +810,6 @@ class _InfoRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
-    required this.theme,
     required this.r,
     this.valueColor,
   });
@@ -826,14 +821,14 @@ class _InfoRow extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon, size: r.s(14), color: theme.textSecondary),
+            Icon(icon, size: r.s(14), color: context.nexusTheme.textSecondary),
             SizedBox(width: r.s(6)),
             Text(
               label,
               style: TextStyle(
                 fontSize: r.fs(11),
                 fontWeight: FontWeight.w600,
-                color: theme.textSecondary,
+                color: context.nexusTheme.textSecondary,
                 letterSpacing: 0.3,
               ),
             ),
@@ -844,7 +839,7 @@ class _InfoRow extends StatelessWidget {
           value,
           style: TextStyle(
             fontSize: r.fs(13),
-            color: valueColor ?? theme.textPrimary,
+            color: valueColor ?? context.nexusTheme.textPrimary,
             height: 1.4,
           ),
         ),
