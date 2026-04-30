@@ -33,6 +33,7 @@ import BroadcastPage from "./BroadcastPage";
 import FounderPage from "./FounderPage";
 import AICharactersPage from "./AICharactersPage";
 import AILearningPage from "./AILearningPage";
+import AIConsciousnessPage from "./AIConsciousnessPage";
 import DeviceSecurityPage from "./DeviceSecurityPage";
 import EconomyPage from "./EconomyPage";
 
@@ -3000,6 +3001,7 @@ export default function Dashboard() {
       case "founder":          return <FounderPage />;
       case "ai-characters":    return <AICharactersPage />;
       case "ai-learning":       return <AILearningPage />;
+      case "ai-consciousness":   return <AIConsciousnessPage />;
       case "device-security":  return <DeviceSecurityPage />;
       case "economy":          return <EconomyPage />;
       default:                 return <OverviewPage />;
