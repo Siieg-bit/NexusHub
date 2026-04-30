@@ -16,6 +16,7 @@ import '../widgets/frame_picker_sheet.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 import '../../../core/widgets/amino_custom_title.dart';
+import '../../../core/widgets/avatar_with_frame.dart';
 
 /// Editar Perfil da Comunidade — estilo Amino Apps.
 ///
@@ -53,6 +54,7 @@ class _EditCommunityProfileScreenState
   // Moldura selecionada temporariamente (só persiste ao salvar o perfil)
   String? _selectedFrameUrl;
   String? _selectedFramePurchaseId;
+  bool _selectedFrameIsAnimated = false;
   bool _frameSelectionChanged = false;
 
   bool _isLoading = true;
@@ -212,24 +214,42 @@ class _EditCommunityProfileScreenState
       // Carregar moldura global (is_equipped) — única fonte de verdade
       String? resolvedFrameUrl;
       String? resolvedFramePurchaseId;
+      bool resolvedFrameIsAnimated = false;
       try {
-        final equipped = await SupabaseService.table('user_purchases')
+        final equippedItems = await SupabaseService.table('user_purchases')
             .select(
-                'id, store_items!user_purchases_item_id_fkey(preview_url, asset_url, asset_config)')
+                'id, store_items!user_purchases_item_id_fkey(type, preview_url, asset_url, asset_config)')
             .eq('user_id', userId)
-            .eq('is_equipped', true)
-            .maybeSingle();
-        if (equipped != null) {
-          final si = equipped['store_items'] as Map<String, dynamic>?;
-          if (si != null) {
-            String? fUrl = si['preview_url'] as String?;
-            if (fUrl == null || fUrl.isEmpty) fUrl = si['asset_url'] as String?;
-            if ((fUrl == null || fUrl.isEmpty) && si['asset_config'] is Map) {
-              fUrl = (si['asset_config'] as Map)['frame_url'] as String?;
-            }
-            resolvedFrameUrl = fUrl;
-            resolvedFramePurchaseId = equipped['id'] as String?;
+            .eq('is_equipped', true);
+        for (final equipped in List<Map<String, dynamic>>.from(equippedItems as List? ?? [])) {
+          final rawStoreItem = equipped['store_items'];
+          final si = rawStoreItem is Map<String, dynamic>
+              ? rawStoreItem
+              : rawStoreItem is Map
+                  ? Map<String, dynamic>.from(rawStoreItem)
+                  : null;
+          if (si == null || si['type'] != 'avatar_frame') continue;
+
+          final rawConfig = si['asset_config'];
+          final assetConfig = rawConfig is Map<String, dynamic>
+              ? rawConfig
+              : rawConfig is Map
+                  ? Map<String, dynamic>.from(rawConfig)
+                  : <String, dynamic>{};
+          String? fUrl = (assetConfig['frame_url'] as String?)?.trim();
+          if (fUrl == null || fUrl.isEmpty) {
+            fUrl = (assetConfig['image_url'] as String?)?.trim();
           }
+          if (fUrl == null || fUrl.isEmpty) {
+            fUrl = (si['asset_url'] as String?)?.trim();
+          }
+          if (fUrl == null || fUrl.isEmpty) {
+            fUrl = (si['preview_url'] as String?)?.trim();
+          }
+          resolvedFrameUrl = fUrl;
+          resolvedFramePurchaseId = equipped['id'] as String?;
+          resolvedFrameIsAnimated = assetConfig['is_animated'] as bool? ?? false;
+          break;
         }
       } catch (_) {}
 
@@ -249,6 +269,7 @@ class _EditCommunityProfileScreenState
                 hydratedMembership['local_background_color'] as String?;
             _selectedFrameUrl = resolvedFrameUrl;
             _selectedFramePurchaseId = resolvedFramePurchaseId;
+            _selectedFrameIsAnimated = resolvedFrameIsAnimated;
             final rawGallery = hydratedMembership['local_gallery'];
             final initialGallery = rawGallery is List
                 ? rawGallery.map((e) => e.toString()).toList()
@@ -630,17 +651,25 @@ class _EditCommunityProfileScreenState
           },
         );
       } else if (_frameSelectionChanged && _selectedFramePurchaseId == null) {
-        // Usuário removeu a moldura: desequipa qualquer moldura global ativa.
-        final equipped = await SupabaseService.table('user_purchases')
-            .select('id')
+        // Usuário removeu a moldura: desequipa somente a moldura global ativa.
+        final equippedItems = await SupabaseService.table('user_purchases')
+            .select('id, store_items!user_purchases_item_id_fkey(type)')
             .eq('user_id', userId)
-            .eq('is_equipped', true)
-            .maybeSingle();
-        if (equipped != null) {
+            .eq('is_equipped', true);
+        Map<String, dynamic>? equippedFrame;
+        for (final item
+            in List<Map<String, dynamic>>.from(equippedItems as List? ?? [])) {
+          final storeItem = item['store_items'];
+          if (storeItem is Map && storeItem['type'] == 'avatar_frame') {
+            equippedFrame = item;
+            break;
+          }
+        }
+        if (equippedFrame != null) {
           await SupabaseService.rpc(
             'equip_store_item',
             params: {
-              'p_purchase_id': equipped['id'] as String,
+              'p_purchase_id': equippedFrame['id'] as String,
               'p_item_type': 'avatar_frame',
             },
           );
@@ -770,6 +799,7 @@ class _EditCommunityProfileScreenState
                         _gallery.isNotEmpty ? _gallery.first : _localBannerUrl,
                     avatarUrl: _localIconUrl,
                     frameUrl: _selectedFrameUrl,
+                    isFrameAnimated: _selectedFrameIsAnimated,
                     editFramesLabel: s.editProfileFrames,
                     onTapAvatar: _pickAvatar,
                     onTapEditFrames: () async {
@@ -782,6 +812,7 @@ class _EditCommunityProfileScreenState
                         setState(() {
                           _selectedFrameUrl = result.frameUrl;
                           _selectedFramePurchaseId = result.purchaseId;
+                          _selectedFrameIsAnimated = result.isAnimated;
                           _frameSelectionChanged = true;
                         });
                       }
@@ -1104,6 +1135,7 @@ class _BannerAvatarSection extends ConsumerWidget {
   final String? bannerUrl;
   final String? avatarUrl;
   final String? frameUrl;
+  final bool isFrameAnimated;
   final String editFramesLabel;
   final VoidCallback onTapAvatar;
   final VoidCallback onTapEditFrames;
@@ -1112,6 +1144,7 @@ class _BannerAvatarSection extends ConsumerWidget {
     required this.bannerUrl,
     required this.avatarUrl,
     this.frameUrl,
+    this.isFrameAnimated = false,
     required this.editFramesLabel,
     required this.onTapAvatar,
     required this.onTapEditFrames,
@@ -1184,50 +1217,27 @@ class _BannerAvatarSection extends ConsumerWidget {
               ),
             ),
             Positioned(
-              bottom: -r.s(50),
+              bottom: -r.s(72),
               child: GestureDetector(
                 onTap: onTapAvatar,
                 behavior: HitTestBehavior.opaque,
                 child: SizedBox(
-                  width: r.s(124),
-                  height: r.s(124),
+                  width: r.s(154),
+                  height: r.s(154),
                   child: Center(
                     child: Stack(
+                      alignment: Alignment.center,
                       clipBehavior: Clip.none,
                       children: [
-                        Container(
-                          width: r.s(104),
-                          height: r.s(104),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: context.nexusTheme.backgroundPrimary,
-                              width: 4,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.22),
-                                blurRadius: 18,
-                                offset: Offset(0, r.s(8)),
-                              ),
-                            ],
-                          ),
-                          child: ClipOval(
-                            child: avatarUrl != null
-                                ? CachedNetworkImage(
-                                    imageUrl: avatarUrl!,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Container(
-                                    color: context.surfaceColor,
-                                    child: Icon(Icons.person_rounded,
-                                        color: Colors.grey[500], size: r.s(56)),
-                                  ),
-                          ),
+                        AvatarWithFrame(
+                          avatarUrl: avatarUrl,
+                          frameUrl: frameUrl,
+                          size: r.s(104),
+                          isFrameAnimated: isFrameAnimated,
                         ),
                         Positioned(
-                          bottom: r.s(2),
-                          right: r.s(2),
+                          bottom: r.s(20),
+                          right: r.s(20),
                           child: Container(
                             width: r.s(30),
                             height: r.s(30),
@@ -1251,7 +1261,7 @@ class _BannerAvatarSection extends ConsumerWidget {
             ),
           ],
         ),
-        SizedBox(height: r.s(62)),
+        SizedBox(height: r.s(84)),
         Center(
           child: GestureDetector(
             onTap: onTapEditFrames,

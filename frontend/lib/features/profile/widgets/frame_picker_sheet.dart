@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../core/widgets/avatar_with_frame.dart';
 
 /// Resultado da seleção de moldura.
 ///
@@ -100,9 +102,31 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
   @override
   void initState() {
     super.initState();
-    _selectedFrameUrl = widget.currentFrameUrl;
+    _selectedFrameUrl = _nonEmpty(widget.currentFrameUrl);
+    _selectedNone = _selectedFrameUrl == null;
     _loadFrames();
   }
+
+  String? _nonEmpty(dynamic value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
+  }
+
+  Map<String, dynamic> _asMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+    if (value is String && value.trim().isNotEmpty) {
+      try {
+        final decoded = jsonDecode(value);
+        if (decoded is Map<String, dynamic>) return decoded;
+        if (decoded is Map) return Map<String, dynamic>.from(decoded);
+      } catch (_) {}
+    }
+    return <String, dynamic>{};
+  }
+
+  String? _effectiveFrameUrl(_FrameGridItem item) =>
+      _nonEmpty(item.frameUrl) ?? _nonEmpty(item.previewUrl);
 
   Future<void> _loadFrames() async {
     try {
@@ -152,8 +176,8 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
         final si = p['store_items'] as Map<String, dynamic>?;
         if (si == null) continue;
         final frameUrl = _extractFrameUrl(si);
-        final ac = si['asset_config'];
-        final isAnimated = ac is Map ? (ac['is_animated'] as bool? ?? false) : false;
+        final ac = _asMap(si['asset_config']);
+        final isAnimated = ac['is_animated'] as bool? ?? false;
         owned.add({
           'purchase_id': p['id'] as String?,
           'store_item_id': si['id'] as String?,
@@ -165,10 +189,31 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
       }
 
       if (mounted) {
+        final selectedFrameUrl = _nonEmpty(_selectedFrameUrl);
+        Map<String, dynamic>? selectedOwnedFrame;
+        if (selectedFrameUrl != null) {
+          for (final frame in owned) {
+            if (_nonEmpty(frame['frame_url']) == selectedFrameUrl ||
+                _nonEmpty(frame['preview_url']) == selectedFrameUrl) {
+              selectedOwnedFrame = frame;
+              break;
+            }
+          }
+        }
+
         setState(() {
           _ownedFrames = owned;
           _allFrames = allStoreItems;
           _ownedStoreItemIds = ownedIds;
+          if (selectedOwnedFrame != null) {
+            _selectedFrameUrl = _nonEmpty(selectedOwnedFrame['frame_url']) ??
+                _nonEmpty(selectedOwnedFrame['preview_url']);
+            _selectedPurchaseId = selectedOwnedFrame['purchase_id'] as String?;
+            _selectedStoreItemId = selectedOwnedFrame['store_item_id'] as String?;
+            _selectedIsAnimated =
+                selectedOwnedFrame['is_animated'] as bool? ?? false;
+            _selectedNone = false;
+          }
           _isLoading = false;
         });
       }
@@ -182,18 +227,11 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
   /// Priorizamos asset_config.frame_url / image_url para mostrar somente a
   /// moldura transparente no seletor, evitando thumbs promocionais tortos.
   String? _extractFrameUrl(Map<String, dynamic> item) {
-    final config = item['asset_config'];
-    if (config is Map) {
-      final fu = config['frame_url'] as String?;
-      if (fu != null && fu.isNotEmpty) return fu;
-      final iu = config['image_url'] as String?;
-      if (iu != null && iu.isNotEmpty) return iu;
-    }
-    final assetUrl = item['asset_url'] as String?;
-    if (assetUrl != null && assetUrl.isNotEmpty) return assetUrl;
-    final previewUrl = item['preview_url'] as String?;
-    if (previewUrl != null && previewUrl.isNotEmpty) return previewUrl;
-    return null;
+    final config = _asMap(item['asset_config']);
+    return _nonEmpty(config['frame_url']) ??
+        _nonEmpty(config['image_url']) ??
+        _nonEmpty(item['asset_url']) ??
+        _nonEmpty(item['preview_url']);
   }
 
   void _selectFrame({
@@ -489,8 +527,8 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
       final id = si['id'] as String?;
       if (id == null || _ownedStoreItemIds.contains(id)) continue;
       final frameUrl = _extractFrameUrl(si);
-      final ac = si['asset_config'];
-      final isAnimated = ac is Map ? (ac['is_animated'] as bool? ?? false) : false;
+      final ac = _asMap(si['asset_config']);
+      final isAnimated = ac['is_animated'] as bool? ?? false;
       items.add(_FrameGridItem.locked(
         storeItemId: id,
         name: si['name'] as String? ?? '',
@@ -515,10 +553,11 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
   }
 
   Widget _buildGridCell(_FrameGridItem item, Responsive r) {
+    final effectiveFrameUrl = _effectiveFrameUrl(item);
     final isSelected = item.isNone
         ? _selectedNone
         : (_selectedFrameUrl != null &&
-            _selectedFrameUrl == item.frameUrl &&
+            _selectedFrameUrl == effectiveFrameUrl &&
             !_selectedNone);
 
     return GestureDetector(
@@ -526,7 +565,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
       onTap: item.isLocked
           ? () => _quickPurchase(item)
           : () => _selectFrame(
-                frameUrl: item.frameUrl,
+                frameUrl: effectiveFrameUrl,
                 purchaseId: item.purchaseId,
                 storeItemId: item.storeItemId,
                 none: item.isNone,
@@ -711,15 +750,8 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
 
 // ─── Preview do avatar com moldura ───────────────────────────────────────────
 //
-// Bug fix: o widget anterior usava Positioned com offsets negativos calculados
-// manualmente (top: -(frameSize - size) / 2, left: -(frameSize - size) / 2)
-// para sobrepor a moldura ao avatar. Isso causava desalinhamento porque a
-// moldura saía dos limites do Stack e o clipBehavior: Clip.none não era
-// suficiente para garantir o alinhamento perfeito em todos os tamanhos de tela.
-//
-// Solução: usar um Stack com tamanho fixo = frameSize (moldura), centralizar
-// o avatar com Positioned.fill + Center, e a moldura ocupa Positioned.fill
-// diretamente. Isso garante alinhamento perfeito independente do tamanho.
+// Usa o mesmo widget compartilhado das telas de perfil para manter a
+// pré-visualização do seletor alinhada ao comportamento real do app.
 
 class _AvatarPreview extends StatelessWidget {
   final String? avatarUrl;
@@ -736,72 +768,11 @@ class _AvatarPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // frameSize = tamanho total do widget (moldura + margem)
-    // avatarSize = tamanho do círculo do avatar dentro da moldura
-    // A moldura ocupa frameSize x frameSize; o avatar fica centralizado
-    // com tamanho = size (passado pelo caller).
-    final frameSize = size * 1.4;
-    final hasFrame = (frameUrl ?? '').isNotEmpty;
-
-    return SizedBox(
-      width: frameSize,
-      height: frameSize,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // Avatar centralizado no Stack
-          Positioned.fill(
-            child: Center(
-              child: SizedBox(
-                width: size,
-                height: size,
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.grey[300],
-                    border: hasFrame
-                        ? null
-                        : Border.all(color: Colors.grey[400]!, width: 1.5),
-                  ),
-                  child: ClipOval(
-                    child: (avatarUrl ?? '').isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: avatarUrl!,
-                            fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) =>
-                                Icon(Icons.person_rounded, size: size * 0.55),
-                          )
-                        : Icon(Icons.person_rounded,
-                            color: Colors.grey[600], size: size * 0.55),
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Moldura sobreposta — ocupa todo o Stack (frameSize x frameSize)
-          if (hasFrame)
-            Positioned.fill(
-              child: isFrameAnimated
-                  ? Image.network(
-                      frameUrl!,
-                      fit: BoxFit.contain,
-                      gaplessPlayback: true,
-                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                      loadingBuilder: (_, child, progress) {
-                        if (progress == null) return child;
-                        return const SizedBox.shrink();
-                      },
-                    )
-                  : CachedNetworkImage(
-                      imageUrl: frameUrl!,
-                      fit: BoxFit.contain,
-                      errorWidget: (_, __, ___) => const SizedBox.shrink(),
-                      placeholder: (_, __) => const SizedBox.shrink(),
-                    ),
-            ),
-        ],
-      ),
+    return AvatarWithFrame(
+      avatarUrl: avatarUrl,
+      frameUrl: frameUrl,
+      size: size,
+      isFrameAnimated: isFrameAnimated,
     );
   }
 }
