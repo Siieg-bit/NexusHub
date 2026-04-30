@@ -26,7 +26,7 @@ CREATE POLICY "Membros podem criar convites" ON public.community_invites
         EXISTS (
             SELECT 1 FROM public.community_members
             WHERE community_id = community_invites.community_id
-            AND profile_id = auth.uid()
+            AND user_id = auth.uid()
         )
     );
 

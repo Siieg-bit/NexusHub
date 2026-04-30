@@ -46,7 +46,7 @@ CREATE POLICY "ai_characters_admin" ON ai_characters
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND is_admin = true
+      WHERE id = auth.uid() AND is_team_admin = true
     )
   );
 

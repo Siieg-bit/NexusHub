@@ -38,13 +38,13 @@ CREATE POLICY "system_announcements_admin_write" ON public.system_announcements
   USING (
     EXISTS (
       SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND is_platform_admin = TRUE
+      WHERE id = auth.uid() AND is_team_admin = TRUE
     )
   )
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND is_platform_admin = TRUE
+      WHERE id = auth.uid() AND is_team_admin = TRUE
     )
   );
 

@@ -64,8 +64,8 @@ BEGIN
   -- Verificar se já existe um DM ativo entre os dois
   SELECT ct.id INTO v_thread_id
   FROM public.chat_threads ct
-  JOIN public.chat_thread_members ctm1 ON ctm1.thread_id = ct.id AND ctm1.user_id = v_sender_id
-  JOIN public.chat_thread_members ctm2 ON ctm2.thread_id = ct.id AND ctm2.user_id = p_receiver_id
+  JOIN public.chat_members ctm1 ON ctm1.thread_id = ct.id AND ctm1.user_id = v_sender_id
+  JOIN public.chat_members ctm2 ON ctm2.thread_id = ct.id AND ctm2.user_id = p_receiver_id
   WHERE ct.type = 'dm'
   LIMIT 1;
 
@@ -115,8 +115,15 @@ BEGIN
   RETURNING id INTO v_existing_req;
 
   -- Notificar o receptor
-  INSERT INTO public.notifications (user_id, type, actor_id, entity_id, entity_type)
-  VALUES (p_receiver_id, 'chat_request', v_sender_id, v_existing_req, 'chat_request')
+  INSERT INTO public.notifications (user_id, type, actor_id, title, body, action_url)
+  VALUES (
+    p_receiver_id,
+    'chat_request',
+    v_sender_id,
+    'Nova solicitação de chat',
+    (SELECT nickname FROM public.profiles WHERE id = v_sender_id) || ' quer conversar com você',
+    '/chat/requests'
+  )
   ON CONFLICT DO NOTHING;
 
   RETURN jsonb_build_object('success', true, 'action', 'request_sent', 'request_id', v_existing_req);
@@ -170,14 +177,5 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.respond_chat_request(UUID, BOOLEAN) TO authenticated;
 
--- Adicionar 'chat_request' ao enum de notification_type se não existir
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_enum
-    WHERE enumlabel = 'chat_request'
-      AND enumtypid = 'public.notification_type'::regtype
-  ) THEN
-    ALTER TYPE public.notification_type ADD VALUE 'chat_request';
-  END IF;
-END$$;
+-- Nota: o sistema de notificações usa TEXT para o campo 'type', não um enum SQL.
+-- Portanto, nenhuma alteração de tipo é necessária.

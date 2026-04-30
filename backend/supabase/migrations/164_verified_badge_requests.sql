@@ -29,7 +29,7 @@ CREATE POLICY "Admins can view all requests"
     EXISTS (
       SELECT 1 FROM public.profiles
        WHERE id = auth.uid()
-         AND global_role IN ('admin', 'team_member')
+         AND is_team_admin = true
     )
   );
 
@@ -43,7 +43,7 @@ CREATE POLICY "Admins can update requests"
     EXISTS (
       SELECT 1 FROM public.profiles
        WHERE id = auth.uid()
-         AND global_role IN ('admin', 'team_member')
+         AND is_team_admin = true
     )
   );
 
@@ -85,7 +85,7 @@ BEGIN
 
   RETURN jsonb_build_object('success', true);
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- 3. RPC para aprovar/rejeitar (apenas admins)
 CREATE OR REPLACE FUNCTION public.review_verified_badge_request(
@@ -110,7 +110,7 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM public.profiles
      WHERE id = v_reviewer_id
-       AND global_role IN ('admin', 'team_member')
+       AND is_team_admin = true
   ) THEN
     RAISE EXCEPTION 'insufficient_permissions';
   END IF;
@@ -144,7 +144,7 @@ BEGIN
     'user_id', v_user_id
   );
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 GRANT EXECUTE ON FUNCTION public.submit_verified_badge_request(TEXT, TEXT[]) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.review_verified_badge_request(UUID, BOOLEAN, TEXT) TO authenticated;
