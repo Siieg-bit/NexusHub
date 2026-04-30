@@ -15,6 +15,7 @@ class WikiEntryModel {
   final Map<String, dynamic>? customFields;
   final List<String> tags;
   final String status; // enum: ok, pending, closed, disabled, deleted
+  final bool isCanonical;
   final String? submissionNote;
   final String? reviewedBy;
   final DateTime? reviewedAt;
@@ -38,6 +39,7 @@ class WikiEntryModel {
     this.customFields,
     this.tags = const [],
     this.status = 'ok',
+    this.isCanonical = false,
     this.submissionNote,
     this.reviewedBy,
     this.reviewedAt,
@@ -51,6 +53,9 @@ class WikiEntryModel {
 
   /// Indica se a wiki está publicada (status == 'ok').
   bool get isPublished => status == 'ok';
+
+  /// Indica se a wiki foi canonizada pela staff da comunidade.
+  bool get isCanonicalWiki => isCanonical;
 
   factory WikiEntryModel.fromJson(Map<String, dynamic> json) {
     return WikiEntryModel(
@@ -68,6 +73,7 @@ class WikiEntryModel {
           (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
               [],
       status: json['status'] as String? ?? 'ok',
+      isCanonical: json['is_canonical'] == true,
       submissionNote: json['submission_note'] as String?,
       reviewedBy: json['reviewed_by'] as String?,
       reviewedAt: json['reviewed_at'] != null

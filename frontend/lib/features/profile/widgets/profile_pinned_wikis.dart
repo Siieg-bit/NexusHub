@@ -34,7 +34,7 @@ class _ProfilePinnedWikisState extends ConsumerState<ProfilePinnedWikis> {
     try {
       final res = await SupabaseService.table('bookmarks')
           .select(
-              'wiki_id, wiki_entries!bookmarks_wiki_id_fkey(id, title, cover_image_url, category)')
+              'wiki_id, wiki_entries!bookmarks_wiki_id_fkey(id, title, cover_image_url, category, is_canonical)')
           .eq('user_id', widget.userId)
           .not('wiki_id', 'is', null)
           .order('created_at', ascending: false)
@@ -96,6 +96,7 @@ class _ProfilePinnedWikisState extends ConsumerState<ProfilePinnedWikis> {
                 final coverUrl = wiki['cover_image_url'] as String?;
                 final category = wiki['category'] as String?;
                 final wikiId = wiki['id'] as String?;
+                final isCanonical = wiki['is_canonical'] == true;
 
                 return GestureDetector(
                   onTap: () => context.push('/wiki/$wikiId'),
@@ -104,61 +105,103 @@ class _ProfilePinnedWikisState extends ConsumerState<ProfilePinnedWikis> {
                     decoration: BoxDecoration(
                       color: context.surfaceColor,
                       borderRadius: BorderRadius.circular(r.s(12)),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.08),
-                      ),
+                      border: isCanonical
+                          ? Border.all(
+                              color: const Color(0xFFFFD700),
+                              width: 2.0,
+                            )
+                          : Border.all(
+                              color: Colors.white.withValues(alpha: 0.08),
+                            ),
+                      boxShadow: isCanonical
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFFFFD700)
+                                    .withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                              )
+                            ]
+                          : null,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Stack(
                       children: [
-                        // Cover
-                        ClipRRect(
-                          borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(12)),
-                          child: coverUrl != null
-                              ? CachedNetworkImage(
-                                  imageUrl: coverUrl,
-                                  height: r.s(50),
-                                  width: r.s(140),
-                                  fit: BoxFit.cover,
-                                  errorWidget: (_, __, ___) =>
-                                      _coverPlaceholder(r),
-                                )
-                              : _coverPlaceholder(r),
-                        ),
-                        // Title + category
-                        Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: r.s(8), vertical: r.s(6)),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  title,
-                                  style: TextStyle(
-                                    color: context.nexusTheme.textPrimary,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: r.fs(11),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                if (category != null && category.isNotEmpty)
-                                  Text(
-                                    category,
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: r.fs(9),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Cover
+                            ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(10)),
+                              child: coverUrl != null
+                                  ? CachedNetworkImage(
+                                      imageUrl: coverUrl,
+                                      height: r.s(50),
+                                      width: r.s(140),
+                                      fit: BoxFit.cover,
+                                      errorWidget: (_, __, ___) =>
+                                          _coverPlaceholder(r),
+                                    )
+                                  : _coverPlaceholder(r),
+                            ),
+                            // Title + category
+                            Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(8), vertical: r.s(6)),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      title,
+                                      style: TextStyle(
+                                        color: context.nexusTheme.textPrimary,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: r.fs(11),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                              ],
+                                    if (category != null && category.isNotEmpty)
+                                      Text(
+                                        category,
+                                        style: TextStyle(
+                                          color: isCanonical
+                                              ? const Color(0xFFFFD700)
+                                              : Colors.grey[600],
+                                          fontSize: r.fs(9),
+                                          fontWeight: isCanonical
+                                              ? FontWeight.w700
+                                              : FontWeight.normal,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        // Badge canônica
+                        if (isCanonical)
+                          Positioned(
+                            top: r.s(4),
+                            right: r.s(4),
+                            child: Container(
+                              padding: EdgeInsets.all(r.s(3)),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFFFD700),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.star_rounded,
+                                color: Colors.black,
+                                size: r.s(9),
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
