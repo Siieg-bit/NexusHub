@@ -573,6 +573,7 @@ class _CenterControlsConsumer extends ConsumerWidget {
     await notifier.updateVideo(
       videoUrl: item['url'] ?? '',
       videoTitle: item['title'] ?? '',
+      videoThumbnail: item['thumbnail'],
     );
   }
 

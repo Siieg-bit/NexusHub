@@ -9,6 +9,7 @@ import '../providers/screening_room_provider.dart';
 import '../providers/screening_sync_provider.dart';
 import '../providers/screening_voice_provider.dart';
 import '../../../../core/widgets/emoji_rain_overlay.dart';
+import '../../../../router/app_router.dart';
 import '../widgets/screening_landscape_layout.dart';
 
 // =============================================================================
@@ -261,29 +262,35 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
     // MiniRoomPip chamava os callbacks depois que este widget já foi descartado.
     final sessionId = roomState.sessionId!;
     final videoTitle = roomState.currentVideoTitle ?? 'Sala de Projeção';
+    final videoThumbnail = roomState.currentVideoThumbnail;
+    final videoUrl = roomState.currentVideoUrl;
     final threadId = widget.threadId;
     final miniNotifier = ref.read(miniRoomProvider.notifier);
     final roomNotifier = ref.read(screeningRoomProvider(threadId).notifier);
     final voiceNotifier = ref.read(screeningVoiceProvider(sessionId).notifier);
+    final router = ref.read(appRouterProvider);
 
     miniNotifier.show(
       roomId: sessionId,
       title: videoTitle,
       type: MiniRoomType.screening,
-      // onReturnWithContext recebe o BuildContext do _MiniRoomPip (sempre válido),
-      // evitando o crash "Cannot use ref after widget was disposed" que ocorria
-      // quando o callback capturava ref/context do ScreeningRoomScreen já descartado.
-      onReturnWithContext: (pipContext) {
+      thumbnailUrl: videoThumbnail,
+      videoUrl: videoUrl,
+      // O PiP fica acima do Router no builder do MaterialApp; por isso o context
+      // dele não é descendente de Navigator. Usamos o GoRouter capturado antes
+      // de descartar esta tela, mantendo a navegação declarativa e segura.
+      onReturnWithContext: (_) {
         miniNotifier.hide();
-        Navigator.of(pipContext).push(MaterialPageRoute(
-          builder: (_) => ScreeningRoomScreen(
-            threadId: threadId,
-            callSessionId: sessionId,
-          ),
-        ));
+        router.push(
+          Uri(
+            path: '/screening-room/$threadId',
+            queryParameters: {'sessionId': sessionId},
+          ).toString(),
+        );
       },
       onEnd: () {
         miniNotifier.hide();
+        voiceNotifier.leaveChannel();
         roomNotifier.leaveRoom();
       },
       onToggleMute: () {

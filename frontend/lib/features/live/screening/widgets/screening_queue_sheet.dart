@@ -56,6 +56,7 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
         .updateVideo(
           videoUrl: item['url'] ?? '',
           videoTitle: item['title'] ?? '',
+          videoThumbnail: item['thumbnail'],
         );
     // Não remove da fila — o item fica até ser removido manualmente
     if (mounted) Navigator.of(context).pop();

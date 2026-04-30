@@ -458,7 +458,11 @@ class _ScreeningBrowserSheetState
         await notifier.addToQueue(url: finalUrl, title: title, thumbnail: thumbnail);
         if (mounted) { HapticFeedback.lightImpact(); Navigator.of(context).pop(); }
       } else {
-        await notifier.updateVideo(videoUrl: finalUrl, videoTitle: title);
+        await notifier.updateVideo(
+          videoUrl: finalUrl,
+          videoTitle: title,
+          videoThumbnail: thumbnail,
+        );
         if (mounted) Navigator.of(context).pop();
       }
     } catch (e) {

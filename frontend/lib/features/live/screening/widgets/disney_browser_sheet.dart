@@ -190,6 +190,7 @@ class _DisneyBrowserSheetState extends ConsumerState<DisneyBrowserSheet>
         await notifier.updateVideo(
           videoUrl: stream.manifestUrl,
           videoTitle: title,
+          videoThumbnail: thumbnail,
         );
       }
 

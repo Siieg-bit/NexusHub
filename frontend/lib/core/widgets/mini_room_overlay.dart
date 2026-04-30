@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../services/haptic_service.dart';
 
 // ============================================================================
@@ -47,6 +48,8 @@ class MiniRoomState {
   final bool isMuted;
   final int participantCount;
   final bool isVisible;
+  final String? thumbnailUrl;
+  final String? videoUrl;
   /// Callback legado (sem context). Mantido por compatibilidade com voice/freeTalk.
   final VoidCallback? onReturn;
   /// Callback com context do PiP — preferir este para navegação segura.
@@ -64,6 +67,8 @@ class MiniRoomState {
     this.isMuted = false,
     this.participantCount = 0,
     this.isVisible = true,
+    this.thumbnailUrl,
+    this.videoUrl,
     this.onReturn,
     this.onReturnWithContext,
     this.onEnd,
@@ -82,6 +87,8 @@ class MiniRoomState {
       isMuted: isMuted ?? this.isMuted,
       participantCount: participantCount ?? this.participantCount,
       isVisible: isVisible ?? this.isVisible,
+      thumbnailUrl: thumbnailUrl,
+      videoUrl: videoUrl,
       onReturn: onReturn,
       onReturnWithContext: onReturnWithContext,
       onEnd: onEnd,
@@ -100,6 +107,8 @@ class MiniRoomNotifier extends StateNotifier<MiniRoomState?> {
     required MiniRoomType type,
     bool isMuted = false,
     int participantCount = 0,
+    String? thumbnailUrl,
+    String? videoUrl,
     VoidCallback? onReturn,
     void Function(BuildContext context)? onReturnWithContext,
     VoidCallback? onEnd,
@@ -112,6 +121,8 @@ class MiniRoomNotifier extends StateNotifier<MiniRoomState?> {
       isMuted: isMuted,
       participantCount: participantCount,
       isVisible: true,
+      thumbnailUrl: thumbnailUrl,
+      videoUrl: videoUrl,
       onReturn: onReturn,
       onReturnWithContext: onReturnWithContext,
       onEnd: onEnd,
@@ -276,7 +287,11 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
                     GestureDetector(
                       onTap: () {
                         HapticService.buttonPress();
-                        ref.read(miniRoomProvider.notifier).hide();
+                        if (s.type == MiniRoomType.screening && s.onEnd != null) {
+                          s.onEnd?.call();
+                        } else {
+                          ref.read(miniRoomProvider.notifier).hide();
+                        }
                       },
                       child: const Icon(
                         Icons.close_rounded,
@@ -286,6 +301,10 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
                     ),
                   ],
                 ),
+                if (s.type == MiniRoomType.screening) ...[
+                  const SizedBox(height: 8),
+                  _buildScreeningPreview(s),
+                ],
                 const SizedBox(height: 6),
                 // Linha inferior: participantes + controles
                 Row(
@@ -348,6 +367,66 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
             ),
           ),
         ),
+      ),
+    );
+  }
+
+
+  Widget _buildScreeningPreview(MiniRoomState state) {
+    final thumbnailUrl = state.thumbnailUrl?.trim();
+    final hasThumbnail = thumbnailUrl != null && thumbnailUrl.isNotEmpty;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (hasThumbnail)
+              CachedNetworkImage(
+                imageUrl: thumbnailUrl,
+                fit: BoxFit.cover,
+                errorWidget: (_, __, ___) => _buildScreeningPreviewFallback(),
+              )
+            else
+              _buildScreeningPreviewFallback(),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.10),
+                    Colors.black.withValues(alpha: 0.55),
+                  ],
+                ),
+              ),
+            ),
+            const Center(
+              child: Icon(
+                Icons.play_circle_fill_rounded,
+                color: Colors.white,
+                size: 34,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScreeningPreviewFallback() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1B1B2F), Color(0xFF0F3460)],
+        ),
+      ),
+      child: const Center(
+        child: Icon(Icons.live_tv_rounded, color: Colors.white70, size: 30),
       ),
     );
   }

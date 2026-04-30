@@ -542,6 +542,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
       await notifier.updateVideo(
         videoUrl: next['url'] ?? '',
         videoTitle: next['title'] ?? '',
+        videoThumbnail: next['thumbnail'],
       );
     } catch (e) {
       debugPrint('[ScreeningPlayerProvider] Auto-avanço falhou: $e');

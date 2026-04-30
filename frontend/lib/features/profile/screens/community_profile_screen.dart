@@ -201,7 +201,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             .limit(20),
         // [4] Wiki entries do usuário na comunidade
         SupabaseService.table('wiki_entries')
-            .select('id, title, cover_image_url')
+            .select('id, title, cover_image_url, is_canonical')
             .eq('author_id', widget.userId)
             .eq('community_id', widget.communityId)
             .eq('status', 'ok')
@@ -1892,6 +1892,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                 final coverUrl = wiki['cover_image_url'] as String?;
                 final wikiTitle = wiki['title'] as String? ?? s.wiki;
                 final wikiId = wiki['id'] as String?;
+                final isCanonical = wiki['is_canonical'] == true;
                 return GestureDetector(
                   onTap: () {
                     if (wikiId != null) context.push('/wiki/$wikiId');
@@ -1903,25 +1904,67 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                       color: context.surfaceColor,
                       borderRadius: BorderRadius.circular(r.s(10)),
                       border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.08)),
+                        color: isCanonical
+                            ? const Color(0xFFFFD700)
+                            : Colors.white.withValues(alpha: 0.08),
+                        width: isCanonical ? 2 : 1,
+                      ),
+                      boxShadow: isCanonical
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFFFFD700)
+                                    .withValues(alpha: 0.30),
+                                blurRadius: r.s(10),
+                                spreadRadius: r.s(1),
+                              ),
+                            ]
+                          : null,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Thumbnail
-                        ClipRRect(
-                          borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(r.s(10))),
-                          child: coverUrl != null
-                              ? CachedNetworkImage(
-                                  imageUrl: coverUrl,
-                                  width: r.s(90),
-                                  height: r.s(100),
-                                  fit: BoxFit.cover,
-                                  errorWidget: (_, __, ___) =>
-                                      _wikiPlaceholder(r),
-                                )
-                              : _wikiPlaceholder(r),
+                        Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(r.s(10))),
+                              child: coverUrl != null
+                                  ? CachedNetworkImage(
+                                      imageUrl: coverUrl,
+                                      width: r.s(90),
+                                      height: r.s(100),
+                                      fit: BoxFit.cover,
+                                      errorWidget: (_, __, ___) =>
+                                          _wikiPlaceholder(r),
+                                    )
+                                  : _wikiPlaceholder(r),
+                            ),
+                            if (isCanonical)
+                              Positioned(
+                                top: r.s(6),
+                                right: r.s(6),
+                                child: Container(
+                                  padding: EdgeInsets.all(r.s(3)),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFD700),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black
+                                            .withValues(alpha: 0.25),
+                                        blurRadius: r.s(4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Icon(
+                                    Icons.star_rounded,
+                                    color: Colors.black87,
+                                    size: r.s(12),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                         Padding(
                           padding: EdgeInsets.all(r.s(5)),

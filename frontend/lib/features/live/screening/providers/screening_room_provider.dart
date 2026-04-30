@@ -73,6 +73,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
       String? hostUserId;
       String? videoUrl;
       String? videoTitle;
+      String? videoThumbnail;
 
       if (existingSessionId != null) {
         // ── Entrando em sessão existente ──
@@ -99,6 +100,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         hostUserId = row['host_user_id'] as String?;
         videoUrl = row['video_url'] as String?;
         videoTitle = row['video_title'] as String?;
+        videoThumbnail = row['video_thumbnail'] as String?;
         debugPrint('[ScreeningRoom] Sessão encontrada — isHost=$isHost, hostUserId=$hostUserId, videoUrl=$videoUrl');
 
         // Registrar como participante
@@ -139,6 +141,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         // Usar o vídeo inicial passado pelo ScreeningCreateRoomSheet
         videoUrl = initialVideoUrl;
         videoTitle = initialVideoTitle;
+        videoThumbnail = initialVideoThumbnail;
         // O RPC já inseriu o criador como participante HOST — não chamar _joinAsParticipant.
       }
 
@@ -186,6 +189,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         hostUserId: hostUserId ?? userId,
         currentVideoUrl: videoUrl,
         currentVideoTitle: videoTitle,
+        currentVideoThumbnail: videoThumbnail,
         participants: participants,
         // Resetar a fila ao entrar/criar uma sala para evitar estado residual
         // de sessões anteriores (o provider é family por threadId e persiste
@@ -264,6 +268,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
             state = state.copyWith(
               currentVideoUrl: payload['video_url'] as String?,
               currentVideoTitle: payload['video_title'] as String?,
+              currentVideoThumbnail: payload['video_thumbnail'] as String?,
             );
           },
         );
@@ -490,6 +495,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
   Future<void> updateVideo({
     required String videoUrl,
     required String videoTitle,
+    String? videoThumbnail,
   }) async {
     if (!state.isHost || state.sessionId == null) return;
 
@@ -500,6 +506,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         'p_metadata': {
           'video_url': videoUrl,
           'video_title': videoTitle,
+          'video_thumbnail': videoThumbnail ?? '',
           'is_playing': false,
         },
       });
@@ -510,12 +517,14 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         payload: {
           'video_url': videoUrl,
           'video_title': videoTitle,
+          'video_thumbnail': videoThumbnail ?? '',
         },
       );
 
       state = state.copyWith(
         currentVideoUrl: videoUrl,
         currentVideoTitle: videoTitle,
+        currentVideoThumbnail: videoThumbnail ?? '',
       );
     } catch (e) {
       debugPrint('[ScreeningRoom] updateVideo error: $e');
@@ -535,6 +544,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         'p_metadata': {
           'video_url': '',
           'video_title': '',
+          'video_thumbnail': '',
           'is_playing': false,
         },
       });
@@ -544,12 +554,14 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         payload: {
           'video_url': '',
           'video_title': '',
+          'video_thumbnail': '',
         },
       );
 
       state = state.copyWith(
         currentVideoUrl: '',
         currentVideoTitle: '',
+        currentVideoThumbnail: '',
       );
     } catch (e) {
       debugPrint('[ScreeningRoom] clearVideo error: $e');
@@ -664,6 +676,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
       await updateVideo(
         videoUrl: item['url'] ?? '',
         videoTitle: item['title'] ?? '',
+        videoThumbnail: item['thumbnail'],
       );
     }
   }
