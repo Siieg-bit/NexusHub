@@ -330,6 +330,13 @@ class PostModel {
   /// preservado apenas por compatibilidade de dados.
   bool get isFeaturedActive => isFeatured;
 
+  /// Modo de capa escolhido pelo autor: 'square' (padrão) ou 'tpl'.
+  /// TPL só é respeitado em posts do tipo 'normal'.
+  String get coverMode =>
+      (type == 'normal')
+          ? (editorMetadata.extra['cover_mode'] as String? ?? 'square')
+          : 'square';
+
   /// Extrai lista de URLs de mídia dos blocos e da mediaList
   String get effectiveEditorType =>
       editorType ?? variant ?? type;

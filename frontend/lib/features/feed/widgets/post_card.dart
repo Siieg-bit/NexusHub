@@ -795,11 +795,12 @@ class _PostCardState extends ConsumerState<PostCard>
   // ══════════════════════════════════════════════════════════════════════════
   Widget _buildInlineMedia(Responsive r) {
     final urls = _post.mediaUrls;
+    final String coverMode = _post.coverMode;
 
-    // Regra de exibição:
-    //   0 imagens       → nada
-    //   1–2 imagens     → 1 square (só a primeira)
-    //   3+ imagens     → TPL com as 3 primeiras
+    // Regra de exibição baseada no coverMode escolhido pelo autor:
+    //   coverMode='square' (padrão) → 1 square com a primeira imagem
+    //   coverMode='tpl'             → TPL com as 3 primeiras (só se houver ≥3)
+    //   0 imagens                   → nada
     if (urls.isEmpty) return const SizedBox.shrink();
 
     Widget buildImg(String url, {BorderRadius? radius}) {
@@ -822,14 +823,9 @@ class _PostCardState extends ConsumerState<PostCard>
 
     Widget mediaWidget;
 
-    if (urls.length < 3) {
-      // ─ 1 ou 2 imagens: exibe apenas a primeira como square
-      mediaWidget = AspectRatio(
-        aspectRatio: 1.0,
-        child: buildImg(urls[0], radius: BorderRadius.circular(r.s(10))),
-      );
-    } else {
-      // ─ Exatamente 3 imagens: layout TPL
+    if (coverMode == 'tpl' && urls.length >= 3) {
+      // ─ TPL: imagem grande à esquerda + 2 menores à direita
+      // (usa as 3 primeiras; ignora o restante)
       final double blockH = r.s(200);
       mediaWidget = SizedBox(
         height: blockH,
@@ -868,6 +864,12 @@ class _PostCardState extends ConsumerState<PostCard>
             ),
           ],
         ),
+      );
+    } else {
+      // ─ Square: exibe apenas a primeira imagem
+      mediaWidget = AspectRatio(
+        aspectRatio: 1.0,
+        child: buildImg(urls[0], radius: BorderRadius.circular(r.s(10))),
       );
     }
 

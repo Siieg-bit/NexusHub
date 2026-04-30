@@ -54,6 +54,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen>
   // BlurHash gerado para cada URL de imagem (mesmo índice que _mediaUrls)
   final Map<String, String> _mediaBlurhashes = {};
   String? _coverImageUrl;
+  // Modo de capa: 'square' (padrão) ou 'tpl' (Three Pics Layer)
+  String _coverMode = 'square';
 
   // Visibilidade e controle
   String _postVisibility = 'public';
@@ -124,6 +126,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen>
         post.editorMetadata.extra['visibility'] as String? ?? 'public';
     _commentsBlocked = post.editorMetadata.extra['comments_blocked'] == true;
     _isPinnedProfile = post.isPinnedProfile;
+    _coverMode = post.editorMetadata.extra['cover_mode'] as String? ?? 'square';
 
     // Mídia
     for (final media in post.mediaList) {
@@ -566,6 +569,7 @@ final image = _pickedFiles_image.first.file;
         'visibility': _postVisibility,
         'comments_blocked': _commentsBlocked,
         'pinned_profile': _isPinnedProfile,
+        'cover_mode': _coverMode,
       },
     };
   }
@@ -833,9 +837,11 @@ final image = _pickedFiles_image.first.file;
                 children: [
                   // ── Cover image ──
                   _buildCoverPicker(r, s),
-                  SizedBox(height: r.s(16)),
-
-                  // ── Título ──
+                  SizedBox(height: r.s(10)),
+                  // ── Seletor de modo de capa (só aparece quando há imagens em _mediaUrls) ──
+                  if (_mediaUrls.isNotEmpty) _buildCoverModeSelector(r, s),
+                  if (_mediaUrls.isNotEmpty) SizedBox(height: r.s(10)),
+                  // ── Título ───
                   TextField(
                     controller: _titleController,
                     style: TextStyle(
@@ -1098,6 +1104,231 @@ final image = _pickedFiles_image.first.file;
   // ════════════════════════════════════════════════════════════════════════════
   // COVER PICKER
   // ════════════════════════════════════════════════════════════════════════════
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // COVER MODE SELECTOR
+  // ══════════════════════════════════════════════════════════════════════════
+  Widget _buildCoverModeSelector(Responsive r, dynamic s) {
+    // Aviso quando modo TPL está selecionado mas não há exatamente 3 imagens
+    final bool tplWarning = _coverMode == 'tpl' && _mediaUrls.length < 3;
+    final bool tplReady  = _coverMode == 'tpl' && _mediaUrls.length >= 3;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Label
+        Text(
+          'Modo de capa',
+          style: TextStyle(
+            color: _textColor.withValues(alpha: 0.5),
+            fontSize: r.fs(11),
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
+        ),
+        SizedBox(height: r.s(6)),
+        // Botões de seleção
+        Row(
+          children: [
+            // ─ Square ─
+            Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _coverMode = 'square'),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: EdgeInsets.symmetric(
+                      vertical: r.s(10), horizontal: r.s(12)),
+                  decoration: BoxDecoration(
+                    color: _coverMode == 'square'
+                        ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
+                        : _textColor.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(r.s(10)),
+                    border: Border.all(
+                      color: _coverMode == 'square'
+                          ? context.nexusTheme.accentPrimary
+                          : _textColor.withValues(alpha: 0.08),
+                      width: _coverMode == 'square' ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Miniatura do layout square
+                      Container(
+                        width: r.s(28),
+                        height: r.s(20),
+                        decoration: BoxDecoration(
+                          color: _coverMode == 'square'
+                              ? context.nexusTheme.accentPrimary.withValues(alpha: 0.4)
+                              : _textColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(r.s(3)),
+                        ),
+                      ),
+                      SizedBox(width: r.s(8)),
+                      Text(
+                        'Square',
+                        style: TextStyle(
+                          color: _coverMode == 'square'
+                              ? context.nexusTheme.accentPrimary
+                              : _textColor.withValues(alpha: 0.5),
+                          fontSize: r.fs(12),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: r.s(8)),
+            // ─ TPL ─
+            Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _coverMode = 'tpl'),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: EdgeInsets.symmetric(
+                      vertical: r.s(10), horizontal: r.s(12)),
+                  decoration: BoxDecoration(
+                    color: _coverMode == 'tpl'
+                        ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
+                        : _textColor.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(r.s(10)),
+                    border: Border.all(
+                      color: _coverMode == 'tpl'
+                          ? (tplWarning
+                              ? context.nexusTheme.warning
+                              : context.nexusTheme.accentPrimary)
+                          : _textColor.withValues(alpha: 0.08),
+                      width: _coverMode == 'tpl' ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Miniatura do layout TPL
+                      SizedBox(
+                        width: r.s(32),
+                        height: r.s(20),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 65,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: _coverMode == 'tpl'
+                                      ? (tplWarning
+                                          ? context.nexusTheme.warning.withValues(alpha: 0.4)
+                                          : context.nexusTheme.accentPrimary.withValues(alpha: 0.4))
+                                      : _textColor.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(r.s(2)),
+                                    bottomLeft: Radius.circular(r.s(2)),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: r.s(1)),
+                            Expanded(
+                              flex: 35,
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: _coverMode == 'tpl'
+                                            ? (tplWarning
+                                                ? context.nexusTheme.warning.withValues(alpha: 0.3)
+                                                : context.nexusTheme.accentPrimary.withValues(alpha: 0.3))
+                                            : _textColor.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.only(
+                                          topRight: Radius.circular(r.s(2)),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: r.s(1)),
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: _coverMode == 'tpl'
+                                            ? (tplWarning
+                                                ? context.nexusTheme.warning.withValues(alpha: 0.3)
+                                                : context.nexusTheme.accentPrimary.withValues(alpha: 0.3))
+                                            : _textColor.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.only(
+                                          bottomRight: Radius.circular(r.s(2)),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: r.s(8)),
+                      Text(
+                        'TPL',
+                        style: TextStyle(
+                          color: _coverMode == 'tpl'
+                              ? (tplWarning
+                                  ? context.nexusTheme.warning
+                                  : context.nexusTheme.accentPrimary)
+                              : _textColor.withValues(alpha: 0.5),
+                          fontSize: r.fs(12),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        // Aviso: TPL precisa de exatamente 3 imagens
+        if (tplWarning) ...[  
+          SizedBox(height: r.s(6)),
+          Row(
+            children: [
+              Icon(Icons.info_outline_rounded,
+                  color: context.nexusTheme.warning, size: r.s(13)),
+              SizedBox(width: r.s(5)),
+              Expanded(
+                child: Text(
+                  'TPL exige 3 imagens. Adicione ${3 - _mediaUrls.length} mais na seção de imagens abaixo.',
+                  style: TextStyle(
+                    color: context.nexusTheme.warning,
+                    fontSize: r.fs(11),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+        // Confirmação: TPL pronto
+        if (tplReady) ...[  
+          SizedBox(height: r.s(6)),
+          Row(
+            children: [
+              Icon(Icons.check_circle_outline_rounded,
+                  color: context.nexusTheme.success, size: r.s(13)),
+              SizedBox(width: r.s(5)),
+              Text(
+                'TPL pronto! As 3 primeiras imagens serão usadas.',
+                style: TextStyle(
+                  color: context.nexusTheme.success,
+                  fontSize: r.fs(11),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
 
   Widget _buildCoverPicker(Responsive r, dynamic s) {
     return GestureDetector(

@@ -2212,10 +2212,25 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       if (cover != null && cover.isNotEmpty) imageUrls.add(cover);
     }
 
-    // Regra de exibição:
-    //   0 imagens       → nada
-    //   1–2 imagens     → 1 square (só a primeira)
-    //   3+ imagens     → TPL com as 3 primeiras
+    // Modo de capa escolhido pelo autor (salvo em editor_metadata.extra.cover_mode)
+    final Map<String, dynamic>? editorMeta =
+        post['editor_metadata'] is Map
+            ? Map<String, dynamic>.from(post['editor_metadata'] as Map)
+            : null;
+    final Map<String, dynamic>? extraMeta =
+        editorMeta?['extra'] is Map
+            ? Map<String, dynamic>.from(editorMeta!['extra'] as Map)
+            : null;
+    // TPL só disponível para posts do tipo 'normal'
+    final String coverMode =
+        (postType == 'normal')
+            ? (extraMeta?['cover_mode'] as String? ?? 'square')
+            : 'square';
+
+    // Regra de exibição baseada no coverMode:
+    //   coverMode='square' (padrão) → 1 square com a primeira imagem
+    //   coverMode='tpl'             → TPL com as 3 primeiras (só se houver ≥3)
+    //   0 imagens                   → nada
     if (imageUrls.isEmpty) return const SizedBox.shrink();
 
     // Altura do layout
@@ -2240,19 +2255,11 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
 
     Widget mediaWidget;
 
-    if (imageUrls.length < 3) {
-      // ─ 1 ou 2 imagens: exibe apenas a primeira como square
-      mediaWidget = AspectRatio(
-        aspectRatio: 1.0,
-        child: buildImg(imageUrls[0],
-            radius: BorderRadius.circular(r.s(10))),
-      );
-    } else {
-      // ─ 3+ imagens: layout TPL com as 3 primeiras (1 grande à esquerda + 2 menores à direita)
+    if (coverMode == 'tpl' && imageUrls.length >= 3) {
+      // ─ TPL: 1 imagem grande à esquerda + 2 menores à direita (usa as 3 primeiras)
       final String img1 = imageUrls[0];
       final String img2 = imageUrls[1];
       final String img3 = imageUrls[2];
-      const int extra = 0; // sem overlay +N: sempre usamos as 3 primeiras
 
       mediaWidget = SizedBox(
         height: blockH,
@@ -2297,6 +2304,13 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             ),
           ],
         ),
+      );
+    } else {
+      // ─ Square (padrão): exibe apenas a primeira imagem
+      mediaWidget = AspectRatio(
+        aspectRatio: 1.0,
+        child: buildImg(imageUrls[0],
+            radius: BorderRadius.circular(r.s(10))),
       );
     }
 
