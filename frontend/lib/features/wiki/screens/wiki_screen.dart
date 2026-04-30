@@ -1893,144 +1893,145 @@ final image = _pickedFiles_image.first.file;
                         if (infoboxData != null && infoboxData.isNotEmpty) ...[
                           Container(
                             width: double.infinity,
-                            padding: EdgeInsets.all(r.s(16)),
                             decoration: BoxDecoration(
                               color: context.surfaceColor,
-                              borderRadius: BorderRadius.circular(r.s(16)),
+                              borderRadius: BorderRadius.circular(r.s(20)),
                               border: Border.all(
                                   color: isCanonical
-                                      ? const Color(0xFFFFD700)
-                                          .withValues(alpha: 0.3)
-                                      : Colors.white.withValues(alpha: 0.05)),
+                                      ? const Color(0xFFFFD700).withValues(alpha: 0.35)
+                                      : Colors.white.withValues(alpha: 0.07)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.18),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(s.information,
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: r.fs(16),
-                                        color: context.nexusTheme.textPrimary)),
-                                SizedBox(height: r.s(8)),
-                                ...infoboxData.entries.map((e) => Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: r.s(6)),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: r.s(110),
-                                            child: Text(
-                                              e.key,
-                                              style: TextStyle(
-                                                  color: context.nexusTheme
-                                                      .textSecondary,
-                                                  fontSize: r.fs(14)),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Text(
-                                              e.value.toString(),
-                                              style: TextStyle(
-                                                  fontSize: r.fs(14),
-                                                  color: context
-                                                      .nexusTheme.textPrimary),
-                                            ),
-                                          ),
-                                        ],
+                                // Header do infobox
+                                Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(16), vertical: r.s(12)),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: isCanonical
+                                          ? [
+                                              const Color(0xFFFFD700).withValues(alpha: 0.25),
+                                              const Color(0xFFFFA000).withValues(alpha: 0.10),
+                                            ]
+                                          : [
+                                              context.nexusTheme.accentPrimary.withValues(alpha: 0.18),
+                                              context.nexusTheme.accentSecondary.withValues(alpha: 0.08),
+                                            ],
+                                    ),
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(r.s(20)),
+                                      topRight: Radius.circular(r.s(20)),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        isCanonical ? Icons.auto_awesome_rounded : Icons.info_outline_rounded,
+                                        color: isCanonical ? const Color(0xFFFFD700) : context.nexusTheme.accentPrimary,
+                                        size: r.s(18),
                                       ),
-                                    )),
+                                      SizedBox(width: r.s(8)),
+                                      Text(
+                                        s.information,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: r.fs(15),
+                                          color: isCanonical
+                                              ? const Color(0xFFFFD700)
+                                              : context.nexusTheme.accentPrimary,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Linhas do infobox
+                                Padding(
+                                  padding: EdgeInsets.all(r.s(4)),
+                                  child: Column(
+                                    children: [
+                                      ...infoboxData.entries.toList().asMap().entries.map((entry) {
+                                        final idx = entry.key;
+                                        final e = entry.value;
+                                        final isLast = idx == infoboxData.length - 1;
+                                        return Container(
+                                          decoration: BoxDecoration(
+                                            border: isLast
+                                                ? null
+                                                : Border(
+                                                    bottom: BorderSide(
+                                                      color: Colors.white.withValues(alpha: 0.05),
+                                                    ),
+                                                  ),
+                                          ),
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: r.s(12), vertical: r.s(10)),
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              SizedBox(
+                                                width: r.s(110),
+                                                child: Text(
+                                                  e.key,
+                                                  style: TextStyle(
+                                                    color: context.nexusTheme.textSecondary,
+                                                    fontSize: r.fs(13),
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Text(
+                                                  e.value.toString(),
+                                                  style: TextStyle(
+                                                    fontSize: r.fs(14),
+                                                    color: context.nexusTheme.textPrimary,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                          SizedBox(height: r.s(16)),
+                          SizedBox(height: r.s(20)),
                         ],
 
                         // ── Conteúdo textual ─────────────────────────────────
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            content,
-                            style: TextStyle(
-                                fontSize: r.fs(16),
-                                height: 1.7,
-                                color: context.nexusTheme.textPrimary),
-                          ),
-                        ),
-
-                        // ── Autor ────────────────────────────────────────────
-                        if (author != null) ...[
-                          SizedBox(height: r.s(24)),
-                          Row(
-                            children: [
-                              CosmeticAvatar(
-                                userId: author['id'] as String?,
-                                avatarUrl: author['icon_url'] as String?,
-                                size: r.s(36),
+                        if (content.trim().isNotEmpty) ...[
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(4), vertical: r.s(8)),
+                            child: SelectableText(
+                              content,
+                              style: TextStyle(
+                                fontSize: r.fs(15.5),
+                                height: 1.85,
+                                color: context.nexusTheme.textPrimary,
+                                letterSpacing: 0.15,
                               ),
-                              SizedBox(width: r.s(10)),
-                              Text(
-                                '${s.byAuthor}${author['nickname'] ?? s.anonymous}',
-                                style: TextStyle(
-                                    color: context.nexusTheme.textSecondary,
-                                    fontSize: r.fs(14)),
-                              ),
-                            ],
+                            ),
                           ),
+                          SizedBox(height: r.s(8)),
                         ],
 
-                        // ── My Rating ────────────────────────────────────────
-                        SizedBox(height: r.s(24)),
-                        Divider(color: Colors.white.withValues(alpha: 0.05)),
-                        SizedBox(height: r.s(12)),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(s.myRating,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: r.fs(18),
-                                  color: context.nexusTheme.textPrimary)),
-                        ),
-                        SizedBox(height: r.s(8)),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: List.generate(5, (i) {
-                              final star = i + 1;
-                              return GestureDetector(
-                                onTap: () => _submitRating(star),
-                                child: Icon(
-                                  star <= _userRating
-                                      ? Icons.star_rounded
-                                      : Icons.star_border_rounded,
-                                  color: star <= _userRating
-                                      ? Colors.amber
-                                      : Colors.grey.withValues(alpha: 0.3),
-                                  size: r.s(34),
-                                ),
-                              );
-                            }),
-                          ),
-                        ),
-                        SizedBox(height: r.s(6)),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            _totalRatings > 0
-                                ? '${_avgRating.toStringAsFixed(1)} ★  ($_totalRatings ${_totalRatings == 1 ? 'avaliação' : 'avaliações'})'
-                                : s.averageRating,
-                            style: TextStyle(
-                                color: _totalRatings > 0
-                                    ? Colors.amber
-                                    : context.nexusTheme.textSecondary,
-                                fontSize: r.fs(13),
-                                fontWeight: _totalRatings > 0
-                                    ? FontWeight.w600
-                                    : FontWeight.normal),
-                          ),
-                        ),
 
                         // ── Comentários ──────────────────────────────────────
                         SizedBox(height: r.s(24)),
