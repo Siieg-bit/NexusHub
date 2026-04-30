@@ -13,7 +13,13 @@ import '../../../config/nexus_theme_extension.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/services/deep_link_service.dart';
 import '../../../core/services/social_share_service.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+
+class _ShareCardVariant {
+  static const String standard = 'standard';
+  static const String story = 'story';
+}
 
 class CommunityShareCardSheet extends StatefulWidget {
   final CommunityModel community;
@@ -42,6 +48,8 @@ class CommunityShareCardSheet extends StatefulWidget {
 class _CommunityShareCardSheetState extends State<CommunityShareCardSheet> {
   final GlobalKey _cardKey = GlobalKey();
   late Future<String> _shareUrlFuture;
+  late Future<Set<String>> _availableTargetsFuture;
+  String _previewVariant = _ShareCardVariant.standard;
   bool _isSharing = false;
 
   @override
@@ -51,6 +59,7 @@ class _CommunityShareCardSheetState extends State<CommunityShareCardSheet> {
       type: 'community',
       targetId: widget.community.id,
     );
+    _availableTargetsFuture = SocialShareService.availableTargets();
   }
 
   String get _safeFileSlug {
@@ -68,8 +77,11 @@ class _CommunityShareCardSheetState extends State<CommunityShareCardSheet> {
   }
 
 
-  Future<File> _captureCardAsPng() async {
-    await Future<void>.delayed(const Duration(milliseconds: 80));
+  Future<File> _captureCardAsPng({required String variant}) async {
+    if (_previewVariant != variant && mounted) {
+      setState(() => _previewVariant = variant);
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 120));
     final boundary =
         _cardKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
     if (boundary == null) {
@@ -103,15 +115,23 @@ class _CommunityShareCardSheetState extends State<CommunityShareCardSheet> {
     HapticFeedback.selectionClick();
     setState(() => _isSharing = true);
     try {
-      final imageFile = await _captureCardAsPng();
-      final usedNativeTarget = await SocialShareService.shareCommunityCard(
+      final variant = target == SocialShareTarget.instagramStories
+          ? _ShareCardVariant.story
+          : _ShareCardVariant.standard;
+      final imageFile = await _captureCardAsPng(variant: variant);
+      final shareResult = await SocialShareService.shareCommunityCard(
         target: target,
         imageFile: imageFile,
         text: _shareText(shareUrl),
         url: shareUrl,
         subject: widget.community.name,
       );
-      if (!mounted || usedNativeTarget) return;
+      _trackShareEvent(
+        target: target,
+        usedNativeTarget: shareResult.usedNativeTarget,
+        nativePackage: shareResult.nativePackage,
+      );
+      if (!mounted || shareResult.usedNativeTarget) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('$channel não estava disponível. Abri o compartilhamento geral.'),
@@ -131,6 +151,22 @@ class _CommunityShareCardSheetState extends State<CommunityShareCardSheet> {
     }
   }
 
+  void _trackShareEvent({
+    required String target,
+    required bool usedNativeTarget,
+    String? nativePackage,
+  }) {
+    SupabaseService.rpc('track_share_event', params: {
+      'p_content_type': 'community',
+      'p_content_id': widget.community.id,
+      'p_target': target,
+      'p_native': usedNativeTarget,
+      'p_package': nativePackage,
+    }).catchError((e) {
+      debugPrint('[CommunityShareCardSheet] share analytics skipped: $e');
+    });
+  }
+
   Future<void> _copyLink(String shareUrl) async {
     await Clipboard.setData(ClipboardData(text: shareUrl));
     if (!mounted) return;
@@ -138,6 +174,36 @@ class _CommunityShareCardSheetState extends State<CommunityShareCardSheet> {
       const SnackBar(
         content: Text('Link copiado!'),
         behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+
+  Widget _buildSocialAction({
+    required double width,
+    required IconData icon,
+    required String label,
+    required Color color,
+    required String target,
+    required String channel,
+    required String shareUrl,
+    required bool nativeReady,
+    required bool loadingAvailability,
+  }) {
+    return SizedBox(
+      width: width,
+      child: _ShareActionButton(
+        icon: icon,
+        label: label,
+        color: color,
+        enabled: !_isSharing,
+        nativeReady: nativeReady,
+        loadingAvailability: loadingAvailability,
+        onTap: () => _share(
+          shareUrl,
+          target: target,
+          channel: channel,
+        ),
       ),
     );
   }
@@ -220,6 +286,7 @@ class _CommunityShareCardSheetState extends State<CommunityShareCardSheet> {
                     child: _CommunitySharePreviewCard(
                       community: widget.community,
                       shareUrl: shareUrl,
+                      variant: _previewVariant,
                     ),
                   ),
                 ),
@@ -233,133 +300,120 @@ class _CommunityShareCardSheetState extends State<CommunityShareCardSheet> {
                   ),
                 ),
                 SizedBox(height: r.s(10)),
-                Wrap(
-                  spacing: r.s(10),
-                  runSpacing: r.s(10),
-                  children: [
-                    SizedBox(
-                      width: actionWidth,
-                      child: _ShareActionButton(
-                        icon: Icons.play_circle_fill_rounded,
-                        label: 'Stories',
-                        color: const Color(0xFFE1306C),
-                        enabled: !_isSharing,
-                        onTap: () => _share(
-                          shareUrl,
+                FutureBuilder<Set<String>>(
+                  future: _availableTargetsFuture,
+                  builder: (context, targetSnapshot) {
+                    final availableTargets = targetSnapshot.data ?? const <String>{};
+                    final isLoadingTargets =
+                        targetSnapshot.connectionState == ConnectionState.waiting;
+                    bool isNativeReady(String target) => availableTargets.contains(target);
+                    return Wrap(
+                      spacing: r.s(10),
+                      runSpacing: r.s(10),
+                      children: [
+                        _buildSocialAction(
+                          width: actionWidth,
+                          icon: Icons.play_circle_fill_rounded,
+                          label: 'Stories',
+                          color: const Color(0xFFE1306C),
                           target: SocialShareTarget.instagramStories,
                           channel: 'Instagram Stories',
+                          shareUrl: shareUrl,
+                          nativeReady: isNativeReady(SocialShareTarget.instagramStories),
+                          loadingAvailability: isLoadingTargets,
                         ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: actionWidth,
-                      child: _ShareActionButton(
-                        icon: Icons.camera_alt_rounded,
-                        label: 'Instagram',
-                        color: const Color(0xFFE1306C),
-                        enabled: !_isSharing,
-                        onTap: () => _share(
-                          shareUrl,
+                        _buildSocialAction(
+                          width: actionWidth,
+                          icon: Icons.camera_alt_rounded,
+                          label: 'Instagram',
+                          color: const Color(0xFFE1306C),
                           target: SocialShareTarget.instagramFeed,
                           channel: 'Instagram',
+                          shareUrl: shareUrl,
+                          nativeReady: isNativeReady(SocialShareTarget.instagramFeed),
+                          loadingAvailability: isLoadingTargets,
                         ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: actionWidth,
-                      child: _ShareActionButton(
-                        icon: Icons.chat_rounded,
-                        label: 'WhatsApp',
-                        color: const Color(0xFF25D366),
-                        enabled: !_isSharing,
-                        onTap: () => _share(
-                          shareUrl,
+                        _buildSocialAction(
+                          width: actionWidth,
+                          icon: Icons.chat_rounded,
+                          label: 'WhatsApp',
+                          color: const Color(0xFF25D366),
                           target: SocialShareTarget.whatsapp,
                           channel: 'WhatsApp',
+                          shareUrl: shareUrl,
+                          nativeReady: isNativeReady(SocialShareTarget.whatsapp),
+                          loadingAvailability: isLoadingTargets,
                         ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: actionWidth,
-                      child: _ShareActionButton(
-                        icon: Icons.send_rounded,
-                        label: 'Telegram',
-                        color: const Color(0xFF229ED9),
-                        enabled: !_isSharing,
-                        onTap: () => _share(
-                          shareUrl,
+                        _buildSocialAction(
+                          width: actionWidth,
+                          icon: Icons.send_rounded,
+                          label: 'Telegram',
+                          color: const Color(0xFF229ED9),
                           target: SocialShareTarget.telegram,
                           channel: 'Telegram',
+                          shareUrl: shareUrl,
+                          nativeReady: isNativeReady(SocialShareTarget.telegram),
+                          loadingAvailability: isLoadingTargets,
                         ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: actionWidth,
-                      child: _ShareActionButton(
-                        icon: Icons.facebook_rounded,
-                        label: 'Facebook',
-                        color: const Color(0xFF1877F2),
-                        enabled: !_isSharing,
-                        onTap: () => _share(
-                          shareUrl,
+                        _buildSocialAction(
+                          width: actionWidth,
+                          icon: Icons.facebook_rounded,
+                          label: 'Facebook',
+                          color: const Color(0xFF1877F2),
                           target: SocialShareTarget.facebook,
                           channel: 'Facebook',
+                          shareUrl: shareUrl,
+                          nativeReady: isNativeReady(SocialShareTarget.facebook),
+                          loadingAvailability: isLoadingTargets,
                         ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: actionWidth,
-                      child: _ShareActionButton(
-                        icon: Icons.forum_rounded,
-                        label: 'Messenger',
-                        color: const Color(0xFF0084FF),
-                        enabled: !_isSharing,
-                        onTap: () => _share(
-                          shareUrl,
+                        _buildSocialAction(
+                          width: actionWidth,
+                          icon: Icons.forum_rounded,
+                          label: 'Messenger',
+                          color: const Color(0xFF0084FF),
                           target: SocialShareTarget.messenger,
                           channel: 'Messenger',
+                          shareUrl: shareUrl,
+                          nativeReady: isNativeReady(SocialShareTarget.messenger),
+                          loadingAvailability: isLoadingTargets,
                         ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: actionWidth,
-                      child: _ShareActionButton(
-                        icon: Icons.alternate_email_rounded,
-                        label: 'X / Twitter',
-                        color: const Color(0xFF111111),
-                        enabled: !_isSharing,
-                        onTap: () => _share(
-                          shareUrl,
+                        _buildSocialAction(
+                          width: actionWidth,
+                          icon: Icons.alternate_email_rounded,
+                          label: 'X / Twitter',
+                          color: const Color(0xFF111111),
                           target: SocialShareTarget.twitter,
                           channel: 'X/Twitter',
+                          shareUrl: shareUrl,
+                          nativeReady: isNativeReady(SocialShareTarget.twitter),
+                          loadingAvailability: isLoadingTargets,
                         ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: actionWidth,
-                      child: _ShareActionButton(
-                        icon: Icons.ios_share_rounded,
-                        label: 'Mais apps',
-                        color: theme.accentPrimary,
-                        enabled: !_isSharing,
-                        onTap: () => _share(
-                          shareUrl,
+                        _buildSocialAction(
+                          width: actionWidth,
+                          icon: Icons.ios_share_rounded,
+                          label: 'Mais apps',
+                          color: theme.accentPrimary,
                           target: SocialShareTarget.more,
                           channel: 'outros apps',
+                          shareUrl: shareUrl,
+                          nativeReady: true,
+                          loadingAvailability: false,
                         ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: actionWidth,
-                      child: _ShareActionButton(
-                        icon: Icons.link_rounded,
-                        label: 'Copiar link',
-                        color: theme.textSecondary,
-                        enabled: !_isSharing,
-                        onTap: () => _copyLink(shareUrl),
-                      ),
-                    ),
-                  ],
+                        SizedBox(
+                          width: actionWidth,
+                          child: _ShareActionButton(
+                            icon: Icons.link_rounded,
+                            label: 'Copiar link',
+                            color: theme.textSecondary,
+                            enabled: !_isSharing,
+                            nativeReady: true,
+                            loadingAvailability: false,
+                            onTap: () => _copyLink(shareUrl),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 if (_isSharing) ...[
                   SizedBox(height: r.s(14)),
@@ -381,10 +435,12 @@ class _CommunityShareCardSheetState extends State<CommunityShareCardSheet> {
 class _CommunitySharePreviewCard extends StatelessWidget {
   final CommunityModel community;
   final String shareUrl;
+  final String variant;
 
   const _CommunitySharePreviewCard({
     required this.community,
     required this.shareUrl,
+    required this.variant,
   });
 
   Color _parseColor(String hex) {
@@ -405,9 +461,14 @@ class _CommunitySharePreviewCard extends StatelessWidget {
         ? community.tagline.trim()
         : community.description.trim();
 
+    final isStory = variant == _ShareCardVariant.story;
+    final cardWidth = isStory ? r.s(300) : r.s(330);
+    final cardHeight = isStory ? r.s(533) : r.s(430);
+    final heroGap = isStory ? r.s(96) : r.s(58);
+
     return Container(
-      width: r.s(330),
-      constraints: BoxConstraints(minHeight: r.s(430)),
+      width: cardWidth,
+      height: cardHeight,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(r.s(28)),
         gradient: LinearGradient(
@@ -498,12 +559,12 @@ class _CommunitySharePreviewCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: r.s(58)),
+                SizedBox(height: heroGap),
                 Text(
                   tagline.isNotEmpty
                       ? tagline
                       : 'Entre nessa comunidade no NexusHub.',
-                  maxLines: 4,
+                  maxLines: isStory ? 5 : 4,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.92),
@@ -521,10 +582,11 @@ class _CommunitySharePreviewCard extends StatelessWidget {
                       icon: Icons.people_alt_rounded,
                       label: '${community.membersCount} membros',
                     ),
-                    _ShareMetricChip(
-                      icon: Icons.article_rounded,
-                      label: '${community.postsCount} posts',
-                    ),
+                    if (!isStory)
+                      _ShareMetricChip(
+                        icon: Icons.article_rounded,
+                        label: '${community.postsCount} posts',
+                      ),
                     if (community.category.isNotEmpty)
                       _ShareMetricChip(
                         icon: Icons.auto_awesome_rounded,
@@ -698,6 +760,8 @@ class _ShareActionButton extends StatelessWidget {
   final String label;
   final Color color;
   final bool enabled;
+  final bool nativeReady;
+  final bool loadingAvailability;
   final VoidCallback onTap;
 
   const _ShareActionButton({
@@ -705,6 +769,8 @@ class _ShareActionButton extends StatelessWidget {
     required this.label,
     required this.color,
     required this.enabled,
+    required this.nativeReady,
+    required this.loadingAvailability,
     required this.onTap,
   });
 
@@ -730,15 +796,37 @@ class _ShareActionButton extends StatelessWidget {
               Icon(icon, color: color, size: r.s(18)),
               SizedBox(width: r.s(7)),
               Flexible(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: r.fs(12),
-                    fontWeight: FontWeight.w800,
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: r.fs(12),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    SizedBox(height: r.s(2)),
+                    Text(
+                      loadingAvailability
+                          ? 'verificando'
+                          : nativeReady
+                              ? 'direto'
+                              : 'fallback',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: color.withValues(alpha: 0.68),
+                        fontSize: r.fs(8.5),
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

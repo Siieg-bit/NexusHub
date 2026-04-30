@@ -4,6 +4,23 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
+/// Resultado de uma tentativa de compartilhamento social.
+class SocialShareResult {
+  final bool success;
+  final bool usedNativeTarget;
+  final String target;
+  final String? nativePackage;
+  final String? error;
+
+  const SocialShareResult({
+    required this.success,
+    required this.usedNativeTarget,
+    required this.target,
+    this.nativePackage,
+    this.error,
+  });
+}
+
 /// SocialShareService centraliza compartilhamento direcionado para apps sociais.
 ///
 /// A estratégia é em camadas: primeiro tenta integração nativa via MethodChannel
@@ -14,7 +31,28 @@ class SocialShareService {
 
   static const MethodChannel _channel = MethodChannel('nexushub/social_share');
 
-  static Future<bool> shareCommunityCard({
+  /// Retorna alvos sociais instalados/conhecidos na plataforma atual.
+  ///
+  /// No Android a consulta é nativa por pacote. Em plataformas sem ponte nativa,
+  /// retorna apenas o fallback genérico para manter a UI funcional.
+  static Future<Set<String>> availableTargets() async {
+    if (kIsWeb) return {SocialShareTarget.more};
+    try {
+      final result = await _channel.invokeMethod<List<dynamic>>('availableTargets');
+      if (result == null) return {SocialShareTarget.more};
+      return {...result.map((e) => e.toString()), SocialShareTarget.more};
+    } on MissingPluginException catch (_) {
+      return {SocialShareTarget.more};
+    } on PlatformException catch (e) {
+      debugPrint('[SocialShareService] availableTargets failed: ${e.code} ${e.message}');
+      return {SocialShareTarget.more};
+    } catch (e) {
+      debugPrint('[SocialShareService] availableTargets unexpected error: $e');
+      return {SocialShareTarget.more};
+    }
+  }
+
+  static Future<SocialShareResult> shareCommunityCard({
     required String target,
     required File imageFile,
     required String text,
@@ -27,7 +65,11 @@ class SocialShareService {
         text: text,
         subject: subject,
       );
-      return true;
+      return SocialShareResult(
+        success: true,
+        usedNativeTarget: false,
+        target: target,
+      );
     }
 
     try {
@@ -42,7 +84,14 @@ class SocialShareService {
         },
       );
       final success = result?['success'] == true;
-      if (success) return true;
+      if (success) {
+        return SocialShareResult(
+          success: true,
+          usedNativeTarget: true,
+          target: target,
+          nativePackage: result?['target'] as String?,
+        );
+      }
     } on MissingPluginException catch (_) {
       // Plataforma sem implementação nativa: fallback controlado abaixo.
     } on PlatformException catch (e) {
@@ -56,7 +105,12 @@ class SocialShareService {
       text: text,
       subject: subject,
     );
-    return false;
+    return SocialShareResult(
+      success: true,
+      usedNativeTarget: false,
+      target: target,
+      error: 'fallback_used',
+    );
   }
 
   static Future<void> _fallbackShare({

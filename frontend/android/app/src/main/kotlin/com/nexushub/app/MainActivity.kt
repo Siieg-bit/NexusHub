@@ -43,6 +43,9 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, socialShareChannel)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
+                    "availableTargets" -> {
+                        result.success(availableShareTargets())
+                    }
                     "shareCommunityCard" -> {
                         val args = call.arguments as? Map<*, *>
                         if (args == null) {
@@ -60,6 +63,31 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    private fun availableShareTargets(): List<String> {
+        val targets = mutableListOf<String>()
+        if (isAnyPackageInstalled(listOf("com.instagram.android"))) {
+            targets.add("instagram_stories")
+            targets.add("instagram_feed")
+        }
+        if (isAnyPackageInstalled(listOf("com.whatsapp", "com.whatsapp.w4b"))) {
+            targets.add("whatsapp")
+        }
+        if (isAnyPackageInstalled(listOf("org.telegram.messenger", "org.thunderdog.challegram"))) {
+            targets.add("telegram")
+        }
+        if (isAnyPackageInstalled(listOf("com.facebook.katana"))) {
+            targets.add("facebook")
+        }
+        if (isAnyPackageInstalled(listOf("com.facebook.orca"))) {
+            targets.add("messenger")
+        }
+        if (isAnyPackageInstalled(listOf("com.twitter.android"))) {
+            targets.add("twitter")
+        }
+        targets.add("more")
+        return targets
     }
 
     private fun shareCommunityCard(
@@ -154,6 +182,10 @@ class MainActivity : FlutterActivity() {
         } catch (e: SecurityException) {
             mapOf("success" to false, "error" to "security_exception", "package" to packageName)
         }
+    }
+
+    private fun isAnyPackageInstalled(packages: List<String>): Boolean {
+        return packages.any { isPackageInstalled(it) }
     }
 
     private fun isPackageInstalled(packageName: String): Boolean {
