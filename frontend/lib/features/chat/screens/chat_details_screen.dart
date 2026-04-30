@@ -43,6 +43,8 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
   String? _callerRole;
   bool _isAnnouncementOnly = false;
   bool _isReadOnly = false;
+  bool _isMuted = false;
+  bool _isTogglingMute = false;
 
   @override
   void initState() {
@@ -81,7 +83,7 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
       }
 
       // Carregar membros (limitado a 24 para o grid)
-      final membersRes = await SupabaseService.table('chat_members')
+       final membersRes = await SupabaseService.table('chat_members')
           .select(
               '*, profiles!chat_members_user_id_fkey(id, nickname, icon_url)')
           .eq('thread_id', widget.threadId)
@@ -89,7 +91,16 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
           .limit(24);
       final members =
           List<Map<String, dynamic>>.from(membersRes as List? ?? []);
-
+      // Carregar is_muted do usuário atual
+      bool isMuted = false;
+      if (userId != null) {
+        final myMember = await SupabaseService.table('chat_members')
+            .select('is_muted')
+            .eq('thread_id', widget.threadId)
+            .eq('user_id', userId)
+            .maybeSingle();
+        isMuted = myMember?['is_muted'] as bool? ?? false;
+      }
       if (mounted) {
         setState(() {
           _threadInfo = threadInfo;
@@ -98,6 +109,7 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
           _isAnnouncementOnly =
               threadInfo['is_announcement_only'] as bool? ?? false;
           _isReadOnly = threadInfo['is_read_only'] as bool? ?? false;
+          _isMuted = isMuted;
           _isLoading = false;
         });
       }
@@ -298,6 +310,26 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
       }
     } catch (e) {
       debugPrint('[ChatDetails] toggle read-only: $e');
+    }
+  }
+
+  Future<void> _toggleMute(bool muted) async {
+    if (_isTogglingMute) return;
+    setState(() => _isTogglingMute = true);
+    try {
+      await SupabaseService.rpc('toggle_chat_mute', params: {
+        'p_thread_id': widget.threadId,
+        'p_muted': muted,
+      });
+      if (mounted) {
+        setState(() {
+          _isMuted = muted;
+          _isTogglingMute = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('[ChatDetails] toggle mute: $e');
+      if (mounted) setState(() => _isTogglingMute = false);
     }
   }
 
@@ -649,17 +681,7 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
 
                   // ── Notificações ──────────────────────────────────────────
                   _sectionLabel(r, 'Notificações'),
-                  _settingsTile(r, Icons.notifications_rounded,
-                      s.notifications, () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content:
-                            Text(s.notificationSettingsComingSoon),
-                        backgroundColor: theme.accentPrimary,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }),
+                  _muteTile(r, theme),
                   SizedBox(height: r.s(8)),
 
                   // ── Moderação (host + público) ────────────────────────────
@@ -873,6 +895,78 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _muteTile(Responsive r, dynamic theme) {
+    return GestureDetector(
+      onTap: _isTogglingMute ? null : () => _toggleMute(!_isMuted),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: r.s(12)),
+        decoration: BoxDecoration(
+          border: Border(
+              bottom: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.05))),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              _isMuted
+                  ? Icons.notifications_off_rounded
+                  : Icons.notifications_active_rounded,
+              color: _isMuted
+                  ? Colors.grey[600]!
+                  : Colors.grey[400]!,
+              size: r.s(20),
+            ),
+            SizedBox(width: r.s(12)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _isMuted
+                        ? 'Notificações silenciadas'
+                        : 'Silenciar notificações',
+                    style: TextStyle(
+                      color: _isMuted
+                          ? Colors.grey[600]!
+                          : theme.textPrimary,
+                      fontSize: r.fs(14),
+                    ),
+                  ),
+                  Text(
+                    _isMuted
+                        ? 'Toque para reativar'
+                        : 'Desativar notificações deste chat',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: r.fs(11),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _isTogglingMute
+                ? SizedBox(
+                    width: r.s(20),
+                    height: r.s(20),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: theme.accentPrimary,
+                    ),
+                  )
+                : Switch(
+                    value: _isMuted,
+                    onChanged: (val) => _toggleMute(val),
+                    activeColor: theme.accentPrimary,
+                    inactiveThumbColor: Colors.grey[600],
+                    inactiveTrackColor: Colors.grey[800],
+                  ),
+          ],
+        ),
+      ),
     );
   }
 
