@@ -796,8 +796,11 @@ class _PostCardState extends ConsumerState<PostCard>
   Widget _buildInlineMedia(Responsive r) {
     final urls = _post.mediaUrls;
 
-    // Apenas 1 ou exatamente 3 imagens são exibidas
-    if (urls.length != 1 && urls.length != 3) return const SizedBox.shrink();
+    // Regra de exibição:
+    //   0 imagens       → nada
+    //   1–2 imagens     → 1 square (só a primeira)
+    //   3+ imagens     → TPL com as 3 primeiras
+    if (urls.isEmpty) return const SizedBox.shrink();
 
     Widget buildImg(String url, {BorderRadius? radius}) {
       return ClipRRect(
@@ -819,8 +822,8 @@ class _PostCardState extends ConsumerState<PostCard>
 
     Widget mediaWidget;
 
-    if (urls.length == 1) {
-      // ─ 1 imagem: square simples
+    if (urls.length < 3) {
+      // ─ 1 ou 2 imagens: exibe apenas a primeira como square
       mediaWidget = AspectRatio(
         aspectRatio: 1.0,
         child: buildImg(urls[0], radius: BorderRadius.circular(r.s(10))),

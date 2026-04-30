@@ -2212,10 +2212,11 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       if (cover != null && cover.isNotEmpty) imageUrls.add(cover);
     }
 
-    // Apenas 1 ou exatamente 3 imagens são exibidas inline.
-    // Qualquer outra quantidade (2, 4, 5...) não exibe nada.
+    // Regra de exibição:
+    //   0 imagens       → nada
+    //   1–2 imagens     → 1 square (só a primeira)
+    //   3+ imagens     → TPL com as 3 primeiras
     if (imageUrls.isEmpty) return const SizedBox.shrink();
-    if (imageUrls.length != 1 && imageUrls.length != 3) return const SizedBox.shrink();
 
     // Altura do layout
     final double blockH = r.s(200);
@@ -2239,19 +2240,19 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
 
     Widget mediaWidget;
 
-    if (imageUrls.length == 1) {
-      // ─ 1 imagem: square simples
+    if (imageUrls.length < 3) {
+      // ─ 1 ou 2 imagens: exibe apenas a primeira como square
       mediaWidget = AspectRatio(
         aspectRatio: 1.0,
         child: buildImg(imageUrls[0],
             radius: BorderRadius.circular(r.s(10))),
       );
     } else {
-      // ─ Exatamente 3 imagens: layout TPL (1 grande à esquerda + 2 menores à direita)
+      // ─ 3+ imagens: layout TPL com as 3 primeiras (1 grande à esquerda + 2 menores à direita)
       final String img1 = imageUrls[0];
       final String img2 = imageUrls[1];
       final String img3 = imageUrls[2];
-      const int extra = 0; // nunca haverá +N pois só chegamos aqui com 3 exatas
+      const int extra = 0; // sem overlay +N: sempre usamos as 3 primeiras
 
       mediaWidget = SizedBox(
         height: blockH,
