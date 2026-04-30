@@ -1982,54 +1982,6 @@ final image = _pickedFiles_image.first.file;
       ),
     );
   }
-}
-
-// =============================================================================
-// BOTÃO DA BARRA INFERIOR
-// =============================================================================
-class _BottomBarButton extends ConsumerWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final Color? color;
-
-  const _BottomBarButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final r = context.r;
-    final effectiveColor = color ?? Colors.grey[600]!;
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: r.s(10)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: r.s(22), color: effectiveColor),
-              SizedBox(height: r.s(3)),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: r.fs(10),
-                  color: effectiveColor,
-                  fontWeight: FontWeight.w500,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   // ═══════════════════════════════════════════════════════════════════════════
   // CONTAINER DE REAÇÕES
   // ═══════════════════════════════════════════════════════════════════════════
@@ -2128,6 +2080,56 @@ class _BottomBarButton extends ConsumerWidget {
       builder: (ctx) => _LikersSheet(postId: postId),
     );
   }
+
+}
+
+// =============================================================================
+// BOTÃO DA BARRA INFERIOR
+// =============================================================================
+class _BottomBarButton extends ConsumerWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color? color;
+
+  const _BottomBarButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final r = context.r;
+    final effectiveColor = color ?? Colors.grey[600]!;
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: r.s(10)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: r.s(22), color: effectiveColor),
+              SizedBox(height: r.s(3)),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: r.fs(10),
+                  color: effectiveColor,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
 }
 
 // =============================================================================
