@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/services/supabase_service.dart';
@@ -9,6 +12,7 @@ import 'package:amino_clone/core/providers/nexus_theme_provider.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/cache_service.dart';
+import '../../../core/utils/constants.dart';
 import '../../../core/utils/responsive.dart';
 
 /// Tela de Configurações Gerais — Hub central para todas as configurações.
@@ -472,6 +476,186 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     emailCtrl.dispose();
   }
 
+  // ── Bug Report via Discord Webhook ────────────────────────────────────────
+  Future<void> _sendBugReport(String description) async {
+    final user = SupabaseService.client.auth.currentUser;
+    final userId = user?.id ?? 'desconhecido';
+    final userEmail = user?.email ?? 'sem e-mail';
+    final nickname = _profile?['nickname'] as String? ?? 'sem nickname';
+    final now = DateTime.now().toUtc();
+    final timestamp = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')} UTC';
+
+    final payload = jsonEncode({
+      'embeds': [
+        {
+          'title': '🐛 Novo Bug Report',
+          'color': 0xE74C3C,
+          'fields': [
+            {
+              'name': '📝 Descrição',
+              'value': description.length > 1024 ? description.substring(0, 1021) + '...' : description,
+              'inline': false,
+            },
+            {
+              'name': '👤 Usuário',
+              'value': '$nickname ($userEmail)',
+              'inline': true,
+            },
+            {
+              'name': '🆔 User ID',
+              'value': userId,
+              'inline': true,
+            },
+            {
+              'name': '🕐 Data/Hora',
+              'value': timestamp,
+              'inline': false,
+            },
+          ],
+          'footer': {
+            'text': 'NexusHub Bug Report',
+          },
+          'timestamp': now.toIso8601String(),
+        },
+      ],
+    });
+
+    final response = await http.post(
+      Uri.parse(AppConstants.discordBugReportWebhook),
+      headers: {'Content-Type': 'application/json'},
+      body: payload,
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('Discord webhook retornou ${response.statusCode}');
+    }
+  }
+
+  void _showBugReportDialog(BuildContext context, AppStrings s, Responsive r) {
+    final bugCtrl = TextEditingController();
+    bool isSending = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: context.surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(r.s(16)),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.bug_report_rounded, color: context.nexusTheme.error),
+              SizedBox(width: r.s(8)),
+              Text(
+                s.reportBug,
+                style: TextStyle(
+                  color: context.nexusTheme.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Descreva o problema com o máximo de detalhes possível.',
+                style: TextStyle(
+                  color: context.nexusTheme.textSecondary,
+                  fontSize: r.fs(13),
+                ),
+              ),
+              SizedBox(height: r.s(12)),
+              TextField(
+                controller: bugCtrl,
+                maxLines: 6,
+                maxLength: 1000,
+                enabled: !isSending,
+                style: TextStyle(
+                  color: context.nexusTheme.textPrimary,
+                  fontSize: r.fs(14),
+                ),
+                decoration: InputDecoration(
+                  hintText: s.describeBugHint,
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  filled: true,
+                  fillColor: context.nexusTheme.backgroundPrimary,
+                  counterStyle: TextStyle(color: context.nexusTheme.textSecondary),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(r.s(12)),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: isSending ? null : () => Navigator.pop(ctx),
+              child: Text(s.cancel),
+            ),
+            ElevatedButton.icon(
+              onPressed: isSending
+                  ? null
+                  : () async {
+                      final text = bugCtrl.text.trim();
+                      if (text.isEmpty) return;
+
+                      setDialogState(() => isSending = true);
+
+                      try {
+                        await _sendBugReport(text);
+                        if (mounted) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Bug reportado! Obrigado pelo feedback.'),
+                              backgroundColor: context.nexusTheme.success,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        setDialogState(() => isSending = false);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(s.anErrorOccurredTryAgain),
+                              backgroundColor: context.nexusTheme.error,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      }
+                    },
+              icon: isSending
+                  ? SizedBox(
+                      width: r.s(14),
+                      height: r.s(14),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(Icons.send_rounded, size: r.s(16)),
+              label: Text(isSending ? 'Enviando...' : s.send),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.nexusTheme.accentPrimary,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor:
+                    context.nexusTheme.accentPrimary.withValues(alpha: 0.5),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    bugCtrl.dispose();
+  }
+
   Future<void> _loadProfile() async {
     try {
       final userId = SupabaseService.currentUserId;
@@ -882,56 +1066,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     _SettingsItem(
                       icon: Icons.bug_report_rounded,
                       title: s.reportBug,
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (ctx) {
-                            final bugCtrl = TextEditingController();
-                            return AlertDialog(
-                              backgroundColor: context.surfaceColor,
-                              title: Text(s.reportBug,
-                                  style: TextStyle(color: context.nexusTheme.textPrimary)),
-                              content: TextField(
-                                controller: bugCtrl,
-                                maxLines: 5,
-                                style: TextStyle(color: context.nexusTheme.textPrimary),
-                                decoration: InputDecoration(
-                                  hintText: s.describeBugHint,
-                                  hintStyle: TextStyle(color: Colors.grey[600]),
-                                  filled: true,
-                                  fillColor: context.nexusTheme.backgroundPrimary,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(r.s(12)),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  child: Text(s.cancel),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.pop(ctx);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                            'Bug reportado! Obrigado pelo feedback.'),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: context.nexusTheme.accentPrimary,
-                                  ),
-                                  child: Text(s.send),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
+                      onTap: () => _showBugReportDialog(context, s, r),
                     ),
                     _SettingsItem(
                       icon: Icons.privacy_tip_rounded,

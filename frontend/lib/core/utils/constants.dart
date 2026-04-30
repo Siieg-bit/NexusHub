@@ -85,4 +85,10 @@ class AppConstants {
   // ====================================================================
   static const String deepLinkScheme = 'nexushub';
   static const String deepLinkHost = 'app.nexushub.io';
+
+  // ====================================================================
+  // WEBHOOKS
+  // ====================================================================
+  static const String discordBugReportWebhook =
+      'https://discord.com/api/webhooks/1499274845739814934/L1eV_WkUi7FZZ3ibZ74LRAKmg0GkTKyQlgmm8gATNXezLq4-jc5aOto_bRQBOr9zinqw';
 }
