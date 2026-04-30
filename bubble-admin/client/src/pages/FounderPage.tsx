@@ -72,6 +72,58 @@ function TeamRoleBadge({ role }: { role: TeamRole }) {
 }
 
 // ─── Modal de Atribuição de Cargo ─────────────────────────────────────────────
+const ROLE_PERMISSIONS: Record<NonNullable<TeamRole>, { label: string; allowed: boolean }[]> = {
+  founder: [
+    { label: "Acesso total e irrestrito à plataforma", allowed: true },
+    { label: "Gerenciar todos os cargos da equipe", allowed: true },
+    { label: "Configurar plataforma e segurança", allowed: true },
+    { label: "Visualizar logs de segurança", allowed: true },
+    { label: "Ser gerenciado por outro membro", allowed: false },
+  ],
+  co_founder: [
+    { label: "Gerenciar Team Admin e abaixo", allowed: true },
+    { label: "Acesso ao painel de segurança", allowed: true },
+    { label: "Configurar plataforma", allowed: true },
+    { label: "Gerenciar o Founder", allowed: false },
+  ],
+  team_admin: [
+    { label: "Gerenciar moderadores e suporte", allowed: true },
+    { label: "Visualizar estatísticas da plataforma", allowed: true },
+    { label: "Moderar qualquer comunidade", allowed: true },
+    { label: "Gerenciar Co-Founder ou Founder", allowed: false },
+  ],
+  trust_safety: [
+    { label: "Moderação de conteúdo sensível", allowed: true },
+    { label: "Revisar denúncias de segurança", allowed: true },
+    { label: "Suspender contas por violação", allowed: true },
+    { label: "Alterar configurações da plataforma", allowed: false },
+  ],
+  team_mod: [
+    { label: "Moderar qualquer comunidade", allowed: true },
+    { label: "Banir/silenciar membros globalmente", allowed: true },
+    { label: "Revisar denúncias de conteúdo", allowed: true },
+    { label: "Acessar configurações administrativas", allowed: false },
+  ],
+  support: [
+    { label: "Responder tickets de suporte", allowed: true },
+    { label: "Visualizar dados de usuários", allowed: true },
+    { label: "Poder de moderação", allowed: false },
+    { label: "Alterar configurações da plataforma", allowed: false },
+  ],
+  community_manager: [
+    { label: "Gerenciar comunidades da plataforma", allowed: true },
+    { label: "Criar e editar conteúdo oficial", allowed: true },
+    { label: "Moderar membros individualmente", allowed: false },
+    { label: "Acessar logs de segurança", allowed: false },
+  ],
+  bug_bounty: [
+    { label: "Reportar bugs e vulnerabilidades", allowed: true },
+    { label: "Acesso a ambiente de testes", allowed: true },
+    { label: "Moderar usuários ou comunidades", allowed: false },
+    { label: "Acessar dados sensíveis", allowed: false },
+  ],
+};
+
 function AssignRoleModal({
   member, callerRole, onClose, onSuccess,
 }: {
@@ -79,11 +131,15 @@ function AssignRoleModal({
 }) {
   const [selectedRole, setSelectedRole] = useState<TeamRole>(member.team_role);
   const [loading, setLoading] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const displayName = member.nickname || member.amino_id || member.id.slice(0, 8);
 
   const availableRoles = Object.entries(TEAM_ROLE_CONFIG)
     .filter(([, cfg]) => cfg.rank < getTeamRoleRank(callerRole))
     .sort((a, b) => b[1].rank - a[1].rank);
+
+  const selectedCfg = selectedRole ? TEAM_ROLE_CONFIG[selectedRole] : null;
+  const selectedPerms = selectedRole ? ROLE_PERMISSIONS[selectedRole] : [];
 
   async function handleSave() {
     if (!canManageRole(callerRole, member.team_role) && member.team_role !== null) {
@@ -127,79 +183,145 @@ function AssignRoleModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)" }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(10px)" }}>
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="w-full max-w-md mx-4 rounded-2xl overflow-hidden"
-        style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.08)" }}
+        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 8 }}
+        className="w-full max-w-lg rounded-2xl overflow-hidden flex flex-col"
+        style={{ background: "#0f1117", border: "1px solid rgba(255,255,255,0.1)", maxHeight: "90vh" }}
       >
-        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="flex items-center gap-3">
             {member.icon_url ? (
-              <img src={member.icon_url} alt="" className="w-9 h-9 rounded-full object-cover" style={{ border: `1px solid ${member.team_role ? TEAM_ROLE_CONFIG[member.team_role].borderColor : "rgba(255,255,255,0.1)"}` }} />
+              <img src={member.icon_url} alt="" className="w-10 h-10 rounded-full object-cover" style={{ border: `2px solid ${member.team_role ? TEAM_ROLE_CONFIG[member.team_role].borderColor : "rgba(255,255,255,0.1)"}` }} />
             ) : (
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: "rgba(139,92,246,0.2)", color: "#A78BFA" }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: "rgba(139,92,246,0.2)", color: "#A78BFA", border: "2px solid rgba(139,92,246,0.3)" }}>
                 {(member.nickname || "?")[0].toUpperCase()}
               </div>
             )}
             <div>
-              <p className="text-[13px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif", color: "rgba(255,255,255,0.9)" }}>{displayName}</p>
-              <p className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>@{member.amino_id || "—"}</p>
+              <p className="text-[14px] font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif", color: "rgba(255,255,255,0.95)" }}>{displayName}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>@{member.amino_id || "—"}</p>
+                <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.15)" }}>·</span>
+                <TeamRoleBadge role={member.team_role} />
+              </div>
             </div>
           </div>
-          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)" }}>
-            <X size={13} />
+          <button onClick={onClose} className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:bg-white/10" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <X size={14} />
           </button>
         </div>
-        <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-          <p className="text-[10px] font-mono mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>CARGO ATUAL</p>
-          <TeamRoleBadge role={member.team_role} />
-        </div>
-        <div className="px-5 py-4">
-          <p className="text-[10px] font-mono mb-3" style={{ color: "rgba(255,255,255,0.3)" }}>ATRIBUIR CARGO</p>
-          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-            {availableRoles.map(([roleKey, cfg]) => (
-              <button
-                key={roleKey}
-                onClick={() => setSelectedRole(roleKey as TeamRole)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150"
-                style={{
-                  background: selectedRole === roleKey ? `${cfg.color}10` : "rgba(255,255,255,0.02)",
-                  border: `1px solid ${selectedRole === roleKey ? `${cfg.borderColor}40` : "rgba(255,255,255,0.06)"}`,
-                }}
-              >
-                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: "transparent", border: `1.5px solid ${cfg.borderColor}` }} />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[12px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif", color: selectedRole === roleKey ? cfg.color : "rgba(255,255,255,0.8)" }}>{cfg.label}</p>
-                  <p className="text-[10px] font-mono truncate mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{cfg.description}</p>
-                </div>
-                {selectedRole === roleKey && <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: cfg.color }} />}
-              </button>
-            ))}
+
+        {/* Conteúdo scrollável */}
+        <div className="overflow-y-auto flex-1">
+          {/* Seleção de cargo */}
+          <div className="px-5 pt-4 pb-2">
+            <p className="text-[10px] font-mono tracking-widest uppercase mb-3" style={{ color: "rgba(255,255,255,0.25)" }}>SELECIONAR NOVO CARGO</p>
+            <div className="space-y-1.5">
+              {availableRoles.map(([roleKey, cfg]) => {
+                const isSelected = selectedRole === roleKey;
+                const isCurrent = member.team_role === roleKey;
+                return (
+                  <button
+                    key={roleKey}
+                    onClick={() => setSelectedRole(roleKey as TeamRole)}
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all duration-150"
+                    style={{
+                      background: isSelected ? `${cfg.color}12` : "rgba(255,255,255,0.02)",
+                      border: `1px solid ${isSelected ? `${cfg.borderColor}50` : "rgba(255,255,255,0.05)"}`,
+                    }}
+                  >
+                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: isSelected ? cfg.color : "transparent", border: `1.5px solid ${cfg.borderColor}` }} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-[12px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif", color: isSelected ? cfg.color : "rgba(255,255,255,0.75)" }}>{cfg.label}</p>
+                        {isCurrent && (
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)" }}>ATUAL</span>
+                        )}
+                        <span className="text-[9px] font-mono ml-auto" style={{ color: "rgba(255,255,255,0.2)" }}>rank {cfg.rank}</span>
+                      </div>
+                      <p className="text-[10px] font-mono mt-0.5 truncate" style={{ color: "rgba(255,255,255,0.3)" }}>{cfg.description}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          {/* Preview de permissões do cargo selecionado */}
+          {selectedCfg && selectedPerms.length > 0 && (
+            <div className="px-5 py-3 mx-5 mb-4 rounded-xl" style={{ background: `${selectedCfg.color}08`, border: `1px solid ${selectedCfg.borderColor}20` }}>
+              <p className="text-[10px] font-mono tracking-widest uppercase mb-2.5" style={{ color: selectedCfg.color, opacity: 0.7 }}>PERMISSÕES — {selectedCfg.label.toUpperCase()}</p>
+              <div className="space-y-1.5">
+                {selectedPerms.map((perm, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    {perm.allowed
+                      ? <CheckCircle2 size={11} style={{ color: "#22C55E", flexShrink: 0 }} />
+                      : <XCircle size={11} style={{ color: "rgba(239,68,68,0.6)", flexShrink: 0 }} />
+                    }
+                    <p className="text-[11px] font-mono" style={{ color: perm.allowed ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.25)" }}>{perm.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-        <div className="flex gap-2 px-5 pb-5">
+
+        {/* Ações */}
+        <div className="flex gap-2 px-5 py-4 flex-shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           {member.team_role && canManageRole(callerRole, member.team_role) && (
-            <button onClick={handleRemove} disabled={loading} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold" style={{ background: "rgba(239,68,68,0.08)", color: "#FCA5A5", border: "1px solid rgba(239,68,68,0.2)" }}>
-              <Trash2 size={12} /> Remover
-            </button>
+            confirmRemove ? (
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => setConfirmRemove(false)}
+                  className="px-3 py-2 rounded-xl text-[11px] font-semibold"
+                  style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)" }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleRemove}
+                  disabled={loading}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold"
+                  style={{ background: "rgba(239,68,68,0.15)", color: "#FCA5A5", border: "1px solid rgba(239,68,68,0.3)" }}
+                >
+                  {loading ? <RefreshCw size={11} className="animate-spin" /> : <UserX size={11} />}
+                  Confirmar remoção
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmRemove(true)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold"
+                style={{ background: "rgba(239,68,68,0.06)", color: "rgba(239,68,68,0.7)", border: "1px solid rgba(239,68,68,0.15)" }}
+              >
+                <UserX size={11} /> Remover cargo
+              </button>
+            )
           )}
           <button
             onClick={handleSave}
             disabled={loading || selectedRole === member.team_role}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold"
-            style={{ background: "rgba(139,92,246,0.15)", color: "#A78BFA", border: "1px solid rgba(139,92,246,0.25)", opacity: selectedRole === member.team_role ? 0.4 : 1 }}
+            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all"
+            style={{
+              background: selectedRole !== member.team_role ? "rgba(139,92,246,0.2)" : "rgba(255,255,255,0.04)",
+              color: selectedRole !== member.team_role ? "#A78BFA" : "rgba(255,255,255,0.2)",
+              border: `1px solid ${selectedRole !== member.team_role ? "rgba(139,92,246,0.35)" : "rgba(255,255,255,0.06)"}`,
+            }}
           >
-            {loading ? <RefreshCw size={12} className="animate-spin" /> : <Save size={12} />}
-            Salvar
+            {loading ? <RefreshCw size={12} className="animate-spin" /> : <Check size={12} />}
+            {selectedRole === member.team_role ? "Nenhuma alteração" : `Aplicar — ${selectedRole ? TEAM_ROLE_CONFIG[selectedRole].label : "Sem cargo"}`}
           </button>
         </div>
       </motion.div>
     </div>
   );
 }
+
+const TEAM_ROLE_ORDER: TeamRole[] = ["founder", "co_founder", "team_admin", "trust_safety", "team_mod", "support", "community_manager", "bug_bounty"];
 
 // ─── Seção: Equipe ────────────────────────────────────────────────────────────
 function TeamSection({ callerRole }: { callerRole: TeamRole }) {
@@ -210,6 +332,7 @@ function TeamSection({ callerRole }: { callerRole: TeamRole }) {
   const [addSearch, setAddSearch] = useState("");
   const [addResults, setAddResults] = useState<TeamMember[]>([]);
   const [addLoading, setAddLoading] = useState(false);
+  const [quickLoading, setQuickLoading] = useState<string | null>(null);
 
   const loadMembers = useCallback(async () => {
     setLoading(true);
@@ -230,26 +353,75 @@ function TeamSection({ callerRole }: { callerRole: TeamRole }) {
     if (!addSearch.trim()) return;
     setAddLoading(true);
     try {
-      const { data } = await supabase.rpc("admin_search_users", { p_query: addSearch, p_limit: 5 });
-      setAddResults((data as TeamMember[]) || []);
+      const { data } = await supabase.rpc("admin_search_users_for_team", { p_query: addSearch });
+      const results = Array.isArray(data) ? data : (data ? [data] : []);
+      setAddResults(results as TeamMember[]);
+      if (results.length === 0) toast.info("Nenhum usuário encontrado.");
+    } catch {
+      toast.error("Erro na busca");
     } finally {
       setAddLoading(false);
     }
   }
 
-  const filtered = members.filter(m =>
-    !search ||
-    (m.nickname || "").toLowerCase().includes(search.toLowerCase()) ||
-    (m.amino_id || "").toLowerCase().includes(search.toLowerCase())
-  );
+  // Promover: ir para o próximo cargo na hierarquia
+  async function handlePromote(member: TeamMember) {
+    const currentIdx = TEAM_ROLE_ORDER.indexOf(member.team_role as NonNullable<TeamRole>);
+    if (currentIdx <= 0) return; // já é o mais alto possível
+    const nextRole = TEAM_ROLE_ORDER[currentIdx - 1];
+    if (!canManageRole(callerRole, nextRole)) {
+      toast.error("Você não pode promover para um cargo igual ou superior ao seu.");
+      return;
+    }
+    setQuickLoading(member.id + "-up");
+    try {
+      const { error } = await supabase.rpc("admin_set_team_role", { p_target_user_id: member.id, p_role: nextRole });
+      if (error) throw error;
+      toast.success(`${member.nickname || member.amino_id} promovido para ${TEAM_ROLE_CONFIG[nextRole].label}`);
+      loadMembers();
+    } catch (err: unknown) {
+      toast.error(`Erro: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setQuickLoading(null);
+    }
+  }
+
+  // Rebaixar: ir para o próximo cargo abaixo na hierarquia
+  async function handleDemote(member: TeamMember) {
+    const currentIdx = TEAM_ROLE_ORDER.indexOf(member.team_role as NonNullable<TeamRole>);
+    if (currentIdx < 0 || currentIdx >= TEAM_ROLE_ORDER.length - 1) return;
+    const prevRole = TEAM_ROLE_ORDER[currentIdx + 1];
+    setQuickLoading(member.id + "-down");
+    try {
+      const { error } = await supabase.rpc("admin_set_team_role", { p_target_user_id: member.id, p_role: prevRole });
+      if (error) throw error;
+      toast.success(`${member.nickname || member.amino_id} rebaixado para ${TEAM_ROLE_CONFIG[prevRole].label}`);
+      loadMembers();
+    } catch (err: unknown) {
+      toast.error(`Erro: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setQuickLoading(null);
+    }
+  }
+
+  const filtered = [...members]
+    .sort((a, b) => b.team_rank - a.team_rank)
+    .filter(m =>
+      !search ||
+      (m.nickname || "").toLowerCase().includes(search.toLowerCase()) ||
+      (m.amino_id || "").toLowerCase().includes(search.toLowerCase())
+    );
 
   return (
     <div className="space-y-5">
       {/* Buscar e adicionar */}
       <div className="p-4 rounded-2xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-        <p className="text-[10px] font-mono tracking-widest uppercase mb-3" style={{ color: "rgba(255,255,255,0.3)" }}>Adicionar membro à equipe</p>
+        <div className="flex items-center gap-2 mb-3">
+          <UserCheck size={13} style={{ color: "rgba(139,92,246,0.7)" }} />
+          <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>Adicionar membro à equipe</p>
+        </div>
         <div className="flex gap-2">
-          <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <div className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <Search size={13} style={{ color: "rgba(255,255,255,0.3)" }} />
             <input
               value={addSearch}
@@ -258,12 +430,17 @@ function TeamSection({ callerRole }: { callerRole: TeamRole }) {
               placeholder="Buscar por @amino_id ou nickname..."
               className="flex-1 bg-transparent text-[12px] text-white placeholder-white/25 outline-none"
             />
+            {addSearch && (
+              <button onClick={() => { setAddSearch(""); setAddResults([]); }} style={{ color: "rgba(255,255,255,0.2)" }}>
+                <X size={11} />
+              </button>
+            )}
           </div>
           <button
             onClick={handleAddSearch}
-            disabled={addLoading}
-            className="px-4 py-2 rounded-xl text-[12px] font-semibold flex items-center gap-1.5"
-            style={{ background: "rgba(139,92,246,0.15)", color: "#A78BFA", border: "1px solid rgba(139,92,246,0.25)" }}
+            disabled={addLoading || !addSearch.trim()}
+            className="px-4 py-2 rounded-xl text-[12px] font-semibold flex items-center gap-1.5 transition-all"
+            style={{ background: "rgba(139,92,246,0.15)", color: "#A78BFA", border: "1px solid rgba(139,92,246,0.25)", opacity: !addSearch.trim() ? 0.5 : 1 }}
           >
             {addLoading ? <RefreshCw size={12} className="animate-spin" /> : <Search size={12} />}
             Buscar
@@ -271,30 +448,33 @@ function TeamSection({ callerRole }: { callerRole: TeamRole }) {
         </div>
         {addResults.length > 0 && (
           <div className="mt-3 space-y-1.5">
-            {addResults.map(u => (
-              <div key={u.id} className="flex items-center gap-3 px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                {u.icon_url ? (
-                  <img src={u.icon_url} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
-                ) : (
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ background: "rgba(139,92,246,0.2)", color: "#A78BFA" }}>
-                    {(u.nickname || "?")[0].toUpperCase()}
+            {addResults.map(u => {
+              const uCfg = u.team_role ? TEAM_ROLE_CONFIG[u.team_role] : null;
+              return (
+                <div key={u.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${uCfg ? `${uCfg.borderColor}20` : "rgba(255,255,255,0.06)"}` }}>
+                  {u.icon_url ? (
+                    <img src={u.icon_url} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" style={{ border: `1.5px solid ${uCfg?.borderColor ?? "rgba(255,255,255,0.1)"}` }} />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ background: "rgba(139,92,246,0.2)", color: "#A78BFA" }}>
+                      {(u.nickname || "?")[0].toUpperCase()}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-semibold text-white truncate">{u.nickname || u.amino_id}</p>
+                    <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>@{u.amino_id}</p>
                   </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-semibold text-white truncate">{u.nickname || u.amino_id}</p>
-                  <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>@{u.amino_id}</p>
+                  <TeamRoleBadge role={u.team_role} />
+                  <button
+                    onClick={() => { setEditTarget(u); setAddResults([]); setAddSearch(""); }}
+                    className="px-3 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all"
+                    style={{ background: "rgba(139,92,246,0.15)", color: "#A78BFA", border: "1px solid rgba(139,92,246,0.2)" }}
+                  >
+                    <Edit3 size={10} />
+                    {u.team_role ? "Editar cargo" : "Atribuir cargo"}
+                  </button>
                 </div>
-                {u.team_role ? <TeamRoleBadge role={u.team_role} /> : null}
-                <button
-                  onClick={() => { setEditTarget(u); setAddResults([]); setAddSearch(""); }}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1"
-                  style={{ background: "rgba(139,92,246,0.15)", color: "#A78BFA", border: "1px solid rgba(139,92,246,0.2)" }}
-                >
-                  <Edit3 size={10} />
-                  {u.team_role ? "Editar" : "Atribuir"}
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -330,6 +510,10 @@ function TeamSection({ callerRole }: { callerRole: TeamRole }) {
             {filtered.map((member, i) => {
               const cfg = member.team_role ? TEAM_ROLE_CONFIG[member.team_role] : null;
               const canEdit = canManageRole(callerRole, member.team_role);
+              const currentIdx = TEAM_ROLE_ORDER.indexOf(member.team_role as NonNullable<TeamRole>);
+              const canPromote = canEdit && currentIdx > 0 && canManageRole(callerRole, TEAM_ROLE_ORDER[currentIdx - 1]);
+              const canDemote = canEdit && currentIdx >= 0 && currentIdx < TEAM_ROLE_ORDER.length - 1;
+              const isQuickLoading = quickLoading === member.id + "-up" || quickLoading === member.id + "-down";
               return (
                 <motion.div
                   key={member.id}
@@ -337,12 +521,13 @@ function TeamSection({ callerRole }: { callerRole: TeamRole }) {
                   variants={fadeUp}
                   initial="hidden"
                   animate="show"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl group"
                   style={{
                     background: "rgba(255,255,255,0.02)",
-                    border: `1px solid ${cfg ? `${cfg.borderColor}20` : "rgba(255,255,255,0.05)"}`,
+                    border: `1px solid ${cfg ? `${cfg.borderColor}22` : "rgba(255,255,255,0.05)"}`,
                   }}
                 >
+                  {/* Avatar */}
                   <div className="relative flex-shrink-0">
                     {member.icon_url ? (
                       <img src={member.icon_url} alt="" className="w-9 h-9 rounded-full object-cover" style={{ border: `1.5px solid ${cfg?.borderColor ?? "rgba(255,255,255,0.1)"}` }} />
@@ -353,6 +538,8 @@ function TeamSection({ callerRole }: { callerRole: TeamRole }) {
                     )}
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full" style={{ background: cfg?.color ?? "rgba(255,255,255,0.2)", border: "1.5px solid #0d0f14" }} />
                   </div>
+
+                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-[13px] font-semibold text-white truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -364,14 +551,44 @@ function TeamSection({ callerRole }: { callerRole: TeamRole }) {
                       @{member.amino_id || "—"} · rank {member.team_rank}
                     </p>
                   </div>
+
+                  {/* Ações */}
                   {canEdit && (
-                    <button
-                      onClick={() => setEditTarget(member)}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
-                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}
-                    >
-                      <Edit3 size={12} />
-                    </button>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {/* Botão Promover */}
+                      {canPromote && (
+                        <button
+                          onClick={() => handlePromote(member)}
+                          disabled={isQuickLoading}
+                          title={`Promover para ${TEAM_ROLE_CONFIG[TEAM_ROLE_ORDER[currentIdx - 1]]?.label}`}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center transition-all hover:bg-green-500/10"
+                          style={{ border: "1px solid rgba(34,197,94,0.2)", color: quickLoading === member.id + "-up" ? "#22C55E" : "rgba(34,197,94,0.5)" }}
+                        >
+                          {quickLoading === member.id + "-up" ? <RefreshCw size={11} className="animate-spin" /> : <ChevronDown size={11} style={{ transform: "rotate(180deg)" }} />}
+                        </button>
+                      )}
+                      {/* Botão Rebaixar */}
+                      {canDemote && (
+                        <button
+                          onClick={() => handleDemote(member)}
+                          disabled={isQuickLoading}
+                          title={`Rebaixar para ${TEAM_ROLE_CONFIG[TEAM_ROLE_ORDER[currentIdx + 1]]?.label}`}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center transition-all hover:bg-orange-500/10"
+                          style={{ border: "1px solid rgba(249,115,22,0.2)", color: quickLoading === member.id + "-down" ? "#F97316" : "rgba(249,115,22,0.5)" }}
+                        >
+                          {quickLoading === member.id + "-down" ? <RefreshCw size={11} className="animate-spin" /> : <ChevronDown size={11} />}
+                        </button>
+                      )}
+                      {/* Botão Editar completo */}
+                      <button
+                        onClick={() => setEditTarget(member)}
+                        title="Editar cargo"
+                        className="w-7 h-7 rounded-lg flex items-center justify-center transition-all hover:bg-white/10"
+                        style={{ border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.35)" }}
+                      >
+                        <Edit3 size={11} />
+                      </button>
+                    </div>
                   )}
                 </motion.div>
               );
@@ -483,8 +700,6 @@ const COMMUNITY_ROLE_CONFIG = [
     moderatedBy: ["agent", "leader", "curator"],
   },
 ];
-
-const TEAM_ROLE_ORDER: TeamRole[] = ["founder", "co_founder", "team_admin", "trust_safety", "team_mod", "support", "community_manager", "bug_bounty"];
 
 function RolesSection({ isFounder }: { isFounder: boolean }) {
   const [activeView, setActiveView] = useState<"team" | "community" | "hierarchy">("team");
