@@ -222,6 +222,7 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
             builder: (_) => StoryViewerScreen(
               stories: stories,
               authorProfile: profile ?? {},
+              communityId: widget.communityId,
             ),
           ));
           // Ao fechar o viewer, re-verificar quais stories foram vistas
