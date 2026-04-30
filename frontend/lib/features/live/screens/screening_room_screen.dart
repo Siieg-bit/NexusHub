@@ -10,7 +10,11 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/mini_room_overlay.dart';
 import '../../../core/widgets/emoji_rain_overlay.dart';
 import '../../../core/services/haptic_service.dart';
+import 'package:go_router/go_router.dart';
 import '../../moderation/widgets/report_dialog.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../../core/models/message_model.dart';
+import '../../chat/widgets/chat_message_actions.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Sala de Projeção — sala de exibição coletiva de vídeos/streams.
@@ -66,6 +70,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
   bool _isHost = false;
   bool _isPlaying = false;
   bool _isLoading = true;
+  String? _communityId;
   bool _roomClosed = false;
   bool _webViewLoading = false;
   int _viewerCount = 0;
@@ -165,6 +170,15 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
         'status': 'connected',
         'last_heartbeat': DateTime.now().toIso8601String(),
       });
+
+      // Carregar community_id do thread para moderation
+      try {
+        final threadData = await SupabaseService.table('chat_threads')
+            .select('community_id')
+            .eq('id', widget.threadId)
+            .maybeSingle();
+        _communityId = threadData?['community_id'] as String?;
+      } catch (_) {}
 
       // Carregar perfil do usuário atual para exibir no chat interno
       try {
@@ -1598,12 +1612,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
         return GestureDetector(
           onLongPress: isMe || msgId == null
               ? null
-              : () => ReportDialog.show(
-                    context,
-                    entityId: msgId,
-                    entityType: 'message',
-                    communityId: null,
-                  ),
+              : () => _showMessageActions(msg),
           child: Padding(
           padding: EdgeInsets.only(bottom: r.s(6)),
           child: Row(
@@ -1677,6 +1686,127 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
         );
       },
     );
+  }
+
+  // ── Message Actions ────────────────────────────────────────────────────────
+
+  Future<void> _showMessageActions(Map<String, dynamic> msg) async {
+    final msgId = msg['id'] as String? ?? '';
+    final userId = msg['user_id'] as String? ?? '';
+    final username = msg['username'] as String? ?? 'Usuário';
+    final text = msg['text'] as String? ?? '';
+    final currentUser = ref.read(currentUserProvider);
+    final canModerate =
+        _isHost || (currentUser?.isTeamMember ?? false);
+
+    // Construir MessageModel temporário para o ChatMessageActionsSheet
+    final tempMessage = MessageModel(
+      id: msgId,
+      threadId: widget.threadId,
+      authorId: userId,
+      type: 'text',
+      content: text,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    final action = await ChatMessageActionsSheet.show(
+      context,
+      message: tempMessage,
+      onReaction: (_) {}, // reações não disponíveis na sala de projeção
+      canModerate: canModerate,
+    );
+    if (!mounted || action == null) return;
+
+    switch (action) {
+      case ChatMessageAction.reply:
+        // reply não disponível na sala de projeção
+        break;
+      case ChatMessageAction.copy:
+        Clipboard.setData(ClipboardData(text: text));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text('Mensagem copiada'),
+          backgroundColor: context.nexusTheme.accentPrimary,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ));
+        break;
+      case ChatMessageAction.edit:
+        break;
+      case ChatMessageAction.forward:
+        break;
+      case ChatMessageAction.pin:
+        break;
+      case ChatMessageAction.deleteForMe:
+        if (mounted) setState(() => _chatMessages.remove(msg));
+        break;
+      case ChatMessageAction.deleteForAll:
+        try {
+          await SupabaseService.rpc('delete_chat_message_for_all',
+              params: {'p_message_id': msgId});
+          if (mounted) setState(() => _chatMessages.remove(msg));
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: const Text('Erro ao apagar mensagem'),
+              backgroundColor: context.nexusTheme.error,
+              behavior: SnackBarBehavior.floating,
+            ));
+          }
+        }
+        break;
+      case ChatMessageAction.report:
+        if (mounted) {
+          await ReportDialog.show(
+            context,
+            communityId: _communityId,
+            targetMessageId: msgId,
+          );
+        }
+        break;
+      case ChatMessageAction.moderate:
+        if (!mounted) break;
+        final modAction = await ModerationQuickSheet.show(
+          context,
+          targetUserId: userId,
+          targetUserNickname: username,
+          messageId: msgId,
+          communityId: _communityId,
+        );
+        if (!mounted || modAction == null) break;
+        if (modAction == ModerationQuickAction.deleteMessage) {
+          try {
+            await SupabaseService.rpc('delete_chat_message_for_all',
+                params: {'p_message_id': msgId});
+            if (mounted) setState(() => _chatMessages.remove(msg));
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: const Text('Erro ao remover mensagem'),
+                backgroundColor: context.nexusTheme.error,
+                behavior: SnackBarBehavior.floating,
+              ));
+            }
+          }
+        } else if (_communityId != null) {
+          final actionId = switch (modAction) {
+            ModerationQuickAction.warn => 'warn',
+            ModerationQuickAction.mute => 'mute',
+            ModerationQuickAction.ban => 'ban',
+            _ => 'warn',
+          };
+          if (mounted) {
+            context.push(
+              '/community/$_communityId/mod-action',
+              extra: {
+                'targetUserId': userId,
+                'preselectedAction': actionId,
+              },
+            );
+          }
+        }
+        break;
+    }
   }
 
   Widget _buildChatInput() {

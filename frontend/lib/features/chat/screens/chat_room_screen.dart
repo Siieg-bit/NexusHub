@@ -2968,15 +2968,25 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   void _showMessageActions(MessageModel message) async {
     final s = getStrings();
+    final userId = SupabaseService.currentUserId;
+    final hostId = _threadInfo?['host_id'] as String?;
+    final coHosts = (_threadInfo?['co_hosts'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        [];
+    final currentUser = ref.read(currentUserProvider);
+    final canModerate = _callerRole == 'host' ||
+        _callerRole == 'co_host' ||
+        (userId != null && userId == hostId) ||
+        coHosts.contains(userId ?? '') ||
+        (currentUser?.isTeamMember ?? false);
     final action = await ChatMessageActionsSheet.show(
       context,
       message: message,
       onReaction: (emoji) => _addReaction(message.id, emoji),
-      hostId: _threadInfo?['host_id'] as String?,
-      coHostIds: (_threadInfo?['co_hosts'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
+      hostId: hostId,
+      coHostIds: coHosts,
+      canModerate: canModerate,
     );
 
     if (!mounted || action == null) return;
@@ -3064,6 +3074,61 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             communityId: _reportCommunityId,
             targetMessageId: message.id,
           );
+        }
+        break;
+      case ChatMessageAction.moderate:
+        if (!mounted) break;
+        final modCommunityId = _threadInfo?['community_id'] as String?;
+        final authorNickname =
+            message.author?.nickname ?? message.authorId ?? 'Usuário';
+        final modAction = await ModerationQuickSheet.show(
+          context,
+          targetUserId: message.authorId ?? '',
+          targetUserNickname: authorNickname,
+          messageId: message.id,
+          communityId: modCommunityId,
+        );
+        if (!mounted || modAction == null) break;
+        if (modAction == ModerationQuickAction.deleteMessage) {
+          try {
+            await SupabaseService.rpc('delete_chat_message_for_all',
+                params: {'p_message_id': message.id});
+            if (mounted) {
+              final idx = _messages.indexWhere((m) => m.id == message.id);
+              if (idx >= 0) {
+                setState(() {
+                  _messages[idx] = _messages[idx].copyWith(
+                    type: 'system_deleted',
+                    content: s.messageDeleted,
+                    isDeleted: true,
+                  );
+                });
+              }
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(s.errorDeletingTryAgain),
+                backgroundColor: context.nexusTheme.error,
+              ));
+            }
+          }
+        } else if (modCommunityId != null) {
+          final actionId = switch (modAction) {
+            ModerationQuickAction.warn => 'warn',
+            ModerationQuickAction.mute => 'mute',
+            ModerationQuickAction.ban => 'ban',
+            _ => 'warn',
+          };
+          if (mounted) {
+            context.push(
+              '/community/$modCommunityId/mod-action',
+              extra: {
+                'targetUserId': message.authorId,
+                'preselectedAction': actionId,
+              },
+            );
+          }
         }
         break;
     }

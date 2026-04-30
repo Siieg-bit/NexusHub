@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/services/call_service.dart';
@@ -12,8 +13,10 @@ import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import 'package:flutter/services.dart';
 import '../../../core/widgets/mini_room_overlay.dart';
 import '../../moderation/widgets/report_dialog.dart';
+import '../widgets/chat_message_actions.dart';
 
 // ============================================================================
 // CallScreen — Tela de chamada reformada.
@@ -371,6 +374,130 @@ class _CallScreenState extends ConsumerState<CallScreen>
       }
     } finally {
       if (mounted) setState(() => _isSendingMessage = false);
+    }
+  }
+
+  // ── Message Actions ────────────────────────────────────────────────────────
+
+  Future<void> _showMessageActions(MessageModel message) async {
+    final userId = SupabaseService.currentUserId;
+    final currentUser = ref.read(currentUserProvider);
+    final myStageRole = _myParticipant?['stage_role'] as String? ?? 'listener';
+    final canModerate = myStageRole == 'host' ||
+        myStageRole == 'co_host' ||
+        (currentUser?.isTeamMember ?? false);
+    final action = await ChatMessageActionsSheet.show(
+      context,
+      message: message,
+      onReaction: (_) {}, // reações não disponíveis na call
+      canModerate: canModerate,
+    );
+    if (!mounted || action == null) return;
+    switch (action) {
+      case ChatMessageAction.reply:
+        // reply não disponível na call — sem campo de resposta
+        break;
+      case ChatMessageAction.copy:
+        Clipboard.setData(ClipboardData(text: message.content ?? ''));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text('Mensagem copiada'),
+          backgroundColor: context.nexusTheme.accentPrimary,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ));
+        break;
+      case ChatMessageAction.edit:
+        // edição não disponível na call
+        break;
+      case ChatMessageAction.forward:
+        // encaminhar não disponível na call
+        break;
+      case ChatMessageAction.pin:
+        // fixar não disponível na call
+        break;
+      case ChatMessageAction.deleteForMe:
+        try {
+          await SupabaseService.rpc('delete_chat_message_for_me',
+              params: {'p_message_id': message.id});
+          if (mounted) setState(() => _messages.remove(message));
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: const Text('Erro ao apagar mensagem'),
+              backgroundColor: context.nexusTheme.error,
+              behavior: SnackBarBehavior.floating,
+            ));
+          }
+        }
+        break;
+      case ChatMessageAction.deleteForAll:
+        try {
+          await SupabaseService.rpc('delete_chat_message_for_all',
+              params: {'p_message_id': message.id});
+          if (mounted) setState(() => _messages.remove(message));
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: const Text('Erro ao apagar mensagem'),
+              backgroundColor: context.nexusTheme.error,
+              behavior: SnackBarBehavior.floating,
+            ));
+          }
+        }
+        break;
+      case ChatMessageAction.report:
+        if (mounted) {
+          await ReportDialog.show(
+            context,
+            communityId: widget.session.communityId,
+            targetMessageId: message.id,
+          );
+        }
+        break;
+      case ChatMessageAction.moderate:
+        if (!mounted) break;
+        final authorNickname =
+            message.author?.nickname ?? message.authorId ?? 'Usuário';
+        final modAction = await ModerationQuickSheet.show(
+          context,
+          targetUserId: message.authorId ?? '',
+          targetUserNickname: authorNickname,
+          messageId: message.id,
+          communityId: widget.session.communityId,
+        );
+        if (!mounted || modAction == null) break;
+        if (modAction == ModerationQuickAction.deleteMessage) {
+          try {
+            await SupabaseService.rpc('delete_chat_message_for_all',
+                params: {'p_message_id': message.id});
+            if (mounted) setState(() => _messages.remove(message));
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: const Text('Erro ao remover mensagem'),
+                backgroundColor: context.nexusTheme.error,
+                behavior: SnackBarBehavior.floating,
+              ));
+            }
+          }
+        } else if (widget.session.communityId != null) {
+          final actionId = switch (modAction) {
+            ModerationQuickAction.warn => 'warn',
+            ModerationQuickAction.mute => 'mute',
+            ModerationQuickAction.ban => 'ban',
+            _ => 'warn',
+          };
+          if (mounted) {
+            context.push(
+              '/community/${widget.session.communityId}/mod-action',
+              extra: {
+                'targetUserId': message.authorId,
+                'preselectedAction': actionId,
+              },
+            );
+          }
+        }
+        break;
     }
   }
 
@@ -826,7 +953,10 @@ class _CallScreenState extends ConsumerState<CallScreen>
                         horizontal: r.s(10), vertical: r.s(4)),
                     itemCount: _messages.length,
                     itemBuilder: (context, i) =>
-                        _ChatBubble(message: _messages[i]),
+                        _ChatBubble(
+                          message: _messages[i],
+                          onLongPress: _showMessageActions,
+                        ),
                   ),
           ),
 
@@ -1296,8 +1426,9 @@ class _ListenerChip extends ConsumerWidget {
 
 class _ChatBubble extends ConsumerWidget {
   final MessageModel message;
+  final Future<void> Function(MessageModel)? onLongPress;
 
-  const _ChatBubble({required this.message});
+  const _ChatBubble({required this.message, this.onLongPress});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1309,14 +1440,7 @@ class _ChatBubble extends ConsumerWidget {
     final iconUrl = message.author?.iconUrl;
 
     return GestureDetector(
-      onLongPress: isMe
-          ? null
-          : () => ReportDialog.show(
-                context,
-                entityId: message.id,
-                entityType: 'message',
-                communityId: null,
-              ),
+      onLongPress: onLongPress != null ? () => onLongPress!(message) : null,
       child: Padding(
       padding: EdgeInsets.only(bottom: r.s(8)),
       child: Row(
