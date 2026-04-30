@@ -11,7 +11,7 @@
 // ============================================================================
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { initializeApp, cert, getApps, deleteApp } from "npm:firebase-admin/app";
+import { initializeApp, cert, deleteApp } from "npm:firebase-admin/app";
 import { getMessaging } from "npm:firebase-admin/messaging";
 
 const corsHeaders = {
@@ -28,6 +28,7 @@ const TYPE_TO_SETTINGS_COL: Record<string, string> = {
   comment: "push_comments",
   mention: "push_mentions",
   wall_post: "push_mentions",
+  wall_comment: "push_mentions",
   // Follows e Match
   follow: "push_follows",
   match: "push_follows",
@@ -75,6 +76,7 @@ const TYPE_TO_CHANNEL: Record<string, string> = {
   match: "nexushub_social",
   mention: "nexushub_social",
   wall_post: "nexushub_social",
+  wall_comment: "nexushub_social",
   repost: "nexushub_social",
   wiki_approved: "nexushub_social",
   // Comunidade
@@ -100,6 +102,44 @@ Deno.serve(async (req: Request) => {
 
   let firebaseApp: ReturnType<typeof initializeApp> | null = null;
 
+  // Criar cliente Supabase uma única vez (usado tanto para dados quanto para logs)
+  const serviceKey =
+    Deno.env.get("APP_SERVICE_KEY") ??
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
+    "";
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    serviceKey
+  );
+
+  // Helper para registrar resultado no push_logs
+  async function logPush(params: {
+    user_id: string;
+    notification_id?: string;
+    notification_type: string;
+    status: "sent" | "failed" | "skipped" | "no_token" | "disabled";
+    fcm_message_id?: string;
+    error_code?: string;
+    error_message?: string;
+    fcm_token_prefix?: string;
+  }) {
+    try {
+      await supabase.from("push_logs").insert({
+        user_id: params.user_id,
+        notification_id: params.notification_id ?? null,
+        notification_type: params.notification_type,
+        status: params.status,
+        fcm_message_id: params.fcm_message_id ?? null,
+        error_code: params.error_code ?? null,
+        error_message: params.error_message ?? null,
+        fcm_token_prefix: params.fcm_token_prefix ?? null,
+      });
+    } catch (logErr) {
+      // Nunca deixar falha de log quebrar o fluxo principal
+      console.warn(`[push] Falha ao registrar push_log: ${logErr}`);
+    }
+  }
+
   try {
     const payload = await req.json();
     const {
@@ -118,17 +158,8 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    console.log(`[push] Processando ${notification_type} para ${user_id}`);
-
-    // ── Criar cliente Supabase ──────────────────────────────────────────────
-    const serviceKey =
-      Deno.env.get("APP_SERVICE_KEY") ??
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
-      "";
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      serviceKey
-    );
+    const notifId: string | undefined = extraData?.notification_id;
+    console.log(`[push] Processando ${notification_type} para ${user_id} (notif: ${notifId ?? "N/A"})`);
 
     // ── Buscar FCM token e nickname ─────────────────────────────────────────
     const { data: profile, error: profileError } = await supabase
@@ -138,12 +169,21 @@ Deno.serve(async (req: Request) => {
       .single();
 
     if (profileError || !profile?.fcm_token) {
-      console.warn(`[push] Usuário ${user_id} sem FCM token`);
+      console.warn(`[push] ⚠️ Usuário ${user_id} sem FCM token`);
+      await logPush({
+        user_id,
+        notification_id: notifId,
+        notification_type,
+        status: "no_token",
+        error_message: profileError?.message ?? "FCM token is null",
+      });
       return new Response(
         JSON.stringify({ error: "User has no FCM token" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const tokenPrefix = profile.fcm_token.substring(0, 20);
 
     // ── Verificar preferências de notificação ───────────────────────────────
     const { data: settings } = await supabase
@@ -155,6 +195,7 @@ Deno.serve(async (req: Request) => {
     if (settings) {
       if (settings.push_enabled === false) {
         console.log(`[push] Push globalmente desabilitado para ${user_id}`);
+        await logPush({ user_id, notification_id: notifId, notification_type, status: "disabled", error_message: "push_enabled=false", fcm_token_prefix: tokenPrefix });
         return new Response(
           JSON.stringify({ message: "Push disabled by user" }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -162,6 +203,7 @@ Deno.serve(async (req: Request) => {
       }
 
       if (settings.pause_all_until && new Date(settings.pause_all_until) > new Date()) {
+        await logPush({ user_id, notification_id: notifId, notification_type, status: "disabled", error_message: "push paused until " + settings.pause_all_until, fcm_token_prefix: tokenPrefix });
         return new Response(
           JSON.stringify({ message: "Push paused" }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -172,6 +214,7 @@ Deno.serve(async (req: Request) => {
       // col vazio = broadcast, sem filtro de settings
       if (col && settings[col] === false) {
         console.log(`[push] Tipo ${notification_type} desabilitado pelo usuário`);
+        await logPush({ user_id, notification_id: notifId, notification_type, status: "disabled", error_message: `${col}=false`, fcm_token_prefix: tokenPrefix });
         return new Response(
           JSON.stringify({ message: "Notification type disabled" }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -199,6 +242,7 @@ Deno.serve(async (req: Request) => {
     const serviceAccountJson = Deno.env.get("FCM_SERVICE_ACCOUNT_JSON");
     if (!serviceAccountJson) {
       console.error("[push] FCM_SERVICE_ACCOUNT_JSON não configurado");
+      await logPush({ user_id, notification_id: notifId, notification_type, status: "failed", error_code: "config_error", error_message: "FCM_SERVICE_ACCOUNT_JSON not set", fcm_token_prefix: tokenPrefix });
       return new Response(
         JSON.stringify({ error: "FCM_SERVICE_ACCOUNT_JSON not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -257,10 +301,55 @@ Deno.serve(async (req: Request) => {
       data: messageData,
     };
 
-    console.log(`[push] Enviando para token: ${profile.fcm_token.substring(0, 20)}...`);
+    console.log(`[push] Enviando ${notification_type} → ${user_id} (token: ${tokenPrefix}...)`);
 
-    const messageId = await messaging.send(message);
-    console.log(`[push] Enviado com sucesso: ${messageId}`);
+    // ── Enviar via FCM ──────────────────────────────────────────────────────
+    let messageId: string;
+    try {
+      messageId = await messaging.send(message);
+    } catch (fcmError) {
+      const fcmErr = fcmError as Error & { code?: string };
+      console.error(`[push] ❌ FCM erro: ${fcmErr.message} (code: ${fcmErr.code})`);
+
+      // Registrar falha no push_logs
+      await logPush({
+        user_id,
+        notification_id: notifId,
+        notification_type,
+        status: "failed",
+        error_code: fcmErr.code ?? "fcm_error",
+        error_message: fcmErr.message,
+        fcm_token_prefix: tokenPrefix,
+      });
+
+      // Limpar token inválido automaticamente
+      if (
+        fcmErr.code === "messaging/invalid-registration-token" ||
+        fcmErr.code === "messaging/registration-token-not-registered"
+      ) {
+        try {
+          await supabase.from("profiles").update({ fcm_token: null }).eq("id", user_id);
+          console.log(`[push] 🗑️ Token inválido removido para ${user_id}`);
+        } catch { /* ignorar */ }
+      }
+
+      return new Response(
+        JSON.stringify({ error: fcmErr.message, code: fcmErr.code }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`[push] ✅ Enviado com sucesso: ${messageId} → ${user_id} (${notification_type})`);
+
+    // Registrar sucesso no push_logs
+    await logPush({
+      user_id,
+      notification_id: notifId,
+      notification_type,
+      status: "sent",
+      fcm_message_id: messageId,
+      fcm_token_prefix: tokenPrefix,
+    });
 
     return new Response(
       JSON.stringify({ success: true, message_id: messageId }),
@@ -269,34 +358,7 @@ Deno.serve(async (req: Request) => {
 
   } catch (error) {
     const err = error as Error & { code?: string };
-    console.error(`[push] Erro: ${err.message} (code: ${err.code})`);
-
-    // Limpar token inválido
-    if (
-      err.code === "messaging/invalid-registration-token" ||
-      err.code === "messaging/registration-token-not-registered"
-    ) {
-      try {
-        const serviceKey =
-          Deno.env.get("APP_SERVICE_KEY") ??
-          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
-          "";
-        const supabase = createClient(
-          Deno.env.get("SUPABASE_URL") ?? "",
-          serviceKey
-        );
-        const payload = await req.clone().json().catch(() => ({}));
-        if (payload.user_id) {
-          await supabase
-            .from("profiles")
-            .update({ fcm_token: null })
-            .eq("id", payload.user_id);
-          console.log(`[push] Token inválido removido para ${payload.user_id}`);
-        }
-      } catch {
-        // ignorar erro ao limpar token
-      }
-    }
+    console.error(`[push] ❌ Erro inesperado: ${err.message} (code: ${err.code})`);
 
     return new Response(
       JSON.stringify({ error: err.message, code: err.code }),

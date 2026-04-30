@@ -19,6 +19,12 @@ import '../../core/l10n/locale_provider.dart';
 /// - Mark as read
 /// ============================================================================
 
+// ── Provider que rastreia o chat atualmente aberto ──
+/// Armazena o ID da thread que o usuário está visualizando no momento.
+/// Usado pelo PushNotificationService para suprimir notificações locais
+/// quando o usuário já está naquele chat específico.
+final activeChatIdProvider = StateProvider<String?>((ref) => null);
+
 // ── Mapeamento de tipos de mensagem para o enum do banco ──
 // NOTA: chatThreadsProvider foi removido (Etapa 1 — dead code).
 // A lista de chats do usuário é gerenciada exclusivamente pelo chatListProvider

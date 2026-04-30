@@ -119,6 +119,11 @@ void _onBackgroundNotificationResponse(NotificationResponse details) {
 /// em foreground/background usa as opções definidas em `firebase_options.dart`.
 class PushNotificationService {
 
+  /// ID da thread de chat atualmente aberta pelo usuário.
+  /// Quando preenchido, notificações locais de `chat_message` para
+  /// esse chat específico são suprimidas (usuário já está vendo as mensagens).
+  static String? activeChatThreadId;
+
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
@@ -317,8 +322,20 @@ class PushNotificationService {
     final notification = message.notification;
     if (notification == null) return;
 
-    // Determinar o canal baseado no tipo de notificação
+    // Suprimir notificação local se o usuário já está naquele chat
     final type = message.data['type'] as String? ?? 'default';
+    final chatTypes = {'chat_message', 'chat_mention', 'chat', 'dm_invite', 'chat_invite'};
+    if (chatTypes.contains(type) && activeChatThreadId != null) {
+      final incomingThreadId = message.data['chat_thread_id'] as String?;
+      if (incomingThreadId != null && incomingThreadId == activeChatThreadId) {
+        debugPrint('[Push] Suprimindo notificação local — usuário já está no chat $incomingThreadId');
+        // Ainda emite para a stream para atualizar o estado interno
+        _notificationStreamController?.add(message.data);
+        return;
+      }
+    }
+
+    // Determinar o canal baseado no tipo de notificação
     String channelId;
     switch (type) {
       case 'chat_message':

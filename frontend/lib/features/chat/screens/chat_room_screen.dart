@@ -37,6 +37,8 @@ import '../../moderation/widgets/report_dialog.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
 import 'chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
+import '../../../core/providers/chat_provider.dart' show activeChatIdProvider;
+import '../../../core/services/push_notification_service.dart' show PushNotificationService;
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/deep_link_service.dart';
@@ -306,6 +308,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_handleScrollPositionChange);
+    // Registrar o chat ativo para suprimir notificações locais deste chat
+    PushNotificationService.activeChatThreadId = widget.threadId;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(activeChatIdProvider.notifier).state = widget.threadId;
+    });
     _initChat();
   }
 
@@ -655,6 +662,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     RealtimeService.instance.connectionStatus
         .removeListener(_onRealtimeStatusChanged);
     RealtimeService.instance.unsubscribe('chat:${widget.threadId}');
+    // Limpar o chat ativo ao sair da tela
+    PushNotificationService.activeChatThreadId = null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try { ref.read(activeChatIdProvider.notifier).state = null; } catch (_) {}
+    });
     super.dispose();
   }
 
