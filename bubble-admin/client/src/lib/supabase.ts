@@ -1,17 +1,15 @@
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = "https://ylvzqqvcanzzswjkqeya.supabase.co";
-// Usando a nova publishable key do Supabase (substitui a anon key legada)
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_HYsYzaF8DuBgXpqJAICJ1Q_b73GLUeb";
-export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+// Anon key JWT legada — obrigatória para que auth.uid() seja propagado
+// corretamente nas RPCs SECURITY DEFINER do painel admin.
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsdnpxcXZjYW56enN3amtxZXlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NTk3MDYsImV4cCI6MjA5MDEzNTcwNn0.eoHEl-w8bac2Q-jxjBvmXr118ZzuGC0uwmsCES7r7hA";
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
   },
 });
-
-// supabaseAdmin usa a mesma publishable key — as políticas RLS das tabelas
-// admin permitem acesso total para a role anon (painel admin público).
 export const supabaseAdmin = supabase;
 
 // ─── Hierarquia de Team Members ───────────────────────────────────────────────
