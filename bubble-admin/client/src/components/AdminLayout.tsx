@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ShoppingBag, MessageSquare, Frame, Smile,
   Palette, Users, ArrowLeftRight, Settings, LogOut, Menu, X,
   Zap, ChevronRight, Search, Shield, Globe, Trophy, Bell, Crown,
-  Bot, Fingerprint, BarChart3
+  Bot, Fingerprint, BarChart3, Brain
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { TEAM_ROLE_CONFIG } from "@/lib/supabase";
@@ -26,7 +26,8 @@ export type AdminSection =
   | "founder"
   | "ai-characters"
   | "device-security"
-  | "economy";
+  | "economy"
+  | "ai-learning";
 
 interface AdminLayoutProps {
   activeSection: AdminSection;
@@ -72,6 +73,7 @@ const navGroups = [
     label: "Avançado",
     items: [
       { id: "ai-characters" as AdminSection, icon: Bot, label: "AI Studio", hex: "#8B5CF6", rgb: "139,92,246" },
+      { id: "ai-learning" as AdminSection, icon: Brain, label: "Auto-Aprendizado", hex: "#A78BFA", rgb: "167,139,250" },
       { id: "device-security" as AdminSection, icon: Fingerprint, label: "Device Security", hex: "#EF4444", rgb: "239,68,68" },
       { id: "economy" as AdminSection, icon: BarChart3, label: "Economy", hex: "#22C55E", rgb: "34,197,94" },
     ],

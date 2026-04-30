@@ -32,6 +32,7 @@ import { HorizontalStretchEditor } from "@/components/HorizontalStretchEditor";
 import BroadcastPage from "./BroadcastPage";
 import FounderPage from "./FounderPage";
 import AICharactersPage from "./AICharactersPage";
+import AILearningPage from "./AILearningPage";
 import DeviceSecurityPage from "./DeviceSecurityPage";
 import EconomyPage from "./EconomyPage";
 
@@ -2998,6 +2999,7 @@ export default function Dashboard() {
       case "settings":       return <SettingsPage />;
       case "founder":          return <FounderPage />;
       case "ai-characters":    return <AICharactersPage />;
+      case "ai-learning":       return <AILearningPage />;
       case "device-security":  return <DeviceSecurityPage />;
       case "economy":          return <EconomyPage />;
       default:                 return <OverviewPage />;
