@@ -458,7 +458,7 @@ final file = _pickedFiles_file.first.file;
 
     // Layout sempre inline fixo: composer no topo, lista de comentários abaixo.
     // O campo de texto fica sempre visível — ao tocar, o teclado abre direto.
-    return Column(
+    final content = Column(
       children: [
         // Composer fixo no topo
         _buildComposer(r, keyboardHeight),
@@ -466,6 +466,35 @@ final file = _pickedFiles_file.first.file;
         Expanded(child: _buildCommentList(r, null, commentsAsync)),
       ],
     );
+
+    // Quando aberto como bottom sheet, aplica ClipRRect para arredondar o topo
+    // e evitar o efeito de "quadrado dentro do arredondado".
+    if (widget.asBottomSheet) {
+      return ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        child: Container(
+          color: context.nexusTheme.backgroundPrimary,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle visual
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[700],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Flexible(child: content),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return content;
   }
 
   Widget _buildCommentList(
@@ -991,32 +1020,33 @@ class _CommentRow extends StatelessWidget {
                           comment.isLiked
                               ? Icons.favorite_rounded
                               : Icons.favorite_border_rounded,
-                          color: comment.isLiked ? Colors.red : Colors.grey[600],
-                          size: r.s(14),
+                          color: comment.isLiked ? Colors.red : Colors.grey[500],
+                          size: r.s(18),
                         ),
                         if (comment.likesCount > 0) ...[
-                          SizedBox(width: r.s(3)),
+                          SizedBox(width: r.s(4)),
                           Text(
                             '${comment.likesCount}',
                             style: TextStyle(
-                              color: comment.isLiked ? Colors.red : Colors.grey[600],
-                              fontSize: r.fs(11),
+                              color: comment.isLiked ? Colors.red : Colors.grey[500],
+                              fontSize: r.fs(13),
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ],
                     ),
                   ),
-                  SizedBox(width: r.s(14)),
+                  SizedBox(width: r.s(16)),
                   GestureDetector(
                     onTap: onReply,
                     child: Row(
                       children: [
-                        Icon(Icons.reply_rounded, color: Colors.grey[600], size: r.s(14)),
-                        SizedBox(width: r.s(3)),
+                        Icon(Icons.reply_rounded, color: Colors.grey[500], size: r.s(18)),
+                        SizedBox(width: r.s(4)),
                         Text(
                           'Responder',
-                          style: TextStyle(color: Colors.grey[600], fontSize: r.fs(11)),
+                          style: TextStyle(color: Colors.grey[500], fontSize: r.fs(13)),
                         ),
                       ],
                     ),
