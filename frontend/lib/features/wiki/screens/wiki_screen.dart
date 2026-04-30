@@ -481,6 +481,9 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
   double _avgRating = 0;
   int _totalRatings = 0;
   bool _isPinnedToProfile = false;
+  // Like da wiki
+  bool _isWikiLiked = false;
+  int _wikiLikesCount = 0;
   // Comentários
   final _commentController = TextEditingController();
   final _commentFocusNode = FocusNode();
@@ -517,6 +520,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
   void initState() {
     super.initState();
     _loadEntry();
+    _loadWikiLike();
   }
 
   @override
@@ -608,6 +612,47 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadWikiLike() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return;
+    try {
+      final res = await SupabaseService.table('likes')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('wiki_id', widget.wikiId)
+          .maybeSingle();
+      if (mounted) setState(() => _isWikiLiked = res != null);
+    } catch (_) {}
+    try {
+      final countRes = await SupabaseService.table('likes')
+          .select('id')
+          .eq('wiki_id', widget.wikiId);
+      if (mounted) setState(() => _wikiLikesCount = (countRes as List).length);
+    } catch (_) {}
+  }
+
+  Future<void> _toggleWikiLike() async {
+    if (SupabaseService.currentUserId == null) return;
+    setState(() {
+      _isWikiLiked = !_isWikiLiked;
+      _wikiLikesCount += _isWikiLiked ? 1 : -1;
+    });
+    try {
+      await SupabaseService.rpc('toggle_like_with_reputation', params: {
+        'p_community_id': _communityId,
+        'p_user_id': SupabaseService.currentUserId,
+        'p_wiki_id': widget.wikiId,
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isWikiLiked = !_isWikiLiked;
+          _wikiLikesCount += _isWikiLiked ? 1 : -1;
+        });
+      }
     }
   }
 
@@ -1397,7 +1442,6 @@ final image = _pickedFiles_image.first.file;
     final isCanonical = _entry?['is_canonical'] == true;
     final isHidden = (_entry?['status'] as String?) == 'disabled';
 
-    // Verificar se o usuário é moderador
     final currentUser = ref.watch(currentUserProvider);
     final communityMembership = _communityId.isNotEmpty
         ? ref
@@ -1410,14 +1454,17 @@ final image = _pickedFiles_image.first.file;
       isTeamMember: currentUser?.isTeamMember ?? false,
       userRole: currentUserRole,
     );
-
-    // Avatar do usuário logado
     final currentUserAvatar = _communityId.isNotEmpty
         ? ref
                 .watch(communityLocalAvatarProvider(_communityId))
                 .valueOrNull ??
             ref.watch(currentUserAvatarProvider)
         : ref.watch(currentUserAvatarProvider);
+
+    // Dimensões do layout estilo Amino
+    final bannerHeight = r.s(220.0);
+    final cardSize = r.s(140.0);
+    final cardOverlap = cardSize * 0.5;
 
     return Scaffold(
       backgroundColor: context.nexusTheme.backgroundPrimary,
@@ -1427,60 +1474,120 @@ final image = _pickedFiles_image.first.file;
           Expanded(
             child: CustomScrollView(
               slivers: [
+                // ── AppBar transparente sobre o banner ──────────────────────
                 SliverAppBar(
-                  backgroundColor: context.nexusTheme.backgroundPrimary,
-                  expandedHeight: coverUrl != null ? 200 : 0,
+                  backgroundColor: Colors.transparent,
+                  expandedHeight: bannerHeight + cardOverlap,
                   pinned: true,
                   elevation: 0,
-                  iconTheme:
-                      IconThemeData(color: context.nexusTheme.textPrimary),
-                  flexibleSpace: coverUrl != null
-                      ? FlexibleSpaceBar(
-                          background: CachedNetworkImage(
-                            imageUrl: coverUrl,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : null,
-                  title: Row(
-                    children: [
-                      Expanded(
-                        child: Text(title,
-                            style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                color: context.nexusTheme.textPrimary)),
-                      ),
-                      // Badge canônica na AppBar
-                      if (isCanonical)
-                        Container(
-                          margin: EdgeInsets.only(right: r.s(4)),
-                          padding: EdgeInsets.symmetric(
-                              horizontal: r.s(8), vertical: r.s(3)),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFD700),
-                            borderRadius: BorderRadius.circular(r.s(10)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.star_rounded,
-                                  color: Colors.black, size: r.s(11)),
-                              SizedBox(width: r.s(3)),
-                              Text(
-                                s.wikiCanonicalBadge,
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: r.fs(9),
-                                  fontWeight: FontWeight.w800,
+                  iconTheme: const IconThemeData(color: Colors.white),
+                  flexibleSpace: FlexibleSpaceBar(
+                    collapseMode: CollapseMode.pin,
+                    background: Stack(
+                      children: [
+                        // Banner de fundo
+                        Positioned.fill(
+                          child: coverUrl != null
+                              ? CachedNetworkImage(
+                                  imageUrl: coverUrl,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (_, __, ___) => Container(
+                                    color:
+                                        context.nexusTheme.backgroundSecondary,
+                                  ),
+                                )
+                              : Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        context.nexusTheme.accentPrimary
+                                            .withValues(alpha: 0.8),
+                                        context.nexusTheme.accentSecondary
+                                            .withValues(alpha: 0.6),
+                                      ],
+                                    ),
+                                  ),
                                 ),
+                        ),
+                        // Gradiente escuro na parte inferior do banner
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: bannerHeight * 0.55,
+                          child: const DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Color(0xF0000000),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
-                    ],
+                        // Card da imagem principal centralizado (flutuando sobre o banner)
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: Container(
+                              width: cardSize,
+                              height: cardSize,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(r.s(16)),
+                                border: isCanonical
+                                    ? Border.all(
+                                        color: const Color(0xFFFFD700),
+                                        width: 2.5,
+                                      )
+                                    : null,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.35),
+                                    blurRadius: r.s(20),
+                                    offset: Offset(0, r.s(6)),
+                                  ),
+                                  if (isCanonical)
+                                    BoxShadow(
+                                      color: const Color(0xFFFFD700)
+                                          .withValues(alpha: 0.45),
+                                      blurRadius: r.s(14),
+                                      spreadRadius: r.s(2),
+                                    ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(r.s(14)),
+                                child: coverUrl != null
+                                    ? CachedNetworkImage(
+                                        imageUrl: coverUrl,
+                                        fit: BoxFit.cover,
+                                        errorWidget: (_, __, ___) => Icon(
+                                          Icons.article_rounded,
+                                          color: Colors.grey[400],
+                                          size: r.s(48),
+                                        ),
+                                      )
+                                    : Icon(
+                                        Icons.article_rounded,
+                                        color: Colors.grey[400],
+                                        size: r.s(48),
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   actions: [
-                    // Denunciar
                     if (SupabaseService.currentUserId != null)
                       GestureDetector(
                         onTap: () => ReportDialog.show(
@@ -1492,15 +1599,13 @@ final image = _pickedFiles_image.first.file;
                           margin: EdgeInsets.only(right: r.s(4)),
                           padding: EdgeInsets.all(r.s(8)),
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.3),
+                            color: Colors.black.withValues(alpha: 0.35),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(Icons.flag_outlined,
-                              color: context.nexusTheme.textPrimary,
-                              size: r.s(20)),
+                              color: Colors.white, size: r.s(20)),
                         ),
                       ),
-                    // Share
                     GestureDetector(
                       onTap: () => DeepLinkService.shareUrl(
                         type: 'wiki',
@@ -1512,15 +1617,13 @@ final image = _pickedFiles_image.first.file;
                         margin: EdgeInsets.only(right: r.s(4)),
                         padding: EdgeInsets.all(r.s(8)),
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.3),
+                          color: Colors.black.withValues(alpha: 0.35),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(Icons.share_outlined,
-                            color: context.nexusTheme.textPrimary,
-                            size: r.s(20)),
+                            color: Colors.white, size: r.s(20)),
                       ),
                     ),
-                    // Pin to profile button
                     GestureDetector(
                       onTap: _togglePinToProfile,
                       child: Container(
@@ -1529,34 +1632,30 @@ final image = _pickedFiles_image.first.file;
                         decoration: BoxDecoration(
                           color: _isPinnedToProfile
                               ? context.nexusTheme.accentPrimary
-                                  .withValues(alpha: 0.2)
-                              : Colors.black.withValues(alpha: 0.3),
+                                  .withValues(alpha: 0.4)
+                              : Colors.black.withValues(alpha: 0.35),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           _isPinnedToProfile
                               ? Icons.push_pin_rounded
                               : Icons.push_pin_outlined,
-                          color: _isPinnedToProfile
-                              ? context.nexusTheme.accentPrimary
-                              : context.nexusTheme.textPrimary,
+                          color: Colors.white,
                           size: r.s(20),
                         ),
                       ),
                     ),
-                    // Menu de moderação
                     if (canModerate)
                       PopupMenuButton<String>(
                         icon: Container(
                           margin: EdgeInsets.only(right: r.s(8)),
                           padding: EdgeInsets.all(r.s(8)),
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.3),
+                            color: Colors.black.withValues(alpha: 0.35),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(Icons.shield_outlined,
-                              color: context.nexusTheme.textPrimary,
-                              size: r.s(20)),
+                              color: Colors.white, size: r.s(20)),
                         ),
                         color: context.surfaceColor,
                         elevation: 8,
@@ -1569,8 +1668,7 @@ final image = _pickedFiles_image.first.file;
                           if (value == 'hide') {
                             _toggleHideWiki(currentlyHidden: isHidden);
                           } else if (value == 'canonical') {
-                            _toggleCanonical(
-                                currentlyCanonical: isCanonical);
+                            _toggleCanonical(currentlyCanonical: isCanonical);
                           }
                         },
                         itemBuilder: (_) => [
@@ -1588,11 +1686,9 @@ final image = _pickedFiles_image.first.file;
                                   size: r.s(18),
                                 ),
                                 SizedBox(width: r.s(10)),
-                                Text(
-                                  isHidden ? s.wikiUnhide : s.wikiHide,
-                                  style: TextStyle(
-                                      color: context.nexusTheme.textPrimary),
-                                ),
+                                Text(isHidden ? s.wikiUnhide : s.wikiHide,
+                                    style: TextStyle(
+                                        color: context.nexusTheme.textPrimary)),
                               ],
                             ),
                           ),
@@ -1624,13 +1720,131 @@ final image = _pickedFiles_image.first.file;
                       ),
                   ],
                 ),
+
+                // ── Conteúdo principal ───────────────────────────────────────
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.all(r.s(16)),
+                    padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), 0),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Banner "Wiki oculta" para moderadores
+                        // ── Título ──────────────────────────────────────────
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (isCanonical) ...[
+                              Icon(Icons.star_rounded,
+                                  color: const Color(0xFFFFD700),
+                                  size: r.s(18)),
+                              SizedBox(width: r.s(4)),
+                            ],
+                            Flexible(
+                              child: Text(
+                                title,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: r.fs(22),
+                                  fontWeight: FontWeight.w800,
+                                  color: context.nexusTheme.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // ── Categoria ───────────────────────────────────────
+                        if (category != null) ...[
+                          SizedBox(height: r.s(8)),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(14), vertical: r.s(5)),
+                            decoration: BoxDecoration(
+                              color: isCanonical
+                                  ? const Color(0xFFFFD700)
+                                      .withValues(alpha: 0.15)
+                                  : context.nexusTheme.accentPrimary
+                                      .withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(r.s(16)),
+                            ),
+                            child: Text(
+                              category,
+                              style: TextStyle(
+                                color: isCanonical
+                                    ? const Color(0xFFFFD700)
+                                    : context.nexusTheme.accentPrimary,
+                                fontSize: r.fs(12),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+
+                        // ── Botão Like ──────────────────────────────────────
+                        SizedBox(height: r.s(16)),
+                        GestureDetector(
+                          onTap: _toggleWikiLike,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(24), vertical: r.s(10)),
+                            decoration: BoxDecoration(
+                              color: _isWikiLiked
+                                  ? context.nexusTheme.accentPrimary
+                                      .withValues(alpha: 0.12)
+                                  : context.surfaceColor,
+                              borderRadius: BorderRadius.circular(r.s(24)),
+                              border: Border.all(
+                                color: _isWikiLiked
+                                    ? context.nexusTheme.accentPrimary
+                                        .withValues(alpha: 0.5)
+                                    : Colors.white.withValues(alpha: 0.1),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _isWikiLiked
+                                      ? Icons.favorite_rounded
+                                      : Icons.favorite_border_rounded,
+                                  color: _isWikiLiked
+                                      ? context.nexusTheme.accentPrimary
+                                      : context.nexusTheme.textSecondary,
+                                  size: r.s(20),
+                                ),
+                                if (_wikiLikesCount > 0) ...[
+                                  SizedBox(width: r.s(6)),
+                                  Text(
+                                    '$_wikiLikesCount',
+                                    style: TextStyle(
+                                      color: _isWikiLiked
+                                          ? context.nexusTheme.accentPrimary
+                                          : context.nexusTheme.textSecondary,
+                                      fontSize: r.fs(14),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                                SizedBox(width: r.s(6)),
+                                Text(
+                                  s.like,
+                                  style: TextStyle(
+                                    color: _isWikiLiked
+                                        ? context.nexusTheme.accentPrimary
+                                        : context.nexusTheme.textSecondary,
+                                    fontSize: r.fs(14),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: r.s(24)),
+                        Divider(color: Colors.white.withValues(alpha: 0.06)),
+                        SizedBox(height: r.s(16)),
+
+                        // ── Banner "Wiki oculta" ─────────────────────────────
                         if (isHidden)
                           Container(
                             width: double.infinity,
@@ -1640,8 +1854,8 @@ final image = _pickedFiles_image.first.file;
                               color: Colors.orange.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(r.s(12)),
                               border: Border.all(
-                                  color: Colors.orange
-                                      .withValues(alpha: 0.4)),
+                                  color:
+                                      Colors.orange.withValues(alpha: 0.4)),
                             ),
                             child: Row(
                               children: [
@@ -1660,32 +1874,23 @@ final image = _pickedFiles_image.first.file;
                               ],
                             ),
                           ),
-                        if (category != null)
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: r.s(14), vertical: r.s(6)),
-                            decoration: BoxDecoration(
-                              color: isCanonical
-                                  ? const Color(0xFFFFD700)
-                                      .withValues(alpha: 0.15)
-                                  : context.nexusTheme.accentPrimary
-                                      .withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(r.s(16)),
-                            ),
-                            child: Text(
-                              category,
-                              style: TextStyle(
-                                color: isCanonical
-                                    ? const Color(0xFFFFD700)
-                                    : context.nexusTheme.accentPrimary,
-                                fontSize: r.fs(13),
-                                fontWeight: FontWeight.w700,
-                              ),
+
+                        // ── Seção About ──────────────────────────────────────
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            s.about,
+                            style: TextStyle(
+                              fontSize: r.fs(18),
+                              fontWeight: FontWeight.w800,
+                              color: context.nexusTheme.textPrimary,
                             ),
                           ),
-                        SizedBox(height: r.s(16)),
-                        if (infoboxData != null &&
-                            infoboxData.isNotEmpty) ...[
+                        ),
+                        SizedBox(height: r.s(12)),
+
+                        // ── Infobox ──────────────────────────────────────────
+                        if (infoboxData != null && infoboxData.isNotEmpty) ...[
                           Container(
                             width: double.infinity,
                             padding: EdgeInsets.all(r.s(16)),
@@ -1705,8 +1910,7 @@ final image = _pickedFiles_image.first.file;
                                     style: TextStyle(
                                         fontWeight: FontWeight.w800,
                                         fontSize: r.fs(16),
-                                        color:
-                                            context.nexusTheme.textPrimary)),
+                                        color: context.nexusTheme.textPrimary)),
                                 SizedBox(height: r.s(8)),
                                 ...infoboxData.entries.map((e) => Padding(
                                       padding: EdgeInsets.symmetric(
@@ -1742,15 +1946,22 @@ final image = _pickedFiles_image.first.file;
                           ),
                           SizedBox(height: r.s(16)),
                         ],
-                        Text(
-                          content,
-                          style: TextStyle(
-                              fontSize: r.fs(16),
-                              height: 1.7,
-                              color: context.nexusTheme.textPrimary),
+
+                        // ── Conteúdo textual ─────────────────────────────────
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            content,
+                            style: TextStyle(
+                                fontSize: r.fs(16),
+                                height: 1.7,
+                                color: context.nexusTheme.textPrimary),
+                          ),
                         ),
-                        SizedBox(height: r.s(24)),
-                        if (author != null)
+
+                        // ── Autor ────────────────────────────────────────────
+                        if (author != null) ...[
+                          SizedBox(height: r.s(24)),
                           Row(
                             children: [
                               CosmeticAvatar(
@@ -1767,56 +1978,63 @@ final image = _pickedFiles_image.first.file;
                               ),
                             ],
                           ),
+                        ],
 
-                        // ── My Rating ──
+                        // ── My Rating ────────────────────────────────────────
                         SizedBox(height: r.s(24)),
-                        Divider(
-                            color: Colors.white.withValues(alpha: 0.05)),
+                        Divider(color: Colors.white.withValues(alpha: 0.05)),
                         SizedBox(height: r.s(12)),
-                        Text(s.myRating,
-                            style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: r.fs(18),
-                                color: context.nexusTheme.textPrimary)),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(s.myRating,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: r.fs(18),
+                                  color: context.nexusTheme.textPrimary)),
+                        ),
                         SizedBox(height: r.s(8)),
-                        Row(
-                          children: List.generate(5, (i) {
-                            final star = i + 1;
-                            return GestureDetector(
-                              onTap: () => _submitRating(star),
-                              child: Icon(
-                                star <= _userRating
-                                    ? Icons.star_rounded
-                                    : Icons.star_border_rounded,
-                                color: star <= _userRating
-                                    ? Colors.amber
-                                    : Colors.grey.withValues(alpha: 0.3),
-                                size: r.s(34),
-                              ),
-                            );
-                          }),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: List.generate(5, (i) {
+                              final star = i + 1;
+                              return GestureDetector(
+                                onTap: () => _submitRating(star),
+                                child: Icon(
+                                  star <= _userRating
+                                      ? Icons.star_rounded
+                                      : Icons.star_border_rounded,
+                                  color: star <= _userRating
+                                      ? Colors.amber
+                                      : Colors.grey.withValues(alpha: 0.3),
+                                  size: r.s(34),
+                                ),
+                              );
+                            }),
+                          ),
                         ),
                         SizedBox(height: r.s(6)),
-                        Text(
-                          _totalRatings > 0
-                              ? '${_avgRating.toStringAsFixed(1)} ★  ($_totalRatings ${_totalRatings == 1 ? 'avaliação' : 'avaliações'})'
-                              : s.averageRating,
-                          style: TextStyle(
-                              color: _totalRatings > 0
-                                  ? Colors.amber
-                                  : context.nexusTheme.textSecondary,
-                              fontSize: r.fs(13),
-                              fontWeight: _totalRatings > 0
-                                  ? FontWeight.w600
-                                  : FontWeight.normal),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _totalRatings > 0
+                                ? '${_avgRating.toStringAsFixed(1)} ★  ($_totalRatings ${_totalRatings == 1 ? 'avaliação' : 'avaliações'})'
+                                : s.averageRating,
+                            style: TextStyle(
+                                color: _totalRatings > 0
+                                    ? Colors.amber
+                                    : context.nexusTheme.textSecondary,
+                                fontSize: r.fs(13),
+                                fontWeight: _totalRatings > 0
+                                    ? FontWeight.w600
+                                    : FontWeight.normal),
+                          ),
                         ),
 
-                        // ══════════════════════════════════════════════════
-                        // COMENTÁRIOS EM MODAL (mesmo padrão de interação do blog)
-                        // ══════════════════════════════════════════════════
+                        // ── Comentários ──────────────────────────────────────
                         SizedBox(height: r.s(24)),
-                        Divider(
-                            color: Colors.white.withValues(alpha: 0.05)),
+                        Divider(color: Colors.white.withValues(alpha: 0.05)),
                         SizedBox(height: r.s(12)),
                         GestureDetector(
                           onTap: () => _openCommentsSheet(
@@ -1863,8 +2081,8 @@ final image = _pickedFiles_image.first.file;
                                         style: TextStyle(
                                           fontSize: r.fs(15),
                                           fontWeight: FontWeight.w800,
-                                          color: context
-                                              .nexusTheme.textPrimary,
+                                          color:
+                                              context.nexusTheme.textPrimary,
                                         ),
                                       ),
                                       SizedBox(height: r.s(4)),
@@ -1886,7 +2104,7 @@ final image = _pickedFiles_image.first.file;
                             ),
                           ),
                         ),
-                        SizedBox(height: r.s(24)),
+                        SizedBox(height: r.s(32)),
                       ],
                     ),
                   ),
@@ -1894,13 +2112,12 @@ final image = _pickedFiles_image.first.file;
               ],
             ),
           ),
-
-
         ],
       ),
     );
   }
 }
+
 
 // ============================================================================
 // ENUM: ordenação de comentários
