@@ -229,6 +229,11 @@ class YouTubeStreamService {
       resolveMetaOnly(String url) async {
     // Primeiro tenta via Innertube (mais preciso)
     final videoId = extractVideoId(url);
+    // URL estática de thumbnail do YouTube — pública, sem API, sem autenticação.
+    // Usada como fallback garantido quando as APIs falham ou não retornam thumbnail.
+    final staticThumbnail = videoId != null
+        ? 'https://img.youtube.com/vi/$videoId/hqdefault.jpg'
+        : null;
     if (videoId != null) {
       try {
         final playerData = await _fetchPlayerData(videoId);
@@ -236,7 +241,8 @@ class YouTubeStreamService {
         debugPrint('[YouTube] MetaOnly: "${meta.title}" isLive=${meta.isLive}');
         return (
           title: meta.title,
-          thumbnailUrl: meta.thumbnail,
+          // Preferir thumbnail do Innertube (maior resolução); fallback para URL estática.
+          thumbnailUrl: meta.thumbnail ?? staticThumbnail,
           isLive: meta.isLive,
         );
       } catch (e) {
@@ -255,7 +261,8 @@ class YouTubeStreamService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         final title = data['title'] as String? ?? 'YouTube';
-        final thumbnail = data['thumbnail_url'] as String?;
+        // oEmbed retorna thumbnail_url; fallback para URL estática se ausente.
+        final thumbnail = data['thumbnail_url'] as String? ?? staticThumbnail;
         debugPrint('[YouTube] MetaOnly oEmbed: "$title"');
         return (title: title, thumbnailUrl: thumbnail, isLive: false);
       }
@@ -263,8 +270,10 @@ class YouTubeStreamService {
       debugPrint('[YouTube] MetaOnly oEmbed falhou: $e');
     }
 
-    // Último fallback: título genérico
-    return (title: 'YouTube', thumbnailUrl: null, isLive: false);
+    // Último fallback: título genérico + thumbnail estática via URL direta.
+    // staticThumbnail já foi calculado acima; garante que a fila exiba
+    // pelo menos a thumbnail do vídeo mesmo quando todas as APIs falham.
+    return (title: 'YouTube', thumbnailUrl: staticThumbnail, isLive: false);
   }
 
   /// Verifica se uma URL é do YouTube.

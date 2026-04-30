@@ -202,11 +202,19 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
   }
 
   /// Conecta o stream de notificações push ao router para navegação.
+  /// Após registrar o listener, consome notificações pendentes (app terminado).
   void _setupPushNotificationListener(GoRouter router) {
     _pushSubscription?.cancel();
     _pushSubscription =
         PushNotificationService.notificationStream.listen((data) {
       _handlePushNotificationTap(router, data);
+    });
+    // Consumir notificações pendentes de quando o app estava terminado.
+    // Deve ser chamado APÓS registrar o listener para garantir que o
+    // payload seja recebido e não perdido por race condition entre
+    // PushNotificationService.initialize() (unawaited) e didChangeDependencies().
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      PushNotificationService.consumePendingNotification();
     });
   }
 

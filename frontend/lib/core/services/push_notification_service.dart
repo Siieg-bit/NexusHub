@@ -102,8 +102,12 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 @pragma('vm:entry-point')
 void _onBackgroundNotificationResponse(NotificationResponse details) {
   // Não há como navegar aqui pois o app pode não estar inicializado.
-  // O payload é processado pelo onDidReceiveNotificationResponse quando o app abre.
+  // O payload é salvo em _pendingLocalPayload e processado quando o app abre
+  // e o listener é registrado via consumePendingNotification().
   debugPrint('[Push] Background notification response: ${details.payload}');
+  if (details.payload != null) {
+    PushNotificationService._pendingLocalPayload = details.payload;
+  }
 }
 
 /// Serviço de Push Notifications via Firebase Cloud Messaging.
@@ -123,6 +127,15 @@ class PushNotificationService {
   /// Quando preenchido, notificações locais de `chat_message` para
   /// esse chat específico são suprimidas (usuário já está vendo as mensagens).
   static String? activeChatThreadId;
+
+  /// Payload pendente de notificação local (app estava terminado ao tocar).
+  /// Armazenado pelo _onBackgroundNotificationResponse e consumido em
+  /// consumePendingNotification() quando o listener da UI já está registrado.
+  static String? _pendingLocalPayload;
+
+  /// Payload pendente de mensagem FCM inicial (app terminado, aberto via tap).
+  /// Armazenado quando getInitialMessage() retorna antes do listener estar pronto.
+  static Map<String, dynamic>? _pendingFcmData;
 
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
@@ -182,20 +195,66 @@ class PushNotificationService {
       _foregroundSubscription =
           FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
-      // Listener para quando o usuário toca na notificação
+      // Listener para quando o usuário toca na notificação (app em background)
       _messageOpenSubscription?.cancel();
       _messageOpenSubscription =
           FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
 
-      // Verificar se o app foi aberto por uma notificação
+      // Verificar se o app foi aberto por uma notificação FCM (app terminado).
+      // O getInitialMessage() pode ser chamado antes do listener da UI estar
+      // registrado (race condition com unawaited). Armazenamos o dado em
+      // _pendingFcmData e o consumimos em consumePendingNotification().
       final initialMessage = await _messaging.getInitialMessage();
       if (initialMessage != null) {
-        _handleNotificationTap(initialMessage);
+        debugPrint('[Push] initialMessage detectado — armazenando para consumo posterior');
+        _pendingFcmData = initialMessage.data;
+        clearAppBadge();
+      }
+
+      // Verificar se há notificação local pendente (app terminado, tap local).
+      // O _onBackgroundNotificationResponse armazena em _pendingLocalPayload.
+      // Tentamos também via getNotificationAppLaunchDetails para cobrir o caso
+      // em que o app foi aberto diretamente pelo toque na notificação local.
+      final launchDetails =
+          await _localNotifications.getNotificationAppLaunchDetails();
+      if (launchDetails != null &&
+          launchDetails.didNotificationLaunchApp &&
+          launchDetails.notificationResponse?.payload != null) {
+        debugPrint('[Push] launchDetails detectado — armazenando para consumo posterior');
+        _pendingLocalPayload ??= launchDetails.notificationResponse!.payload;
       }
 
       debugPrint('[Push] Serviço inicializado com sucesso');
     } catch (e) {
       debugPrint('[Push] Erro ao inicializar: $e');
+    }
+  }
+
+  /// Consome notificações pendentes (FCM inicial e local) e as emite no stream.
+  ///
+  /// Deve ser chamado pelo widget raiz após registrar o listener no
+  /// notificationStream, garantindo que o payload não seja perdido por
+  /// race condition entre initialize() e didChangeDependencies().
+  static void consumePendingNotification() {
+    // Consumir payload FCM pendente
+    final fcmData = _pendingFcmData;
+    if (fcmData != null) {
+      _pendingFcmData = null;
+      debugPrint('[Push] Emitindo FCM pendente: $fcmData');
+      _notificationStreamController?.add(fcmData);
+    }
+
+    // Consumir payload de notificação local pendente
+    final localPayload = _pendingLocalPayload;
+    if (localPayload != null) {
+      _pendingLocalPayload = null;
+      try {
+        final data = jsonDecode(localPayload) as Map<String, dynamic>;
+        debugPrint('[Push] Emitindo notificação local pendente: $data');
+        _notificationStreamController?.add(data);
+      } catch (e) {
+        debugPrint('[Push] Erro ao decodificar payload local pendente: $e');
+      }
     }
   }
 
@@ -266,17 +325,19 @@ class PushNotificationService {
     await _localNotifications.initialize(
       initSettings,
       onDidReceiveNotificationResponse: (details) {
-        // Quando o usuário toca na notificação local
+        // Quando o usuário toca na notificação local (app em foreground ou background)
         if (details.payload != null) {
           try {
-            final data = jsonDecode(details.payload!);
+            final data = jsonDecode(details.payload!) as Map<String, dynamic>;
             _notificationStreamController?.add(data);
           } catch (e) {
-            debugPrint('[push_notification_service] Erro: $e');
+            debugPrint('[Push] Erro ao decodificar payload local: $e');
           }
         }
       },
-      // Quando o app estava terminado e o usuário tocou na notificação local
+      // Quando o app estava terminado e o usuário tocou na notificação local.
+      // O payload é armazenado em _pendingLocalPayload e consumido via
+      // consumePendingNotification() quando o listener da UI estiver pronto.
       onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationResponse,
     );
 
@@ -390,22 +451,17 @@ class PushNotificationService {
     // Incrementar badge no ícone do app
     _incrementAppBadge();
   }
-  /// Lida com toque na notificação (app em background/terminated)
+
+  /// Lida com toque na notificação FCM (app em background — não terminado).
+  /// Para app terminado, o payload é capturado via getInitialMessage() em
+  /// initialize() e emitido via consumePendingNotification().
   static void _handleNotificationTap(RemoteMessage message) {
-    debugPrint('[Push] Notification tap: ${message.data}');
+    debugPrint('[Push] Notification tap (background): ${message.data}');
     _notificationStreamController?.add(message.data);
     // Limpar badge ao abrir notificação
     clearAppBadge();
-    
-    // Garantir que o app está em primeiro plano
-    try {
-      // Trazer o app para frente se estiver em background
-      // Isso é importante para garantir que o deep link funcione
-      debugPrint('[Push] App trazido para frente após toque na notificação');
-    } catch (e) {
-      debugPrint('[Push] Erro ao trazer app para frente: $e');
-    }
   }
+
   /// Incrementa o badge do ícone do app
   static Future<void> _incrementAppBadge() async {
     try {
@@ -423,18 +479,20 @@ class PushNotificationService {
       final count = res.count;
       await FlutterAppBadger.updateBadgeCount(count);
     } catch (e) {
-      debugPrint('[Push] Erro ao atualizar badge: \$e');
+      debugPrint('[Push] Erro ao atualizar badge: $e');
     }
   }
+
   /// Limpa o badge do ícone do app
   static Future<void> clearAppBadge() async {
     try {
       final supported = await FlutterAppBadger.isAppBadgeSupported();
       if (supported) await FlutterAppBadger.removeBadge();
     } catch (e) {
-      debugPrint('[Push] Erro ao limpar badge: \$e');
+      debugPrint('[Push] Erro ao limpar badge: $e');
     }
   }
+
   /// Atualiza o badge com a contagem atual de não lidas
   static Future<void> updateBadgeFromUnreadCount(int count) async {
     try {
@@ -446,7 +504,7 @@ class PushNotificationService {
         await FlutterAppBadger.removeBadge();
       }
     } catch (e) {
-      debugPrint('[Push] Erro ao atualizar badge: \$e');
+      debugPrint('[Push] Erro ao atualizar badge: $e');
     }
   }
 
@@ -478,7 +536,7 @@ class PushNotificationService {
           'fcm_token': null,
         }).eq('id', userId);
       } catch (e) {
-        debugPrint('[push_notification_service] Erro: $e');
+        debugPrint('[Push] Erro ao remover token: $e');
       }
     }
     await _messaging.deleteToken();

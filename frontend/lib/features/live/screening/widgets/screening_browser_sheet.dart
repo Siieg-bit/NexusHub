@@ -493,7 +493,19 @@ class _ScreeningBrowserSheetState
       // Usa resolveMetaOnly para não exigir HLS/MP4 — só busca título e thumbnail
       // via Innertube. O resolve() completo lança exceção se não encontrar stream.
       final meta = await YouTubeStreamService.resolveMetaOnly(url);
-      return (title: meta.title, thumbnailUrl: meta.thumbnailUrl);
+      // Se o título retornado é genérico (APIs falharam), tenta extrair o título
+      // real da página do YouTube via OG tags no WebView (já carregado).
+      // Isso garante que o usuário veja o título real do vídeo na fila.
+      String resolvedTitle = meta.title;
+      if (resolvedTitle == 'YouTube' && _webViewController != null) {
+        try {
+          final ogMeta = await OgTagsMetaService.resolveFromWebView(_webViewController!);
+          if (ogMeta != null && ogMeta.title.isNotEmpty && ogMeta.title != 'YouTube') {
+            resolvedTitle = ogMeta.title;
+          }
+        } catch (_) {}
+      }
+      return (title: resolvedTitle, thumbnailUrl: meta.thumbnailUrl);
     }
 
     // ── Twitch ────────────────────────────────────────────────────────────────
