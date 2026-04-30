@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase, supabaseAdmin } from "@/lib/supabase";
+import { supabase, supabaseAdmin, TEAM_ROLE_CONFIG, TeamRole, getTeamRoleRank, canManageRole } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import {
   Search, Users, ShoppingBag, ArrowLeft, ChevronRight, Crown, Shield,
@@ -21,6 +22,8 @@ type Profile = {
   icon_url: string | null;
   is_team_admin: boolean;
   is_team_moderator: boolean;
+  team_role: TeamRole;
+  team_rank: number;
   is_system_account: boolean;
   is_premium: boolean;
   level: number;
@@ -78,9 +81,7 @@ function ActionModal({
   const [coinsReason, setCoinsReason] = useState("");
   const [banReason, setBanReason] = useState("");
   const [strikeReason, setStrikeReason] = useState("");
-  const [roleTarget, setRoleTarget] = useState<"admin" | "mod" | "none">(
-    user.is_team_admin ? "admin" : user.is_team_moderator ? "mod" : "none"
-  );
+  const [roleTarget, setRoleTarget] = useState<TeamRole>(user.team_role ?? null);
 
   const displayName = user.nickname || user.amino_id || user.id.slice(0, 8);
 
@@ -147,14 +148,14 @@ function ActionModal({
   async function handleRole() {
     setLoading(true);
     try {
-      const update = {
-        is_team_admin: roleTarget === "admin",
-        is_team_moderator: roleTarget === "mod" || roleTarget === "admin",
-      };
-      const { error } = await supabaseAdmin.from("profiles").update(update).eq("id", user.id);
+      const { error } = await supabase.rpc("set_team_role", {
+        p_target_user_id: user.id,
+        p_new_role: roleTarget,
+      });
       if (error) throw error;
-      toast.success(`Cargo de ${displayName} atualizado.`);
-      onSuccess(update);
+      const cfg = roleTarget ? TEAM_ROLE_CONFIG[roleTarget] : null;
+      toast.success(`Cargo de ${displayName} atualizado para ${cfg?.label ?? "Nenhum"}.`);
+      onSuccess({ team_role: roleTarget, team_rank: cfg?.rank ?? 0, is_team_admin: (cfg?.rank ?? 0) >= 80, is_team_moderator: (cfg?.rank ?? 0) >= 70 });
       onClose();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Erro ao atualizar cargo.");
@@ -319,28 +320,39 @@ function ActionModal({
         {/* Role */}
         {type === "role" && (
           <div className="space-y-4">
-            <div className="space-y-2">
-              {([
-                { value: "none", label: "Usuário Comum", desc: "Sem privilégios especiais", color: "#9CA3AF" },
-                { value: "mod", label: "Moderador", desc: "Pode moderar conteúdo e aplicar strikes", color: "#67E8F9" },
-                { value: "admin", label: "Admin", desc: "Acesso total ao painel administrativo", color: "#A78BFA" },
-              ] as const).map((opt) => (
-                <button key={opt.value} onClick={() => setRoleTarget(opt.value)}
+            <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+              {/* Opção: remover cargo */}
+              <button onClick={() => setRoleTarget(null)}
+                className="w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left"
+                style={{
+                  background: roleTarget === null ? "rgba(156,163,175,0.08)" : "rgba(255,255,255,0.03)",
+                  border: `1px solid ${roleTarget === null ? "rgba(156,163,175,0.25)" : "rgba(255,255,255,0.07)"}`,
+                }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(156,163,175,0.1)" }}>
+                  <Users size={14} style={{ color: "#9CA3AF" }} />
+                </div>
+                <div>
+                  <p className="text-[13px] font-semibold" style={{ color: roleTarget === null ? "#9CA3AF" : "rgba(255,255,255,0.8)", fontFamily: "'Space Grotesk', sans-serif" }}>Sem cargo</p>
+                  <p className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>Remove o cargo da equipe</p>
+                </div>
+                {roleTarget === null && <div className="ml-auto w-2 h-2 rounded-full" style={{ background: "#9CA3AF" }} />}
+              </button>
+              {/* Cargos disponíveis */}
+              {(Object.entries(TEAM_ROLE_CONFIG) as [NonNullable<TeamRole>, typeof TEAM_ROLE_CONFIG[NonNullable<TeamRole>]][])
+                .sort((a, b) => b[1].rank - a[1].rank)
+                .map(([roleKey, cfg]) => (
+                <button key={roleKey} onClick={() => setRoleTarget(roleKey as TeamRole)}
                   className="w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left"
                   style={{
-                    background: roleTarget === opt.value ? `${opt.color}10` : "rgba(255,255,255,0.03)",
-                    border: `1px solid ${roleTarget === opt.value ? `${opt.color}30` : "rgba(255,255,255,0.07)"}`,
+                    background: roleTarget === roleKey ? `${cfg.color}10` : "rgba(255,255,255,0.03)",
+                    border: `1px solid ${roleTarget === roleKey ? `${cfg.borderColor}30` : "rgba(255,255,255,0.07)"}`,
                   }}>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${opt.color}15` }}>
-                    {opt.value === "none" && <Users size={14} style={{ color: opt.color }} />}
-                    {opt.value === "mod" && <Shield size={14} style={{ color: opt.color }} />}
-                    {opt.value === "admin" && <Crown size={14} style={{ color: opt.color }} />}
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: "transparent", border: `1.5px solid ${cfg.borderColor}` }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold" style={{ color: roleTarget === roleKey ? cfg.color : "rgba(255,255,255,0.8)", fontFamily: "'Space Grotesk', sans-serif" }}>{cfg.label}</p>
+                    <p className="text-[11px] font-mono truncate" style={{ color: "rgba(255,255,255,0.3)" }}>{cfg.description}</p>
                   </div>
-                  <div>
-                    <p className="text-[13px] font-semibold" style={{ color: roleTarget === opt.value ? opt.color : "rgba(255,255,255,0.8)", fontFamily: "'Space Grotesk', sans-serif" }}>{opt.label}</p>
-                    <p className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>{opt.desc}</p>
-                  </div>
-                  {roleTarget === opt.value && <div className="ml-auto w-2 h-2 rounded-full" style={{ background: opt.color }} />}
+                  {roleTarget === roleKey && <div className="ml-auto w-2 h-2 rounded-full flex-shrink-0" style={{ background: cfg.color }} />}
                 </button>
               ))}
             </div>

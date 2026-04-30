@@ -14,6 +14,41 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 // admin permitem acesso total para a role anon (painel admin público).
 export const supabaseAdmin = supabase;
 
+// ─── Hierarquia de Team Members ───────────────────────────────────────────────
+export type TeamRole =
+  | "founder"
+  | "co_founder"
+  | "team_admin"
+  | "trust_safety"
+  | "team_mod"
+  | "support"
+  | "community_manager"
+  | "bug_bounty"
+  | null;
+
+export const TEAM_ROLE_CONFIG: Record<
+  NonNullable<TeamRole>,
+  { label: string; rank: number; color: string; borderColor: string; description: string }
+> = {
+  founder:           { label: "Founder",           rank: 100, color: "#FFFFFF", borderColor: "#FFFFFF", description: "Fundador da plataforma. Acesso total e irrestrito." },
+  co_founder:        { label: "Co-Founder",        rank: 90,  color: "#FFD700", borderColor: "#FFD700", description: "Co-Fundador. Pode gerenciar Team Admins e abaixo." },
+  team_admin:        { label: "Team Admin",        rank: 80,  color: "#FF4444", borderColor: "#FF4444", description: "Administrador. Gerencia moderadores e equipe de suporte." },
+  trust_safety:      { label: "Trust & Safety",    rank: 75,  color: "#3B82F6", borderColor: "#3B82F6", description: "Segurança e confiança. Moderação de conteúdo sensível." },
+  team_mod:          { label: "Team Mod",          rank: 70,  color: "#60A5FA", borderColor: "#60A5FA", description: "Moderador global. Pode moderar qualquer comunidade." },
+  support:           { label: "Support",           rank: 65,  color: "#22C55E", borderColor: "#22C55E", description: "Suporte ao usuário. Sem poder de moderação." },
+  community_manager: { label: "Community Manager", rank: 60,  color: "#A855F7", borderColor: "#A855F7", description: "Gerencia comunidades e conteúdo da plataforma." },
+  bug_bounty:        { label: "Bug Bounty",        rank: 50,  color: "#F97316", borderColor: "#F97316", description: "Programa de recompensa por bugs. Acesso limitado." },
+};
+
+export function getTeamRoleRank(role: TeamRole): number {
+  if (!role) return 0;
+  return TEAM_ROLE_CONFIG[role]?.rank ?? 0;
+}
+
+export function canManageRole(callerRole: TeamRole, targetRole: TeamRole): boolean {
+  return getTeamRoleRank(callerRole) > getTeamRoleRank(targetRole);
+}
+
 // ─── Tipos da Loja ─────────────────────────────────────────────────────────────
 
 export type StoreItemType =
@@ -143,6 +178,8 @@ export type Profile = {
   icon_url: string | null;
   is_team_admin: boolean;
   is_team_moderator: boolean;
+  team_role: TeamRole;
+  team_rank: number;
   coins?: number;
   amino_id?: string;
   bio?: string | null;

@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, ShoppingBag, MessageSquare, Frame, Smile,
   Palette, Users, ArrowLeftRight, Settings, LogOut, Menu, X,
-  Zap, ChevronRight, Search, Shield, Globe, Trophy, Bell
+  Zap, ChevronRight, Search, Shield, Globe, Trophy, Bell, Crown
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { TEAM_ROLE_CONFIG } from "@/lib/supabase";
 
 export type AdminSection =
   | "overview"
@@ -20,7 +21,8 @@ export type AdminSection =
   | "achievements"
   | "broadcast"
   | "transactions"
-  | "settings";
+  | "settings"
+  | "founder";
 
 interface AdminLayoutProps {
   activeSection: AdminSection;
@@ -65,7 +67,7 @@ const navGroups = [
 ];
 
 export default function AdminLayout({ activeSection, onSectionChange, children }: AdminLayoutProps) {
-  const { auth, signOut } = useAuth();
+  const { auth, signOut, isFounder, isCoFounderOrAbove, canManageTeamRoles, teamRole } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -77,7 +79,15 @@ export default function AdminLayout({ activeSection, onSectionChange, children }
     return () => window.removeEventListener("resize", handler);
   }, []);
 
-  const activeItem = navGroups.flatMap(g => g.items).find(i => i.id === activeSection);
+  // Grupo exclusivo do Founder/Co-Founder/Team Admin
+  const founderGroup = canManageTeamRoles ? [{
+    label: isFounder ? "Founder" : isCoFounderOrAbove ? "Co-Founder" : "Admin",
+    items: [
+      { id: "founder" as AdminSection, icon: Crown, label: isFounder ? "Founder Panel" : isCoFounderOrAbove ? "Co-Founder Panel" : "Admin Panel", hex: isFounder ? "#FFFFFF" : isCoFounderOrAbove ? "#FFD700" : "#FF4444", rgb: isFounder ? "255,255,255" : isCoFounderOrAbove ? "255,215,0" : "255,68,68" },
+    ],
+  }] : [];
+  const allNavGroups = [...founderGroup, ...navGroups];
+  const activeItem = allNavGroups.flatMap(g => g.items).find(i => i.id === activeSection);
 
   const SidebarInner = () => (
     <div className="flex flex-col h-full overflow-hidden">
@@ -125,7 +135,7 @@ export default function AdminLayout({ activeSection, onSectionChange, children }
 
       {/* Nav */}
       <nav className="flex-1 px-2 overflow-y-auto space-y-4 pb-2">
-        {navGroups.map((group) => (
+        {allNavGroups.map((group) => (
           <div key={group.label}>
             {!collapsed && (
               <div className="text-[9px] font-mono tracking-[0.16em] uppercase mb-1 px-2" style={{ color: "rgba(255,255,255,0.18)" }}>
@@ -214,7 +224,7 @@ export default function AdminLayout({ activeSection, onSectionChange, children }
                 <div className="text-[11.5px] font-medium truncate" style={{ color: "rgba(255,255,255,0.75)", fontFamily: "'Space Grotesk', sans-serif" }}>
                   {("user" in auth ? auth.user : undefined)?.email?.split("@")[0] ?? "Admin"}
                 </div>
-                <div className="text-[9px] font-mono tracking-wider" style={{ color: "rgba(255,255,255,0.22)" }}>TEAM ADMIN</div>
+                <div className="text-[9px] font-mono tracking-wider" style={{ color: teamRole && TEAM_ROLE_CONFIG[teamRole] ? TEAM_ROLE_CONFIG[teamRole].color + "99" : "rgba(255,255,255,0.22)" }}>{teamRole && TEAM_ROLE_CONFIG[teamRole] ? TEAM_ROLE_CONFIG[teamRole].label.toUpperCase() : "TEAM MEMBER"}</div>
               </div>
               <LogOut size={12} style={{ color: "rgba(255,255,255,0.2)", flexShrink: 0 }} />
             </>

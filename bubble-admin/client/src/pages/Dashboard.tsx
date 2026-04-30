@@ -30,6 +30,7 @@ import CommunitiesPage from "./CommunitiesPage";
 import AchievementsPage from "./AchievementsPage";
 import { HorizontalStretchEditor } from "@/components/HorizontalStretchEditor";
 import BroadcastPage from "./BroadcastPage";
+import FounderPage from "./FounderPage";
 
 // ─── Tipos e Constantes ───────────────────────────────────────────────────────
 
@@ -2992,6 +2993,7 @@ export default function Dashboard() {
       case "broadcast":      return <BroadcastPage />;
       case "transactions":   return <TransactionsPage />;
       case "settings":       return <SettingsPage />;
+      case "founder":        return <FounderPage />;
       default:               return <OverviewPage />;
     }
   }
