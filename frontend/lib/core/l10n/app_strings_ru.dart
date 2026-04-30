@@ -6103,4 +6103,38 @@ class AppStringsRu implements AppStrings {
   String get reportDetailsRequiredHint => 'Пожалуйста, опишите проблему подробнее...';
   @override
   String get requiresDetails => 'Требуются подробности';
+
+  // Appeals & Security Center
+  @override
+  String get appealsEmptyTitle => 'Нет апелляций';
+  @override
+  String get appealsEmptySubtitle => 'У вас нет активных апелляций на бан в данный момент.';
+  @override
+  String get appealsInfoBanner => 'Апелляции рассматриваются персоналом сообщества в течение 7 дней.';
+  @override
+  String get securityEventFailedLogin => 'Попытка входа не удалась';
+  @override
+  String get securityEventLogout => 'Сеанс завершён';
+  @override
+  String get securityEventSessionRevoked => 'Сеанс отозван';
+  @override
+  String get securityLevelLow => 'Низкий';
+  @override
+  String get securityLevelMedium => 'Средний';
+  @override
+  String get securityLevelHigh => 'Высокий';
+  @override
+  String get securityRevokeSession => 'Отозвать сеанс';
+  @override
+  String get securityScoreTitle => 'Оценка безопасности';
+  @override
+  String get securitySessionRevoked => 'Сеанс успешно отозван';
+  @override
+  String get securityTipsTitle => 'Советы по безопасности';
+  @override
+  String get securityTip1 => 'Включите двухэтапную проверку для защиты вашего аккаунта.';
+  @override
+  String get securityTip2 => 'Используйте надёжный и уникальный пароль для NexusHub.';
+  @override
+  String get securityTip3 => 'Регулярно проверяйте устройства, подключённые к вашему аккаунту.';
 }

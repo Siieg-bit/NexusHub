@@ -6103,4 +6103,38 @@ class AppStringsKo implements AppStrings {
   String get reportDetailsRequiredHint => '문제에 대해 더 자세히 설명해 주세요...';
   @override
   String get requiresDetails => '세부 정보 필요';
+
+  // Appeals & Security Center
+  @override
+  String get appealsEmptyTitle => '이의 없음';
+  @override
+  String get appealsEmptySubtitle => '현재 활성 밴 이의 신청이 없습니다.';
+  @override
+  String get appealsInfoBanner => '이의 신청은 7일 이내에 커뮤니티 스태프가 검토합니다.';
+  @override
+  String get securityEventFailedLogin => '로그인 시도 실패';
+  @override
+  String get securityEventLogout => '세션 종료';
+  @override
+  String get securityEventSessionRevoked => '세션이 취소되었습니다';
+  @override
+  String get securityLevelLow => '낮음';
+  @override
+  String get securityLevelMedium => '중간';
+  @override
+  String get securityLevelHigh => '높음';
+  @override
+  String get securityRevokeSession => '세션 취소';
+  @override
+  String get securityScoreTitle => '보안 점수';
+  @override
+  String get securitySessionRevoked => '세션이 성공적으로 취소되었습니다';
+  @override
+  String get securityTipsTitle => '보안 팁';
+  @override
+  String get securityTip1 => '계정을 보호하기 위해 2단계 인증을 활성화하세요.';
+  @override
+  String get securityTip2 => 'NexusHub에 강력하고 고유한 비밀번호를 사용하세요.';
+  @override
+  String get securityTip3 => '계정에 연결된 기기를 정기적으로 확인하세요.';
 }

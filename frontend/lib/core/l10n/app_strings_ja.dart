@@ -6101,4 +6101,38 @@ class AppStringsJa implements AppStrings {
   String get reportDetailsRequiredHint => '問題についてより詳しく説明してください...';
   @override
   String get requiresDetails => '詳細が必要';
+
+  // Appeals & Security Center
+  @override
+  String get appealsEmptyTitle => '申し立てなし';
+  @override
+  String get appealsEmptySubtitle => '現在アクティブなBANの申し立てはありません。';
+  @override
+  String get appealsInfoBanner => '申し立てはコミュニティスタッフが7日以内に審査します。';
+  @override
+  String get securityEventFailedLogin => 'ログイン試行が失敗しました';
+  @override
+  String get securityEventLogout => 'セッション終了';
+  @override
+  String get securityEventSessionRevoked => 'セッションが取り消されました';
+  @override
+  String get securityLevelLow => '低';
+  @override
+  String get securityLevelMedium => '中';
+  @override
+  String get securityLevelHigh => '高';
+  @override
+  String get securityRevokeSession => 'セッションを取り消す';
+  @override
+  String get securityScoreTitle => 'セキュリティスコア';
+  @override
+  String get securitySessionRevoked => 'セッションが正常に取り消されました';
+  @override
+  String get securityTipsTitle => 'セキュリティのヒント';
+  @override
+  String get securityTip1 => 'アカウントを保護するために二段階認証を有効にしてください。';
+  @override
+  String get securityTip2 => 'NexusHubには強力で一意のパスワードを使用してください。';
+  @override
+  String get securityTip3 => 'アカウントに接続されているデバイスを定期的に確認してください。';
 }

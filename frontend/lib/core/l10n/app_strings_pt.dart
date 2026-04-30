@@ -6232,4 +6232,38 @@ class AppStringsPt implements AppStrings {
   String get reportDetailsRequiredHint => 'Por favor, descreva o problema com mais detalhes...';
   @override
   String get requiresDetails => 'Requer detalhes';
+
+  // Appeals & Security Center
+  @override
+  String get appealsEmptyTitle => 'Nenhuma apelação';
+  @override
+  String get appealsEmptySubtitle => 'Você não tem apelações de banimento ativas no momento.';
+  @override
+  String get appealsInfoBanner => 'Apelações são analisadas pelo staff da comunidade em até 7 dias.';
+  @override
+  String get securityEventFailedLogin => 'Tentativa de login falhou';
+  @override
+  String get securityEventLogout => 'Sessão encerrada';
+  @override
+  String get securityEventSessionRevoked => 'Sessão revogada';
+  @override
+  String get securityLevelLow => 'Baixo';
+  @override
+  String get securityLevelMedium => 'Médio';
+  @override
+  String get securityLevelHigh => 'Alto';
+  @override
+  String get securityRevokeSession => 'Revogar sessão';
+  @override
+  String get securityScoreTitle => 'Pontuação de segurança';
+  @override
+  String get securitySessionRevoked => 'Sessão revogada com sucesso';
+  @override
+  String get securityTipsTitle => 'Dicas de segurança';
+  @override
+  String get securityTip1 => 'Ative a verificação em duas etapas para proteger sua conta.';
+  @override
+  String get securityTip2 => 'Use uma senha forte e única para o NexusHub.';
+  @override
+  String get securityTip3 => 'Verifique regularmente os dispositivos conectados à sua conta.';
 }

@@ -3184,4 +3184,22 @@ abstract class AppStrings {
   String get reportResponsibleUse;
   String get reportDetailsRequiredHint;
   String get requiresDetails;
+
+  // Appeals & Security Center
+  String get appealsEmptyTitle;
+  String get appealsEmptySubtitle;
+  String get appealsInfoBanner;
+  String get securityEventFailedLogin;
+  String get securityEventLogout;
+  String get securityEventSessionRevoked;
+  String get securityLevelLow;
+  String get securityLevelMedium;
+  String get securityLevelHigh;
+  String get securityRevokeSession;
+  String get securityScoreTitle;
+  String get securitySessionRevoked;
+  String get securityTipsTitle;
+  String get securityTip1;
+  String get securityTip2;
+  String get securityTip3;
 }

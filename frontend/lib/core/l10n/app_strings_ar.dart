@@ -6102,4 +6102,38 @@ class AppStringsAr implements AppStrings {
   String get reportDetailsRequiredHint => 'يرجى وصف المشكلة بمزيد من التفاصيل...';
   @override
   String get requiresDetails => 'يتطلب تفاصيل';
+
+  // Appeals & Security Center
+  @override
+  String get appealsEmptyTitle => 'لا توجد طعون';
+  @override
+  String get appealsEmptySubtitle => 'ليس لديك أي طعون حظر نشطة في الوقت الحالي.';
+  @override
+  String get appealsInfoBanner => 'يتم مراجعة الطعون من قبل فريق المجتمع خلال 7 أيام.';
+  @override
+  String get securityEventFailedLogin => 'فشلت محاولة تسجيل الدخول';
+  @override
+  String get securityEventLogout => 'انتهت الجلسة';
+  @override
+  String get securityEventSessionRevoked => 'تم إلغاء الجلسة';
+  @override
+  String get securityLevelLow => 'منخفض';
+  @override
+  String get securityLevelMedium => 'متوسط';
+  @override
+  String get securityLevelHigh => 'مرتفع';
+  @override
+  String get securityRevokeSession => 'إلغاء الجلسة';
+  @override
+  String get securityScoreTitle => 'درجة الأمان';
+  @override
+  String get securitySessionRevoked => 'تم إلغاء الجلسة بنجاح';
+  @override
+  String get securityTipsTitle => 'نصائح الأمان';
+  @override
+  String get securityTip1 => 'قم بتفعيل التحقق بخطوتين لحماية حسابك.';
+  @override
+  String get securityTip2 => 'استخدم كلمة مرور قوية وفريدة لـ NexusHub.';
+  @override
+  String get securityTip3 => 'تحقق بانتظام من الأجهزة المتصلة بحسابك.';
 }
