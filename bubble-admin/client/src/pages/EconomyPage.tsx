@@ -223,7 +223,7 @@ export default function EconomyPage() {
   useEffect(() => { loadAll(); }, [loadAll]);
 
   // Fontes únicas para o filtro
-  const uniqueSources = [...new Set(transactions.map((t) => t.source))];
+  const uniqueSources = Array.from(new Set(transactions.map((t) => t.source)));
 
   const filteredTx = transactions.filter((t) => {
     const matchSearch =
@@ -240,7 +240,7 @@ export default function EconomyPage() {
     const txs = transactions.filter((t) => t.source === src);
     const total = txs.reduce((s, t) => s + Math.abs(t.amount), 0);
     const cfg = getSourceConfig(src);
-    return { source: src, label: cfg.label, color: cfg.color, count: txs.length, total };
+    return { source: src, label: cfg.label, color: cfg.color, icon: cfg.icon, count: txs.length, total };
   }).sort((a, b) => b.total - a.total);
 
   const maxSourceTotal = Math.max(...sourceDistribution.map((s) => s.total), 1);

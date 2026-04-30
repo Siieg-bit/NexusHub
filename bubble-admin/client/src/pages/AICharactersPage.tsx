@@ -183,7 +183,7 @@ function CharacterModal({
                 style={{
                   background: "rgba(255,255,255,0.05)",
                   border: "1px solid rgba(255,255,255,0.1)",
-                  focusRingColor: "#8B5CF6",
+                  outlineColor: "#8B5CF6",
                 }}
               />
             </div>
@@ -582,7 +582,7 @@ export default function AICharactersPage() {
     total: characters.length,
     active: characters.filter((c) => c.is_active).length,
     inactive: characters.filter((c) => !c.is_active).length,
-    languages: [...new Set(characters.map((c) => c.language))].length,
+    languages: Array.from(new Set(characters.map((c) => c.language))).length,
   };
 
   if (!canModerate) {
