@@ -81,8 +81,22 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
   int _page = 0;
   bool _isLoadingMore = false;
 
+  /// Tipos de notificação que são exclusivos de mensagens/chat.
+  /// Esses tipos devem aparecer APENAS como push no celular,
+  /// nunca no sino de alertas do app.
+  static const _messageOnlyTypes = {
+    'chat_message',
+    'chat_invite',
+    'dm_invite',
+    'dm_message',
+    'new_message',
+  };
+
   bool _isGlobalNotification(Map<String, dynamic> notification) {
     final communityId = notification['community_id'];
+    final type = notification['type'] as String? ?? '';
+    // Excluir notificações de mensagens do sino
+    if (_messageOnlyTypes.contains(type)) return false;
     return communityId == null ||
         (communityId is String && communityId.trim().isEmpty);
   }
@@ -163,7 +177,8 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
           query = query.inFilter('type', ['like', 'comment', 'follow', 'mention', 'wall_post', 'match']);
           break;
         case NotificationCategory.chat:
-          query = query.inFilter('type', ['chat_message', 'chat_mention', 'dm_invite', 'roleplay']);
+          // Categoria chat: exibe apenas chat_mention e roleplay (sem mensagens diretas)
+          query = query.inFilter('type', ['chat_mention', 'roleplay']);
           break;
         case NotificationCategory.community:
           query = query.inFilter('type', ['community_invite', 'community_update', 'join_request', 'role_change']);
@@ -172,6 +187,8 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
           query = query.inFilter('type', ['level_up', 'achievement', 'check_in_streak', 'moderation', 'strike', 'ban', 'broadcast', 'wiki_approved', 'wiki_rejected', 'tip']);
           break;
         case NotificationCategory.all:
+          // Excluir tipos de mensagem do sino em 'all'
+          query = query.not('type', 'in', '(${_messageOnlyTypes.map((t) => '"$t"').join(',')})');
           break;
       }
 
@@ -274,6 +291,8 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
           .eq('user_id', userId)
           .isFilter('community_id', null)
           .eq('is_read', false)
+          // Não contar notificações de mensagens no badge do sino
+          .not('type', 'in', '(${_messageOnlyTypes.map((t) => '"$t"').join(',')})')
           .count(CountOption.exact);
       return res.count;
     } catch (_) {

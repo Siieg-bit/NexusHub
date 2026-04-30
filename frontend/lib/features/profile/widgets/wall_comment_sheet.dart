@@ -17,6 +17,7 @@ import '../../../core/widgets/comment_media_menu_button.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/nexus_empty_state.dart';
 import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
+import '../../../core/widgets/linkified_text.dart';
 
 // =============================================================================
 // PROVIDER — carregamento de comentários do mural via RPC
@@ -981,15 +982,14 @@ class _CommentRow extends StatelessWidget {
                   comment.content != '[sticker]' &&
                   comment.content != '[image]' &&
                   comment.content != '[video]')
-                Text(
-                  comment.content,
+                LinkifiedText(
+                  text: comment.content,
                   style: TextStyle(
                     color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(13),
                     height: 1.4,
                   ),
                 ),
-
               // Se há texto E mídia
               if ((comment.isMedia || comment.isSticker) &&
                   comment.content.isNotEmpty &&
@@ -997,8 +997,8 @@ class _CommentRow extends StatelessWidget {
                   comment.content != '[image]' &&
                   comment.content != '[video]') ...[
                 SizedBox(height: r.s(4)),
-                Text(
-                  comment.content,
+                LinkifiedText(
+                  text: comment.content,
                   style: TextStyle(
                     color: context.nexusTheme.textPrimary,
                     fontSize: r.fs(13),

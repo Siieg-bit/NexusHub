@@ -4,11 +4,13 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
-/// Widget que renderiza texto com URLs automaticamente clicáveis.
+/// Widget que renderiza texto com URLs e @mentions automaticamente clicáveis.
 ///
-/// Suporta links externos (abre no navegador) e links internos do app
-/// (navega via GoRouter com destaque visual de tipo).
-/// Também suporta links no formato Markdown: `[título](url)`.
+/// Suporta:
+///   - Links externos (abre no navegador)
+///   - Links internos do app (navega via GoRouter com destaque visual de tipo)
+///   - Links no formato Markdown: `[título](url)`
+///   - Menções @username (navega para /user/username em azul)
 ///
 /// Implementado como [StatefulWidget] para gerenciar corretamente o ciclo
 /// de vida dos [TapGestureRecognizer] e evitar memory leaks.
@@ -16,6 +18,7 @@ class LinkifiedText extends StatefulWidget {
   final String text;
   final TextStyle? style;
   final TextStyle? linkStyle;
+  final TextStyle? mentionStyle;
   final int? maxLines;
   final TextOverflow? overflow;
   final TextAlign? textAlign;
@@ -25,6 +28,7 @@ class LinkifiedText extends StatefulWidget {
     required this.text,
     this.style,
     this.linkStyle,
+    this.mentionStyle,
     this.maxLines,
     this.overflow,
     this.textAlign,
@@ -35,6 +39,12 @@ class LinkifiedText extends StatefulWidget {
   ///   2. URLs simples: `https://...`
   static final _urlRegex = RegExp(
     r'(?:\[([^\]]+)\]\((https?://[^\s\)]+)\))|(https?://[^\s]+)',
+    caseSensitive: false,
+  );
+
+  /// Regex que detecta @username (letras, números, underscores, pontos, hífens)
+  static final _mentionRegex = RegExp(
+    r'@([\w.\-]{2,32})',
     caseSensitive: false,
   );
 
@@ -129,8 +139,33 @@ class _LinkifiedTextState extends State<LinkifiedText> {
           decorationColor: context.nexusTheme.accentSecondary,
         );
 
-    final matches = LinkifiedText._urlRegex.allMatches(widget.text).toList();
-    if (matches.isEmpty) {
+    final defaultMentionStyle = widget.mentionStyle ??
+        defaultStyle.copyWith(
+          color: const Color(0xFF4FC3F7), // azul claro
+          fontWeight: FontWeight.w700,
+        );
+
+    // Combinar matches de URLs e @mentions, ordenados por posição
+    final urlMatches = LinkifiedText._urlRegex.allMatches(widget.text);
+    final mentionMatches = LinkifiedText._mentionRegex.allMatches(widget.text);
+
+    // Unificar e ordenar por posição de início
+    final allMatches = [
+      ...urlMatches.map((m) => _MatchInfo(m.start, m.end, 'url', m)),
+      ...mentionMatches.map((m) => _MatchInfo(m.start, m.end, 'mention', m)),
+    ]..sort((a, b) => a.start.compareTo(b.start));
+
+    // Remover sobreposições (URL tem prioridade sobre mention)
+    final filtered = <_MatchInfo>[];
+    int lastFiltered = 0;
+    for (final m in allMatches) {
+      if (m.start >= lastFiltered) {
+        filtered.add(m);
+        lastFiltered = m.end;
+      }
+    }
+
+    if (filtered.isEmpty) {
       return Text(
         widget.text,
         style: defaultStyle,
@@ -143,45 +178,55 @@ class _LinkifiedTextState extends State<LinkifiedText> {
     final spans = <InlineSpan>[];
     int lastEnd = 0;
 
-    for (final match in matches) {
-      // Texto antes do link
-      if (match.start > lastEnd) {
+    for (final item in filtered) {
+      // Texto antes do match
+      if (item.start > lastEnd) {
         spans.add(TextSpan(
-          text: widget.text.substring(lastEnd, match.start),
+          text: widget.text.substring(lastEnd, item.start),
           style: defaultStyle,
         ));
       }
 
-      final isMarkdownLink = match.group(1) != null;
-      final displayText =
-          isMarkdownLink ? match.group(1)! : match.group(3)!;
-      final url = isMarkdownLink ? match.group(2)! : match.group(3)!;
-
-      final internalInfo = LinkifiedText._getInternalInfo(url);
-
-      if (internalInfo != null && !isMarkdownLink) {
-        // Link interno: mostrar badge com tipo
-        spans.add(WidgetSpan(
-          alignment: PlaceholderAlignment.middle,
-          child: _InternalLinkChip(
-            label: internalInfo.label,
-            icon: internalInfo.icon,
-            color: internalInfo.color,
-            url: url,
+      if (item.type == 'mention') {
+        // @username → link azul para /user/username
+        final username = item.match.group(1)!;
+        spans.add(TextSpan(
+          text: '@$username',
+          style: defaultMentionStyle,
+          recognizer: _createRecognizer(
+            () => context.push('/user/$username'),
           ),
         ));
       } else {
-        // Link externo ou markdown link: texto clicável
-        spans.add(TextSpan(
-          text: displayText,
-          style: defaultLinkStyle,
-          recognizer: _createRecognizer(
-            () => LinkifiedText.openUrl(context, url),
-          ),
-        ));
+        // URL
+        final match = item.match;
+        final isMarkdownLink = match.group(1) != null;
+        final displayText = isMarkdownLink ? match.group(1)! : match.group(3)!;
+        final url = isMarkdownLink ? match.group(2)! : match.group(3)!;
+        final internalInfo = LinkifiedText._getInternalInfo(url);
+
+        if (internalInfo != null && !isMarkdownLink) {
+          spans.add(WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: _InternalLinkChip(
+              label: internalInfo.label,
+              icon: internalInfo.icon,
+              color: internalInfo.color,
+              url: url,
+            ),
+          ));
+        } else {
+          spans.add(TextSpan(
+            text: displayText,
+            style: defaultLinkStyle,
+            recognizer: _createRecognizer(
+              () => LinkifiedText.openUrl(context, url),
+            ),
+          ));
+        }
       }
 
-      lastEnd = match.end;
+      lastEnd = item.end;
     }
 
     // Texto restante
@@ -206,6 +251,15 @@ class _InternalLinkInfo {
   final IconData icon;
   final Color color;
   const _InternalLinkInfo(this.label, this.icon, this.color);
+}
+
+/// Estrutura interna para unificar matches de URL e @mention
+class _MatchInfo {
+  final int start;
+  final int end;
+  final String type; // 'url' ou 'mention'
+  final RegExpMatch match;
+  const _MatchInfo(this.start, this.end, this.type, this.match);
 }
 
 class _InternalLinkChip extends StatelessWidget {
