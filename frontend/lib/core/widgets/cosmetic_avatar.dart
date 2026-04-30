@@ -15,12 +15,14 @@ import 'avatar_with_frame.dart';
 ///
 /// ## Indicadores de Estado
 ///
-/// O widget suporta dois indicadores visuais com hierarquia de prioridade:
+/// O widget suporta três indicadores visuais com hierarquia de prioridade:
 ///
 /// - [hasActiveCall]: Borda glow verde pulsante — prioridade máxima.
 ///   Indica que o usuário está em uma call ou projeção pública ativa.
 /// - [hasActiveStory]: Anel gradiente laranja/rosa — exibido apenas quando
 ///   não há call ativa. Indica stories não vistos.
+/// - [hasCanonicalWiki]: Anel gradiente dourado — exibido apenas quando não
+///   há call ativa nem story não visto. Indica wiki canonizada pelo curador.
 ///
 /// Uso:
 /// ```dart
@@ -31,6 +33,7 @@ import 'avatar_with_frame.dart';
 ///   hasActiveStory: hasUnviewedStory,
 ///   hasActiveCall: isInPublicCall,
 ///   isScreeningRoom: callType == 'screening_room',
+///   hasCanonicalWiki: hasCanonWiki,
 /// )
 /// ```
 class CosmeticAvatar extends ConsumerWidget {
@@ -59,6 +62,10 @@ class CosmeticAvatar extends ConsumerWidget {
   /// Quando `true` e [hasActiveCall] também é `true`, usa ícone de projeção.
   final bool isScreeningRoom;
 
+  /// Indica se o usuário é autor de pelo menos uma wiki canonizada.
+  /// Quando `true` e não há call ativa nem story não visto, exibe anel dourado.
+  final bool hasCanonicalWiki;
+
   const CosmeticAvatar({
     super.key,
     this.userId,
@@ -71,6 +78,7 @@ class CosmeticAvatar extends ConsumerWidget {
     this.hasActiveStory = false,
     this.hasActiveCall = false,
     this.isScreeningRoom = false,
+    this.hasCanonicalWiki = false,
   });
 
   @override
@@ -87,6 +95,7 @@ class CosmeticAvatar extends ConsumerWidget {
         hasActiveStory: hasActiveStory,
         hasActiveCall: hasActiveCall,
         isScreeningRoom: isScreeningRoom,
+        hasCanonicalWiki: hasCanonicalWiki,
       );
     }
 
@@ -102,6 +111,7 @@ class CosmeticAvatar extends ConsumerWidget {
         hasActiveStory: hasActiveStory,
         hasActiveCall: hasActiveCall,
         isScreeningRoom: isScreeningRoom,
+        hasCanonicalWiki: hasCanonicalWiki,
       );
     }
 
@@ -121,6 +131,7 @@ class CosmeticAvatar extends ConsumerWidget {
         hasActiveStory: hasActiveStory,
         hasActiveCall: hasActiveCall,
         isScreeningRoom: isScreeningRoom,
+        hasCanonicalWiki: hasCanonicalWiki,
       ),
       loading: () => AvatarWithFrame(
         avatarUrl: avatarUrl,
@@ -130,6 +141,7 @@ class CosmeticAvatar extends ConsumerWidget {
         hasActiveStory: hasActiveStory,
         hasActiveCall: hasActiveCall,
         isScreeningRoom: isScreeningRoom,
+        hasCanonicalWiki: hasCanonicalWiki,
       ),
       error: (_, __) => AvatarWithFrame(
         avatarUrl: avatarUrl,
@@ -139,6 +151,7 @@ class CosmeticAvatar extends ConsumerWidget {
         hasActiveStory: hasActiveStory,
         hasActiveCall: hasActiveCall,
         isScreeningRoom: isScreeningRoom,
+        hasCanonicalWiki: hasCanonicalWiki,
       ),
     );
   }

@@ -81,6 +81,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   bool _isTogglingFollow = false; // evita double-tap
   bool _hasActiveStory = false; // usuário tem story ativo nesta comunidade
   Map<String, dynamic>? _activeCallData; // dados da call ativa pública do usuário
+  bool _hasCanonicalWiki = false; // usuário tem wiki canonizada
   String _communityName = '';
   String? _communityBannerUrl;
 
@@ -241,6 +242,18 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         } catch (_) {
           _activeCallData = null;
         }
+      }
+      // Verificar se o usuário tem wiki canonizada
+      try {
+        final canonRes = await SupabaseService.table('wiki_entries')
+            .select('id')
+            .eq('author_id', widget.userId)
+            .eq('is_canonical', true)
+            .eq('status', 'ok')
+            .limit(1);
+        _hasCanonicalWiki = (canonRes as List?)?.isNotEmpty == true;
+      } catch (_) {
+        _hasCanonicalWiki = false;
       }
 
       if (_isOwnProfile) {
@@ -1089,6 +1102,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                   hasActiveStory: _hasActiveStory,
                                   hasActiveCall: hasActiveCall,
                                   isScreeningRoom: isScreeningRoom,
+                                  hasCanonicalWiki: _hasCanonicalWiki,
                                   onTap: () {
                                     // Prioridade 1: Redirecionar para call/projeção pública ativa
                                     if (hasActiveCall && _activeCallData != null) {
