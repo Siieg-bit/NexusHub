@@ -1345,14 +1345,19 @@ final image = _pickedFiles_image.first.file;
                           ),
                         ),
 
+                        // ======================================================
+                        // CONTAINER DE REAÇÕES
+                        // ======================================================
+                        if (post.likesCount > 0)
+                          _buildReactionsContainer(post, r, s),
+
                         Divider(
                           color: Colors.grey.withValues(alpha: 0.15),
                           thickness: 1,
                           height: r.s(24),
                         ),
-
                         // ======================================================
-                        // SEÇÃO DE COMENTÁRIOS — cabeçalho estilo Amino
+                        // SEÇÃO DE COMENTÁRIOS — cabeçalho estilo Aminoo
                         // ======================================================
                         Padding(
                           padding: EdgeInsets.symmetric(
@@ -2019,6 +2024,361 @@ class _BottomBarButton extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CONTAINER DE REAÇÕES
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildReactionsContainer(
+      PostModel post, Responsive r, AppStrings s) {
+    // Mapa de tipo -> emoji + cor
+    const Map<String, Map<String, dynamic>> reactionMeta = {
+      'like': {'emoji': '👍', 'color': Color(0xFF4FC3F7)},
+      'love': {'emoji': '❤️', 'color': Color(0xFFE91E63)},
+      'haha': {'emoji': '😂', 'color': Color(0xFFFFCA28)},
+      'wow': {'emoji': '😮', 'color': Color(0xFFFFCA28)},
+      'sad': {'emoji': '😢', 'color': Color(0xFF90CAF9)},
+      'angry': {'emoji': '😡', 'color': Color(0xFFEF5350)},
+    };
+
+    // Construir lista de tipos com contagem > 0
+    final List<MapEntry<String, int>> activeReactions = [
+      MapEntry('like', post.likesCount),
+      MapEntry('love', post.loveCount),
+      MapEntry('haha', post.hahaCount),
+      MapEntry('wow', post.wowCount),
+      MapEntry('sad', post.sadCount),
+      MapEntry('angry', post.angryCount),
+    ].where((e) => e.value > 0).toList();
+
+    if (activeReactions.isEmpty) return const SizedBox.shrink();
+
+    final int totalReactions =
+        activeReactions.fold(0, (sum, e) => sum + e.value);
+
+    return GestureDetector(
+      onTap: () => _showLikersSheet(post.id),
+      child: Container(
+        margin: EdgeInsets.symmetric(
+            horizontal: r.s(16), vertical: r.s(6)),
+        padding: EdgeInsets.symmetric(
+            horizontal: r.s(14), vertical: r.s(10)),
+        decoration: BoxDecoration(
+          color: context.nexusTheme.surfacePrimary,
+          borderRadius: BorderRadius.circular(r.s(14)),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.06),
+          ),
+        ),
+        child: Row(
+          children: [
+            // Emojis das reações ativas (até 4)
+            ...activeReactions.take(4).map((entry) {
+              final meta = reactionMeta[entry.key]!;
+              return Container(
+                margin: EdgeInsets.only(right: r.s(2)),
+                width: r.s(24),
+                height: r.s(24),
+                decoration: BoxDecoration(
+                  color: (meta['color'] as Color).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  meta['emoji'] as String,
+                  style: TextStyle(fontSize: r.fs(13)),
+                ),
+              );
+            }),
+            SizedBox(width: r.s(8)),
+            // Contagem total
+            Expanded(
+              child: Text(
+                totalReactions == 1
+                    ? s.oneReaction
+                    : s.reactionsCount(totalReactions),
+                style: TextStyle(
+                  color: context.nexusTheme.textSecondary,
+                  fontSize: r.fs(12),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            // Seta indicando que é clicável
+            Icon(
+              Icons.chevron_right_rounded,
+              size: r.s(18),
+              color: Colors.grey[600],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showLikersSheet(String postId) async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _LikersSheet(postId: postId),
+    );
+  }
+}
+
+// =============================================================================
+// SHEET DE QUEM CURTIU
+// =============================================================================
+class _LikersSheet extends ConsumerStatefulWidget {
+  final String postId;
+  const _LikersSheet({required this.postId});
+
+  @override
+  ConsumerState<_LikersSheet> createState() => _LikersSheetState();
+}
+
+class _LikersSheetState extends ConsumerState<_LikersSheet> {
+  List<Map<String, dynamic>> _likers = [];
+  bool _loading = true;
+  String? _selectedType; // null = todos
+
+  static const Map<String, Map<String, dynamic>> _reactionMeta = {
+    'like': {'emoji': '👍', 'label': 'Curtir'},
+    'love': {'emoji': '❤️', 'label': 'Amei'},
+    'haha': {'emoji': '😂', 'label': 'Haha'},
+    'wow': {'emoji': '😮', 'label': 'Uau'},
+    'sad': {'emoji': '😢', 'label': 'Triste'},
+    'angry': {'emoji': '😡', 'label': 'Grr'},
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLikers();
+  }
+
+  Future<void> _loadLikers() async {
+    try {
+      final res = await SupabaseService.table('post_reactions')
+          .select('type, user_id, profiles!post_reactions_user_id_fkey(id, nickname, icon_url)')
+          .eq('post_id', widget.postId)
+          .order('created_at', ascending: false)
+          .limit(200);
+      if (mounted) {
+        setState(() {
+          _likers = List<Map<String, dynamic>>.from(res as List? ?? []);
+          _loading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    final filtered = _selectedType == null
+        ? _likers
+        : _likers.where((l) => l['type'] == _selectedType).toList();
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.65,
+      decoration: BoxDecoration(
+        color: context.nexusTheme.backgroundPrimary,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+      ),
+      child: Column(
+        children: [
+          // Handle
+          Container(
+            margin: EdgeInsets.only(top: r.s(10), bottom: r.s(4)),
+            width: r.s(36),
+            height: r.s(4),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(r.s(999)),
+            ),
+          ),
+          // Título
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: r.s(16), vertical: r.s(10)),
+            child: Row(
+              children: [
+                Text(
+                  'Reações',
+                  style: TextStyle(
+                    color: context.nexusTheme.textPrimary,
+                    fontSize: r.fs(16),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${_likers.length}',
+                  style: TextStyle(
+                    color: context.nexusTheme.textSecondary,
+                    fontSize: r.fs(14),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Filtro por tipo de reação
+          if (!_loading && _likers.isNotEmpty)
+            SizedBox(
+              height: r.s(38),
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: r.s(12)),
+                children: [
+                  _buildFilterChip(null, 'Todos', r),
+                  ..._reactionMeta.entries.map(
+                    (e) => _buildFilterChip(
+                        e.key, '${e.value['emoji']} ${e.value['label']}', r),
+                  ),
+                ],
+              ),
+            ),
+          SizedBox(height: r.s(8)),
+          // Lista
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : filtered.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Nenhuma reação',
+                          style: TextStyle(
+                              color: context.nexusTheme.textSecondary),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: filtered.length,
+                        padding: EdgeInsets.symmetric(horizontal: r.s(12)),
+                        itemBuilder: (ctx, i) {
+                          final item = filtered[i];
+                          final profile =
+                              item['profiles'] as Map<String, dynamic>?;
+                          final userId = profile?['id'] as String? ??
+                              item['user_id'] as String?;
+                          final nickname =
+                              profile?['nickname'] as String? ?? 'Usuário';
+                          final iconUrl = profile?['icon_url'] as String?;
+                          final reactionType =
+                              item['type'] as String? ?? 'like';
+                          final meta = _reactionMeta[reactionType] ??
+                              _reactionMeta['like']!;
+
+                          return ListTile(
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: r.s(4), vertical: r.s(2)),
+                            onTap: () {
+                              Navigator.pop(context);
+                              if (userId != null) {
+                                context.push('/profile/$userId');
+                              }
+                            },
+                            leading: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                CircleAvatar(
+                                  radius: r.s(20),
+                                  backgroundImage: iconUrl != null
+                                      ? NetworkImage(iconUrl)
+                                      : null,
+                                  backgroundColor:
+                                      context.nexusTheme.surfacePrimary,
+                                  child: iconUrl == null
+                                      ? Icon(Icons.person_rounded,
+                                          size: r.s(20),
+                                          color: context
+                                              .nexusTheme.textSecondary)
+                                      : null,
+                                ),
+                                Positioned(
+                                  bottom: -2,
+                                  right: -2,
+                                  child: Container(
+                                    width: r.s(18),
+                                    height: r.s(18),
+                                    decoration: BoxDecoration(
+                                      color: context
+                                          .nexusTheme.backgroundPrimary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      meta['emoji'] as String,
+                                      style:
+                                          TextStyle(fontSize: r.fs(11)),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            title: Text(
+                              nickname,
+                              style: TextStyle(
+                                color: context.nexusTheme.textPrimary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: r.fs(14),
+                              ),
+                            ),
+                            subtitle: Text(
+                              meta['label'] as String,
+                              style: TextStyle(
+                                color: context.nexusTheme.textSecondary,
+                                fontSize: r.fs(11),
+                              ),
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right_rounded,
+                              size: r.s(18),
+                              color: Colors.grey[600],
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String? type, String label, Responsive r) {
+    final isSelected = _selectedType == type;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedType = type),
+      child: Container(
+        margin: EdgeInsets.only(right: r.s(8)),
+        padding: EdgeInsets.symmetric(
+            horizontal: r.s(12), vertical: r.s(6)),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? context.nexusTheme.accentPrimary.withValues(alpha: 0.2)
+              : context.nexusTheme.surfacePrimary,
+          borderRadius: BorderRadius.circular(r.s(999)),
+          border: Border.all(
+            color: isSelected
+                ? context.nexusTheme.accentPrimary
+                : Colors.white.withValues(alpha: 0.08),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected
+                ? context.nexusTheme.accentPrimary
+                : context.nexusTheme.textSecondary,
+            fontSize: r.fs(12),
+            fontWeight:
+                isSelected ? FontWeight.w700 : FontWeight.normal,
           ),
         ),
       ),

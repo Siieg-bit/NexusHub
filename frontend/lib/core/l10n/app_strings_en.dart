@@ -6302,4 +6302,9 @@ class AppStringsEn implements AppStrings {
   String get securityPasswordChangeTitle => 'Change password';
   @override
   String get securityPasswordChangeSubtitle => 'We recommend using a strong and unique password.';
+
+  @override
+  String get oneReaction => '1 reaction';
+  @override
+  String reactionsCount(int count) => '{count} reactions'.replaceAll('{count}', '$count');
 }

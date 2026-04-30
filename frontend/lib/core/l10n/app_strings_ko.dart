@@ -6227,4 +6227,9 @@ class AppStringsKo implements AppStrings {
   String get securityPasswordChangeTitle => '비밀번호 변경';
   @override
   String get securityPasswordChangeSubtitle => '강력하고 고유한 비밀번호 사용을 권장합니다.';
+
+  @override
+  String get oneReaction => '반응 1개';
+  @override
+  String reactionsCount(int count) => '반응 {count}개'.replaceAll('{count}', '$count');
 }

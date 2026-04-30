@@ -3250,4 +3250,7 @@ abstract class AppStrings {
   String get securityVerifyEmailAlreadyVerified;
   String get securityPasswordChangeTitle;
   String get securityPasswordChangeSubtitle;
+  // Reações no post
+  String get oneReaction;
+  String reactionsCount(int count);
 }

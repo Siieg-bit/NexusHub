@@ -6226,4 +6226,9 @@ class AppStringsAr implements AppStrings {
   String get securityPasswordChangeTitle => 'تغيير كلمة المرور';
   @override
   String get securityPasswordChangeSubtitle => 'نوصي باستخدام كلمة مرور قوية وفريدة.';
+
+  @override
+  String get oneReaction => 'تفاعل واحد';
+  @override
+  String reactionsCount(int count) => '{count} تفاعلات'.replaceAll('{count}', '$count');
 }

@@ -771,8 +771,13 @@ class _PostCardState extends ConsumerState<PostCard>
             // ── Type-specific content ──
             _buildTypeSpecificContent(),
 
-            // ── Media (oculto para reposts — mídia fica no card aninhado) ──
-            if (_post.type != 'repost' && (_post.mediaUrl ?? '').isNotEmpty)
+            // ── Media (oculto para reposts e enquetes/quizzes) ──
+            // Enquetes e quizzes já exibem seu conteúdo específico acima;
+            // mostrar a imagem inline tornaria o card excessivamente grande.
+            if (_post.type != 'repost' &&
+                _post.type != 'poll' &&
+                _post.type != 'quiz' &&
+                (_post.mediaUrl ?? '').isNotEmpty)
               Padding(
                 padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
                 child: AspectRatio(

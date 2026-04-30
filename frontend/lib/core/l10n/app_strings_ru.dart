@@ -6227,4 +6227,9 @@ class AppStringsRu implements AppStrings {
   String get securityPasswordChangeTitle => 'Изменить пароль';
   @override
   String get securityPasswordChangeSubtitle => 'Рекомендуем использовать надёжный и уникальный пароль.';
+
+  @override
+  String get oneReaction => '1 реакция';
+  @override
+  String reactionsCount(int count) => '{count} реакций'.replaceAll('{count}', '$count');
 }

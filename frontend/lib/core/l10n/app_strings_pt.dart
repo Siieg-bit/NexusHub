@@ -6356,4 +6356,9 @@ class AppStringsPt implements AppStrings {
   String get securityPasswordChangeTitle => 'Alterar senha';
   @override
   String get securityPasswordChangeSubtitle => 'Recomendamos usar uma senha forte e única.';
+
+  @override
+  String get oneReaction => '1 reação';
+  @override
+  String reactionsCount(int count) => '{count} reações'.replaceAll('{count}', '$count');
 }

@@ -6227,4 +6227,9 @@ class AppStringsFr implements AppStrings {
   String get securityPasswordChangeTitle => 'Changer le mot de passe';
   @override
   String get securityPasswordChangeSubtitle => 'Nous recommandons d\'utiliser un mot de passe fort et unique.';
+
+  @override
+  String get oneReaction => '1 réaction';
+  @override
+  String reactionsCount(int count) => '{count} réactions'.replaceAll('{count}', '$count');
 }

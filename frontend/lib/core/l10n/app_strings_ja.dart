@@ -6225,4 +6225,9 @@ class AppStringsJa implements AppStrings {
   String get securityPasswordChangeTitle => 'パスワードを変更';
   @override
   String get securityPasswordChangeSubtitle => '強力でユニークなパスワードの使用をお勧めします。';
+
+  @override
+  String get oneReaction => '1件のリアクション';
+  @override
+  String reactionsCount(int count) => '{count}件のリアクション'.replaceAll('{count}', '$count');
 }

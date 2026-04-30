@@ -2131,6 +2131,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                   ),
               ],
             ),
+            // ── TPL / Imagem principal ─────────────────────────────────────
+            _buildCommunityPostMedia(post),
+
             if ((post['content'] as String?)?.isNotEmpty == true) ...[
               SizedBox(height: r.s(4)),
               Text(
@@ -2174,6 +2177,174 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TPL / IMAGEM DO POST (layout 1 grande + 2 menores ou 1 square)
+  // ══════════════════════════════════════════════════════════════════════════
+  Widget _buildCommunityPostMedia(Map<String, dynamic> post) {
+    final r = context.r;
+    final postType = post['type'] as String? ?? '';
+
+    // Enquetes e quizzes não exibem imagem inline no card
+    if (postType == 'poll' || postType == 'quiz') return const SizedBox.shrink();
+
+    // Extrair lista de mídias
+    final rawMediaList = post['media_list'];
+    final List<String> imageUrls = [];
+
+    if (rawMediaList is List && rawMediaList.isNotEmpty) {
+      for (final m in rawMediaList) {
+        if (m is Map && m['url'] is String) {
+          imageUrls.add(m['url'] as String);
+        } else if (m is String && m.isNotEmpty) {
+          imageUrls.add(m);
+        }
+      }
+    }
+
+    // Fallback para cover_image_url
+    if (imageUrls.isEmpty) {
+      final cover = post['cover_image_url'] as String?;
+      if (cover != null && cover.isNotEmpty) imageUrls.add(cover);
+    }
+
+    if (imageUrls.isEmpty) return const SizedBox.shrink();
+
+    // Altura do layout
+    final double blockH = r.s(200);
+
+    Widget buildImg(String url, {BorderRadius? radius}) {
+      return ClipRRect(
+        borderRadius: radius ?? BorderRadius.zero,
+        child: CachedNetworkImage(
+          imageUrl: url,
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+          errorWidget: (_, __, ___) => Container(
+            color: context.nexusTheme.backgroundPrimary,
+            child: Icon(Icons.broken_image_rounded,
+                color: context.nexusTheme.textHint),
+          ),
+        ),
+      );
+    }
+
+    Widget mediaWidget;
+
+    if (imageUrls.length == 1) {
+      // ─ 1 imagem: square simples
+      mediaWidget = AspectRatio(
+        aspectRatio: 1.0,
+        child: buildImg(imageUrls[0],
+            radius: BorderRadius.circular(r.s(10))),
+      );
+    } else if (imageUrls.length == 2) {
+      // ─ 2 imagens: lado a lado
+      mediaWidget = SizedBox(
+        height: blockH,
+        child: Row(
+          children: [
+            Expanded(
+              child: buildImg(imageUrls[0],
+                  radius: BorderRadius.only(
+                    topLeft: Radius.circular(r.s(10)),
+                    bottomLeft: Radius.circular(r.s(10)),
+                  )),
+            ),
+            SizedBox(width: r.s(2)),
+            Expanded(
+              child: buildImg(imageUrls[1],
+                  radius: BorderRadius.only(
+                    topRight: Radius.circular(r.s(10)),
+                    bottomRight: Radius.circular(r.s(10)),
+                  )),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // ─ 3+ imagens: layout TPL (1 grande à esquerda + 2 menores à direita)
+      final String img1 = imageUrls[0];
+      final String img2 = imageUrls[1];
+      final String img3 = imageUrls[2];
+      final int extra = imageUrls.length - 3;
+
+      mediaWidget = SizedBox(
+        height: blockH,
+        child: Row(
+          children: [
+            // Imagem grande à esquerda (~65% da largura)
+            Expanded(
+              flex: 65,
+              child: buildImg(img1,
+                  radius: BorderRadius.only(
+                    topLeft: Radius.circular(r.s(10)),
+                    bottomLeft: Radius.circular(r.s(10)),
+                  )),
+            ),
+            SizedBox(width: r.s(2)),
+            // 2 imagens menores à direita (~35% da largura)
+            Expanded(
+              flex: 35,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: buildImg(img2,
+                        radius: BorderRadius.only(
+                          topRight: Radius.circular(r.s(10)),
+                        )),
+                  ),
+                  SizedBox(height: r.s(2)),
+                  Expanded(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        buildImg(img3,
+                            radius: BorderRadius.only(
+                              bottomRight: Radius.circular(r.s(10)),
+                            )),
+                        // Overlay "+N" se houver mais de 3 imagens
+                        if (extra > 0)
+                          ClipRRect(
+                            borderRadius: BorderRadius.only(
+                              bottomRight: Radius.circular(r.s(10)),
+                            ),
+                            child: Container(
+                              color: Colors.black.withValues(alpha: 0.55),
+                              alignment: Alignment.center,
+                              child: Text(
+                                '+$extra',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: r.fs(18),
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(0, r.s(8), 0, r.s(4)),
+      child: GestureDetector(
+        onTap: () => context.push('/post/${post["id"]}'),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(r.s(10)),
+          child: mediaWidget,
         ),
       ),
     );
