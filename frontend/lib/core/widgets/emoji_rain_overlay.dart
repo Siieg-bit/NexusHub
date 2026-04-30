@@ -185,10 +185,21 @@ class EmojiRainOverlayState extends State<EmojiRainOverlay> {
   final List<_EmojiParticle> _particles = [];
   final _random = Random();
   bool _isActive = false;
+  int _generation = 0;
+
+  void clear() {
+    _generation++;
+    if (!mounted) return;
+    setState(() {
+      _particles.clear();
+      _isActive = false;
+    });
+  }
 
   /// Dispara a chuva de emojis para o tipo especificado.
   void trigger(EmojiRainType type) {
-    if (_isActive) return; // Evitar sobreposição
+    if (!mounted || _isActive) return; // Evitar sobreposição
+    final generation = ++_generation;
     final emojis = EmojiRainAnalyzer.emojisFor(type);
     final particles = <_EmojiParticle>[];
 
@@ -213,13 +224,21 @@ class EmojiRainOverlayState extends State<EmojiRainOverlay> {
 
     // Limpar após a animação
     Future.delayed(const Duration(milliseconds: 3500), () {
-      if (mounted) {
+      if (mounted && generation == _generation) {
         setState(() {
           _particles.clear();
           _isActive = false;
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _generation++;
+    _particles.clear();
+    _isActive = false;
+    super.dispose();
   }
 
   /// Analisa o texto e dispara automaticamente se houver correspondência.
@@ -238,22 +257,31 @@ class EmojiRainOverlayState extends State<EmojiRainOverlay> {
         if (_particles.isNotEmpty)
           Positioned.fill(
             child: IgnorePointer(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return Stack(
-                    children: _particles.map((p) {
-                      final startLeft = p.startX * constraints.maxWidth;
-                      return Positioned(
-                        left: startLeft,
-                        top: 0,
-                        child: _AnimatedEmojiParticle(
-                          particle: p,
-                          screenHeight: constraints.maxHeight,
-                        ),
-                      );
-                    }).toList(),
-                  );
-                },
+              child: ClipRect(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Stack(
+                      clipBehavior: Clip.hardEdge,
+                      children: _particles.map((p) {
+                        final particleWidth = p.size + 12;
+                        final maxLeft = (constraints.maxWidth - particleWidth)
+                            .clamp(0.0, constraints.maxWidth);
+                        final startLeft = (p.startX * maxLeft).clamp(0.0, maxLeft);
+                        return Positioned(
+                          left: startLeft,
+                          top: 0,
+                          child: SizedBox(
+                            width: particleWidth,
+                            child: _AnimatedEmojiParticle(
+                              particle: p,
+                              screenHeight: constraints.maxHeight,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
               ),
             ),
           ),

@@ -88,8 +88,8 @@ class LocalVideoService {
     required String userId,
     void Function(LocalVideoUploadProgress)? onProgress,
   }) async {
-    final fileBytes = await file.readAsBytes();
-    final fileSizeBytes = fileBytes.length;
+    final localFile = File(file.path);
+    final fileSizeBytes = await localFile.length();
     final fileSizeMb = fileSizeBytes / (1024 * 1024);
 
     // Validar tamanho
@@ -119,11 +119,15 @@ class LocalVideoService {
     ));
 
     try {
-      // Upload para o Supabase Storage
+      // Upload para o Supabase Storage usando File em vez de bytes.
+      // Carregar o vídeo inteiro em memória com readAsBytes() fazia aparelhos
+      // menos potentes travarem ou encerrarem o processo durante uploads curtos
+      // mas pesados. O client do Supabase consegue enviar File diretamente,
+      // preservando memória e evitando o falso "travou em 10%" causado por OOM.
       final publicUrl = await SupabaseService.uploadFile(
         bucket: _bucket,
         path: storagePath,
-        file: fileBytes,
+        file: localFile,
         fileOptions: FileOptions(
           contentType: _mimeType(safeExt),
           upsert: false,

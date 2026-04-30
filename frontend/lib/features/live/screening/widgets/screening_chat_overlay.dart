@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,12 +6,14 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/services/supabase_service.dart';
+import '../../../../core/services/media_upload_service.dart';
 import '../../../../core/widgets/emoji_rain_overlay.dart';
 import '../providers/screening_chat_provider.dart';
 import '../providers/screening_voice_provider.dart';
 import '../providers/screening_room_provider.dart';
 import '../models/screening_participant.dart';
 import '../models/screening_chat_message.dart';
+import '../../../chat/widgets/sticker_picker.dart';
 // emoji_picker_flutter removido — usar EmojiRainCascadePicker (efeito cascata)
 import 'screening_add_video_sheet.dart';
 
@@ -119,6 +122,147 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
     _textController.clear();
     // Fechar o emoji picker ao enviar mensagem
     if (_showEmojiPicker) setState(() => _showEmojiPicker = false);
+    _scrollToBottom();
+  }
+
+  Future<void> _pickAndSendImage() async {
+    try {
+      final file = await MediaUploadService.pickImage(context: context);
+      if (file == null || !mounted) return;
+      final url = await MediaUploadService.uploadChatMedia(file: file);
+      if (url == null || !mounted) return;
+      await ref.read(screeningChatProvider(widget.sessionId).notifier).sendImage(
+            imageUrl: url,
+            name: file.path.split(Platform.pathSeparator).last,
+          );
+      _scrollToBottom();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao enviar imagem: $e')),
+      );
+    }
+  }
+
+  Future<void> _pickAndSendSticker() async {
+    final sticker = await StickerPicker.show(context);
+    if (sticker == null || !mounted) return;
+    final stickerUrl = sticker['sticker_url'] as String?;
+    if (stickerUrl == null || stickerUrl.isEmpty) return;
+    await ref.read(screeningChatProvider(widget.sessionId).notifier).sendSticker(
+          stickerUrl: stickerUrl,
+          stickerName: sticker['sticker_name'] as String?,
+        );
+    _scrollToBottom();
+  }
+
+  Future<void> _openModerationSheet() async {
+    final roomState = ref.read(screeningRoomProvider(widget.threadId));
+    final currentUserId = SupabaseService.currentUserId;
+    final participants = roomState.participants
+        .where((p) => p.userId != currentUserId && !p.isHost)
+        .toList();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF151515),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        if (participants.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              'Nenhum participante moderável na sala.',
+              style: TextStyle(color: Colors.white70),
+            ),
+          );
+        }
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Moderação da sala',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: participants.length,
+                    separatorBuilder: (_, __) => Divider(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      height: 1,
+                    ),
+                    itemBuilder: (_, index) {
+                      final participant = participants[index];
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.white24,
+                          backgroundImage: participant.avatarUrl != null
+                              ? NetworkImage(participant.avatarUrl!)
+                              : null,
+                          child: participant.avatarUrl == null
+                              ? Text(participant.username.isNotEmpty
+                                  ? participant.username[0].toUpperCase()
+                                  : '?')
+                              : null,
+                        ),
+                        title: Text(
+                          participant.username,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        trailing: Wrap(
+                          spacing: 8,
+                          children: [
+                            TextButton.icon(
+                              onPressed: () {
+                                ref
+                                    .read(screeningRoomProvider(widget.threadId)
+                                        .notifier)
+                                    .muteParticipant(participant.userId);
+                                Navigator.of(ctx).pop();
+                              },
+                              icon: const Icon(Icons.mic_off_rounded, size: 16),
+                              label: const Text('Mutar'),
+                            ),
+                            TextButton.icon(
+                              onPressed: () {
+                                ref
+                                    .read(screeningRoomProvider(widget.threadId)
+                                        .notifier)
+                                    .kickParticipant(participant.userId);
+                                Navigator.of(ctx).pop();
+                              },
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.redAccent,
+                              ),
+                              icon: const Icon(Icons.person_remove_alt_1_rounded,
+                                  size: 16),
+                              label: const Text('Remover'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -210,6 +354,21 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
                     () => _showEmojiPicker = !_showEmojiPicker),
               ),
               const SizedBox(width: 6),
+              _ActionIconButton(
+                icon: Icons.image_outlined,
+                onTap: _pickAndSendImage,
+              ),
+              const SizedBox(width: 6),
+              _ActionIconButton(
+                icon: Icons.sticky_note_2_outlined,
+                onTap: _pickAndSendSticker,
+              ),
+              const SizedBox(width: 6),
+              _ActionIconButton(
+                icon: Icons.shield_outlined,
+                onTap: _openModerationSheet,
+              ),
+              const SizedBox(width: 6),
               // Botão de adicionar vídeo (apenas para host)
               if (roomState.isHost) ...[
                 _ActionIconButton(
@@ -269,75 +428,138 @@ class _ChatBubble extends StatelessWidget {
           .scale(begin: const Offset(0.95, 0.95), end: const Offset(1, 1), duration: 300.ms);
     }
 
+    final isMe = message.isMe;
+    final normalizedName = message.username.trim().toLowerCase();
+    final showName = !isMe &&
+        message.username.trim().isNotEmpty &&
+        normalizedName != 'usuário' &&
+        normalizedName != 'usuario' &&
+        normalizedName != 'user';
+
+    final avatar = CircleAvatar(
+      radius: 14,
+      backgroundColor: Colors.white24,
+      backgroundImage: message.avatarUrl != null
+          ? NetworkImage(message.avatarUrl!)
+          : null,
+      child: message.avatarUrl == null
+          ? Text(
+              message.username.isNotEmpty
+                  ? message.username[0].toUpperCase()
+                  : '?',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            )
+          : null,
+    );
+
+    final bubble = ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width * 0.72,
+      ),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: message.isMedia ? 6 : 12,
+          vertical: message.isMedia ? 6 : 8,
+        ),
+        decoration: BoxDecoration(
+          color: isMe
+              ? Colors.lightBlueAccent.withValues(alpha: 0.22)
+              : Colors.white.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(14),
+            topRight: const Radius.circular(14),
+            bottomLeft: Radius.circular(isMe ? 14 : 4),
+            bottomRight: Radius.circular(isMe ? 4 : 14),
+          ),
+          border: Border.all(
+            color: isMe
+                ? Colors.lightBlueAccent.withValues(alpha: 0.24)
+                : Colors.white.withValues(alpha: 0.08),
+            width: 0.6,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment:
+              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            if (showName) ...[
+              Text(
+                message.username,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.72),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  shadows: const [
+                    Shadow(color: Colors.black, blurRadius: 3),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 3),
+            ],
+            if (message.kind == ScreeningChatMessageKind.image &&
+                message.mediaUrl != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(
+                  message.mediaUrl!,
+                  width: 180,
+                  height: 140,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Text(
+                    message.displayText,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              )
+            else if (message.kind == ScreeningChatMessageKind.sticker &&
+                message.mediaUrl != null)
+              Image.network(
+                message.mediaUrl!,
+                width: 96,
+                height: 96,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => Text(
+                  message.displayText,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              )
+            else
+              Text(
+                message.displayText,
+                textAlign: isMe ? TextAlign.right : TextAlign.left,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  shadows: [
+                    Shadow(color: Colors.black, blurRadius: 4),
+                    Shadow(color: Colors.black54, blurRadius: 8),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Avatar com animação de entrada
-          CircleAvatar(
-            radius: 14,
-            backgroundColor: Colors.white24,
-            backgroundImage: message.avatarUrl != null
-                ? NetworkImage(message.avatarUrl!)
-                : null,
-            child: message.avatarUrl == null
-                ? Text(
-                    message.username.isNotEmpty
-                        ? message.username[0].toUpperCase()
-                        : '?',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                : null,
-          ),
-          const SizedBox(width: 8),
-
-          // Texto
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Username
-                Text(
-                  message.isMe ? 'Você' : message.username,
-                  style: TextStyle(
-                    color: message.isMe
-                        ? Colors.lightBlueAccent
-                        : Colors.white.withValues(alpha: 0.75),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    shadows: const [
-                      Shadow(color: Colors.black, blurRadius: 3),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 2),
-                // Mensagem
-                Text(
-                  message.text,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    shadows: [
-                      Shadow(color: Colors.black, blurRadius: 4),
-                      Shadow(color: Colors.black54, blurRadius: 8),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        mainAxisAlignment:
+            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: isMe
+            ? [bubble, const SizedBox(width: 8), avatar]
+            : [avatar, const SizedBox(width: 8), bubble],
       ),
     )
         .animate()
         .fadeIn(duration: 250.ms)
         .slideX(
-          begin: message.isMe ? 0.05 : -0.05,
+          begin: isMe ? 0.05 : -0.05,
           end: 0.0,
           duration: 250.ms,
           curve: Curves.easeOut,

@@ -106,6 +106,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
   @override
   void dispose() {
     _controlsHideTimer?.cancel();
+    _emojiRainKey.currentState?.clear();
     WidgetsBinding.instance.removeObserver(this);
 
     // Restaurar UI do sistema (mostrar status bar e nav bar novamente)

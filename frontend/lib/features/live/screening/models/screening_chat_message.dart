@@ -1,8 +1,14 @@
+import 'dart:convert';
+
 // =============================================================================
 // ScreeningChatMessage — Mensagem do chat interno da Sala de Projeção
 // =============================================================================
 
+enum ScreeningChatMessageKind { text, image, sticker }
+
 class ScreeningChatMessage {
+  static const _mediaPrefix = '__nexus_screening_chat_media__:';
+
   final String id;
   final String userId;
   final String username;
@@ -26,6 +32,55 @@ class ScreeningChatMessage {
     this.isMe = false,
     this.isSystem = false,
   });
+
+  ScreeningChatMessageKind get kind {
+    final payload = mediaPayload;
+    if (payload == null) return ScreeningChatMessageKind.text;
+    return switch (payload['type'] as String?) {
+      'image' => ScreeningChatMessageKind.image,
+      'sticker' => ScreeningChatMessageKind.sticker,
+      _ => ScreeningChatMessageKind.text,
+    };
+  }
+
+  Map<String, dynamic>? get mediaPayload {
+    if (!text.startsWith(_mediaPrefix)) return null;
+    try {
+      final raw = text.substring(_mediaPrefix.length);
+      final decoded = jsonDecode(raw);
+      return decoded is Map<String, dynamic> ? decoded : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? get mediaUrl => mediaPayload?['url'] as String?;
+  String? get mediaName => mediaPayload?['name'] as String?;
+  bool get isMedia => kind != ScreeningChatMessageKind.text;
+
+  String get displayText {
+    final payload = mediaPayload;
+    if (payload == null) return text;
+    return (payload['name'] as String?) ??
+        (kind == ScreeningChatMessageKind.sticker ? 'Sticker' : 'Imagem');
+  }
+
+  static String encodeMediaPayload({
+    required ScreeningChatMessageKind kind,
+    required String url,
+    String? name,
+  }) {
+    final type = switch (kind) {
+      ScreeningChatMessageKind.image => 'image',
+      ScreeningChatMessageKind.sticker => 'sticker',
+      ScreeningChatMessageKind.text => 'text',
+    };
+    return '$_mediaPrefix${jsonEncode({
+      'type': type,
+      'url': url,
+      if (name != null && name.trim().isNotEmpty) 'name': name.trim(),
+    })}';
+  }
 
   /// Cria uma mensagem de sistema.
   factory ScreeningChatMessage.system(String text) {

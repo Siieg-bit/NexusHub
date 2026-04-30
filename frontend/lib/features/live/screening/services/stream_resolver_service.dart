@@ -225,19 +225,33 @@ class StreamResolverService {
     final platform = detectPlatform(url);
 
     switch (platform) {
-      // ── Twitch: embed iframe (HLS direto falha por auth GQL) ─────────────
+      // ── Twitch: HLS nativo otimizado com fallback para embed ─────────────
       case StreamPlatform.twitch:
-        // Retornar embed imediatamente — sem await de metadados.
-        // O resolveMetaOnly() fazia await do GQL da Twitch (2-5s de latência)
-        // antes de retornar a URL do embed, bloqueando o carregamento do player.
-        // Título/thumbnail não são críticos para o player funcionar.
-        final twitchEmbedUrl = _toEmbedUrl(url, platform);
-        return StreamResolution(
-          url: twitchEmbedUrl ?? url,
-          type: twitchEmbedUrl != null ? StreamType.embed : StreamType.direct,
-          platform: platform,
-          originalUrl: url,
-        );
+        // Priorizar HLS direto no media_kit. O embed oficial da Twitch dentro de
+        // WebView é pesado em aparelhos menos potentes, disputa GPU/thread com a
+        // UI Flutter e derruba FPS quando chat/controles ficam ativos. O player
+        // nativo reduz composição, elimina DOM/JS contínuo e mantém o embed como
+        // fallback quando a Twitch negar token, o canal estiver offline ou for uma
+        // URL que o resolver HLS não consiga tratar.
+        try {
+          final result = await TwitchStreamService.resolve(url);
+          return StreamResolution(
+            url: result.hlsUrl,
+            type: StreamType.hls,
+            platform: platform,
+            title: result.title,
+            thumbnailUrl: result.thumbnailUrl,
+            originalUrl: url,
+          );
+        } catch (_) {
+          final twitchEmbedUrl = _toEmbedUrl(url, platform);
+          return StreamResolution(
+            url: twitchEmbedUrl ?? url,
+            type: twitchEmbedUrl != null ? StreamType.embed : StreamType.direct,
+            platform: platform,
+            originalUrl: url,
+          );
+        }
 
       case StreamPlatform.tubi:
         final result = await TubiStreamService.resolve(url);
@@ -401,20 +415,20 @@ class StreamResolverService {
           originalUrl: url,
         );
 
-      // ── Google Drive (MP4 direto) ──────────────────────────────────────────
+      // ── Google Drive (preview autenticado em WebView) ─────────────────────
       case StreamPlatform.googleDrive:
         try {
           final result = await GoogleDriveStreamService.resolve(url);
           return StreamResolution(
             url: result.streamUrl,
-            type: StreamType.direct,
+            type: StreamType.embed,
             platform: platform,
             title: result.title,
             thumbnailUrl: result.thumbnailUrl,
             originalUrl: url,
           );
         } catch (_) {
-          // Fallback: embed no WebView
+          // Fallback: manter a URL original em WebView para preservar login/cookies.
           return StreamResolution(
             url: url,
             type: StreamType.embed,

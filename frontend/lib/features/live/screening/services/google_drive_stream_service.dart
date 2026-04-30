@@ -74,15 +74,18 @@ class GoogleDriveStreamService {
     return (name: 'Google Drive', thumbnailUrl: null);
   }
 
-  // ── Constrói a URL de stream do Drive ────────────────────────────────────
+  // ── Constrói a URL de reprodução do Drive ───────────────────────────────
   static String _buildStreamUrl(String fileId) {
-    // URL de download direto — o Drive serve o MP4 com suporte a range requests
-    // O parâmetro confirm=t bypassa o aviso de arquivo grande
-    return 'https://drive.google.com/uc?export=download&id=$fileId&confirm=t';
+    // Usar /preview em vez de /uc?export=download.
+    // O download direto frequentemente retorna uma página HTML intermediária
+    // (quota, confirmação, permissão ou cookie de sessão) e o player nativo não
+    // consegue reproduzir. O preview roda dentro do WebView do Drive e aproveita
+    // a sessão/login que o usuário acabou de fazer no navegador interno.
+    return 'https://drive.google.com/file/d/$fileId/preview';
   }
 
   // ── API pública ───────────────────────────────────────────────────────────
-  /// Resolve uma URL do Google Drive para um stream de vídeo direto.
+  /// Resolve uma URL do Google Drive para o preview reproduzível em WebView.
   static Future<GoogleDriveStreamResult> resolve(String url) async {
     final fileId = extractFileId(url);
     if (fileId == null) {

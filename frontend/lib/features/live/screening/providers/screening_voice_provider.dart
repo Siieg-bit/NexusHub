@@ -210,12 +210,15 @@ class ScreeningVoiceNotifier extends StateNotifier<ScreeningVoiceState> {
   // ── Mute / Unmute ───────────────────────────────────────────────────────────
 
   Future<void> toggleMute() async {
-    final newMuted = !state.isMuted;
+    await setMuted(!state.isMuted);
+  }
+
+  Future<void> setMuted(bool muted) async {
     try {
-      await _engine?.muteLocalAudioStream(newMuted);
-      state = state.copyWith(isMuted: newMuted);
+      await _engine?.muteLocalAudioStream(muted);
+      state = state.copyWith(isMuted: muted);
     } catch (e) {
-      debugPrint('[ScreeningVoice] toggleMute error: $e');
+      debugPrint('[ScreeningVoice] setMuted error: $e');
     }
   }
 

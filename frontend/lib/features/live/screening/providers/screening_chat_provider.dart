@@ -112,6 +112,35 @@ class ScreeningChatNotifier extends StateNotifier<List<ScreeningChatMessage>> {
 
   Future<void> sendMessage(String text) async {
     final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
+    await _sendRawMessage(trimmed);
+  }
+
+  Future<void> sendImage({required String imageUrl, String? name}) async {
+    if (imageUrl.trim().isEmpty) return;
+    final payload = ScreeningChatMessage.encodeMediaPayload(
+      kind: ScreeningChatMessageKind.image,
+      url: imageUrl.trim(),
+      name: name,
+    );
+    await _sendRawMessage(payload);
+  }
+
+  Future<void> sendSticker({
+    required String stickerUrl,
+    String? stickerName,
+  }) async {
+    if (stickerUrl.trim().isEmpty) return;
+    final payload = ScreeningChatMessage.encodeMediaPayload(
+      kind: ScreeningChatMessageKind.sticker,
+      url: stickerUrl.trim(),
+      name: stickerName,
+    );
+    await _sendRawMessage(payload);
+  }
+
+  Future<void> _sendRawMessage(String rawText) async {
+    final trimmed = rawText.trim();
     if (trimmed.isEmpty || _currentUserId == null) return;
 
     final now = DateTime.now();

@@ -7,6 +7,7 @@ import '../../../../core/services/realtime_service.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../models/screening_room_state.dart';
 import '../models/screening_participant.dart';
+import 'screening_voice_provider.dart';
 
 // =============================================================================
 // ScreeningRoomProvider — Gerencia o ciclo de vida da Sala de Projeção
@@ -279,6 +280,11 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
             );
           },
         );
+        // Ações de moderação (host/co-admin)
+        channel.onBroadcast(
+          event: 'moderation_action',
+          callback: (payload) => _handleModerationAction(payload, userId),
+        );
         // Atualização da fila de vídeos
         channel.onBroadcast(
           event: 'queue_update',
@@ -329,6 +335,117 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
       final updated =
           state.participants.where((p) => p.userId != targetUserId).toList();
       state = state.copyWith(participants: updated);
+    }
+  }
+
+  Future<void> _handleModerationAction(
+    Map<String, dynamic> payload,
+    String currentUserId,
+  ) async {
+    final action = payload['action'] as String?;
+    final targetUserId = payload['target_user_id'] as String?;
+    if (action == null || targetUserId == null) return;
+
+    if (action == 'kick') {
+      final updated =
+          state.participants.where((p) => p.userId != targetUserId).toList();
+      state = state.copyWith(participants: updated);
+      if (targetUserId == currentUserId) {
+        if (state.sessionId != null) {
+          await ref
+              .read(screeningVoiceProvider(state.sessionId!).notifier)
+              .leaveChannel();
+        }
+        state = state.copyWith(status: ScreeningRoomStatus.closed);
+      }
+    } else if (action == 'mute' && targetUserId == currentUserId) {
+      if (state.sessionId != null) {
+        await ref
+            .read(screeningVoiceProvider(state.sessionId!).notifier)
+            .setMuted(true);
+      }
+    }
+  }
+
+  Future<bool> _canModerate() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return false;
+    if (state.isHost || state.hostUserId == userId) return true;
+    try {
+      final thread = await SupabaseService.table('chat_threads')
+          .select('host_id, co_hosts')
+          .eq('id', threadId)
+          .maybeSingle();
+      if (thread == null) return false;
+      if (thread['host_id'] == userId) return true;
+      final coHosts = thread['co_hosts'];
+      if (coHosts is List) return coHosts.map((e) => e.toString()).contains(userId);
+    } catch (e) {
+      debugPrint('[ScreeningRoom] canModerate error: $e');
+    }
+    return false;
+  }
+
+  Future<void> kickParticipant(String targetUserId) async {
+    if (state.sessionId == null || targetUserId == state.hostUserId) return;
+    if (!await _canModerate()) return;
+
+    try {
+      final result = await SupabaseService.rpc(
+        'moderate_screening_participant',
+        params: {
+          'p_session_id': state.sessionId!,
+          'p_target_user_id': targetUserId,
+          'p_action': 'kick',
+        },
+      );
+      final data = result as Map<String, dynamic>? ?? {};
+      if (data['success'] != true) return;
+
+      _channel?.sendBroadcastMessage(
+        event: 'moderation_action',
+        payload: {
+          'action': 'kick',
+          'target_user_id': targetUserId,
+          'moderator_id': SupabaseService.currentUserId,
+          'ts': DateTime.now().millisecondsSinceEpoch,
+        },
+      );
+      final updated =
+          state.participants.where((p) => p.userId != targetUserId).toList();
+      state = state.copyWith(participants: updated);
+    } catch (e) {
+      debugPrint('[ScreeningRoom] kickParticipant error: $e');
+    }
+  }
+
+  Future<void> muteParticipant(String targetUserId) async {
+    if (state.sessionId == null || targetUserId == state.hostUserId) return;
+    if (!await _canModerate()) return;
+
+    try {
+      final result = await SupabaseService.rpc(
+        'moderate_screening_participant',
+        params: {
+          'p_session_id': state.sessionId!,
+          'p_target_user_id': targetUserId,
+          'p_action': 'mute',
+        },
+      );
+      final data = result as Map<String, dynamic>? ?? {};
+      if (data['success'] != true) return;
+
+      _channel?.sendBroadcastMessage(
+        event: 'moderation_action',
+        payload: {
+          'action': 'mute',
+          'target_user_id': targetUserId,
+          'moderator_id': SupabaseService.currentUserId,
+          'ts': DateTime.now().millisecondsSinceEpoch,
+        },
+      );
+    } catch (e) {
+      debugPrint('[ScreeningRoom] muteParticipant error: $e');
     }
   }
 
