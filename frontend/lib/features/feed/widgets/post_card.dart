@@ -771,34 +771,13 @@ class _PostCardState extends ConsumerState<PostCard>
             // ── Type-specific content ──
             _buildTypeSpecificContent(),
 
-            // ── Media (oculto para reposts e enquetes/quizzes) ──
-            // Enquetes e quizzes já exibem seu conteúdo específico acima;
-            // mostrar a imagem inline tornaria o card excessivamente grande.
+            // ── Media inline: apenas 1 square ou TPL de 3 imagens ──
+            // Enquetes, quizzes e reposts não exibem imagem.
+            // 2, 4+ imagens também não exibem nada inline.
             if (_post.type != 'repost' &&
                 _post.type != 'poll' &&
-                _post.type != 'quiz' &&
-                (_post.mediaUrl ?? '').isNotEmpty)
-              Padding(
-                padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
-                child: AspectRatio(
-                  aspectRatio: 1.0,
-                  child: NexusImage(
-                    imageUrl: _post.mediaUrl ?? '',
-                    blurhash: _post.mediaBlurhash,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    borderRadius: BorderRadius.circular(r.s(10)),
-                    errorWidget: Container(
-                      decoration: BoxDecoration(
-                        color: context.surfaceColor,
-                        borderRadius: BorderRadius.circular(r.s(10)),
-                      ),
-                      child: Icon(Icons.broken_image_rounded,
-                          color: context.nexusTheme.textHint),
-                    ),
-                  ),
-                ),
-              ),
+                _post.type != 'quiz')
+              _buildInlineMedia(r),
 
             // ── Actions footer ──
             _buildActions(context),
@@ -811,6 +790,90 @@ class _PostCardState extends ConsumerState<PostCard>
   // ══════════════════════════════════════════════════════════════════════════
   // COMMUNITY HEADER (small, above author)
   // ══════════════════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════════════
+  // INLINE MEDIA: 1 square ou TPL de 3 imagens. Qualquer outra qtd = nada.
+  // ══════════════════════════════════════════════════════════════════════════
+  Widget _buildInlineMedia(Responsive r) {
+    final urls = _post.mediaUrls;
+
+    // Apenas 1 ou exatamente 3 imagens são exibidas
+    if (urls.length != 1 && urls.length != 3) return const SizedBox.shrink();
+
+    Widget buildImg(String url, {BorderRadius? radius}) {
+      return ClipRRect(
+        borderRadius: radius ?? BorderRadius.zero,
+        child: NexusImage(
+          imageUrl: url,
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+          borderRadius: radius,
+          errorWidget: Container(
+            color: context.surfaceColor,
+            child: Icon(Icons.broken_image_rounded,
+                color: context.nexusTheme.textHint),
+          ),
+        ),
+      );
+    }
+
+    Widget mediaWidget;
+
+    if (urls.length == 1) {
+      // ─ 1 imagem: square simples
+      mediaWidget = AspectRatio(
+        aspectRatio: 1.0,
+        child: buildImg(urls[0], radius: BorderRadius.circular(r.s(10))),
+      );
+    } else {
+      // ─ Exatamente 3 imagens: layout TPL
+      final double blockH = r.s(200);
+      mediaWidget = SizedBox(
+        height: blockH,
+        child: Row(
+          children: [
+            // Imagem grande à esquerda (~65%)
+            Expanded(
+              flex: 65,
+              child: buildImg(urls[0],
+                  radius: BorderRadius.only(
+                    topLeft: Radius.circular(r.s(10)),
+                    bottomLeft: Radius.circular(r.s(10)),
+                  )),
+            ),
+            SizedBox(width: r.s(2)),
+            // 2 imagens menores à direita (~35%)
+            Expanded(
+              flex: 35,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: buildImg(urls[1],
+                        radius: BorderRadius.only(
+                          topRight: Radius.circular(r.s(10)),
+                        )),
+                  ),
+                  SizedBox(height: r.s(2)),
+                  Expanded(
+                    child: buildImg(urls[2],
+                        radius: BorderRadius.only(
+                          bottomRight: Radius.circular(r.s(10)),
+                        )),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
+      child: mediaWidget,
+    );
+  }
+
   Widget _buildCommunityHeader() {
     final s = ref.read(stringsProvider);
     final r = context.r;

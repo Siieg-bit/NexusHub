@@ -2212,7 +2212,10 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       if (cover != null && cover.isNotEmpty) imageUrls.add(cover);
     }
 
+    // Apenas 1 ou exatamente 3 imagens são exibidas inline.
+    // Qualquer outra quantidade (2, 4, 5...) não exibe nada.
     if (imageUrls.isEmpty) return const SizedBox.shrink();
+    if (imageUrls.length != 1 && imageUrls.length != 3) return const SizedBox.shrink();
 
     // Altura do layout
     final double blockH = r.s(200);
@@ -2243,36 +2246,12 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         child: buildImg(imageUrls[0],
             radius: BorderRadius.circular(r.s(10))),
       );
-    } else if (imageUrls.length == 2) {
-      // ─ 2 imagens: lado a lado
-      mediaWidget = SizedBox(
-        height: blockH,
-        child: Row(
-          children: [
-            Expanded(
-              child: buildImg(imageUrls[0],
-                  radius: BorderRadius.only(
-                    topLeft: Radius.circular(r.s(10)),
-                    bottomLeft: Radius.circular(r.s(10)),
-                  )),
-            ),
-            SizedBox(width: r.s(2)),
-            Expanded(
-              child: buildImg(imageUrls[1],
-                  radius: BorderRadius.only(
-                    topRight: Radius.circular(r.s(10)),
-                    bottomRight: Radius.circular(r.s(10)),
-                  )),
-            ),
-          ],
-        ),
-      );
     } else {
-      // ─ 3+ imagens: layout TPL (1 grande à esquerda + 2 menores à direita)
+      // ─ Exatamente 3 imagens: layout TPL (1 grande à esquerda + 2 menores à direita)
       final String img1 = imageUrls[0];
       final String img2 = imageUrls[1];
       final String img3 = imageUrls[2];
-      final int extra = imageUrls.length - 3;
+      const int extra = 0; // nunca haverá +N pois só chegamos aqui com 3 exatas
 
       mediaWidget = SizedBox(
         height: blockH,
@@ -2308,25 +2287,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                             radius: BorderRadius.only(
                               bottomRight: Radius.circular(r.s(10)),
                             )),
-                        // Overlay "+N" se houver mais de 3 imagens
-                        if (extra > 0)
-                          ClipRRect(
-                            borderRadius: BorderRadius.only(
-                              bottomRight: Radius.circular(r.s(10)),
-                            ),
-                            child: Container(
-                              color: Colors.black.withValues(alpha: 0.55),
-                              alignment: Alignment.center,
-                              child: Text(
-                                '+$extra',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: r.fs(18),
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                          ),
+                        // Sem overlay +N: só chegamos aqui com exatamente 3 imagens
                       ],
                     ),
                   ),
