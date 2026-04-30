@@ -1033,11 +1033,21 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               context.push('/settings/blocked-users');
             }),
           ),
+        // Gerenciar Equipe (apenas Team Admin+)
+        if (widget.currentUser?.canManageTeamRoles ?? false)
+          _AminoDrawerTile(
+            icon: Icons.shield_rounded,
+            iconColor: const Color(0xFFFFD700),
+            label: 'Gerenciar Equipe',
+            onTap: () => _closeAndNavigate(() {
+              context.push('/staff-management');
+            }),
+          ),
       ],
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════
   // TRANSFER OWNERSHIP DIALOG
   // ═══════════════════════════════════════════════════════════════════════════
 

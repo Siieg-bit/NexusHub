@@ -19,8 +19,10 @@ import 'manage_member_titles_sheet.dart';
 //   - Suporte a auto-gerenciamento (líder atribuindo título a si mesmo)
 //
 // Hierarquia de permissões (rank numérico):
-//   team_admin (5) → modera TODOS os cargos
-//   team_mod   (4) → modera todos os cargos de comunidade
+//   founder    (7) → Fundador: modera TODOS, único com borda branca
+//   co_founder (6) → Co-Fundador: modera team_admin e abaixo
+//   team_admin (5) → Administrador: modera team_mod e abaixo
+//   team_mod   (4) → Moderador Global: modera todos os cargos de comunidade
 //   agent      (3) → Líder Fundador: modera leader e abaixo
 //   leader     (2) → Líder normal: modera curator e abaixo
 //   curator    (1) → modera apenas member
@@ -32,6 +34,8 @@ import 'manage_member_titles_sheet.dart';
 /// Retorna o rank numérico de um role string para comparações hierárquicas.
 int _rankOf(String role) {
   switch (role) {
+    case 'founder':    return 7;
+    case 'co_founder': return 6;
     case 'team_admin': return 5;
     case 'team_mod':   return 4;
     case 'agent':      return 3;

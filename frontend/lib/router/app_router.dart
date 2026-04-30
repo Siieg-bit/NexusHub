@@ -109,6 +109,7 @@ import 'shell_screen.dart';
 import '../features/stories/screens/story_viewer_screen.dart';
 import '../core/screens/short_code_redirect_screen.dart';
 import '../core/utils/page_transitions.dart';
+import '../features/moderation/screens/staff_management_screen.dart';
 
 /// Router principal do app com GoRouter.
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -1115,6 +1116,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/profile/referral',
         name: 'referral',
         builder: (context, state) => const ReferralScreen(),
+      ),
+      // ====================================================================
+      // STAFF MANAGEMENT (apenas Team Admin+)
+      // ====================================================================
+      GoRoute(
+        path: '/staff-management',
+        name: 'staff-management',
+        builder: (context, state) => const StaffManagementScreen(),
       ),
     ],
   );

@@ -71,6 +71,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   bool _viewerIsTeamMember = false;
   bool _viewerIsTeamAdmin  = false;
   bool _viewerIsTeamMod    = false;
+  bool _viewerIsFounder    = false;
+  bool _viewerIsCoFounder  = false;
   bool _isUpdatingManualPresence = false;
   int _followersCount = 0;
   int _followingCount = 0;
@@ -312,6 +314,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             _viewerIsTeamMember = _user!.isTeamMember;
             _viewerIsTeamAdmin  = _user!.isTeamAdmin;
             _viewerIsTeamMod    = _user!.isTeamModerator;
+            _viewerIsFounder    = _user!.teamRole == TeamRole.founder;
+            _viewerIsCoFounder  = _user!.teamRole == TeamRole.coFounder;
           }
         } else if (group2.length > 2) {
           _myMembership = group2[2] as Map<String, dynamic>?;
@@ -324,6 +328,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             _viewerIsTeamMember = viewerProfile.isTeamMember;
             _viewerIsTeamAdmin  = viewerProfile.isTeamAdmin;
             _viewerIsTeamMod    = viewerProfile.isTeamModerator;
+            _viewerIsFounder    = viewerProfile.teamRole == TeamRole.founder;
+            _viewerIsCoFounder  = viewerProfile.teamRole == TeamRole.coFounder;
           }
           _isFollowing = ((group2[4] as List?)?.length ?? 0) > 0;
           _isFollowingMe = ((group2[5] as List?)?.length ?? 0) > 0;
@@ -1172,6 +1178,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                   child: AminoCustomTitleList(
                                     titles: titles,
                                     maxVisible: 6,
+                                    ownerTeamRole: _user?.teamRole,
                                   ),
                                 ),
                               SizedBox(height: r.s(10)),
@@ -2846,9 +2853,14 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final myRole = _myMembership?['role'] as String? ?? 'member';
 
     // ── Calcular ranks do caller e do alvo ────────────────────────────────
-    // Hierarquia: team_admin(5) > team_mod(4) > agent(3) > leader(2) > curator(1) > member(0)
+    // Hierarquia: founder(7) > co_founder(6) > team_admin(5) > team_mod(4)
+    //             > agent(3) > leader(2) > curator(1) > member(0)
     int callerRank;
-    if (_viewerIsTeamAdmin) {
+    if (_viewerIsFounder) {
+      callerRank = 7;
+    } else if (_viewerIsCoFounder) {
+      callerRank = 6;
+    } else if (_viewerIsTeamAdmin) {
       callerRank = 5;
     } else if (_viewerIsTeamMod) {
       callerRank = 4;
@@ -2863,10 +2875,16 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
 
     // Rank do alvo (usuário sendo visualizado)
     final targetCommunityRole = (_membership?['role'] as String? ?? 'member');
+    final targetIsFounder   = _user?.teamRole == TeamRole.founder;
+    final targetIsCoFounder = _user?.teamRole == TeamRole.coFounder;
     final targetIsTeamAdmin = _user?.isTeamAdmin ?? false;
     final targetIsTeamMod   = _user?.isTeamModerator ?? false;
     int targetRank;
-    if (targetIsTeamAdmin) {
+    if (targetIsFounder) {
+      targetRank = 7;
+    } else if (targetIsCoFounder) {
+      targetRank = 6;
+    } else if (targetIsTeamAdmin) {
       targetRank = 5;
     } else if (targetIsTeamMod) {
       targetRank = 4;
@@ -3008,11 +3026,15 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           currentRole: targetRole,
           currentTitle: currentTitle,
           membershipData: Map<String, dynamic>.from(_membership ?? {}),
-          callerRole: _viewerIsTeamAdmin
-              ? 'team_admin'
-              : _viewerIsTeamMod
-                  ? 'team_mod'
-                  : myRole,
+          callerRole: _viewerIsFounder
+              ? 'founder'
+              : _viewerIsCoFounder
+                  ? 'co_founder'
+                  : _viewerIsTeamAdmin
+                      ? 'team_admin'
+                      : _viewerIsTeamMod
+                          ? 'team_mod'
+                          : myRole,
         );
         if (changed == true && mounted) _loadProfile();
         break;
@@ -3025,11 +3047,15 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           communityId: widget.communityId,
           targetUserId: widget.userId,
           targetUserName: titleTargetName,
-          callerRole: _viewerIsTeamAdmin
-              ? 'team_admin'
-              : _viewerIsTeamMod
-                  ? 'team_mod'
-                  : myRole,
+          callerRole: _viewerIsFounder
+              ? 'founder'
+              : _viewerIsCoFounder
+                  ? 'co_founder'
+                  : _viewerIsTeamAdmin
+                      ? 'team_admin'
+                      : _viewerIsTeamMod
+                          ? 'team_mod'
+                          : myRole,
         );
         if (titlesChanged == true && mounted) _loadProfile();
         break;

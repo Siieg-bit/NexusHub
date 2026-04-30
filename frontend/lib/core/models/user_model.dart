@@ -1,5 +1,91 @@
 /// Modelo de usuário/perfil da plataforma.
 import '../l10n/locale_provider.dart';
+
+// =============================================================================
+// TeamRole — Enum de cargos globais da equipe NexusHub
+// =============================================================================
+// Hierarquia (rank numérico):
+//   100 → founder           (Fundador / CEO)
+//    90 → co_founder        (Co-Fundador / CTO)
+//    80 → team_admin        (Admin da plataforma)
+//    70 → trust_safety      (Trust & Safety)
+//    60 → support           (Suporte)
+//    50 → bug_bounty        (Bug Bounty / Segurança)
+//    40 → community_manager (Community Manager)
+//     0 → none              (Usuário normal)
+// =============================================================================
+enum TeamRole {
+  none,
+  communityManager,
+  bugBounty,
+  support,
+  trustSafety,
+  teamAdmin,
+  coFounder,
+  founder;
+
+  /// Rank numérico para comparações hierárquicas.
+  int get rank => switch (this) {
+    TeamRole.founder          => 100,
+    TeamRole.coFounder        => 90,
+    TeamRole.teamAdmin        => 80,
+    TeamRole.trustSafety      => 70,
+    TeamRole.support          => 60,
+    TeamRole.bugBounty        => 50,
+    TeamRole.communityManager => 40,
+    TeamRole.none             => 0,
+  };
+
+  /// Label exibido na badge do perfil.
+  String get label => switch (this) {
+    TeamRole.founder          => 'Founder',
+    TeamRole.coFounder        => 'Co-Founder',
+    TeamRole.teamAdmin        => 'Team Admin',
+    TeamRole.trustSafety      => 'Trust & Safety',
+    TeamRole.support          => 'Support',
+    TeamRole.bugBounty        => 'Bug Bounty',
+    TeamRole.communityManager => 'Community Manager',
+    TeamRole.none             => '',
+  };
+
+  /// Cor da borda da badge (fundo sempre transparente).
+  /// Founder → branco exclusivo. Demais → cores distintas.
+  String get borderColorHex => switch (this) {
+    TeamRole.founder          => '#FFFFFF',   // Branco exclusivo
+    TeamRole.coFounder        => '#FFD700',   // Dourado
+    TeamRole.teamAdmin        => '#FF4444',   // Vermelho
+    TeamRole.trustSafety      => '#3B82F6',   // Azul escuro
+    TeamRole.support          => '#60A5FA',   // Azul claro
+    TeamRole.bugBounty        => '#22C55E',   // Verde neon
+    TeamRole.communityManager => '#A855F7',   // Roxo
+    TeamRole.none             => '#FFFFFF',
+  };
+
+  /// Converte string do banco para enum.
+  static TeamRole fromString(String? value) => switch (value) {
+    'founder'           => TeamRole.founder,
+    'co_founder'        => TeamRole.coFounder,
+    'team_admin'        => TeamRole.teamAdmin,
+    'trust_safety'      => TeamRole.trustSafety,
+    'support'           => TeamRole.support,
+    'bug_bounty'        => TeamRole.bugBounty,
+    'community_manager' => TeamRole.communityManager,
+    _                   => TeamRole.none,
+  };
+
+  /// Converte enum para string do banco.
+  String get dbValue => switch (this) {
+    TeamRole.founder          => 'founder',
+    TeamRole.coFounder        => 'co_founder',
+    TeamRole.teamAdmin        => 'team_admin',
+    TeamRole.trustSafety      => 'trust_safety',
+    TeamRole.support          => 'support',
+    TeamRole.bugBounty        => 'bug_bounty',
+    TeamRole.communityManager => 'community_manager',
+    TeamRole.none             => 'none',
+  };
+}
+
 /// Baseado no schema v5 — engenharia reversa do APK Amino (User.smali).
 class UserModel {
   final String id;
@@ -15,6 +101,10 @@ class UserModel {
   final bool isTeamAdmin;
   final bool isTeamModerator;
   final bool isSystemAccount;
+
+  // Nova hierarquia de equipe
+  final TeamRole teamRole;
+  final int teamRank;
 
   // Gamificação global
   final int level; // era global_level
@@ -75,6 +165,8 @@ class UserModel {
     this.isTeamAdmin = false,
     this.isTeamModerator = false,
     this.isSystemAccount = false,
+    this.teamRole = TeamRole.none,
+    this.teamRank = 0,
     this.level = 1,
     this.reputation = 0,
     this.coins = 0,
@@ -156,8 +248,22 @@ class UserModel {
     return 'há $y ${y == 1 ? 'ano' : 'anos'}';
   }
 
-  /// Indica se o usuário é membro da equipe (admin ou moderador global).
-  bool get isTeamMember => isTeamAdmin || isTeamModerator;
+  // ── Getters de hierarquia de equipe ─────────────────────────────────────
+
+  /// Indica se o usuário é membro da equipe (qualquer cargo global).
+  bool get isTeamMember => teamRank > 0 || isTeamAdmin || isTeamModerator;
+
+  /// Indica se o usuário é o Fundador da plataforma.
+  bool get isFounder => teamRole == TeamRole.founder;
+
+  /// Indica se o usuário é Co-Fundador ou superior.
+  bool get isCoFounderOrAbove => teamRank >= 90;
+
+  /// Indica se o usuário tem poder de moderação global (Trust & Safety+).
+  bool get hasGlobalModerationPower => teamRank >= 70;
+
+  /// Indica se o usuário pode gerenciar cargos de equipe (Team Admin+).
+  bool get canManageTeamRoles => teamRank >= 80;
 
   /// Indica se o usuário tem um status/mood definido.
   bool get hasStatus =>
@@ -166,6 +272,23 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     final s = getStrings();
+    final teamRoleStr = json['team_role'] as String?;
+    final teamRankRaw = (json['team_rank'] as num?)?.toInt() ?? 0;
+    final parsedTeamRole = TeamRole.fromString(teamRoleStr);
+
+    // Retrocompatibilidade: se não tem team_role mas tem is_team_admin/moderator
+    TeamRole effectiveTeamRole = parsedTeamRole;
+    int effectiveTeamRank = teamRankRaw;
+    if (parsedTeamRole == TeamRole.none && teamRankRaw == 0) {
+      if (json['is_team_admin'] as bool? ?? false) {
+        effectiveTeamRole = TeamRole.teamAdmin;
+        effectiveTeamRank = 80;
+      } else if (json['is_team_moderator'] as bool? ?? false) {
+        effectiveTeamRole = TeamRole.trustSafety;
+        effectiveTeamRank = 70;
+      }
+    }
+
     return UserModel(
       id: json['id'] as String? ?? '',
       aminoId: json['amino_id'] as String? ?? '',
@@ -178,6 +301,8 @@ class UserModel {
       isTeamAdmin: json['is_team_admin'] as bool? ?? false,
       isTeamModerator: json['is_team_moderator'] as bool? ?? false,
       isSystemAccount: json['is_system_account'] as bool? ?? false,
+      teamRole: effectiveTeamRole,
+      teamRank: effectiveTeamRank,
       level: (json['level'] as num?)?.toInt() ?? 1,
       reputation: (json['reputation'] as num?)?.toInt() ?? 0,
       coins: (json['coins'] as num?)?.toInt() ?? 0,
@@ -236,6 +361,8 @@ class UserModel {
       'is_premium': isPremium,
       'status_emoji': statusEmoji,
       'status_text': statusText,
+      'team_role': teamRole.dbValue,
+      'team_rank': teamRank,
     };
   }
 
@@ -255,6 +382,8 @@ class UserModel {
     String? statusEmoji,
     String? statusText,
     List<String>? selectedInterests,
+    TeamRole? teamRole,
+    int? teamRank,
   }) {
     return UserModel(
       id: id,
@@ -268,6 +397,8 @@ class UserModel {
       isTeamAdmin: isTeamAdmin,
       isTeamModerator: isTeamModerator,
       isSystemAccount: isSystemAccount,
+      teamRole: teamRole ?? this.teamRole,
+      teamRank: teamRank ?? this.teamRank,
       level: level ?? this.level,
       reputation: reputation ?? this.reputation,
       coins: coins ?? this.coins,
