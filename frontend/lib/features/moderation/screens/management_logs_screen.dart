@@ -508,7 +508,7 @@ class _LogEntryState extends State<_LogEntry> {
                     _DetailRow(
                       label: s.logReason,
                       value: reason,
-                      theme: r: r,
+                      r: r,
                     ),
                     SizedBox(height: r.s(8)),
                   ],
@@ -518,7 +518,7 @@ class _LogEntryState extends State<_LogEntry> {
                       value: durationHours >= 8760
                           ? s.logDurationPermanent
                           : '$durationHours ${s.logDurationHours}',
-                      theme: r: r,
+                      r: r,
                     ),
                     SizedBox(height: r.s(8)),
                   ],
@@ -526,7 +526,7 @@ class _LogEntryState extends State<_LogEntry> {
                     _DetailRow(
                       label: s.logExpiresAt,
                       value: timeago.format(expiresAt, locale: 'pt_BR'),
-                      theme: r: r,
+                      r: r,
                     ),
                     SizedBox(height: r.s(8)),
                   ],
@@ -537,7 +537,7 @@ class _LogEntryState extends State<_LogEntry> {
                       icon: Icons.article_rounded,
                       onTap: () => context.push(
                           '/post/${log['target_post_id']}'),
-                      theme: r: r,
+                      r: r,
                     ),
                   if (log['target_user_id'] != null)
                     _ContentLink(
@@ -545,7 +545,7 @@ class _LogEntryState extends State<_LogEntry> {
                       icon: Icons.person_rounded,
                       onTap: () => context.push(
                           '/community/${widget.communityId}/profile/${log['target_user_id']}'),
-                      theme: r: r,
+                      r: r,
                     ),
                 ],
               ),

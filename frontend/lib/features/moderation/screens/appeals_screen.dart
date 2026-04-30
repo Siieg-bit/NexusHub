@@ -321,7 +321,7 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
                       icon: Icons.block_rounded,
                       label: s.appealBanReason,
                       value: banReason,
-                      theme: r: r,
+                      r: r,
                       valueColor: context.nexusTheme.error,
                     ),
                     SizedBox(height: r.s(10)),
@@ -332,7 +332,7 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
                     icon: Icons.edit_note_rounded,
                     label: s.appealYourReason,
                     value: reason,
-                    theme: r: r,
+                    r: r,
                   ),
 
                   // Nota do revisor
@@ -342,7 +342,7 @@ class _AppealCardState extends ConsumerState<_AppealCard> {
                       icon: Icons.rate_review_rounded,
                       label: s.appealReviewerNote,
                       value: reviewerNote,
-                      theme: r: r,
+                      r: r,
                       valueColor: status == 'accepted'
                           ? context.nexusTheme.success
                           : context.nexusTheme.error,

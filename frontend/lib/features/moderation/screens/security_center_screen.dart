@@ -177,7 +177,7 @@ class _OverviewTab extends ConsumerWidget {
                       color: context.nexusTheme.success, size: r.s(20))
                   : Icon(Icons.warning_rounded,
                       color: context.nexusTheme.error, size: r.s(20)),
-              theme: r: r,
+              r: r,
             ),
             _SecuritySettingTile(
               icon: Icons.lock_rounded,
@@ -185,7 +185,7 @@ class _OverviewTab extends ConsumerWidget {
               subtitle: s.securityChangePasswordSubtitle,
               trailing: Icon(Icons.chevron_right_rounded,
                   color: context.nexusTheme.textSecondary, size: r.s(20)),
-              theme: r: r,
+              r: r,
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(s.featureComingSoon)),
@@ -198,7 +198,7 @@ class _OverviewTab extends ConsumerWidget {
               subtitle: s.securityActiveSessionsSubtitle,
               trailing: Icon(Icons.chevron_right_rounded,
                   color: context.nexusTheme.textSecondary, size: r.s(20)),
-              theme: r: r,
+              r: r,
               onTap: () {
                 // Navega para a aba de sessões
                 final tabCtrl = context
@@ -213,7 +213,7 @@ class _OverviewTab extends ConsumerWidget {
               subtitle: s.securityActivityLogSubtitle,
               trailing: Icon(Icons.chevron_right_rounded,
                   color: context.nexusTheme.textSecondary, size: r.s(20)),
-              theme: r: r,
+              r: r,
               onTap: () {
                 final tabCtrl = context
                     .findAncestorStateOfType<_SecurityCenterScreenState>()
@@ -774,11 +774,11 @@ class _RevokeButtonState extends ConsumerState<_RevokeButton> {
             width: widget.r.s(18),
             height: widget.r.s(18),
             child: CircularProgressIndicator(
-                strokeWidth: 2, color: widget.context.nexusTheme.error),
+                strokeWidth: 2, color: context.nexusTheme.error),
           )
         : IconButton(
             icon: Icon(Icons.logout_rounded,
-                color: widget.context.nexusTheme.error, size: widget.r.s(20)),
+                color: context.nexusTheme.error, size: widget.r.s(20)),
             tooltip: widget.s.securityRevokeSession,
             onPressed: _revoke,
           );
@@ -794,7 +794,7 @@ class _RevokeButtonState extends ConsumerState<_RevokeButton> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(widget.s.securitySessionRevoked),
-            backgroundColor: widget.context.nexusTheme.success,
+            backgroundColor: context.nexusTheme.success,
           ),
         );
       }
@@ -803,7 +803,7 @@ class _RevokeButtonState extends ConsumerState<_RevokeButton> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(widget.s.anErrorOccurredTryAgain),
-            backgroundColor: widget.context.nexusTheme.error,
+            backgroundColor: context.nexusTheme.error,
           ),
         );
       }
