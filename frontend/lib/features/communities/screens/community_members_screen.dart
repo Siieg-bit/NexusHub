@@ -64,6 +64,8 @@ class CommunityMembersScreen extends ConsumerWidget {
         return s.curator2;
       case 'moderator':
         return 'Moderator';
+      case 'admin':
+        return 'Admin';
       default:
         return '';
     }
@@ -79,6 +81,8 @@ class CommunityMembersScreen extends ConsumerWidget {
         return context.nexusTheme.accentSecondary;
       case 'moderator':
         return context.nexusTheme.accentPrimary;
+      case 'admin':
+        return const Color(0xFFFF6B6B);
       default:
         return Colors.transparent;
     }
@@ -86,16 +90,18 @@ class CommunityMembersScreen extends ConsumerWidget {
 
   int _rolePriority(String role) {
     switch (role) {
-      case 'agent':
+      case 'admin':
         return 0;
-      case 'leader':
+      case 'agent':
         return 1;
-      case 'curator':
+      case 'leader':
         return 2;
-      case 'moderator':
+      case 'curator':
         return 3;
-      default:
+      case 'moderator':
         return 4;
+      default:
+        return 5;
     }
   }
 

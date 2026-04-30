@@ -496,7 +496,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
 
     final viewerRole = (_myMembership?['role'] as String? ?? '').toLowerCase();
     final canViewHiddenProfile =
-        _isOwnProfile || _viewerIsTeamMember || viewerRole == 'agent' || viewerRole == 'leader' || viewerRole == 'curator';
+        _isOwnProfile || _viewerIsTeamMember || viewerRole == 'agent' || viewerRole == 'leader' || viewerRole == 'curator' || viewerRole == 'moderator' || viewerRole == 'admin';
     final isHiddenProfile = _membership?['is_hidden'] == true;
     final isBlocked = ref.watch(isBlockedProvider(widget.userId));
 
@@ -3056,10 +3056,12 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       callerRank = 4;
     } else {
       callerRank = switch (myRole) {
-        'agent'   => 3,
-        'leader'  => 2,
-        'curator' => 1,
-        _         => 0,
+        'agent'     => 3,
+        'admin'     => 3,
+        'leader'    => 2,
+        'curator'   => 1,
+        'moderator' => 1,
+        _           => 0,
       };
     }
 
@@ -3080,10 +3082,12 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       targetRank = 4;
     } else {
       targetRank = switch (targetCommunityRole) {
-        'agent'   => 3,
-        'leader'  => 2,
-        'curator' => 1,
-        _         => 0,
+        'agent'     => 3,
+        'admin'     => 3,
+        'leader'    => 2,
+        'curator'   => 1,
+        'moderator' => 1,
+        _           => 0,
       };
     }
 

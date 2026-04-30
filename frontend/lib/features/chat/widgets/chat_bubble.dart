@@ -159,8 +159,10 @@ class ChatBubble extends ConsumerWidget {
     if (bubbleTextColor != null) return bubbleTextColor!;
     if (isMine ||
         userRole == 'agent' ||
+        userRole == 'admin' ||
         userRole == 'leader' ||
-        userRole == 'curator') {
+        userRole == 'curator' ||
+        userRole == 'moderator') {
       return Colors.white;
     }
     return context.nexusTheme.textPrimary;

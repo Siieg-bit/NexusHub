@@ -584,10 +584,10 @@ class _AllMembersSection extends ConsumerWidget {
     final communityId = community.id;
 
     final leaders = members
-        .where((m) => m['role'] == 'leader' || m['role'] == 'curator')
+        .where((m) => m['role'] == 'admin' || m['role'] == 'agent' || m['role'] == 'leader' || m['role'] == 'curator' || m['role'] == 'moderator')
         .toList();
     final regular = members
-        .where((m) => m['role'] != 'leader' && m['role'] != 'curator')
+        .where((m) => m['role'] != 'admin' && m['role'] != 'agent' && m['role'] != 'leader' && m['role'] != 'curator' && m['role'] != 'moderator')
         .toList();
 
     return Container(

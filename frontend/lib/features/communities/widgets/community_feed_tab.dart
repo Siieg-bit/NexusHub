@@ -13,6 +13,7 @@ import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/haptic_service.dart';
+import '../../auth/providers/auth_provider.dart';
 import 'featured_members_section.dart';
 import '../../../core/widgets/reaction_picker.dart';
 
@@ -96,7 +97,9 @@ class _FeaturedTab extends ConsumerWidget {
     final latestPosts = latestAsync.valueOrNull ?? [];
     final membershipAsync = ref.watch(communityMembershipProvider(communityId));
     final userRole = membershipAsync.valueOrNull?['role'] as String?;
-    final isStaff = ['leader', 'co_leader', 'moderator', 'agent'].contains(userRole);
+    final currentUser = ref.watch(currentUserProvider);
+    final isStaff = (currentUser?.isTeamMember ?? false) ||
+        ['leader', 'curator', 'moderator', 'agent', 'admin'].contains(userRole);
     final primaryFeatured =
         featuredPosts.isNotEmpty ? featuredPosts.first : null;
     final secondaryFeatured = featuredPosts.length > 1

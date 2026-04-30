@@ -10,6 +10,30 @@ import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
 
+// ── Role helpers para exibição de cargos de comunidade ──────────────────────
+Color _roleColorForChat(BuildContext context, String role) {
+  switch (role) {
+    case 'agent':  return Colors.amber;
+    case 'admin':  return const Color(0xFFFF6B6B);
+    case 'leader': return Colors.deepOrange;
+    case 'curator':
+    case 'moderator': return Colors.lightBlue;
+    default: return Colors.grey;
+  }
+}
+
+String _roleLabelForChat(String role, dynamic s) {
+  switch (role) {
+    case 'agent':     return 'Agent';
+    case 'admin':     return 'Admin';
+    case 'leader':    return s.leader2 as String? ?? 'Líder';
+    case 'curator':   return s.curator2 as String? ?? 'Curador';
+    case 'moderator': return 'Moderador';
+    default:          return role;
+  }
+}
+
+
 // =============================================================================
 // CREATE GROUP CHAT SCREEN — Estilo Amino Apps
 // Fluxo: Selecionar comunidade → Nome do grupo → Selecionar membros → Criar
@@ -895,24 +919,15 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                           padding: EdgeInsets.symmetric(
                                               horizontal: r.s(6), vertical: 1),
                                           decoration: BoxDecoration(
-                                            color: role == 'leader'
-                                                ? Colors.amber
-                                                    .withValues(alpha: 0.2)
-                                                : context.nexusTheme.accentPrimary
+                                            color: _roleColorForChat(context, role)
                                                     .withValues(alpha: 0.2),
                                             borderRadius:
                                                 BorderRadius.circular(r.s(4)),
                                           ),
                                           child: Text(
-                                            role == 'leader'
-                                                ? s.leader2
-                                                : role == 'curator'
-                                                    ? s.curator2
-                                                    : role,
+                                            _roleLabelForChat(role, s),
                                             style: TextStyle(
-                                              color: role == 'leader'
-                                                  ? Colors.amber
-                                                  : context.nexusTheme.accentPrimary,
+                                              color: _roleColorForChat(context, role),
                                               fontSize: r.fs(10),
                                               fontWeight: FontWeight.w700,
                                             ),

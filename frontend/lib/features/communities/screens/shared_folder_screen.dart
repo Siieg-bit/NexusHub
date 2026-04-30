@@ -35,9 +35,12 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
   bool _showPending = false;
 
   bool get _isStaff =>
+      _userRole == 'admin' ||
+      _userRole == 'agent' ||
       _userRole == 'leader' ||
       _userRole == 'co_leader' ||
-      _userRole == 'curator';
+      _userRole == 'curator' ||
+      _userRole == 'moderator';
 
   static const _tabs = ['Todos', 'Imagens', 'Vídeos', 'Arquivos'];
 

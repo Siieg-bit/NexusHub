@@ -1092,14 +1092,15 @@ class _MemberAvatar extends StatelessWidget {
 
   Color _roleColor(Color base) {
     switch (role) {
-      case 'leader':
       case 'admin':
+        return const Color(0xFFFF6B6B);
+      case 'agent':
         return Colors.amber;
+      case 'leader':
+        return Colors.deepOrange;
       case 'curator':
       case 'moderator':
         return Colors.lightBlue;
-      case 'agent':
-        return Colors.purple;
       default:
         return base;
     }
