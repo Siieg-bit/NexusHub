@@ -43,20 +43,28 @@ class _FlagCenterScreenState extends ConsumerState<FlagCenterScreen>
       _isLoading = true;
       _error = null;
     });
+    debugPrint('[FlagCenter] _loadFlags() communityId=${widget.communityId}');
     try {
       // Usar o RPC get_community_flags que retorna preview do snapshot
+      debugPrint('[FlagCenter] chamando get_community_flags status=pending...');
       final pendingResult = await SupabaseService.rpc('get_community_flags', params: {
         'p_community_id': widget.communityId,
         'p_status': 'pending',
         'p_limit': 50,
         'p_offset': 0,
       });
+      debugPrint('[FlagCenter] pendingResult runtimeType=${pendingResult.runtimeType}');
+      debugPrint('[FlagCenter] pendingResult=$pendingResult');
+
+      debugPrint('[FlagCenter] chamando get_community_flags status=all...');
       final resolvedResult = await SupabaseService.rpc('get_community_flags', params: {
         'p_community_id': widget.communityId,
         'p_status': 'all',
         'p_limit': 50,
         'p_offset': 0,
       });
+      debugPrint('[FlagCenter] resolvedResult runtimeType=${resolvedResult.runtimeType}');
+      debugPrint('[FlagCenter] resolvedResult=$resolvedResult');
 
       final pendingData = pendingResult as Map<String, dynamic>?;
       final resolvedData = resolvedResult as Map<String, dynamic>?;
@@ -68,13 +76,16 @@ class _FlagCenterScreenState extends ConsumerState<FlagCenterScreen>
         .where((f) => (f['status'] as String?) != 'pending')
         .toList();
 
+      debugPrint('[FlagCenter] ✅ pendingFlags=${allPending.length} resolvedFlags=${allResolved.length}');
       if (!mounted) return;
       setState(() {
         _pendingFlags = allPending;
         _resolvedFlags = allResolved;
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('[FlagCenter] ❌ _loadFlags ERROR: $e');
+      debugPrint('[FlagCenter] stack: $stack');
       if (mounted) {
         setState(() {
           _error = e.toString();

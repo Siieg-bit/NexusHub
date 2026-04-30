@@ -37,17 +37,24 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
   }
 
   Future<void> _load() async {
+    debugPrint('[FlagDetail] _load() flagId=${widget.flagId}');
     try {
+      debugPrint('[FlagDetail] chamando get_flag_detail...');
       final result = await SupabaseService.rpc('get_flag_detail', params: {
         'p_flag_id': widget.flagId,
       });
+      debugPrint('[FlagDetail] result runtimeType=${result.runtimeType}');
+      debugPrint('[FlagDetail] result=$result');
       if (mounted) {
         setState(() {
           _detail = result as Map<String, dynamic>?;
           _isLoading = false;
         });
+        debugPrint('[FlagDetail] ✅ _detail carregado. keys=${_detail?.keys.toList()}');
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('[FlagDetail] ❌ _load ERROR: $e');
+      debugPrint('[FlagDetail] stack: $stack');
       if (mounted) {
         setState(() {
           _error = e.toString();
@@ -63,15 +70,17 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
     String? moderateAction,
   }) async {
     final s = getStrings();
+    debugPrint('[FlagDetail] _resolve() flagId=${widget.flagId} action=$action moderateContent=$moderateContent moderateAction=$moderateAction note=$note');
     setState(() => _isActing = true);
     try {
-      await SupabaseService.rpc('resolve_flag', params: {
+      final resolveResult = await SupabaseService.rpc('resolve_flag', params: {
         'p_flag_id':          widget.flagId,
         'p_action':           action,
         'p_resolution_note':  note,
         'p_moderate_content': moderateContent,
         'p_moderate_action':  moderateAction,
       });
+      debugPrint('[FlagDetail] ✅ resolve_flag result=$resolveResult');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -85,7 +94,9 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
         );
         Navigator.pop(context, true); // retorna true para atualizar a lista
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('[FlagDetail] ❌ _resolve ERROR: $e');
+      debugPrint('[FlagDetail] stack: $stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(s.anErrorOccurredTryAgain)),
