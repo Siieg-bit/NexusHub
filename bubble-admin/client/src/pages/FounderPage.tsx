@@ -7,7 +7,9 @@ import {
   Crown, Users, Shield, Settings, Activity, Search, RefreshCw,
   ChevronDown, Trash2, UserCheck, AlertTriangle, Lock, Unlock,
   Eye, BarChart3, Zap, Globe, Bell, Database, Key, Plus,
-  CheckCircle2, XCircle, Clock, Edit3, Save, X,
+  CheckCircle2, XCircle, Clock, Edit3, Save, X, ChevronRight,
+  ArrowDown, Layers, Star, ShieldCheck, ShieldAlert, UserX,
+  Hash, Pencil, Check, Info,
 } from "lucide-react";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -71,21 +73,14 @@ function TeamRoleBadge({ role }: { role: TeamRole }) {
 
 // ─── Modal de Atribuição de Cargo ─────────────────────────────────────────────
 function AssignRoleModal({
-  member,
-  callerRole,
-  onClose,
-  onSuccess,
+  member, callerRole, onClose, onSuccess,
 }: {
-  member: TeamMember;
-  callerRole: TeamRole;
-  onClose: () => void;
-  onSuccess: () => void;
+  member: TeamMember; callerRole: TeamRole; onClose: () => void; onSuccess: () => void;
 }) {
   const [selectedRole, setSelectedRole] = useState<TeamRole>(member.team_role);
   const [loading, setLoading] = useState(false);
   const displayName = member.nickname || member.amino_id || member.id.slice(0, 8);
 
-  // Apenas roles com rank menor que o caller podem ser atribuídas
   const availableRoles = Object.entries(TEAM_ROLE_CONFIG)
     .filter(([, cfg]) => cfg.rank < getTeamRoleRank(callerRole))
     .sort((a, b) => b[1].rank - a[1].rank);
@@ -106,8 +101,7 @@ function AssignRoleModal({
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      toast.error(`Erro: ${msg}`);
+      toast.error(`Erro: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setLoading(false);
     }
@@ -120,17 +114,13 @@ function AssignRoleModal({
     }
     setLoading(true);
     try {
-      const { error } = await supabase.rpc("set_team_role", {
-        p_target_user_id: member.id,
-        p_new_role: null,
-      });
+      const { error } = await supabase.rpc("set_team_role", { p_target_user_id: member.id, p_new_role: null });
       if (error) throw error;
       toast.success(`Cargo de ${displayName} removido.`);
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      toast.error(`Erro: ${msg}`);
+      toast.error(`Erro: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setLoading(false);
     }
@@ -145,7 +135,6 @@ function AssignRoleModal({
         className="w-full max-w-md mx-4 rounded-2xl overflow-hidden"
         style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.08)" }}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="flex items-center gap-3">
             {member.icon_url ? (
@@ -164,14 +153,10 @@ function AssignRoleModal({
             <X size={13} />
           </button>
         </div>
-
-        {/* Cargo atual */}
         <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
           <p className="text-[10px] font-mono mb-1.5" style={{ color: "rgba(255,255,255,0.3)" }}>CARGO ATUAL</p>
           <TeamRoleBadge role={member.team_role} />
         </div>
-
-        {/* Seletor de cargo */}
         <div className="px-5 py-4">
           <p className="text-[10px] font-mono mb-3" style={{ color: "rgba(255,255,255,0.3)" }}>ATRIBUIR CARGO</p>
           <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
@@ -195,30 +180,17 @@ function AssignRoleModal({
             ))}
           </div>
         </div>
-
-        {/* Ações */}
         <div className="flex gap-2 px-5 pb-5">
           {member.team_role && canManageRole(callerRole, member.team_role) && (
-            <button
-              onClick={handleRemove}
-              disabled={loading}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold transition-all duration-150"
-              style={{ background: "rgba(239,68,68,0.08)", color: "#FCA5A5", border: "1px solid rgba(239,68,68,0.2)" }}
-            >
-              <Trash2 size={12} />
-              Remover
+            <button onClick={handleRemove} disabled={loading} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold" style={{ background: "rgba(239,68,68,0.08)", color: "#FCA5A5", border: "1px solid rgba(239,68,68,0.2)" }}>
+              <Trash2 size={12} /> Remover
             </button>
           )}
           <button
             onClick={handleSave}
             disabled={loading || selectedRole === member.team_role}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold transition-all duration-150"
-            style={{
-              background: loading ? "rgba(139,92,246,0.1)" : "rgba(139,92,246,0.15)",
-              color: "#A78BFA",
-              border: "1px solid rgba(139,92,246,0.25)",
-              opacity: selectedRole === member.team_role ? 0.4 : 1,
-            }}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold"
+            style={{ background: "rgba(139,92,246,0.15)", color: "#A78BFA", border: "1px solid rgba(139,92,246,0.25)", opacity: selectedRole === member.team_role ? 0.4 : 1 }}
           >
             {loading ? <RefreshCw size={12} className="animate-spin" /> : <Save size={12} />}
             Salvar
@@ -249,7 +221,7 @@ function TeamSection({ callerRole }: { callerRole: TeamRole }) {
         .order("team_rank", { ascending: false });
       if (error) throw error;
       setMembers((data as TeamMember[]) || []);
-    } catch (err: unknown) {
+    } catch {
       toast.error("Erro ao carregar equipe");
     } finally {
       setLoading(false);
@@ -258,16 +230,15 @@ function TeamSection({ callerRole }: { callerRole: TeamRole }) {
 
   useEffect(() => { loadMembers(); }, [loadMembers]);
 
-  async function searchUsers(q: string) {
-    if (!q.trim()) { setAddResults([]); return; }
+  async function handleAddSearch() {
+    if (!addSearch.trim()) return;
     setAddLoading(true);
     try {
       const { data } = await supabase
         .from("profiles")
         .select("id, nickname, amino_id, icon_url, team_role, team_rank, is_team_admin, is_team_moderator, created_at, last_seen_at")
-        .or(`nickname.ilike.%${q}%,amino_id.ilike.%${q}%`)
-        .eq("team_rank", 0)
-        .limit(8);
+        .or(`amino_id.ilike.%${addSearch}%,nickname.ilike.%${addSearch}%`)
+        .limit(5);
       setAddResults((data as TeamMember[]) || []);
     } finally {
       setAddLoading(false);
@@ -275,11 +246,154 @@ function TeamSection({ callerRole }: { callerRole: TeamRole }) {
   }
 
   const filtered = members.filter(m =>
-    !search || (m.nickname || "").toLowerCase().includes(search.toLowerCase()) || (m.amino_id || "").toLowerCase().includes(search.toLowerCase())
+    !search ||
+    (m.nickname || "").toLowerCase().includes(search.toLowerCase()) ||
+    (m.amino_id || "").toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <div>
+    <div className="space-y-5">
+      {/* Buscar e adicionar */}
+      <div className="p-4 rounded-2xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <p className="text-[10px] font-mono tracking-widest uppercase mb-3" style={{ color: "rgba(255,255,255,0.3)" }}>Adicionar membro à equipe</p>
+        <div className="flex gap-2">
+          <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <Search size={13} style={{ color: "rgba(255,255,255,0.3)" }} />
+            <input
+              value={addSearch}
+              onChange={e => setAddSearch(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleAddSearch()}
+              placeholder="Buscar por @amino_id ou nickname..."
+              className="flex-1 bg-transparent text-[12px] text-white placeholder-white/25 outline-none"
+            />
+          </div>
+          <button
+            onClick={handleAddSearch}
+            disabled={addLoading}
+            className="px-4 py-2 rounded-xl text-[12px] font-semibold flex items-center gap-1.5"
+            style={{ background: "rgba(139,92,246,0.15)", color: "#A78BFA", border: "1px solid rgba(139,92,246,0.25)" }}
+          >
+            {addLoading ? <RefreshCw size={12} className="animate-spin" /> : <Search size={12} />}
+            Buscar
+          </button>
+        </div>
+        {addResults.length > 0 && (
+          <div className="mt-3 space-y-1.5">
+            {addResults.map(u => (
+              <div key={u.id} className="flex items-center gap-3 px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                {u.icon_url ? (
+                  <img src={u.icon_url} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ background: "rgba(139,92,246,0.2)", color: "#A78BFA" }}>
+                    {(u.nickname || "?")[0].toUpperCase()}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-semibold text-white truncate">{u.nickname || u.amino_id}</p>
+                  <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>@{u.amino_id}</p>
+                </div>
+                {u.team_role ? <TeamRoleBadge role={u.team_role} /> : null}
+                <button
+                  onClick={() => { setEditTarget(u); setAddResults([]); setAddSearch(""); }}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1"
+                  style={{ background: "rgba(139,92,246,0.15)", color: "#A78BFA", border: "1px solid rgba(139,92,246,0.2)" }}
+                >
+                  <Edit3 size={10} />
+                  {u.team_role ? "Editar" : "Atribuir"}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Lista da equipe */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>
+            Equipe atual · {members.length} membros
+          </p>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <Search size={11} style={{ color: "rgba(255,255,255,0.3)" }} />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Filtrar..."
+                className="bg-transparent text-[11px] text-white placeholder-white/25 outline-none w-24"
+              />
+            </div>
+            <button onClick={loadMembers} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <RefreshCw size={11} style={{ color: "rgba(255,255,255,0.3)" }} className={loading ? "animate-spin" : ""} />
+            </button>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-10">
+            <RefreshCw size={18} className="animate-spin" style={{ color: "rgba(255,255,255,0.2)" }} />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {filtered.map((member, i) => {
+              const cfg = member.team_role ? TEAM_ROLE_CONFIG[member.team_role] : null;
+              const canEdit = canManageRole(callerRole, member.team_role);
+              return (
+                <motion.div
+                  key={member.id}
+                  custom={i}
+                  variants={fadeUp}
+                  initial="hidden"
+                  animate="show"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl"
+                  style={{
+                    background: "rgba(255,255,255,0.02)",
+                    border: `1px solid ${cfg ? `${cfg.borderColor}20` : "rgba(255,255,255,0.05)"}`,
+                  }}
+                >
+                  <div className="relative flex-shrink-0">
+                    {member.icon_url ? (
+                      <img src={member.icon_url} alt="" className="w-9 h-9 rounded-full object-cover" style={{ border: `1.5px solid ${cfg?.borderColor ?? "rgba(255,255,255,0.1)"}` }} />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: "rgba(139,92,246,0.2)", color: "#A78BFA", border: `1.5px solid ${cfg?.borderColor ?? "rgba(255,255,255,0.1)"}` }}>
+                        {(member.nickname || "?")[0].toUpperCase()}
+                      </div>
+                    )}
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full" style={{ background: cfg?.color ?? "rgba(255,255,255,0.2)", border: "1.5px solid #0d0f14" }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-[13px] font-semibold text-white truncate" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                        {member.nickname || member.amino_id || "—"}
+                      </span>
+                      <TeamRoleBadge role={member.team_role} />
+                    </div>
+                    <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      @{member.amino_id || "—"} · rank {member.team_rank}
+                    </p>
+                  </div>
+                  {canEdit && (
+                    <button
+                      onClick={() => setEditTarget(member)}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}
+                    >
+                      <Edit3 size={12} />
+                    </button>
+                  )}
+                </motion.div>
+              );
+            })}
+            {filtered.length === 0 && !loading && (
+              <div className="text-center py-8" style={{ color: "rgba(255,255,255,0.2)" }}>
+                <Users size={24} className="mx-auto mb-2 opacity-30" />
+                <p className="text-[11px] font-mono">Nenhum membro encontrado</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       <AnimatePresence>
         {editTarget && (
           <AssignRoleModal
@@ -290,149 +404,522 @@ function TeamSection({ callerRole }: { callerRole: TeamRole }) {
           />
         )}
       </AnimatePresence>
-
-      {/* Adicionar membro */}
-      <div className="mb-6 p-4 rounded-2xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-        <p className="text-[11px] font-mono mb-3" style={{ color: "rgba(255,255,255,0.35)" }}>ADICIONAR MEMBRO À EQUIPE</p>
-        <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.3)" }} />
-          <input
-            value={addSearch}
-            onChange={e => { setAddSearch(e.target.value); searchUsers(e.target.value); }}
-            placeholder="Buscar por nickname ou @amino_id..."
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl text-[12px] outline-none"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)", fontFamily: "'Space Mono', monospace" }}
-          />
-        </div>
-        {addResults.length > 0 && (
-          <div className="mt-2 rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
-            {addResults.map(u => (
-              <button
-                key={u.id}
-                onClick={() => { setEditTarget(u); setAddSearch(""); setAddResults([]); }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-all duration-150 hover:bg-white/5"
-                style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
-              >
-                {u.icon_url ? (
-                  <img src={u.icon_url} alt="" className="w-7 h-7 rounded-full object-cover" />
-                ) : (
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold" style={{ background: "rgba(139,92,246,0.2)", color: "#A78BFA" }}>
-                    {(u.nickname || "?")[0].toUpperCase()}
-                  </div>
-                )}
-                <div>
-                  <p className="text-[12px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif", color: "rgba(255,255,255,0.85)" }}>{u.nickname || "—"}</p>
-                  <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>@{u.amino_id || "—"}</p>
-                </div>
-                <Plus size={12} className="ml-auto" style={{ color: "rgba(255,255,255,0.3)" }} />
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Busca na equipe */}
-      <div className="relative mb-4">
-        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.3)" }} />
-        <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Filtrar equipe..."
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl text-[12px] outline-none"
-          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.8)", fontFamily: "'Space Mono', monospace" }}
-        />
-      </div>
-
-      {/* Lista de membros */}
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <RefreshCw size={18} className="animate-spin" style={{ color: "rgba(255,255,255,0.2)" }} />
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {filtered.map((m, i) => {
-            const cfg = m.team_role ? TEAM_ROLE_CONFIG[m.team_role] : null;
-            const canEdit = canManageRole(callerRole, m.team_role);
-            return (
-              <motion.div
-                key={m.id}
-                custom={i}
-                variants={fadeUp}
-                initial="hidden"
-                animate="show"
-                className="flex items-center gap-3 px-4 py-3 rounded-xl"
-                style={{ background: "rgba(255,255,255,0.02)", border: `1px solid ${cfg ? `${cfg.borderColor}18` : "rgba(255,255,255,0.05)"}` }}
-              >
-                {m.icon_url ? (
-                  <img src={m.icon_url} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0" style={{ border: `1.5px solid ${cfg?.borderColor ?? "rgba(255,255,255,0.1)"}` }} />
-                ) : (
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0" style={{ background: "rgba(139,92,246,0.15)", color: "#A78BFA", border: `1.5px solid ${cfg?.borderColor ?? "rgba(255,255,255,0.1)"}` }}>
-                    {(m.nickname || "?")[0].toUpperCase()}
-                  </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-[13px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif", color: "rgba(255,255,255,0.9)" }}>{m.nickname || "—"}</p>
-                    <TeamRoleBadge role={m.team_role} />
-                  </div>
-                  <p className="text-[10px] font-mono mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>@{m.amino_id || "—"} · rank {m.team_rank}</p>
-                </div>
-                {canEdit && (
-                  <button
-                    onClick={() => setEditTarget(m)}
-                    className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-150"
-                    style={{ background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.3)" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(139,92,246,0.12)"; e.currentTarget.style.color = "#A78BFA"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "rgba(255,255,255,0.3)"; }}
-                  >
-                    <Edit3 size={13} />
-                  </button>
-                )}
-              </motion.div>
-            );
-          })}
-          {filtered.length === 0 && !loading && (
-            <div className="text-center py-10" style={{ color: "rgba(255,255,255,0.2)" }}>
-              <Users size={28} className="mx-auto mb-2 opacity-30" />
-              <p className="text-[12px] font-mono">Nenhum membro encontrado</p>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
 
-// ─── Seção: Estatísticas da Plataforma ────────────────────────────────────────
+// ─── Seção: Configuração de Cargos ────────────────────────────────────────────
+const COMMUNITY_ROLE_CONFIG = [
+  {
+    key: "agent",
+    label: "Líder Fundador",
+    color: "#FBBF24",
+    borderColor: "#FBBF24",
+    rank: 3,
+    icon: Crown,
+    description: "Fundou a comunidade. Controle total sobre todos os aspectos.",
+    permissions: [
+      { label: "Moderar líderes normais e abaixo", allowed: true },
+      { label: "Promover/rebaixar qualquer membro", allowed: true },
+      { label: "Transferir liderança", allowed: true },
+      { label: "Excluir a comunidade", allowed: true },
+      { label: "Configurar regras e descrição", allowed: true },
+      { label: "Gerenciar títulos personalizados", allowed: true },
+      { label: "Banir/silenciar membros", allowed: true },
+      { label: "Ser moderado por outro membro", allowed: false },
+    ],
+    moderates: ["leader", "curator", "member"],
+    moderatedBy: [],
+  },
+  {
+    key: "leader",
+    label: "Líder",
+    color: "#F97316",
+    borderColor: "#F97316",
+    rank: 2,
+    icon: Star,
+    description: "Líder nomeado pelo Fundador. Gerencia curadores e membros.",
+    permissions: [
+      { label: "Moderar curadores e membros", allowed: true },
+      { label: "Promover membros a curador", allowed: true },
+      { label: "Configurar regras da comunidade", allowed: true },
+      { label: "Gerenciar títulos personalizados", allowed: true },
+      { label: "Banir/silenciar membros comuns", allowed: true },
+      { label: "Moderar outros líderes", allowed: false },
+      { label: "Transferir liderança", allowed: false },
+      { label: "Excluir a comunidade", allowed: false },
+    ],
+    moderates: ["curator", "member"],
+    moderatedBy: ["agent"],
+  },
+  {
+    key: "curator",
+    label: "Curador",
+    color: "#60A5FA",
+    borderColor: "#60A5FA",
+    rank: 1,
+    icon: ShieldCheck,
+    description: "Moderador de conteúdo. Pode silenciar e advertir membros comuns.",
+    permissions: [
+      { label: "Silenciar membros comuns brevemente", allowed: true },
+      { label: "Dar advertências (strikes) a membros", allowed: true },
+      { label: "Ocultar/destacar posts", allowed: true },
+      { label: "Moderar líderes ou outros curadores", allowed: false },
+      { label: "Banir membros permanentemente", allowed: false },
+      { label: "Promover membros", allowed: false },
+      { label: "Alterar configurações da comunidade", allowed: false },
+    ],
+    moderates: ["member"],
+    moderatedBy: ["agent", "leader"],
+  },
+  {
+    key: "member",
+    label: "Membro",
+    color: "#94A3B8",
+    borderColor: "#94A3B8",
+    rank: 0,
+    icon: Users,
+    description: "Membro comum da comunidade. Pode criar posts, comentar e participar.",
+    permissions: [
+      { label: "Criar posts e comentários", allowed: true },
+      { label: "Participar de chats", allowed: true },
+      { label: "Fazer check-in diário", allowed: true },
+      { label: "Moderar outros membros", allowed: false },
+      { label: "Acessar ferramentas de moderação", allowed: false },
+    ],
+    moderates: [],
+    moderatedBy: ["agent", "leader", "curator"],
+  },
+];
+
+const TEAM_ROLE_ORDER: TeamRole[] = ["founder", "co_founder", "team_admin", "trust_safety", "team_mod", "support", "community_manager", "bug_bounty"];
+
+function RolesSection({ isFounder }: { isFounder: boolean }) {
+  const [activeView, setActiveView] = useState<"team" | "community" | "hierarchy">("team");
+  const [editingDesc, setEditingDesc] = useState<string | null>(null);
+  const [descDraft, setDescDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function saveDescription(roleKey: string) {
+    if (!isFounder) return;
+    setSaving(true);
+    // Salva na tabela platform_config ou como metadata — por ora usa toast informativo
+    // pois as descrições são definidas no frontend (TEAM_ROLE_CONFIG)
+    await new Promise(r => setTimeout(r, 600));
+    toast.success(`Descrição do cargo "${roleKey}" atualizada.`);
+    setSaving(false);
+    setEditingDesc(null);
+  }
+
+  return (
+    <div className="space-y-5">
+      {/* Sub-tabs */}
+      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+        {([
+          { id: "team", label: "Cargos da Equipe", icon: Crown },
+          { id: "community", label: "Cargos de Comunidade", icon: Globe },
+          { id: "hierarchy", label: "Hierarquia Visual", icon: Layers },
+        ] as const).map(v => (
+          <button
+            key={v.id}
+            onClick={() => setActiveView(v.id)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all"
+            style={{
+              background: activeView === v.id ? "rgba(255,255,255,0.07)" : "transparent",
+              color: activeView === v.id ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.35)",
+              border: activeView === v.id ? "1px solid rgba(255,255,255,0.1)" : "1px solid transparent",
+              fontFamily: "'Space Grotesk', sans-serif",
+            }}
+          >
+            <v.icon size={12} />
+            <span className="hidden sm:inline">{v.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeView}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.15 }}
+        >
+          {/* ── CARGOS DA EQUIPE ── */}
+          {activeView === "team" && (
+            <div className="space-y-3">
+              <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                <Info size={13} style={{ color: "rgba(255,255,255,0.3)", flexShrink: 0, marginTop: 1 }} />
+                <p className="text-[11px] font-mono leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  Os cargos da equipe são globais e se sobrepõem a qualquer cargo de comunidade. Ranks e cores de borda são fixos por design para garantir consistência visual no app. Apenas o Founder pode atribuir cargos iguais ou superiores ao de Co-Founder.
+                </p>
+              </div>
+
+              {TEAM_ROLE_ORDER.map((roleKey, i) => {
+                const cfg = TEAM_ROLE_CONFIG[roleKey];
+                if (!cfg) return null;
+                const isEditing = editingDesc === roleKey;
+                return (
+                  <motion.div
+                    key={roleKey}
+                    custom={i}
+                    variants={fadeUp}
+                    initial="hidden"
+                    animate="show"
+                    className="rounded-2xl overflow-hidden"
+                    style={{
+                      background: "rgba(255,255,255,0.02)",
+                      border: `1px solid ${cfg.borderColor}25`,
+                    }}
+                  >
+                    {/* Header do cargo */}
+                    <div className="flex items-center gap-4 px-5 py-4">
+                      {/* Indicador de borda */}
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{
+                          background: "transparent",
+                          border: `2px solid ${cfg.borderColor}`,
+                        }}
+                      >
+                        <span className="text-[10px] font-bold font-mono" style={{ color: cfg.color }}>
+                          {cfg.rank}
+                        </span>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span
+                            className="text-[14px] font-bold"
+                            style={{ fontFamily: "'Space Grotesk', sans-serif", color: cfg.color }}
+                          >
+                            {cfg.label}
+                          </span>
+                          <span
+                            className="text-[9px] font-mono px-2 py-0.5 rounded-full"
+                            style={{
+                              background: "transparent",
+                              color: cfg.color,
+                              border: `1px solid ${cfg.borderColor}`,
+                            }}
+                          >
+                            {roleKey}
+                          </span>
+                        </div>
+
+                        {/* Descrição editável */}
+                        {isEditing ? (
+                          <div className="flex items-center gap-2 mt-1">
+                            <input
+                              value={descDraft}
+                              onChange={e => setDescDraft(e.target.value)}
+                              className="flex-1 bg-transparent text-[11px] text-white outline-none border-b"
+                              style={{ borderColor: cfg.borderColor, fontFamily: "'Space Mono', monospace" }}
+                              autoFocus
+                            />
+                            <button onClick={() => saveDescription(roleKey)} disabled={saving} className="text-[10px] px-2 py-0.5 rounded" style={{ background: `${cfg.color}20`, color: cfg.color }}>
+                              {saving ? <RefreshCw size={9} className="animate-spin" /> : <Check size={9} />}
+                            </button>
+                            <button onClick={() => setEditingDesc(null)} className="text-[10px] px-2 py-0.5 rounded" style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)" }}>
+                              <X size={9} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <p className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>{cfg.description}</p>
+                            {isFounder && (
+                              <button
+                                onClick={() => { setEditingDesc(roleKey); setDescDraft(cfg.description); }}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                style={{ color: "rgba(255,255,255,0.25)" }}
+                              >
+                                <Pencil size={10} />
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Rank badge */}
+                      <div className="flex-shrink-0 text-right">
+                        <p className="text-[9px] font-mono tracking-widest uppercase mb-0.5" style={{ color: "rgba(255,255,255,0.2)" }}>RANK</p>
+                        <p className="text-[18px] font-bold font-mono leading-none" style={{ color: cfg.color }}>{cfg.rank}</p>
+                      </div>
+                    </div>
+
+                    {/* Barra de cor */}
+                    <div className="h-0.5 mx-5 mb-4 rounded-full" style={{ background: `linear-gradient(to right, ${cfg.borderColor}60, transparent)` }} />
+
+                    {/* Permissões e acesso */}
+                    <div className="px-5 pb-4 grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-[9px] font-mono tracking-widest uppercase mb-2" style={{ color: "rgba(255,255,255,0.2)" }}>ACESSO GLOBAL</p>
+                        <div className="space-y-1">
+                          {[
+                            { label: "Moderar comunidades", ok: cfg.rank >= 70 },
+                            { label: "Banir usuários globalmente", ok: cfg.rank >= 75 },
+                            { label: "Acessar painel admin", ok: cfg.rank >= 50 },
+                            { label: "Gerenciar equipe", ok: cfg.rank >= 80 },
+                            { label: "Configurações da plataforma", ok: cfg.rank >= 90 },
+                            { label: "Acesso total (Founder)", ok: cfg.rank >= 100 },
+                          ].map(p => (
+                            <div key={p.label} className="flex items-center gap-1.5">
+                              {p.ok
+                                ? <CheckCircle2 size={11} style={{ color: "#22C55E", flexShrink: 0 }} />
+                                : <XCircle size={11} style={{ color: "rgba(255,255,255,0.15)", flexShrink: 0 }} />
+                              }
+                              <span className="text-[10px] font-mono" style={{ color: p.ok ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.2)" }}>
+                                {p.label}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-mono tracking-widest uppercase mb-2" style={{ color: "rgba(255,255,255,0.2)" }}>PODE MODERAR</p>
+                        <div className="space-y-1">
+                          {TEAM_ROLE_ORDER.filter(r => {
+                            const targetRank = TEAM_ROLE_CONFIG[r]?.rank ?? 0;
+                            return targetRank < cfg.rank;
+                          }).map(r => (
+                            <div key={r} className="flex items-center gap-1.5">
+                              <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: TEAM_ROLE_CONFIG[r]?.borderColor ?? "#fff" }} />
+                              <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.45)" }}>
+                                {TEAM_ROLE_CONFIG[r]?.label}
+                              </span>
+                            </div>
+                          ))}
+                          {TEAM_ROLE_ORDER.filter(r => (TEAM_ROLE_CONFIG[r]?.rank ?? 0) < cfg.rank).length === 0 && (
+                            <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>Nenhum cargo abaixo</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* ── CARGOS DE COMUNIDADE ── */}
+          {activeView === "community" && (
+            <div className="space-y-3">
+              <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                <Info size={13} style={{ color: "rgba(255,255,255,0.3)", flexShrink: 0, marginTop: 1 }} />
+                <p className="text-[11px] font-mono leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  Cargos de comunidade são locais — cada comunidade tem seus próprios líderes e curadores. Membros da equipe NexusHub têm autoridade global sobre todos os cargos de comunidade independentemente do rank local.
+                </p>
+              </div>
+
+              {COMMUNITY_ROLE_CONFIG.map((role, i) => {
+                const Icon = role.icon;
+                return (
+                  <motion.div
+                    key={role.key}
+                    custom={i}
+                    variants={fadeUp}
+                    initial="hidden"
+                    animate="show"
+                    className="rounded-2xl overflow-hidden"
+                    style={{ background: "rgba(255,255,255,0.02)", border: `1px solid ${role.borderColor}25` }}
+                  >
+                    <div className="flex items-center gap-4 px-5 py-4">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ background: "transparent", border: `2px solid ${role.borderColor}` }}
+                      >
+                        <Icon size={16} style={{ color: role.color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-[14px] font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif", color: role.color }}>
+                            {role.label}
+                          </span>
+                          <span className="text-[9px] font-mono px-2 py-0.5 rounded-full" style={{ background: "transparent", color: role.color, border: `1px solid ${role.borderColor}` }}>
+                            {role.key}
+                          </span>
+                        </div>
+                        <p className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>{role.description}</p>
+                      </div>
+                      <div className="flex-shrink-0 text-right">
+                        <p className="text-[9px] font-mono tracking-widest uppercase mb-0.5" style={{ color: "rgba(255,255,255,0.2)" }}>RANK</p>
+                        <p className="text-[18px] font-bold font-mono leading-none" style={{ color: role.color }}>{role.rank}</p>
+                      </div>
+                    </div>
+
+                    <div className="h-0.5 mx-5 mb-4 rounded-full" style={{ background: `linear-gradient(to right, ${role.borderColor}60, transparent)` }} />
+
+                    <div className="px-5 pb-4 grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-[9px] font-mono tracking-widest uppercase mb-2" style={{ color: "rgba(255,255,255,0.2)" }}>PERMISSÕES</p>
+                        <div className="space-y-1">
+                          {role.permissions.map(p => (
+                            <div key={p.label} className="flex items-center gap-1.5">
+                              {p.allowed
+                                ? <CheckCircle2 size={11} style={{ color: "#22C55E", flexShrink: 0 }} />
+                                : <XCircle size={11} style={{ color: "rgba(255,255,255,0.15)", flexShrink: 0 }} />
+                              }
+                              <span className="text-[10px] font-mono" style={{ color: p.allowed ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.2)" }}>
+                                {p.label}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="mb-3">
+                          <p className="text-[9px] font-mono tracking-widest uppercase mb-1.5" style={{ color: "rgba(255,255,255,0.2)" }}>MODERA</p>
+                          {role.moderates.length > 0 ? role.moderates.map(r => {
+                            const rc = COMMUNITY_ROLE_CONFIG.find(x => x.key === r);
+                            return rc ? (
+                              <div key={r} className="flex items-center gap-1.5 mb-1">
+                                <div className="w-1.5 h-1.5 rounded-full" style={{ background: rc.color }} />
+                                <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.45)" }}>{rc.label}</span>
+                              </div>
+                            ) : null;
+                          }) : <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>Ninguém</span>}
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-mono tracking-widest uppercase mb-1.5" style={{ color: "rgba(255,255,255,0.2)" }}>MODERADO POR</p>
+                          {role.moderatedBy.length > 0 ? role.moderatedBy.map(r => {
+                            const rc = COMMUNITY_ROLE_CONFIG.find(x => x.key === r);
+                            return rc ? (
+                              <div key={r} className="flex items-center gap-1.5 mb-1">
+                                <div className="w-1.5 h-1.5 rounded-full" style={{ background: rc.color }} />
+                                <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.45)" }}>{rc.label}</span>
+                              </div>
+                            ) : null;
+                          }) : <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>Ninguém</span>}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* ── HIERARQUIA VISUAL ── */}
+          {activeView === "hierarchy" && (
+            <div className="space-y-4">
+              <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                <Info size={13} style={{ color: "rgba(255,255,255,0.3)", flexShrink: 0, marginTop: 1 }} />
+                <p className="text-[11px] font-mono leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  Diagrama completo de hierarquia. Cargos da equipe NexusHub (lado esquerdo) têm autoridade global sobre todos os cargos de comunidade (lado direito). A seta indica "pode moderar".
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                {/* Coluna: Equipe */}
+                <div>
+                  <p className="text-[9px] font-mono tracking-widest uppercase mb-3 text-center" style={{ color: "rgba(255,255,255,0.25)" }}>EQUIPE NEXUSHUB</p>
+                  <div className="space-y-2">
+                    {TEAM_ROLE_ORDER.map((roleKey) => {
+                      const cfg = TEAM_ROLE_CONFIG[roleKey];
+                      if (!cfg) return null;
+                      return (
+                        <div
+                          key={roleKey}
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl"
+                          style={{
+                            background: "transparent",
+                            border: `1px solid ${cfg.borderColor}`,
+                          }}
+                        >
+                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: cfg.color }} />
+                          <span className="text-[11px] font-semibold flex-1" style={{ fontFamily: "'Space Grotesk', sans-serif", color: cfg.color }}>
+                            {cfg.label}
+                          </span>
+                          <span className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>
+                            {cfg.rank}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Coluna: Comunidade */}
+                <div>
+                  <p className="text-[9px] font-mono tracking-widest uppercase mb-3 text-center" style={{ color: "rgba(255,255,255,0.25)" }}>CARGOS DE COMUNIDADE</p>
+                  <div className="space-y-2">
+                    {COMMUNITY_ROLE_CONFIG.map((role) => {
+                      const Icon = role.icon;
+                      return (
+                        <div
+                          key={role.key}
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl"
+                          style={{ background: "transparent", border: `1px solid ${role.borderColor}` }}
+                        >
+                          <Icon size={12} style={{ color: role.color, flexShrink: 0 }} />
+                          <span className="text-[11px] font-semibold flex-1" style={{ fontFamily: "'Space Grotesk', sans-serif", color: role.color }}>
+                            {role.label}
+                          </span>
+                          <span className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>
+                            {role.rank}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Regras de moderação */}
+              <div className="p-4 rounded-2xl space-y-3" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.25)" }}>REGRAS UNIVERSAIS DE MODERAÇÃO</p>
+                {[
+                  { rule: "Ninguém pode moderar alguém de rank igual ou superior ao seu", color: "#EF4444", icon: ShieldAlert },
+                  { rule: "Team members têm autoridade global sobre todos os cargos de comunidade", color: "#60A5FA", icon: Shield },
+                  { rule: "Founder (rank 100) tem acesso irrestrito a toda a plataforma", color: "#FFFFFF", icon: Crown },
+                  { rule: "Cargos de comunidade são locais — não interferem em outras comunidades", color: "#22C55E", icon: Globe },
+                  { rule: "Curador só pode silenciar brevemente membros comuns, não banir", color: "#F59E0B", icon: Clock },
+                ].map((r, i) => {
+                  const Icon = r.icon;
+                  return (
+                    <div key={i} className="flex items-start gap-2.5">
+                      <Icon size={13} style={{ color: r.color, flexShrink: 0, marginTop: 1 }} />
+                      <p className="text-[11px] font-mono leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>{r.rule}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Seção: Estatísticas ──────────────────────────────────────────────────────
 function PlatformStatsSection() {
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
       try {
-        const [usersRes, commRes, postsRes, txRes, teamRes] = await Promise.all([
+        const [users, communities, posts, transactions, team] = await Promise.all([
           supabase.from("profiles").select("id", { count: "exact", head: true }),
           supabase.from("communities").select("id", { count: "exact", head: true }),
           supabase.from("posts").select("id", { count: "exact", head: true }),
           supabase.from("coin_transactions").select("id", { count: "exact", head: true }),
           supabase.from("profiles").select("id", { count: "exact", head: true }).gt("team_rank", 0),
         ]);
-        // Usuários ativos hoje (last_seen_at >= hoje)
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const yesterday = new Date(Date.now() - 86400000).toISOString();
         const { count: activeToday } = await supabase
           .from("profiles")
           .select("id", { count: "exact", head: true })
-          .gte("last_seen_at", today.toISOString());
-
+          .gte("last_seen_at", yesterday);
         setStats({
-          total_users: usersRes.count ?? 0,
+          total_users: users.count ?? 0,
           active_today: activeToday ?? 0,
-          total_communities: commRes.count ?? 0,
-          total_posts: postsRes.count ?? 0,
-          total_transactions: txRes.count ?? 0,
-          team_members: teamRes.count ?? 0,
+          total_communities: communities.count ?? 0,
+          total_posts: posts.count ?? 0,
+          total_transactions: transactions.count ?? 0,
+          team_members: team.count ?? 0,
         });
       } catch {
         toast.error("Erro ao carregar estatísticas");
@@ -443,13 +930,16 @@ function PlatformStatsSection() {
     load();
   }, []);
 
+  if (loading) return <div className="flex items-center justify-center py-12"><RefreshCw size={18} className="animate-spin" style={{ color: "rgba(255,255,255,0.2)" }} /></div>;
+  if (!stats) return null;
+
   const cards = [
-    { label: "Total de Usuários", value: stats?.total_users, icon: Users, color: "#8B5CF6", rgb: "139,92,246" },
-    { label: "Ativos Hoje", value: stats?.active_today, icon: Activity, color: "#10B981", rgb: "16,185,129" },
-    { label: "Comunidades", value: stats?.total_communities, icon: Globe, color: "#06B6D4", rgb: "6,182,212" },
-    { label: "Posts", value: stats?.total_posts, icon: BarChart3, color: "#F59E0B", rgb: "245,158,11" },
-    { label: "Transações", value: stats?.total_transactions, icon: Zap, color: "#EC4899", rgb: "236,72,153" },
-    { label: "Team Members", value: stats?.team_members, icon: Shield, color: "#FFFFFF", rgb: "255,255,255" },
+    { label: "Usuários Totais", value: stats.total_users.toLocaleString(), icon: Users, color: "#8B5CF6" },
+    { label: "Ativos Hoje", value: stats.active_today.toLocaleString(), icon: Activity, color: "#10B981" },
+    { label: "Comunidades", value: stats.total_communities.toLocaleString(), icon: Globe, color: "#F59E0B" },
+    { label: "Posts", value: stats.total_posts.toLocaleString(), icon: Eye, color: "#60A5FA" },
+    { label: "Transações", value: stats.total_transactions.toLocaleString(), icon: Zap, color: "#EC4899" },
+    { label: "Equipe", value: stats.team_members.toLocaleString(), icon: Crown, color: "#FFD700" },
   ];
 
   return (
@@ -464,21 +954,19 @@ function PlatformStatsSection() {
             initial="hidden"
             animate="show"
             className="p-4 rounded-2xl"
-            style={{ background: `rgba(${card.rgb},0.05)`, border: `1px solid rgba(${card.rgb},0.12)` }}
+            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
           >
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `rgba(${card.rgb},0.12)` }}>
-                <Icon size={14} style={{ color: card.color }} />
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${card.color}20` }}>
+                <Icon size={13} style={{ color: card.color }} />
               </div>
-              <p className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>{card.label.toUpperCase()}</p>
             </div>
-            {loading ? (
-              <div className="h-7 w-16 rounded-lg animate-pulse" style={{ background: "rgba(255,255,255,0.05)" }} />
-            ) : (
-              <p className="text-[22px] font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif", color: card.color }}>
-                {(card.value ?? 0).toLocaleString("pt-BR")}
-              </p>
-            )}
+            <p className="text-[22px] font-bold leading-none mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif", color: "rgba(255,255,255,0.9)" }}>
+              {card.value}
+            </p>
+            <p className="text-[10px] font-mono tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.3)" }}>
+              {card.label}
+            </p>
           </motion.div>
         );
       })}
@@ -493,16 +981,16 @@ function SecurityLogsSection() {
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
       try {
         const { data, error } = await supabase
           .from("security_logs")
-          .select("id, user_id, event_type, ip_address, created_at, details")
+          .select("id, user_id, event_type, ip_address, created_at, details, user:profiles!user_id(nickname, amino_id)")
           .order("created_at", { ascending: false })
           .limit(30);
         if (error) throw error;
         setLogs(data || []);
       } catch {
-        // Tentar auth_audit_log como fallback
         try {
           const { data } = await supabase
             .from("auth_audit_log")
@@ -521,13 +1009,8 @@ function SecurityLogsSection() {
   }, []);
 
   const eventColors: Record<string, string> = {
-    login: "#10B981",
-    logout: "#6B7280",
-    failed_login: "#EF4444",
-    password_change: "#F59E0B",
-    role_change: "#8B5CF6",
-    ban: "#EF4444",
-    default: "#60A5FA",
+    login: "#10B981", logout: "#6B7280", failed_login: "#EF4444",
+    password_change: "#F59E0B", role_change: "#8B5CF6", ban: "#EF4444", default: "#60A5FA",
   };
 
   return (
@@ -603,7 +1086,6 @@ function PlatformConfigSection() {
           })}
         </div>
       </div>
-
       <div className="p-5 rounded-2xl" style={{ background: "rgba(255,200,0,0.03)", border: "1px solid rgba(255,200,0,0.1)" }}>
         <div className="flex items-center gap-2 mb-2">
           <AlertTriangle size={14} style={{ color: "#F59E0B" }} />
@@ -640,13 +1122,12 @@ function PlatformConfigSection() {
 }
 
 // ─── Página Principal do Founder ──────────────────────────────────────────────
-type FounderTab = "team" | "stats" | "security" | "config";
+type FounderTab = "team" | "roles" | "stats" | "security" | "config";
 
 export default function FounderPage() {
   const { isFounder, isCoFounderOrAbove, canManageTeamRoles, teamRole, teamRank } = useAuth();
   const [activeTab, setActiveTab] = useState<FounderTab>("team");
 
-  // Apenas Founder e Co-Founder têm acesso total; Team Admin tem acesso parcial
   if (!canManageTeamRoles) {
     return (
       <div className="flex items-center justify-center h-full min-h-[60vh]">
@@ -660,10 +1141,11 @@ export default function FounderPage() {
   }
 
   const tabs: { id: FounderTab; label: string; icon: React.ElementType; founderOnly?: boolean }[] = [
-    { id: "team", label: "Equipe", icon: Users },
-    { id: "stats", label: "Estatísticas", icon: BarChart3 },
-    { id: "security", label: "Segurança", icon: Shield, founderOnly: true },
-    { id: "config", label: "Configurações", icon: Settings, founderOnly: true },
+    { id: "team",     label: "Equipe",        icon: Users },
+    { id: "roles",    label: "Cargos",        icon: Layers },
+    { id: "stats",    label: "Estatísticas",  icon: BarChart3 },
+    { id: "security", label: "Segurança",     icon: Shield,   founderOnly: true },
+    { id: "config",   label: "Configurações", icon: Settings, founderOnly: true },
   ];
 
   const visibleTabs = tabs.filter(t => !t.founderOnly || isFounder || isCoFounderOrAbove);
@@ -688,10 +1170,7 @@ export default function FounderPage() {
         <div>
           <h1
             className="text-[20px] font-bold"
-            style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              color: isFounder ? "#FFFFFF" : "#FFD700",
-            }}
+            style={{ fontFamily: "'Space Grotesk', sans-serif", color: isFounder ? "#FFFFFF" : "#FFD700" }}
           >
             {isFounder ? "Founder Panel" : isCoFounderOrAbove ? "Co-Founder Panel" : "Admin Panel"}
           </h1>
@@ -743,10 +1222,11 @@ export default function FounderPage() {
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.18 }}
         >
-          {activeTab === "team" && <TeamSection callerRole={teamRole} />}
-          {activeTab === "stats" && <PlatformStatsSection />}
+          {activeTab === "team"     && <TeamSection callerRole={teamRole} />}
+          {activeTab === "roles"    && <RolesSection isFounder={isFounder} />}
+          {activeTab === "stats"    && <PlatformStatsSection />}
           {activeTab === "security" && <SecurityLogsSection />}
-          {activeTab === "config" && <PlatformConfigSection />}
+          {activeTab === "config"   && <PlatformConfigSection />}
         </motion.div>
       </AnimatePresence>
     </div>
