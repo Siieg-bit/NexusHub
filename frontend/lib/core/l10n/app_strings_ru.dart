@@ -5988,6 +5988,32 @@ class AppStringsRu implements AppStrings {
   @override
   String get actionRejectAppeal => 'Апелляция отклонена';
   @override
+  String get actionStrike => 'Страйк';
+  @override
+  String get actionFeaturePost => 'Пост выделен';
+  @override
+  String get actionUnfeaturePost => 'Выделение снято';
+  @override
+  String get actionHidePost => 'Пост скрыт';
+  @override
+  String get actionUnhidePost => 'Пост показан';
+  @override
+  String get actionPromote => 'Роль повышена';
+  @override
+  String get actionDemote => 'Роль понижена';
+  @override
+  String get actionKick => 'Кик';
+  @override
+  String get actionWikiApprove => 'Вики одобрена';
+  @override
+  String get actionWikiReject => 'Вики отклонена';
+  @override
+  String get actionCanonizeWiki => 'Вики канонизирована';
+  @override
+  String get actionDecanonizeWiki => 'Вики деканонизирована';
+  @override
+  String get actionTransferAgent => 'Агент переведён';
+  @override
   String get filterAll => 'Все';
   @override
   String get filterBan => 'Баны';

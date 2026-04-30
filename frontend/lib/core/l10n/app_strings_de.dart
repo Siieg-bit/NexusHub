@@ -5988,6 +5988,32 @@ class AppStringsDe implements AppStrings {
   @override
   String get actionRejectAppeal => 'Einspruch abgelehnt';
   @override
+  String get actionStrike => 'Verwarnung';
+  @override
+  String get actionFeaturePost => 'Beitrag hervorgehoben';
+  @override
+  String get actionUnfeaturePost => 'Hervorhebung entfernt';
+  @override
+  String get actionHidePost => 'Beitrag ausgeblendet';
+  @override
+  String get actionUnhidePost => 'Beitrag eingeblendet';
+  @override
+  String get actionPromote => 'Rolle befördert';
+  @override
+  String get actionDemote => 'Rolle herabgestuft';
+  @override
+  String get actionKick => 'Rauswurf';
+  @override
+  String get actionWikiApprove => 'Wiki genehmigt';
+  @override
+  String get actionWikiReject => 'Wiki abgelehnt';
+  @override
+  String get actionCanonizeWiki => 'Wiki kanonisiert';
+  @override
+  String get actionDecanonizeWiki => 'Wiki dekanonisiert';
+  @override
+  String get actionTransferAgent => 'Agent übertragen';
+  @override
   String get filterAll => 'Alle';
   @override
   String get filterBan => 'Sperren';

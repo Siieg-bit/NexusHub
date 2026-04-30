@@ -5987,6 +5987,32 @@ class AppStringsAr implements AppStrings {
   @override
   String get actionRejectAppeal => 'تم رفض الطعن';
   @override
+  String get actionStrike => 'إنذار';
+  @override
+  String get actionFeaturePost => 'منشور مميز';
+  @override
+  String get actionUnfeaturePost => 'إلغاء تمييز المنشور';
+  @override
+  String get actionHidePost => 'إخفاء المنشور';
+  @override
+  String get actionUnhidePost => 'إظهار المنشور';
+  @override
+  String get actionPromote => 'ترقية الدور';
+  @override
+  String get actionDemote => 'تخفيض الدور';
+  @override
+  String get actionKick => 'طرد';
+  @override
+  String get actionWikiApprove => 'تمت الموافقة على الويكي';
+  @override
+  String get actionWikiReject => 'تم رفض الويكي';
+  @override
+  String get actionCanonizeWiki => 'تم تأهيل الويكي';
+  @override
+  String get actionDecanonizeWiki => 'إلغاء تأهيل الويكي';
+  @override
+  String get actionTransferAgent => 'تم نقل الوكيل';
+  @override
   String get filterAll => 'الكل';
   @override
   String get filterBan => 'الحظر';

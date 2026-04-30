@@ -5986,6 +5986,32 @@ class AppStringsJa implements AppStrings {
   @override
   String get actionRejectAppeal => '異議却下';
   @override
+  String get actionStrike => 'ストライク';
+  @override
+  String get actionFeaturePost => '投稿を特集';
+  @override
+  String get actionUnfeaturePost => '特集から外す';
+  @override
+  String get actionHidePost => '投稿を非表示';
+  @override
+  String get actionUnhidePost => '投稿を再表示';
+  @override
+  String get actionPromote => 'ロール昇格';
+  @override
+  String get actionDemote => 'ロール降格';
+  @override
+  String get actionKick => 'キック';
+  @override
+  String get actionWikiApprove => 'Wiki承認';
+  @override
+  String get actionWikiReject => 'Wiki拒否';
+  @override
+  String get actionCanonizeWiki => 'Wiki正典化';
+  @override
+  String get actionDecanonizeWiki => 'Wiki正典解除';
+  @override
+  String get actionTransferAgent => 'エージェント移管';
+  @override
   String get filterAll => 'すべて';
   @override
   String get filterBan => 'BAN';

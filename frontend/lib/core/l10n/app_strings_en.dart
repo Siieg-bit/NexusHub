@@ -6063,6 +6063,32 @@ class AppStringsEn implements AppStrings {
   @override
   String get actionRejectAppeal => 'Appeal rejected';
   @override
+  String get actionStrike => 'Strike';
+  @override
+  String get actionFeaturePost => 'Featured post';
+  @override
+  String get actionUnfeaturePost => 'Post unfeatured';
+  @override
+  String get actionHidePost => 'Post hidden';
+  @override
+  String get actionUnhidePost => 'Post unhidden';
+  @override
+  String get actionPromote => 'Role promoted';
+  @override
+  String get actionDemote => 'Role demoted';
+  @override
+  String get actionKick => 'Kick';
+  @override
+  String get actionWikiApprove => 'Wiki approved';
+  @override
+  String get actionWikiReject => 'Wiki rejected';
+  @override
+  String get actionCanonizeWiki => 'Wiki canonized';
+  @override
+  String get actionDecanonizeWiki => 'Wiki decanonized';
+  @override
+  String get actionTransferAgent => 'Agent transferred';
+  @override
   String get filterAll => 'All';
   @override
   String get filterBan => 'Bans';

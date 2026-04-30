@@ -6117,6 +6117,32 @@ class AppStringsPt implements AppStrings {
   @override
   String get actionRejectAppeal => 'Apelação rejeitada';
   @override
+  String get actionStrike => 'Strike';
+  @override
+  String get actionFeaturePost => 'Post destacado';
+  @override
+  String get actionUnfeaturePost => 'Destaque removido';
+  @override
+  String get actionHidePost => 'Post ocultado';
+  @override
+  String get actionUnhidePost => 'Post reexibido';
+  @override
+  String get actionPromote => 'Promoção de cargo';
+  @override
+  String get actionDemote => 'Rebaixamento de cargo';
+  @override
+  String get actionKick => 'Expulsão';
+  @override
+  String get actionWikiApprove => 'Wiki aprovada';
+  @override
+  String get actionWikiReject => 'Wiki rejeitada';
+  @override
+  String get actionCanonizeWiki => 'Wiki canonizada';
+  @override
+  String get actionDecanonizeWiki => 'Wiki descanonizada';
+  @override
+  String get actionTransferAgent => 'Agente transferido';
+  @override
   String get filterAll => 'Todos';
   @override
   String get filterBan => 'Banimentos';

@@ -5986,6 +5986,32 @@ class AppStringsEs implements AppStrings {
   @override
   String get actionRejectAppeal => 'Apelación rechazada';
   @override
+  String get actionStrike => 'Strike';
+  @override
+  String get actionFeaturePost => 'Post destacado';
+  @override
+  String get actionUnfeaturePost => 'Destaque eliminado';
+  @override
+  String get actionHidePost => 'Post ocultado';
+  @override
+  String get actionUnhidePost => 'Post mostrado';
+  @override
+  String get actionPromote => 'Cargo promovido';
+  @override
+  String get actionDemote => 'Cargo rebajado';
+  @override
+  String get actionKick => 'Expulsión';
+  @override
+  String get actionWikiApprove => 'Wiki aprobada';
+  @override
+  String get actionWikiReject => 'Wiki rechazada';
+  @override
+  String get actionCanonizeWiki => 'Wiki canonizada';
+  @override
+  String get actionDecanonizeWiki => 'Wiki descanonizada';
+  @override
+  String get actionTransferAgent => 'Agente transferido';
+  @override
   String get filterAll => 'Todos';
   @override
   String get filterBan => 'Baneos';

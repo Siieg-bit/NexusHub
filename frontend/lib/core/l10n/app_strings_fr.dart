@@ -5988,6 +5988,32 @@ class AppStringsFr implements AppStrings {
   @override
   String get actionRejectAppeal => 'Appel rejeté';
   @override
+  String get actionStrike => 'Avertissement';
+  @override
+  String get actionFeaturePost => 'Post mis en avant';
+  @override
+  String get actionUnfeaturePost => 'Post retiré des favoris';
+  @override
+  String get actionHidePost => 'Post masqué';
+  @override
+  String get actionUnhidePost => 'Post affiché';
+  @override
+  String get actionPromote => 'Rôle promu';
+  @override
+  String get actionDemote => 'Rôle rétrogradé';
+  @override
+  String get actionKick => 'Expulsion';
+  @override
+  String get actionWikiApprove => 'Wiki approuvé';
+  @override
+  String get actionWikiReject => 'Wiki rejeté';
+  @override
+  String get actionCanonizeWiki => 'Wiki canonisé';
+  @override
+  String get actionDecanonizeWiki => 'Wiki décanonisé';
+  @override
+  String get actionTransferAgent => 'Agent transféré';
+  @override
   String get filterAll => 'Tous';
   @override
   String get filterBan => 'Bannissements';

@@ -5988,6 +5988,32 @@ class AppStringsKo implements AppStrings {
   @override
   String get actionRejectAppeal => '이의 신청 거부';
   @override
+  String get actionStrike => '경고';
+  @override
+  String get actionFeaturePost => '추천 게시물';
+  @override
+  String get actionUnfeaturePost => '추천 취소';
+  @override
+  String get actionHidePost => '게시물 숨김';
+  @override
+  String get actionUnhidePost => '게시물 표시';
+  @override
+  String get actionPromote => '역할 승진';
+  @override
+  String get actionDemote => '역할 강등';
+  @override
+  String get actionKick => '추방';
+  @override
+  String get actionWikiApprove => '위키 승인';
+  @override
+  String get actionWikiReject => '위키 거부';
+  @override
+  String get actionCanonizeWiki => '위키 정전화';
+  @override
+  String get actionDecanonizeWiki => '위키 정전 해제';
+  @override
+  String get actionTransferAgent => '에이전트 이전';
+  @override
   String get filterAll => '전체';
   @override
   String get filterBan => '차단';

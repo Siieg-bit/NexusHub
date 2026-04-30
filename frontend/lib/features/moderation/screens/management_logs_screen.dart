@@ -209,7 +209,7 @@ class _StatsRow extends StatelessWidget {
         Icons.block_rounded,
         const Color(0xFFF44336),
         s.managementLogsBans,
-        '${stats['bans'] ?? 0}'
+        '${stats['total_bans'] ?? 0}'
       ),
       (
         Icons.flag_rounded,
@@ -576,20 +576,33 @@ class _LogEntryState extends State<_LogEntry> {
 
   (Color, IconData, String) _actionInfo(String action, dynamic s) {
     return switch (action) {
-      'ban' => (const Color(0xFFF44336), Icons.block_rounded, s.actionBan),
-      'unban' => (const Color(0xFF4CAF50), Icons.check_circle_rounded, s.actionUnban),
-      'warn' => (const Color(0xFFFF9800), Icons.warning_rounded, s.actionWarn),
-      'mute' => (const Color(0xFF9C27B0), Icons.volume_off_rounded, s.actionMute),
-      'unmute' => (const Color(0xFF4CAF50), Icons.volume_up_rounded, s.actionUnmute),
-      'delete_post' => (const Color(0xFFE91E63), Icons.delete_rounded, s.actionDeletePost),
-      'delete_content' => (const Color(0xFFE91E63), Icons.delete_sweep_rounded, s.actionDeleteContent),
-      'pin_post' => (const Color(0xFF2196F3), Icons.push_pin_rounded, s.actionPinPost),
-      'unpin_post' => (const Color(0xFF9E9E9E), Icons.push_pin_outlined, s.actionUnpinPost),
-      'approve_flag' => (const Color(0xFF4CAF50), Icons.flag_rounded, s.actionApproveFlag),
-      'dismiss_flag' => (const Color(0xFF9E9E9E), Icons.flag_outlined, s.actionDismissFlag),
-      'accept_appeal' => (const Color(0xFF4CAF50), Icons.gavel_rounded, s.actionAcceptAppeal),
-      'reject_appeal' => (const Color(0xFFF44336), Icons.gavel_rounded, s.actionRejectAppeal),
-      _ => (const Color(0xFF9E9E9E), Icons.info_rounded, action),
+      'ban'             => (const Color(0xFFF44336), Icons.block_rounded,            s.actionBan),
+      'unban'           => (const Color(0xFF4CAF50), Icons.check_circle_rounded,     s.actionUnban),
+      'warn'            => (const Color(0xFFFF9800), Icons.warning_rounded,          s.actionWarn),
+      'strike'          => (const Color(0xFFFF5722), Icons.report_rounded,           s.actionStrike),
+      'mute'            => (const Color(0xFF9C27B0), Icons.volume_off_rounded,       s.actionMute),
+      'unmute'          => (const Color(0xFF4CAF50), Icons.volume_up_rounded,        s.actionUnmute),
+      'kick'            => (const Color(0xFFFF9800), Icons.exit_to_app_rounded,      s.actionKick),
+      'delete_post'     => (const Color(0xFFE91E63), Icons.delete_rounded,           s.actionDeletePost),
+      'delete_content'  => (const Color(0xFFE91E63), Icons.delete_sweep_rounded,     s.actionDeleteContent),
+      'hide_post'       => (const Color(0xFF607D8B), Icons.visibility_off_rounded,   s.actionHidePost),
+      'unhide_post'     => (const Color(0xFF4CAF50), Icons.visibility_rounded,       s.actionUnhidePost),
+      'pin_post'        => (const Color(0xFF2196F3), Icons.push_pin_rounded,         s.actionPinPost),
+      'unpin_post'      => (const Color(0xFF9E9E9E), Icons.push_pin_outlined,        s.actionUnpinPost),
+      'feature_post'    => (const Color(0xFFFFD700), Icons.star_rounded,             s.actionFeaturePost),
+      'unfeature_post'  => (const Color(0xFF9E9E9E), Icons.star_outline_rounded,     s.actionUnfeaturePost),
+      'promote'         => (const Color(0xFF4CAF50), Icons.arrow_upward_rounded,     s.actionPromote),
+      'demote'          => (const Color(0xFFFF9800), Icons.arrow_downward_rounded,   s.actionDemote),
+      'wiki_approve'    => (const Color(0xFF4CAF50), Icons.menu_book_rounded,        s.actionWikiApprove),
+      'wiki_reject'     => (const Color(0xFFF44336), Icons.menu_book_rounded,        s.actionWikiReject),
+      'canonize_wiki'   => (const Color(0xFF9C27B0), Icons.auto_stories_rounded,     s.actionCanonizeWiki),
+      'decanonize_wiki' => (const Color(0xFF9E9E9E), Icons.auto_stories_rounded,     s.actionDecanonizeWiki),
+      'transfer_agent'  => (const Color(0xFF2196F3), Icons.swap_horiz_rounded,       s.actionTransferAgent),
+      'approve_flag'    => (const Color(0xFF4CAF50), Icons.flag_rounded,             s.actionApproveFlag),
+      'dismiss_flag'    => (const Color(0xFF9E9E9E), Icons.flag_outlined,            s.actionDismissFlag),
+      'accept_appeal'   => (const Color(0xFF4CAF50), Icons.gavel_rounded,            s.actionAcceptAppeal),
+      'reject_appeal'   => (const Color(0xFFF44336), Icons.gavel_rounded,            s.actionRejectAppeal),
+      _                 => (const Color(0xFF9E9E9E), Icons.info_rounded,             action),
     };
   }
 }
