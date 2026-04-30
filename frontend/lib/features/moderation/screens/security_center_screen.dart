@@ -293,7 +293,16 @@ class _SessionsTab extends ConsumerWidget {
           );
         }
 
-        return ListView.builder(
+        return Column(
+          children: [
+            // Botão: revogar todas as outras sessões
+            if (sessions.length > 1)
+              Padding(
+                padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), 0),
+                child: _RevokeAllButton(r: r, s: s),
+              ),
+            Expanded(
+              child: ListView.builder(
           padding: EdgeInsets.all(r.s(16)),
           itemCount: sessions.length,
           itemBuilder: (ctx, i) {
@@ -402,8 +411,7 @@ class _SessionsTab extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  if (!isCurrent) ...[
-                    SizedBox(width: r.s(8)),
+                  if (!isCurrent) ...[SizedBox(width: r.s(8)),
                     _RevokeButton(
                       sessionId: session['id'] as String,
                       r: r,
@@ -414,6 +422,9 @@ class _SessionsTab extends ConsumerWidget {
               ),
             );
           },
+              ),
+            ),
+          ],
         );
       },
     );
@@ -770,6 +781,105 @@ class _SecurityTipsCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Botão: Revogar todas as outras sessões
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _RevokeAllButton extends ConsumerStatefulWidget {
+  final Responsive r;
+  final dynamic s;
+
+  const _RevokeAllButton({required this.r, required this.s});
+
+  @override
+  ConsumerState<_RevokeAllButton> createState() => _RevokeAllButtonState();
+}
+
+class _RevokeAllButtonState extends ConsumerState<_RevokeAllButton> {
+  bool _isRevoking = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _isRevoking ? null : _revokeAll,
+        icon: _isRevoking
+            ? SizedBox(
+                width: widget.r.s(14),
+                height: widget.r.s(14),
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: context.nexusTheme.error),
+              )
+            : Icon(Icons.devices_other_rounded,
+                color: context.nexusTheme.error, size: widget.r.s(16)),
+        label: Text(
+          widget.s.securityRevokeAllOtherSessions,
+          style: TextStyle(
+              color: context.nexusTheme.error,
+              fontSize: widget.r.fs(13),
+              fontWeight: FontWeight.w600),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: context.nexusTheme.error.withValues(alpha: 0.4)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(widget.r.s(10))),
+          padding: EdgeInsets.symmetric(
+              vertical: widget.r.s(10), horizontal: widget.r.s(14)),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _revokeAll() async {
+    final s = widget.s;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.securityRevokeAllOtherSessions),
+        content: Text(s.securityRevokeAllConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(s.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(s.confirm,
+                style: TextStyle(color: context.nexusTheme.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _isRevoking = true);
+    try {
+      await SupabaseService.rpc('revoke_all_other_sessions');
+      if (mounted) {
+        ref.invalidate(securityOverviewProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(s.securityAllSessionsRevoked),
+            backgroundColor: context.nexusTheme.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(s.anErrorOccurredTryAgain),
+            backgroundColor: context.nexusTheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isRevoking = false);
+    }
   }
 }
 

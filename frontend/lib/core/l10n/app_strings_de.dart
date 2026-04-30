@@ -6198,6 +6198,9 @@ class AppStringsDe implements AppStrings {
   String get securityScoreTitle => 'Sicherheitsbewertung';
   @override
   String get securitySessionRevoked => 'Sitzung erfolgreich widerrufen';
+  @override String get securityRevokeAllOtherSessions => 'Alle anderen Sitzungen widerrufen';
+  @override String get securityRevokeAllConfirm => 'Dadurch werden alle aktiven Sitzungen auf anderen Geräten beendet. Fortfahren?';
+  @override String get securityAllSessionsRevoked => 'Alle anderen Sitzungen wurden widerrufen.';
   @override
   String get securityTipsTitle => 'Sicherheitstipps';
   @override

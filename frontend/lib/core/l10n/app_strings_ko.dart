@@ -6198,6 +6198,9 @@ class AppStringsKo implements AppStrings {
   String get securityScoreTitle => '보안 점수';
   @override
   String get securitySessionRevoked => '세션이 성공적으로 취소되었습니다';
+  @override String get securityRevokeAllOtherSessions => '다른 모든 세션 취소';
+  @override String get securityRevokeAllConfirm => '다른 기기의 모든 활성 세션이 종료됩니다. 계속하시겠습니까?';
+  @override String get securityAllSessionsRevoked => '다른 모든 세션이 취소되었습니다.';
   @override
   String get securityTipsTitle => '보안 팁';
   @override

@@ -6198,6 +6198,9 @@ class AppStringsRu implements AppStrings {
   String get securityScoreTitle => 'Оценка безопасности';
   @override
   String get securitySessionRevoked => 'Сеанс успешно отозван';
+  @override String get securityRevokeAllOtherSessions => 'Отозвать все другие сессии';
+  @override String get securityRevokeAllConfirm => 'Это завершит все активные сессии на других устройствах. Продолжить?';
+  @override String get securityAllSessionsRevoked => 'Все другие сессии были отозваны.';
   @override
   String get securityTipsTitle => 'Советы по безопасности';
   @override

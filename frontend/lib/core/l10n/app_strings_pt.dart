@@ -6327,6 +6327,9 @@ class AppStringsPt implements AppStrings {
   String get securityScoreTitle => 'Pontuação de segurança';
   @override
   String get securitySessionRevoked => 'Sessão revogada com sucesso';
+  @override String get securityRevokeAllOtherSessions => 'Revogar todas as outras sessões';
+  @override String get securityRevokeAllConfirm => 'Isso encerrará todas as sessões ativas em outros dispositivos. Deseja continuar?';
+  @override String get securityAllSessionsRevoked => 'Todas as outras sessões foram encerradas.';
   @override
   String get securityTipsTitle => 'Dicas de segurança';
   @override

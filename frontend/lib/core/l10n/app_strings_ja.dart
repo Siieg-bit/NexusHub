@@ -6196,6 +6196,9 @@ class AppStringsJa implements AppStrings {
   String get securityScoreTitle => 'セキュリティスコア';
   @override
   String get securitySessionRevoked => 'セッションが正常に取り消されました';
+  @override String get securityRevokeAllOtherSessions => '他のすべてのセッションを無効化';
+  @override String get securityRevokeAllConfirm => '他のデバイスのすべてのアクティブセッションを終了します。続行しますか？';
+  @override String get securityAllSessionsRevoked => '他のすべてのセッションが無効化されました。';
   @override
   String get securityTipsTitle => 'セキュリティのヒント';
   @override

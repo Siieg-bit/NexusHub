@@ -6197,6 +6197,9 @@ class AppStringsAr implements AppStrings {
   String get securityScoreTitle => 'درجة الأمان';
   @override
   String get securitySessionRevoked => 'تم إلغاء الجلسة بنجاح';
+  @override String get securityRevokeAllOtherSessions => 'إلغاء جميع الجلسات الأخرى';
+  @override String get securityRevokeAllConfirm => 'سيؤدي هذا إلى إنهاء جميع الجلسات النشطة على الأجهزة الأخرى. هل تريد المتابعة؟';
+  @override String get securityAllSessionsRevoked => 'تم إلغاء جميع الجلسات الأخرى.';
   @override
   String get securityTipsTitle => 'نصائح الأمان';
   @override

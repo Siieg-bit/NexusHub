@@ -6198,6 +6198,9 @@ class AppStringsFr implements AppStrings {
   String get securityScoreTitle => 'Score de sécurité';
   @override
   String get securitySessionRevoked => 'Session révoquée avec succès';
+  @override String get securityRevokeAllOtherSessions => 'Révoquer toutes les autres sessions';
+  @override String get securityRevokeAllConfirm => 'Cela mettra fin à toutes les sessions actives sur d\'autres appareils. Continuer ?';
+  @override String get securityAllSessionsRevoked => 'Toutes les autres sessions ont été révoquées.';
   @override
   String get securityTipsTitle => 'Conseils de sécurité';
   @override

@@ -3232,6 +3232,9 @@ abstract class AppStrings {
   String get securityRevokeSession;
   String get securityScoreTitle;
   String get securitySessionRevoked;
+  String get securityRevokeAllOtherSessions;
+  String get securityRevokeAllConfirm;
+  String get securityAllSessionsRevoked;
   String get securityTipsTitle;
   String get securityTip1;
   String get securityTip2;

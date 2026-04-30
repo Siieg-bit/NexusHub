@@ -6196,6 +6196,9 @@ class AppStringsEs implements AppStrings {
   String get securityScoreTitle => 'Puntuación de seguridad';
   @override
   String get securitySessionRevoked => 'Sesión revocada con éxito';
+  @override String get securityRevokeAllOtherSessions => 'Revocar todas las otras sesiones';
+  @override String get securityRevokeAllConfirm => 'Esto cerrará todas las sesiones activas en otros dispositivos. ¿Continuar?';
+  @override String get securityAllSessionsRevoked => 'Todas las otras sesiones han sido revocadas.';
   @override
   String get securityTipsTitle => 'Consejos de seguridad';
   @override

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -157,10 +159,68 @@ class AuthNotifier extends StateNotifier<AuthState> {
       } catch (_) {
         // Presença é best-effort
       }
+
+      // Registrar/atualizar sessão ativa no Centro de Segurança
+      _upsertCurrentSession();
     } catch (e) {
       // Mesmo se o perfil falhar, a sessão é válida
       state = state.copyWith(
           isLoading: false, error: s.errorLoadingProfileRetry);
+    }
+  }
+
+  /// Registra ou atualiza a sessão atual do usuário na tabela user_sessions.
+  /// É chamado em background após o login/inicialização do perfil.
+  Future<void> _upsertCurrentSession() async {
+    try {
+      // Obter o token da sessão Supabase como identificador único
+      final sessionToken = SupabaseService.currentSession?.accessToken;
+      if (sessionToken == null) return;
+
+      // Detectar informações do dispositivo
+      String deviceName = 'Dispositivo desconhecido';
+      String deviceType = 'mobile';
+
+      try {
+        final deviceInfo = DeviceInfoPlugin();
+        if (kIsWeb) {
+          final webInfo = await deviceInfo.webBrowserInfo;
+          deviceName = webInfo.browserName.name;
+          deviceType = 'desktop';
+        } else if (Platform.isAndroid) {
+          final androidInfo = await deviceInfo.androidInfo;
+          deviceName = '${androidInfo.brand} ${androidInfo.model}';
+          deviceType = 'mobile';
+        } else if (Platform.isIOS) {
+          final iosInfo = await deviceInfo.iosInfo;
+          deviceName = iosInfo.utsname.machine ?? iosInfo.model;
+          deviceType = iosInfo.model.toLowerCase().contains('ipad') ? 'tablet' : 'mobile';
+        } else if (Platform.isMacOS) {
+          final macInfo = await deviceInfo.macOsInfo;
+          deviceName = macInfo.computerName;
+          deviceType = 'desktop';
+        } else if (Platform.isWindows) {
+          final winInfo = await deviceInfo.windowsInfo;
+          deviceName = winInfo.computerName;
+          deviceType = 'desktop';
+        } else if (Platform.isLinux) {
+          final linuxInfo = await deviceInfo.linuxInfo;
+          deviceName = linuxInfo.prettyName;
+          deviceType = 'desktop';
+        }
+      } catch (_) {
+        // device_info é best-effort
+      }
+
+      await SupabaseService.rpc('upsert_user_session', params: {
+        'p_session_token': sessionToken,
+        'p_device_name':   deviceName,
+        'p_device_type':   deviceType,
+      });
+      debugPrint('[Auth] ✅ Sessão registrada: $deviceName ($deviceType)');
+    } catch (e) {
+      // Registro de sessão é best-effort — não bloqueia o app
+      debugPrint('[Auth] ⚠️ Falha ao registrar sessão: $e');
     }
   }
 
