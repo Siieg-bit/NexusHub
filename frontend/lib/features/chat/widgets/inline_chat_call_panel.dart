@@ -65,11 +65,11 @@ class _InlineChatCallPanelState extends ConsumerState<InlineChatCallPanel>
     super.dispose();
   }
 
-  // Reage a mudanças no isActive para animar entrada/saída
-  void _syncAnimation(bool isActive) {
-    if (isActive && _slideCtrl.status != AnimationStatus.completed) {
+  // Reage a mudanças no isActive/isConnecting para animar entrada/saída
+  void _syncAnimation(bool shouldShow) {
+    if (shouldShow && _slideCtrl.status != AnimationStatus.completed) {
       _slideCtrl.forward();
-    } else if (!isActive && _slideCtrl.status != AnimationStatus.dismissed) {
+    } else if (!shouldShow && _slideCtrl.status != AnimationStatus.dismissed) {
       _slideCtrl.reverse();
     }
   }
@@ -77,14 +77,16 @@ class _InlineChatCallPanelState extends ConsumerState<InlineChatCallPanel>
   @override
   Widget build(BuildContext context) {
     final callState = ref.watch(chatCallProvider(widget.threadId));
-    _syncAnimation(callState.isActive);
+    // Painel visível tanto quando está conectando quanto quando está ativo.
+    final shouldShow = callState.isActive || callState.isConnecting;
+    _syncAnimation(shouldShow);
 
-    // Quando a animação de saída termina e a call não está ativa,
+    // Quando a animação de saída termina e o painel não deve ser mostrado,
     // não renderizar nada para liberar recursos.
     return AnimatedBuilder(
       animation: _slideCtrl,
       builder: (context, _) {
-        if (_slideCtrl.isDismissed && !callState.isActive) {
+        if (_slideCtrl.isDismissed && !shouldShow) {
           return const SizedBox.shrink();
         }
         return FadeTransition(
@@ -135,39 +137,49 @@ class _PanelBody extends ConsumerWidget {
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ── Header sempre visível ──────────────────────────────────────
-            _PanelHeader(threadId: threadId),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          switchInCurve: Curves.easeOut,
+          switchOutCurve: Curves.easeIn,
+          child: callState.isConnecting
+              // ── Estado de conexão: spinner + texto ───────────────────────────
+              ? _ConnectingContent(key: const ValueKey('connecting'))
+              // ── Estado ativo: layout normal do painel ─────────────────────
+              : Column(
+                  key: const ValueKey('active'),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // ── Header sempre visível ───────────────────────────────────────────
+                    _PanelHeader(threadId: threadId),
 
-            // ── Conteúdo animado: expandido ou compacto ────────────────────
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 220),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              transitionBuilder: (child, anim) => FadeTransition(
-                opacity: anim,
-                child: SizeTransition(
-                  sizeFactor: anim,
-                  axisAlignment: -1,
-                  child: child,
-                ),
-              ),
-              child: callState.isExpanded
-                  ? _ExpandedContent(
-                      key: const ValueKey('expanded'),
-                      threadId: threadId,
-                    )
-                  : _CompactContent(
-                      key: const ValueKey('compact'),
-                      threadId: threadId,
+                    // ── Conteúdo animado: expandido ou compacto ───────────────────
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 220),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      transitionBuilder: (child, anim) => FadeTransition(
+                        opacity: anim,
+                        child: SizeTransition(
+                          sizeFactor: anim,
+                          axisAlignment: -1,
+                          child: child,
+                        ),
+                      ),
+                      child: callState.isExpanded
+                          ? _ExpandedContent(
+                              key: const ValueKey('expanded'),
+                              threadId: threadId,
+                            )
+                          : _CompactContent(
+                              key: const ValueKey('compact'),
+                              threadId: threadId,
+                            ),
                     ),
-            ),
 
-            // ── Barra de controles ─────────────────────────────────────────
-            _ControlsBar(threadId: threadId),
-          ],
+                    // ── Barra de controles ───────────────────────────────────────────
+                    _ControlsBar(threadId: threadId),
+                  ],
+                ),
         ),
       ),
     );
@@ -841,6 +853,45 @@ class _CallControlBtn extends StatelessWidget {
               color: isEnd ? theme.error : Colors.grey[500],
               fontSize: r.fs(9),
               fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// _ConnectingContent — Exibido enquanto o Agora SDK inicializa (isConnecting)
+// ============================================================================
+class _ConnectingContent extends StatelessWidget {
+  const _ConnectingContent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    final theme = context.nexusTheme;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: r.s(20), horizontal: r.s(16)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: r.s(16),
+            height: r.s(16),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(theme.accentPrimary),
+            ),
+          ),
+          SizedBox(width: r.s(10)),
+          Text(
+            'Conectando ao Voice Chat...',
+            style: TextStyle(
+              color: theme.textSecondary,
+              fontSize: r.fs(13),
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

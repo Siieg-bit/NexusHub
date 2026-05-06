@@ -1185,11 +1185,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Future<void> _startVoiceChat() async {
     final callCtrl = ref.read(chatCallProvider(widget.threadId).notifier);
+    final callState = ref.read(chatCallProvider(widget.threadId));
+
     // Se a call já está ativa no painel inline, apenas garante que está expandido.
-    if (ref.read(chatCallProvider(widget.threadId)).isActive) {
+    if (callState.isActive) {
       callCtrl.toggleExpanded();
       return;
     }
+    // Evitar duplo clique enquanto já está conectando.
+    if (callState.isConnecting) return;
+
+    // ── Abrir o painel imediatamente com spinner "Conectando..." ──────────────
+    // O Agora SDK leva 2-4s para inicializar + entrar no canal.
+    // Mostrar o painel antes elimina o delay percebido pelo usuário.
+    callCtrl.startConnecting();
+
     try {
       // createCallOnly: cria uma nova call sem entrar em uma existente.
       // Para entrar em call existente o usuário usa o botão "Entrar" na mensagem.
@@ -1199,6 +1209,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       );
       if (!mounted) return;
       if (result.callAlreadyActive) {
+        callCtrl.connectFailed('call_already_active');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text(
@@ -1211,6 +1222,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         return;
       }
       if (result.session == null) {
+        callCtrl.connectFailed('session_null');
         final report = CallService.buildLastErrorReport(
           title: 'CHAT VOICE CALL FAILURE',
         );
@@ -1220,8 +1232,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       // Enviar mensagem de rastreamento e ativar o painel inline.
       await _sendMessage(type: 'voice_chat');
       if (!mounted) return;
+      // attach() transita isConnecting → false e isActive → true
       await callCtrl.attach(result.session!);
     } catch (e, st) {
+      if (mounted) callCtrl.connectFailed(e.toString());
       debugPrint('[ChatRoom] _startVoiceChat error: $e\n$st');
     }
   }

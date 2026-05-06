@@ -14,6 +14,8 @@ import '../../../core/models/message_model.dart';
 class ChatCallState {
   final CallSession? session;
   final bool isActive;
+  /// Painel visível mas ainda conectando ao Agora (loading state)
+  final bool isConnecting;
   final bool isExpanded;
   final List<Map<String, dynamic>> participants;
   final Set<int> remoteUsers;
@@ -26,10 +28,13 @@ class ChatCallState {
   final String elapsed;
   final List<MessageModel> messages;
   final bool isSendingMessage;
+  /// Mensagem de erro de conexão (null = sem erro)
+  final String? connectError;
 
   const ChatCallState({
     this.session,
     this.isActive = false,
+    this.isConnecting = false,
     this.isExpanded = true,
     this.participants = const [],
     this.remoteUsers = const {},
@@ -42,11 +47,13 @@ class ChatCallState {
     this.elapsed = '00:00',
     this.messages = const [],
     this.isSendingMessage = false,
+    this.connectError,
   });
 
   ChatCallState copyWith({
     CallSession? session,
     bool? isActive,
+    bool? isConnecting,
     bool? isExpanded,
     List<Map<String, dynamic>>? participants,
     Set<int>? remoteUsers,
@@ -59,10 +66,13 @@ class ChatCallState {
     String? elapsed,
     List<MessageModel>? messages,
     bool? isSendingMessage,
+    String? connectError,
+    bool clearConnectError = false,
   }) {
     return ChatCallState(
       session: session ?? this.session,
       isActive: isActive ?? this.isActive,
+      isConnecting: isConnecting ?? this.isConnecting,
       isExpanded: isExpanded ?? this.isExpanded,
       participants: participants ?? this.participants,
       remoteUsers: remoteUsers ?? this.remoteUsers,
@@ -75,6 +85,7 @@ class ChatCallState {
       elapsed: elapsed ?? this.elapsed,
       messages: messages ?? this.messages,
       isSendingMessage: isSendingMessage ?? this.isSendingMessage,
+      connectError: clearConnectError ? null : (connectError ?? this.connectError),
     );
   }
 
@@ -105,14 +116,31 @@ class ChatCallController extends StateNotifier<ChatCallState> {
 
   ChatCallController(Ref ref) : super(const ChatCallState());
 
-  // ── Iniciar ou entrar na call ─────────────────────────────────────────────
+  // ── Abrir painel imediatamente (estado de conexão) ────────────────────────
+  /// Chamado ANTES de createCallOnly/joinExistingCall para abrir o painel
+  /// instantaneamente com spinner de "Conectando...". Elimina o delay percebido.
+  void startConnecting() {
+    state = const ChatCallState(
+      isConnecting: true,
+      isExpanded: true,
+    );
+  }
 
+  /// Chamado quando a conexão falha — fecha o painel e exibe o erro.
+  void connectFailed(String error) {
+    if (!mounted) return;
+    state = const ChatCallState(); // fecha o painel
+    debugPrint('[ChatCallController] connectFailed: $error');
+  }
+
+  // ── Iniciar ou entrar na call (após Agora conectado) ──────────────────────
   Future<void> attach(CallSession session) async {
     _startTime = DateTime.now();
 
     state = ChatCallState(
       session: session,
       isActive: true,
+      isConnecting: false, // Agora conectado — sai do loading
       isExpanded: true,
       isMuted: CallService.isMuted,
       isSpeakerOn: CallService.isSpeakerOn,
