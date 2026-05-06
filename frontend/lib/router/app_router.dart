@@ -76,10 +76,8 @@ import '../features/profile/screens/community_followers_screen.dart';
 import '../features/store/screens/store_screen.dart';
 import '../features/store/screens/coin_shop_screen.dart';
 import '../features/gamification/screens/free_coins_screen.dart';
-import '../features/chat/screens/call_screen.dart';
 import '../features/chat/screens/create_group_chat_screen.dart';
 import '../features/chat/screens/create_public_chat_screen.dart';
-import '../core/services/call_service.dart';
 import '../features/wiki/screens/wiki_screen.dart';
 import '../features/wiki/screens/wiki_curator_review_screen.dart';
 import '../features/communities/screens/shared_folder_screen.dart';
@@ -942,27 +940,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const CoinShopScreen(),
       ),
 
-      // ====================================================================
-      // CHAMADAS
-      // ====================================================================
-      GoRoute(
-        path: '/call/:sessionId',
-        name: 'call',
-        builder: (context, state) {
-          final session = state.extra as CallSession?;
-          if (session != null) {
-            return CallScreen(session: session);
-          }
-          // Fallback: redirecionar para home se não houver sessão
-          return const Scaffold(
-            // SafeArea garante que o conteúdo não fique atrás da status bar
-            // em dispositivos com edge-to-edge (Android 15+).
-            body: SafeArea(
-              child: Center(child: Text('Sessão de chamada inválida')),
-            ),
-          );
-        },
-      ),
+      // Rota /call removida — voice chat integrado inline na chat_room_screen.
 
       // ====================================================================
       // FEED GLOBAL
