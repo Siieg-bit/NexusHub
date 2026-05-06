@@ -68,7 +68,6 @@ import '../features/settings/screens/phone_2fa_screen.dart';
 import '../features/auth/screens/mfa_challenge_screen.dart';
 import '../features/explore/screens/search_screen.dart';
 import '../features/explore/screens/interest_match_screen.dart';
-import '../features/explore/screens/match_queue_screen.dart';
 import '../features/profile/screens/edit_interests_screen.dart';
 import '../features/profile/screens/user_wall_screen.dart';
 import '../features/profile/screens/followers_screen.dart';
@@ -869,11 +868,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/interest-match',
         name: 'interest-match',
         builder: (context, state) => const InterestMatchScreen(),
-      ),
-      GoRoute(
-        path: '/match-queue',
-        name: 'match-queue',
-        builder: (context, state) => const MatchQueueScreen(),
       ),
       GoRoute(
         path: '/edit-interests',
