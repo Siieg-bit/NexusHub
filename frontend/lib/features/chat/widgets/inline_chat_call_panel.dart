@@ -404,12 +404,12 @@ class _CompactContent extends ConsumerWidget {
 
 // ============================================================================
 // _ControlsBar — botões de ação.
-//
-// Modo ouvinte (isAudience):
-//   [Alto-falante] [Subir ao Palco] [Sair]
+// Modo ouvinte passivo (isAudience):
+//   [Alto-falante] [Subir ao Palco]
 //
 // Modo speaker (isOnStage):
-//   [Mic] [Alto-falante] [Descer do Palco] [Encerrar/Sair]
+//   [Mic] [Alto-falante] [Descer do Palco]
+//   Host: + [Encerrar]
 // ============================================================================
 class _ControlsBar extends ConsumerWidget {
   final String threadId;
@@ -454,14 +454,7 @@ class _ControlsBar extends ConsumerWidget {
               isActive: true,
               onTap: ctrl.goOnStage,
             ),
-            // Sair
-            _CallControlBtn(
-              icon: Icons.exit_to_app_rounded,
-              label: 'Sair',
-              isActive: false,
-              isEnd: true,
-              onTap: ctrl.leave,
-            ),
+
           ],
 
           // ── Modo speaker / host ────────────────────────────────────────────
@@ -492,24 +485,19 @@ class _ControlsBar extends ConsumerWidget {
                 isActive: false,
                 onTap: ctrl.leaveStage,
               ),
-            // Encerrar (host) ou Sair (outros)
-            _CallControlBtn(
-              icon: isHost
-                  ? Icons.call_end_rounded
-                  : Icons.exit_to_app_rounded,
-              label: isHost ? 'Encerrar' : 'Sair',
-              isActive: false,
-              isEnd: true,
-              onTap: () {
-                if (isHost) {
+            // Encerrar (apenas host)
+            if (isHost)
+              _CallControlBtn(
+                icon: Icons.call_end_rounded,
+                label: 'Encerrar',
+                isActive: false,
+                isEnd: true,
+                onTap: () {
                   final nickname =
                       ref.read(currentUserProvider)?.nickname;
                   ctrl.end(nickname);
-                } else {
-                  ctrl.leave();
-                }
-              },
-            ),
+                },
+              ),
           ],
         ],
       ),
@@ -557,23 +545,11 @@ class _SpeakersRow extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    padding: EdgeInsets.all(isSpeaking ? r.s(2) : 0),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isSpeaking
-                            ? context.nexusTheme.success
-                            : Colors.transparent,
-                        width: 2,
-                      ),
-                    ),
-                    child: CosmeticAvatar(
-                      userId: userId,
-                      avatarUrl: iconUrl,
-                      size: r.s(44),
-                    ),
+                  _PulsingAvatar(
+                    userId: userId,
+                    iconUrl: iconUrl,
+                    isSpeaking: isSpeaking,
+                    size: r.s(44),
                   ),
                   SizedBox(height: r.s(4)),
                   Text(
@@ -867,6 +843,115 @@ class _CallControlBtn extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ============================================================================
+// _PulsingAvatar — avatar com animação de pulso verde ao falar
+// ============================================================================
+class _PulsingAvatar extends StatefulWidget {
+  final String userId;
+  final String? iconUrl;
+  final bool isSpeaking;
+  final double size;
+
+  const _PulsingAvatar({
+    required this.userId,
+    required this.iconUrl,
+    required this.isSpeaking,
+    required this.size,
+  });
+
+  @override
+  State<_PulsingAvatar> createState() => _PulsingAvatarState();
+}
+
+class _PulsingAvatarState extends State<_PulsingAvatar>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+  late final Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 1.22).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+    _opacity = Tween<double>(begin: 0.6, end: 0.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
+    );
+    if (widget.isSpeaking) _ctrl.repeat();
+  }
+
+  @override
+  void didUpdateWidget(_PulsingAvatar old) {
+    super.didUpdateWidget(old);
+    if (widget.isSpeaking && !_ctrl.isAnimating) {
+      _ctrl.repeat();
+    } else if (!widget.isSpeaking && _ctrl.isAnimating) {
+      _ctrl.stop();
+      _ctrl.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final successColor = context.nexusTheme.success;
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, child) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Anel de pulso externo
+            if (widget.isSpeaking)
+              Transform.scale(
+                scale: _scale.value,
+                child: Opacity(
+                  opacity: _opacity.value,
+                  child: Container(
+                    width: widget.size + 8,
+                    height: widget.size + 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: successColor.withValues(alpha: 0.35),
+                    ),
+                  ),
+                ),
+              ),
+            // Borda verde fixa quando falando
+            Container(
+              padding: EdgeInsets.all(widget.isSpeaking ? 2 : 0),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: widget.isSpeaking
+                      ? successColor
+                      : Colors.transparent,
+                  width: 2,
+                ),
+              ),
+              child: CosmeticAvatar(
+                userId: widget.userId,
+                avatarUrl: widget.iconUrl,
+                size: widget.size,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
