@@ -85,10 +85,10 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(action == 'approved'
-                ? 'Denúncia aprovada e ação tomada'
+            content: Text(action == 'resolved'
+                ? 'Denúncia resolvida e ação tomada'
                 : 'Denúncia rejeitada'),
-            backgroundColor: action == 'approved'
+            backgroundColor: action == 'resolved'
                 ? context.nexusTheme.error
                 : context.nexusTheme.success,
           ),
@@ -297,7 +297,7 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
           return AlertDialog(
             backgroundColor: ctx.surfaceColor,
             title: Text(
-              action == 'approved' ? 'Tomar Ação' : 'Rejeitar Denúncia',
+              action == 'resolved' ? 'Tomar Ação' : 'Rejeitar Denúncia',
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             content: SingleChildScrollView(
@@ -318,7 +318,7 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
                       ),
                     ),
                   ),
-                  if (action == 'approved') ...[
+                  if (action == 'resolved') ...[
                     SizedBox(height: r.s(16)),
                     Text('Ação sobre o conteúdo:',
                         style: TextStyle(
@@ -337,7 +337,7 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
               ),
               FilledButton(
                 style: FilledButton.styleFrom(
-                  backgroundColor: action == 'approved'
+                  backgroundColor: action == 'resolved'
                       ? context.nexusTheme.error
                       : context.nexusTheme.success,
                 ),
@@ -352,7 +352,7 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
                     moderateAction: moderateAction,
                   );
                 },
-                child: Text(action == 'approved' ? 'Confirmar Ação' : 'Rejeitar'),
+                child: Text(action == 'resolved' ? 'Confirmar Ação' : 'Rejeitar'),
               ),
             ],
           );
@@ -404,24 +404,7 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
       appBar: AppBar(
         backgroundColor: context.nexusTheme.backgroundPrimary,
         title: const Text('Detalhes da Denúncia'),
-        actions: [
-          if (isPending) ...[
-            TextButton(
-              onPressed: _isActing ? null : () => _showResolveDialog('rejected'),
-              child: Text('Rejeitar',
-                  style: TextStyle(color: context.nexusTheme.textSecondary)),
-            ),
-            Padding(
-              padding: EdgeInsets.only(right: r.s(8)),
-              child: FilledButton(
-                style: FilledButton.styleFrom(
-                    backgroundColor: context.nexusTheme.error),
-                onPressed: _isActing ? null : () => _showResolveDialog('approved'),
-                child: const Text('Tomar Ação'),
-              ),
-            ),
-          ],
-        ],
+        actions: const [],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(r.s(16)),
@@ -515,7 +498,7 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
                     child: OutlinedButton(
                       onPressed: _isActing
                           ? null
-                          : () => _showResolveDialog('rejected'),
+                          : () => _showResolveDialog('dismissed'),
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: r.s(14)),
                         side: BorderSide(
@@ -530,7 +513,7 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
                     child: FilledButton(
                       onPressed: _isActing
                           ? null
-                          : () => _showResolveDialog('approved'),
+                          : () => _showResolveDialog('resolved'),
                       style: FilledButton.styleFrom(
                         backgroundColor: context.nexusTheme.error,
                         padding: EdgeInsets.symmetric(vertical: r.s(14)),
@@ -608,12 +591,12 @@ class _StatusBanner extends StatelessWidget {
           label = 'Aguardando revisão';
           icon = Icons.hourglass_empty_rounded;
           break;
-        case 'approved':
+        case 'resolved':
           color = context.nexusTheme.error;
           label = 'Ação tomada';
           icon = Icons.gavel_rounded;
           break;
-        case 'rejected':
+        case 'dismissed':
           color = context.nexusTheme.success;
           label = 'Denúncia rejeitada (conteúdo ok)';
           icon = Icons.check_circle_rounded;
