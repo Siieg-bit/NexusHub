@@ -664,6 +664,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     RealtimeService.instance.connectionStatus
         .removeListener(_onRealtimeStatusChanged);
     RealtimeService.instance.unsubscribe('chat:${widget.threadId}');
+    RealtimeService.instance.unsubscribe('call_sessions:${widget.threadId}');
     // Limpar o chat ativo ao sair da tela
     PushNotificationService.activeChatThreadId = null;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1127,6 +1128,28 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       },
     );
 
+    // Escutar mudanças de call_sessions para exibir/ocultar painel para todos
+    RealtimeService.instance.subscribeWithRetry(
+      channelName: 'call_sessions:${widget.threadId}',
+      configure: (channel) {
+        channel.onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'call_sessions',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'thread_id',
+            value: widget.threadId,
+          ),
+          callback: (_) {
+            if (_isDisposed || !mounted) return;
+            // Invalida o provider para que todos os membros do chat
+            // vejam o painel aparecer/desaparecer automaticamente.
+            ref.invalidate(activeCallSessionProvider(widget.threadId));
+          },
+        );
+      },
+    );
     // Escutar mudanças de status de conexão
     RealtimeService.instance.connectionStatus
         .addListener(_onRealtimeStatusChanged);

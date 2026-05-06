@@ -273,8 +273,11 @@ class CallService {
     _engine = createAgoraRtcEngine();
     await _engine!.initialize(RtcEngineContext(
       appId: _agoraAppId,
-      channelProfile: ChannelProfileType.channelProfileCommunication,
+      channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
     ));
+    // Cenário ChatRoom: áudio bidirecional otimizado para voz em grupo.
+    // Evita supressão de eco agressiva que silencia o áudio remoto.
+    await _engine!.setAudioScenario(AudioScenarioType.audioScenarioChatroom);
 
     _engine!.registerEventHandler(RtcEngineEventHandler(
       onJoinChannelSuccess: (connection, elapsed) {
@@ -845,10 +848,17 @@ class CallService {
       throw StateError('Unable to fetch a valid Agora token for channel $channelName');
     }
 
+    // Gerar UID único e determinístico a partir do userId do Supabase.
+    // uid=0 faz o Agora atribuir UIDs aleatórios que podem colidir entre usuários.
+    final userId = SupabaseService.currentUserId ?? '';
+    final agoraUid = userId.isNotEmpty
+        ? userId.codeUnits.fold(0, (h, c) => (h * 31 + c) & 0x7FFFFFFF)
+        : 0;
+
     await _engine!.joinChannel(
       token: _agoraToken!,
       channelId: channelName,
-      uid: 0,
+      uid: agoraUid,
       options: ChannelMediaOptions(
         autoSubscribeAudio: true,
         autoSubscribeVideo: isVideo,
@@ -858,6 +868,8 @@ class CallService {
       ),
     );
 
+    // Garantir que o microfone está ativo após entrar no canal.
+    await _engine!.muteLocalAudioStream(false);
     await _applySpeakerphonePreference(allowRetry: true);
   }
 

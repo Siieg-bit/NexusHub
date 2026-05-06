@@ -77,8 +77,11 @@ class _InlineChatCallPanelState extends ConsumerState<InlineChatCallPanel>
   @override
   Widget build(BuildContext context) {
     final callState = ref.watch(chatCallProvider(widget.threadId));
-    // Painel visível tanto quando está conectando quanto quando está ativo.
-    final shouldShow = callState.isActive || callState.isConnecting;
+    // Busca call ativa no thread (para exibir painel para quem ainda não entrou)
+    final activeCallAsync = ref.watch(activeCallSessionProvider(widget.threadId));
+    final activeSession = activeCallAsync.valueOrNull;
+    // Painel visível: usuário está na call OU há call ativa no thread
+    final shouldShow = callState.isActive || callState.isConnecting || activeSession != null;
     _syncAnimation(shouldShow);
 
     // Quando a animação de saída termina e o painel não deve ser mostrado,
@@ -142,8 +145,14 @@ class _PanelBody extends ConsumerWidget {
           switchInCurve: Curves.easeOut,
           switchOutCurve: Curves.easeIn,
           child: callState.isConnecting
-              // ── Estado de conexão: spinner + texto ───────────────────────────
+              // ── Estado de conexão: spinner + texto ───────────────────────────────────────
               ? _ConnectingContent(key: const ValueKey('connecting'))
+              // ── Call ativa mas usuário ainda não entrou ──────────────────────
+              : !callState.isActive
+                  ? _JoinCallInvite(
+                      key: const ValueKey('invite'),
+                      threadId: threadId,
+                    )
               // ── Estado ativo: layout normal do painel ─────────────────────
               : Column(
                   key: const ValueKey('active'),
@@ -892,6 +901,137 @@ class _ConnectingContent extends StatelessWidget {
               color: theme.textSecondary,
               fontSize: r.fs(13),
               fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// _JoinCallInvite — Exibido para usuários que ainda não entraram na call ativa.
+// Mostra o host + participantes atuais e um botão verde "Entrar na Call".
+// ============================================================================
+class _JoinCallInvite extends ConsumerWidget {
+  final String threadId;
+  const _JoinCallInvite({super.key, required this.threadId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final r = context.r;
+    final theme = context.nexusTheme;
+    final activeCallAsync = ref.watch(activeCallSessionProvider(threadId));
+    final activeSession = activeCallAsync.valueOrNull;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+          horizontal: r.s(14), vertical: r.s(12)),
+      child: Row(
+        children: [
+          // Ícone de microfone animado (pulso verde)
+          Container(
+            width: r.s(36),
+            height: r.s(36),
+            decoration: BoxDecoration(
+              color: const Color(0xFF22C55E).withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.mic_rounded,
+              color: const Color(0xFF22C55E),
+              size: r.s(18),
+            ),
+          ),
+          SizedBox(width: r.s(10)),
+          // Texto informativo
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Voice Chat ativo',
+                  style: TextStyle(
+                    color: theme.textPrimary,
+                    fontSize: r.fs(13),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: r.s(2)),
+                Text(
+                  activeSession != null
+                      ? 'Toque para entrar na conversa'
+                      : 'Carregando...',
+                  style: TextStyle(
+                    color: theme.textSecondary,
+                    fontSize: r.fs(11),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: r.s(8)),
+          // Botão verde de entrada
+          GestureDetector(
+            onTap: activeSession == null
+                ? null
+                : () async {
+                    final ctrl =
+                        ref.read(chatCallProvider(threadId).notifier);
+                    ctrl.startConnecting();
+                    try {
+                      final joined = await CallService.joinExistingCall(
+                        threadId: threadId,
+                        type: activeSession.type,
+                      );
+                      if (joined != null) {
+                        ctrl.attach(joined);
+                      } else {
+                        ctrl.connectFailed('Não foi possível entrar na call');
+                      }
+                    } catch (e) {
+                      ctrl.connectFailed(e.toString());
+                    }
+                  },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(14), vertical: r.s(8)),
+              decoration: BoxDecoration(
+                color: activeSession != null
+                    ? const Color(0xFF22C55E)
+                    : const Color(0xFF22C55E).withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(r.s(20)),
+                boxShadow: activeSession != null
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFF22C55E).withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.call_rounded,
+                    color: Colors.white,
+                    size: r.s(14),
+                  ),
+                  SizedBox(width: r.s(5)),
+                  Text(
+                    'Entrar',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: r.fs(12),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

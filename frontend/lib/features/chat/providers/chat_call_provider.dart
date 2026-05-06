@@ -367,3 +367,20 @@ final chatCallProvider = StateNotifierProvider.family<
     ChatCallController, ChatCallState, String>(
   (ref, threadId) => ChatCallController(ref),
 );
+
+// ============================================================================
+// activeCallSessionProvider — busca a call ativa do thread no banco.
+// Usado para exibir o painel para TODOS os membros do chat, mesmo quem
+// ainda não entrou na call.
+// ============================================================================
+final activeCallSessionProvider =
+    FutureProvider.family<CallSession?, String>((ref, threadId) async {
+  try {
+    return await CallService.getActiveCallForThread(
+      threadId,
+      allowedTypes: {CallType.voice, CallType.stage},
+    );
+  } catch (_) {
+    return null;
+  }
+});
