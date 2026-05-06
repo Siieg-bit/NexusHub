@@ -3513,7 +3513,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
               final callState = cRef.watch(chatCallProvider(widget.threadId));
               final isOnStage = callState.isOnStage;
               final isAudience = callState.isAudience && !callState.isOnStage;
-              final callActive = callState.isActive;
+              // Considera ativo se está no palco OU ouvindo passivamente
+              final callActive = isOnStage || isAudience;
               return GestureDetector(
                 onTap: _startVoiceChat,
                 child: Container(
@@ -3521,32 +3522,30 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
                   height: r.s(34),
                   margin: EdgeInsets.only(right: r.s(4)),
                   decoration: BoxDecoration(
-                    color: isOnStage
-                        ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
-                        : isAudience
-                            ? context.nexusTheme.textHint.withValues(alpha: 0.10)
-                            : context.surfaceColor,
+                    color: callActive
+                        ? const Color(0xFF4CAF50).withValues(alpha: 0.15)
+                        : context.surfaceColor,
                     shape: BoxShape.circle,
                     border: callActive
                         ? Border.all(
-                            color: isOnStage
-                                ? context.nexusTheme.accentPrimary.withValues(alpha: 0.5)
-                                : context.nexusTheme.textHint.withValues(alpha: 0.3),
+                            color: const Color(0xFF4CAF50).withValues(alpha: 0.5),
                             width: 1,
                           )
                         : null,
                   ),
-                  child: Icon(
-                    isAudience
-                        ? Icons.headphones_rounded
-                        : Icons.headset_mic_rounded,
-                    color: isOnStage
-                        ? context.nexusTheme.accentPrimary
-                        : isAudience
-                            ? context.nexusTheme.textHint
-                            : Colors.grey[500],
-                    size: r.s(16),
-                  ),
+                  child: callActive
+                      ? _PulsingIcon(
+                          icon: isAudience
+                              ? Icons.headphones_rounded
+                              : Icons.headset_mic_rounded,
+                          color: const Color(0xFF4CAF50),
+                          size: r.s(16),
+                        )
+                      : Icon(
+                          Icons.headset_mic_rounded,
+                          color: Colors.grey[500],
+                          size: r.s(16),
+                        ),
                 ),
               );
             },
@@ -3555,10 +3554,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
             builder: (ctx, cRef, _) {
               final screeningAsync = cRef.watch(
                   activeScreeningSessionProvider(widget.threadId));
-              final screeningActive =
-                  screeningAsync.valueOrNull != null;
+              final screeningSession = screeningAsync.valueOrNull;
+              final screeningActive = screeningSession != null;
               return GestureDetector(
-                onTap: _startProjection,
+                onTap: screeningActive
+                    // Se já há sala ativa, redirecionar para ela
+                    ? () => context.push('/screening-room/${widget.threadId}')
+                    : _startProjection,
                 child: Container(
                   width: r.s(34),
                   height: r.s(34),
