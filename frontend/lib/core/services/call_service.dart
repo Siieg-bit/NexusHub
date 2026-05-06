@@ -1150,6 +1150,21 @@ class CallService {
     _cleanup();
   }
 
+  /// forceEndMyCallSessions — Encerra todas as sessões ativas onde o usuário é host.
+  /// Usado quando o host fecha o app sem encerrar a call explicitamente.
+  /// Não depende de activeCall local — opera direto no banco via RPC.
+  static Future<void> forceEndMyCallSessions({String? threadId}) async {
+    try {
+      await _engine?.leaveChannel();
+      await SupabaseService.rpc('force_end_my_call_sessions', params: {
+        if (threadId != null) 'p_thread_id': threadId,
+      });
+    } catch (e) {
+      debugPrint('[CallService] forceEndMyCallSessions error: \$e');
+    }
+    _cleanup();
+  }
+
   /// Buscar participantes ativos
   static Future<List<Map<String, dynamic>>> getParticipants() async {
     final call = activeCall;

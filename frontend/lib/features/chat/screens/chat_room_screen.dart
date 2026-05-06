@@ -83,7 +83,8 @@ class ChatRoomScreen extends ConsumerStatefulWidget {
   ConsumerState<ChatRoomScreen> createState() => _ChatRoomScreenState();
 }
 
-class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
+class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
+    with WidgetsBindingObserver {
   /// Cache de identidade local por userId — evita N+1 queries ao carregar mensagens.
   /// Chave: userId, Valor: {local_nickname, local_icon_url, local_banner_url} ou null se sem membership.
   final Map<String, Map<String, dynamic>?> _memberCache = {};
@@ -310,6 +311,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_handleScrollPositionChange);
+    WidgetsBinding.instance.addObserver(this);
     // Registrar o chat ativo para suprimir notificações locais deste chat
     PushNotificationService.activeChatThreadId = widget.threadId;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -695,12 +697,31 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         .removeListener(_onRealtimeStatusChanged);
     RealtimeService.instance.unsubscribe('chat:${widget.threadId}');
     RealtimeService.instance.unsubscribe('call_sessions:${widget.threadId}');
+    WidgetsBinding.instance.removeObserver(this);
     // Limpar o chat ativo ao sair da tela
     PushNotificationService.activeChatThreadId = null;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try { ref.read(activeChatIdProvider.notifier).state = null; } catch (_) {}
     });
-    super.dispose();
+     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Quando o app vai para background (paused) ou é encerrado (detached),
+    // verificar se o usuário é host de uma call ativa e encerrá-la.
+    if (state == AppLifecycleState.detached ||
+        state == AppLifecycleState.paused) {
+      final callState = ref.read(chatCallProvider(widget.threadId));
+      final isHost = callState.myRole.isHost;
+      final hasActiveCall = callState.isActive || callState.isAudience;
+      if (hasActiveCall && isHost) {
+        // Fire-and-forget: encerrar a call no banco sem esperar resposta.
+        // Não depende de CallService.activeCall (pode ser null após reiniciar).
+        CallService.forceEndMyCallSessions(threadId: widget.threadId);
+      }
+    }
   }
 
   void _onRealtimeStatusChanged() {
@@ -1276,7 +1297,19 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   Future<void> _startVoiceChat() async {
     final callCtrl = ref.read(chatCallProvider(widget.threadId).notifier);
     final callState = ref.read(chatCallProvider(widget.threadId));
-
+    // Bloquear se já há uma call ativa em OUTRO chat.
+    if (CallService.activeCall != null &&
+        CallService.activeCall!.threadId != widget.threadId) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Você já está em uma chamada ativa em outro chat. Encerre-a antes de iniciar outra.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
     // Se o usuário está como ouvinte passivo, subir ao palco como speaker.
     if (callState.isAudience && !callState.isOnStage) {
       await callCtrl.goOnStage();
@@ -1336,6 +1369,30 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _startProjection() async {
+    // Bloquear se já há uma call ativa (voice ou projeção).
+    if (CallService.activeCall != null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Encerre a chamada ativa antes de abrir a Sala de Projeção.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+    final callState = ref.read(chatCallProvider(widget.threadId));
+    if (callState.isAudience || callState.isActive || callState.isOnStage) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Encerre a chamada ativa antes de abrir a Sala de Projeção.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
     // Debounce: evita abertura múltipla por clique rápido
     if (_isOpeningProjection) return;
     setState(() => _isOpeningProjection = true);
