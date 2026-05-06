@@ -108,10 +108,14 @@ class ChatCallState {
     );
   }
 
+  // Inclui 'audience' como fallback de compatibilidade:
+  // participantes inseridos antes da migration 232 (DEFAULT era 'audience')
+  // ainda aparecem no palco em vez de ficarem invisíveis.
   List<Map<String, dynamic>> get speakers => participants
       .where((p) =>
           p['stage_role'] == 'host' ||
           p['stage_role'] == 'speaker' ||
+          p['stage_role'] == 'audience' ||
           p['stage_role'] == null)
       .toList();
 
@@ -192,9 +196,13 @@ class ChatCallController extends StateNotifier<ChatCallState> {
           isMuted: CallService.isMuted,
           myRole: CallService.myStageRole,
         );
-        // Pequeno delay para garantir que o banco confirmou o INSERT
-        // antes de buscar os participantes (evita race condition).
+        // Primeiro carregamento imediato após 300ms (race condition com o banco).
         await Future.delayed(const Duration(milliseconds: 300));
+        if (!mounted) return;
+        await _loadParticipants();
+        // Segundo carregamento após 800ms para garantir que o Realtime do host
+        // recebeu o evento de INSERT e atualizou a lista no dispositivo remoto.
+        await Future.delayed(const Duration(milliseconds: 800));
         if (!mounted) return;
         await _loadParticipants();
       } else {

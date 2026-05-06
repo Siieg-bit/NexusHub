@@ -191,6 +191,14 @@ class CallService {
   static bool get isCameraOn => _isCameraOn;
   static bool get isSpeakerOn => _isSpeakerOn;
   static StageRole get myStageRole => _myStageRole;
+
+  /// Força o role para host — usado ao reconectar o host após reiniciar o app.
+  static void setMyStageRoleHost() {
+    _myStageRole = StageRole.host;
+    if (!_stageRoleController.isClosed) {
+      _stageRoleController.add(_myStageRole);
+    }
+  }
   static Set<String> get handRaisedUsers => Set.unmodifiable(_handRaisedUsers);
   static RtcEngine? get engine => _engine;
   static Set<int> get remoteUsers => _remoteUsers;

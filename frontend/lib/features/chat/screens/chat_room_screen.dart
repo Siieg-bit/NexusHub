@@ -349,7 +349,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
   }
 
   /// Verifica se há call ativa no thread ao abrir o chat.
-  /// Se houver, entra automaticamente como ouvinte passivo (sem publicar mic).
+  /// Se o usuário for o host, reconecta como broadcaster.
+  /// Caso contrário, entra automaticamente como ouvinte passivo (sem publicar mic).
   Future<void> _checkAndAttachAudience() async {
     // Pequeno delay para garantir que o Realtime já está inscrito
     await Future.delayed(const Duration(milliseconds: 600));
@@ -366,13 +367,30 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
     } catch (_) {}
     if (_isDisposed || !mounted) return;
     if (activeSession == null) return;
-    // Entrar como ouvinte passivo
-    CallSession? joined;
-    try {
-      joined = await CallService.joinAsAudience(threadId: widget.threadId);
-    } catch (_) {}
-    if (_isDisposed || !mounted || joined == null) return;
-    await ref.read(chatCallProvider(widget.threadId).notifier).attachAsAudience(joined);
+
+    final currentUserId = SupabaseService.currentUserId;
+    final isHost = currentUserId != null &&
+        currentUserId == activeSession.creatorId;
+
+    if (isHost) {
+      // O usuário é o host da sessão ativa — reconectar como broadcaster.
+      // Isso ocorre quando o host fecha e reabre o chat com a call ainda ativa.
+      CallService.setMyStageRoleHost();
+      CallSession? rejoined;
+      try {
+        rejoined = await CallService.joinCallSession(activeSession.id);
+      } catch (_) {}
+      if (_isDisposed || !mounted || rejoined == null) return;
+      await ref.read(chatCallProvider(widget.threadId).notifier).attach(rejoined);
+    } else {
+      // Entrar como ouvinte passivo
+      CallSession? joined;
+      try {
+        joined = await CallService.joinAsAudience(threadId: widget.threadId);
+      } catch (_) {}
+      if (_isDisposed || !mounted || joined == null) return;
+      await ref.read(chatCallProvider(widget.threadId).notifier).attachAsAudience(joined);
+    }
   }
 
   GlobalKey _messageKeyFor(String messageId) {
