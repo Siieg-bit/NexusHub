@@ -9,10 +9,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/providers/cosmetics_provider.dart';
 import '../../../core/services/supabase_service.dart';
-import '../../../core/services/call_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../providers/chat_call_provider.dart';
 import '../../stickers/widgets/sticker_message_bubble.dart';
 import 'chat_bubble.dart' show ChatBubble;
 import 'voice_recorder.dart' show VoiceNotePlayer;
@@ -330,79 +328,45 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
     if (_specialType == 'system_voice_start' || _specialType == 'system_screen_start') {
       final isVoice = _specialType == 'system_voice_start';
       final icon = isVoice ? Icons.headset_mic_rounded : Icons.live_tv_rounded;
-      final label = isVoice ? 'Voice Chat' : 'Sala de Projeção';
-      final accentColor = isVoice ? const Color(0xFF4CAF50) : const Color(0xFFFF5722);
-      final threadId = message.threadId;
-      // Exibe o nome do iniciador a partir do conteúdo da mensagem
       final initiatorText = message.content?.isNotEmpty == true ? message.content! : null;
-      final container = Container(
-        padding: EdgeInsets.all(r.s(12)),
-        decoration: BoxDecoration(
-          color: accentColor.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(r.s(12)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
+      final label = isVoice
+          ? (initiatorText != null ? '$initiatorText iniciou o Voice Chat' : 'Voice Chat iniciado')
+          : (initiatorText != null ? '$initiatorText iniciou a Sala de Projeção' : 'Sala de Projeção iniciada');
+      final threadId = message.threadId;
+      // Formato fino: sem card colorido, apenas ícone + texto cinza
+      final Widget pill = Padding(
+        padding: EdgeInsets.symmetric(vertical: r.s(4)),
+        child: Center(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
+            decoration: BoxDecoration(
+              color: Colors.grey.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(r.s(12)),
+            ),
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: accentColor),
-                SizedBox(width: r.s(8)),
-                Text(label,
-                    style: TextStyle(fontWeight: FontWeight.w600, color: accentColor)),
-                if (!isVoice) ...[SizedBox(width: r.s(8)), Icon(Icons.arrow_forward_ios_rounded, color: accentColor, size: r.s(12))],
+                Icon(icon, size: r.s(13), color: Colors.grey[500]),
+                SizedBox(width: r.s(6)),
+                Text(
+                  label,
+                  style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
+                ),
+                if (!isVoice) ...[SizedBox(width: r.s(4)), Icon(Icons.arrow_forward_ios_rounded, size: r.s(10), color: Colors.grey[500])],
               ],
             ),
-            if (initiatorText != null) ...[  
-              SizedBox(height: r.s(4)),
-              Text(
-                initiatorText,
-                style: TextStyle(color: accentColor.withValues(alpha: 0.75), fontSize: r.fs(11)),
-              ),
-            ],
-          ],
-        ),
-      );
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: r.s(8)),
-        child: Center(
-          child: GestureDetector(
-            onTap: () async {
-              if (threadId.isEmpty) return;
-              if (!isVoice) {
-                context.push('/screening-room/$threadId');
-                return;
-              }
-              try {
-                // Entrar na call existente e ativar o painel inline.
-                final session = await CallService.joinExistingCall(
-                  threadId: threadId,
-                  type: CallType.voice,
-                );
-                if (session == null) {
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Esta chamada já foi encerrada.'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                  return;
-                }
-                if (!context.mounted) return;
-                // Ativa o painel inline diretamente na sala de chat.
-                await ref
-                    .read(chatCallProvider(threadId).notifier)
-                    .attach(session);
-              } catch (e, st) {
-                debugPrint('[MessageBubble] joinCall error: $e\n$st');
-              }
-            },
-            child: container,
           ),
         ),
       );
+      // Sala de Projeção: torna clicável para navegar
+      if (!isVoice && threadId.isNotEmpty) {
+        return GestureDetector(
+          onTap: () => context.push('/screening-room/$threadId'),
+          child: pill,
+        );
+      }
+      // Voice Chat: sem botão de entrar (painel inline já aparece automaticamente)
+      return pill;
     }
 
     // System messages com nome do autor em azul clicável (system_join, system_leave, system_deleted, system_removed, system_admin_delete)
@@ -1262,107 +1226,40 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
     if (type == 'system_voice_start' || type == 'system_screen_start') {
       final isVoice = type == 'system_voice_start';
       final icon = isVoice ? Icons.headset_mic_rounded : Icons.live_tv_rounded;
-      final label = isVoice ? 'Voice Chat' : 'Sala de Projeção';
-      final accentColor =
-          isVoice ? const Color(0xFF4CAF50) : const Color(0xFFFF5722);
-      final threadId = message.threadId;
       final initiatorText = message.content?.isNotEmpty == true ? message.content! : null;
-      final container = Container(
-        padding: EdgeInsets.all(r.s(12)),
+      final label = isVoice
+          ? (initiatorText != null ? '$initiatorText iniciou o Voice Chat' : 'Voice Chat iniciado')
+          : (initiatorText != null ? '$initiatorText iniciou a Sala de Projeção' : 'Sala de Projeção iniciada');
+      final threadId = message.threadId;
+      // Formato fino: sem card colorido, apenas ícone + texto cinza
+      final Widget pill = Container(
+        padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
         decoration: BoxDecoration(
-          color: accentColor.withValues(alpha: 0.15),
+          color: Colors.grey.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(r.s(12)),
         ),
-        child: Column(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, color: accentColor),
-                SizedBox(width: r.s(8)),
-                Text(label,
-                    style:
-                        TextStyle(fontWeight: FontWeight.w600, color: accentColor)),
-                if (!isVoice) ...[
-                  SizedBox(width: r.s(8)),
-                  Icon(Icons.arrow_forward_ios_rounded,
-                      color: accentColor, size: r.s(12)),
-                ],
-              ],
+            Icon(icon, size: r.s(13), color: Colors.grey[500]),
+            SizedBox(width: r.s(6)),
+            Text(
+              label,
+              style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
             ),
-            if (initiatorText != null) ...[  
-              SizedBox(height: r.s(4)),
-              Text(
-                initiatorText,
-                style: TextStyle(color: accentColor.withValues(alpha: 0.75), fontSize: r.fs(11)),
-              ),
-            ],
+            if (!isVoice) ...[SizedBox(width: r.s(4)), Icon(Icons.arrow_forward_ios_rounded, size: r.s(10), color: Colors.grey[500])],
           ],
         ),
       );
-      // Sala de Projeção: navega para a tela de projeção
+      // Sala de Projeção: torna clicável para navegar
       if (!isVoice && threadId.isNotEmpty) {
         return GestureDetector(
-          onTap: () async {
-            try {
-              final result = await SupabaseService.client.rpc(
-                'get_active_screening_session',
-                params: {'p_thread_id': threadId},
-              );
-              if (!context.mounted) return;
-              if (result == null || (result as List).isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Esta projeção já foi encerrada.'),
-                    duration: Duration(seconds: 3),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-                return;
-              }
-              final sessionId = (result as List).first['id'] as String?;
-              context.push(
-                '/screening-room/$threadId${sessionId != null ? '?sessionId=\$sessionId' : ''}',
-              );
-            } catch (_) {
-              if (context.mounted) context.push('/screening-room/$threadId');
-            }
-          },
-          child: container,
+          onTap: () => context.push('/screening-room/$threadId'),
+          child: pill,
         );
       }
-      // Voice Chat: ativa o painel inline
-      if (isVoice && threadId.isNotEmpty) {
-        return GestureDetector(
-          onTap: () async {
-            try {
-              final session = await CallService.joinExistingCall(
-                threadId: threadId,
-                type: CallType.voice,
-              );
-              if (session == null) {
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Esta chamada já foi encerrada.'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-                return;
-              }
-              if (!context.mounted) return;
-              await ref
-                  .read(chatCallProvider(threadId).notifier)
-                  .attach(session);
-            } catch (e, st) {
-              debugPrint('[MessageBubble] joinCall (_buildContent) error: $e\n$st');
-            }
-          },
-          child: container,
-        );
-      }
-      return container;
+      // Voice Chat: sem botão de entrar (painel inline já aparece automaticamente)
+      return pill;
     }
 
     // Link (share_url) — clicável com preview

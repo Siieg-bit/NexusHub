@@ -1143,9 +1143,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           ),
           callback: (_) {
             if (_isDisposed || !mounted) return;
-            // Invalida o provider para que todos os membros do chat
-            // vejam o painel aparecer/desaparecer automaticamente.
+            // Invalida os providers para que todos os membros do chat
+            // vejam o painel de voice e o ícone de projeção atualizarem automaticamente.
             ref.invalidate(activeCallSessionProvider(widget.threadId));
+            ref.invalidate(activeScreeningSessionProvider(widget.threadId));
           },
         );
       },
@@ -3413,19 +3414,41 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               );
             },
           ),
-          GestureDetector(
-            onTap: _startProjection,
-            child: Container(
-              width: r.s(34),
-              height: r.s(34),
-              margin: EdgeInsets.only(right: r.s(4)),
-              decoration: BoxDecoration(
-                color: context.surfaceColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.live_tv_rounded,
-                  color: Colors.grey[500], size: r.s(16)),
-            ),
+          Consumer(
+            builder: (ctx, cRef, _) {
+              final screeningAsync = cRef.watch(
+                  activeScreeningSessionProvider(widget.threadId));
+              final screeningActive =
+                  screeningAsync.valueOrNull != null;
+              return GestureDetector(
+                onTap: _startProjection,
+                child: Container(
+                  width: r.s(34),
+                  height: r.s(34),
+                  margin: EdgeInsets.only(right: r.s(4)),
+                  decoration: BoxDecoration(
+                    color: screeningActive
+                        ? const Color(0xFFFF5722).withValues(alpha: 0.15)
+                        : context.surfaceColor,
+                    shape: BoxShape.circle,
+                    border: screeningActive
+                        ? Border.all(
+                            color: const Color(0xFFFF5722).withValues(alpha: 0.5),
+                            width: 1,
+                          )
+                        : null,
+                  ),
+                  child: screeningActive
+                      ? _PulsingIcon(
+                          icon: Icons.live_tv_rounded,
+                          color: const Color(0xFFFF5722),
+                          size: r.s(16),
+                        )
+                      : Icon(Icons.live_tv_rounded,
+                          color: Colors.grey[500], size: r.s(16)),
+                ),
+              );
+            },
           ),
           PopupMenuButton<String>(
             key: _appBarMenuKey,
@@ -6368,6 +6391,68 @@ class _UploadQueueIndicator extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// _PulsingIcon — ícone com animação de pulsação (escala + opacidade)
+// Usado no AppBar para indicar que há uma sala de projeção ativa.
+// =============================================================================
+class _PulsingIcon extends StatefulWidget {
+  final IconData icon;
+  final Color color;
+  final double size;
+
+  const _PulsingIcon({
+    required this.icon,
+    required this.color,
+    required this.size,
+  });
+
+  @override
+  State<_PulsingIcon> createState() => _PulsingIconState();
+}
+
+class _PulsingIconState extends State<_PulsingIcon>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scaleAnim;
+  late final Animation<double> _opacityAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
+
+    _scaleAnim = Tween<double>(begin: 0.88, end: 1.12).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    _opacityAnim = Tween<double>(begin: 0.65, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (_, __) => Transform.scale(
+        scale: _scaleAnim.value,
+        child: Opacity(
+          opacity: _opacityAnim.value,
+          child: Icon(widget.icon, color: widget.color, size: widget.size),
+        ),
       ),
     );
   }

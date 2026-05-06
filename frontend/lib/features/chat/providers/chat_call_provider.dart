@@ -384,3 +384,19 @@ final activeCallSessionProvider =
     return null;
   }
 });
+
+// ============================================================================
+// activeScreeningSessionProvider — busca a sessão de projeção ativa do thread.
+// Usado para animar o ícone de projeção no AppBar quando há sala ativa.
+// ============================================================================
+final activeScreeningSessionProvider =
+    FutureProvider.family<CallSession?, String>((ref, threadId) async {
+  try {
+    return await CallService.getActiveCallForThread(
+      threadId,
+      allowedTypes: {CallType.screeningRoom},
+    );
+  } catch (_) {
+    return null;
+  }
+});
