@@ -18,7 +18,8 @@ import '../../auth/providers/auth_provider.dart';
 import '../../../core/providers/cosmetics_provider.dart';
 import '../../../core/services/realtime_service.dart';
 import '../../../core/services/cache_service.dart';
-// call_screen.dart removido — chamadas de voz/vídeo substituídas por projeção
+import '../providers/chat_call_provider.dart';
+import '../widgets/inline_chat_call_panel.dart';
 import '../widgets/giphy_picker.dart';
 import '../widgets/forward_message_sheet.dart';
 import '../../stickers/stickers.dart';
@@ -43,7 +44,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/deep_link_service.dart';
 import '../../../core/services/blurhash_service.dart';
-import 'call_screen.dart';
+// call_screen.dart removido — voice chat integrado inline via InlineChatCallPanel
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 import '../../../core/widgets/emoji_rain_overlay.dart';
 import '../../../core/services/haptic_service.dart';
@@ -206,7 +207,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   static const double _scrollButtonBottomSpacing = 16;
   static const double _scrollButtonHorizontalSpacing = 16;
   static const double _scrollButtonVisibilityOffset = 240;
-  bool _isOpeningVoiceCall = false;
   bool _isOpeningProjection = false;
   List<Map<String, dynamic>> _pinnedMessages = [];
   String? _chatBackground;
@@ -1184,25 +1184,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   Future<void> _startVoiceChat() async {
-    if (_isOpeningVoiceCall) return;
-
-    if (mounted) {
-      setState(() => _isOpeningVoiceCall = true);
+    final callCtrl = ref.read(chatCallProvider(widget.threadId).notifier);
+    // Se a call já está ativa no painel inline, apenas garante que está expandido.
+    if (ref.read(chatCallProvider(widget.threadId)).isActive) {
+      callCtrl.toggleExpanded();
+      return;
     }
-
     try {
-      // Usar createCallOnly: só cria uma nova call.
-      // Se já existe uma call ativa, informa o usuário e não entra automaticamente.
-      // Para entrar em uma call existente, o usuário deve clicar no botão
-      // "Entrar" no bubble da mensagem system_voice_start.
+      // createCallOnly: cria uma nova call sem entrar em uma existente.
+      // Para entrar em call existente o usuário usa o botão "Entrar" na mensagem.
       final result = await CallService.createCallOnly(
         threadId: widget.threadId,
         type: CallType.voice,
       );
-
       if (!mounted) return;
-
-      // Já existe uma call ativa iniciada por outro usuário.
       if (result.callAlreadyActive) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1215,81 +1210,19 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         );
         return;
       }
-
       if (result.session == null) {
         final report = CallService.buildLastErrorReport(
           title: 'CHAT VOICE CALL FAILURE',
         );
         debugPrint(report);
-
-        await showDialog<void>(
-          context: context,
-          builder: (dialogContext) {
-            return AlertDialog(
-              title: const Text('Falha ao iniciar a chamada'),
-              content: SizedBox(
-                width: 560,
-                child: SingleChildScrollView(
-                  child: SelectableText(report),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Fechar'),
-                ),
-              ],
-            );
-          },
-        );
         return;
       }
-
-      // Nova call criada com sucesso: enviar mensagem de rastreamento.
+      // Enviar mensagem de rastreamento e ativar o painel inline.
       await _sendMessage(type: 'voice_chat');
       if (!mounted) return;
-
-      if (mounted) {
-        setState(() => _isOpeningVoiceCall = false);
-      }
-
-      await CallScreen.show(context, result.session!);
+      await callCtrl.attach(result.session!);
     } catch (e, st) {
-      final report = [
-        '===== CHAT VOICE CALL UNCAUGHT EXCEPTION =====',
-        'threadId: ${widget.threadId}',
-        'error: $e',
-        'stackTrace:',
-        st.toString(),
-        '===== END CHAT VOICE CALL UNCAUGHT EXCEPTION =====',
-      ].join('\n');
-      debugPrint(report);
-
-      if (!mounted) return;
-      await showDialog<void>(
-        context: context,
-        builder: (dialogContext) {
-          return AlertDialog(
-            title: const Text('Exceção ao abrir chamada'),
-            content: SizedBox(
-              width: 560,
-              child: SingleChildScrollView(
-                child: SelectableText(report),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Fechar'),
-              ),
-            ],
-          );
-        },
-      );
-    } finally {
-      if (mounted && _isOpeningVoiceCall) {
-        setState(() => _isOpeningVoiceCall = false);
-      }
+      debugPrint('[ChatRoom] _startVoiceChat error: $e\n$st');
     }
   }
 
@@ -3409,27 +3342,39 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               onTap: _showPinnedMessages,
               child: _badgeIcon(Icons.push_pin_rounded, _pinnedMessages.length),
             ),
-          GestureDetector(
-            onTap: _isOpeningVoiceCall ? null : _startVoiceChat,
-            child: Container(
-              width: r.s(34),
-              height: r.s(34),
-              margin: EdgeInsets.only(right: r.s(4)),
-              decoration: BoxDecoration(
-                color: context.surfaceColor,
-                shape: BoxShape.circle,
-              ),
-              child: _isOpeningVoiceCall
-                  ? Padding(
-                      padding: EdgeInsets.all(r.s(9)),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: context.nexusTheme.accentPrimary,
-                      ),
-                    )
-                  : Icon(Icons.headset_mic_rounded,
-                      color: Colors.grey[500], size: r.s(16)),
-            ),
+          Consumer(
+            builder: (ctx, cRef, _) {
+              final callActive = cRef
+                  .watch(chatCallProvider(widget.threadId))
+                  .isActive;
+              return GestureDetector(
+                onTap: _startVoiceChat,
+                child: Container(
+                  width: r.s(34),
+                  height: r.s(34),
+                  margin: EdgeInsets.only(right: r.s(4)),
+                  decoration: BoxDecoration(
+                    color: callActive
+                        ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
+                        : context.surfaceColor,
+                    shape: BoxShape.circle,
+                    border: callActive
+                        ? Border.all(
+                            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.5),
+                            width: 1,
+                          )
+                        : null,
+                  ),
+                  child: Icon(
+                    Icons.headset_mic_rounded,
+                    color: callActive
+                        ? context.nexusTheme.accentPrimary
+                        : Colors.grey[500],
+                    size: r.s(16),
+                  ),
+                ),
+              );
+            },
           ),
           GestureDetector(
             onTap: _startProjection,
@@ -3491,6 +3436,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             : null,
         child: Column(
           children: [
+            // ── Painel de call inline — desce do topo com animação ──
+            InlineChatCallPanel(threadId: widget.threadId),
             // ── Connection status banner ──
             if (!_realtimeConnected)
               Container(

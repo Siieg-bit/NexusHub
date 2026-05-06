@@ -12,7 +12,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/services/call_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import '../screens/call_screen.dart';
+import '../providers/chat_call_provider.dart';
 import '../../stickers/widgets/sticker_message_bubble.dart';
 import 'chat_bubble.dart' show ChatBubble;
 import 'voice_recorder.dart' show VoiceNotePlayer;
@@ -370,53 +370,16 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
           child: GestureDetector(
             onTap: () async {
               if (threadId.isEmpty) return;
-
               if (!isVoice) {
                 context.push('/screening-room/$threadId');
                 return;
               }
-
-              var loadingVisible = false;
               try {
-                loadingVisible = true;
-                showDialog<void>(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (dialogContext) {
-                    return PopScope(
-                      canPop: false,
-                      child: AlertDialog(
-                        content: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2.2),
-                            ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: Text('Abrindo voice chat...'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ).then((_) => loadingVisible = false);
-
-                // Usar joinExistingCall: entra apenas em uma call já ativa.
-                // O usuário clicou explicitamente em "Entrar" — esta é a única
-                // forma de participar de uma call iniciada por outro usuário.
+                // Entrar na call existente e ativar o painel inline.
                 final session = await CallService.joinExistingCall(
                   threadId: threadId,
                   type: CallType.voice,
                 );
-
-                if (loadingVisible && context.mounted) {
-                  Navigator.of(context, rootNavigator: true).pop();
-                }
-
                 if (session == null) {
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -427,46 +390,13 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
                   );
                   return;
                 }
-
                 if (!context.mounted) return;
-                await CallScreen.show(context, session);
+                // Ativa o painel inline diretamente na sala de chat.
+                await ref
+                    .read(chatCallProvider(threadId).notifier)
+                    .attach(session);
               } catch (e, st) {
-                if (loadingVisible && context.mounted) {
-                  Navigator.of(context, rootNavigator: true).pop();
-                }
-
-                final report = [
-                  '===== MESSAGE BUBBLE VOICE CALL UNCAUGHT EXCEPTION =====',
-                  'threadId: $threadId',
-                  'messageId: ${message.id}',
-                  'error: $e',
-                  'stackTrace:',
-                  st.toString(),
-                  '===== END MESSAGE BUBBLE VOICE CALL UNCAUGHT EXCEPTION =====',
-                ].join('\n');
-                debugPrint(report);
-
-                if (!context.mounted) return;
-                await showDialog<void>(
-                  context: context,
-                  builder: (dialogContext) {
-                    return AlertDialog(
-                      title: const Text('Exceção ao abrir chamada'),
-                      content: SizedBox(
-                        width: 560,
-                        child: SingleChildScrollView(
-                          child: SelectableText(report),
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(dialogContext).pop(),
-                          child: const Text('Fechar'),
-                        ),
-                      ],
-                    );
-                  },
-                );
+                debugPrint('[MessageBubble] joinCall error: $e\n$st');
               }
             },
             child: container,
@@ -1336,7 +1266,6 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
       final accentColor =
           isVoice ? const Color(0xFF4CAF50) : const Color(0xFFFF5722);
       final threadId = message.threadId;
-      // Exibe o nome do iniciador a partir do conteúdo da mensagem
       final initiatorText = message.content?.isNotEmpty == true ? message.content! : null;
       final container = Container(
         padding: EdgeInsets.all(r.s(12)),
@@ -1372,12 +1301,10 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
           ],
         ),
       );
-      // Sala de Projeção é clicável para entrar na sala
+      // Sala de Projeção: navega para a tela de projeção
       if (!isVoice && threadId.isNotEmpty) {
         return GestureDetector(
           onTap: () async {
-            // Verificar se ainda existe uma sessão ativa para este thread
-            // antes de navegar, para evitar entrar em sessão já encerrada.
             try {
               final result = await SupabaseService.client.rpc(
                 'get_active_screening_session',
@@ -1400,6 +1327,36 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
               );
             } catch (_) {
               if (context.mounted) context.push('/screening-room/$threadId');
+            }
+          },
+          child: container,
+        );
+      }
+      // Voice Chat: ativa o painel inline
+      if (isVoice && threadId.isNotEmpty) {
+        return GestureDetector(
+          onTap: () async {
+            try {
+              final session = await CallService.joinExistingCall(
+                threadId: threadId,
+                type: CallType.voice,
+              );
+              if (session == null) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Esta chamada já foi encerrada.'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+                return;
+              }
+              if (!context.mounted) return;
+              await ref
+                  .read(chatCallProvider(threadId).notifier)
+                  .attach(session);
+            } catch (e, st) {
+              debugPrint('[MessageBubble] joinCall (_buildContent) error: $e\n$st');
             }
           },
           child: container,
