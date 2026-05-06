@@ -2,9 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../../core/services/supabase_service.dart';
-import '../../../core/services/haptic_service.dart';
+import '../../../core/services/match_queue_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -29,23 +27,33 @@ class MatchQueueScreen extends ConsumerStatefulWidget {
 
 class _MatchQueueScreenState extends ConsumerState<MatchQueueScreen>
     with TickerProviderStateMixin {
-  // Estados possíveis: idle, entering, waiting, matched, error
-  String _status = 'idle';
-  String? _error;
-  String? _matchedThreadId;
-  List<String> _matchInterests = [];
-  int _waitingSeconds = 0;
+  // Estado local espelha o MatchQueueService singleton
+  late MatchQueueState _queueState;
+  StreamSubscription<MatchQueueState>? _stateSub;
 
   late AnimationController _radarCtrl;
   late AnimationController _pulseCtrl;
   late Animation<double> _pulseAnim;
 
-  Timer? _pollTimer;
-  Timer? _waitTimer;
+  // Getters de conveniência para manter compatibilidade com os _build* widgets
+  String get _status {
+    switch (_queueState.status) {
+      case MatchQueueStatus.idle:    return 'idle';
+      case MatchQueueStatus.waiting: return 'waiting';
+      case MatchQueueStatus.matched: return 'matched';
+      case MatchQueueStatus.error:   return 'error';
+    }
+  }
+  String? get _error          => _queueState.error;
+  String? get _matchedThreadId => _queueState.threadId;
+  List<String> get _matchInterests => _queueState.matchInterests;
+  int get _waitingSeconds     => _queueState.waitingSeconds;
 
   @override
   void initState() {
     super.initState();
+    _queueState = MatchQueueService.instance.state;
+
     _radarCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -58,174 +66,38 @@ class _MatchQueueScreenState extends ConsumerState<MatchQueueScreen>
       CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
     );
 
-    // Verificar se já está em uma fila ou tem match ativo
-    _checkCurrentStatus();
+    // Ouvir mudanças do serviço global e refletir na UI
+    _stateSub = MatchQueueService.instance.stateStream.listen((s) {
+      if (mounted) setState(() => _queueState = s);
+    });
+
+    // Sincronizar com o banco ao abrir a tela
+    MatchQueueService.instance.syncStatus();
   }
 
   @override
   void dispose() {
+    _stateSub?.cancel();
     _radarCtrl.dispose();
     _pulseCtrl.dispose();
-    _pollTimer?.cancel();
-    _waitTimer?.cancel();
+    // NÃO cancelar o polling — o serviço continua em background
     super.dispose();
   }
 
-  Future<void> _checkCurrentStatus() async {
-    try {
-      final res = await SupabaseService.rpc('get_match_queue_status');
-      final data = Map<String, dynamic>.from(res as Map);
-      final status = data['status'] as String? ?? 'idle';
-      if (!mounted) return;
-      if (status == 'matched' || status == 'promoted') {
-        setState(() {
-          _status = 'matched';
-          _matchedThreadId = data['thread_id'] as String?;
-          _matchInterests = (data['match_interests'] as List?)
-                  ?.map((e) => e.toString())
-                  .toList() ??
-              [];
-        });
-      } else if (status == 'waiting') {
-        setState(() => _status = 'waiting');
-        _startPolling();
-        _startWaitTimer();
-      }
-      // else idle — mostrar tela inicial
-    } catch (e, st) {
-      // Erro não crítico — apenas logar, não bloquear a tela
-      debugPrint('[MatchQueue] checkCurrentStatus error: $e');
-      debugPrint('[MatchQueue] checkCurrentStatus stacktrace: $st');
-    }
-  }
-
+  // Delega ao MatchQueueService singleton (polling continua em background)
   Future<void> _enterQueue() async {
     final user = ref.read(currentUserProvider);
     if (user == null) return;
-
-    // Verificar se tem interesses
     if (user.selectedInterests.isEmpty) {
-      if (mounted) {
-        _showNoInterestsDialog();
-      }
+      if (mounted) _showNoInterestsDialog();
       return;
     }
-
-    setState(() {
-      _status = 'entering';
-      _error = null;
-    });
-    HapticService.action();
-
-    try {
-      final res = await SupabaseService.rpc('enter_match_queue');
-      final data = Map<String, dynamic>.from(res as Map);
-      final status = data['status'] as String? ?? 'waiting';
-
-      if (!mounted) return;
-
-      if (status == 'matched') {
-        HapticService.success();
-        setState(() {
-          _status = 'matched';
-          _matchedThreadId = data['thread_id'] as String?;
-          _matchInterests = [];
-        });
-      } else {
-        // waiting
-        setState(() {
-          _status = 'waiting';
-          _waitingSeconds = 0;
-        });
-        _startPolling();
-        _startWaitTimer();
-      }
-    } catch (e, st) {
-      debugPrint('[MatchQueue] enterQueue error: $e');
-      debugPrint('[MatchQueue] enterQueue stacktrace: $st');
-      if (mounted) {
-        // Extrair mensagem amigável do PostgrestException (P0001 = RAISE EXCEPTION do banco)
-        final raw = e.toString();
-        String userMsg;
-        if (raw.contains('interesses')) {
-          userMsg = 'Adicione interesses ao seu perfil antes de entrar na fila.';
-        } else if (raw.contains('chat de match ativo') || raw.contains('match ativo')) {
-          userMsg = 'Você já possui um chat de match ativo.';
-        } else if (raw.contains('P0001')) {
-          // Tentar extrair a mensagem do banco entre aspas ou após 'message:'
-          final msgMatch = RegExp(r'message: ([^,}]+)').firstMatch(raw);
-          userMsg = msgMatch?.group(1)?.trim() ?? 'Erro ao entrar na fila.';
-        } else {
-          userMsg = 'Erro ao entrar na fila. Tente novamente.';
-        }
-        setState(() {
-          _status = 'error';
-          _error = userMsg;
-        });
-      }
-    }
+    await MatchQueueService.instance.enter();
   }
 
-  Future<void> _leaveQueue() async {
-    _pollTimer?.cancel();
-    _waitTimer?.cancel();
-    try {
-      await SupabaseService.rpc('leave_match_queue');
-    } catch (e) {
-      debugPrint('[MatchQueue] leaveQueue error (non-critical): $e');
-    }
-    if (mounted) {
-      setState(() {
-        _status = 'idle';
-        _waitingSeconds = 0;
-        _error = null;
-      });
-    }
-  }
+  Future<void> _leaveQueue() => MatchQueueService.instance.leave();
 
-  void _startPolling() {
-    _pollTimer?.cancel();
-    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
-      if (!mounted) return;
-      try {
-        final res = await SupabaseService.rpc('get_match_queue_status');
-        final data = Map<String, dynamic>.from(res as Map);
-        final status = data['status'] as String? ?? 'idle';
-        if (!mounted) return;
-        if (status == 'matched' || status == 'promoted') {
-          _pollTimer?.cancel();
-          _waitTimer?.cancel();
-          HapticService.success();
-          setState(() {
-            _status = 'matched';
-            _matchedThreadId = data['thread_id'] as String?;
-            _matchInterests = (data['match_interests'] as List?)
-                    ?.map((e) => e.toString())
-                    .toList() ??
-                [];
-          });
-        } else if (status == 'idle') {
-          // Saiu da fila por outro motivo
-          _pollTimer?.cancel();
-          _waitTimer?.cancel();
-          if (mounted) setState(() => _status = 'idle');
-        }
-      } catch (e, st) {
-        debugPrint('[MatchQueue] polling error: $e');
-        debugPrint('[MatchQueue] polling stacktrace: $st');
-      }
-    });
-  }
-
-  void _startWaitTimer() {
-    _waitTimer?.cancel();
-    _waitTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
-      setState(() => _waitingSeconds++);
-    });
-  }
-
-  void _showNoInterestsDialog() {
+    void _showNoInterestsDialog() {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -276,10 +148,9 @@ class _MatchQueueScreenState extends ConsumerState<MatchQueueScreen>
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, color: theme.textPrimary),
-          onPressed: () async {
-            if (_status == 'waiting') {
-              await _leaveQueue();
-            }
+          tooltip: _status == 'waiting' ? 'Voltar (fila continua em background)' : 'Voltar',
+          onPressed: () {
+            // Sai da tela sem sair da fila — o MatchQueueService continua em background
             if (mounted) context.pop();
           },
         ),
@@ -291,10 +162,48 @@ class _MatchQueueScreenState extends ConsumerState<MatchQueueScreen>
             fontWeight: FontWeight.w800,
           ),
         ),
+        // Indicador visual de fila ativa na AppBar
+        actions: _status == 'waiting'
+            ? [
+                Padding(
+                  padding: EdgeInsets.only(right: r.s(12)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: r.s(10),
+                        height: r.s(10),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: theme.accentPrimary,
+                        ),
+                      ),
+                      SizedBox(width: r.s(6)),
+                      Text(
+                        'Na fila',
+                        style: TextStyle(
+                          color: theme.accentPrimary,
+                          fontSize: r.fs(12),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ]
+            : null,
       ),
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 400),
-        child: _buildBody(theme, r),
+      body: PopScope(
+        // Intercepta o botão físico de voltar — sai da tela sem sair da fila
+        canPop: true,
+        onPopInvokedWithResult: (didPop, _) {
+          // Não fazer nada especial — apenas sair da tela normalmente
+          // O MatchQueueService continua rodando em background
+        },
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 400),
+          child: _buildBody(theme, r),
+        ),
       ),
     );
   }
@@ -676,6 +585,35 @@ class _MatchQueueScreenState extends ConsumerState<MatchQueueScreen>
             ),
           ),
           SizedBox(height: r.s(32)),
+          // Banner: pode sair da tela sem sair da fila
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: r.s(24)),
+            padding: EdgeInsets.symmetric(
+                horizontal: r.s(14), vertical: r.s(10)),
+            decoration: BoxDecoration(
+              color: theme.accentPrimary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(r.s(12)),
+              border: Border.all(
+                  color: theme.accentPrimary.withValues(alpha: 0.25)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline_rounded,
+                    color: theme.accentPrimary, size: r.s(16)),
+                SizedBox(width: r.s(8)),
+                Expanded(
+                  child: Text(
+                    'Você pode sair desta tela. A fila continua em background e você será notificado quando encontrar alguém.',
+                    style: TextStyle(
+                      color: theme.textSecondary,
+                      fontSize: r.fs(12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: r.s(16)),
           OutlinedButton.icon(
             onPressed: _leaveQueue,
             icon: Icon(Icons.exit_to_app_rounded,
@@ -697,8 +635,7 @@ class _MatchQueueScreenState extends ConsumerState<MatchQueueScreen>
       ),
     );
   }
-
-  // ── Estado: match encontrado ────────────────────────────────────────────────
+  // ── Estado: match encontradoo ────────────────────────────────────────────────
   Widget _buildMatchedState(dynamic theme, Responsive r) {
     return Center(
       child: Padding(

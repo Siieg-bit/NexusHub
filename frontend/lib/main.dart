@@ -21,6 +21,7 @@ import 'core/services/device_fingerprint_service.dart';
 import 'core/services/deep_link_service.dart';
 import 'core/services/app_navigation_helper.dart';
 import 'core/services/push_notification_service.dart';
+import 'core/services/match_queue_service.dart';
 import 'core/services/iap_service.dart';
 import 'core/services/ad_service.dart';
 import 'core/services/cache_service.dart';
@@ -92,6 +93,7 @@ void main() async {
   // Grupo 2: Serviços que dependem de Supabase (não-bloqueantes)
   unawaited(Future.wait([
     _initSafe('pushNotification', PushNotificationService.initialize),
+    _initSafe('matchQueueNotif', MatchQueueService.initNotifications),
     _initSafe('iap', IAPService.initialize),
     _initSafe('adService', AdService.initialize),
   ]));
