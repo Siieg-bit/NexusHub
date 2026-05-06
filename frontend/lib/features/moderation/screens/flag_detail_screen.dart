@@ -434,7 +434,12 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
                     GestureDetector(
                       onTap: () {
                         final uid = reporter['id'] as String?;
-                        if (uid != null) context.push('/user/$uid');
+                        final cid = flag['community_id'] as String?;
+                        if (uid != null && cid != null) {
+                          context.push('/community/$cid/profile/$uid');
+                        } else if (uid != null) {
+                          context.push('/user/$uid');
+                        }
                       },
                       child: Row(
                         children: [
@@ -466,7 +471,10 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
 
             // ── Snapshot do conteúdo ──
             if (snapshot != null) ...[
-              _SnapshotCard(snapshot: snapshot),
+              _SnapshotCard(
+                snapshot: snapshot,
+                communityId: flag['community_id'] as String?,
+              ),
               SizedBox(height: r.s(12)),
             ] else ...[
               _SectionCard(
@@ -723,7 +731,8 @@ class _InfoRow extends StatelessWidget {
 
 class _SnapshotCard extends StatelessWidget {
   final Map<String, dynamic> snapshot;
-  const _SnapshotCard({required this.snapshot});
+  final String? communityId;
+  const _SnapshotCard({required this.snapshot, this.communityId});
 
   @override
   Widget build(BuildContext context) {
@@ -814,7 +823,12 @@ class _SnapshotCard extends StatelessWidget {
                     GestureDetector(
                       onTap: () {
                         final uid = (data['author_id'] ?? data['sender_id']) as String?;
-                        if (uid != null) context.push('/user/$uid');
+                        final cid = communityId;
+                        if (uid != null && cid != null) {
+                          context.push('/community/$cid/profile/$uid');
+                        } else if (uid != null) {
+                          context.push('/user/$uid');
+                        }
                       },
                       child: Row(
                         children: [
