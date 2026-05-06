@@ -328,10 +328,10 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
     if (_specialType == 'system_voice_start' || _specialType == 'system_screen_start') {
       final isVoice = _specialType == 'system_voice_start';
       final icon = isVoice ? Icons.headset_mic_rounded : Icons.live_tv_rounded;
-      final initiatorText = message.content?.isNotEmpty == true ? message.content! : null;
-      final label = isVoice
-          ? (initiatorText != null ? '$initiatorText iniciou o Voice Chat' : 'Voice Chat iniciado')
-          : (initiatorText != null ? '$initiatorText iniciou a Sala de Projeção' : 'Sala de Projeção iniciada');
+      // content já contém o texto completo (ex: "Sieg iniciou um Voice Chat")
+      final label = message.content?.isNotEmpty == true
+          ? message.content!
+          : (isVoice ? 'Voice Chat iniciado' : 'Sala de Projeção iniciada');
       final threadId = message.threadId;
       // Formato fino: sem card colorido, apenas ícone + texto cinza
       final Widget pill = Padding(
@@ -1226,10 +1226,10 @@ class _MessageBubbleState extends ConsumerState<MessageBubble> {
     if (type == 'system_voice_start' || type == 'system_screen_start') {
       final isVoice = type == 'system_voice_start';
       final icon = isVoice ? Icons.headset_mic_rounded : Icons.live_tv_rounded;
-      final initiatorText = message.content?.isNotEmpty == true ? message.content! : null;
-      final label = isVoice
-          ? (initiatorText != null ? '$initiatorText iniciou o Voice Chat' : 'Voice Chat iniciado')
-          : (initiatorText != null ? '$initiatorText iniciou a Sala de Projeção' : 'Sala de Projeção iniciada');
+      // content já contém o texto completo (ex: "Sieg iniciou um Voice Chat")
+      final label = message.content?.isNotEmpty == true
+          ? message.content!
+          : (isVoice ? 'Voice Chat iniciado' : 'Sala de Projeção iniciada');
       final threadId = message.threadId;
       // Formato fino: sem card colorido, apenas ícone + texto cinza
       final Widget pill = Container(
