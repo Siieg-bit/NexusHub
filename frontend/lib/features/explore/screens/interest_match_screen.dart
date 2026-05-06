@@ -165,21 +165,52 @@ class _InterestMatchScreenState extends ConsumerState<InterestMatchScreen>
   Future<void> _openDm(MatchedUser user) async {
     HapticService.action();
     try {
-      // Criar ou abrir DM existente
+      // send_dm_invite cria ou retorna DM existente entre os dois usuários
       final res = await SupabaseService.rpc(
-        'get_or_create_dm_thread',
-        params: {'p_other_user_id': user.userId},
+        'send_dm_invite',
+        params: {'p_target_user_id': user.userId},
       );
-      final threadId = res as String?;
+      final data = Map<String, dynamic>.from(res as Map);
+      final success = data['success'] as bool? ?? false;
+      final threadId = data['thread_id'] as String?;
+
+      debugPrint(
+        '[InterestMatch] openDm: success=$success '
+        'threadId=$threadId existing=\${data["existing"]}',
+      );
+
+      if (!success) {
+        final errCode = data['error'] as String? ?? 'unknown';
+        debugPrint('[InterestMatch] openDm error code: $errCode');
+        if (mounted) {
+          final msg = switch (errCode) {
+            'cannot_dm_yourself' => 'Você não pode enviar DM para si mesmo',
+            'unauthenticated'    => 'Você precisa estar logado',
+            _                   => 'Erro ao abrir conversa ($errCode)',
+          };
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(msg),
+              backgroundColor: context.nexusTheme.error,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+
       if (threadId != null && mounted) {
         context.push('/chat/$threadId');
       }
-    } catch (e) {
-      debugPrint('[InterestMatch] openDm error: $e');
+    } catch (e, st) {
+      debugPrint('[InterestMatch] openDm exception: $e');
+      debugPrint('[InterestMatch] openDm stacktrace: $st');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Erro ao abrir conversa'),
+            content: Text(
+              'Erro ao abrir conversa: \${e.toString().split("\n").first}',
+            ),
             backgroundColor: context.nexusTheme.error,
             behavior: SnackBarBehavior.floating,
           ),

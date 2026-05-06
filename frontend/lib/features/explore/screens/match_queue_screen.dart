@@ -92,8 +92,10 @@ class _MatchQueueScreenState extends ConsumerState<MatchQueueScreen>
         _startWaitTimer();
       }
       // else idle — mostrar tela inicial
-    } catch (_) {
-      // Ignorar erro na verificação inicial
+    } catch (e, st) {
+      // Erro não crítico — apenas logar, não bloquear a tela
+      debugPrint('[MatchQueue] checkCurrentStatus error: $e');
+      debugPrint('[MatchQueue] checkCurrentStatus stacktrace: $st');
     }
   }
 
@@ -138,14 +140,27 @@ class _MatchQueueScreenState extends ConsumerState<MatchQueueScreen>
         _startPolling();
         _startWaitTimer();
       }
-    } catch (e) {
+    } catch (e, st) {
       debugPrint('[MatchQueue] enterQueue error: $e');
+      debugPrint('[MatchQueue] enterQueue stacktrace: $st');
       if (mounted) {
+        // Extrair mensagem amigável do PostgrestException (P0001 = RAISE EXCEPTION do banco)
+        final raw = e.toString();
+        String userMsg;
+        if (raw.contains('interesses')) {
+          userMsg = 'Adicione interesses ao seu perfil antes de entrar na fila.';
+        } else if (raw.contains('chat de match ativo') || raw.contains('match ativo')) {
+          userMsg = 'Você já possui um chat de match ativo.';
+        } else if (raw.contains('P0001')) {
+          // Tentar extrair a mensagem do banco entre aspas ou após 'message:'
+          final msgMatch = RegExp(r'message: ([^,}]+)').firstMatch(raw);
+          userMsg = msgMatch?.group(1)?.trim() ?? 'Erro ao entrar na fila.';
+        } else {
+          userMsg = 'Erro ao entrar na fila. Tente novamente.';
+        }
         setState(() {
           _status = 'error';
-          _error = e.toString().contains('P0001')
-              ? e.toString().split('message: ').last.split(',').first
-              : 'Erro ao entrar na fila. Tente novamente.';
+          _error = userMsg;
         });
       }
     }
@@ -156,7 +171,9 @@ class _MatchQueueScreenState extends ConsumerState<MatchQueueScreen>
     _waitTimer?.cancel();
     try {
       await SupabaseService.rpc('leave_match_queue');
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[MatchQueue] leaveQueue error (non-critical): $e');
+    }
     if (mounted) {
       setState(() {
         _status = 'idle';
@@ -193,7 +210,10 @@ class _MatchQueueScreenState extends ConsumerState<MatchQueueScreen>
           _waitTimer?.cancel();
           if (mounted) setState(() => _status = 'idle');
         }
-      } catch (_) {}
+      } catch (e, st) {
+        debugPrint('[MatchQueue] polling error: $e');
+        debugPrint('[MatchQueue] polling stacktrace: $st');
+      }
     });
   }
 
