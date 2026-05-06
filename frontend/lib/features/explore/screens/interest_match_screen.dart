@@ -88,6 +88,9 @@ class _InterestMatchScreenState extends ConsumerState<InterestMatchScreen>
   // ── Fase atual da tela ────────────────────────────────────────────────────
   _Phase _phase = _Phase.suggestions;
 
+  // Flag: true quando o usuário saiu da fila manualmente — impede re-entrada automática
+  bool _userLeftQueue = false;
+
   // ── Animações ─────────────────────────────────────────────────────────────
   late AnimationController _radarCtrl;
   late AnimationController _pulseCtrl;
@@ -190,14 +193,24 @@ class _InterestMatchScreenState extends ConsumerState<InterestMatchScreen>
             _isLoadingSuggestions = false;
           });
         } else {
-          // Tem interesses mas não achou ninguém → entrar na fila automaticamente
-          setState(() {
-            _hasInterests = true;
-            _matches = [];
-            _isLoadingSuggestions = false;
-            _phase = _Phase.queue;
-          });
-          _enterQueueAuto();
+          // Tem interesses mas não achou ninguém
+          if (_userLeftQueue) {
+            // Usuário saiu da fila manualmente → mostrar tela de "nenhuma sugestão" sem entrar de novo
+            setState(() {
+              _hasInterests = true;
+              _matches = [];
+              _isLoadingSuggestions = false;
+            });
+          } else {
+            // Entrada automática na fila
+            setState(() {
+              _hasInterests = true;
+              _matches = [];
+              _isLoadingSuggestions = false;
+              _phase = _Phase.queue;
+            });
+            _enterQueueAuto();
+          }
         }
       } else {
         setState(() {
@@ -561,6 +574,83 @@ class _InterestMatchScreenState extends ConsumerState<InterestMatchScreen>
       );
     }
 
+    // Lista vazia após sair da fila manualmente
+    if (_matches.isEmpty) {
+      return Center(
+        key: const ValueKey('no_suggestions'),
+        child: Padding(
+          padding: EdgeInsets.all(r.s(32)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.search_off_rounded,
+                  color: theme.textSecondary.withValues(alpha: 0.3),
+                  size: r.s(72)),
+              SizedBox(height: r.s(20)),
+              Text(
+                'Nenhuma sugestão encontrada',
+                style: TextStyle(
+                  color: theme.textPrimary,
+                  fontSize: r.fs(18),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              SizedBox(height: r.s(8)),
+              Text(
+                'Que tal entrar na fila e aguardar alguém com interesses em comum aparecer?',
+                style: TextStyle(
+                    color: theme.textSecondary,
+                    fontSize: r.fs(14),
+                    height: 1.4),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: r.s(28)),
+              ElevatedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _userLeftQueue = false;
+                    _phase = _Phase.queue;
+                  });
+                  _enterQueueAuto();
+                },
+                icon: Icon(Icons.radar_rounded,
+                    color: Colors.white, size: r.s(18)),
+                label: Text(
+                  'Entrar na fila',
+                  style: TextStyle(
+                    fontSize: r.fs(14),
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.accentPrimary,
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(24), vertical: r.s(14)),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(r.s(14))),
+                ),
+              ),
+              SizedBox(height: r.s(12)),
+              TextButton(
+                onPressed: _loadSuggestions,
+                child: Text(
+                  'TENTAR NOVAMENTE',
+                  style: TextStyle(
+                    color: theme.textSecondary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: r.fs(12),
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     // Lista de sugestões
     return RefreshIndicator(
       key: const ValueKey('suggestions_list'),
@@ -728,7 +818,10 @@ class _InterestMatchScreenState extends ConsumerState<InterestMatchScreen>
               onPressed: () async {
                 await _leaveQueue();
                 if (mounted) {
-                  setState(() => _phase = _Phase.suggestions);
+                  setState(() {
+                    _userLeftQueue = true;
+                    _phase = _Phase.suggestions;
+                  });
                   _loadSuggestions();
                 }
               },
