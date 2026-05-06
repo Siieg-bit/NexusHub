@@ -965,8 +965,8 @@ class _InterestMatchScreenState extends ConsumerState<InterestMatchScreen>
                 onTap: () => context.push('/profile/${user.userId}'),
                 child: CosmeticAvatar(
                   userId: user.userId,
-                  imageUrl: user.iconUrl,
-                  radius: r.s(24),
+                  avatarUrl: user.iconUrl,
+                  size: r.s(48),
                 ),
               ),
               SizedBox(width: r.s(10)),
