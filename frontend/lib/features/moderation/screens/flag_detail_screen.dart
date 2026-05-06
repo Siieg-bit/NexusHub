@@ -819,8 +819,7 @@ class _SnapshotCard extends StatelessWidget {
                       data['sender_nickname'] != null) ...[
                     Row(
                       children: [
-                        CosmeticAvatar(
-                          userId: (data['author_id'] ?? data['sender_id']) as String?,
+                        _SnapshotAvatar(
                           avatarUrl: (data['author_avatar'] ?? data['sender_avatar']) as String?,
                           size: r.s(28),
                         ),
@@ -1262,6 +1261,30 @@ class _ActionChip extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// Avatar estático do snapshot — exibe apenas o avatar salvo no momento da denúncia,
+// sem buscar o perfil atual do usuário (evita mostrar frame/avatar atualizados).
+class _SnapshotAvatar extends StatelessWidget {
+  final String? avatarUrl;
+  final double size;
+  const _SnapshotAvatar({this.avatarUrl, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      radius: size / 2,
+      backgroundColor: context.nexusTheme.surfaceSecondary,
+      backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
+          ? CachedNetworkImageProvider(avatarUrl!)
+          : null,
+      child: avatarUrl == null || avatarUrl!.isEmpty
+          ? Icon(Icons.person_rounded,
+              size: size * 0.55,
+              color: context.nexusTheme.textSecondary)
+          : null,
     );
   }
 }
