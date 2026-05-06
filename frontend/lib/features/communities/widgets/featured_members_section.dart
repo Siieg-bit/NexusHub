@@ -39,7 +39,7 @@ class FeaturedMembersSection extends ConsumerWidget {
       loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
       data: (members) {
-        if (members.isEmpty && !isStaff) return const SizedBox.shrink();
+        if (members.isEmpty) return const SizedBox.shrink();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,18 +75,7 @@ class FeaturedMembersSection extends ConsumerWidget {
                 ],
               ),
             ),
-            if (members.isEmpty)
-              Padding(
-                padding: EdgeInsets.symmetric(
-                    horizontal: r.s(16), vertical: r.s(8)),
-                child: Text(
-                  'Nenhum membro em destaque ainda.',
-                  style: TextStyle(
-                      color: theme.textSecondary, fontSize: r.fs(13)),
-                ),
-              )
-            else
-              SizedBox(
+            SizedBox(
                 height: r.s(110),
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,

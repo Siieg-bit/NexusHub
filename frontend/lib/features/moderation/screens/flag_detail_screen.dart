@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
@@ -98,8 +99,18 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
       debugPrint('[FlagDetail] ❌ _resolve ERROR: $e');
       debugPrint('[FlagDetail] stack: $stack');
       if (mounted) {
+        // Extrair mensagem real do erro para facilitar diagnóstico
+        String errorMsg = s.anErrorOccurredTryAgain;
+        if (e is PostgrestException) {
+          final detail = e.message.isNotEmpty ? e.message : (e.code ?? 'erro desconhecido');
+          debugPrint('[FlagDetail] PostgrestException code=${e.code} message=${e.message} details=${e.details}');
+          errorMsg = 'Erro: $detail';
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
+          SnackBar(
+            content: Text(errorMsg),
+            duration: const Duration(seconds: 6),
+          ),
         );
       }
     } finally {

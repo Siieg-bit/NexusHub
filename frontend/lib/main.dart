@@ -33,6 +33,7 @@ import 'core/widgets/connectivity_banner.dart';
 import 'core/l10n/locale_provider.dart';
 import 'firebase_options.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:http/http.dart' as http;
 
 void main() async {
   // Carrega variáveis de ambiente do arquivo .env se ele existir.
@@ -94,6 +95,13 @@ void main() async {
     _initSafe('iap', IAPService.initialize),
     _initSafe('adService', AdService.initialize),
   ]));
+
+  // Grupo 3: Warm-up das Edge Functions (não-bloqueante)
+  // Edge Functions do Supabase ficam inativas após períodos sem uso e
+  // sofrem "cold start" (2–5 s) na primeira chamada real. Disparar um
+  // OPTIONS (CORS preflight) logo após o boot acorda os containers em
+  // background sem bloquear a UI nem exigir autenticação.
+  unawaited(_warmUpEdgeFunctions());
 
   // Registrar device fingerprint se usuário já estiver logado
   if (Supabase.instance.client.auth.currentUser != null) {
@@ -162,6 +170,32 @@ Future<void> _initSafe(String name, Future<void> Function() init) async {
     await init();
   } catch (e) {
     debugPrint('[Main] $name init error: $e');
+  }
+}
+
+/// Aquece as Edge Functions mais usadas com um OPTIONS (CORS preflight).
+/// Isso evita o cold start perceptível pelo usuário na primeira chamada real.
+/// Chamado de forma não-bloqueante (unawaited) para não atrasar o boot.
+Future<void> _warmUpEdgeFunctions() async {
+  const baseUrl = 'https://ylvzqqvcanzzswjkqeya.supabase.co/functions/v1';
+  // Lista das Edge Functions que mais sofrem cold start por serem chamadas
+  // após longos períodos de inatividade.
+  const functions = [
+    'push-notification',
+    'check-in',
+    'content-moderation-bot',
+    'webhook-handler',
+  ];
+  for (final fn in functions) {
+    try {
+      await http
+          .head(Uri.parse('$baseUrl/$fn'))
+          .timeout(const Duration(seconds: 8));
+      debugPrint('[WarmUp] ✅ $fn acordado');
+    } catch (e) {
+      // Silencioso — o warm-up é best-effort e nunca deve quebrar o boot.
+      debugPrint('[WarmUp] ⚠️ $fn: $e');
+    }
   }
 }
 
