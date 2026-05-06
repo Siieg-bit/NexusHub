@@ -532,50 +532,83 @@ class _SpeakersRow extends StatelessWidget {
           final iconUrl = profile?['icon_url'] as String?;
           final isHost = p['stage_role'] == 'host';
           final isMuted = p['is_muted'] == true;
+          // is_absent: true quando o host do chat está na call mas offline
+          final isAbsent = p['is_absent'] == true;
           final isMe = userId == SupabaseService.currentUserId;
           final level = ctrl.audioLevelFor(p);
-          final isSpeaking = level > 0.1 && !isMuted;
+          // Host ausente não fala, independente do nível de áudio
+          final isSpeaking = !isAbsent && level > 0.1 && !isMuted;
 
           return Padding(
             padding: EdgeInsets.only(right: r.s(10)),
             child: GestureDetector(
-              onLongPress: callState.myRole.isHost && !isMe
+              onLongPress: callState.myRole.isHost && !isMe && !isAbsent
                   ? () => _showHostActions(context, userId, nickname, isMuted)
                   : null,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _PulsingAvatar(
-                    userId: userId,
-                    iconUrl: iconUrl,
-                    isSpeaking: isSpeaking,
-                    size: r.s(44),
-                  ),
-                  SizedBox(height: r.s(4)),
-                  Text(
-                    isMe ? 'Você' : nickname,
-                    style: TextStyle(
-                      color: context.nexusTheme.textPrimary,
-                      fontSize: r.fs(10),
-                      fontWeight: FontWeight.w600,
+              child: Opacity(
+                opacity: isAbsent ? 0.4 : 1.0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        _PulsingAvatar(
+                          userId: userId,
+                          iconUrl: iconUrl,
+                          isSpeaking: isSpeaking,
+                          size: r.s(44),
+                        ),
+                        // Ícone de "ausente" sobreposto ao avatar do host
+                        if (isAbsent)
+                          Container(
+                            width: r.s(16),
+                            height: r.s(16),
+                            decoration: BoxDecoration(
+                              color: context.nexusTheme.backgroundSecondary,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: context.nexusTheme.textHint
+                                    .withValues(alpha: 0.4),
+                                width: 1,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.wifi_off_rounded,
+                              color: context.nexusTheme.textHint,
+                              size: r.s(9),
+                            ),
+                          ),
+                      ],
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (isHost)
+                    SizedBox(height: r.s(4)),
                     Text(
-                      '👑 Host',
+                      isMe ? 'Você' : nickname,
                       style: TextStyle(
-                        color: context.nexusTheme.accentPrimary,
-                        fontSize: r.fs(9),
-                        fontWeight: FontWeight.w700,
+                        color: context.nexusTheme.textPrimary,
+                        fontSize: r.fs(10),
+                        fontWeight: FontWeight.w600,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  if (isMuted)
-                    Icon(Icons.mic_off_rounded,
-                        color: context.nexusTheme.error,
-                        size: r.s(12)),
-                ],
+                    if (isHost)
+                      Text(
+                        isAbsent ? '👑 Ausente' : '👑 Host',
+                        style: TextStyle(
+                          color: isAbsent
+                              ? context.nexusTheme.textHint
+                              : context.nexusTheme.accentPrimary,
+                          fontSize: r.fs(9),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    if (isMuted && !isAbsent)
+                      Icon(Icons.mic_off_rounded,
+                          color: context.nexusTheme.error,
+                          size: r.s(12)),
+                  ],
+                ),
               ),
             ),
           );

@@ -67,6 +67,9 @@ class CallSession {
   final String? communityId;
   final CallType type;
   final String creatorId;
+  /// ID do host do chat (chat_threads.host_id).
+  /// É o "dono" permanente da call, independente de quem a iniciou.
+  final String? threadHostId;
   final String status;
   final DateTime createdAt;
 
@@ -76,16 +79,19 @@ class CallSession {
     this.communityId,
     required this.type,
     required this.creatorId,
+    this.threadHostId,
     required this.status,
     required this.createdAt,
   });
 
   factory CallSession.fromJson(Map<String, dynamic> json) {
-    // community_id pode vir diretamente (quando a query faz join com chat_threads)
-    // ou via o mapa aninhado 'chat_threads' (quando select inclui o relacionamento)
+    // community_id e host_id podem vir diretamente ou via mapa aninhado 'chat_threads'
     final threadMap = json['chat_threads'] as Map<String, dynamic>?;
     final communityId = (json['community_id'] as String?) ??
         (threadMap?['community_id'] as String?);
+    // threadHostId: host do chat — vem do join com chat_threads
+    final threadHostId = (threadMap?['host_id'] as String?) ??
+        (json['thread_host_id'] as String?);
     return CallSession(
       id: json['id'] as String? ?? '',
       threadId: json['thread_id'] as String? ?? '',
@@ -94,6 +100,7 @@ class CallSession {
       // Suporta tanto creator_id quanto host_id (banco tem ambos)
       creatorId:
           json['creator_id'] as String? ?? json['host_id'] as String? ?? '',
+      threadHostId: threadHostId?.trim().isEmpty == true ? null : threadHostId?.trim(),
       status: json['status'] as String? ?? 'active',
       createdAt: DateTime.tryParse(json['created_at'] as String? ??
               json['started_at'] as String? ??
@@ -560,7 +567,7 @@ class CallService {
       // (criadas antes da coluna status existir), o que causa call_already_active
       // no RPC mas não é detectado pelo Flutter com .eq('status','active').
       final res = await SupabaseService.table('call_sessions')
-          .select('*, chat_threads!call_sessions_thread_id_fkey(community_id)')
+          .select('*, chat_threads!call_sessions_thread_id_fkey(community_id, host_id)')
           .eq('thread_id', threadId)
           .or('status.eq.active,and(status.is.null,is_active.eq.true)')
           .order('created_at', ascending: false)
@@ -1176,16 +1183,55 @@ class CallService {
     _cleanup();
   }
 
-  /// Buscar participantes ativos
+  /// Buscar participantes ativos.
+  ///
+  /// Sempre inclui o host do chat (stage_role='host') mesmo quando ausente
+  /// (status='disconnected'). Nesses casos, marca o participante com
+  /// 'is_absent': true para que a UI exiba o avatar apagado.
   static Future<List<Map<String, dynamic>>> getParticipants() async {
     final call = activeCall;
     if (call == null) return [];
     try {
+      // Buscar participantes conectados
       final res = await SupabaseService.table('call_participants')
           .select()
           .eq('call_session_id', call.id)
           .eq('status', 'connected');
-      final participants = List<Map<String, dynamic>>.from(res as List? ?? []);
+      final connected = List<Map<String, dynamic>>.from(res as List? ?? []);
+
+      // Buscar o host do chat (stage_role='host') independente do status.
+      // Isso garante que o avatar do host aparece mesmo quando ele está ausente.
+      final hostRes = await SupabaseService.table('call_participants')
+          .select()
+          .eq('call_session_id', call.id)
+          .eq('stage_role', 'host')
+          .limit(1);
+      final hostRows = List<Map<String, dynamic>>.from(hostRes as List? ?? []);
+
+      // Montar lista final: host sempre primeiro, depois os demais conectados
+      final List<Map<String, dynamic>> participants = [];
+      final connectedIds = connected.map((p) => p['user_id'] as String?).toSet();
+
+      if (hostRows.isNotEmpty) {
+        final hostRow = Map<String, dynamic>.from(hostRows.first);
+        final hostUserId = hostRow['user_id'] as String?;
+        final isAbsent = hostRow['status'] != 'connected';
+        hostRow['is_absent'] = isAbsent;
+        participants.add(hostRow);
+        // Se o host já está na lista de conectados, removê-lo para evitar duplicata
+        if (hostUserId != null) connectedIds.remove(hostUserId);
+      }
+
+      // Adicionar demais participantes conectados (excluindo o host já adicionado)
+      for (final p in connected) {
+        final uid = p['user_id'] as String?;
+        if (uid != null && !participants.any((x) => x['user_id'] == uid)) {
+          final row = Map<String, dynamic>.from(p);
+          row['is_absent'] = false;
+          participants.add(row);
+        }
+      }
+
       if (participants.isEmpty) return participants;
       final userIds = participants
           .map((row) => row['user_id'] as String?)

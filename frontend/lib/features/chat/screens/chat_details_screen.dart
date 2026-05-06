@@ -45,6 +45,7 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
   bool _isReadOnly = false;
   bool _isMuted = false;
   bool _isTogglingMute = false;
+  bool _isVoiceOpenToAll = false;
 
   @override
   void initState() {
@@ -110,6 +111,8 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
               threadInfo['is_announcement_only'] as bool? ?? false;
           _isReadOnly = threadInfo['is_read_only'] as bool? ?? false;
           _isMuted = isMuted;
+          _isVoiceOpenToAll =
+              threadInfo['is_voice_open_to_all'] as bool? ?? false;
           _isLoading = false;
         });
       }
@@ -271,6 +274,28 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
       if (mounted) context.go('/chat');
     } catch (e) {
       debugPrint('[ChatDetails] delete error: $e');
+    }
+  }
+
+  Future<void> _toggleVoiceOpenToAll() async {
+    final newVal = !_isVoiceOpenToAll;
+    try {
+      await SupabaseService.table('chat_threads')
+          .update({'is_voice_open_to_all': newVal})
+          .eq('id', widget.threadId);
+      if (mounted) {
+        setState(() => _isVoiceOpenToAll = newVal);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(newVal
+                ? 'Qualquer membro pode iniciar o voice chat'
+                : 'Apenas host pode iniciar o voice chat'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('[ChatDetails] toggle voice open to all: $e');
     }
   }
 
@@ -684,6 +709,12 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
                   _muteTile(r, theme),
                   SizedBox(height: r.s(8)),
 
+                  // ── Voice Chat (host + público) ─────────────────────────────────
+                  if (isHost && isPublic) ...[                    
+                    _sectionLabel(r, 'Voice Chat'),
+                    _voiceOpenToAllTile(r, theme),
+                    SizedBox(height: r.s(8)),
+                  ],
                   // ── Moderação (host + público) ────────────────────────────
                   if (isHost && isPublic) ...[
                     _sectionLabel(r, 'Moderação'),
@@ -964,6 +995,65 @@ class _ChatDetailsScreenState extends ConsumerState<ChatDetailsScreen> {
                     inactiveThumbColor: Colors.grey[600],
                     inactiveTrackColor: Colors.grey[800],
                   ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _voiceOpenToAllTile(Responsive r, dynamic theme) {
+    return GestureDetector(
+      onTap: _toggleVoiceOpenToAll,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: r.s(12)),
+        decoration: BoxDecoration(
+          border: Border(
+              bottom: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.05))),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.mic_external_on_rounded,
+              color: _isVoiceOpenToAll
+                  ? context.nexusTheme.accentPrimary
+                  : Colors.grey[400]!,
+              size: r.s(20),
+            ),
+            SizedBox(width: r.s(12)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Qualquer membro pode iniciar',
+                    style: TextStyle(
+                      color: _isVoiceOpenToAll
+                          ? context.nexusTheme.accentPrimary
+                          : context.nexusTheme.textPrimary,
+                      fontSize: r.fs(14),
+                    ),
+                  ),
+                  Text(
+                    _isVoiceOpenToAll
+                        ? 'Membros podem iniciar o voice chat'
+                        : 'Somente host pode iniciar o voice chat',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: r.fs(11),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: _isVoiceOpenToAll,
+              onChanged: (_) => _toggleVoiceOpenToAll(),
+              activeColor: context.nexusTheme.accentPrimary,
+              inactiveThumbColor: Colors.grey[600],
+              inactiveTrackColor: Colors.grey[800],
+            ),
           ],
         ),
       ),

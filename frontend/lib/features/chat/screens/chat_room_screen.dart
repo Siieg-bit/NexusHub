@@ -368,12 +368,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
     if (_isDisposed || !mounted) return;
     if (activeSession == null) return;
 
-    final currentUserId = SupabaseService.currentUserId;
-    final isHost = currentUserId != null &&
-        currentUserId == activeSession.creatorId;
-
+     final currentUserId = SupabaseService.currentUserId;
+    // Host do chat = threadHostId (novo campo) ou fallback para creatorId.
+    // O host do chat sempre reconecta como broadcaster, mesmo que um membro
+    // comum tenha iniciado a call com is_voice_open_to_all=true.
+    final chatHostId = activeSession.threadHostId ?? activeSession.creatorId;
+    final isHost = currentUserId != null && currentUserId == chatHostId;
     if (isHost) {
-      // O usuário é o host da sessão ativa — reconectar como broadcaster.
+      // O usuário é o host do chat — reconectar como broadcaster.
       // Isso ocorre quando o host fecha e reabre o chat com a call ainda ativa.
       CallService.setMyStageRoleHost();
       CallSession? rejoined;
@@ -1340,6 +1342,25 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
     }
     // Evitar duplo clique enquanto já está conectando.
     if (callState.isConnecting) return;
+    // ── Verificar permissão para INICIAR uma nova call ──────────────────────
+    // Host e co-host sempre podem iniciar.
+    // Membros comuns só podem se is_voice_open_to_all = true.
+    final isHostOrCoHost = _callerRole == 'host' || _callerRole == 'co_host';
+    final isVoiceOpenToAll =
+        (_threadInfo?['is_voice_open_to_all'] as bool?) ?? false;
+    if (!isHostOrCoHost && !isVoiceOpenToAll) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Apenas o host pode iniciar o voice chat neste canal.',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
 
     // ── Abrir o painel imediatamente com spinner "Conectando..." ──────────────
     // O Agora SDK leva 2-4s para inicializar + entrar no canal.
