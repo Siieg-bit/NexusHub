@@ -795,8 +795,30 @@ class CallService {
         );
         return null;
       }
+      // Solicitar permissão de microfone (pode não ter sido solicitada no joinAsAudience).
+      final granted = await _requestPermissions(CallType.voice);
+      if (!granted) {
+        _recordFailure(
+          stage: 'promoteToStage.permissions',
+          error: StateError('Microphone permission denied'),
+          stackTrace: StackTrace.current,
+          context: {'threadId': threadId},
+        );
+        return null;
+      }
+      // Garantir que o áudio está habilitado antes de trocar de role.
+      await _engine?.enableAudio();
       // Trocar role no Agora para broadcaster (pode falar).
+      // No SDK 6.x, setClientRole sozinho não ativa a publicação do mic.
+      // É necessário chamar updateChannelMediaOptions com publishMicrophoneTrack=true.
       await _engine?.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
+      await _engine?.updateChannelMediaOptions(const ChannelMediaOptions(
+        clientRoleType: ClientRoleType.clientRoleBroadcaster,
+        publishMicrophoneTrack: true,
+        publishCameraTrack: false,
+        autoSubscribeAudio: true,
+        autoSubscribeVideo: false,
+      ));
       await _engine?.muteLocalAudioStream(false);
       _isMuted = false;
       _myStageRole = StageRole.speaker;
@@ -834,6 +856,13 @@ class CallService {
     }
     try {
       await _engine?.setClientRole(role: ClientRoleType.clientRoleAudience);
+      await _engine?.updateChannelMediaOptions(const ChannelMediaOptions(
+        clientRoleType: ClientRoleType.clientRoleAudience,
+        publishMicrophoneTrack: false,
+        publishCameraTrack: false,
+        autoSubscribeAudio: true,
+        autoSubscribeVideo: false,
+      ));
       await _engine?.muteLocalAudioStream(true);
     } catch (e) {
       debugPrint('[CallService] demoteToAudience.agora error: $e');

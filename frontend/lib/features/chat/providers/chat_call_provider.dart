@@ -129,6 +129,7 @@ class ChatCallController extends StateNotifier<ChatCallState> {
   StreamSubscription? _stageRoleSub;
   StreamSubscription? _handRaisedSub;
   Timer? _durationTimer;
+  Timer? _participantsTimer; // Polling periódico como fallback ao Realtime
   String? _chatChannelName;
   int _prevHandRaisedCount = 0;
 
@@ -166,6 +167,7 @@ class ChatCallController extends StateNotifier<ChatCallState> {
     );
     _subscribeStreams();
     _startUniversalTimer(session.createdAt);
+    _startParticipantsPolling();
     await _loadParticipants();
     _subscribeChatRealtime(session.threadId);
   }
@@ -190,6 +192,10 @@ class ChatCallController extends StateNotifier<ChatCallState> {
           isMuted: CallService.isMuted,
           myRole: CallService.myStageRole,
         );
+        // Pequeno delay para garantir que o banco confirmou o INSERT
+        // antes de buscar os participantes (evita race condition).
+        await Future.delayed(const Duration(milliseconds: 300));
+        if (!mounted) return;
         await _loadParticipants();
       } else {
         state = state.copyWith(isConnecting: false);
@@ -232,6 +238,7 @@ class ChatCallController extends StateNotifier<ChatCallState> {
     );
     _subscribeStreams();
     _startUniversalTimer(session.createdAt);
+    _startParticipantsPolling();
     await _loadParticipants();
     _subscribeChatRealtime(session.threadId);
   }
@@ -280,12 +287,23 @@ class ChatCallController extends StateNotifier<ChatCallState> {
   /// Todos os usuários veem o mesmo contador, independente de quando entraram.
   void _startUniversalTimer(DateTime sessionCreatedAt) {
     _durationTimer?.cancel();
+    _participantsTimer?.cancel();
     _durationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       final diff = DateTime.now().difference(sessionCreatedAt);
       final mm = diff.inMinutes.toString().padLeft(2, '0');
       final ss = (diff.inSeconds % 60).toString().padLeft(2, '0');
       state = state.copyWith(elapsed: '$mm:$ss');
+    });
+  }
+  // ── Polling periódico de participantes (fallback ao Realtime) ─────────────
+  /// Garante que a lista de participantes está sempre atualizada,
+  /// mesmo que o Realtime tenha delay ou falhe.
+  void _startParticipantsPolling() {
+    _participantsTimer?.cancel();
+    _participantsTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
+      if (!mounted) return;
+      await _loadParticipants();
     });
   }
 
