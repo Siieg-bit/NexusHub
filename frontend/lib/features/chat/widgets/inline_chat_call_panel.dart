@@ -73,7 +73,13 @@ class _InlineChatCallPanelState extends ConsumerState<InlineChatCallPanel>
   Widget build(BuildContext context) {
     final callState = ref.watch(chatCallProvider(widget.threadId));
     final activeCallAsync = ref.watch(activeCallSessionProvider(widget.threadId));
-    final activeSession = activeCallAsync.valueOrNull;
+
+    // Quando o provider está recarregando (após invalidate), não usar o valor
+    // anterior em cache — isso causaria o painel ficar preso após encerrar.
+    // Só considerar activeSession quando o provider já resolveu (isLoading=false).
+    final activeSession = activeCallAsync.isLoading
+        ? null
+        : activeCallAsync.valueOrNull;
 
     // Painel visível: usuário está na call/ouvindo OU há call ativa no thread
     final shouldShow =
@@ -189,7 +195,8 @@ class _PanelHeader extends ConsumerWidget {
     final theme = context.nexusTheme;
     final callState = ref.watch(chatCallProvider(threadId));
     final ctrl = ref.read(chatCallProvider(threadId).notifier);
-    final count = callState.participants.length;
+    // Contar apenas participantes conectados (não ausentes)
+    final count = callState.participants.where((p) => p['is_absent'] != true).length;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
