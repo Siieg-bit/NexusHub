@@ -10,11 +10,20 @@ import '../../../core/models/message_model.dart';
 
 // ============================================================================
 // ChatCallState — Estado imutável da call inline
+//
+// Modos possíveis:
+//   isConnecting = true           → spinner "Conectando..."
+//   isAudience = true             → ouvindo passivamente (painel completo visível)
+//   isOnStage = true              → no palco como speaker/host
+//   todos false + session != null → estado transitório
 // ============================================================================
 class ChatCallState {
   final CallSession? session;
-  final bool isActive;
-  /// Painel visível mas ainda conectando ao Agora (loading state)
+  /// Usuário está no palco (broadcaster) — pode falar.
+  final bool isOnStage;
+  /// Usuário está ouvindo passivamente (audience) — vê o painel mas não fala.
+  final bool isAudience;
+  /// Painel visível mas ainda conectando ao Agora (loading state).
   final bool isConnecting;
   final bool isExpanded;
   final List<Map<String, dynamic>> participants;
@@ -25,15 +34,17 @@ class ChatCallState {
   final bool handRaised;
   final bool isMuted;
   final bool isSpeakerOn;
+  /// Elapsed calculado a partir do created_at universal da sessão.
   final String elapsed;
   final List<MessageModel> messages;
   final bool isSendingMessage;
-  /// Mensagem de erro de conexão (null = sem erro)
+  /// Mensagem de erro de conexão (null = sem erro).
   final String? connectError;
 
   const ChatCallState({
     this.session,
-    this.isActive = false,
+    this.isOnStage = false,
+    this.isAudience = false,
     this.isConnecting = false,
     this.isExpanded = true,
     this.participants = const [],
@@ -50,9 +61,16 @@ class ChatCallState {
     this.connectError,
   });
 
+  /// O painel deve ser exibido quando há sessão ativa (qualquer modo).
+  bool get isActive => isOnStage || isAudience;
+
+  /// Compatibilidade retroativa com código que usa isActive diretamente.
+  bool get isOnStageLegacy => isOnStage;
+
   ChatCallState copyWith({
     CallSession? session,
-    bool? isActive,
+    bool? isOnStage,
+    bool? isAudience,
     bool? isConnecting,
     bool? isExpanded,
     List<Map<String, dynamic>>? participants,
@@ -71,7 +89,8 @@ class ChatCallState {
   }) {
     return ChatCallState(
       session: session ?? this.session,
-      isActive: isActive ?? this.isActive,
+      isOnStage: isOnStage ?? this.isOnStage,
+      isAudience: isAudience ?? this.isAudience,
       isConnecting: isConnecting ?? this.isConnecting,
       isExpanded: isExpanded ?? this.isExpanded,
       participants: participants ?? this.participants,
@@ -110,7 +129,6 @@ class ChatCallController extends StateNotifier<ChatCallState> {
   StreamSubscription? _stageRoleSub;
   StreamSubscription? _handRaisedSub;
   Timer? _durationTimer;
-  DateTime? _startTime;
   String? _chatChannelName;
   int _prevHandRaisedCount = 0;
 
@@ -129,32 +147,104 @@ class ChatCallController extends StateNotifier<ChatCallState> {
   /// Chamado quando a conexão falha — fecha o painel e exibe o erro.
   void connectFailed(String error) {
     if (!mounted) return;
-    state = const ChatCallState(); // fecha o painel
+    state = const ChatCallState();
     debugPrint('[ChatCallController] connectFailed: $error');
   }
 
-  // ── Iniciar ou entrar na call (após Agora conectado) ──────────────────────
-  Future<void> attach(CallSession session) async {
-    _startTime = DateTime.now();
-
+  // ── Entrar como ouvinte passivo (painel completo, sem mic) ────────────────
+  /// Chamado automaticamente quando há call ativa no thread.
+  /// O usuário vê o palco completo e ouve tudo, mas não aparece como participante.
+  Future<void> attachAsAudience(CallSession session) async {
     state = ChatCallState(
       session: session,
-      isActive: true,
-      isConnecting: false, // Agora conectado — sai do loading
+      isAudience: true,
+      isOnStage: false,
+      isConnecting: false,
+      isExpanded: true,
+      isMuted: true,
+      isSpeakerOn: true,
+    );
+    _subscribeStreams();
+    _startUniversalTimer(session.createdAt);
+    await _loadParticipants();
+    _subscribeChatRealtime(session.threadId);
+  }
+
+  // ── Subir ao palco (ouvinte → speaker) ───────────────────────────────────
+  /// Chama promoteToStage no CallService (RPC + troca de role no Agora).
+  Future<void> goOnStage() async {
+    final session = state.session;
+    if (session == null) return;
+    HapticService.action();
+    state = state.copyWith(isConnecting: true);
+    try {
+      final promoted = await CallService.promoteToStage(
+        threadId: session.threadId,
+      );
+      if (!mounted) return;
+      if (promoted != null) {
+        state = state.copyWith(
+          isOnStage: true,
+          isAudience: false,
+          isConnecting: false,
+          isMuted: CallService.isMuted,
+          myRole: CallService.myStageRole,
+        );
+        await _loadParticipants();
+      } else {
+        state = state.copyWith(isConnecting: false);
+        debugPrint('[ChatCallController] goOnStage: promoteToStage returned null');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      state = state.copyWith(isConnecting: false);
+      debugPrint('[ChatCallController] goOnStage error: $e');
+    }
+  }
+
+  // ── Descer do palco (speaker → ouvinte) ──────────────────────────────────
+  /// Chama demoteToAudience no CallService (RPC + troca de role no Agora).
+  Future<void> leaveStage() async {
+    HapticService.action();
+    await CallService.demoteToAudience();
+    if (!mounted) return;
+    state = state.copyWith(
+      isOnStage: false,
+      isAudience: true,
+      isMuted: true,
+      myRole: StageRole.listener,
+    );
+    await _loadParticipants();
+  }
+
+  // ── Iniciar ou entrar na call como speaker (host) ─────────────────────────
+  /// Chamado pelo host ao criar a call ou ao entrar como speaker direto.
+  Future<void> attach(CallSession session) async {
+    state = ChatCallState(
+      session: session,
+      isOnStage: true,
+      isAudience: false,
+      isConnecting: false,
       isExpanded: true,
       isMuted: CallService.isMuted,
       isSpeakerOn: CallService.isSpeakerOn,
       myRole: CallService.myStageRole,
     );
-
     _subscribeStreams();
-    _startDurationTimer();
+    _startUniversalTimer(session.createdAt);
     await _loadParticipants();
     _subscribeChatRealtime(session.threadId);
   }
 
-  // ── Streams do CallService ────────────────────────────────────────────────
+  // ── Encerramento global (host encerrou) ───────────────────────────────────
+  /// Chamado quando o activeCallSessionProvider retorna null após estar ativo.
+  /// Fecha o painel para todos os ouvintes passivos.
+  void forceClose() {
+    if (!mounted) return;
+    _teardown();
+  }
 
+  // ── Streams do CallService ────────────────────────────────────────────────
   void _subscribeStreams() {
     _participantsSub = CallService.participantsStream.listen((p) {
       if (!mounted) return;
@@ -178,7 +268,6 @@ class ChatCallController extends StateNotifier<ChatCallState> {
 
     _handRaisedSub = CallService.handRaisedUsersStream.listen((raised) {
       if (!mounted) return;
-      // Notificar host quando alguém novo levantar a mão
       if (state.myRole.isHost && raised.length > _prevHandRaisedCount) {
         HapticService.action();
       }
@@ -187,12 +276,13 @@ class ChatCallController extends StateNotifier<ChatCallState> {
     });
   }
 
-  // ── Timer de duração ──────────────────────────────────────────────────────
-
-  void _startDurationTimer() {
+  // ── Timer universal baseado em created_at da sessão ──────────────────────
+  /// Todos os usuários veem o mesmo contador, independente de quando entraram.
+  void _startUniversalTimer(DateTime sessionCreatedAt) {
+    _durationTimer?.cancel();
     _durationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted || _startTime == null) return;
-      final diff = DateTime.now().difference(_startTime!);
+      if (!mounted) return;
+      final diff = DateTime.now().difference(sessionCreatedAt);
       final mm = diff.inMinutes.toString().padLeft(2, '0');
       final ss = (diff.inSeconds % 60).toString().padLeft(2, '0');
       state = state.copyWith(elapsed: '$mm:$ss');
@@ -200,7 +290,6 @@ class ChatCallController extends StateNotifier<ChatCallState> {
   }
 
   // ── Participantes ─────────────────────────────────────────────────────────
-
   Future<void> _loadParticipants() async {
     final p = await CallService.getParticipants();
     if (!mounted) return;
@@ -208,7 +297,6 @@ class ChatCallController extends StateNotifier<ChatCallState> {
   }
 
   // ── Chat Realtime ─────────────────────────────────────────────────────────
-
   void _subscribeChatRealtime(String threadId) {
     _chatChannelName = 'inline_call_chat:$threadId';
     RealtimeService.instance.subscribeWithRetry(
@@ -228,7 +316,6 @@ class ChatCallController extends StateNotifier<ChatCallState> {
             final raw = Map<String, dynamic>.from(
                 payload.newRecord as Map? ?? {});
             if (raw.isEmpty) return;
-            // Enriquecer com perfil
             try {
               final authorId = raw['author_id'] as String?;
               if (authorId != null) {
@@ -254,8 +341,7 @@ class ChatCallController extends StateNotifier<ChatCallState> {
     );
   }
 
-  // ── Controles ─────────────────────────────────────────────────────────────
-
+  // ── Controles (apenas para quem está no palco) ────────────────────────────
   Future<void> toggleMute() async {
     HapticService.micOn();
     await CallService.toggleMute();
@@ -289,17 +375,23 @@ class ChatCallController extends StateNotifier<ChatCallState> {
 
   // ── Sair / Encerrar ───────────────────────────────────────────────────────
 
+  /// Sair do palco e voltar a ouvinte passivo.
   Future<void> leave() async {
     HapticService.action();
-    await CallService.leaveCall();
-    _teardown();
+    if (state.isOnStage) {
+      await leaveStage();
+    } else {
+      // Ouvinte passivo sai completamente.
+      await CallService.leaveAudience();
+      _teardown();
+    }
   }
 
+  /// Encerrar a call (apenas host). Envia mensagem de sistema e fecha para todos.
   Future<void> end(String? callerNickname) async {
     HapticService.error();
     final session = state.session;
     await CallService.endCall();
-    // Mensagem de sistema informando encerramento
     if (session != null) {
       try {
         final nickname = callerNickname ?? 'Alguém';
@@ -319,7 +411,6 @@ class ChatCallController extends StateNotifier<ChatCallState> {
   }
 
   // ── Limpeza interna ───────────────────────────────────────────────────────
-
   void _teardown() {
     _participantsSub?.cancel();
     _remoteUsersSub?.cancel();
@@ -331,7 +422,6 @@ class ChatCallController extends StateNotifier<ChatCallState> {
       RealtimeService.instance.unsubscribe(_chatChannelName!);
       _chatChannelName = null;
     }
-    _startTime = null;
     _prevHandRaisedCount = 0;
     if (mounted) {
       state = const ChatCallState();
@@ -345,7 +435,6 @@ class ChatCallController extends StateNotifier<ChatCallState> {
   }
 
   // ── Helper: nível de áudio de um participante ─────────────────────────────
-
   double audioLevelFor(Map<String, dynamic> participant) {
     final agoraUid = participant['agora_uid'] as int?;
     final levels = state.audioLevels;

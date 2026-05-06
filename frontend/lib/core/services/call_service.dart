@@ -703,7 +703,164 @@ class CallService {
     return joinCallSession(existing.id);
   }
 
-  /// Gera o channelName a partir do ID da sessão.
+  /// =========================================================================
+  /// joinAsAudience — Entra no canal Agora como ouvinte passivo (sem publicar).
+  ///
+  /// Não chama nenhuma RPC de call_participants — o usuário apenas ouve.
+  /// Usado para mostrar o painel completo para todos os membros do chat.
+  /// =========================================================================
+  static Future<CallSession?> joinAsAudience({
+    required String threadId,
+  }) async {
+    clearLastError();
+    try {
+      final existing = await getActiveCallForThread(
+        threadId,
+        allowedTypes: {CallType.voice, CallType.stage},
+      );
+      if (existing == null) return null;
+      // Se já está na call como participante ativo, retornar sessão existente.
+      if (activeCall?.id == existing.id) return activeCall;
+      final channelName = _channelName(existing);
+      final initEngineFuture = _initEngine();
+      final tokenFuture = _fetchAgoraToken(channelName);
+      await initEngineFuture;
+      await _engine!.disableVideo();
+      await _engine!.enableAudio();
+      _isMuted = true; // ouvinte não publica mic
+      _agoraToken = await tokenFuture;
+      if (_agoraToken == null || _agoraToken!.isEmpty) {
+        throw StateError('Unable to fetch Agora token for audience join');
+      }
+      final userId = SupabaseService.currentUserId ?? '';
+      final agoraUid = userId.isNotEmpty
+          ? userId.codeUnits.fold(0, (h, c) => (h * 31 + c) & 0x7FFFFFFF)
+          : 0;
+      await _engine!.joinChannel(
+        token: _agoraToken!,
+        channelId: channelName,
+        uid: agoraUid,
+        options: const ChannelMediaOptions(
+          autoSubscribeAudio: true,
+          autoSubscribeVideo: false,
+          publishMicrophoneTrack: false,
+          publishCameraTrack: false,
+          clientRoleType: ClientRoleType.clientRoleAudience,
+        ),
+      );
+      await _applySpeakerphonePreference(allowRetry: true);
+      // Assinar Realtime de participantes para exibir quem está no palco.
+      _subscribeToCall(existing.id);
+      // Marcar sessão ativa localmente (sem participante no banco).
+      activeCall = existing;
+      return existing;
+    } catch (e, st) {
+      _recordFailure(
+        stage: 'joinAsAudience.exception',
+        error: e,
+        stackTrace: st,
+        context: {'threadId': threadId},
+      );
+      return null;
+    }
+  }
+
+  /// =========================================================================
+  /// promoteToStage — Promove ouvinte passivo para broadcaster (sobe ao palco).
+  ///
+  /// Chama join_call_session RPC para registrar participante no banco,
+  /// depois troca o clientRole do Agora para broadcaster.
+  /// =========================================================================
+  static Future<CallSession?> promoteToStage({
+    required String threadId,
+  }) async {
+    clearLastError();
+    try {
+      final existing = await getActiveCallForThread(
+        threadId,
+        allowedTypes: {CallType.voice, CallType.stage},
+      );
+      if (existing == null) return null;
+      // Registrar como participante no banco (join_call_session RPC).
+      final rpcResult = await SupabaseService.rpc('join_call_session', params: {
+        'p_session_id': existing.id,
+      });
+      final result = rpcResult as Map<String, dynamic>? ?? {};
+      if (result['success'] != true) {
+        _recordFailure(
+          stage: 'promoteToStage.rpc',
+          error: StateError('join_call_session returned success=false: ${result['error'] ?? 'unknown'}'),
+          stackTrace: StackTrace.current,
+          context: {'threadId': threadId, 'sessionId': existing.id},
+        );
+        return null;
+      }
+      // Trocar role no Agora para broadcaster (pode falar).
+      await _engine?.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
+      await _engine?.muteLocalAudioStream(false);
+      _isMuted = false;
+      _myStageRole = StageRole.speaker;
+      if (!_stageRoleController.isClosed) {
+        _stageRoleController.add(_myStageRole);
+      }
+      activeCall = existing;
+      return existing;
+    } catch (e, st) {
+      _recordFailure(
+        stage: 'promoteToStage.exception',
+        error: e,
+        stackTrace: st,
+        context: {'threadId': threadId},
+      );
+      return null;
+    }
+  }
+
+  /// =========================================================================
+  /// demoteToAudience — Desce do palco, volta a ouvinte passivo.
+  ///
+  /// Chama leave_call_session RPC para remover do banco,
+  /// depois troca o clientRole do Agora para audience.
+  /// =========================================================================
+  static Future<void> demoteToAudience() async {
+    final call = activeCall;
+    if (call == null) return;
+    try {
+      await SupabaseService.rpc('leave_call_session', params: {
+        'p_session_id': call.id,
+      });
+    } catch (e) {
+      debugPrint('[CallService] demoteToAudience.rpc error: $e');
+    }
+    try {
+      await _engine?.setClientRole(role: ClientRoleType.clientRoleAudience);
+      await _engine?.muteLocalAudioStream(true);
+    } catch (e) {
+      debugPrint('[CallService] demoteToAudience.agora error: $e');
+    }
+    _isMuted = true;
+    _myStageRole = StageRole.listener;
+    if (!_stageRoleController.isClosed) {
+      _stageRoleController.add(_myStageRole);
+    }
+    // Manter activeCall para continuar ouvindo — não chamar _cleanup().
+  }
+
+  /// =========================================================================
+  /// leaveAudience — Sai completamente do canal como ouvinte (sem RPC).
+  ///
+  /// Chamado quando a call é encerrada pelo host e o usuário estava só ouvindo.
+  /// =========================================================================
+  static Future<void> leaveAudience() async {
+    try {
+      await _engine?.leaveChannel();
+    } catch (e) {
+      debugPrint('[CallService] leaveAudience error: $e');
+    }
+    _cleanup();
+  }
+
+    /// Gera o channelName a partir do ID da sessão.
   static String _channelName(CallSession session) {
     return 'nexushub_${session.id.replaceAll('-', '').substring(0, 16)}';
   }

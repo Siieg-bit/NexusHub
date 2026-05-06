@@ -341,6 +341,36 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     if (!mounted || _isDisposed) return;
     // Marcar chat como lido ao abrir — zera unread_count no banco
     _markChatRead();
+    if (!mounted || _isDisposed) return;
+    // Verificar se há call ativa ao abrir o chat — entrar como ouvinte passivo
+    _checkAndAttachAudience();
+  }
+
+  /// Verifica se há call ativa no thread ao abrir o chat.
+  /// Se houver, entra automaticamente como ouvinte passivo (sem publicar mic).
+  Future<void> _checkAndAttachAudience() async {
+    // Pequeno delay para garantir que o Realtime já está inscrito
+    await Future.delayed(const Duration(milliseconds: 600));
+    if (_isDisposed || !mounted) return;
+    final callState = ref.read(chatCallProvider(widget.threadId));
+    // Não fazer nada se já está no painel
+    if (callState.isActive || callState.isConnecting) return;
+    CallSession? activeSession;
+    try {
+      activeSession = await CallService.getActiveCallForThread(
+        widget.threadId,
+        allowedTypes: {CallType.voice, CallType.stage},
+      );
+    } catch (_) {}
+    if (_isDisposed || !mounted) return;
+    if (activeSession == null) return;
+    // Entrar como ouvinte passivo
+    CallSession? joined;
+    try {
+      joined = await CallService.joinAsAudience(threadId: widget.threadId);
+    } catch (_) {}
+    if (_isDisposed || !mounted || joined == null) return;
+    await ref.read(chatCallProvider(widget.threadId).notifier).attachAsAudience(joined);
   }
 
   GlobalKey _messageKeyFor(String messageId) {
@@ -1141,12 +1171,48 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             column: 'thread_id',
             value: widget.threadId,
           ),
-          callback: (_) {
+          callback: (_) async {
             if (_isDisposed || !mounted) return;
             // Invalida os providers para que todos os membros do chat
             // vejam o painel de voice e o ícone de projeção atualizarem automaticamente.
             ref.invalidate(activeCallSessionProvider(widget.threadId));
             ref.invalidate(activeScreeningSessionProvider(widget.threadId));
+            // Aguardar o banco propagar antes de agir
+            await Future.delayed(const Duration(milliseconds: 400));
+            if (_isDisposed || !mounted) return;
+            final callCtrl = ref.read(chatCallProvider(widget.threadId).notifier);
+            final callState = ref.read(chatCallProvider(widget.threadId));
+            // Verificar se há call ativa agora
+            CallSession? activeSession;
+            try {
+              activeSession = await CallService.getActiveCallForThread(
+                widget.threadId,
+                allowedTypes: {CallType.voice, CallType.stage},
+              );
+            } catch (_) {}
+            if (_isDisposed || !mounted) return;
+            if (activeSession != null) {
+              // Call ativa: se o usuário ainda não está no painel, entrar como ouvinte passivo.
+              if (!callState.isActive && !callState.isConnecting) {
+                CallSession? joined;
+                try {
+                  joined = await CallService.joinAsAudience(
+                    threadId: widget.threadId,
+                  );
+                } catch (_) {}
+                if (!_isDisposed && mounted && joined != null) {
+                  await callCtrl.attachAsAudience(joined);
+                }
+              }
+            } else {
+              // Call encerrada: fechar o painel para todos.
+              if (callState.isActive || callState.isConnecting) {
+                if (callState.isAudience && !callState.isOnStage) {
+                  try { await CallService.leaveAudience(); } catch (_) {}
+                }
+                callCtrl.forceClose();
+              }
+            }
           },
         );
       },
@@ -1211,8 +1277,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final callCtrl = ref.read(chatCallProvider(widget.threadId).notifier);
     final callState = ref.read(chatCallProvider(widget.threadId));
 
-    // Se a call já está ativa no painel inline, apenas garante que está expandido.
-    if (callState.isActive) {
+    // Se o usuário está como ouvinte passivo, subir ao palco como speaker.
+    if (callState.isAudience && !callState.isOnStage) {
+      await callCtrl.goOnStage();
+      return;
+    }
+    // Se já está no palco, apenas expandir o painel.
+    if (callState.isOnStage) {
       callCtrl.toggleExpanded();
       return;
     }
@@ -3382,9 +3453,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             ),
           Consumer(
             builder: (ctx, cRef, _) {
-              final callActive = cRef
-                  .watch(chatCallProvider(widget.threadId))
-                  .isActive;
+              final callState = cRef.watch(chatCallProvider(widget.threadId));
+              final isOnStage = callState.isOnStage;
+              final isAudience = callState.isAudience && !callState.isOnStage;
+              final callActive = callState.isActive;
               return GestureDetector(
                 onTap: _startVoiceChat,
                 child: Container(
@@ -3392,22 +3464,30 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   height: r.s(34),
                   margin: EdgeInsets.only(right: r.s(4)),
                   decoration: BoxDecoration(
-                    color: callActive
+                    color: isOnStage
                         ? context.nexusTheme.accentPrimary.withValues(alpha: 0.15)
-                        : context.surfaceColor,
+                        : isAudience
+                            ? context.nexusTheme.textHint.withValues(alpha: 0.10)
+                            : context.surfaceColor,
                     shape: BoxShape.circle,
                     border: callActive
                         ? Border.all(
-                            color: context.nexusTheme.accentPrimary.withValues(alpha: 0.5),
+                            color: isOnStage
+                                ? context.nexusTheme.accentPrimary.withValues(alpha: 0.5)
+                                : context.nexusTheme.textHint.withValues(alpha: 0.3),
                             width: 1,
                           )
                         : null,
                   ),
                   child: Icon(
-                    Icons.headset_mic_rounded,
-                    color: callActive
+                    isAudience
+                        ? Icons.headphones_rounded
+                        : Icons.headset_mic_rounded,
+                    color: isOnStage
                         ? context.nexusTheme.accentPrimary
-                        : Colors.grey[500],
+                        : isAudience
+                            ? context.nexusTheme.textHint
+                            : Colors.grey[500],
                     size: r.s(16),
                   ),
                 ),
