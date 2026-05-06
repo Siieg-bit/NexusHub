@@ -816,10 +816,7 @@ class _MatchQueueScreenState extends ConsumerState<MatchQueueScreen>
                   )
                 else
                   ElevatedButton(
-                    onPressed: () => setState(() {
-                      _status = 'idle';
-                      _error = null;
-                    }),
+                    onPressed: () => MatchQueueService.instance.clearError(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.accentPrimary,
                       elevation: 0,
