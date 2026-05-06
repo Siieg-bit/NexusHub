@@ -426,6 +426,9 @@ class CallService {
           .single();
       final session = CallSession.fromJson(res);
       activeCall = session;
+      // O criador da sessão é sempre o host
+      _myStageRole = StageRole.host;
+      if (!_stageRoleController.isClosed) _stageRoleController.add(_myStageRole);
       // Inicializar Agora e entrar no canal
       await _joinAgoraChannel(session);
       // Inscrever no Realtime via RealtimeService (com retry automático)
