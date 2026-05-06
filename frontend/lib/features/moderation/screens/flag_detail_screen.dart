@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 import '../../../core/services/supabase_service.dart';
@@ -430,22 +431,32 @@ class _FlagDetailScreenState extends ConsumerState<FlagDetailScreen> {
                   ),
                   if (reporter != null) ...[
                     SizedBox(height: r.s(8)),
-                    Row(
-                      children: [
-                        CosmeticAvatar(
-                          userId: reporter['id'] as String?,
-                          avatarUrl: reporter['avatar'] as String?,
-                          size: r.s(28),
-                        ),
-                        SizedBox(width: r.s(8)),
-                        Text(
-                          'Denunciado por: ${reporter['nickname'] ?? 'Anônimo'}',
-                          style: TextStyle(
-                            color: context.nexusTheme.textSecondary,
-                            fontSize: r.fs(13),
+                    GestureDetector(
+                      onTap: () {
+                        final uid = reporter['id'] as String?;
+                        if (uid != null) context.push('/user/$uid');
+                      },
+                      child: Row(
+                        children: [
+                          CosmeticAvatar(
+                            userId: reporter['id'] as String?,
+                            avatarUrl: reporter['avatar'] as String?,
+                            size: r.s(28),
                           ),
-                        ),
-                      ],
+                          SizedBox(width: r.s(8)),
+                          Text(
+                            'Denunciado por: ${reporter['nickname'] ?? 'Anônimo'}',
+                            style: TextStyle(
+                              color: context.nexusTheme.textSecondary,
+                              fontSize: r.fs(13),
+                            ),
+                          ),
+                          SizedBox(width: r.s(4)),
+                          Icon(Icons.chevron_right_rounded,
+                              size: r.s(14),
+                              color: context.nexusTheme.textSecondary),
+                        ],
+                      ),
                     ),
                   ],
                 ],
@@ -800,32 +811,41 @@ class _SnapshotCard extends StatelessWidget {
                   // Autor
                   if (data['author_nickname'] != null ||
                       data['sender_nickname'] != null) ...[
-                    Row(
-                      children: [
-                        _SnapshotAvatar(
-                          avatarUrl: (data['author_avatar'] ?? data['sender_avatar']) as String?,
-                          size: r.s(28),
-                        ),
-                        SizedBox(width: r.s(8)),
-                        Text(
-                          data['author_nickname'] as String? ??
-                              data['sender_nickname'] as String? ??
-                              'Desconhecido',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: r.fs(13),
+                    GestureDetector(
+                      onTap: () {
+                        final uid = (data['author_id'] ?? data['sender_id']) as String?;
+                        if (uid != null) context.push('/user/$uid');
+                      },
+                      child: Row(
+                        children: [
+                          _SnapshotAvatar(
+                            avatarUrl: (data['author_avatar'] ?? data['sender_avatar']) as String?,
+                            size: r.s(28),
                           ),
-                        ),
-                        SizedBox(width: r.s(8)),
-                        Text(
-                          _formatDate(
-                              data['created_at'] as String?),
-                          style: TextStyle(
-                            color: context.nexusTheme.textSecondary,
-                            fontSize: r.fs(11),
+                          SizedBox(width: r.s(8)),
+                          Text(
+                            data['author_nickname'] as String? ??
+                                data['sender_nickname'] as String? ??
+                                'Desconhecido',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: r.fs(13),
+                            ),
                           ),
-                        ),
-                      ],
+                          SizedBox(width: r.s(8)),
+                          Text(
+                            _formatDate(data['created_at'] as String?),
+                            style: TextStyle(
+                              color: context.nexusTheme.textSecondary,
+                              fontSize: r.fs(11),
+                            ),
+                          ),
+                          const Spacer(),
+                          Icon(Icons.chevron_right_rounded,
+                              size: r.s(14),
+                              color: context.nexusTheme.textSecondary),
+                        ],
+                      ),
                     ),
                     SizedBox(height: r.s(10)),
                   ],
