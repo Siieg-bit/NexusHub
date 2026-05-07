@@ -715,12 +715,10 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       resizeToAvoidBottomInset: true,
       backgroundColor: layeredBgColor,
       floatingActionButton: _isOwnProfile
-          ? AminoCommunityFab(
-              onTap: () => showCommunityCreateMenu(
-                context,
-                communityId: widget.communityId,
-                communityName: _communityName,
-              ),
+          ? _ProfileOwnFab(
+              communityId: widget.communityId,
+              communityName: _communityName,
+              onShowOptions: () => _showOptions(context),
             )
           : null,
       body: Stack(
@@ -3056,9 +3054,11 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       callerRank = 4;
     } else {
       callerRank = switch (myRole) {
+        'owner'     => 3, // owner da comunidade = rank equivalente a agent
         'agent'     => 3,
         'admin'     => 3,
         'leader'    => 2,
+        'co_leader' => 2,
         'curator'   => 1,
         'moderator' => 1,
         _           => 0,
@@ -3104,7 +3104,32 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final items = <PopupMenuEntry<String>>[];
 
     // ── AÇÕES SOCIAIS ──────────────────────────────────────────────────
-    if (!_isOwnProfile) {
+    if (_isOwnProfile) {
+      // Próprio perfil: Editar perfil + Criar publicação
+      items.add(_menuItem(
+        value: 'edit_profile',
+        icon: Icons.edit_rounded,
+        label: 'Editar perfil da comunidade',
+        r: r,
+      ));
+      items.add(_menuItem(
+        value: 'create_post',
+        icon: Icons.add_circle_outline_rounded,
+        label: 'Criar publicação',
+        r: r,
+      ));
+      // Staff vê também o painel de moderação no próprio perfil
+      if (callerRank >= 1) {
+        items.add(const PopupMenuDivider(height: 1));
+        items.add(_menuItem(
+          value: 'moderation_panel',
+          icon: Icons.admin_panel_settings_rounded,
+          label: 'Painel de moderação',
+          r: r,
+        ));
+      }
+      items.add(const PopupMenuDivider(height: 1));
+    } else {
       items.add(_menuItem(
         value: 'dm',
         icon: Icons.chat_bubble_outline_rounded,
@@ -3183,6 +3208,22 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     switch (selected) {
       case 'dm':
         _openDm(context);
+        break;
+
+      case 'edit_profile':
+        context.push('/community/${widget.communityId}/profile/edit');
+        break;
+
+      case 'create_post':
+        showCommunityCreateMenu(
+          context,
+          communityId: widget.communityId,
+          communityName: _communityName,
+        );
+        break;
+
+      case 'moderation_panel':
+        context.push('/community/${widget.communityId}/moderation');
         break;
 
       case 'share':
@@ -3412,4 +3453,53 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(covariant _TabBarDelegate oldDelegate) => false;
+}
+
+// =============================================================================
+// FAB DO PRÓPRIO PERFIL
+// Exibe dois botões flutuantes empilhados:
+//   • Botão principal (roxo): abre o menu de opções do perfil (editar, moderação, etc.)
+//   • Botão secundário (menor): abre o menu de criar publicação
+// =============================================================================
+class _ProfileOwnFab extends StatelessWidget {
+  final String communityId;
+  final String communityName;
+  final VoidCallback onShowOptions;
+
+  const _ProfileOwnFab({
+    required this.communityId,
+    required this.communityName,
+    required this.onShowOptions,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        // Botão secundário: criar publicação
+        FloatingActionButton.small(
+          heroTag: 'fab_create',
+          onPressed: () => showCommunityCreateMenu(
+            context,
+            communityId: communityId,
+            communityName: communityName,
+          ),
+          backgroundColor: const Color(0xFF7B5EA7),
+          tooltip: 'Criar publicação',
+          child: const Icon(Icons.add_rounded, color: Colors.white),
+        ),
+        const SizedBox(height: 10),
+        // Botão principal: opções do perfil
+        FloatingActionButton(
+          heroTag: 'fab_profile_options',
+          onPressed: onShowOptions,
+          backgroundColor: const Color(0xFF9C6FD6),
+          tooltip: 'Opções do perfil',
+          child: const Icon(Icons.person_rounded, color: Colors.white),
+        ),
+      ],
+    );
+  }
 }
