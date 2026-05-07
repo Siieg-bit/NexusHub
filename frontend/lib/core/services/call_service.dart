@@ -199,6 +199,18 @@ class CallService {
   static bool get isSpeakerOn => _isSpeakerOn;
   static StageRole get myStageRole => _myStageRole;
 
+  /// UID determinístico usado no Agora para mapear eventos de áudio ao usuário.
+  ///
+  /// A UI do palco depende desse mesmo cálculo para saber exatamente qual
+  /// participante está falando. Manter a regra centralizada evita fallback visual
+  /// incorreto quando o banco não possui uma coluna persistida de Agora UID.
+  static int agoraUidForUserId(String? userId) {
+    final normalized = userId?.trim() ?? '';
+    if (normalized.isEmpty) return 0;
+    return normalized.codeUnits
+        .fold<int>(0, (h, c) => (h * 31 + c) & 0x7FFFFFFF);
+  }
+
   /// Força o role para host — usado ao reconectar o host após reiniciar o app.
   static void setMyStageRoleHost() {
     _myStageRole = StageRole.host;
@@ -313,9 +325,17 @@ class CallService {
       },
       onAudioVolumeIndication:
           (connection, speakers, speakerNumber, totalVolume) {
+        // O callback traz um snapshot dos usuários detectados neste tick.
+        // Recriar o mapa evita manter volume antigo de quem já parou de falar,
+        // o que deixava o anel verde preso em avatares errados.
+        final nextLevels = <int, double>{};
         for (final speaker in speakers) {
-          _audioLevels[speaker.uid ?? 0] = (speaker.volume ?? 0).toDouble();
+          final uid = speaker.uid ?? 0;
+          nextLevels[uid] = (speaker.volume ?? 0).toDouble();
         }
+        _audioLevels
+          ..clear()
+          ..addAll(nextLevels);
         _audioLevelsController.add(Map.from(_audioLevels));
       },
       onError: (err, msg) {
@@ -750,10 +770,7 @@ class CallService {
       if (_agoraToken == null || _agoraToken!.isEmpty) {
         throw StateError('Unable to fetch Agora token for audience join');
       }
-      final userId = SupabaseService.currentUserId ?? '';
-      final agoraUid = userId.isNotEmpty
-          ? userId.codeUnits.fold(0, (h, c) => (h * 31 + c) & 0x7FFFFFFF)
-          : 0;
+      final agoraUid = agoraUidForUserId(SupabaseService.currentUserId);
       await _engine!.joinChannel(
         token: _agoraToken!,
         channelId: channelName,
@@ -1054,10 +1071,7 @@ class CallService {
 
     // Gerar UID único e determinístico a partir do userId do Supabase.
     // uid=0 faz o Agora atribuir UIDs aleatórios que podem colidir entre usuários.
-    final userId = SupabaseService.currentUserId ?? '';
-    final agoraUid = userId.isNotEmpty
-        ? userId.codeUnits.fold(0, (h, c) => (h * 31 + c) & 0x7FFFFFFF)
-        : 0;
+    final agoraUid = agoraUidForUserId(SupabaseService.currentUserId);
 
     await _engine!.joinChannel(
       token: _agoraToken!,
@@ -1196,7 +1210,8 @@ class CallService {
       final res = await SupabaseService.table('call_participants')
           .select()
           .eq('call_session_id', call.id)
-          .eq('status', 'connected');
+          .eq('status', 'connected')
+          .order('joined_at', ascending: true);
       final connected = List<Map<String, dynamic>>.from(res as List? ?? []);
 
       // Buscar o host do chat (stage_role='host') independente do status.
@@ -1274,6 +1289,7 @@ class CallService {
         final userId = participant['user_id'] as String? ?? '';
         return {
           ...participant,
+          'agora_uid': agoraUidForUserId(userId),
           'profiles': profiles[userId],
         };
       }).toList();

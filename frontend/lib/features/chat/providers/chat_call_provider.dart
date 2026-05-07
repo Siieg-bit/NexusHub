@@ -111,13 +111,20 @@ class ChatCallState {
   // Inclui 'audience' como fallback de compatibilidade:
   // participantes inseridos antes da migration 232 (DEFAULT era 'audience')
   // ainda aparecem no palco em vez de ficarem invisíveis.
-  List<Map<String, dynamic>> get speakers => participants
-      .where((p) =>
-          p['stage_role'] == 'host' ||
-          p['stage_role'] == 'speaker' ||
-          p['stage_role'] == 'audience' ||
-          p['stage_role'] == null)
-      .toList();
+  // O host fica sempre na primeira posição (à esquerda na UI); os demais
+  // participantes mantêm a ordem de entrada carregada do serviço.
+  List<Map<String, dynamic>> get speakers {
+    final stageParticipants = participants
+        .where((p) =>
+            p['stage_role'] == 'host' ||
+            p['stage_role'] == 'speaker' ||
+            p['stage_role'] == 'audience' ||
+            p['stage_role'] == null)
+        .toList();
+    final hosts = stageParticipants.where((p) => p['stage_role'] == 'host');
+    final others = stageParticipants.where((p) => p['stage_role'] != 'host');
+    return [...hosts, ...others];
+  }
 
   List<Map<String, dynamic>> get listeners =>
       participants.where((p) => p['stage_role'] == 'listener').toList();
@@ -462,15 +469,29 @@ class ChatCallController extends StateNotifier<ChatCallState> {
 
   // ── Helper: nível de áudio de um participante ─────────────────────────────
   double audioLevelFor(Map<String, dynamic> participant) {
-    final agoraUid = participant['agora_uid'] as int?;
+    final userId = participant['user_id'] as String?;
+    final dynamic rawAgoraUid = participant['agora_uid'];
+    final agoraUid = rawAgoraUid is int
+        ? rawAgoraUid
+        : int.tryParse(rawAgoraUid?.toString() ?? '') ??
+            CallService.agoraUidForUserId(userId);
     final levels = state.audioLevels;
-    if (agoraUid != null && levels.containsKey(agoraUid)) {
-      return (levels[agoraUid]! / 255.0).clamp(0.0, 1.0);
+
+    // Mapeamento exato: cada anel verde deve responder apenas ao UID do
+    // participante correspondente. O fallback antigo usava o maior volume global
+    // quando o UID não batia, fazendo todos os avatares parecerem estar falando.
+    final matchedLevel = levels[agoraUid];
+    if (matchedLevel != null) {
+      return (matchedLevel / 255.0).clamp(0.0, 1.0);
     }
-    if (levels.isNotEmpty) {
-      return (levels.values.reduce((a, b) => a > b ? a : b) / 255.0)
-          .clamp(0.0, 1.0);
+
+    // Em alguns callbacks do Agora o usuário local pode chegar como UID 0.
+    // Esse fallback é restrito ao próprio usuário, então não contamina os demais
+    // participantes do palco.
+    if (userId == SupabaseService.currentUserId && levels.containsKey(0)) {
+      return (levels[0]! / 255.0).clamp(0.0, 1.0);
     }
+
     return 0.0;
   }
 }
