@@ -21,6 +21,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart' show FileOptions;
+import 'package:video_thumbnail/video_thumbnail.dart';
 import '../../../../core/services/supabase_service.dart';
 
 class LocalVideoResult {
@@ -36,11 +37,15 @@ class LocalVideoResult {
   /// Duração estimada (null se não disponível antes do upload)
   final Duration? duration;
 
+  /// URL pública da thumbnail gerada automaticamente (null se falhou)
+  final String? thumbnailUrl;
+
   const LocalVideoResult({
     required this.url,
     required this.fileName,
     required this.fileSize,
     this.duration,
+    this.thumbnailUrl,
   });
 }
 
@@ -134,6 +139,34 @@ class LocalVideoService {
         ),
       );
 
+      // Gerar thumbnail do primeiro frame e fazer upload
+      String? thumbnailUrl;
+      try {
+        final thumbBytes = await VideoThumbnail.thumbnailData(
+          video: file.path,
+          imageFormat: ImageFormat.JPEG,
+          maxWidth: 320,
+          quality: 70,
+          timeMs: 0,
+        );
+        if (thumbBytes != null) {
+          final thumbPath = '$sessionId/$userId/${timestamp}_thumb.jpg';
+          thumbnailUrl = await SupabaseService.uploadFile(
+            bucket: _bucket,
+            path: thumbPath,
+            file: thumbBytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+              upsert: false,
+            ),
+          );
+          debugPrint('[LocalVideoService] Thumbnail gerada e enviada: $thumbnailUrl');
+        }
+      } catch (e) {
+        // Thumbnail é opcional — não bloqueia o upload do vídeo
+        debugPrint('[LocalVideoService] Falha ao gerar thumbnail (ignorado): $e');
+      }
+
       onProgress?.call(const LocalVideoUploadProgress(
         progress: 1.0,
         status: 'done',
@@ -146,6 +179,7 @@ class LocalVideoService {
         url: publicUrl,
         fileName: displayName,
         fileSize: fileSizeBytes,
+        thumbnailUrl: thumbnailUrl,
       );
     } catch (e) {
       onProgress?.call(LocalVideoUploadProgress(

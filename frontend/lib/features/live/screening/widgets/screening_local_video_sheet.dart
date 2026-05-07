@@ -104,11 +104,16 @@ class _ScreeningLocalVideoSheetState
       // Adicionar à fila ou reproduzir imediatamente
       final notifier = ref.read(screeningRoomProvider(widget.threadId).notifier);
       if (widget.addToQueue) {
-        await notifier.addToQueue(url: result.url, title: result.fileName);
+        await notifier.addToQueue(
+          url: result.url,
+          title: result.fileName,
+          thumbnail: result.thumbnailUrl,
+        );
       } else {
         await notifier.updateVideo(
           videoUrl: result.url,
           videoTitle: result.fileName,
+          videoThumbnail: result.thumbnailUrl,
         );
       }
 
