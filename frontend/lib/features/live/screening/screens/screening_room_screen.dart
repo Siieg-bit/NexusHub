@@ -476,7 +476,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
-        if (!didPop) await _leaveRoom();
+        if (!didPop) await _minimizeToPip();
       },
       child: EmojiRainOverlay(
         key: _emojiRainKey,
@@ -532,7 +532,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
       showControls: _showControls,
       entryAnimationDone: _entryAnimationDone,
       onTap: _onTapScreen,
-      onMinimize: _minimize,
+      onMinimize: _minimizeToPip,
       entryAnimationExiting: _entryAnimationExiting,
       onEntryAnimationComplete: () {
         if (mounted) setState(() => _entryAnimationDone = true);
