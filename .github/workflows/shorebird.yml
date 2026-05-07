@@ -1,0 +1,94 @@
+name: Shorebird — Release & Patch
+
+# ─── Triggers ─────────────────────────────────────────────────────────────────
+# - Push na main: envia patch automático (hotfixes)
+# - Tag vX.Y.Z: cria release para submissão nas lojas
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Ação a executar'
+        required: true
+        type: choice
+        options:
+          - patch
+          - release
+
+# ─── PATCH: enviado a cada push na main ───────────────────────────────────────
+jobs:
+  patch:
+    name: Shorebird Patch (Android)
+    runs-on: ubuntu-latest
+    # Só roda em push na main (não em tags de release)
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'patch')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Shorebird
+        uses: shorebirdtech/setup-shorebird@v1
+        with:
+          token: ${{ secrets.SHOREBIRD_TOKEN }}
+
+      - name: Instalar dependências
+        working-directory: frontend
+        run: flutter pub get
+
+      - name: Enviar patch Android
+        working-directory: frontend
+        run: |
+          shorebird patch android \
+            --no-confirm \
+            --message "Auto-patch: ${{ github.sha }} — ${{ github.event.head_commit.message }}"
+
+  # ─── RELEASE: criado quando uma tag vX.Y.Z é publicada ─────────────────────
+  release:
+    name: Shorebird Release (Android)
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'release')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Shorebird
+        uses: shorebirdtech/setup-shorebird@v1
+        with:
+          token: ${{ secrets.SHOREBIRD_TOKEN }}
+
+      - name: Instalar dependências
+        working-directory: frontend
+        run: flutter pub get
+
+      - name: Criar release Android
+        working-directory: frontend
+        run: shorebird release android --no-confirm
+
+      - name: Upload APK como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexushub-release-${{ github.ref_name }}
+          path: frontend/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
