@@ -74,16 +74,6 @@ class _ScreeningNativePlayerWidgetState
     _mkPlayer = Player();
     _mkController = VideoController(_mkPlayer!);
 
-    // IMPORTANTE: registrar o player ANTES do open() para que _isNativeMode=true
-    // desde o início. Isso evita que play()/pause() caiam no caminho do WebView
-    // enquanto o open() ainda está em andamento.
-    if (mounted) {
-      ref
-          .read(screeningPlayerProvider(widget.sessionId).notifier)
-          .registerNativePlayer(_mkPlayer!);
-      debugPrint('[NativePlayer] registerNativePlayer chamado antes do open()');
-    }
-
     // Callbacks de sincronização com o ScreeningPlayerProvider.
     // Registrados ANTES do open() para não perder eventos emitidos durante a abertura.
     _mkPlayer!.stream.playing.listen((playing) {
@@ -125,6 +115,19 @@ class _ScreeningNativePlayerWidgetState
       debugPrint('[NativePlayer] stream.error=$error');
     });
 
+    // IMPORTANTE: registerNativePlayer() modifica o provider (state=).
+    // Não pode ser chamado durante o ciclo de build (initState é chamado
+    // durante StatefulElement._firstBuild). Usar addPostFrameCallback garante
+    // que a modificação ocorre após o build, evitando o erro Riverpod:
+    // "Tried to modify a provider while the widget tree was building".
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref
+          .read(screeningPlayerProvider(widget.sessionId).notifier)
+          .registerNativePlayer(_mkPlayer!);
+      debugPrint('[NativePlayer] registerNativePlayer chamado (post-frame)');
+    });
+
     await _mkPlayer!.open(
       Media(
         widget.hlsUrl,
@@ -135,15 +138,19 @@ class _ScreeningNativePlayerWidgetState
     debugPrint('[NativePlayer] open() concluído — url=${widget.hlsUrl}');
 
     // Sincronizar isPlaying com o estado real do player após o open().
-    // O stream.playing pode ter emitido antes do widget estar montado,
-    // então verificamos o estado atual e atualizamos o provider manualmente.
+    // O stream.playing pode ter emitido antes do registerNativePlayer,
+    // então verificamos o estado atual e atualizamos o provider via
+    // addPostFrameCallback para garantir que o provider já foi registrado.
     if (mounted) {
       final isPlaying = _mkPlayer!.state.playing;
       final duration = _mkPlayer!.state.duration;
       debugPrint('[NativePlayer] estado após open(): isPlaying=$isPlaying, duration=${duration.inMilliseconds}ms');
-      final notifier = ref.read(screeningPlayerProvider(widget.sessionId).notifier);
-      if (isPlaying) notifier.onNativePlay();
-      if (duration > Duration.zero) notifier.onDurationUpdate(duration.inMilliseconds);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final notifier = ref.read(screeningPlayerProvider(widget.sessionId).notifier);
+        if (isPlaying) notifier.onNativePlay();
+        if (duration > Duration.zero) notifier.onDurationUpdate(duration.inMilliseconds);
+      });
       setState(() => _initialized = true);
     }
   }
