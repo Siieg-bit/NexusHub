@@ -375,19 +375,57 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
   Future<bool> canModerate() async {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return false;
+    // Host da sessão de projeção
     if (state.isHost || state.hostUserId == userId) return true;
     try {
-      final thread = await SupabaseService.table('chat_threads')
-          .select('host_id, co_hosts')
-          .eq('id', threadId)
-          .maybeSingle();
+      // Buscar thread + community_id + perfil do usuário em paralelo
+      final results = await Future.wait([
+        SupabaseService.table('chat_threads')
+            .select('host_id, co_hosts, community_id')
+            .eq('id', threadId)
+            .maybeSingle(),
+        SupabaseService.table('profiles')
+            .select('is_team_moderator, is_team_admin')
+            .eq('id', userId)
+            .maybeSingle(),
+      ]);
+
+      final thread = results[0] as Map<String, dynamic>?;
+      final profile = results[1] as Map<String, dynamic>?;
+
       if (thread == null) return false;
+
+      // Host do chat thread
       if (thread['host_id'] == userId) return true;
+
+      // Co-hosts do chat thread
       final coHosts = thread['co_hosts'];
-      if (coHosts is List) {
-        return coHosts.map((e) => e.toString()).contains(userId);
+      if (coHosts is List &&
+          coHosts.map((e) => e.toString()).contains(userId)) return true;
+      if (coHosts is String && coHosts == userId) return true;
+
+      // Team members (moderadores/admins globais do NexusHub)
+      if (profile != null) {
+        final isTeamMod = profile['is_team_moderator'] as bool? ?? false;
+        final isTeamAdmin = profile['is_team_admin'] as bool? ?? false;
+        if (isTeamMod || isTeamAdmin) return true;
       }
-      if (coHosts is String) return coHosts == userId;
+
+      // Cargos de staff da comunidade: agent, leader, curator
+      final communityId = thread['community_id'] as String?;
+      if (communityId != null) {
+        final member = await SupabaseService.table('community_members')
+            .select('role')
+            .eq('community_id', communityId)
+            .eq('user_id', userId)
+            .maybeSingle();
+        if (member != null) {
+          final role = member['role'] as String?;
+          if (role != null && ['agent', 'leader', 'curator'].contains(role)) {
+            return true;
+          }
+        }
+      }
     } catch (e) {
       debugPrint('[ScreeningRoom] canModerate error: $e');
     }
