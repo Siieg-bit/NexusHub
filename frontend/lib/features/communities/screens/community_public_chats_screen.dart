@@ -5,7 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../core/models/chat_room_model.dart';
-import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
@@ -125,9 +124,6 @@ class _CommunityPublicChatsScreenState
                       itemBuilder: (context, index) =>
                           _PublicChatTile(
                         chatRoom: filtered[index],
-                        communityId: widget.communityId,
-                        onJoined: () => ref.invalidate(
-                            communityPublicChatsProvider(widget.communityId)),
                       ),
                     ),
                   );
@@ -303,50 +299,12 @@ class _CommunityPublicChatsScreenState
 // =============================================================================
 class _PublicChatTile extends ConsumerWidget {
   final ChatRoomModel chatRoom;
-  final String communityId;
-  final VoidCallback onJoined;
-
   const _PublicChatTile({
     required this.chatRoom,
-    required this.communityId,
-    required this.onJoined,
   });
 
-  Future<void> _joinAndOpen(BuildContext context, WidgetRef ref) async {
-    final userId = SupabaseService.currentUserId;
-    if (userId == null) return;
-
-    try {
-      // Verifica se já é membro
-      final existing = await SupabaseService.table('chat_members')
-          .select('id, status')
-          .eq('thread_id', chatRoom.id)
-          .eq('user_id', userId)
-          .maybeSingle();
-
-      if (existing == null) {
-        // Entra na sala
-        await SupabaseService.table('chat_members').insert({
-          'thread_id': chatRoom.id,
-          'user_id': userId,
-          'status': 'active',
-        });
-        onJoined();
-      } else if (existing['status'] != 'active') {
-        // Reativa membership
-        await SupabaseService.table('chat_members')
-            .update({'status': 'active'})
-            .eq('thread_id', chatRoom.id)
-            .eq('user_id', userId);
-        onJoined();
-      }
-
-      if (context.mounted) {
-        context.push('/chat/${chatRoom.id}');
-      }
-    } catch (e) {
-      debugPrint('[PublicChats] Join error: $e');
-    }
+  void _openReadOnly(BuildContext context) {
+    context.push('/chat/${chatRoom.id}');
   }
 
   @override
@@ -361,7 +319,7 @@ class _PublicChatTile extends ConsumerWidget {
         : null;
 
     return GestureDetector(
-      onTap: () => _joinAndOpen(context, ref),
+      onTap: () => _openReadOnly(context),
       behavior: HitTestBehavior.opaque,
       child: Container(
         padding: EdgeInsets.symmetric(
