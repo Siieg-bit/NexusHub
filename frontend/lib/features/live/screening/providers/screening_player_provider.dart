@@ -185,8 +185,15 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     _webViewController = controller;
     _bridgeInjected = false;
     _webViewDisposed = false;
-    // Ao registrar um WebView, sair do modo nativo
-    _isNativeMode = false;
+    // NUNCA zerar _isNativeMode se o player nativo já foi registrado.
+    // O ScreeningPlayerWidget pode ser reconstruído (ex: mudança de sessionId)
+    // e chamar registerWebViewController novamente — mas se o ScreeningNativePlayerWidget
+    // já registrou o player nativo, _isNativeMode deve permanecer true.
+    // Só sair do modo nativo se explicitamente não há player nativo ativo.
+    if (_nativePlayer == null && _drmPlayer == null) {
+      _isNativeMode = false;
+    }
+    debugPrint('[ScreeningPlayer] registerWebViewController — _isNativeMode=$_isNativeMode (nativePlayer=${_nativePlayer != null}, drmPlayer=${_drmPlayer != null})');
   }
 
   /// Chamado quando o InAppWebView é destruído (onDispose do widget).
@@ -597,12 +604,28 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   }
 
   /// Recebe atualização de duração via JavaScriptHandler 'NexusPlayerBridge'.
-  /// Chamado pelo evento 'durationchange' do <video> HTML5.
+  /// Chamado pelo evento 'durationchange' do <video> HTML5 (modo WebView).
   void onDurationUpdate(int durationMs) {
-    if (!mounted || _isNativeMode) return;
+    if (!mounted) return;
+    // Em modo nativo, a duração é atualizada via onNativeDurationUpdate.
+    // Ignorar chamadas do WebView quando o player nativo está ativo.
+    if (_isNativeMode) return;
     if (durationMs <= 0) return;
     final newDur = Duration(milliseconds: durationMs);
     if (newDur != state.duration) {
+      state = state.copyWith(duration: newDur);
+    }
+  }
+
+  /// Recebe atualização de duração do player nativo (media_kit / DRM).
+  /// Não verifica _isNativeMode — é chamado diretamente pelo stream.duration
+  /// do media_kit, independente do estado do provider.
+  void onNativeDurationUpdate(int durationMs) {
+    if (!mounted) return;
+    if (durationMs <= 0) return;
+    final newDur = Duration(milliseconds: durationMs);
+    if (newDur != state.duration) {
+      debugPrint('[ScreeningPlayer] onNativeDurationUpdate: ${durationMs}ms');
       state = state.copyWith(duration: newDur);
     }
   }

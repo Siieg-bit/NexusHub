@@ -93,7 +93,7 @@ class _ScreeningNativePlayerWidgetState
       debugPrint('[NativePlayer] stream.duration=${duration.inMilliseconds}ms');
       ref
           .read(screeningPlayerProvider(widget.sessionId).notifier)
-          .onDurationUpdate(duration.inMilliseconds);
+          .onNativeDurationUpdate(duration.inMilliseconds);
     });
 
     _mkPlayer!.stream.position.listen((position) {
@@ -149,7 +149,7 @@ class _ScreeningNativePlayerWidgetState
         if (!mounted) return;
         final notifier = ref.read(screeningPlayerProvider(widget.sessionId).notifier);
         if (isPlaying) notifier.onNativePlay();
-        if (duration > Duration.zero) notifier.onDurationUpdate(duration.inMilliseconds);
+        if (duration > Duration.zero) notifier.onNativeDurationUpdate(duration.inMilliseconds);
       });
       setState(() => _initialized = true);
     }
