@@ -536,94 +536,97 @@ class _ChatBubble extends StatelessWidget {
           : null,
     );
 
-    final bubble = ConstrainedBox(
-      constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width * 0.72,
-      ),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: message.isMedia ? 6 : 12,
-          vertical: message.isMedia ? 6 : 8,
-        ),
-        decoration: BoxDecoration(
-          color: isMe
-              ? Colors.lightBlueAccent.withValues(alpha: 0.22)
-              : Colors.white.withValues(alpha: 0.10),
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(14),
-            topRight: const Radius.circular(14),
-            bottomLeft: Radius.circular(isMe ? 14 : 4),
-            bottomRight: Radius.circular(isMe ? 4 : 14),
-          ),
-          border: Border.all(
-            color: isMe
-                ? Colors.lightBlueAccent.withValues(alpha: 0.24)
-                : Colors.white.withValues(alpha: 0.08),
-            width: 0.6,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment:
-              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-          children: [
-            if (showName) ...[
-              Text(
-                message.username,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.72),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  shadows: const [
-                    Shadow(color: Colors.black, blurRadius: 3),
-                  ],
+    // Stickers são exibidos sem balão (sem borda/fundo) — apenas a imagem + avatar
+    final isSticker = message.kind == ScreeningChatMessageKind.sticker &&
+        message.mediaUrl != null;
+
+    final bubble = isSticker
+        ? Image.network(
+            message.mediaUrl!,
+            width: 96,
+            height: 96,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => Text(
+              message.displayText,
+              style: const TextStyle(color: Colors.white),
+            ),
+          )
+        : ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.72,
+            ),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: message.isMedia ? 6 : 12,
+                vertical: message.isMedia ? 6 : 8,
+              ),
+              decoration: BoxDecoration(
+                color: isMe
+                    ? Colors.lightBlueAccent.withValues(alpha: 0.22)
+                    : Colors.white.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(14),
+                  topRight: const Radius.circular(14),
+                  bottomLeft: Radius.circular(isMe ? 14 : 4),
+                  bottomRight: Radius.circular(isMe ? 4 : 14),
+                ),
+                border: Border.all(
+                  color: isMe
+                      ? Colors.lightBlueAccent.withValues(alpha: 0.24)
+                      : Colors.white.withValues(alpha: 0.08),
+                  width: 0.6,
                 ),
               ),
-              const SizedBox(height: 3),
-            ],
-            if (message.kind == ScreeningChatMessageKind.image &&
-                message.mediaUrl != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  message.mediaUrl!,
-                  width: 180,
-                  height: 140,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Text(
-                    message.displayText,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-              )
-            else if (message.kind == ScreeningChatMessageKind.sticker &&
-                message.mediaUrl != null)
-              Image.network(
-                message.mediaUrl!,
-                width: 96,
-                height: 96,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => Text(
-                  message.displayText,
-                  style: const TextStyle(color: Colors.white),
-                ),
-              )
-            else
-              Text(
-                message.displayText,
-                textAlign: isMe ? TextAlign.right : TextAlign.left,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  shadows: [
-                    Shadow(color: Colors.black, blurRadius: 4),
-                    Shadow(color: Colors.black54, blurRadius: 8),
+              child: Column(
+                crossAxisAlignment:
+                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                children: [
+                  if (showName) ...[
+                    Text(
+                      message.username,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.72),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        shadows: const [
+                          Shadow(color: Colors.black, blurRadius: 3),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 3),
                   ],
-                ),
+                  if (message.kind == ScreeningChatMessageKind.image &&
+                      message.mediaUrl != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        message.mediaUrl!,
+                        width: 180,
+                        height: 140,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Text(
+                          message.displayText,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    )
+                  else
+                    Text(
+                      message.displayText,
+                      textAlign: isMe ? TextAlign.right : TextAlign.left,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        shadows: [
+                          Shadow(color: Colors.black, blurRadius: 4),
+                          Shadow(color: Colors.black54, blurRadius: 8),
+                        ],
+                      ),
+                    ),
+                ],
               ),
-          ],
-        ),
-      ),
-    );
+            ),
+          );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
