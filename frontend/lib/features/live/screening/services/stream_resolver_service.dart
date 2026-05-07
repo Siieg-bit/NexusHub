@@ -5,6 +5,7 @@
 // Retorna um StreamResolution com a URL HLS (ou embed) e metadados.
 // =============================================================================
 
+import 'package:flutter/foundation.dart';
 import 'twitch_stream_service.dart';
 import 'tubi_stream_service.dart';
 import 'pluto_stream_service.dart';
@@ -279,21 +280,13 @@ class StreamResolverService {
           originalUrl: url,
         );
 
-       // ── YouTube: embed para VODs regulares, Innertube apenas para lives ───
+       // ── YouTube VOD: Innertube (HLS/MP4 direto) primeiro, embed como fallback ─
       case StreamPlatform.youtube:
-        // VOD regular: usar embed (IFrame API) para controle total via Flutter.
-        // O Innertube retorna URLs diretas que o YouTube pode bloquear e que
-        // não permitem controle via IFrame API.
-        final embedUrl = _toEmbedUrl(url, platform);
-        if (embedUrl != null) {
-          return StreamResolution(
-            url: embedUrl,
-            type: StreamType.embed,
-            platform: platform,
-            originalUrl: url,
-          );
-        }
-        // Fallback: Innertube se embed não for possível
+        // Priorizar stream direto via Innertube — igual ao padrão Twitch/Kick.
+        // O player nativo (media_kit) é mais confiável que o WebView+IFrame API:
+        // não tem race condition de bridge JS, controles Flutter funcionam
+        // imediatamente, seek/play/pause são síncronos e sem polling.
+        // Fallback para embed se o Innertube bloquear (IP, região, DRM).
         try {
           final result = await YouTubeStreamService.resolve(url);
           final isHls = result.hlsUrl.contains('.m3u8');
@@ -305,7 +298,19 @@ class StreamResolverService {
             thumbnailUrl: result.thumbnailUrl,
             originalUrl: url,
           );
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[StreamResolver] YouTube Innertube falhou, usando embed: $e');
+        }
+        // Fallback: embed IFrame API
+        final embedUrl = _toEmbedUrl(url, platform);
+        if (embedUrl != null) {
+          return StreamResolution(
+            url: embedUrl,
+            type: StreamType.embed,
+            platform: platform,
+            originalUrl: url,
+          );
+        }
         return StreamResolution(
           url: url,
           type: StreamType.direct,

@@ -93,6 +93,13 @@ class _ScreeningNativePlayerWidgetState
       }
     });
 
+    _mkPlayer!.stream.duration.listen((duration) {
+      if (!mounted || duration == Duration.zero) return;
+      ref
+          .read(screeningPlayerProvider(widget.sessionId).notifier)
+          .onDurationUpdate(duration.inMilliseconds.toDouble());
+    });
+
     _mkPlayer!.stream.position.listen((position) {
       if (!mounted) return;
       ref
