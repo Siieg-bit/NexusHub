@@ -634,153 +634,226 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
   }
 
   // ── Screening PiP ─────────────────────────────────────────────────────────
+  // Design retangular 16:9 imersivo: thumbnail do vídeo ocupa todo o card,
+  // com overlay gradiente no topo (título + X) e na base (indicador ao vivo).
+  // Sem textos externos ao card — tudo embutido no thumbnail.
   Widget _buildScreeningPip(MiniRoomState s) {
-    const color = Color(0xFFE91E63);
-    return Container(
-      width: 200,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.4),
-            blurRadius: 12,
-            spreadRadius: 2,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.live_tv_rounded, color: Colors.white, size: 14),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  s.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  HapticService.buttonPress();
-                  if (s.onEnd != null) {
-                    s.onEnd?.call();
-                  } else {
-                    ref.read(miniRoomProvider.notifier).hide();
-                  }
-                },
-                child: const Icon(
-                  Icons.close_rounded,
-                  color: Colors.white70,
-                  size: 14,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          _buildScreeningPreview(s),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  s.participantCount > 0
-                      ? '${s.participantCount} participantes'
-                      : 'Ao vivo',
-                  style: const TextStyle(color: Colors.white70, fontSize: 11),
-                ),
-              ),
-              if (s.onToggleMute != null)
-                GestureDetector(
-                  onTap: () {
-                    HapticService.tap();
-                    s.onToggleMute?.call();
-                  },
-                  child: Icon(
-                    s.isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
-                    color: s.isMuted ? Colors.red[200] : Colors.white,
-                    size: 16,
-                  ),
-                ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () {
-                  HapticService.action();
-                  s.onEnd?.call();
-                  ref.read(miniRoomProvider.notifier).hide();
-                },
-                child: const Icon(
-                  Icons.call_end_rounded,
-                  color: Colors.red,
-                  size: 16,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildScreeningPreview(MiniRoomState s) {
     final thumbnailUrl = s.thumbnailUrl?.trim();
     final hasThumbnail = thumbnailUrl != null && thumbnailUrl.isNotEmpty;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
-      child: AspectRatio(
-        aspectRatio: 16 / 9,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (hasThumbnail)
-              CachedNetworkImage(
-                imageUrl: thumbnailUrl,
-                fit: BoxFit.cover,
-                errorWidget: (_, __, ___) => _buildScreeningFallback(),
-              )
-            else
-              _buildScreeningFallback(),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.10),
-                    Colors.black.withValues(alpha: 0.55),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: 200,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0D0D1A),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.65),
+              blurRadius: 24,
+              spreadRadius: 0,
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: const Color(0xFF1565C0).withValues(alpha: 0.20),
+              blurRadius: 18,
+              spreadRadius: -2,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // ── Camada 0: Thumbnail do vídeo ───────────────────────────
+              if (hasThumbnail)
+                CachedNetworkImage(
+                  imageUrl: thumbnailUrl,
+                  fit: BoxFit.cover,
+                  errorWidget: (_, __, ___) => _buildScreeningFallback(),
+                )
+              else
+                _buildScreeningFallback(),
+
+              // ── Camada 1: Gradiente topo (para legibilidade do header) ────
+              Positioned(
+                top: 0, left: 0, right: 0,
+                height: 48,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.75),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // ── Camada 2: Gradiente base (para legibilidade do rodapé) ────
+              Positioned(
+                bottom: 0, left: 0, right: 0,
+                height: 36,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.80),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // ── Camada 3: Header (título + botão fechar) ──────────────
+              Positioned(
+                top: 6, left: 8, right: 6,
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.live_tv_rounded,
+                      color: Colors.white70,
+                      size: 11,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        s.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 10,
+                          letterSpacing: 0.1,
+                          decoration: TextDecoration.none,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black,
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // Botão fechar
+                    GestureDetector(
+                      onTap: _onClose,
+                      behavior: HitTestBehavior.opaque,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: Colors.white.withValues(alpha: 0.75),
+                          size: 13,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-            const Center(
-              child: Icon(
-                Icons.play_circle_fill_rounded,
-                color: Colors.white,
-                size: 34,
+
+              // ── Camada 4: Ícone de play centralizado ──────────────────
+              AnimatedBuilder(
+                animation: _pulseAnim,
+                builder: (_, __) => Center(
+                  child: Transform.scale(
+                    scale: _pulseAnim.value,
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withValues(alpha: 0.45),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.60),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ],
+
+              // ── Camada 5: Indicador ao vivo (rodapé esquerdo) ────────
+              Positioned(
+                bottom: 6, left: 8,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedBuilder(
+                      animation: _pulseAnim,
+                      builder: (_, __) => Container(
+                        width: 5,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFFE53935),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFE53935)
+                                  .withValues(alpha: _pulseAnim.value - 0.7),
+                              blurRadius: 5,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Text(
+                      'AO VIVO',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                        decoration: TextDecoration.none,
+                        shadows: [
+                          Shadow(color: Colors.black, blurRadius: 4),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Camada 6: Mic mute (rodapé direito) ────────────────
+              if (s.onToggleMute != null)
+                Positioned(
+                  bottom: 4, right: 6,
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticService.tap();
+                      s.onToggleMute?.call();
+                    },
+                    behavior: HitTestBehavior.opaque,
+                    child: Icon(
+                      s.isMuted
+                          ? Icons.mic_off_rounded
+                          : Icons.mic_rounded,
+                      color: s.isMuted
+                          ? Colors.red[300]
+                          : Colors.white.withValues(alpha: 0.75),
+                      size: 14,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

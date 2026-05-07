@@ -133,6 +133,13 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
   // ── Entrar na sala ──────────────────────────────────────────────────────────
 
   Future<void> _joinRoom() async {
+    // Fechar o PiP de projeção caso esteja visível ao reabrir a sala
+    final miniNotifier = ref.read(miniRoomProvider.notifier);
+    final miniState = ref.read(miniRoomProvider);
+    if (miniState != null && miniState.type == MiniRoomType.screening) {
+      miniNotifier.hide();
+    }
+
     await ref.read(screeningRoomProvider(widget.threadId).notifier).joinRoom(
           existingSessionId: widget.callSessionId,
           initialVideoUrl: widget.initialVideoUrl,
@@ -375,6 +382,12 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
     // Sinalizar que estamos encerrando ativamente para que o ref.listen
     // não exiba o _showRoomClosedDialog (destinado a participantes externos).
     _isLeavingRoom = true;
+
+    // Fechar o PiP caso esteja visível (ex: usuário reabriu a sala e encerrou)
+    final miniState = ref.read(miniRoomProvider);
+    if (miniState != null && miniState.type == MiniRoomType.screening) {
+      ref.read(miniRoomProvider.notifier).hide();
+    }
 
     if (roomState.sessionId != null) {
       await ref
