@@ -97,7 +97,7 @@ class _ScreeningNativePlayerWidgetState
       if (!mounted || duration == Duration.zero) return;
       ref
           .read(screeningPlayerProvider(widget.sessionId).notifier)
-          .onDurationUpdate(duration.inMilliseconds.toDouble());
+          .onDurationUpdate(duration.inMilliseconds);
     });
 
     _mkPlayer!.stream.position.listen((position) {
