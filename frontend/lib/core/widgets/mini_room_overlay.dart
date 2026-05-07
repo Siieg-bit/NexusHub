@@ -296,18 +296,31 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
   Widget build(BuildContext context) {
     final s = widget.state;
 
+    // Material + DefaultTextStyle garantem que o PiP não herde o
+    // DefaultTextStyle do app (que pode ter decoration: underline / cor amarela)
+    // pois o MiniRoomOverlayWrapper fica acima do MaterialApp na árvore.
     return Transform.translate(
       offset: _offset,
-      child: GestureDetector(
-        onPanUpdate: (details) => setState(() => _offset += details.delta),
-        onTap: _onTap,
-        child: AnimatedBuilder(
-          animation: _pulseAnim,
-          builder: (context, child) => Transform.scale(
-            scale: _pulseAnim.value,
-            child: child,
+      child: Material(
+        type: MaterialType.transparency,
+        child: DefaultTextStyle(
+          style: const TextStyle(
+            decoration: TextDecoration.none,
+            decorationColor: Colors.transparent,
+            fontFamily: 'sans-serif',
           ),
-          child: _buildPipBody(s),
+          child: GestureDetector(
+            onPanUpdate: (details) => setState(() => _offset += details.delta),
+            onTap: _onTap,
+            child: AnimatedBuilder(
+              animation: _pulseAnim,
+              builder: (context, child) => Transform.scale(
+                scale: _pulseAnim.value,
+                child: child,
+              ),
+              child: _buildPipBody(s),
+            ),
+          ),
         ),
       ),
     );
@@ -327,24 +340,33 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
   Widget _buildVoiceChatPip(MiniRoomState s) {
     final speaker = _activeSpeaker;
     final hasSpeaker = speaker != null;
-    const cardColor = Color(0xFF1A1030);
     const accentColor = Color(0xFF9C6FD6);
 
     return Container(
-      width: 110,
+      width: 112,
       decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(18),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E1035), Color(0xFF130B28)],
+        ),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: accentColor.withValues(alpha: 0.35),
-          width: 1.2,
+          color: accentColor.withValues(alpha: 0.30),
+          width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: accentColor.withValues(alpha: 0.25),
-            blurRadius: 14,
-            spreadRadius: 1,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.55),
+            blurRadius: 20,
+            spreadRadius: 0,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.18),
+            blurRadius: 16,
+            spreadRadius: -2,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -353,40 +375,50 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
         children: [
           // ── Header: título + fechar ──────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 7, 4, 0),
+            padding: const EdgeInsets.fromLTRB(9, 8, 5, 0),
             child: Row(
               children: [
+                // Indicador ao vivo
                 Container(
                   width: 5,
                   height: 5,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF9C6FD6),
+                  decoration: BoxDecoration(
+                    color: accentColor,
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: accentColor.withValues(alpha: 0.6),
+                        blurRadius: 4,
+                        spreadRadius: 1,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: 5),
                 Expanded(
                   child: Text(
                     s.title,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       fontSize: 10,
                       letterSpacing: 0.1,
+                      decoration: TextDecoration.none,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                // Botão fechar
                 GestureDetector(
                   onTap: _onClose,
                   behavior: HitTestBehavior.opaque,
                   child: Padding(
-                    padding: const EdgeInsets.all(3),
+                    padding: const EdgeInsets.fromLTRB(4, 2, 2, 2),
                     child: Icon(
                       Icons.close_rounded,
-                      color: Colors.white.withValues(alpha: 0.5),
-                      size: 12,
+                      color: Colors.white.withValues(alpha: 0.40),
+                      size: 13,
                     ),
                   ),
                 ),
@@ -396,7 +428,7 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
 
           // ── Avatar grande centralizado ───────────────────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.fromLTRB(0, 10, 0, 12),
             child: AnimatedBuilder(
               animation: _ringAnim,
               builder: (context, child) {
@@ -408,25 +440,37 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
                       Transform.scale(
                         scale: _ringAnim.value,
                         child: Container(
-                          width: 80,
-                          height: 80,
+                          width: 82,
+                          height: 82,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: accentColor.withValues(
-                                alpha: (0.55 * (speaker.audioLevel + 0.2))
-                                    .clamp(0.0, 1.0),
+                                alpha: (0.50 * (speaker.audioLevel + 0.25))
+                                    .clamp(0.0, 0.85),
                               ),
-                              width: 2,
+                              width: 1.5,
                             ),
                           ),
                         ),
                       ),
+                    // Anel interno estático (sempre visível)
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: accentColor.withValues(alpha: 0.15),
+                          width: 1,
+                        ),
+                      ),
+                    ),
                     // Avatar principal
                     _SpeakerAvatar(
                       avatarUrl: hasSpeaker ? speaker.avatarUrl : null,
                       name: hasSpeaker ? speaker.name : null,
-                      size: 66,
+                      size: 64,
                     ),
                   ],
                 );
