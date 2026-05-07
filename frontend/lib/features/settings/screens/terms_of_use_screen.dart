@@ -1,15 +1,34 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+
+// =============================================================================
+// TermsOfUseScreen — Termos de Uso
+//
+// O conteúdo é carregado remotamente da tabela `legal_documents` (slug:
+// 'terms_of_use'), eliminando o texto hardcoded anterior.
+// =============================================================================
+
+/// Provider que busca os Termos de Uso do Supabase.
+final _termsOfUseProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  final rows = await SupabaseService.table('legal_documents')
+      .select('title, content_md, version, updated_at')
+      .eq('slug', 'terms_of_use')
+      .limit(1);
+  if ((rows as List).isEmpty) throw Exception('Documento não encontrado.');
+  return rows.first as Map<String, dynamic>;
+});
 
 /// Tela de Termos de Uso do NexusHub.
 class TermsOfUseScreen extends ConsumerWidget {
   const TermsOfUseScreen({super.key});
 
-  static const _content = '''
+  // Conteúdo de fallback exibido apenas se o banco estiver inacessível.
+  static const _fallbackContent = '''
 # Termos de Uso
 
 **Última atualização:** 29 de março de 2026
@@ -139,65 +158,103 @@ Para dúvidas sobre estes Termos:
 *Estes Termos são efetivos a partir de 29 de março de 2026.*
 ''';
 
+  MarkdownStyleSheet _markdownStyle(BuildContext context, Responsive r) {
+    final theme = context.nexusTheme;
+    return MarkdownStyleSheet(
+      h1: TextStyle(
+          color: theme.textPrimary, fontSize: r.fs(22),
+          fontWeight: FontWeight.w800, fontFamily: 'PlusJakartaSans'),
+      h2: TextStyle(
+          color: theme.textPrimary, fontSize: r.fs(17),
+          fontWeight: FontWeight.w700, fontFamily: 'PlusJakartaSans'),
+      h3: TextStyle(
+          color: theme.textPrimary, fontSize: r.fs(15),
+          fontWeight: FontWeight.w600, fontFamily: 'PlusJakartaSans'),
+      p: TextStyle(
+          color: theme.textSecondary, fontSize: r.fs(14),
+          height: 1.6, fontFamily: 'PlusJakartaSans'),
+      strong: TextStyle(
+          color: theme.textPrimary, fontWeight: FontWeight.w700,
+          fontFamily: 'PlusJakartaSans'),
+      listBullet: TextStyle(color: theme.accentPrimary, fontSize: r.fs(14)),
+      horizontalRuleDecoration: BoxDecoration(
+        border: Border(top: BorderSide(color: theme.divider, width: 1)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final theme = context.nexusTheme;
     final r = context.r;
+    final s = ref.watch(stringsProvider);
+    final docAsync = ref.watch(_termsOfUseProvider);
+
     return Scaffold(
-      backgroundColor: context.nexusTheme.backgroundPrimary,
+      backgroundColor: theme.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: theme.appBarBackground,
+        foregroundColor: theme.appBarForeground,
         elevation: 0,
-        iconTheme: IconThemeData(color: context.nexusTheme.textPrimary),
+        centerTitle: true,
+        surfaceTintColor: Colors.transparent,
         title: Text(
           s.termsOfUse,
           style: TextStyle(
-            fontWeight: FontWeight.w800,
-            color: context.nexusTheme.textPrimary,
+            color: theme.appBarForeground,
+            fontSize: r.fs(18),
+            fontWeight: FontWeight.w700,
+            fontFamily: 'PlusJakartaSans',
           ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new_rounded,
+              color: theme.appBarForeground, size: r.s(20)),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 0.5, color: theme.divider),
         ),
       ),
-      body: Markdown(
-        data: _content,
-        padding: EdgeInsets.all(r.s(16)),
-        styleSheet: MarkdownStyleSheet(
-          h1: TextStyle(
-            color: context.nexusTheme.textPrimary,
-            fontSize: r.fs(22),
-            fontWeight: FontWeight.w800,
-          ),
-          h2: TextStyle(
-            color: context.nexusTheme.textPrimary,
-            fontSize: r.fs(17),
-            fontWeight: FontWeight.w700,
-          ),
-          h3: TextStyle(
-            color: context.nexusTheme.textPrimary,
-            fontSize: r.fs(15),
-            fontWeight: FontWeight.w600,
-          ),
-          p: TextStyle(
-            color: context.nexusTheme.textSecondary,
-            fontSize: r.fs(14),
-            height: 1.6,
-          ),
-          strong: TextStyle(
-            color: context.nexusTheme.textPrimary,
-            fontWeight: FontWeight.w700,
-          ),
-          listBullet: TextStyle(
-            color: context.nexusTheme.accentPrimary,
-            fontSize: r.fs(14),
-          ),
-          horizontalRuleDecoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1,
-              ),
-            ),
-          ),
+      body: docAsync.when(
+        loading: () => Center(
+          child: CircularProgressIndicator(
+              color: theme.accentPrimary, strokeWidth: 2)),
+        error: (_, __) => Markdown(
+          data: _fallbackContent,
+          padding: EdgeInsets.all(r.s(16)),
+          styleSheet: _markdownStyle(context, r),
         ),
+        data: (doc) {
+          final content = doc['content_md'] as String? ?? _fallbackContent;
+          final version = doc['version'] as String? ?? '1.0';
+          return Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(16), vertical: r.s(8)),
+                color: theme.surfacePrimary,
+                child: Text(
+                  'Versão $version',
+                  style: TextStyle(
+                    color: theme.textSecondary,
+                    fontSize: r.fs(12),
+                    fontFamily: 'PlusJakartaSans',
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Markdown(
+                  data: content,
+                  padding: EdgeInsets.all(r.s(16)),
+                  styleSheet: _markdownStyle(context, r),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
