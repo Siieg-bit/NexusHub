@@ -320,131 +320,153 @@ class _ScreeningChatOverlayState extends ConsumerState<ScreeningChatOverlay> {
       }
     });
 
-    return Column(
-      children: [
-        // ── Lista de mensagens ─────────────────────────────────────────────
-        Expanded(
-          child: messages.isEmpty
-              ? const SizedBox.shrink()
-              : ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final fromEnd = messages.length - 1 - index;
-                    final opacity = fromEnd >= 8
-                        ? 0.0
-                        : fromEnd >= 5
-                            ? 0.45
-                            : 1.0;
-                    if (opacity == 0.0) return const SizedBox.shrink();
-                    return Opacity(
-                      opacity: opacity,
-                      child: _ChatBubble(message: messages[index]),
-                    );
-                  },
-                ),
-        ),
-        // ── Indicadores de voz ─────────────────────────────────────────────
-        _VoiceParticipantsBar(
-          participants: roomState.participants,
-          speakingUids: voiceState.speakingAgoraUids,
-        ),
-        // ── Seletor de reações (efeito cascata) ────────────────────────────────
-        // Substitui o EmojiPicker padrão: ao tocar em uma reação, dispara
-        // o EmojiRainOverlay (chuva de emojis) em vez de inserir no texto.
-        if (_showEmojiPicker)
-          _EmojiCascadePicker(
-            emojiRainKey: widget.emojiRainKey,
-            onClose: () => setState(() => _showEmojiPicker = false),
+    // Altura estimada da barra inferior para posicionar o menu FAB
+    const bottomBarH = 64.0;
+
+    // ── Barra inferior (sem o menu FAB) ────────────────────────────────────
+    final bottomBar = Container(
+      padding: EdgeInsets.fromLTRB(12, 8, 12, bottomPad),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.06),
+            width: 0.5,
           ),
-        // ── Barra inferior: microfone + input estilo Rave ──────────────────
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // Menu do FAB — renderizado acima da barra, fora do Row
-            if (_showFab)
-              Positioned(
-                bottom: 64 + bottomPad,
-                right: 12,
-                child: _FabMenu(
-                  onClose: () => setState(() => _showFab = false),
-                  onSticker: () {
-                    setState(() => _showFab = false);
-                    _pickAndSendSticker();
-                  },
-                  onModerate: _canModerateFuture != null
-                      ? () async {
-                          setState(() => _showFab = false);
-                          final can = await _canModerateFuture;
-                          if (can == true) _openModerationSheet();
-                        }
-                      : null,
-                  isHost: roomState.isHost,
-                  onAddVideo: roomState.isHost
-                      ? () {
-                          setState(() => _showFab = false);
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (_) => ScreeningAddVideoSheet(
-                              sessionId: widget.sessionId,
-                              threadId: widget.threadId,
-                            ),
-                          );
-                        }
-                      : null,
-                ),
-              ),
-            Container(
-              padding: EdgeInsets.fromLTRB(12, 8, 12, bottomPad),
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.06),
-                    width: 0.5,
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  // Botão de microfone grande e circular
-                  _MicButton(sessionId: widget.sessionId),
-                  const SizedBox(width: 10),
-                  // Campo de chat estilo Rave
-                  Expanded(
-                    child: _ChatInput(
-                      controller: _textController,
-                      onSend: _sendMessage,
-                    ),
-                  ),
-                  // Botão de reação (emoji) — toggle do seletor de cascata
-                  const SizedBox(width: 8),
-                  _ActionIconButton(
-                    icon: _showEmojiPicker
-                        ? Icons.close_rounded
-                        : Icons.add_reaction_outlined,
-                    onTap: () => setState(
-                        () => _showEmojiPicker = !_showEmojiPicker),
-                  ),
-                  const SizedBox(width: 6),
-                  // Galeria de imagens — sempre visível
-                  _ActionIconButton(
-                    icon: Icons.image_outlined,
-                    onTap: _pickAndSendImage,
-                  ),
-                  const SizedBox(width: 6),
-                  // FAB "+" — toggle do menu
-                  _FabToggleButton(
-                    isOpen: _showFab,
-                    onToggle: () => setState(() => _showFab = !_showFab),
-                  ),
-                ],
-              ),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Botão de microfone grande e circular
+          _MicButton(sessionId: widget.sessionId),
+          const SizedBox(width: 10),
+          // Campo de chat estilo Rave
+          Expanded(
+            child: _ChatInput(
+              controller: _textController,
+              onSend: _sendMessage,
             ),
+          ),
+          // Botão de reação (emoji) — toggle do seletor de cascata
+          const SizedBox(width: 8),
+          _ActionIconButton(
+            icon: _showEmojiPicker
+                ? Icons.close_rounded
+                : Icons.add_reaction_outlined,
+            onTap: () => setState(
+                () => _showEmojiPicker = !_showEmojiPicker),
+          ),
+          const SizedBox(width: 6),
+          // Galeria de imagens — sempre visível
+          _ActionIconButton(
+            icon: Icons.image_outlined,
+            onTap: _pickAndSendImage,
+          ),
+          const SizedBox(width: 6),
+          // FAB "+" — toggle do menu
+          _FabToggleButton(
+            isOpen: _showFab,
+            onToggle: () => setState(() => _showFab = !_showFab),
+          ),
+        ],
+      ),
+    );
+
+    // ── Stack raiz: Column + menu FAB sobreposto ───────────────────────────
+    // O _FabMenu é posicionado no Stack raiz (não dentro do Stack da barra)
+    // para garantir que os toques sejam registrados corretamente.
+    // Quando dentro do Stack da barra (altura ~64px), o Positioned com
+    // bottom positivo colocava o menu fora dos bounds do Stack, fazendo
+    // os GestureDetectors não receberem toques.
+    return Stack(
+      children: [
+        Column(
+          children: [
+            // ── Lista de mensagens ───────────────────────────────────────────
+            Expanded(
+              child: messages.isEmpty
+                  ? const SizedBox.shrink()
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        final fromEnd = messages.length - 1 - index;
+                        final opacity = fromEnd >= 8
+                            ? 0.0
+                            : fromEnd >= 5
+                                ? 0.45
+                                : 1.0;
+                        if (opacity == 0.0) return const SizedBox.shrink();
+                        return Opacity(
+                          opacity: opacity,
+                          child: _ChatBubble(message: messages[index]),
+                        );
+                      },
+                    ),
+            ),
+            // ── Indicadores de voz ──────────────────────────────────────────
+            _VoiceParticipantsBar(
+              participants: roomState.participants,
+              speakingUids: voiceState.speakingAgoraUids,
+            ),
+            // ── Seletor de reações (efeito cascata) ─────────────────────────
+            if (_showEmojiPicker)
+              _EmojiCascadePicker(
+                emojiRainKey: widget.emojiRainKey,
+                onClose: () => setState(() => _showEmojiPicker = false),
+              ),
+            // ── Barra inferior ───────────────────────────────────────────────
+            bottomBar,
           ],
         ),
+        // ── Fechar FAB ao tocar fora do menu ─────────────────────────────────
+        // Renderizado ANTES do _FabMenu para ficar abaixo dele no Stack.
+        // behavior: translucent permite que toques no menu passem para o menu.
+        if (_showFab)
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => setState(() => _showFab = false),
+              behavior: HitTestBehavior.translucent,
+              child: const SizedBox.shrink(),
+            ),
+          ),
+        // ── Menu FAB — posicionado no Stack raiz para hit-testing correto ───
+        // Renderizado ACIMA da Column inteira, alinhado ao canto inferior direito,
+        // com offset para ficar acima da barra inferior.
+        if (_showFab)
+          Positioned(
+            bottom: bottomBarH + bottomPad,
+            right: 12,
+            child: _FabMenu(
+              onClose: () => setState(() => _showFab = false),
+              onSticker: () {
+                setState(() => _showFab = false);
+                _pickAndSendSticker();
+              },
+              onModerate: _canModerateFuture != null
+                  ? () async {
+                      setState(() => _showFab = false);
+                      final can = await _canModerateFuture;
+                      if (can == true) _openModerationSheet();
+                    }
+                  : null,
+              isHost: roomState.isHost,
+              onAddVideo: roomState.isHost
+                  ? () {
+                      setState(() => _showFab = false);
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => ScreeningAddVideoSheet(
+                          sessionId: widget.sessionId,
+                          threadId: widget.threadId,
+                        ),
+                      );
+                    }
+                  : null,
+            ),
+          ),
       ],
     );
   }
