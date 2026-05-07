@@ -592,8 +592,12 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
 
   void onVideoPlaying() {
     if (!mounted) return;
+    // Idempotente: se já está tocando, apenas limpar isBuffering sem reiniciar
+    // o polling. Isso evita que o __YT_STATE:playing__ emitido a cada 500ms
+    // pelo _ytPositionTimer reinicie o timer de polling Dart repetidamente.
+    final wasPlaying = state.isPlaying;
     state = state.copyWith(isPlaying: true, isBuffering: false);
-    if (!_isNativeMode) {
+    if (!_isNativeMode && !wasPlaying) {
       // Para lives: não iniciar polling (sem seek bar, sem necessidade de posição)
       if (!state.isLive) {
         // Polling como fallback: se o bridge JS (timeupdate) estiver ativo,
@@ -606,8 +610,12 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
 
   void onVideoPaused() {
     if (!mounted) return;
+    // Idempotente: se já está pausado, não reiniciar o polling.
+    // O __YT_STATE:paused__ é emitido a cada 500ms pelo _ytPositionTimer
+    // enquanto pausado, então precisamos evitar reiniciar o timer repetidamente.
+    final wasPlaying = state.isPlaying;
     state = state.copyWith(isPlaying: false);
-    if (!_isNativeMode) {
+    if (!_isNativeMode && wasPlaying) {
       _startPositionPolling(intervalSeconds: 5);
     }
   }

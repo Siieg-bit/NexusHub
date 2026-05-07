@@ -854,6 +854,17 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         notifier.onDurationUpdate(durMs);
       }
     }
+    // Estado do player emitido a cada ciclo do _ytPositionTimer.
+    // Garante que isPlaying seja corrigido mesmo após race condition no startup
+    // (onStateChange disparado antes do onConsoleMessage estar registrado).
+    else if (message.contains('__YT_STATE:playing__')) {
+      notifier.onVideoPlaying();
+      if (mounted && _isLoading) setState(() => _isLoading = false);
+    } else if (message.contains('__YT_STATE:paused__')) {
+      notifier.onVideoPaused();
+    } else if (message.contains('__YT_STATE:buffering__')) {
+      notifier.onVideoBuffering();
+    }
   }
 
   // ── Fallback embed URL (sem API) ──────────────────────────────────────────
@@ -1045,7 +1056,10 @@ $touchBlockerHtml
   }
 
   // Timer de polling de posição para YouTube (substitui timeupdate do <video>)
-  // O YT IFrame API não expoe eventos de timeupdate, então fazemos polling leve
+  // O YT IFrame API não expoe eventos de timeupdate, então fazemos polling leve.
+  // IMPORTANTE: emite também o estado de playing a cada ciclo via __YT_STATE:N__
+  // para que o Flutter possa inferir isPlaying mesmo se o onStateChange foi
+  // disparado antes do onConsoleMessage estar registrado (race condition no startup).
   var _ytPositionTimer = null;
   function _startYtPositionPolling(player) {
     if (_ytPositionTimer) clearInterval(_ytPositionTimer);
@@ -1053,8 +1067,14 @@ $touchBlockerHtml
       try {
         var pos = Math.floor(player.getCurrentTime() * 1000);
         var dur = Math.floor(player.getDuration() * 1000);
+        var state = player.getPlayerState(); // 1=playing, 2=paused, 3=buffering
         if (pos >= 0) _ytBridge('VIDEO_POSITION', pos);
         if (dur > 0)  _ytBridge('VIDEO_DURATION', dur);
+        // Emitir estado atual a cada ciclo — garante que o Flutter saiba
+        // se está tocando ou pausado mesmo após race condition no startup.
+        if (state === 1) console.log('__YT_STATE:playing__');
+        else if (state === 2) console.log('__YT_STATE:paused__');
+        else if (state === 3) console.log('__YT_STATE:buffering__');
       } catch(e) {}
     }, 500);
   }
