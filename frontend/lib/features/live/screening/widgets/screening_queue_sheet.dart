@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/screening_room_provider.dart';
+import '../providers/screening_player_provider.dart';
 import '../services/stream_resolver_service.dart';
 import '../../../../core/services/supabase_service.dart';
 import 'screening_browser_sheet.dart';
@@ -310,6 +311,9 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
   // ── Lista reordenável (host) ──────────────────────────────────
   Widget _buildReorderableList(
       List<Map<String, String>> queue, String currentVideoUrl) {
+    final isPlaying = ref.watch(
+      screeningPlayerProvider(widget.sessionId).select((s) => s.isPlaying),
+    );
     return ReorderableListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: queue.length,
@@ -361,8 +365,21 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
             isHost: true,
             isCurrentlyPlaying: (item['url'] ?? '') == currentVideoUrl &&
                 currentVideoUrl.isNotEmpty,
+            isPlaying: isPlaying,
             onRemove: () => _removeFromQueue(index),
-            onPlayNow: () => _playNow(index),
+            // Se já está tocando: pausar/retomar. Se não: reproduzir agora.
+            onPlayNow: (item['url'] ?? '') == currentVideoUrl &&
+                    currentVideoUrl.isNotEmpty
+                ? () {
+                    final notifier = ref.read(
+                        screeningPlayerProvider(widget.sessionId).notifier);
+                    if (isPlaying) {
+                      notifier.pause();
+                    } else {
+                      notifier.play();
+                    }
+                  }
+                : () => _playNow(index),
           ),
         );
       },
@@ -372,18 +389,22 @@ class _ScreeningQueueSheetState extends ConsumerState<ScreeningQueueSheet> {
    // ── Lista somente leitura (participantes) ─────────────────────────────
   Widget _buildReadOnlyList(
       List<Map<String, String>> queue, String currentVideoUrl) {
+    final isPlaying = ref.watch(
+      screeningPlayerProvider(widget.sessionId).select((s) => s.isPlaying),
+    );
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: queue.length,
       itemBuilder: (context, index) {
         final item = queue[index];
-        return _QueueItemTile(
+          return _QueueItemTile(
           key: ValueKey('queue_ro_${item['url']}_$index'),
           item: item,
           index: index,
           isHost: false,
           isCurrentlyPlaying: (item['url'] ?? '') == currentVideoUrl &&
               currentVideoUrl.isNotEmpty,
+          isPlaying: isPlaying,
           onRemove: null,
           onPlayNow: null,
         );
@@ -400,6 +421,8 @@ class _QueueItemTile extends StatelessWidget {
   final int index;
   final bool isHost;
   final bool isCurrentlyPlaying;
+  /// true quando o vídeo está tocando — altera o ícone do botão de ação
+  final bool isPlaying;
   final VoidCallback? onRemove;
   final VoidCallback? onPlayNow;
 
@@ -409,6 +432,7 @@ class _QueueItemTile extends StatelessWidget {
     required this.index,
     required this.isHost,
     this.isCurrentlyPlaying = false,
+    this.isPlaying = false,
     required this.onRemove,
     required this.onPlayNow,
   });
@@ -592,15 +616,21 @@ class _QueueItemTile extends StatelessWidget {
 
           // ── Ações (host) ──────────────────────────────────────────────────
           if (isHost) ...[
-            // Botão "Reproduzir agora"
+            // Botão "Reproduzir agora" / "Pausar"
+            // Quando o item está tocando: mostra pause (clicar pausa o vídeo)
+            // Quando não está tocando: mostra play (clicar reproduz o item)
             if (onPlayNow != null)
               GestureDetector(
                 onTap: onPlayNow,
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   child: Icon(
-                    Icons.play_arrow_rounded,
-                    color: Colors.white.withValues(alpha: 0.5),
+                    isCurrentlyPlaying && isPlaying
+                        ? Icons.pause_rounded
+                        : Icons.play_arrow_rounded,
+                    color: isCurrentlyPlaying
+                        ? const Color(0xFFB57BFF)
+                        : Colors.white.withValues(alpha: 0.5),
                     size: 22,
                   ),
                 ),
