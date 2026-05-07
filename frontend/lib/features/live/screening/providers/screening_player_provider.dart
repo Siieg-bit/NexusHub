@@ -255,8 +255,10 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
       // degradando a performance do player de vídeo.
       if (!state.isLive) {
         _startPositionPolling(intervalSeconds: 1);
-        // Tentar obter duração após um breve delay (aguarda o player carregar)
-        Future.delayed(const Duration(seconds: 2), _updateDuration);
+        // Tentar obter duração imediatamente e com retries progressivos.
+        // O delay fixo de 2s causava isLiveStream=true durante esse período,
+        // ocultando a seek bar e os botões de avançar/retroceder na primeira carga.
+        _scheduleDurationRetries();
       }
     }
   }
@@ -351,6 +353,20 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
       }
     } catch (e) {
       debugPrint('[ScreeningPlayer] getDuration error: $e');
+    }
+  }
+
+  /// Tenta obter a duração imediatamente e com retries progressivos.
+  /// Evita o delay fixo de 2s que deixava isLiveStream=true e ocultava
+  /// a seek bar e os botões de avançar/retroceder na primeira carga.
+  void _scheduleDurationRetries() {
+    // Tentativas: 300ms, 800ms, 1.5s, 3s, 5s
+    const delays = [300, 800, 1500, 3000, 5000];
+    for (final ms in delays) {
+      Future.delayed(Duration(milliseconds: ms), () async {
+        if (!mounted || state.duration > Duration.zero) return;
+        await _updateDuration();
+      });
     }
   }
 
