@@ -28,7 +28,8 @@ export type AdminSection =
   | "device-security"
   | "economy"
   | "ai-learning"
-  | "ai-consciousness";
+  | "ai-consciousness"
+  | "remote-config";
 
 interface AdminLayoutProps {
   activeSection: AdminSection;
@@ -78,6 +79,7 @@ const navGroups = [
       { id: "ai-consciousness" as AdminSection, icon: Sparkles, label: "Consciência IA", hex: "#EC4899", rgb: "236,72,153" },
       { id: "device-security" as AdminSection, icon: Fingerprint, label: "Device Security", hex: "#EF4444", rgb: "239,68,68" },
       { id: "economy" as AdminSection, icon: BarChart3, label: "Economy", hex: "#22C55E", rgb: "34,197,94" },
+      { id: "remote-config" as AdminSection, icon: Settings, label: "Remote Config", hex: "#60A5FA", rgb: "96,165,250" },
     ],
   },
 ];

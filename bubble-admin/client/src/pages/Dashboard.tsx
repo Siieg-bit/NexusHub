@@ -36,6 +36,7 @@ import AILearningPage from "./AILearningPage";
 import AIConsciousnessPage from "./AIConsciousnessPage";
 import DeviceSecurityPage from "./DeviceSecurityPage";
 import EconomyPage from "./EconomyPage";
+import RemoteConfigPage from "./RemoteConfigPage";
 
 // ─── Tipos e Constantes ───────────────────────────────────────────────────────
 
@@ -3004,6 +3005,7 @@ export default function Dashboard() {
       case "ai-consciousness":   return <AIConsciousnessPage />;
       case "device-security":  return <DeviceSecurityPage />;
       case "economy":          return <EconomyPage />;
+      case "remote-config":    return <RemoteConfigPage />;
       default:                 return <OverviewPage />;
     }
   }
