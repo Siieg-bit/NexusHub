@@ -91,6 +91,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
 
       await _loadFiles();
     } catch (e) {
+      debugPrint('[SharedFolder] Erro ao carregar pasta: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -108,16 +109,22 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
 
       // Buscar pendentes (apenas para staff)
       if (_isStaff) {
-        final pending = await SupabaseService.rpc(
-          'get_pending_shared_files',
-          params: {'p_community_id': widget.communityId},
-        );
-        _pendingFiles =
-            List<Map<String, dynamic>>.from(pending as List? ?? []);
+        try {
+          final pending = await SupabaseService.rpc(
+            'get_pending_shared_files',
+            params: {'p_community_id': widget.communityId},
+          );
+          _pendingFiles =
+              List<Map<String, dynamic>>.from(pending as List? ?? []);
+        } catch (e) {
+          debugPrint('[SharedFolder] Erro ao buscar pendentes: $e');
+          _pendingFiles = [];
+        }
       }
 
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
+      debugPrint('[SharedFolder] Erro ao carregar arquivos: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -304,11 +311,20 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
     );
     if (confirm != true) return;
     try {
+      // Deletar o arquivo da tabela (não apenas marcar como rejeitado)
       await SupabaseService.table('shared_files')
-          .update({'approval_status': 'rejected'}).eq('id', fileId);
+          .delete()
+          .eq('id', fileId)
+          .eq('uploader_id', SupabaseService.currentUserId ?? '');
+      // Staff pode deletar qualquer arquivo
+      if (_isStaff) {
+        await SupabaseService.table('shared_files')
+            .delete()
+            .eq('id', fileId);
+      }
       await _loadFiles();
     } catch (e) {
-      debugPrint('[shared_folder_screen] Erro: $e');
+      debugPrint('[shared_folder_screen] Erro ao deletar: $e');
     }
   }
 
