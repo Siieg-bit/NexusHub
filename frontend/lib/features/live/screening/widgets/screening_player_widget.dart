@@ -331,8 +331,12 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         // O postMessage do IFrame API funciona via window.addEventListener('message')
         // no HTML wrapper, independente do baseUrl.
         final htmlContent = _buildHtmlWrapper(resolution.url);
+        final keepAlive = ref.read(
+          screeningWebViewKeepAliveProvider(widget.sessionId),
+        );
         return InAppWebView(
           key: ValueKey(resolution.url),
+          keepAlive: keepAlive,
           initialData: InAppWebViewInitialData(
             data: htmlContent,
             mimeType: 'text/html',
@@ -445,8 +449,12 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     final isLive = resolution.platform == StreamPlatform.twitch ||
         resolution.platform == StreamPlatform.kick ||
         resolution.platform == StreamPlatform.youtubeLive;
+    final keepAliveDirect = ref.read(
+      screeningWebViewKeepAliveProvider(widget.sessionId),
+    );
     return InAppWebView(
       key: ValueKey('direct_$embedUrl'),
+      keepAlive: keepAliveDirect,
       initialUrlRequest: URLRequest(url: WebUri(embedUrl)),
       initialSettings: InAppWebViewSettings(
         javaScriptEnabled: true,
@@ -553,8 +561,12 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     final embedUrl = _toEmbedUrlFallback(url);
     final htmlContent = _buildHtmlWrapper(embedUrl);
     // baseUrl sempre nexushub.app — youtube.com como baseUrl causa erro 152-4
+    final keepAliveFallback = ref.read(
+      screeningWebViewKeepAliveProvider(widget.sessionId),
+    );
     return InAppWebView(
       key: ValueKey('fallback_$url'),
+      keepAlive: keepAliveFallback,
       initialData: InAppWebViewInitialData(
         data: htmlContent,
         mimeType: 'text/html',

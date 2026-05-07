@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../core/widgets/mini_room_overlay.dart';
 import '../models/screening_room_state.dart';
+import '../providers/screening_player_provider.dart';
 import '../providers/screening_room_provider.dart';
 import '../providers/screening_sync_provider.dart';
 import '../providers/screening_voice_provider.dart';
@@ -276,6 +277,10 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
     final roomNotifier = ref.read(screeningRoomProvider(threadId).notifier);
     final voiceNotifier = ref.read(screeningVoiceProvider(sessionId).notifier);
     final router = ref.read(appRouterProvider);
+    // Token de Keep Alive: permite que o PiP reutilize a WebView nativa
+    // sem recarregar o vídeo. O token é por sessão e é o mesmo usado
+    // pelo ScreeningPlayerWidget.
+    final keepAlive = ref.read(screeningWebViewKeepAliveProvider(sessionId));
 
     miniNotifier.show(
       roomId: sessionId,
@@ -283,6 +288,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
       type: MiniRoomType.screening,
       thumbnailUrl: videoThumbnail,
       videoUrl: videoUrl,
+      webViewKeepAlive: keepAlive,
       // O PiP fica acima do Router no builder do MaterialApp; por isso o context
       // dele não é descendente de Navigator. Usamos o GoRouter capturado antes
       // de descartar esta tela, mantendo a navegação declarativa e segura.

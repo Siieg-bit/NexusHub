@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../services/haptic_service.dart';
@@ -55,7 +56,11 @@ class MiniRoomState {
   /// Emite null quando ninguém está falando.
   final Stream<ActiveSpeakerInfo?>? speakerStream;
 
-  /// Callback legado (sem context). Mantido por compatibilidade.
+  /// Token de Keep Alive para reutilizar a WebView nativa no PiP de projeção.
+  /// Quando não nulo, o PiP renderiza a mesma WebView sem recarregar o vídeo.
+  final InAppWebViewKeepAlive? webViewKeepAlive;
+
+  /// Callback legádo (sem context). Mantido por compatibilidade.
   final VoidCallback? onReturn;
 
   /// Callback com context do PiP — preferir este para navegação segura.
@@ -73,6 +78,7 @@ class MiniRoomState {
     this.thumbnailUrl,
     this.videoUrl,
     this.speakerStream,
+    this.webViewKeepAlive,
     this.onReturn,
     this.onReturnWithContext,
     this.onEnd,
@@ -94,6 +100,7 @@ class MiniRoomState {
       thumbnailUrl: thumbnailUrl,
       videoUrl: videoUrl,
       speakerStream: speakerStream,
+      webViewKeepAlive: webViewKeepAlive,
       onReturn: onReturn,
       onReturnWithContext: onReturnWithContext,
       onEnd: onEnd,
@@ -115,6 +122,7 @@ class MiniRoomNotifier extends StateNotifier<MiniRoomState?> {
     String? thumbnailUrl,
     String? videoUrl,
     Stream<ActiveSpeakerInfo?>? speakerStream,
+    InAppWebViewKeepAlive? webViewKeepAlive,
     VoidCallback? onReturn,
     void Function(BuildContext context)? onReturnWithContext,
     VoidCallback? onEnd,
@@ -130,6 +138,7 @@ class MiniRoomNotifier extends StateNotifier<MiniRoomState?> {
       thumbnailUrl: thumbnailUrl,
       videoUrl: videoUrl,
       speakerStream: speakerStream,
+      webViewKeepAlive: webViewKeepAlive,
       onReturn: onReturn,
       onReturnWithContext: onReturnWithContext,
       onEnd: onEnd,
@@ -666,18 +675,31 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
           aspectRatio: 16 / 9,
           child: Stack(
             fit: StackFit.expand,
-            children: [
-              // ── Camada 0: Thumbnail do vídeo ───────────────────────────
-              if (hasThumbnail)
+            children: [              // ── Camada 0: Player de vídeo (WebView Keep Alive) ou Thumbnail ────
+              // Se o token keepAlive estiver disponível, reutiliza a WebView
+              // nativa sem recarregar o vídeo. Caso contrário, exibe o thumbnail.
+              if (s.webViewKeepAlive != null)
+                InAppWebView(
+                  keepAlive: s.webViewKeepAlive,
+                  initialSettings: InAppWebViewSettings(
+                    javaScriptEnabled: true,
+                    mediaPlaybackRequiresUserGesture: false,
+                    allowsInlineMediaPlayback: true,
+                    useHybridComposition: false,
+                    supportZoom: false,
+                    disableHorizontalScroll: true,
+                    disableVerticalScroll: true,
+                    transparentBackground: false,
+                  ),
+                )
+              else if (hasThumbnail)
                 CachedNetworkImage(
                   imageUrl: thumbnailUrl,
                   fit: BoxFit.cover,
                   errorWidget: (_, __, ___) => _buildScreeningFallback(),
                 )
               else
-                _buildScreeningFallback(),
-
-              // ── Camada 1: Gradiente topo (para legibilidade do header) ────
+                _buildScreeningFallback(),       // ── Camada 1: Gradiente topo (para legibilidade do header) ────
               Positioned(
                 top: 0, left: 0, right: 0,
                 height: 48,

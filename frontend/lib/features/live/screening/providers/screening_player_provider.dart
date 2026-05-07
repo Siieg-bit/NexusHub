@@ -180,6 +180,15 @@ final screeningPlayerProvider = StateNotifierProvider.family<
   (ref, sessionId) => ScreeningPlayerNotifier(sessionId: sessionId, ref: ref),
 );
 
+/// Token global de Keep Alive por sessão.
+/// Permite que o InAppWebView da sala de projeção seja reutilizado
+/// pelo PiP flutuante sem recarregar o vídeo.
+/// Regra: apenas UMA instância ativa por token ao mesmo tempo.
+final screeningWebViewKeepAliveProvider =
+    Provider.family<InAppWebViewKeepAlive, String>(
+  (ref, sessionId) => InAppWebViewKeepAlive(),
+);
+
 class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   final String sessionId;
   final Ref _ref;
