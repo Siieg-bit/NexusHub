@@ -700,6 +700,16 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
                 )
               else
                 _buildScreeningFallback(),
+              // ── Camada de toque: captura tap no card inteiro para voltar à sala ──
+              // Necessário porque o InAppWebView (view nativa) absorve todos os
+              // eventos de toque antes que o GestureDetector pai os receba.
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: _onTap,
+                  behavior: HitTestBehavior.translucent,
+                  child: const SizedBox.expand(),
+                ),
+              ),
               // ── Botão fechar (canto superior direito) ──────────────────────
               Positioned(
                 top: 4, right: 4,
