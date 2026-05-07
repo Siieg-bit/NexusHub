@@ -1087,6 +1087,53 @@ $touchBlockerHtml
             onReady: function(e) {
               console.log('__YT_READY__');
               e.target.playVideo();
+              // Injetar CSS diretamente no documento do iframe do YouTube.
+              // O InAppWebView (WebView nativo) não aplica same-origin para
+              // JS executado nativamente, então contentDocument é acessível.
+              // Oculta: overlay de pausa, título, logo, badges, gradientes,
+              // botões de share/watch-later e a seekbar nativa.
+              try {
+                var iframeDoc = e.target.getIframe().contentDocument ||
+                                e.target.getIframe().contentWindow.document;
+                if (iframeDoc) {
+                  var s = iframeDoc.createElement('style');
+                  s.id = 'nexus-yt-hide';
+                  s.textContent = [
+                    '.ytp-pause-overlay,',
+                    '.ytp-pause-overlay-container,',
+                    '.ytp-chrome-top,',
+                    '.ytp-chrome-top-buttons,',
+                    '.ytp-title,',
+                    '.ytp-title-text,',
+                    '.ytp-watermark,',
+                    '.ytp-gradient-top,',
+                    '.ytp-gradient-bottom,',
+                    '.ytp-chrome-bottom,',
+                    '.ytp-progress-bar-container,',
+                    '.ytp-time-display,',
+                    '.ytp-left-controls,',
+                    '.ytp-right-controls,',
+                    '.ytp-button,',
+                    '.ytp-share-button,',
+                    '.ytp-watch-later-button,',
+                    '.ytp-copylink-button,',
+                    '.ytp-settings-button,',
+                    '.ytp-fullscreen-button,',
+                    '.ytp-overflow-button,',
+                    '.ytp-subtitles-button,',
+                    '.ytp-cards-button,',
+                    '.ytp-endscreen-element,',
+                    '.ytp-ce-element,',
+                    '.iv-branding,',
+                    '.iv-card-cta,',
+                    '.ytp-cards-teaser,',
+                    '.ytp-spinner { display: none !important; }'
+                  ].join('');
+                  if (!iframeDoc.getElementById('nexus-yt-hide')) {
+                    iframeDoc.head.appendChild(s);
+                  }
+                }
+              } catch(cssErr) { /* cross-origin bloqueado — silencioso */ }
               // Notificar duração inicial — com retries caso o handler Flutter
               // ainda não esteja registrado no primeiro frame (race condition
               // entre onWebViewCreated Dart e onReady JS).
