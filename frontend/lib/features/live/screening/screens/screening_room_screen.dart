@@ -242,25 +242,12 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
 
   // ── Minimizar (PiP) ─────────────────────────────────────────────────────────
 
-  /// Exibe um dialog perguntando se o usuário quer minimizar (PiP) ou encerrar
-  /// a sala. Isso substitui o comportamento anterior de minimizar direto ao
-  /// clicar no X, e também corrige o crash "Cannot use ref after widget was
-  /// disposed" capturando todos os valores necessários antes do Navigator.pop.
-  Future<void> _minimize() async {
+  /// Minimiza a sala para PiP diretamente, sem dialog de confirmação.
+  /// Chamado pelo botão X, botão físico de voltar e swipe back.
+  Future<void> _minimizeToPip() async {
     final roomState = ref.read(screeningRoomProvider(widget.threadId));
     if (roomState.sessionId == null) {
       if (mounted) Navigator.of(context).pop();
-      return;
-    }
-
-    // Mostrar dialog de escolha: Minimizar ou Encerrar
-    final choice = await _showMinimizeOrEndDialog(roomState.isHost);
-    if (choice == null || !mounted) return; // Cancelou
-
-    if (choice == _MinimizeChoice.end) {
-      // Encerrar sala — skipConfirm:true pois o usuário já confirmou
-      // a intenção ao escolher 'Encerrar sala' no dialog anterior.
-      await _leaveRoom(skipConfirm: true);
       return;
     }
 
@@ -314,63 +301,6 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
     if (mounted) Navigator.of(context).pop();
   }
 
-  Future<_MinimizeChoice?> _showMinimizeOrEndDialog(bool isHost) async {
-    return showDialog<_MinimizeChoice>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Text(
-          'O que deseja fazer?',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        content: Text(
-          isHost
-              ? 'Você pode minimizar a sala (continuar em segundo plano) ou encerrá-la para todos.'
-              : 'Você pode minimizar a sala (continuar em segundo plano) ou sair dela.',
-          style: const TextStyle(color: Colors.white60),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(null),
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(color: Colors.white54),
-            ),
-          ),
-          TextButton(
-            onPressed: () =>
-                Navigator.of(ctx).pop(_MinimizeChoice.minimize),
-            child: const Text(
-              'Minimizar',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(_MinimizeChoice.end),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Text(
-              isHost ? 'Encerrar sala' : 'Sair',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // ── Sair da sala ────────────────────────────────────────────────────────────
 
@@ -378,8 +308,8 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
     final roomState = ref.read(screeningRoomProvider(widget.threadId));
 
     // Mostrar dialog de confirmação apenas quando chamado diretamente (ex: botão
-    // de back do sistema). Quando chamado via _minimize() com choice == end,
-    // o usuário já confirmou a intenção no dialog anterior — pular confirmação.
+    // de back do sistema). Quando chamado diretamente pelo botão de encerrar,
+    // skipConfirm:true é passado para pular a confirmação.
     if (roomState.isHost && !skipConfirm) {
       final confirmed = await _showLeaveConfirmDialog();
       if (!confirmed) return;
@@ -652,4 +582,3 @@ class _SyncStatusBadge extends ConsumerWidget {
 }
 
 // ── Enum interno para o dialog de minimizar/encerrar ─────────────────────────
-enum _MinimizeChoice { minimize, end }
