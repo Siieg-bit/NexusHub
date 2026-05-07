@@ -15,23 +15,16 @@ import '../services/haptic_service.dart';
 // O PiP é arrastável, aparece acima de toda a navegação (via Stack no main.dart)
 // e persiste enquanto o usuário navega pelo app.
 //
-// Uso:
-//   ref.read(miniRoomProvider.notifier).show(
-//     roomId: threadId,
-//     title: 'Voice Chat',
-//     type: MiniRoomType.voiceChat,
-//     onReturnWithContext: (ctx) => router.push('/chat/$threadId'),
-//     onEnd: () => callController.end(null),
-//     onToggleMute: () => callController.toggleMute(),
-//     speakerStream: callController.activeSpeakerStream,
-//   );
+// NOTA: Tooltip NÃO é usado neste widget porque o MiniRoomOverlayWrapper fica
+// acima do MaterialApp na árvore de widgets, fora do Overlay do Navigator.
+// Usar Tooltip aqui causaria "No Overlay widget found" em runtime.
 // ============================================================================
 
 // ─── Tipo de sala ─────────────────────────────────────────────────────────────
 enum MiniRoomType {
-  freeTalk,    // Sala de voz estilo palco
-  voiceChat,   // Voice chat inline do chat
-  screening,   // Sala de projeção
+  freeTalk,   // Sala de voz estilo palco
+  voiceChat,  // Voice chat inline do chat
+  screening,  // Sala de projeção
 }
 
 // ─── Dados do speaker ativo ───────────────────────────────────────────────────
@@ -90,7 +83,6 @@ class MiniRoomState {
     bool? isMuted,
     int? participantCount,
     bool? isVisible,
-    ActiveSpeakerInfo? activeSpeaker,
   }) {
     return MiniRoomState(
       roomId: roomId,
@@ -296,7 +288,6 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
   void _onClose() {
     HapticService.action();
     final s = widget.state;
-    // Fechar sempre encerra a call (sai do palco se estiver nele)
     s.onEnd?.call();
     ref.read(miniRoomProvider.notifier).hide();
   }
@@ -331,8 +322,6 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
   }
 
   // ── Voice Chat PiP ─────────────────────────────────────────────────────────
-  // Design: card escuro com gradiente roxo, avatar circular do speaker ativo
-  // com anel animado de áudio, nome do speaker, título do chat e controles.
   Widget _buildVoiceChatPip(MiniRoomState s) {
     final speaker = _activeSpeaker;
     final hasSpeaker = speaker != null;
@@ -513,7 +502,6 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
                       HapticService.micOn();
                       s.onToggleMute?.call();
                     },
-                    tooltip: s.isMuted ? 'Desmutar' : 'Mutar',
                   ),
                 const Spacer(),
                 // Encerrar call
@@ -521,7 +509,6 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
                   icon: Icons.call_end_rounded,
                   color: Colors.red[400]!,
                   onTap: _onClose,
-                  tooltip: 'Sair da call',
                   background: Colors.red.withValues(alpha: 0.15),
                 ),
               ],
@@ -872,37 +859,35 @@ class _SpeakerAvatar extends StatelessWidget {
 }
 
 // ─── Botão de controle ────────────────────────────────────────────────────────
+// NOTA: Tooltip NÃO é usado aqui porque este widget vive fora do Overlay do
+// Navigator (MiniRoomOverlayWrapper fica acima do MaterialApp). Usar Tooltip
+// causaria "No Overlay widget found" em runtime.
 class _ControlButton extends StatelessWidget {
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
-  final String tooltip;
   final Color? background;
 
   const _ControlButton({
     required this.icon,
     required this.color,
     required this.onTap,
-    required this.tooltip,
     this.background,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-            color: background ?? Colors.transparent,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: color, size: 18),
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: background ?? Colors.transparent,
+          shape: BoxShape.circle,
         ),
+        child: Icon(icon, color: color, size: 18),
       ),
     );
   }
