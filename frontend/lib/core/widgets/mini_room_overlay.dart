@@ -699,181 +699,28 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
                   errorWidget: (_, __, ___) => _buildScreeningFallback(),
                 )
               else
-                _buildScreeningFallback(),       // ── Camada 1: Gradiente topo (para legibilidade do header) ────
+                _buildScreeningFallback(),
+              // ── Botão fechar (canto superior direito) ──────────────────────
               Positioned(
-                top: 0, left: 0, right: 0,
-                height: 48,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.75),
-                        Colors.transparent,
-                      ],
+                top: 4, right: 4,
+                child: GestureDetector(
+                  onTap: _onClose,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.55),
                     ),
-                  ),
-                ),
-              ),
-
-              // ── Camada 2: Gradiente base (para legibilidade do rodapé) ────
-              Positioned(
-                bottom: 0, left: 0, right: 0,
-                height: 36,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.80),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // ── Camada 3: Header (título + botão fechar) ──────────────
-              Positioned(
-                top: 6, left: 8, right: 6,
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.live_tv_rounded,
-                      color: Colors.white70,
-                      size: 11,
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        s.title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 10,
-                          letterSpacing: 0.1,
-                          decoration: TextDecoration.none,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black,
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    // Botão fechar
-                    GestureDetector(
-                      onTap: _onClose,
-                      behavior: HitTestBehavior.opaque,
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Icon(
-                          Icons.close_rounded,
-                          color: Colors.white.withValues(alpha: 0.75),
-                          size: 13,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── Camada 4: Ícone de play centralizado ──────────────────
-              AnimatedBuilder(
-                animation: _pulseAnim,
-                builder: (_, __) => Center(
-                  child: Transform.scale(
-                    scale: _pulseAnim.value,
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black.withValues(alpha: 0.45),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.60),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.play_arrow_rounded,
-                        color: Colors.white,
-                        size: 22,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // ── Camada 5: Indicador ao vivo (rodapé esquerdo) ────────
-              Positioned(
-                bottom: 6, left: 8,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AnimatedBuilder(
-                      animation: _pulseAnim,
-                      builder: (_, __) => Container(
-                        width: 5,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFFE53935),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFE53935)
-                                  .withValues(alpha: _pulseAnim.value - 0.7),
-                              blurRadius: 5,
-                              spreadRadius: 1,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Text(
-                      'AO VIVO',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 8,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                        decoration: TextDecoration.none,
-                        shadows: [
-                          Shadow(color: Colors.black, blurRadius: 4),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── Camada 6: Mic mute (rodapé direito) ────────────────
-              if (s.onToggleMute != null)
-                Positioned(
-                  bottom: 4, right: 6,
-                  child: GestureDetector(
-                    onTap: () {
-                      HapticService.tap();
-                      s.onToggleMute?.call();
-                    },
-                    behavior: HitTestBehavior.opaque,
                     child: Icon(
-                      s.isMuted
-                          ? Icons.mic_off_rounded
-                          : Icons.mic_rounded,
-                      color: s.isMuted
-                          ? Colors.red[300]
-                          : Colors.white.withValues(alpha: 0.75),
-                      size: 14,
+                      Icons.close_rounded,
+                      color: Colors.white.withValues(alpha: 0.85),
+                      size: 13,
                     ),
                   ),
                 ),
+              ),
             ],
           ),
         ),
