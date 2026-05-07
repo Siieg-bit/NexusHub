@@ -7,12 +7,13 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/providers/interests_provider.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Wizard de seleção de interesses em 4 passos, inspirado no Amino Apps.
 /// Passo 1: Boas-vindas e avatar
 /// Passo 2: Definir Amino ID
-/// Passo 3: Selecionar categorias de interesse
+/// Passo 3: Selecionar categorias de interesse (carregadas do Supabase)
 /// Passo 4: Comunidades sugeridas
 class InterestWizardScreen extends ConsumerStatefulWidget {
   const InterestWizardScreen({super.key});
@@ -32,38 +33,6 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   bool _isCheckingAminoId = false;
   bool? _isAminoIdAvailable;
   String? _aminoIdAvailabilityMessage;
-
-  static List<_InterestItem> _getInterestCategories(AppStrings s) => [
-    _InterestItem(
-        s.animeManga, Icons.movie_filter_rounded, Color(0xFFE91E63)),
-    _InterestItem(s.interestKpop, Icons.music_note_rounded, Color(0xFF9C27B0)),
-    _InterestItem(s.games, Icons.sports_esports_rounded, Color(0xFF4CAF50)),
-    _InterestItem(s.artDesign, Icons.palette_rounded, Color(0xFFFF9800)),
-    _InterestItem(s.interestFashion, Icons.checkroom_rounded, Color(0xFFE040FB)),
-    _InterestItem(
-        s.booksWriting, Icons.menu_book_rounded, Color(0xFF795548)),
-    _InterestItem(s.moviesSeries, Icons.theaters_rounded, Color(0xFFF44336)),
-    _InterestItem(s.music, Icons.headphones_rounded, Color(0xFF2196F3)),
-    _InterestItem(s.interestPhotography, Icons.camera_alt_rounded, Color(0xFF607D8B)),
-    _InterestItem(s.interestScience, Icons.science_rounded, Color(0xFF00BCD4)),
-    _InterestItem(s.interestSports, Icons.fitness_center_rounded, Color(0xFFFF5722)),
-    _InterestItem(s.interestTechnology, Icons.computer_rounded, Color(0xFF3F51B5)),
-    _InterestItem(
-        s.interestCosplay, Icons.face_retouching_natural_rounded, Color(0xFFFF4081)),
-    _InterestItem(
-        s.interestSpirituality, Icons.self_improvement_rounded, Color(0xFF8BC34A)),
-    _InterestItem(s.interestCooking, Icons.restaurant_rounded, Color(0xFFFFEB3B)),
-    _InterestItem(s.petsAnimals, Icons.pets_rounded, Color(0xFF009688)),
-    _InterestItem(s.interestTravel, Icons.flight_rounded, Color(0xFF03A9F4)),
-    _InterestItem(s.interestHorror, Icons.dark_mode_rounded, Color(0xFF424242)),
-    _InterestItem(s.memesHumor, Icons.sentiment_very_satisfied_rounded,
-        Color(0xFFFFC107)),
-    _InterestItem(s.interestLanguages, Icons.translate_rounded, Color(0xFF673AB7)),
-    _InterestItem(s.diy, Icons.handyman_rounded, Color(0xFFCDDC39)),
-    _InterestItem(s.interestComics, Icons.auto_stories_rounded, Color(0xFFFF6F00)),
-    _InterestItem(s.interestDance, Icons.nightlife_rounded, Color(0xFFD500F9)),
-    _InterestItem(s.interestNature, Icons.park_rounded, Color(0xFF4CAF50)),
-  ];
 
   void _nextStep() {
     if (_currentStep < 3) {
@@ -92,10 +61,10 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
     final trimmed = _normalizeAminoId(value);
     if (trimmed.length < 3) return s.min3Chars;
     if (trimmed.length > 30) return s.max30Chars;
-     if (!RegExp(r'^[a-z0-9_]+$').hasMatch(trimmed)) {
+    if (!RegExp(r'^[a-z0-9_]+$').hasMatch(trimmed)) {
       return s.aminoIdInvalidChars;
     }
-   return null;
+    return null;
   }
 
   Future<bool> _checkAminoIdAvailability({required bool silent}) async {
@@ -219,18 +188,11 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
             .eq('id', userId);
       }
 
-      // Salvar interesses selecionados
+      // Salvar interesses selecionados via RPC
+      // A RPC set_user_interests espera JSONB — passamos a lista diretamente.
       if (_selectedInterests.isNotEmpty) {
-        final interests = _selectedInterests
-            .map((name) => {
-                  'user_id': userId,
-                  'name': name,
-                })
-            .toList();
-
-        // Substituir interesses atomicamente via RPC
         await SupabaseService.rpc('set_user_interests', params: {
-          'p_interests': interests,
+          'p_interests': _selectedInterests.toList(),
         });
       }
 
@@ -303,7 +265,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
               else
                 SizedBox(width: r.s(20)),
               Text(
-                s.stepProgress,
+                '${s.stepProgress} ${_currentStep + 1}/4',
                 style: TextStyle(
                   color: Colors.grey[500],
                   fontSize: r.fs(14),
@@ -575,6 +537,9 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   Widget _buildInterestsStep() {
     final s = getStrings();
     final r = context.r;
+    // Observa o provider de interesses remotos
+    final interestsAsync = ref.watch(interestCategoriesProvider);
+
     return Column(
       children: [
         SizedBox(height: r.s(16)),
@@ -611,86 +576,116 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
         ),
         SizedBox(height: r.s(16)),
         Expanded(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 1.0,
+          child: interestsAsync.when(
+            loading: () => Center(
+              child: CircularProgressIndicator(
+                color: context.nexusTheme.accentPrimary,
+                strokeWidth: 2,
               ),
-              itemCount: _getInterestCategories(s).length,
-              itemBuilder: (context, index) {
-                final item = _getInterestCategories(s)[index];
-                final isSelected = _selectedInterests.contains(item.name);
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      if (isSelected) {
-                        _selectedInterests.remove(item.name);
-                      } else {
-                        _selectedInterests.add(item.name);
-                      }
-                    });
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? item.color.withValues(alpha: 0.25)
-                          : context.surfaceColor,
-                      borderRadius: BorderRadius.circular(r.s(16)),
-                      border: Border.all(
-                        color: isSelected
-                            ? item.color
-                            : Colors.white.withValues(alpha: 0.05),
-                        width: isSelected ? 2 : 1,
-                      ),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: item.color.withValues(alpha: 0.2),
-                                blurRadius: 8,
-                                spreadRadius: 1,
-                              )
-                            ]
-                          : null,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          item.icon,
-                          color: isSelected ? item.color : Colors.grey[500],
-                          size: r.s(32),
-                        ),
-                        SizedBox(height: r.s(8)),
-                        Text(
-                          item.name,
-                          style: TextStyle(
-                            color:
-                                isSelected ? item.color : context.nexusTheme.textPrimary,
-                            fontSize: r.fs(11),
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : FontWeight.normal,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (isSelected)
-                          Padding(
-                            padding: EdgeInsets.only(top: r.s(4)),
-                            child: Icon(Icons.check_circle_rounded,
-                                color: item.color, size: r.s(16)),
-                          ),
-                      ],
-                    ),
+            ),
+            error: (_, __) => Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.error_outline_rounded,
+                      color: context.nexusTheme.error, size: r.s(40)),
+                  SizedBox(height: r.s(12)),
+                  Text(
+                    s.errorLoading,
+                    style: TextStyle(color: context.nexusTheme.textSecondary),
+                    textAlign: TextAlign.center,
                   ),
-                );
-              },
+                  SizedBox(height: r.s(12)),
+                  TextButton(
+                    onPressed: () => ref.invalidate(interestCategoriesProvider),
+                    child: Text(s.retry,
+                        style: TextStyle(color: context.nexusTheme.accentPrimary)),
+                  ),
+                ],
+              ),
+            ),
+            data: (categories) => Padding(
+              padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 1.0,
+                ),
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final item = categories[index];
+                  final isSelected = _selectedInterests.contains(item.name);
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        if (isSelected) {
+                          _selectedInterests.remove(item.name);
+                        } else {
+                          _selectedInterests.add(item.name);
+                        }
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? item.color.withValues(alpha: 0.25)
+                            : context.surfaceColor,
+                        borderRadius: BorderRadius.circular(r.s(16)),
+                        border: Border.all(
+                          color: isSelected
+                              ? item.color
+                              : Colors.white.withValues(alpha: 0.05),
+                          width: isSelected ? 2 : 1,
+                        ),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: item.color.withValues(alpha: 0.2),
+                                  blurRadius: 8,
+                                  spreadRadius: 1,
+                                )
+                              ]
+                            : null,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            item.icon,
+                            color: isSelected ? item.color : Colors.grey[500],
+                            size: r.s(32),
+                          ),
+                          SizedBox(height: r.s(8)),
+                          Text(
+                            item.name,
+                            style: TextStyle(
+                              color: isSelected
+                                  ? item.color
+                                  : context.nexusTheme.textPrimary,
+                              fontSize: r.fs(11),
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.normal,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (isSelected)
+                            Padding(
+                              padding: EdgeInsets.only(top: r.s(4)),
+                              child: Icon(Icons.check_circle_rounded,
+                                  color: item.color, size: r.s(16)),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -708,6 +703,9 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   Widget _buildSuggestedCommunitiesStep() {
     final s = getStrings();
     final r = context.r;
+    // Usa os interesses já carregados pelo provider (cache do Riverpod)
+    final categories = ref.watch(interestCategoriesProvider).valueOrNull ?? [];
+
     return SingleChildScrollView(
       padding: EdgeInsets.all(r.s(24)),
       child: Column(
@@ -756,11 +754,18 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
             spacing: 8,
             runSpacing: 8,
             alignment: WrapAlignment.center,
-            children: _selectedInterests.map((interest) {
-              final item = _getInterestCategories(s).firstWhere(
-                (i) => i.name == interest,
-                orElse: () => _InterestItem(
-                    interest, Icons.star_rounded, context.nexusTheme.accentPrimary),
+            children: _selectedInterests.map((interestName) {
+              // Busca a categoria no cache do provider para obter ícone e cor
+              final item = categories.firstWhere(
+                (c) => c.name == interestName,
+                orElse: () => InterestCategory(
+                  name: interestName,
+                  displayName: interestName,
+                  category: '',
+                  color: context.nexusTheme.accentPrimary,
+                  icon: Icons.star_rounded,
+                  sortOrder: 0,
+                ),
               );
               return Container(
                 padding:
@@ -776,7 +781,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
                     Icon(item.icon, size: r.s(16), color: item.color),
                     SizedBox(width: r.s(6)),
                     Text(
-                      interest,
+                      interestName,
                       style: TextStyle(
                         color: item.color,
                         fontSize: r.fs(12),
@@ -848,7 +853,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
               ? SizedBox(
                   width: r.s(20),
                   height: r.s(20),
-                  child: CircularProgressIndicator(
+                  child: const CircularProgressIndicator(
                     strokeWidth: 2,
                     color: Colors.white,
                   ),
@@ -865,11 +870,4 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
       ),
     );
   }
-}
-
-class _InterestItem {
-  final String name;
-  final IconData icon;
-  final Color color;
-  const _InterestItem(this.name, this.icon, this.color);
 }
