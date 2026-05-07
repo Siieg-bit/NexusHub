@@ -676,6 +676,8 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             },
             seek: function(seconds) {
               try {
+                // Cobrir controles que aparecem ao seekar no YouTube
+                if (typeof window._showYtCovers === 'function') window._showYtCovers(3500);
                 var yt = window._ytPlayer;
                 if (yt && yt.seekTo) { yt.seekTo(seconds, true); return; }
                 var v = document.querySelector('video');
@@ -873,7 +875,8 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         return 'https://www.youtube.com/embed/$id'
             '?autoplay=1&mute=0&rel=0&modestbranding=1'
             '&playsinline=1&enablejsapi=1&controls=0'
-            '&iv_load_policy=3&disablekb=1'
+            '&iv_load_policy=3&disablekb=1&showinfo=0'
+            '&fs=0&cc_load_policy=0&hl=pt&color=white'
             '&origin=https://nexushub.app';
       }
     }
@@ -993,6 +996,51 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     #pause-overlay.paused {
       background: rgba(0, 0, 0, 0.85);
     }
+    /* ── Overlays de cobertura de controles do YouTube ──────────────────────
+       O YouTube renderiza seus controles DENTRO do iframe, que é cross-origin.
+       Não podemos injetar CSS no iframe (same-origin policy bloqueia).
+       Solução: cobrir as áreas onde os controles aparecem com divs no
+       documento pai que ficam na frente do iframe via z-index.
+
+       Layout do player YouTube (proporções aproximadas):
+         - Topo (~10%): .ytp-chrome-top (título, botões de share/watch-later)
+         - Base (~12%): .ytp-chrome-bottom (seekbar, controles, volume)
+         - Canto inf-dir: .ytp-watermark (logo YouTube)
+         - Overlay de pausa: cobre tudo quando pausado (já tratado acima)
+
+       Os overlays têm background #000 e opacity:0 (invisíveis ao usuário).
+       O iframe fica atrás deles (z-index menor), então os controles do
+       YouTube ficam ocultos sem afetar a área de vídeo no centro.
+    */
+    /* Transición suave para os overlays de cobertura */
+    #yt-top-cover, #yt-bottom-cover, #yt-watermark-cover {
+      position: fixed;
+      z-index: 9997;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.6s ease;
+    }
+    #yt-top-cover.visible, #yt-bottom-cover.visible, #yt-watermark-cover.visible {
+      opacity: 1;
+    }
+    #yt-top-cover {
+      top: 0; left: 0; right: 0;
+      /* Altura do .ytp-chrome-top: ~8-12% da altura do player */
+      height: 12%;
+    }
+    #yt-bottom-cover {
+      bottom: 0; left: 0; right: 0;
+      /* Altura do .ytp-chrome-bottom: ~10-14% da altura do player */
+      height: 14%;
+    }
+    #yt-watermark-cover {
+      /* Logo do YouTube: canto inferior direito, acima do chrome-bottom */
+      bottom: 14%;
+      right: 0;
+      width: 15%;
+      height: 8%;
+    }
   </style>
 </head>
 <body>
@@ -1007,6 +1055,13 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
 ></iframe>
 <!-- Overlay de pausa: cobre badges/end-cards nativos do YouTube quando pausado -->
 <div id="pause-overlay"></div>
+<!-- Overlays de cobertura das áreas de controles do YouTube.
+     Ficam na frente do iframe via z-index. São ativados temporariamente
+     (opacity:1) após state changes para cobrir os controles durante
+     o fade-in/out natural do YouTube, depois voltam a opacity:0. -->
+<div id="yt-top-cover"></div>
+<div id="yt-bottom-cover"></div>
+<div id="yt-watermark-cover"></div>
 <!-- Overlay transparente com pointer-events:all que intercepta TODOS os
      eventos de input antes de chegarem ao iframe do YouTube. O YouTube
      nunca recebe toques, swipes (horizontais ou verticais), cliques, etc.
@@ -1047,6 +1102,44 @@ $touchBlockerHtml
     } catch(e) { /* silencioso */ }
   }
 
+  // ── Overlays de cobertura de controles do YouTube ─────────────────────────
+  // Ativa os overlays (topo, base, watermark) por [durationMs] ms e depois
+  // faz fade-out suave. Usado para cobrir os controles nativos durante o
+  // período em que o YouTube os exibe (após play, seek, state change).
+  var _ytCoversTimer = null;
+  function _showYtCovers(durationMs) {
+    var top = document.getElementById('yt-top-cover');
+    var bot = document.getElementById('yt-bottom-cover');
+    var wm  = document.getElementById('yt-watermark-cover');
+    if (top) top.classList.add('visible');
+    if (bot) bot.classList.add('visible');
+    if (wm)  wm.classList.add('visible');
+    if (_ytCoversTimer) clearTimeout(_ytCoversTimer);
+    _ytCoversTimer = setTimeout(function() {
+      if (top) top.classList.remove('visible');
+      if (bot) bot.classList.remove('visible');
+      if (wm)  wm.classList.remove('visible');
+    }, durationMs || 3500);
+  }
+  function _hideYtCovers() {
+    if (_ytCoversTimer) { clearTimeout(_ytCoversTimer); _ytCoversTimer = null; }
+    var top = document.getElementById('yt-top-cover');
+    var bot = document.getElementById('yt-bottom-cover');
+    var wm  = document.getElementById('yt-watermark-cover');
+    if (top) top.classList.remove('visible');
+    if (bot) bot.classList.remove('visible');
+    if (wm)  wm.classList.remove('visible');
+  }
+  // Expor no window para acesso pelo _injectControlScript (IIFE)
+  window._showYtCovers = _showYtCovers;
+  window._hideYtCovers = _hideYtCovers;
+
+  // Ativar overlays imediatamente ao carregar a página.
+  // O YouTube exibe elementos de UI durante o carregamento e nos primeiros
+  // segundos após o autoplay. Cobrir por 5s garante que não aparecem.
+  // O onReady do YT.Player vai chamar _showYtCovers(4000) novamente.
+  _showYtCovers(5000);
+
   // Timer de polling de posição para YouTube (substitui timeupdate do <video>)
   // O YT IFrame API não expoe eventos de timeupdate, então fazemos polling leve.
   // IMPORTANTE: emite também o estado de playing a cada ciclo via __YT_STATE:N__
@@ -1086,6 +1179,9 @@ $touchBlockerHtml
           events: {
             onReady: function(e) {
               console.log('__YT_READY__');
+              // Cobrir controles nativos que aparecem nos primeiros segundos
+              // O YouTube exibe o título e botões por ~3s ao iniciar
+              _showYtCovers(4000);
               e.target.playVideo();
               // Injetar CSS diretamente no documento do iframe do YouTube.
               // O InAppWebView (WebView nativo) não aplica same-origin para
@@ -1153,6 +1249,9 @@ $touchBlockerHtml
               if (e.data === 1) {
                 _ytBridge('YT_PLAYING');
                 _startYtPositionPolling(e.target);
+                // Cobrir controles que aparecem ao retomar reprodução
+                // O YouTube exibe controles por ~3s ao dar play/resume
+                _showYtCovers(3500);
                 // Remover overlay de pausa ao retomar reprodução
                 if (overlay) overlay.classList.remove('paused');
                 // Notificar duração ao iniciar reprodução
@@ -1161,6 +1260,8 @@ $touchBlockerHtml
               } else if (e.data === 2) {
                 _ytBridge('YT_PAUSED');
                 _stopYtPositionPolling();
+                // Esconder covers de controles (pause-overlay cobre tudo)
+                _hideYtCovers();
                 // Ativar overlay de pausa para ocultar badges/end-cards nativos
                 if (overlay) overlay.classList.add('paused');
                 // Notificar posição final ao pausar
@@ -1173,6 +1274,8 @@ $touchBlockerHtml
               } else if (e.data === 0) {
                 _ytBridge('VIDEO_ENDED');
                 _stopYtPositionPolling();
+                // Esconder covers (pause-overlay cobre end-cards)
+                _hideYtCovers();
                 // Ativar overlay ao terminar para ocultar end-cards
                 if (overlay) overlay.classList.add('paused');
               }

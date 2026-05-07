@@ -140,10 +140,19 @@ class StreamResolverService {
           // controls=0 oculta os controles nativos do YouTube (usamos os do Flutter).
           // iv_load_policy=3: desativa info cards e anotações (badges nativos ao pausar)
           // disablekb=1: desativa atalhos de teclado nativos do YouTube
+          // controls=0: oculta a barra de progresso nativa
+          // iv_load_policy=3: desativa info cards e anotações
+          // disablekb=1: desativa atalhos de teclado
+          // showinfo=0: oculta título e info do canal (legado, ainda funciona em alguns casos)
+          // fs=0: desativa botão de fullscreen nativo
+          // cc_load_policy=0: desativa legendas automáticas
+          // hl=pt: idioma português (reduz elementos de UI em inglês)
+          // color=white: barra de progresso branca (menos visível)
           return 'https://www.youtube.com/embed/$id'
               '?autoplay=1&mute=0&rel=0&modestbranding=1'
               '&playsinline=1&enablejsapi=1&controls=0'
-              '&iv_load_policy=3&disablekb=1'
+              '&iv_load_policy=3&disablekb=1&showinfo=0'
+              '&fs=0&cc_load_policy=0&hl=pt&color=white'
               '&origin=https://nexushub.app';
         }
         return null;
