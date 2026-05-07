@@ -3105,76 +3105,72 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     // Usamos showMenu nativo do Flutter para o estilo dropdown.
     final items = <PopupMenuEntry<String>>[];
 
-    // ── AÇÕES SOCIAIS ──────────────────────────────────────────────────
+    // ── PRÓPRIO PERFIL ───────────────────────────────────────────────
     if (_isOwnProfile) {
-      // Próprio perfil: Editar perfil + Criar publicação
+      // Editar perfil — visível para todos no próprio perfil
       items.add(_menuItem(
         value: 'edit_profile',
         icon: Icons.edit_rounded,
-        label: 'Editar perfil da comunidade',
+        label: 'Editar perfil',
         r: r,
       ));
+      // Compartilhar perfil — visível para todos
       items.add(_menuItem(
-        value: 'create_post',
-        icon: Icons.add_circle_outline_rounded,
-        label: 'Criar publicação',
+        value: 'share',
+        icon: Icons.share_rounded,
+        label: s.shareProfile,
         r: r,
       ));
-      // Staff vê também o painel de moderação no próprio perfil
+      // Menu de moderação — apenas quem tem cargo
       if (callerRank >= 1) {
         items.add(const PopupMenuDivider(height: 1));
         items.add(_menuItem(
           value: 'moderation_panel',
           icon: Icons.admin_panel_settings_rounded,
-          label: 'Painel de moderação',
+          label: 'Menu de moderação',
           r: r,
         ));
       }
-      items.add(const PopupMenuDivider(height: 1));
     } else {
+      // ── PERFIL DE TERCEIROS ───────────────────────────────────
       items.add(_menuItem(
         value: 'dm',
         icon: Icons.chat_bubble_outline_rounded,
         label: 'Enviar mensagem',
         r: r,
       ));
-    }
-    items.add(_menuItem(
-      value: 'share',
-      icon: Icons.share_rounded,
-      label: s.shareProfile,
-      r: r,
-    ));
-
-    // ── MODERAÇÃO ───────────────────────────────────────────────
-    if (canModerateMenu) {
-      items.add(const PopupMenuDivider(height: 1));
       items.add(_menuItem(
-        value: 'moderation',
-        icon: Icons.manage_accounts_rounded,
-        label: 'Opções de moderação',
+        value: 'share',
+        icon: Icons.share_rounded,
+        label: s.shareProfile,
         r: r,
       ));
-      if (canManageTitles) {
+      // Moderação do alvo (apenas staff com rank maior que o alvo)
+      if (canModerateMenu) {
+        items.add(const PopupMenuDivider(height: 1));
         items.add(_menuItem(
-          value: 'titles',
-          icon: Icons.label_rounded,
-          label: 'Gerenciar títulos',
+          value: 'moderation',
+          icon: Icons.manage_accounts_rounded,
+          label: 'Opções de moderação',
           r: r,
         ));
+        if (canManageTitles) {
+          items.add(_menuItem(
+            value: 'titles',
+            icon: Icons.label_rounded,
+            label: 'Gerenciar títulos',
+            r: r,
+          ));
+        }
+        if ((_membership?['is_hidden'] as bool?) == true) {
+          items.add(_menuItem(
+            value: 'unhide',
+            icon: Icons.visibility_rounded,
+            label: 'Desocultar perfil',
+            r: r,
+          ));
+        }
       }
-      if ((_membership?['is_hidden'] as bool?) == true) {
-        items.add(_menuItem(
-          value: 'unhide',
-          icon: Icons.visibility_rounded,
-          label: 'Desocultar perfil',
-          r: r,
-        ));
-      }
-    }
-
-    // ── AÇÕES DESTRUTIVAS ─────────────────────────────────────────────
-    if (!_isOwnProfile) {
       items.add(const PopupMenuDivider(height: 1));
       items.add(_menuItem(
         value: 'report',
