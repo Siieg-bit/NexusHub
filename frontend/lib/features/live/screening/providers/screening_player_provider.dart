@@ -308,18 +308,23 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
         try {
           final posMs = await _getPositionMs();
           final isBuffering = await _getIsBuffering();
+          // Detectar isPlaying via getPlayerState() === 1 (playing)
+          // Isso é mais confiável que esperar a posição avançar no primeiro ciclo.
+          final isPlayingByState = await _getIsPlayingByState();
           if (posMs != null && mounted) {
             final newPos = Duration(milliseconds: posMs);
             final positionAdvanced = newPos > state.position;
-            // Se a posição avançou, o vídeo está reproduzindo — corrigir isPlaying
-            // e limpar isBuffering mesmo que YT_PLAYING não tenha chegado via bridge.
-            final correctedIsPlaying = positionAdvanced ? true : state.isPlaying;
+            // isPlaying: verdadeiro se posição avançou OU getPlayerState()==1
+            final correctedIsPlaying = (positionAdvanced || isPlayingByState) ? true : state.isPlaying;
             final correctedIsBuffering = positionAdvanced ? false : isBuffering;
             state = state.copyWith(
               position: newPos,
               isPlaying: correctedIsPlaying,
               isBuffering: correctedIsBuffering,
             );
+          } else if (isPlayingByState && mounted) {
+            // Posição ainda não disponível mas YT.Player já está reproduzindo
+            state = state.copyWith(isPlaying: true, isBuffering: false);
           }
           // Atualizar duração via polling também (não depender apenas do bridge JS).
           // Isso garante que a seek bar apareça mesmo se VIDEO_DURATION via callHandler falhar.
@@ -331,12 +336,53 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     );
   }
 
+  Future<bool> _getIsPlayingByState() async {
+    if (_webViewController == null || _isNativeMode || _webViewDisposed) return false;
+    try {
+      // YT.Player.getPlayerState() === 1 significa playing
+      final result = await _webViewController!.evaluateJavascript(source: '''
+        (function() {
+          try {
+            if (window._ytPlayer && window._ytPlayer.getPlayerState) {
+              return window._ytPlayer.getPlayerState() === 1;
+            }
+            if (window._nexusPlayer && window._nexusPlayer._yt && window._nexusPlayer._yt.getPlayerState) {
+              return window._nexusPlayer._yt.getPlayerState() === 1;
+            }
+          } catch(e) {}
+          return false;
+        })()
+      ''');
+      return result == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<int?> _getPositionMs() async {
     if (_webViewController == null || _isNativeMode || _webViewDisposed) return null;
     try {
-      final result = await _webViewController!.evaluateJavascript(
-        source: 'window._nexusPlayer ? window._nexusPlayer.getPosition() : -1;',
-      );
+      // Tenta múltiplas fontes em ordem de preferência:
+      // 1. window._nexusPlayer (abstração unificada)
+      // 2. window._ytPlayer (YouTube IFrame API direta)
+      // 3. document.querySelector('video') (HTML5 <video>)
+      final result = await _webViewController!.evaluateJavascript(source: '''
+        (function() {
+          try {
+            if (window._nexusPlayer && window._nexusPlayer._yt && window._nexusPlayer._yt.getCurrentTime) {
+              var p = Math.floor(window._nexusPlayer._yt.getCurrentTime() * 1000);
+              if (p >= 0) return p;
+            }
+            if (window._ytPlayer && window._ytPlayer.getCurrentTime) {
+              var p2 = Math.floor(window._ytPlayer.getCurrentTime() * 1000);
+              if (p2 >= 0) return p2;
+            }
+            var v = document.querySelector('video');
+            if (v && !isNaN(v.currentTime)) return Math.floor(v.currentTime * 1000);
+          } catch(e) {}
+          return -1;
+        })()
+      ''');
       final val = result as num?;
       if (val != null && val >= 0) return val.toInt();
     } catch (e) {
@@ -354,9 +400,23 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   Future<bool> _getIsBuffering() async {
     if (_webViewController == null || _isNativeMode) return false;
     try {
-      final result = await _webViewController!.evaluateJavascript(
-        source: 'window._nexusPlayer ? window._nexusPlayer.isBuffering() : false;',
-      );
+      // YT.Player.getPlayerState() === 3 significa buffering
+      // Fallback: networkState/readyState do <video> HTML5
+      final result = await _webViewController!.evaluateJavascript(source: '''
+        (function() {
+          try {
+            if (window._ytPlayer && window._ytPlayer.getPlayerState) {
+              return window._ytPlayer.getPlayerState() === 3;
+            }
+            if (window._nexusPlayer && window._nexusPlayer._yt && window._nexusPlayer._yt.getPlayerState) {
+              return window._nexusPlayer._yt.getPlayerState() === 3;
+            }
+            var v = document.querySelector('video');
+            if (v) return v.networkState === 2 && v.readyState < 3;
+          } catch(e) {}
+          return false;
+        })()
+      ''');
       return result == true;
     } catch (_) {
       return false;
@@ -366,9 +426,27 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   Future<void> _updateDuration() async {
     if (_webViewController == null || !mounted || _isNativeMode) return;
     try {
-      final result = await _webViewController!.evaluateJavascript(
-        source: 'window._nexusPlayer ? window._nexusPlayer.getDuration() : 0;',
-      );
+      // Tenta múltiplas fontes em ordem de preferência:
+      // 1. window._nexusPlayer (abstração unificada)
+      // 2. window._ytPlayer (YouTube IFrame API direta)
+      // 3. document.querySelector('video') (HTML5 <video>)
+      final result = await _webViewController!.evaluateJavascript(source: '''
+        (function() {
+          try {
+            if (window._nexusPlayer && window._nexusPlayer._yt && window._nexusPlayer._yt.getDuration) {
+              var d = window._nexusPlayer._yt.getDuration();
+              if (d > 0) return Math.floor(d * 1000);
+            }
+            if (window._ytPlayer && window._ytPlayer.getDuration) {
+              var d2 = window._ytPlayer.getDuration();
+              if (d2 > 0) return Math.floor(d2 * 1000);
+            }
+            var v = document.querySelector('video');
+            if (v && !isNaN(v.duration) && v.duration > 0) return Math.floor(v.duration * 1000);
+          } catch(e) {}
+          return 0;
+        })()
+      ''');
       final durMs = (result as num?)?.toInt() ?? 0;
       if (durMs > 0 && mounted) {
         state = state.copyWith(duration: Duration(milliseconds: durMs));
@@ -537,10 +615,9 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   /// Mais eficiente que polling: substitui o evaluateJavascript periódico.
   void onPositionUpdate(int positionMs) {
     if (!mounted || _isNativeMode) return;
-    // Cancelar polling se o bridge estiver ativo (evita dupla atualização)
-    if (_positionPollTimer?.isActive == true) {
-      _positionPollTimer?.cancel();
-    }
+    // Não cancelar o polling: o bridge pode falhar no Android e o polling
+    // é a fonte primária de verdade para posição/isPlaying/isBuffering.
+    // O bridge atualiza o estado quando funciona, sem conflito com o polling.
     final newPos = Duration(milliseconds: positionMs);
     // Se a posição está avançando, o vídeo está reproduzindo — corrigir isPlaying
     // e limpar isBuffering mesmo que YT_PLAYING não tenha chegado via bridge.
