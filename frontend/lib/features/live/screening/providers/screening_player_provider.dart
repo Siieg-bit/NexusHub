@@ -198,6 +198,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   Player? _nativePlayer;
   BetterPlayerController? _drmPlayer;
   Timer? _positionPollTimer;
+  Timer? _bufferingTimeoutTimer;
   bool _bridgeInjected = false;
   bool _isNativeMode = false;
   bool _webViewDisposed = false; // true quando o InAppWebView nativo foi destruído
@@ -308,10 +309,22 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
           final posMs = await _getPositionMs();
           final isBuffering = await _getIsBuffering();
           if (posMs != null && mounted) {
+            final newPos = Duration(milliseconds: posMs);
+            final positionAdvanced = newPos > state.position;
+            // Se a posição avançou, o vídeo está reproduzindo — corrigir isPlaying
+            // e limpar isBuffering mesmo que YT_PLAYING não tenha chegado via bridge.
+            final correctedIsPlaying = positionAdvanced ? true : state.isPlaying;
+            final correctedIsBuffering = positionAdvanced ? false : isBuffering;
             state = state.copyWith(
-              position: Duration(milliseconds: posMs),
-              isBuffering: isBuffering,
+              position: newPos,
+              isPlaying: correctedIsPlaying,
+              isBuffering: correctedIsBuffering,
             );
+          }
+          // Atualizar duração via polling também (não depender apenas do bridge JS).
+          // Isso garante que a seek bar apareça mesmo se VIDEO_DURATION via callHandler falhar.
+          if (state.duration == Duration.zero) {
+            await _updateDuration();
           }
         } catch (_) {}
       },
@@ -448,6 +461,14 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     });
     // Resetar hasEnded ao fazer seek
     if (mounted) state = state.copyWith(position: position, hasEnded: false);
+    // Timeout de segurança: se YT_PLAYING não chegar em 6s após o seek,
+    // limpar isBuffering automaticamente (evita loading infinito).
+    _bufferingTimeoutTimer?.cancel();
+    _bufferingTimeoutTimer = Timer(const Duration(seconds: 6), () {
+      if (mounted && state.isBuffering) {
+        state = state.copyWith(isBuffering: false);
+      }
+    });
   }
 
   Future<void> setRate(double rate) async {
@@ -521,13 +542,13 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
       _positionPollTimer?.cancel();
     }
     final newPos = Duration(milliseconds: positionMs);
-    // Se a posição está avançando, o vídeo está reproduzindo — limpar buffering.
-    // Isso é uma salvaguarda para o caso do YT_PLAYING não ser recebido.
-    final wasBuffering = state.isBuffering;
+    // Se a posição está avançando, o vídeo está reproduzindo — corrigir isPlaying
+    // e limpar isBuffering mesmo que YT_PLAYING não tenha chegado via bridge.
     final positionAdvanced = newPos > state.position;
     state = state.copyWith(
       position: newPos,
-      isBuffering: wasBuffering && positionAdvanced ? false : state.isBuffering,
+      isPlaying: positionAdvanced ? true : state.isPlaying,
+      isBuffering: positionAdvanced ? false : state.isBuffering,
     );
   }
 
@@ -658,6 +679,8 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   void dispose() {
     _positionPollTimer?.cancel();
     _positionPollTimer = null;
+    _bufferingTimeoutTimer?.cancel();
+    _bufferingTimeoutTimer = null;
     _webViewDisposed = true;
     _webViewController = null; // evita MissingPluginException após dispose
     _nativePlayer = null;
