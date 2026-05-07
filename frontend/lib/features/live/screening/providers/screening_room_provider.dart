@@ -155,12 +155,44 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         if (rpcData['success'] != true) {
           final errCode = rpcData['error'] as String? ?? 'unknown_rpc_error';
           debugPrint('[ScreeningRoom] create_screening_session falhou: $errCode');
-          state = state.copyWith(
-            status: ScreeningRoomStatus.error,
-            errorMessage: errCode == 'screening_room_already_active'
-                ? 'Já existe uma Sala de Projeção ativa neste chat.'
-                : 'Não foi possível criar a sala ($errCode).',
-          );
+
+          // BUGFIX: Se já existe uma sessão ativa (ex: host fechou o app sem encerrar),
+          // buscar a sessão existente via RPC e entrar nela como host em vez de mostrar erro.
+          if (errCode == 'screening_room_already_active') {
+            debugPrint('[ScreeningRoom] Sessão já ativa — buscando sessão existente via get_active_screening_session...');
+            try {
+              final activeResult = await SupabaseService.client
+                  .rpc('get_active_screening_session', params: {'p_thread_id': threadId})
+                  .select();
+              final activeList = activeResult as List? ?? [];
+              if (activeList.isNotEmpty) {
+                final activeRow = activeList.first as Map<String, dynamic>;
+                final recoveredSessionId = activeRow['id'] as String?;
+                if (recoveredSessionId != null && recoveredSessionId.isNotEmpty) {
+                  debugPrint('[ScreeningRoom] Sessão recuperada: $recoveredSessionId — reentrando...');
+                  // Reutilizar o fluxo de reentrada recursivamente
+                  return joinRoom(
+                    existingSessionId: recoveredSessionId,
+                    initialVideoUrl: initialVideoUrl,
+                    initialVideoTitle: initialVideoTitle,
+                    initialVideoThumbnail: initialVideoThumbnail,
+                  );
+                }
+              }
+            } catch (e) {
+              debugPrint('[ScreeningRoom] Erro ao buscar sessão ativa: $e');
+            }
+            // Se não conseguiu recuperar, mostrar erro amigável
+            state = state.copyWith(
+              status: ScreeningRoomStatus.error,
+              errorMessage: 'Já existe uma Sala de Projeção ativa neste chat.',
+            );
+          } else {
+            state = state.copyWith(
+              status: ScreeningRoomStatus.error,
+              errorMessage: 'Não foi possível criar a sala ($errCode).',
+            );
+          }
           return;
         }
 

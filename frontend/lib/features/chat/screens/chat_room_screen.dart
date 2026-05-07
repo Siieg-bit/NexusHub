@@ -3721,8 +3721,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
               final screeningActive = screeningSession != null;
               return GestureDetector(
                 onTap: screeningActive
-                    // Se já há sala ativa, redirecionar para ela
-                    ? () => context.push('/screening-room/${widget.threadId}')
+                    // Se já há sala ativa, redirecionar para ela passando o sessionId
+                    ? () {
+                        final sid = screeningSession?.id;
+                        final path = '/screening-room/${widget.threadId}';
+                        if (sid != null && sid.isNotEmpty) {
+                          context.push('$path?sessionId=$sid');
+                        } else {
+                          context.push(path);
+                        }
+                      }
                     : _startProjection,
                 child: Container(
                   width: r.s(34),
