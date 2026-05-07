@@ -264,18 +264,13 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
     final roomNotifier = ref.read(screeningRoomProvider(threadId).notifier);
     final voiceNotifier = ref.read(screeningVoiceProvider(sessionId).notifier);
     final router = ref.read(appRouterProvider);
-    // Token de Keep Alive: permite que o PiP reutilize a WebView nativa
-    // sem recarregar o vídeo. O token é por sessão e é o mesmo usado
-    // pelo ScreeningPlayerWidget.
-    final keepAlive = ref.read(screeningWebViewKeepAliveProvider(sessionId));
-
     miniNotifier.show(
       roomId: sessionId,
       title: videoTitle,
       type: MiniRoomType.screening,
       thumbnailUrl: videoThumbnail,
       videoUrl: videoUrl,
-      webViewKeepAlive: keepAlive,
+      webViewKeepAlive: null, // keepAlive removido: player principal não usa token
       // O PiP fica acima do Router no builder do MaterialApp; por isso o context
       // dele não é descendente de Navigator. Usamos o GoRouter capturado antes
       // de descartar esta tela, mantendo a navegação declarativa e segura.
