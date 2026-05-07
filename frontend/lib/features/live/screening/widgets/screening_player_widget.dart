@@ -304,7 +304,11 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
           }
         });
         return ScreeningNativePlayerWidget(
-          key: ValueKey(resolution.url),
+          // A key inclui o sessionId para garantir que o widget seja recriado
+          // quando o sessionId muda de '' (antes do joinRoom) para o ID real.
+          // Sem isso, o widget mantém o sessionId vazio e registra o player
+          // no provider errado (screeningPlayerProvider('')), causando mismatch.
+          key: ValueKey('${resolution.url}_${widget.sessionId}'),
           hlsUrl: resolution.url,
           sessionId: widget.sessionId,
           threadId: widget.threadId,
