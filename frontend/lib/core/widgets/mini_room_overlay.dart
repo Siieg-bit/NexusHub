@@ -322,6 +322,8 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
   }
 
   // ── Voice Chat PiP ─────────────────────────────────────────────────────────
+  // Design minimalista: card pequeno com header (título + X) e avatar grande
+  // centralizado com anel de áudio animado. Sem textos, sem barra de botões.
   Widget _buildVoiceChatPip(MiniRoomState s) {
     final speaker = _activeSpeaker;
     final hasSpeaker = speaker != null;
@@ -329,20 +331,20 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
     const accentColor = Color(0xFF9C6FD6);
 
     return Container(
-      width: 210,
+      width: 110,
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: accentColor.withValues(alpha: 0.35),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: accentColor.withValues(alpha: 0.30),
-            blurRadius: 18,
-            spreadRadius: 2,
-            offset: const Offset(0, 6),
+            color: accentColor.withValues(alpha: 0.25),
+            blurRadius: 14,
+            spreadRadius: 1,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -351,26 +353,26 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
         children: [
           // ── Header: título + fechar ──────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 8, 0),
+            padding: const EdgeInsets.fromLTRB(8, 7, 4, 0),
             child: Row(
               children: [
                 Container(
-                  width: 7,
-                  height: 7,
+                  width: 5,
+                  height: 5,
                   decoration: const BoxDecoration(
                     color: Color(0xFF9C6FD6),
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     s.title,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
-                      fontSize: 11,
-                      letterSpacing: 0.2,
+                      fontSize: 10,
+                      letterSpacing: 0.1,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -380,11 +382,11 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
                   onTap: _onClose,
                   behavior: HitTestBehavior.opaque,
                   child: Padding(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(3),
                     child: Icon(
                       Icons.close_rounded,
                       color: Colors.white.withValues(alpha: 0.5),
-                      size: 14,
+                      size: 12,
                     ),
                   ),
                 ),
@@ -392,126 +394,43 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
             ),
           ),
 
-          // ── Avatar do speaker ativo ──────────────────────────────────────
+          // ── Avatar grande centralizado ───────────────────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: 10),
             child: AnimatedBuilder(
               animation: _ringAnim,
               builder: (context, child) {
                 return Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Anel externo animado (escala com nível de áudio)
+                    // Anel externo animado (pulsa com o áudio)
                     if (hasSpeaker)
                       Transform.scale(
                         scale: _ringAnim.value,
                         child: Container(
-                          width: 62,
-                          height: 62,
+                          width: 80,
+                          height: 80,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: accentColor.withValues(
-                                alpha: (0.6 * (speaker.audioLevel + 0.2))
+                                alpha: (0.55 * (speaker.audioLevel + 0.2))
                                     .clamp(0.0, 1.0),
                               ),
-                              width: 2.5,
+                              width: 2,
                             ),
                           ),
                         ),
                       ),
-                    // Anel médio estático
-                    if (hasSpeaker)
-                      Container(
-                        width: 54,
-                        height: 54,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: accentColor.withValues(alpha: 0.20),
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                    // Avatar
+                    // Avatar principal
                     _SpeakerAvatar(
                       avatarUrl: hasSpeaker ? speaker.avatarUrl : null,
                       name: hasSpeaker ? speaker.name : null,
-                      size: 46,
+                      size: 66,
                     ),
                   ],
                 );
               },
-            ),
-          ),
-
-          // ── Nome do speaker ──────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.only(bottom: 2),
-            child: Text(
-              hasSpeaker ? speaker.name : 'Ninguém falando',
-              style: TextStyle(
-                color: hasSpeaker
-                    ? Colors.white
-                    : Colors.white.withValues(alpha: 0.4),
-                fontWeight:
-                    hasSpeaker ? FontWeight.w600 : FontWeight.w400,
-                fontSize: 11,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-
-          // ── Linha de participantes ───────────────────────────────────────
-          if (s.participantCount > 0)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Text(
-                '${s.participantCount} participantes',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.35),
-                  fontSize: 10,
-                ),
-              ),
-            ),
-
-          // ── Controles: mute + encerrar ───────────────────────────────────
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Mute
-                if (s.onToggleMute != null)
-                  _ControlButton(
-                    icon: s.isMuted
-                        ? Icons.mic_off_rounded
-                        : Icons.mic_rounded,
-                    color: s.isMuted
-                        ? Colors.red[300]!
-                        : Colors.white.withValues(alpha: 0.8),
-                    onTap: () {
-                      HapticService.micOn();
-                      s.onToggleMute?.call();
-                    },
-                  ),
-                const Spacer(),
-                // Encerrar call
-                _ControlButton(
-                  icon: Icons.call_end_rounded,
-                  color: Colors.red[400]!,
-                  onTap: _onClose,
-                  background: Colors.red.withValues(alpha: 0.15),
-                ),
-              ],
             ),
           ),
         ],
