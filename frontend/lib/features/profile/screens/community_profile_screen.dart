@@ -715,10 +715,12 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       resizeToAvoidBottomInset: true,
       backgroundColor: layeredBgColor,
       floatingActionButton: _isOwnProfile
-          ? _ProfileOwnFab(
-              communityId: widget.communityId,
-              communityName: _communityName,
-              onShowOptions: () => _showOptions(context),
+          ? AminoCommunityFab(
+              onTap: () => showCommunityCreateMenu(
+                context,
+                communityId: widget.communityId,
+                communityName: _communityName,
+              ),
             )
           : null,
       body: Stack(
@@ -3455,51 +3457,3 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant _TabBarDelegate oldDelegate) => false;
 }
 
-// =============================================================================
-// FAB DO PRÓPRIO PERFIL
-// Exibe dois botões flutuantes empilhados:
-//   • Botão principal (roxo): abre o menu de opções do perfil (editar, moderação, etc.)
-//   • Botão secundário (menor): abre o menu de criar publicação
-// =============================================================================
-class _ProfileOwnFab extends StatelessWidget {
-  final String communityId;
-  final String communityName;
-  final VoidCallback onShowOptions;
-
-  const _ProfileOwnFab({
-    required this.communityId,
-    required this.communityName,
-    required this.onShowOptions,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        // Botão secundário: criar publicação
-        FloatingActionButton.small(
-          heroTag: 'fab_create',
-          onPressed: () => showCommunityCreateMenu(
-            context,
-            communityId: communityId,
-            communityName: communityName,
-          ),
-          backgroundColor: const Color(0xFF7B5EA7),
-          tooltip: 'Criar publicação',
-          child: const Icon(Icons.add_rounded, color: Colors.white),
-        ),
-        const SizedBox(height: 10),
-        // Botão principal: opções do perfil
-        FloatingActionButton(
-          heroTag: 'fab_profile_options',
-          onPressed: onShowOptions,
-          backgroundColor: const Color(0xFF9C6FD6),
-          tooltip: 'Opções do perfil',
-          child: const Icon(Icons.person_rounded, color: Colors.white),
-        ),
-      ],
-    );
-  }
-}
