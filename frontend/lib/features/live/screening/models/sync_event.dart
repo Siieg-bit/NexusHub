@@ -32,6 +32,12 @@ class SyncEvent {
   /// ID do novo host (apenas para [SyncEventType.hostChange]).
   final String? newHostId;
 
+  /// ID do usuário que gerou o evento.
+  /// Usado pelo receptor para ignorar eventos enviados por si mesmo
+  /// (Supabase Realtime Broadcast envia para todos os subscribers,
+  /// incluindo o emissor — o host receberia seus próprios eventos de volta).
+  final String? senderId;
+
   const SyncEvent({
     required this.type,
     required this.positionMs,
@@ -39,6 +45,7 @@ class SyncEvent {
     this.videoUrl,
     this.videoTitle,
     this.newHostId,
+    this.senderId,
   });
 
   factory SyncEvent.fromBroadcast(Map<String, dynamic> payload) {
@@ -50,6 +57,7 @@ class SyncEvent {
       videoUrl: payload['video_url'] as String?,
       videoTitle: payload['video_title'] as String?,
       newHostId: payload['new_host_id'] as String?,
+      senderId: payload['sender_id'] as String?,
     );
   }
 
@@ -61,6 +69,7 @@ class SyncEvent {
       if (videoUrl != null) 'video_url': videoUrl,
       if (videoTitle != null) 'video_title': videoTitle,
       if (newHostId != null) 'new_host_id': newHostId,
+      if (senderId != null) 'sender_id': senderId,
     };
   }
 

@@ -6,6 +6,11 @@ import '../../../../core/services/supabase_service.dart';
 import '../models/sync_event.dart';
 import 'screening_player_provider.dart';
 
+// Obtém o userId do usuário autenticado atual.
+// Retorna null se o usuário não estiver autenticado.
+String? _currentUserId() =>
+    SupabaseService.client.auth.currentUser?.id;
+
 // =============================================================================
 // ScreeningSyncProvider — Sincronização de reprodução em tempo real (Fase 2)
 //
@@ -193,6 +198,15 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
   // ── Processamento de eventos ──────────────────────────────────────────────────
 
   void _handleSyncEvent(SyncEvent event) {
+    // Ignorar eventos enviados pelo próprio usuário.
+    // O Supabase Realtime Broadcast envia para todos os subscribers,
+    // incluindo o emissor — sem esse filtro o host receberia seus próprios
+    // eventos de volta e o player ficaria em loop (pause → recebe play de volta).
+    final myId = _currentUserId();
+    if (myId != null && event.senderId == myId) {
+      debugPrint('[ScreeningSync] evento próprio ignorado (senderId=$myId)');
+      return;
+    }
     _resetSyncTimeout();
     final hostTimestamp =
         DateTime.fromMillisecondsSinceEpoch(event.serverTimestampMs);
@@ -378,10 +392,24 @@ class ScreeningSyncNotifier extends StateNotifier<ScreeningSyncState> {
 
   /// Broadcast de evento de sync (chamado pelo host via ScreeningControlsOverlay).
   Future<void> broadcastEvent(SyncEvent event) async {
+    // Incluir o userId do emissor no payload para que os receptores
+    // (incluindo o próprio emissor) possam filtrar o eco.
+    final myId = _currentUserId();
+    final eventWithSender = myId != null && event.senderId == null
+        ? SyncEvent(
+            type: event.type,
+            positionMs: event.positionMs,
+            serverTimestampMs: event.serverTimestampMs,
+            videoUrl: event.videoUrl,
+            videoTitle: event.videoTitle,
+            newHostId: event.newHostId,
+            senderId: myId,
+          )
+        : event;
     try {
       await _channel?.sendBroadcastMessage(
         event: 'sync',
-        payload: event.toBroadcast(),
+        payload: eventWithSender.toBroadcast(),
       );
       // Persistir no banco como fallback para novos entrantes
       if (event.type == SyncEventType.play ||

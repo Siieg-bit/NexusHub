@@ -539,10 +539,12 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     });
     // Resetar hasEnded ao fazer seek
     if (mounted) state = state.copyWith(position: position, hasEnded: false);
-    // Timeout de segurança: se YT_PLAYING não chegar em 6s após o seek,
+    // Timeout de segurança: se YT_PLAYING não chegar em 4s após o seek,
     // limpar isBuffering automaticamente (evita loading infinito).
+    // 4s é suficiente para a maioria das conexões; em conexões lentas o
+    // YT_BUFFERING será reenviado e o isBuffering voltara a true corretamente.
     _bufferingTimeoutTimer?.cancel();
-    _bufferingTimeoutTimer = Timer(const Duration(seconds: 6), () {
+    _bufferingTimeoutTimer = Timer(const Duration(seconds: 4), () {
       if (mounted && state.isBuffering) {
         state = state.copyWith(isBuffering: false);
       }

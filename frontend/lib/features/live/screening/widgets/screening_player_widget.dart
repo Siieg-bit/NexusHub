@@ -614,21 +614,40 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     //
     // Usa window.flutter_inappwebview.callHandler('NexusPlayerBridge', event, data)
     // para notificar o Flutter de forma nativa (sem polling de console.log).
-    // O console.log permanece como fallback para compatibilidade.
+    // O console.log é emitido SEMPRE como fallback robusto (funciona com qualquer
+    // useHybridComposition). Para posição/duração: __YT_POS:N__ e __YT_DUR:N__.
     await controller.evaluateJavascript(source: r'''
       (function() {
-        // Helper: notificar Flutter via handler nativo (instantâneo)
+        // Helper: notificar Flutter via handler nativo + console.log (sempre)
+        // O callHandler falha silenciosamente no Android com useHybridComposition:false,
+        // mas o console.log é capturado pelo onConsoleMessage e funciona sempre.
         function _bridge(event, data) {
+          // Emitir console.log SEMPRE (fallback robusto)
+          if (event === 'VIDEO_POSITION' && data !== undefined) {
+            console.log('__YT_POS:' + data + '__');
+          } else if (event === 'VIDEO_DURATION' && data !== undefined) {
+            console.log('__YT_DUR:' + data + '__');
+          } else if (event === 'VIDEO_PLAYING' || event === 'YT_PLAYING') {
+            console.log('__YT_PLAYING__');
+          } else if (event === 'VIDEO_PAUSED' || event === 'YT_PAUSED') {
+            console.log('__YT_PAUSED__');
+          } else if (event === 'VIDEO_BUFFERING' || event === 'YT_BUFFERING') {
+            console.log('__YT_BUFFERING__');
+          } else if (event === 'VIDEO_ENDED') {
+            console.log('__VIDEO_ENDED__');
+          } else {
+            console.log('__' + event + '__');
+          }
+          // Tentar callHandler também (mais eficiente quando funciona)
           try {
             if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
-              window.flutter_inappwebview.callHandler('NexusPlayerBridge', event, data);
-            } else {
-              // Fallback: console.log para compatibilidade
-              console.log('__' + event.toUpperCase() + '__');
+              if (data !== undefined) {
+                window.flutter_inappwebview.callHandler('NexusPlayerBridge', event, data);
+              } else {
+                window.flutter_inappwebview.callHandler('NexusPlayerBridge', event);
+              }
             }
-          } catch(e) {
-            console.log('__' + event.toUpperCase() + '__');
-          }
+          } catch(e) { /* silencioso */ }
         }
 
         // Definir _nexusPlayer apenas se ainda não foi injetado
@@ -817,6 +836,24 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     } else if (message.contains('__VIDEO_ENDED__')) {
       notifier.onVideoEnded();
     }
+    // Parsear posição e duração via console.log (fallback quando callHandler falha
+    // no Android com useHybridComposition:false).
+    // Formato: __YT_POS:12345__ (ms) e __YT_DUR:300000__ (ms)
+    else if (message.contains('__YT_POS:')) {
+      final match = RegExp(r'__YT_POS:(\d+)__').firstMatch(message);
+      final posMs = int.tryParse(match?.group(1) ?? '');
+      if (posMs != null && posMs >= 0) {
+        notifier.onPositionUpdate(posMs);
+        // Se a posição está chegando, o vídeo está carregado — remover overlay
+        if (mounted && _isLoading) setState(() => _isLoading = false);
+      }
+    } else if (message.contains('__YT_DUR:')) {
+      final match = RegExp(r'__YT_DUR:(\d+)__').firstMatch(message);
+      final durMs = int.tryParse(match?.group(1) ?? '');
+      if (durMs != null && durMs > 0) {
+        notifier.onDurationUpdate(durMs);
+      }
+    }
   }
 
   // ── Fallback embed URL (sem API) ──────────────────────────────────────────
@@ -974,7 +1011,28 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
 $touchBlockerHtml
 <script>
   // Helper: notificar Flutter via bridge nativo (instantâneo) com fallback console.log
+  // IMPORTANTE: sempre emite console.log ALÉM do callHandler.
+  // O callHandler falha silenciosamente no Android com useHybridComposition:false,
+  // mas o console.log sempre funciona e é capturado pelo onConsoleMessage do Flutter.
+  // Para posição/duração, usamos formato parseável: __YT_POS:12345__ e __YT_DUR:300000__
   function _ytBridge(event, data) {
+    // Emitir console.log SEMPRE (funciona com qualquer useHybridComposition)
+    if (event === 'VIDEO_POSITION' && data !== undefined) {
+      console.log('__YT_POS:' + data + '__');
+    } else if (event === 'VIDEO_DURATION' && data !== undefined) {
+      console.log('__YT_DUR:' + data + '__');
+    } else if (event === 'YT_PLAYING' || event === 'VIDEO_PLAYING') {
+      console.log('__YT_PLAYING__');
+    } else if (event === 'YT_PAUSED' || event === 'VIDEO_PAUSED') {
+      console.log('__YT_PAUSED__');
+    } else if (event === 'YT_BUFFERING' || event === 'VIDEO_BUFFERING') {
+      console.log('__YT_BUFFERING__');
+    } else if (event === 'VIDEO_ENDED') {
+      console.log('__VIDEO_ENDED__');
+    } else {
+      console.log('__' + event + '__');
+    }
+    // Tentar callHandler também (mais eficiente quando funciona)
     try {
       if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
         if (data !== undefined) {
@@ -982,12 +1040,8 @@ $touchBlockerHtml
         } else {
           window.flutter_inappwebview.callHandler('NexusPlayerBridge', event);
         }
-      } else {
-        console.log('__' + event + '__');
       }
-    } catch(e) {
-      console.log('__' + event + '__');
-    }
+    } catch(e) { /* silencioso */ }
   }
 
   // Timer de polling de posição para YouTube (substitui timeupdate do <video>)
