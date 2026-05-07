@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -61,25 +60,6 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   // ── Ambient gradient key ────────────────────────────────────────────────────────────────────────────────────────
   final _ambientGradientKey = GlobalKey<ScreeningAmbientGradientState>();
 
-  // ── Overlay temporário para ocultar controles nativos do YouTube ─────────────────
-  // Ativado por ~3.5s após pause/seek para cobrir o overlay nativo do YouTube
-  // (botão de pause, título, logo, badges) que aparece brevemente nesses momentos.
-  bool _ytNativeOverlayVisible = false;
-  Timer? _ytNativeOverlayTimer;
-
-  // ── Overlay temporário YouTube ────────────────────────────────────────────────────────────────────────────────────────
-
-  /// Ativa o overlay preto por [duration] para cobrir os controles nativos
-  /// do YouTube que aparecem brevemente após pause/seek.
-  void _showYtNativeOverlay({Duration duration = const Duration(milliseconds: 3500)}) {
-    if (!mounted) return;
-    _ytNativeOverlayTimer?.cancel();
-    setState(() => _ytNativeOverlayVisible = true);
-    _ytNativeOverlayTimer = Timer(duration, () {
-      if (mounted) setState(() => _ytNativeOverlayVisible = false);
-    });
-  }
-
   // ── Seek visual feedback ────────────────────────────────────────────────────────────────────────────────────────
   bool _showSeekLeft = false;
   bool _showSeekRight = false;
@@ -115,7 +95,6 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     // ConsumerStatefulElement já foi desmontado antes do dispose() ser chamado.
     _playerNotifier?.unregisterWebViewController();
     _playerNotifier = null;
-    _ytNativeOverlayTimer?.cancel();
     _seekLeftController.dispose();
     _seekRightController.dispose();
     super.dispose();
@@ -145,8 +124,6 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     _seekLeftController.forward(from: 0).then((_) {
       if (mounted) setState(() => _showSeekLeft = false);
     });
-    // Cobrir controles nativos do YouTube que aparecem após seek
-    _showYtNativeOverlay();
   }
 
   void _onDoubleTapRight() {
@@ -170,8 +147,6 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     _seekRightController.forward(from: 0).then((_) {
       if (mounted) setState(() => _showSeekRight = false);
     });
-    // Cobrir controles nativos do YouTube que aparecem após seek
-    _showYtNativeOverlay();
   }
 
   @override
@@ -255,21 +230,6 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         ScreeningLoadingOverlay(
           visible: _isLoading || isBuffering,
           isInitialLoad: _isLoading,
-        ),
-
-        // ── Camada 1b: Overlay temporário YouTube ─────────────────────────
-        // Cobre o iframe do YouTube por ~3.5s após pause/seek para ocultar
-        // o overlay nativo do YouTube (botão de pause, título, logo, badges)
-        // que aparece brevemente nesses momentos e não pode ser ocultado via
-        // CSS cross-origin. Usa AnimatedOpacity para fade suave.
-        AnimatedOpacity(
-          opacity: _ytNativeOverlayVisible ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 300),
-          child: IgnorePointer(
-            child: Container(
-              color: Colors.black,
-            ),
-          ),
         ),
 
         // ── Camada 2: Gestos de double-tap (seek) ─────────────────────────
@@ -862,9 +822,6 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     } else if (message.contains('__YT_PAUSED__') ||
         message.contains('__VIDEO_PAUSED__')) {
       notifier.onVideoPaused();
-      // Ativar overlay Flutter para cobrir controles nativos do YouTube
-      // que aparecem por ~3s após pause.
-      _showYtNativeOverlay();
     } else if (message.contains('__YT_BUFFERING__') ||
         message.contains('__VIDEO_BUFFERING__')) {
       notifier.onVideoBuffering();
