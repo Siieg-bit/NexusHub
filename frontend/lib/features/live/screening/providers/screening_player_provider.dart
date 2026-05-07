@@ -436,7 +436,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   // ── Comandos de reprodução (roteiam para nativo ou WebView) ──────────────────
 
   Future<void> play() async {
-    debugPrint('[ScreeningPlayer] play() — _isNativeMode=$_isNativeMode, _nativePlayer=${_nativePlayer != null}');
+    debugPrint('[ScreeningPlayer] play() — sessionId=$sessionId, _isNativeMode=$_isNativeMode, _nativePlayer=${_nativePlayer != null}');
     if (_isNativeMode) {
       await _nativePlayer?.play();
       await _drmPlayer?.play();
@@ -462,7 +462,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   }
 
   Future<void> pause() async {
-    debugPrint('[ScreeningPlayer] pause() — _isNativeMode=$_isNativeMode, _nativePlayer=${_nativePlayer != null}');
+    debugPrint('[ScreeningPlayer] pause() — sessionId=$sessionId, _isNativeMode=$_isNativeMode, _nativePlayer=${_nativePlayer != null}');
     if (_isNativeMode) {
       await _nativePlayer?.pause();
       await _drmPlayer?.pause();
@@ -683,7 +683,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     _positionPollTimer?.cancel();
     _positionPollTimer = null;
     state = state.copyWith(isReady: true, isBuffering: false);
-    debugPrint('[ScreeningPlayer] registerNativePlayer OK — _isNativeMode=true');
+    debugPrint('[ScreeningPlayer] registerNativePlayer OK — sessionId=$sessionId, _isNativeMode=true');
   }
 
   // ── Player DRM (better_player_plus / Widevine) ────────────────────────────────

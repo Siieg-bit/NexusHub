@@ -125,7 +125,7 @@ class _ScreeningNativePlayerWidgetState
       ref
           .read(screeningPlayerProvider(widget.sessionId).notifier)
           .registerNativePlayer(_mkPlayer!);
-      debugPrint('[NativePlayer] registerNativePlayer chamado (post-frame)');
+      debugPrint('[NativePlayer] registerNativePlayer chamado (post-frame) sessionId=${widget.sessionId}');
     });
 
     await _mkPlayer!.open(
