@@ -3212,14 +3212,6 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         context.push('/community/${widget.communityId}/profile/edit');
         break;
 
-      case 'create_post':
-        showCommunityCreateMenu(
-          context,
-          communityId: widget.communityId,
-          communityName: _communityName,
-        );
-        break;
-
       case 'moderation_panel':
         context.push('/community/${widget.communityId}/moderation');
         break;
