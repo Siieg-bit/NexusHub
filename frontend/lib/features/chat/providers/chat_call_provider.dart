@@ -154,7 +154,9 @@ class ChatCallController extends StateNotifier<ChatCallState> {
   Stream<ActiveSpeakerInfo?> get activeSpeakerStream =>
       _activeSpeakerController.stream;
 
-  ChatCallController(Ref ref) : super(const ChatCallState());
+  final Ref _ref;
+
+  ChatCallController(Ref ref) : _ref = ref, super(const ChatCallState());
 
   // ── Abrir painel imediatamente (estado de conexão) ────────────────────────
   /// Chamado ANTES de createCallOnly/joinExistingCall para abrir o painel
@@ -453,8 +455,7 @@ class ChatCallController extends StateNotifier<ChatCallState> {
     }
     _teardown();
   }
-
-  // ── Limpeza interna ───────────────────────────────────────────────────────
+  // ── Limpeza interna ─────────────────────────────────────────────────────────
   void _teardown() {
     _participantsSub?.cancel();
     _remoteUsersSub?.cancel();
@@ -470,8 +471,11 @@ class ChatCallController extends StateNotifier<ChatCallState> {
     if (mounted) {
       state = const ChatCallState();
     }
+    // Fechar o PiP flutuante se estiver visível — a call foi encerrada.
+    try {
+      _ref.read(miniRoomProvider.notifier).hide();
+    } catch (_) {}
   }
-
   @override
   void dispose() {
     _teardown();

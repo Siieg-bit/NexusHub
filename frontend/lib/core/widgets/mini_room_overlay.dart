@@ -173,16 +173,26 @@ class _MiniRoomOverlayWrapperState
   Widget build(BuildContext context) {
     final miniRoom = ref.watch(miniRoomProvider);
 
-    return Stack(
-      children: [
-        widget.child,
-        if (miniRoom != null && miniRoom.isVisible)
-          Positioned(
-            bottom: 90, // Acima da bottom nav bar
-            right: 16,
-            child: _MiniRoomPip(state: miniRoom),
-          ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          children: [
+            widget.child,
+            if (miniRoom != null && miniRoom.isVisible)
+              Positioned(
+                bottom: 90, // Acima da bottom nav bar
+                right: 16,
+                child: _MiniRoomPip(
+                  state: miniRoom,
+                  screenSize: Size(
+                    constraints.maxWidth,
+                    constraints.maxHeight,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -190,8 +200,10 @@ class _MiniRoomOverlayWrapperState
 // ─── PiP flutuante ────────────────────────────────────────────────────────────
 class _MiniRoomPip extends ConsumerStatefulWidget {
   final MiniRoomState state;
+  /// Tamanho total da tela — usado para limitar o arrasto dentro dos bounds.
+  final Size screenSize;
 
-  const _MiniRoomPip({required this.state});
+  const _MiniRoomPip({required this.state, required this.screenSize});
 
   @override
   ConsumerState<_MiniRoomPip> createState() => _MiniRoomPipState();
@@ -310,7 +322,34 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
             fontFamily: 'sans-serif',
           ),
           child: GestureDetector(
-            onPanUpdate: (details) => setState(() => _offset += details.delta),
+            onPanUpdate: (details) {
+              setState(() {
+                // Dimensões aproximadas do card (largura 112, altura ~140)
+                const pipW = 112.0;
+                const pipH = 150.0;
+                // Posição base: bottom=90, right=16 → left = screen.width - 16 - pipW
+                // O offset é relativo a essa posição base.
+                // Limites: o card não pode sair da tela em nenhuma direção.
+                final screen = widget.screenSize;
+                final baseLeft = screen.width - 16 - pipW;
+                const baseBottom = 90.0;
+                final baseTop = screen.height - baseBottom - pipH;
+
+                final newOffset = _offset + details.delta;
+
+                // Clamp horizontal: não ultrapassar a borda esquerda nem a direita
+                final minDx = -baseLeft;                   // borda esquerda
+                final maxDx = screen.width - baseLeft - pipW; // borda direita
+                // Clamp vertical: não ultrapassar o topo nem a borda inferior
+                final minDy = -baseTop;                    // borda superior
+                final maxDy = baseBottom;                  // borda inferior (nav bar)
+
+                _offset = Offset(
+                  newOffset.dx.clamp(minDx, maxDx),
+                  newOffset.dy.clamp(minDy, maxDy),
+                );
+              });
+            },
             onTap: _onTap,
             child: AnimatedBuilder(
               animation: _pulseAnim,

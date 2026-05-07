@@ -362,6 +362,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
     // Pequeno delay para garantir que o Realtime já está inscrito
     await Future.delayed(const Duration(milliseconds: 600));
     if (_isDisposed || !mounted) return;
+
+    // Se o PiP flutuante for deste mesmo chat, fechar ao entrar no chat.
+    final miniState = ref.read(miniRoomProvider);
+    if (miniState != null &&
+        miniState.isVisible &&
+        miniState.roomId == widget.threadId) {
+      ref.read(miniRoomProvider.notifier).hide();
+    }
+
     final callState = ref.read(chatCallProvider(widget.threadId));
     // Não fazer nada se já está no painel
     if (callState.isActive || callState.isConnecting) return;
