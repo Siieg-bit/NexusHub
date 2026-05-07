@@ -7,6 +7,7 @@ import '../../../core/services/haptic_service.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/realtime_service.dart';
 import '../../../core/models/message_model.dart';
+import '../../../core/widgets/mini_room_overlay.dart';
 
 // ============================================================================
 // ChatCallState — Estado imutável da call inline
@@ -143,6 +144,15 @@ class ChatCallController extends StateNotifier<ChatCallState> {
   Timer? _participantsTimer; // Polling periódico como fallback ao Realtime
   String? _chatChannelName;
   int _prevHandRaisedCount = 0;
+
+  // ── Stream de speaker ativo (alimenta o PiP) ──────────────────────────────
+  final StreamController<ActiveSpeakerInfo?> _activeSpeakerController =
+      StreamController<ActiveSpeakerInfo?>.broadcast();
+
+  /// Stream que emite o speaker ativo a cada tick de áudio.
+  /// Emite null quando ninguém está falando acima do threshold.
+  Stream<ActiveSpeakerInfo?> get activeSpeakerStream =>
+      _activeSpeakerController.stream;
 
   ChatCallController(Ref ref) : super(const ChatCallState());
 
@@ -281,6 +291,7 @@ class ChatCallController extends StateNotifier<ChatCallState> {
     _audioLevelsSub = CallService.audioLevelsStream.listen((l) {
       if (!mounted) return;
       state = state.copyWith(audioLevels: l);
+      _emitActiveSpeaker(l);
     });
 
     _stageRoleSub = CallService.stageRoleStream.listen((role) {
@@ -464,10 +475,76 @@ class ChatCallController extends StateNotifier<ChatCallState> {
   @override
   void dispose() {
     _teardown();
+    if (!_activeSpeakerController.isClosed) {
+      _activeSpeakerController.close();
+    }
     super.dispose();
   }
+  // ── Emitir speaker ativo para o PiP ───────────────────────────────────────────────
+  /// Encontra o participante com maior nível de áudio acima do threshold
+  /// e emite um [ActiveSpeakerInfo] para o PiP. Emite null quando ninguém fala.
+  void _emitActiveSpeaker(Map<int, double> levels) {
+    if (_activeSpeakerController.isClosed) return;
 
-  // ── Helper: nível de áudio de um participante ─────────────────────────────
+    const threshold = 15.0; // Volume mínimo para considerar que está falando
+    int? topUid;
+    double topLevel = threshold;
+
+    for (final entry in levels.entries) {
+      if (entry.value > topLevel) {
+        topLevel = entry.value;
+        topUid = entry.key;
+      }
+    }
+
+    if (topUid == null) {
+      _activeSpeakerController.add(null);
+      return;
+    }
+
+    // Encontrar o participante correspondente ao agoraUid
+    final participants = state.participants;
+    Map<String, dynamic>? match;
+    for (final p in participants) {
+      final dynamic rawUid = p['agora_uid'];
+      final uid = rawUid is int
+          ? rawUid
+          : int.tryParse(rawUid?.toString() ?? '') ??
+              CallService.agoraUidForUserId(p['user_id'] as String?);
+      if (uid == topUid) {
+        match = p;
+        break;
+      }
+    }
+
+    // Fallback: uid 0 = próprio usuário local
+    if (match == null && topUid == 0) {
+      final myId = SupabaseService.currentUserId;
+      if (myId != null) {
+        match = participants.where((p) => p['user_id'] == myId).firstOrNull;
+      }
+    }
+
+    if (match == null) {
+      _activeSpeakerController.add(null);
+      return;
+    }
+
+    final profile = match['profiles'] as Map<String, dynamic>?;
+    final name = (profile?['nickname'] as String?) ??
+        (match['nickname'] as String?) ??
+        'Participante';
+    final avatarUrl = (profile?['icon_url'] as String?) ??
+        (match['icon_url'] as String?);
+
+    _activeSpeakerController.add(ActiveSpeakerInfo(
+      name: name,
+      avatarUrl: avatarUrl,
+      audioLevel: (topLevel / 255.0).clamp(0.0, 1.0),
+    ));
+  }
+
+  // ── Helper: nível de áudio de um participante ───────────────────────────────────────────────
   double audioLevelFor(Map<String, dynamic> participant) {
     final userId = participant['user_id'] as String?;
     final dynamic rawAgoraUid = participant['agora_uid'];

@@ -1,43 +1,50 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../services/haptic_service.dart';
 
 // ============================================================================
-// MiniRoomOverlay — Overlay flutuante para salas ativas inspirado no OluOlu
+// MiniRoomOverlay — Overlay flutuante PiP para salas ativas
 //
-// O OluOlu exibe um "pip" (picture-in-picture) flutuante quando o usuário
-// sai de uma sala de voz ativa sem encerrá-la. O pip permite:
-// - Ver o título e contagem de participantes
-// - Voltar para a sala com um toque
-// - Mutar/desmutar sem abrir a sala
-// - Encerrar a sessão
+// Suporta três tipos de sala:
+//   freeTalk   → card compacto roxo com ícone de voz
+//   voiceChat  → preview rico com avatar do speaker ativo + anel animado de áudio
+//   screening  → preview 16:9 com thumbnail do vídeo
 //
-// Implementação:
-// - Usa Overlay do Flutter para renderizar acima de toda a navegação
-// - Posição arrastável (DragTarget/Draggable)
-// - Estado gerenciado via Riverpod
+// O PiP é arrastável, aparece acima de toda a navegação (via Stack no main.dart)
+// e persiste enquanto o usuário navega pelo app.
 //
 // Uso:
-//   // Mostrar o mini room
-//   MiniRoomOverlay.show(
-//     context,
-//     roomId: 'uuid',
-//     title: 'Free Talk',
-//     type: MiniRoomType.freeTalk,
-//     onReturnWithContext: (ctx) => Navigator.of(ctx).push(...),
-//     onEnd: () => leaveRoom(),
+//   ref.read(miniRoomProvider.notifier).show(
+//     roomId: threadId,
+//     title: 'Voice Chat',
+//     type: MiniRoomType.voiceChat,
+//     onReturnWithContext: (ctx) => router.push('/chat/$threadId'),
+//     onEnd: () => callController.end(null),
+//     onToggleMute: () => callController.toggleMute(),
+//     speakerStream: callController.activeSpeakerStream,
 //   );
-//
-//   // Esconder o mini room
-//   MiniRoomOverlay.hide(context);
 // ============================================================================
 
 // ─── Tipo de sala ─────────────────────────────────────────────────────────────
 enum MiniRoomType {
   freeTalk,    // Sala de voz estilo palco
-  voiceChat,   // Voice chat P2P/grupo
+  voiceChat,   // Voice chat inline do chat
   screening,   // Sala de projeção
+}
+
+// ─── Dados do speaker ativo ───────────────────────────────────────────────────
+class ActiveSpeakerInfo {
+  final String? avatarUrl;
+  final String name;
+  final double audioLevel; // 0.0 – 1.0
+
+  const ActiveSpeakerInfo({
+    required this.name,
+    this.avatarUrl,
+    this.audioLevel = 0.0,
+  });
 }
 
 // ─── Estado do mini room ──────────────────────────────────────────────────────
@@ -50,12 +57,15 @@ class MiniRoomState {
   final bool isVisible;
   final String? thumbnailUrl;
   final String? videoUrl;
-  /// Callback legado (sem context). Mantido por compatibilidade com voice/freeTalk.
+
+  /// Stream de speaker ativo — usado pelo voiceChat PiP para animar o avatar.
+  /// Emite null quando ninguém está falando.
+  final Stream<ActiveSpeakerInfo?>? speakerStream;
+
+  /// Callback legado (sem context). Mantido por compatibilidade.
   final VoidCallback? onReturn;
+
   /// Callback com context do PiP — preferir este para navegação segura.
-  /// Recebe o BuildContext do _MiniRoomPip (sempre válido), evitando o erro
-  /// "Cannot use ref after widget was disposed" que ocorre quando o callback
-  /// captura ref/context de um widget já descartado.
   final void Function(BuildContext context)? onReturnWithContext;
   final VoidCallback? onEnd;
   final VoidCallback? onToggleMute;
@@ -69,6 +79,7 @@ class MiniRoomState {
     this.isVisible = true,
     this.thumbnailUrl,
     this.videoUrl,
+    this.speakerStream,
     this.onReturn,
     this.onReturnWithContext,
     this.onEnd,
@@ -79,6 +90,7 @@ class MiniRoomState {
     bool? isMuted,
     int? participantCount,
     bool? isVisible,
+    ActiveSpeakerInfo? activeSpeaker,
   }) {
     return MiniRoomState(
       roomId: roomId,
@@ -89,6 +101,7 @@ class MiniRoomState {
       isVisible: isVisible ?? this.isVisible,
       thumbnailUrl: thumbnailUrl,
       videoUrl: videoUrl,
+      speakerStream: speakerStream,
       onReturn: onReturn,
       onReturnWithContext: onReturnWithContext,
       onEnd: onEnd,
@@ -109,6 +122,7 @@ class MiniRoomNotifier extends StateNotifier<MiniRoomState?> {
     int participantCount = 0,
     String? thumbnailUrl,
     String? videoUrl,
+    Stream<ActiveSpeakerInfo?>? speakerStream,
     VoidCallback? onReturn,
     void Function(BuildContext context)? onReturnWithContext,
     VoidCallback? onEnd,
@@ -123,6 +137,7 @@ class MiniRoomNotifier extends StateNotifier<MiniRoomState?> {
       isVisible: true,
       thumbnailUrl: thumbnailUrl,
       videoUrl: videoUrl,
+      speakerStream: speakerStream,
       onReturn: onReturn,
       onReturnWithContext: onReturnWithContext,
       onEnd: onEnd,
@@ -149,7 +164,7 @@ final miniRoomProvider =
 );
 
 // ─── Widget principal ─────────────────────────────────────────────────────────
-/// Wrapper que deve envolver o MaterialApp ou o widget raiz para exibir o overlay.
+/// Wrapper que envolve o MaterialApp para exibir o overlay acima da navegação.
 class MiniRoomOverlayWrapper extends ConsumerStatefulWidget {
   final Widget child;
 
@@ -191,27 +206,99 @@ class _MiniRoomPip extends ConsumerStatefulWidget {
 }
 
 class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
+    with TickerProviderStateMixin {
+  // Animação de pulso geral (sempre ativa)
+  late AnimationController _pulseCtrl;
+  late Animation<double> _pulseAnim;
+
+  // Animação do anel de áudio (responde ao nível de áudio do speaker)
+  late AnimationController _ringCtrl;
+  late Animation<double> _ringAnim;
+
+  // Posição arrastável
   Offset _offset = Offset.zero;
+
+  // Speaker ativo atual (recebido via stream)
+  ActiveSpeakerInfo? _activeSpeaker;
+  StreamSubscription<ActiveSpeakerInfo?>? _speakerSub;
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
+
+    // Pulso suave de fundo (escala 0.97 → 1.03)
+    _pulseCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 1800),
     )..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    _pulseAnim = Tween<double>(begin: 0.97, end: 1.03).animate(
+      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
     );
+
+    // Anel de áudio (escala 1.0 → 1.35, dispara quando há nível de áudio)
+    _ringCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _ringAnim = Tween<double>(begin: 1.0, end: 1.35).animate(
+      CurvedAnimation(parent: _ringCtrl, curve: Curves.easeOut),
+    );
+
+    _subscribeSpeakerStream();
+  }
+
+  void _subscribeSpeakerStream() {
+    _speakerSub?.cancel();
+    final stream = widget.state.speakerStream;
+    if (stream == null) return;
+
+    _speakerSub = stream.listen((info) {
+      if (!mounted) return;
+      setState(() => _activeSpeaker = info);
+
+      // Animar o anel quando há nível de áudio significativo
+      if (info != null && info.audioLevel > 0.05) {
+        if (!_ringCtrl.isAnimating) {
+          _ringCtrl.forward().then((_) {
+            if (mounted) _ringCtrl.reverse();
+          });
+        }
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _MiniRoomPip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.state.speakerStream != widget.state.speakerStream) {
+      _subscribeSpeakerStream();
+    }
   }
 
   @override
   void dispose() {
-    _pulseController.dispose();
+    _pulseCtrl.dispose();
+    _ringCtrl.dispose();
+    _speakerSub?.cancel();
     super.dispose();
+  }
+
+  void _onTap() {
+    HapticService.buttonPress();
+    final s = widget.state;
+    if (s.onReturnWithContext != null) {
+      s.onReturnWithContext!(context);
+    } else {
+      s.onReturn?.call();
+    }
+  }
+
+  void _onClose() {
+    HapticService.action();
+    final s = widget.state;
+    // Fechar sempre encerra a call (sai do palco se estiver nele)
+    s.onEnd?.call();
+    ref.read(miniRoomProvider.notifier).hide();
   }
 
   @override
@@ -221,159 +308,453 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
     return Transform.translate(
       offset: _offset,
       child: GestureDetector(
-        onPanUpdate: (details) {
-          setState(() {
-            _offset += details.delta;
-          });
-        },
-        onTap: () {
-          HapticService.buttonPress();
-          // Preferir onReturnWithContext (passa o context do PiP, sempre válido).
-          // Fallback para onReturn legado (voice/freeTalk).
-          if (s.onReturnWithContext != null) {
-            s.onReturnWithContext!(context);
-          } else {
-            s.onReturn?.call();
-          }
-        },
+        onPanUpdate: (details) => setState(() => _offset += details.delta),
+        onTap: _onTap,
         child: AnimatedBuilder(
-          animation: _pulseAnimation,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _pulseAnimation.value,
-              child: child,
-            );
-          },
-          child: Container(
-            width: 200,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: _typeColor(s.type),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: _typeColor(s.type).withValues(alpha: 0.4),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Linha superior: ícone + título + fechar
-                Row(
-                  children: [
-                    Icon(
-                      _typeIcon(s.type),
-                      color: Colors.white,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        s.title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        HapticService.buttonPress();
-                        if (s.type == MiniRoomType.screening && s.onEnd != null) {
-                          s.onEnd?.call();
-                        } else {
-                          ref.read(miniRoomProvider.notifier).hide();
-                        }
-                      },
-                      child: const Icon(
-                        Icons.close_rounded,
-                        color: Colors.white70,
-                        size: 14,
-                      ),
-                    ),
-                  ],
-                ),
-                if (s.type == MiniRoomType.screening) ...[
-                  const SizedBox(height: 8),
-                  _buildScreeningPreview(s),
-                ],
-                const SizedBox(height: 6),
-                // Linha inferior: participantes + controles
-                Row(
-                  children: [
-                    // Indicador ao vivo
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      s.participantCount > 0
-                          ? '${s.participantCount} participantes'
-                          : 'Ao vivo',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 10,
-                      ),
-                    ),
-                    const Spacer(),
-                    // Botão mute (apenas para voice/freeTalk)
-                    if (s.type != MiniRoomType.screening &&
-                        s.onToggleMute != null)
-                      GestureDetector(
-                        onTap: () {
-                          HapticService.tap();
-                          s.onToggleMute?.call();
-                        },
-                        child: Icon(
-                          s.isMuted
-                              ? Icons.mic_off_rounded
-                              : Icons.mic_rounded,
-                          color: s.isMuted
-                              ? Colors.red[200]
-                              : Colors.white,
-                          size: 16,
-                        ),
-                      ),
-                    const SizedBox(width: 8),
-                    // Botão encerrar
-                    GestureDetector(
-                      onTap: () {
-                        HapticService.action();
-                        s.onEnd?.call();
-                        ref.read(miniRoomProvider.notifier).hide();
-                      },
-                      child: const Icon(
-                        Icons.call_end_rounded,
-                        color: Colors.red,
-                        size: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          animation: _pulseAnim,
+          builder: (context, child) => Transform.scale(
+            scale: _pulseAnim.value,
+            child: child,
           ),
+          child: _buildPipBody(s),
         ),
       ),
     );
   }
 
+  Widget _buildPipBody(MiniRoomState s) {
+    return switch (s.type) {
+      MiniRoomType.voiceChat => _buildVoiceChatPip(s),
+      MiniRoomType.screening => _buildScreeningPip(s),
+      MiniRoomType.freeTalk  => _buildFreeTalkPip(s),
+    };
+  }
 
-  Widget _buildScreeningPreview(MiniRoomState state) {
-    final thumbnailUrl = state.thumbnailUrl?.trim();
+  // ── Voice Chat PiP ─────────────────────────────────────────────────────────
+  // Design: card escuro com gradiente roxo, avatar circular do speaker ativo
+  // com anel animado de áudio, nome do speaker, título do chat e controles.
+  Widget _buildVoiceChatPip(MiniRoomState s) {
+    final speaker = _activeSpeaker;
+    final hasSpeaker = speaker != null;
+    const cardColor = Color(0xFF1A1030);
+    const accentColor = Color(0xFF9C6FD6);
+
+    return Container(
+      width: 210,
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: accentColor.withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.30),
+            blurRadius: 18,
+            spreadRadius: 2,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Header: título + fechar ──────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 8, 0),
+            child: Row(
+              children: [
+                Container(
+                  width: 7,
+                  height: 7,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF9C6FD6),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    s.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                      letterSpacing: 0.2,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: _onClose,
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      Icons.close_rounded,
+                      color: Colors.white.withValues(alpha: 0.5),
+                      size: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Avatar do speaker ativo ──────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: AnimatedBuilder(
+              animation: _ringAnim,
+              builder: (context, child) {
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Anel externo animado (escala com nível de áudio)
+                    if (hasSpeaker)
+                      Transform.scale(
+                        scale: _ringAnim.value,
+                        child: Container(
+                          width: 62,
+                          height: 62,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: accentColor.withValues(
+                                alpha: (0.6 * (speaker.audioLevel + 0.2))
+                                    .clamp(0.0, 1.0),
+                              ),
+                              width: 2.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    // Anel médio estático
+                    if (hasSpeaker)
+                      Container(
+                        width: 54,
+                        height: 54,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: accentColor.withValues(alpha: 0.20),
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    // Avatar
+                    _SpeakerAvatar(
+                      avatarUrl: hasSpeaker ? speaker.avatarUrl : null,
+                      name: hasSpeaker ? speaker.name : null,
+                      size: 46,
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+
+          // ── Nome do speaker ──────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: Text(
+              hasSpeaker ? speaker.name : 'Ninguém falando',
+              style: TextStyle(
+                color: hasSpeaker
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.4),
+                fontWeight:
+                    hasSpeaker ? FontWeight.w600 : FontWeight.w400,
+                fontSize: 11,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+
+          // ── Linha de participantes ───────────────────────────────────────
+          if (s.participantCount > 0)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text(
+                '${s.participantCount} participantes',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.35),
+                  fontSize: 10,
+                ),
+              ),
+            ),
+
+          // ── Controles: mute + encerrar ───────────────────────────────────
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Mute
+                if (s.onToggleMute != null)
+                  _ControlButton(
+                    icon: s.isMuted
+                        ? Icons.mic_off_rounded
+                        : Icons.mic_rounded,
+                    color: s.isMuted
+                        ? Colors.red[300]!
+                        : Colors.white.withValues(alpha: 0.8),
+                    onTap: () {
+                      HapticService.micOn();
+                      s.onToggleMute?.call();
+                    },
+                    tooltip: s.isMuted ? 'Desmutar' : 'Mutar',
+                  ),
+                const Spacer(),
+                // Encerrar call
+                _ControlButton(
+                  icon: Icons.call_end_rounded,
+                  color: Colors.red[400]!,
+                  onTap: _onClose,
+                  tooltip: 'Sair da call',
+                  background: Colors.red.withValues(alpha: 0.15),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── FreeTalk PiP ───────────────────────────────────────────────────────────
+  Widget _buildFreeTalkPip(MiniRoomState s) {
+    const color = Color(0xFF7C4DFF);
+    return _buildCompactPip(
+      s: s,
+      accentColor: color,
+      icon: Icons.record_voice_over_rounded,
+    );
+  }
+
+  // ── Compact PiP (freeTalk) ─────────────────────────────────────────────────
+  Widget _buildCompactPip({
+    required MiniRoomState s,
+    required Color accentColor,
+    required IconData icon,
+  }) {
+    return Container(
+      width: 200,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: accentColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.4),
+            blurRadius: 12,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: Colors.white, size: 14),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  s.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              GestureDetector(
+                onTap: _onClose,
+                child: const Icon(
+                  Icons.close_rounded,
+                  color: Colors.white70,
+                  size: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  s.participantCount > 0
+                      ? '${s.participantCount} participantes'
+                      : 'Ao vivo',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+              if (s.onToggleMute != null)
+                GestureDetector(
+                  onTap: () {
+                    HapticService.tap();
+                    s.onToggleMute?.call();
+                  },
+                  child: Icon(
+                    s.isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
+                    color: s.isMuted ? Colors.red[200] : Colors.white,
+                    size: 16,
+                  ),
+                ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: _onClose,
+                child: const Icon(
+                  Icons.call_end_rounded,
+                  color: Colors.red,
+                  size: 16,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Screening PiP ─────────────────────────────────────────────────────────
+  Widget _buildScreeningPip(MiniRoomState s) {
+    const color = Color(0xFFE91E63);
+    return Container(
+      width: 200,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.4),
+            blurRadius: 12,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.live_tv_rounded, color: Colors.white, size: 14),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  s.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  HapticService.buttonPress();
+                  if (s.onEnd != null) {
+                    s.onEnd?.call();
+                  } else {
+                    ref.read(miniRoomProvider.notifier).hide();
+                  }
+                },
+                child: const Icon(
+                  Icons.close_rounded,
+                  color: Colors.white70,
+                  size: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _buildScreeningPreview(s),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  s.participantCount > 0
+                      ? '${s.participantCount} participantes'
+                      : 'Ao vivo',
+                  style: const TextStyle(color: Colors.white70, fontSize: 11),
+                ),
+              ),
+              if (s.onToggleMute != null)
+                GestureDetector(
+                  onTap: () {
+                    HapticService.tap();
+                    s.onToggleMute?.call();
+                  },
+                  child: Icon(
+                    s.isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
+                    color: s.isMuted ? Colors.red[200] : Colors.white,
+                    size: 16,
+                  ),
+                ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {
+                  HapticService.action();
+                  s.onEnd?.call();
+                  ref.read(miniRoomProvider.notifier).hide();
+                },
+                child: const Icon(
+                  Icons.call_end_rounded,
+                  color: Colors.red,
+                  size: 16,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScreeningPreview(MiniRoomState s) {
+    final thumbnailUrl = s.thumbnailUrl?.trim();
     final hasThumbnail = thumbnailUrl != null && thumbnailUrl.isNotEmpty;
 
     return ClipRRect(
@@ -387,10 +768,10 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
               CachedNetworkImage(
                 imageUrl: thumbnailUrl,
                 fit: BoxFit.cover,
-                errorWidget: (_, __, ___) => _buildScreeningPreviewFallback(),
+                errorWidget: (_, __, ___) => _buildScreeningFallback(),
               )
             else
-              _buildScreeningPreviewFallback(),
+              _buildScreeningFallback(),
             DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -416,7 +797,7 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
     );
   }
 
-  Widget _buildScreeningPreviewFallback() {
+  Widget _buildScreeningFallback() {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -430,26 +811,99 @@ class _MiniRoomPipState extends ConsumerState<_MiniRoomPip>
       ),
     );
   }
+}
 
-  Color _typeColor(MiniRoomType type) {
-    switch (type) {
-      case MiniRoomType.freeTalk:
-        return const Color(0xFF7C4DFF);
-      case MiniRoomType.voiceChat:
-        return const Color(0xFF4CAF50);
-      case MiniRoomType.screening:
-        return const Color(0xFFE91E63);
-    }
+// ─── Avatar do speaker ────────────────────────────────────────────────────────
+class _SpeakerAvatar extends StatelessWidget {
+  final String? avatarUrl;
+  final String? name;
+  final double size;
+
+  const _SpeakerAvatar({
+    this.avatarUrl,
+    this.name,
+    required this.size,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = (name?.isNotEmpty == true) ? name![0].toUpperCase() : '?';
+    final url = avatarUrl?.trim();
+    final hasUrl = url != null && url.isNotEmpty;
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: const Color(0xFF3D2060),
+        border: Border.all(
+          color: const Color(0xFF9C6FD6).withValues(alpha: 0.5),
+          width: 2,
+        ),
+      ),
+      child: ClipOval(
+        child: hasUrl
+            ? CachedNetworkImage(
+                imageUrl: url,
+                fit: BoxFit.cover,
+                errorWidget: (_, __, ___) => _buildInitial(initial),
+              )
+            : _buildInitial(initial),
+      ),
+    );
   }
 
-  IconData _typeIcon(MiniRoomType type) {
-    switch (type) {
-      case MiniRoomType.freeTalk:
-        return Icons.record_voice_over_rounded;
-      case MiniRoomType.voiceChat:
-        return Icons.headset_mic_rounded;
-      case MiniRoomType.screening:
-        return Icons.live_tv_rounded;
-    }
+  Widget _buildInitial(String initial) {
+    return Container(
+      color: const Color(0xFF3D2060),
+      child: Center(
+        child: Text(
+          initial,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: size * 0.38,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Botão de controle ────────────────────────────────────────────────────────
+class _ControlButton extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  final String tooltip;
+  final Color? background;
+
+  const _ControlButton({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+    required this.tooltip,
+    this.background,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: background ?? Colors.transparent,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: color, size: 18),
+        ),
+      ),
+    );
   }
 }

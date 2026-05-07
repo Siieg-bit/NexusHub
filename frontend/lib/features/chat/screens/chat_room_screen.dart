@@ -52,6 +52,8 @@ import 'roleplay_screen.dart';
 import 'chat_rpg_screen.dart';
 import 'chat_rpg_admin_screen.dart';
 import 'package:amino_clone/core/widgets/nexus_media_picker.dart';
+import '../../../core/widgets/mini_room_overlay.dart';
+import '../../../router/app_router.dart';
 // screening_room_screen.dart — navegação via GoRouter ('/screening-room/:threadId')
 
 /// =============================================================================
@@ -722,6 +724,63 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
       try { ref.read(activeChatIdProvider.notifier).state = null; } catch (_) {}
     });
      super.dispose();
+  }
+
+  // ==========================================================================
+  // MINIMIZAR CALL (PiP) AO SAIR DO CHAT
+  // ==========================================================================
+
+  /// Verifica se há uma call ativa e, se sim, ativa o PiP antes de sair.
+  /// Captura todas as dependências ANTES do Navigator.pop para evitar
+  /// o erro "Cannot use ref after widget was disposed".
+  void _minimizeCallIfActive() {
+    final callState = ref.read(chatCallProvider(widget.threadId));
+    final hasActiveCall = callState.isActive || callState.isAudience;
+
+    if (!hasActiveCall) {
+      // Sem call ativa — sair normalmente
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/chat');
+      }
+      return;
+    }
+
+    // Capturar tudo antes do pop
+    final threadId = widget.threadId;
+    final threadTitle = (_threadInfo?['title'] as String?)?.trim() ?? 'Voice Chat';
+    final miniNotifier = ref.read(miniRoomProvider.notifier);
+    final callController = ref.read(chatCallProvider(threadId).notifier);
+    final router = ref.read(appRouterProvider);
+    final isMuted = callState.isMuted;
+    final participantCount = callState.participants.length;
+
+    miniNotifier.show(
+      roomId: threadId,
+      title: threadTitle,
+      type: MiniRoomType.voiceChat,
+      isMuted: isMuted,
+      participantCount: participantCount,
+      speakerStream: callController.activeSpeakerStream,
+      onReturnWithContext: (_) {
+        miniNotifier.hide();
+        router.push('/chat/$threadId');
+      },
+      onEnd: () {
+        miniNotifier.hide();
+        callController.end(null);
+      },
+      onToggleMute: () {
+        callController.toggleMute();
+      },
+    );
+
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/chat');
+    }
   }
 
   @override
@@ -3500,7 +3559,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
 
     return EmojiRainOverlay(
       key: _emojiRainKey,
-      child: Scaffold(
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _minimizeCallIfActive();
+        },
+        child: Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: context.nexusTheme.backgroundPrimary,
       appBar: AppBar(
@@ -3509,13 +3573,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_rounded,
               color: context.nexusTheme.textPrimary, size: r.s(20)),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/chat');
-            }
-          },
+          onPressed: _minimizeCallIfActive,
         ),
         titleSpacing: 0,
         title: Row(
@@ -4636,7 +4694,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
           ],
         ),
       ),
-    ),
+        ),
+      ),
     );
   }
 
