@@ -98,7 +98,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
           return;
         }
 
-        final row = (result as List).first as Map<String, dynamic>();
+        final row = (result as List).first as Map<String, dynamic>;
         isHost = row['is_caller_host'] as bool? ?? false;
         hostUserId = row['host_user_id'] as String?;
         videoUrl = row['video_url'] as String?;
