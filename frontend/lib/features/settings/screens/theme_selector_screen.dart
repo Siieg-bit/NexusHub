@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:amino_clone/config/nexus_theme_data.dart';
-import 'package:amino_clone/config/nexus_themes.dart';
+
 import 'package:amino_clone/core/providers/nexus_theme_provider.dart';
 import '../../../core/utils/responsive.dart';
 
@@ -96,23 +96,27 @@ class ThemeSelectorScreen extends ConsumerWidget {
                   strokeWidth: 2,
                 ),
               ),
-              error: (_, __) => ListView.separated(
-                padding: EdgeInsets.symmetric(
-                    horizontal: r.s(16), vertical: r.s(4)),
-                itemCount: NexusThemes.all.length,
-                separatorBuilder: (_, __) => SizedBox(height: r.s(12)),
-                itemBuilder: (context, index) {
-                  final t = NexusThemes.all[index];
-                  final isSelected = t.id == theme.id &&
-                      t.remoteSlug == theme.remoteSlug;
-                  return _ThemeCard(
-                    theme: t,
-                    isSelected: isSelected,
-                    currentTheme: theme,
-                    onTap: () =>
-                        ref.read(nexusThemeProvider.notifier).setTheme(t),
-                  );
-                },
+              error: (_, __) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.wifi_off_rounded,
+                        color: theme.textSecondary, size: r.s(40)),
+                    SizedBox(height: r.s(12)),
+                    Text(
+                      'Sem conexão. Tente novamente.',
+                      style: TextStyle(color: theme.textSecondary,
+                          fontSize: r.fs(14),
+                          fontFamily: 'PlusJakartaSans'),
+                    ),
+                    SizedBox(height: r.s(12)),
+                    TextButton(
+                      onPressed: () => ref.invalidate(allThemesProvider),
+                      child: Text('Tentar novamente',
+                          style: TextStyle(color: theme.accentPrimary)),
+                    ),
+                  ],
+                ),
               ),
               data: (allThemes) => ListView.separated(
                 padding: EdgeInsets.symmetric(
@@ -121,7 +125,8 @@ class ThemeSelectorScreen extends ConsumerWidget {
                 separatorBuilder: (_, __) => SizedBox(height: r.s(12)),
                 itemBuilder: (context, index) {
                   final t = allThemes[index];
-                  final isSelected = t.id == NexusThemeId.remote
+                  // Compara por slug — todos os temas agora vêm do banco
+                  final isSelected = t.remoteSlug != null && theme.remoteSlug != null
                       ? t.remoteSlug == theme.remoteSlug
                       : t.id == theme.id;
                   return _ThemeCard(
@@ -348,16 +353,12 @@ class _ThemeCard extends StatelessWidget {
   }
 
   IconData _themeIcon(NexusThemeId id) {
-    switch (id) {
-      case NexusThemeId.principal:
-        return Icons.water_rounded;
-      case NexusThemeId.midnight:
-        return Icons.nights_stay_rounded;
-      case NexusThemeId.greenLeaf:
-        return Icons.eco_rounded;
-      case NexusThemeId.remote:
-        return Icons.palette_rounded;
-    }
+    // Mapa de slug → ícone para temas built-in conhecidos
+    final slug = theme.remoteSlug;
+    if (slug == 'principal')  return Icons.water_rounded;
+    if (slug == 'midnight')   return Icons.nights_stay_rounded;
+    if (slug == 'green_leaf') return Icons.eco_rounded;
+    return Icons.palette_rounded;
   }
 }
 

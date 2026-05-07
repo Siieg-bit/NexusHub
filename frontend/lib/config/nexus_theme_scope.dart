@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'nexus_theme_data.dart';
-import 'nexus_themes.dart';
+import 'package:amino_clone/core/providers/nexus_theme_provider.dart';
 
 // =============================================================================
 // NexusThemeScope — InheritedWidget que propaga NexusThemeData pela árvore
@@ -57,7 +57,7 @@ class NexusThemeScope extends InheritedWidget {
         'NexusThemeScope.of() chamado fora de um NexusThemeScope. '
         'Certifique-se de que o NexusThemeScope está acima na árvore.',
       );
-      return NexusThemes.principal;
+      return kFallbackTheme;
     }
     return scope.theme;
   }
@@ -74,7 +74,8 @@ class NexusThemeScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(NexusThemeScope oldWidget) {
-    // Reconstruir dependentes apenas se o tema realmente mudou
-    return theme.id != oldWidget.theme.id;
+    // Reconstruir dependentes quando o slug ou id do tema mudar
+    return theme.remoteSlug != oldWidget.theme.remoteSlug ||
+        theme.id != oldWidget.theme.id;
   }
 }

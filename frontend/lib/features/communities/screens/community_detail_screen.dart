@@ -326,7 +326,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         // estiver usando o tema padrão (principal). Se ele selecionou outro
         // tema, esse tema deve ser priorizado.
         final currentTheme = ref.watch(nexusThemeProvider);
-        final isDefaultTheme = currentTheme.id == NexusThemeId.principal;
+        // Verifica se o tema ativo é o 'principal' pelo slug (fonte única de verdade)
+        final isDefaultTheme = currentTheme.remoteSlug == 'principal';
         final themeColor = isDefaultTheme
             ? _parseColor(community.themeColor)
             : context.nexusTheme.accentPrimary;
