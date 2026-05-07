@@ -6361,4 +6361,25 @@ class AppStringsPt implements AppStrings {
   String get oneReaction => '1 reação';
   @override
   String reactionsCount(int count) => '{count} reações'.replaceAll('{count}', '$count');
+  @override
+  String get signupVerifyEmailTitle => 'Verifique seu e-mail';
+  @override
+  String get signupVerifyEmailSubtitle => 'Enviamos um código de 6 dígitos para {email}. Insira-o abaixo para ativar sua conta.';
+  @override
+  String get signupVerifyEmailCodeHint => 'Código de 6 dígitos';
+  @override
+  String get signupVerifyEmailCodeLabel => 'Código de verificação';
+  @override
+  String get signupVerifyEmailButton => 'Verificar e entrar';
+  @override
+  String get signupVerifyEmailResend => 'Reenviar código';
+  @override
+  String get signupVerifyEmailResendIn => 'Reenviar em {seconds}s';
+  @override
+  String get signupVerifyEmailInvalidCode => 'Código inválido. Verifique e tente novamente.';
+  @override
+  String get signupVerifyEmailExpiredCode => 'Código expirado. Solicite um novo.';
+  @override
+  String get signupVerifyEmailSuccess => 'E-mail verificado com sucesso!';
+
 }

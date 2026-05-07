@@ -3253,4 +3253,16 @@ abstract class AppStrings {
   // Reações no post
   String get oneReaction;
   String reactionsCount(int count);
+
+  // Verificação de e-mail no cadastro
+  String get signupVerifyEmailTitle;
+  String get signupVerifyEmailSubtitle;
+  String get signupVerifyEmailCodeHint;
+  String get signupVerifyEmailCodeLabel;
+  String get signupVerifyEmailButton;
+  String get signupVerifyEmailResend;
+  String get signupVerifyEmailResendIn;
+  String get signupVerifyEmailInvalidCode;
+  String get signupVerifyEmailExpiredCode;
+  String get signupVerifyEmailSuccess;
 }

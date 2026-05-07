@@ -6232,4 +6232,25 @@ class AppStringsFr implements AppStrings {
   String get oneReaction => '1 réaction';
   @override
   String reactionsCount(int count) => '{count} réactions'.replaceAll('{count}', '$count');
+  @override
+  String get signupVerifyEmailTitle => 'Vérifiez votre e-mail';
+  @override
+  String get signupVerifyEmailSubtitle => 'Nous avons envoyé un code à 6 chiffres à {email}. Entrez-le pour activer votre compte.';
+  @override
+  String get signupVerifyEmailCodeHint => 'Code à 6 chiffres';
+  @override
+  String get signupVerifyEmailCodeLabel => 'Code de vérification';
+  @override
+  String get signupVerifyEmailButton => 'Vérifier et se connecter';
+  @override
+  String get signupVerifyEmailResend => 'Renvoyer le code';
+  @override
+  String get signupVerifyEmailResendIn => 'Renvoyer dans {seconds}s';
+  @override
+  String get signupVerifyEmailInvalidCode => 'Code invalide. Vérifiez et réessayez.';
+  @override
+  String get signupVerifyEmailExpiredCode => 'Code expiré. Demandez-en un nouveau.';
+  @override
+  String get signupVerifyEmailSuccess => 'E-mail vérifié avec succès !';
+
 }

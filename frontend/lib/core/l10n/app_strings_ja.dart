@@ -6230,4 +6230,25 @@ class AppStringsJa implements AppStrings {
   String get oneReaction => '1件のリアクション';
   @override
   String reactionsCount(int count) => '{count}件のリアクション'.replaceAll('{count}', '$count');
+  @override
+  String get signupVerifyEmailTitle => 'メールを確認してください';
+  @override
+  String get signupVerifyEmailSubtitle => '{email} に6桁のコードを送信しました。入力してアカウントを有効化してください。';
+  @override
+  String get signupVerifyEmailCodeHint => '6桁のコード';
+  @override
+  String get signupVerifyEmailCodeLabel => '確認コード';
+  @override
+  String get signupVerifyEmailButton => '確認してログイン';
+  @override
+  String get signupVerifyEmailResend => 'コードを再送信';
+  @override
+  String get signupVerifyEmailResendIn => '{seconds}秒後に再送信';
+  @override
+  String get signupVerifyEmailInvalidCode => '無効なコードです。確認して再試行してください。';
+  @override
+  String get signupVerifyEmailExpiredCode => 'コードの有効期限が切れました。新しいコードを要求してください。';
+  @override
+  String get signupVerifyEmailSuccess => 'メールの確認が完了しました！';
+
 }

@@ -6231,4 +6231,25 @@ class AppStringsAr implements AppStrings {
   String get oneReaction => 'تفاعل واحد';
   @override
   String reactionsCount(int count) => '{count} تفاعلات'.replaceAll('{count}', '$count');
+  @override
+  String get signupVerifyEmailTitle => 'تحقق من بريدك الإلكتروني';
+  @override
+  String get signupVerifyEmailSubtitle => 'أرسلنا رمزًا مكونًا من 6 أرقام إلى {email}. أدخله لتفعيل حسابك.';
+  @override
+  String get signupVerifyEmailCodeHint => 'رمز مكون من 6 أرقام';
+  @override
+  String get signupVerifyEmailCodeLabel => 'رمز التحقق';
+  @override
+  String get signupVerifyEmailButton => 'تحقق وتسجيل الدخول';
+  @override
+  String get signupVerifyEmailResend => 'إعادة إرسال الرمز';
+  @override
+  String get signupVerifyEmailResendIn => 'إعادة الإرسال خلال {seconds}ث';
+  @override
+  String get signupVerifyEmailInvalidCode => 'رمز غير صالح. يرجى التحقق والمحاولة مجددًا.';
+  @override
+  String get signupVerifyEmailExpiredCode => 'انتهت صلاحية الرمز. اطلب رمزًا جديدًا.';
+  @override
+  String get signupVerifyEmailSuccess => 'تم التحقق من البريد الإلكتروني بنجاح!';
+
 }

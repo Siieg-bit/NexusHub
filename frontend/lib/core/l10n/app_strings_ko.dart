@@ -6232,4 +6232,25 @@ class AppStringsKo implements AppStrings {
   String get oneReaction => '반응 1개';
   @override
   String reactionsCount(int count) => '반응 {count}개'.replaceAll('{count}', '$count');
+  @override
+  String get signupVerifyEmailTitle => '이메일을 확인하세요';
+  @override
+  String get signupVerifyEmailSubtitle => '{email}로 6자리 코드를 보냈습니다. 계정을 활성화하려면 입력하세요.';
+  @override
+  String get signupVerifyEmailCodeHint => '6자리 코드';
+  @override
+  String get signupVerifyEmailCodeLabel => '인증 코드';
+  @override
+  String get signupVerifyEmailButton => '인증 후 로그인';
+  @override
+  String get signupVerifyEmailResend => '코드 재전송';
+  @override
+  String get signupVerifyEmailResendIn => '{seconds}초 후 재전송';
+  @override
+  String get signupVerifyEmailInvalidCode => '잘못된 코드입니다. 확인 후 다시 시도하세요.';
+  @override
+  String get signupVerifyEmailExpiredCode => '코드가 만료되었습니다. 새 코드를 요청하세요.';
+  @override
+  String get signupVerifyEmailSuccess => '이메일 인증이 완료되었습니다!';
+
 }

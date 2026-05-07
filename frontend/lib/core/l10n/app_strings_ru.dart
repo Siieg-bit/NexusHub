@@ -6232,4 +6232,25 @@ class AppStringsRu implements AppStrings {
   String get oneReaction => '1 реакция';
   @override
   String reactionsCount(int count) => '{count} реакций'.replaceAll('{count}', '$count');
+  @override
+  String get signupVerifyEmailTitle => 'Подтвердите e-mail';
+  @override
+  String get signupVerifyEmailSubtitle => 'Мы отправили 6-значный код на {email}. Введите его, чтобы активировать аккаунт.';
+  @override
+  String get signupVerifyEmailCodeHint => '6-значный код';
+  @override
+  String get signupVerifyEmailCodeLabel => 'Код подтверждения';
+  @override
+  String get signupVerifyEmailButton => 'Подтвердить и войти';
+  @override
+  String get signupVerifyEmailResend => 'Отправить код повторно';
+  @override
+  String get signupVerifyEmailResendIn => 'Повторная отправка через {seconds}с';
+  @override
+  String get signupVerifyEmailInvalidCode => 'Неверный код. Проверьте и попробуйте снова.';
+  @override
+  String get signupVerifyEmailExpiredCode => 'Срок действия кода истёк. Запросите новый.';
+  @override
+  String get signupVerifyEmailSuccess => 'E-mail успешно подтверждён!';
+
 }

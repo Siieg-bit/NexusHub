@@ -6230,4 +6230,25 @@ class AppStringsEs implements AppStrings {
   String get oneReaction => '1 reacción';
   @override
   String reactionsCount(int count) => '{count} reacciones'.replaceAll('{count}', '$count');
+  @override
+  String get signupVerifyEmailTitle => 'Verifica tu correo';
+  @override
+  String get signupVerifyEmailSubtitle => 'Enviamos un código de 6 dígitos a {email}. Ingrésalo para activar tu cuenta.';
+  @override
+  String get signupVerifyEmailCodeHint => 'Código de 6 dígitos';
+  @override
+  String get signupVerifyEmailCodeLabel => 'Código de verificación';
+  @override
+  String get signupVerifyEmailButton => 'Verificar e iniciar sesión';
+  @override
+  String get signupVerifyEmailResend => 'Reenviar código';
+  @override
+  String get signupVerifyEmailResendIn => 'Reenviar en {seconds}s';
+  @override
+  String get signupVerifyEmailInvalidCode => 'Código inválido. Verifica e intenta de nuevo.';
+  @override
+  String get signupVerifyEmailExpiredCode => 'Código expirado. Solicita uno nuevo.';
+  @override
+  String get signupVerifyEmailSuccess => '¡Correo verificado con éxito!';
+
 }

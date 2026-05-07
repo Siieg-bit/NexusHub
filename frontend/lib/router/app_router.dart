@@ -66,6 +66,7 @@ import '../features/settings/screens/two_factor_screen.dart';
 import '../features/settings/screens/totp_setup_screen.dart';
 import '../features/settings/screens/phone_2fa_screen.dart';
 import '../features/auth/screens/mfa_challenge_screen.dart';
+import '../features/auth/screens/signup_email_verify_screen.dart';
 import '../features/explore/screens/search_screen.dart';
 import '../features/explore/screens/interest_match_screen.dart';
 import '../features/profile/screens/edit_interests_screen.dart';
@@ -122,7 +123,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == '/onboarding' ||
           state.matchedLocation == '/interest-wizard' ||
           // Recuperação de senha: o usuário pode não estar autenticado ainda
-          state.matchedLocation == '/reset-password';
+          state.matchedLocation == '/reset-password' ||
+          // Verificação de e-mail no cadastro
+          state.matchedLocation == '/signup/verify-email';
 
       if (!isAuth && !isAuthRoute) return '/onboarding';
       if (isAuth &&
@@ -160,6 +163,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/reset-password',
         name: 'reset-password',
         builder: (context, state) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/signup/verify-email',
+        name: 'signup-verify-email',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          final email = extra['email'] as String? ?? '';
+          return SignupEmailVerifyScreen(email: email);
+        },
       ),
       GoRoute(
         path: '/auth/mfa-challenge',

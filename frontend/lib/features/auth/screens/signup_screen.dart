@@ -147,45 +147,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     } else {
       final authState = ref.read(authProvider);
       if (authState.error == null) {
-        // E-mail de confirmação enviado
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => AlertDialog(
-            backgroundColor: Theme.of(ctx).cardColor,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Text('Verifique seu e-mail',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Enviamos um link de confirmação para:\n',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                ),
-                Text(
-                  email,
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Abra o e-mail e clique no link para ativar sua conta. Verifique também a caixa de spam.',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(ctx).pop();
-                  context.go('/login');
-                },
-                child: const Text('Entendi'),
-              ),
-            ],
-          ),
-        );
+        // Supabase exige confirmação de e-mail — navegar para tela de verificação de código OTP
+        context.push('/signup/verify-email', extra: {'email': email});
       }
     }
   }
