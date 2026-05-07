@@ -1,5 +1,8 @@
-/// Constantes do aplicativo NexusHub.
-
+/// Constantes estáticas do aplicativo NexusHub.
+///
+/// NOTA: Limites, paginação, gamificação, links e webhooks foram migrados
+/// para RemoteConfigService (tabela app_remote_config). Use RemoteConfigService
+/// para acessar esses valores dinâmicos.
 class AppConstants {
   AppConstants._();
 
@@ -9,42 +12,6 @@ class AppConstants {
   static const String appName = 'NexusHub';
   static const String appVersion = '1.0.0';
   static const String appBuildNumber = '1';
-
-  // ====================================================================
-  // LIMITES
-  // ====================================================================
-  static const int maxPostTitleLength = 200;
-  static const int maxPostContentLength = 10000;
-  static const int maxCommentLength = 2000;
-  static const int maxBioLength = 500;
-  static const int maxNicknameLength = 30;
-  static const int minNicknameLength = 3;
-  static const int maxTagsPerPost = 10;
-  static const int maxMediaPerPost = 10;
-  static const int maxCommunityNameLength = 50;
-  static const int maxCommunityDescLength = 1000;
-  static const int maxMessageLength = 5000;
-  static const int maxChatMembers = 1000;
-
-  // ====================================================================
-  // PAGINAÇÃO
-  // ====================================================================
-  static const int feedPageSize = 20;
-  static const int chatPageSize = 50;
-  static const int searchPageSize = 20;
-  static const int leaderboardPageSize = 50;
-  static const int commentsPageSize = 30;
-
-  // ====================================================================
-  // GAMIFICAÇÃO
-  // ====================================================================
-  static const int xpPerPost = 10;
-  static const int xpPerComment = 5;
-  static const int xpPerLike = 2;
-  static const int xpPerCheckIn = 15;
-  static const int xpCheckInStreak7 = 50;
-  static const int coinsPerCheckIn = 5;
-  static const int coinsCheckInStreak7 = 25;
 
   // ====================================================================
   // ROLES
@@ -86,9 +53,6 @@ class AppConstants {
   static const String deepLinkScheme = 'nexushub';
   static const String deepLinkHost = 'app.nexushub.io';
 
-  // ====================================================================
-  // WEBHOOKS
-  // ====================================================================
-  static const String discordBugReportWebhook =
-      'https://discord.com/api/webhooks/1499274845739814934/L1eV_WkUi7FZZ3ibZ74LRAKmg0GkTKyQlgmm8gATNXezLq4-jc5aOto_bRQBOr9zinqw';
+  // Webhook do Discord migrado para RemoteConfigService:
+  //   RemoteConfigService.discordBugReportWebhook
 }

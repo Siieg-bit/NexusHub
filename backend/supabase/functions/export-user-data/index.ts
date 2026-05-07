@@ -14,8 +14,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const RATE_LIMIT_MAX = 2;
-const RATE_LIMIT_WINDOW_SECONDS = 3600; // 1 hora
+// Fallbacks caso o Remote Config não esteja disponível
+const RATE_LIMIT_MAX_FALLBACK = 2;
+const RATE_LIMIT_WINDOW_FALLBACK = 3600;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -53,10 +54,27 @@ serve(async (req) => {
     );
 
     // ========================================================================
-    // RATE LIMITING - 2 exports por hora
+    // RATE LIMITING - dinâmico via Remote Config
     // ========================================================================
+    let rateLimitMax = RATE_LIMIT_MAX_FALLBACK;
+    let rateLimitWindow = RATE_LIMIT_WINDOW_FALLBACK;
+    try {
+      const { data: configRow } = await supabaseAdmin
+        .from("app_remote_config")
+        .select("value")
+        .eq("key", "rate_limits.export_data_edge")
+        .single();
+      if (configRow?.value) {
+        const cfg = typeof configRow.value === "object"
+          ? configRow.value as Record<string, number>
+          : JSON.parse(configRow.value as string) as Record<string, number>;
+        if (cfg.max)    rateLimitMax    = Number(cfg.max);
+        if (cfg.window) rateLimitWindow = Number(cfg.window);
+      }
+    } catch { /* usa fallback */ }
+
     const windowStart = new Date(
-      Date.now() - RATE_LIMIT_WINDOW_SECONDS * 1000
+      Date.now() - rateLimitWindow * 1000
     ).toISOString();
 
     const { count } = await supabaseAdmin
@@ -66,11 +84,11 @@ serve(async (req) => {
       .eq("action", "export_user_data")
       .gte("created_at", windowStart);
 
-    if ((count ?? 0) >= RATE_LIMIT_MAX) {
+    if ((count ?? 0) >= rateLimitMax) {
       return new Response(
         JSON.stringify({
-          error: "Você já solicitou um export recentemente. Tente novamente em 1 hora.",
-          retry_after_seconds: RATE_LIMIT_WINDOW_SECONDS,
+          error: "Você já solicitou um export recentemente. Tente novamente em breve.",
+          retry_after_seconds: rateLimitWindow,
         }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );

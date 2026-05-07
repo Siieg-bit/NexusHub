@@ -2,7 +2,7 @@
 // NEXUSHUB - Edge Function: Moderação
 // Endpoint: POST /functions/v1/moderation
 // Ações: warn, mute, ban, delete_content
-// Rate Limiting: 10 ações por minuto por usuário (via rate_limit_log)
+// Rate Limiting: dinâmico via app_remote_config (key: rate_limits.moderation_edge)
 // ============================================================================
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
@@ -22,8 +22,9 @@ interface ModerationRequest {
   duration_hours?: number;
 }
 
-const RATE_LIMIT_MAX = 10; // máximo de ações
-const RATE_LIMIT_WINDOW_SECONDS = 60; // janela de 1 minuto
+// Fallbacks caso o Remote Config não esteja disponível
+const RATE_LIMIT_MAX_FALLBACK = 10;
+const RATE_LIMIT_WINDOW_FALLBACK = 60;
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -57,18 +58,40 @@ serve(async (req: Request) => {
       );
     }
 
-    // ========================================================================
-    // RATE LIMITING via tabela rate_limit_log
-    // ========================================================================
-    const windowStart = new Date(
-      Date.now() - RATE_LIMIT_WINDOW_SECONDS * 1000
-    ).toISOString();
-
-    // Cliente service_role para consultar rate_limit_log (RLS pode bloquear SELECT)
+    // Cliente service_role para rate_limit_log e Remote Config
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // ========================================================================
+    // Carregar rate limit do Remote Config (com fallback)
+    // ========================================================================
+    let rateLimitMax = RATE_LIMIT_MAX_FALLBACK;
+    let rateLimitWindow = RATE_LIMIT_WINDOW_FALLBACK;
+
+    try {
+      const { data: configRow } = await supabaseAdmin
+        .from("app_remote_config")
+        .select("value")
+        .eq("key", "rate_limits.moderation_edge")
+        .single();
+
+      if (configRow?.value) {
+        const cfg = typeof configRow.value === "object"
+          ? configRow.value as Record<string, number>
+          : JSON.parse(configRow.value as string) as Record<string, number>;
+        if (cfg.max)    rateLimitMax    = Number(cfg.max);
+        if (cfg.window) rateLimitWindow = Number(cfg.window);
+      }
+    } catch { /* usa fallback */ }
+
+    // ========================================================================
+    // RATE LIMITING via tabela rate_limit_log
+    // ========================================================================
+    const windowStart = new Date(
+      Date.now() - rateLimitWindow * 1000
+    ).toISOString();
 
     const { count, error: countError } = await supabaseAdmin
       .from("rate_limit_log")
@@ -77,11 +100,11 @@ serve(async (req: Request) => {
       .eq("action", "moderation")
       .gte("created_at", windowStart);
 
-    if (!countError && (count ?? 0) >= RATE_LIMIT_MAX) {
+    if (!countError && (count ?? 0) >= rateLimitMax) {
       return new Response(
         JSON.stringify({
-          error: "Rate limit excedido. Tente novamente em 1 minuto.",
-          retry_after_seconds: RATE_LIMIT_WINDOW_SECONDS,
+          error: "Rate limit excedido. Tente novamente em breve.",
+          retry_after_seconds: rateLimitWindow,
         }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );

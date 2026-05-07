@@ -12,7 +12,6 @@ import 'package:amino_clone/core/providers/nexus_theme_provider.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/cache_service.dart';
-import '../../../core/utils/constants.dart';
 import '../../../core/services/remote_config_service.dart';
 import '../../../core/utils/responsive.dart';
 

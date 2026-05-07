@@ -1,0 +1,27 @@
+# =============================================================================
+# Shorebird OTA — NexusHub
+#
+# ATENÇÃO: Este arquivo precisa ser configurado antes do primeiro release.
+#
+# Passos para ativar:
+#   1. Instale o Shorebird CLI:
+#      curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
+#
+#   2. Faça login:
+#      shorebird login
+#
+#   3. Execute dentro de frontend/:
+#      shorebird init
+#      (isso substituirá o app_id abaixo pelo ID real do seu app)
+#
+#   4. Configure o secret SHOREBIRD_TOKEN no GitHub:
+#      https://github.com/Siieg-bit/NexusHub/settings/secrets/actions
+#      Obtenha o token com: shorebird login:ci
+#
+#   5. Após configurado, o workflow .github/workflows/shorebird.yml
+#      enviará patches automaticamente a cada push na main.
+#
+# Consulte: SHOREBIRD_SETUP_GUIDE.md na raiz do repositório.
+# =============================================================================
+
+app_id: CONFIGURE_COM_SHOREBIRD_INIT

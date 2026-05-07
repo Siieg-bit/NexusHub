@@ -24,12 +24,34 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-bot-secret",
 };
 
-// Limiares de decisão automática
-const THRESHOLDS = {
-  AUTO_REMOVE:  0.85,  // score >= 0.85 → auto_removed
-  SUSPICIOUS:   0.50,  // score >= 0.50 → suspicious (escalado para humano)
-  CLEAN:        0.20,  // score < 0.20  → clean
+// Limiares de decisão automática — fallbacks para quando o Remote Config não está disponível
+const THRESHOLDS_FALLBACK = {
+  AUTO_REMOVE:  0.85,
+  SUSPICIOUS:   0.50,
+  CLEAN:        0.20,
 };
+
+// Carrega os limiares do Remote Config (app_remote_config) com fallback
+async function loadThresholds(supabaseAdmin: ReturnType<typeof createClient>) {
+  try {
+    const { data } = await supabaseAdmin
+      .from("app_remote_config")
+      .select("key, value")
+      .in("key", ["moderation.auto_remove_threshold", "moderation.suspicious_threshold", "moderation.clean_threshold"]);
+
+    const map: Record<string, number> = {};
+    for (const row of (data ?? [])) {
+      map[row.key] = parseFloat(String(row.value));
+    }
+    return {
+      AUTO_REMOVE: isNaN(map["moderation.auto_remove_threshold"]) ? THRESHOLDS_FALLBACK.AUTO_REMOVE : map["moderation.auto_remove_threshold"],
+      SUSPICIOUS:  isNaN(map["moderation.suspicious_threshold"])  ? THRESHOLDS_FALLBACK.SUSPICIOUS  : map["moderation.suspicious_threshold"],
+      CLEAN:       isNaN(map["moderation.clean_threshold"])        ? THRESHOLDS_FALLBACK.CLEAN        : map["moderation.clean_threshold"],
+    };
+  } catch {
+    return THRESHOLDS_FALLBACK;
+  }
+}
 
 // Categorias da OpenAI Moderation API mapeadas para as nossas
 const CATEGORY_MAP: Record<string, string> = {
@@ -239,7 +261,8 @@ async function processFlag(
   // 3. Analisar conteúdo
   const analysis = await analyzeContent(textContent, imageUrls);
 
-  // 4. Determinar veredicto
+  // 4. Determinar veredicto (limiares dinâmicos do Remote Config)
+  const THRESHOLDS = await loadThresholds(supabaseAdmin);
   let verdict: string;
   let autoAction = false;
   let reasoning: string;

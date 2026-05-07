@@ -151,7 +151,9 @@ class OpenThreadCallResult {
 /// ============================================================================
 class CallService {
   // ── Agora Configuration ──
-  static const String _agoraAppId = 'dc3fc8b039374782af029efa33f17198';
+  // App ID lido do .env via AppConfig — mesma fonte do screening_voice_provider.
+  // Não usar valor hardcoded: o App ID correto deve estar no arquivo .env.
+  static String get _agoraAppId => AppConfig.agoraAppId;
   static String? _agoraToken;
 
   // ── Agora Engine ──

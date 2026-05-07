@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/ad_service.dart';
+import '../../../core/services/remote_config_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 
@@ -17,7 +18,8 @@ class FreeCoinsScreen extends ConsumerStatefulWidget {
 class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
   int _balance = 0;
   int _adsWatchedToday = 0;
-  static const int _maxAdsPerDay = 10;
+  // Limite diário carregado do RemoteConfigService
+  int get _maxAdsPerDay => RemoteConfigService.maxDailyRewardedAds;
   bool _isLoadingAd = false;
 
   @override
@@ -70,7 +72,7 @@ class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
     if (_adsWatchedToday >= _maxAdsPerDay || _isLoadingAd) return;
     setState(() => _isLoadingAd = true);
     try {
-      const int rewardCoins = 5;
+      final rewardCoins = RemoteConfigService.rewardedCoinsPerAd;
       final success = await AdService.showRewardedAd(rewardCoins: rewardCoins);
       if (!mounted) return;
       if (success) {
@@ -224,7 +226,7 @@ class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
                   iconColor: const Color(0xFFE53935),
                   title: s.watchVideoAction,
                   subtitle: '$_adsWatchedToday/$_maxAdsPerDay assistidos hoje',
-                  reward: '+5',
+                  reward: '+${RemoteConfigService.rewardedCoinsPerAd}',
                   onTap: _adsWatchedToday < _maxAdsPerDay ? _watchAd : null,
                   isLoading: _isLoadingAd,
                 ),
