@@ -756,6 +756,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
     final isMuted = callState.isMuted;
     final participantCount = callState.participants.length;
 
+    // Capturar nickname e container do provider ANTES do pop para uso no onEnd
+    final callerNickname =
+        ref.read(currentUserProvider)?.nickname ??
+        (_memberCache[SupabaseService.currentUserId]?['local_nickname'] as String?)?.trim() ??
+        'Alguém';
+    final container = ProviderScope.containerOf(context, listen: false);
+
     miniNotifier.show(
       roomId: threadId,
       title: threadTitle,
@@ -769,7 +776,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
       },
       onEnd: () {
         miniNotifier.hide();
-        callController.end(null);
+        // Passa o nickname correto para a mensagem de sistema
+        callController.end(callerNickname);
+        // Invalida o provider para que o painel inline feche ao voltar ao chat
+        container.invalidate(activeCallSessionProvider(threadId));
       },
       onToggleMute: () {
         callController.toggleMute();
