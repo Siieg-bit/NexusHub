@@ -287,6 +287,11 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     switch (resolution.type) {
       case StreamType.hls:
       case StreamType.direct:
+        // Não criar o player enquanto o sessionId for vazio (antes do joinRoom
+        // terminar). Evita o provider fantasma screeningPlayerProvider('') que
+        // registraria o player nativo no provider errado. O layout já exibe a
+        // ScreeningEntryAnimation como overlay visual durante esse período.
+        if (widget.sessionId.isEmpty) return const SizedBox.shrink();
         // Player nativo via media_kit.
         // O _isLoading é controlado pelo próprio ScreeningNativePlayerWidget
         // via onNativePlay/onNativeBuffering no provider. Garantir que o
@@ -304,16 +309,12 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
           }
         });
         return ScreeningNativePlayerWidget(
-          // A key inclui o sessionId para garantir que o widget seja recriado
-          // quando o sessionId muda de '' (antes do joinRoom) para o ID real.
-          // Sem isso, o widget mantém o sessionId vazio e registra o player
-          // no provider errado (screeningPlayerProvider('')), causando mismatch.
           key: ValueKey('${resolution.url}_${widget.sessionId}'),
           hlsUrl: resolution.url,
           sessionId: widget.sessionId,
           threadId: widget.threadId,
           platform: resolution.platform,
-          resolution: resolution, // Passa licenseUrl, pssh, headers e requiresDrm para DRM Widevine
+          resolution: resolution,
         );
 
       case StreamType.embed:
