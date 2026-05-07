@@ -51,7 +51,9 @@ class AppNavigationHelper {
   /// Navega para um chat.
   static void navigateToChat(GoRouter router, String chatId) {
     if (chatId.isEmpty) return;
-    router.push('/chat/$chatId');
+    final target = '/chat/$chatId';
+    if (_isCurrentRoute(router, target)) return;
+    router.push(target);
   }
 
   /// Navega para a lista de chats.
@@ -284,6 +286,11 @@ class AppNavigationHelper {
   // ─────────────────────────────────────────────────────────────
   // Utilitários internos
   // ─────────────────────────────────────────────────────────────
+
+  static bool _isCurrentRoute(GoRouter router, String route) {
+    final current = router.routeInformationProvider.value.uri.toString();
+    return current == route || current.split('?').first == route;
+  }
 
   /// Extrai string não-vazia de um valor dinâmico.
   /// Retorna null se o valor for null, vazio, "null" ou "undefined".

@@ -323,6 +323,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
   Future<void> _initChat() async {
     await _loadThreadInfo();
     if (!mounted) return;
+    final currentUserId = SupabaseService.currentUserId;
+    if (currentUserId != null) {
+      await _prefetchMemberCache([currentUserId]);
+    }
+    if (!mounted) return;
     await _ensureMembership();
     if (!mounted) return;
     // Verificar mounted antes de cada operação fire-and-forget.
@@ -773,10 +778,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
           event: 'typing',
           callback: (payload) {
             if (_isDisposed || !mounted) return;
-            final userId = payload['user_id'] as String?;
-            final nickname = payload['nickname'] as String? ?? 'Alguém';
+            final userId = (payload['user_id'] as String?)?.trim();
             final isTyping = payload['is_typing'] as bool? ?? false;
-            if (userId == null || userId == currentUserId) return;
+            if (userId == null || userId.isEmpty || userId == currentUserId) {
+              return;
+            }
+
+            final nickname = _normalizeTypingNickname(
+              payload['nickname'],
+              userId: userId,
+            );
+
             setState(() {
               if (isTyping) {
                 _typingUsers[userId] = nickname;
@@ -787,6 +799,48 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
           },
         )
         ..subscribe();
+  }
+
+  String _normalizeTypingNickname(dynamic rawNickname, {String? userId}) {
+    final raw = rawNickname?.toString().trim();
+    final invalidNames = {'', 'Você', 'Voce', 'You', 'Alguém', 'Alguem'};
+    if (raw != null && !invalidNames.contains(raw)) return raw;
+
+    if (userId != null) {
+      final localNickname =
+          (_memberCache[userId]?['local_nickname'] as String?)?.trim();
+      if (localNickname != null && localNickname.isNotEmpty) {
+        return localNickname;
+      }
+    }
+
+    return 'Alguém';
+  }
+
+  String _currentTypingNickname() {
+    final currentUserId = SupabaseService.currentUserId;
+    if (currentUserId != null) {
+      final localNickname =
+          (_memberCache[currentUserId]?['local_nickname'] as String?)?.trim();
+      if (localNickname != null && localNickname.isNotEmpty) {
+        return localNickname;
+      }
+    }
+
+    final userNickname = ref.read(currentUserNicknameProvider)?.trim();
+    if (userNickname != null && userNickname.isNotEmpty) {
+      return userNickname;
+    }
+
+    final metadataName = SupabaseService.client.auth.currentUser
+        ?.userMetadata?['full_name']
+        ?.toString()
+        .trim();
+    if (metadataName != null && metadataName.isNotEmpty) {
+      return metadataName;
+    }
+
+    return 'Alguém';
   }
 
   /// Emite evento de "digitando" para os outros membros do chat.
@@ -802,7 +856,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen>
       event: 'typing',
       payload: {
         'user_id': currentUserId,
-        'nickname': _threadInfo?['my_nickname'] ?? 'Você',
+        'nickname': _currentTypingNickname(),
         'is_typing': true,
       },
     );
@@ -6333,11 +6387,14 @@ class _TypingIndicatorWidgetState extends State<_TypingIndicatorWidget>
   }
 
   String _buildLabel() {
-    final names = widget.typingUsers.values.toList();
+    final names = widget.typingUsers.values
+        .map((name) => name.trim())
+        .where((name) => name.isNotEmpty)
+        .toSet()
+        .toList();
     if (names.isEmpty) return '';
     if (names.length == 1) return '${names[0]} está digitando';
-    if (names.length == 2) return '${names[0]} e ${names[1]} estão digitando';
-    return '${names[0]} e mais ${names.length - 1} estão digitando';
+    return '${names[0]} e mais ${names.length - 1} pessoas estão digitando';
   }
 
   @override

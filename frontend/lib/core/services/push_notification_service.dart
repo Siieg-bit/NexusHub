@@ -390,8 +390,9 @@ class PushNotificationService {
       final incomingThreadId = message.data['chat_thread_id'] as String?;
       if (incomingThreadId != null && incomingThreadId == activeChatThreadId) {
         debugPrint('[Push] Suprimindo notificação local — usuário já está no chat $incomingThreadId');
-        // Ainda emite para a stream para atualizar o estado interno
-        _notificationStreamController?.add(message.data);
+        // Não emitir no stream global: ele é usado para navegação de taps.
+        // A mensagem já chega pelo realtime do chat aberto; emitir aqui faz
+        // o router empilhar/reabrir a mesma sala, causando refresh visual.
         return;
       }
     }
@@ -446,8 +447,10 @@ class PushNotificationService {
       payload: jsonEncode(message.data),
     );
 
-    // Emitir para a stream
-    _notificationStreamController?.add(message.data);
+    // Não emitir para a stream global em foreground. Esse stream é consumido
+    // pelo app como navegação de toque em notificação; emitir no recebimento
+    // faz a tela atual navegar/recarregar sem ação do usuário. A navegação de
+    // foreground continua acontecendo pelo callback de tap da notificação local.
     // Incrementar badge no ícone do app
     _incrementAppBadge();
   }
