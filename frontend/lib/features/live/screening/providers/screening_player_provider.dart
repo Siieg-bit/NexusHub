@@ -56,25 +56,15 @@ const _kPlayerBridgeJs = r'''
     else if (event === 'ready') console.log('__YT_READY__');
   }
 
+  // IMPORTANTE: nenhum método armazena referência estática ao _ytPlayer.
+  // Todos consultam window._ytPlayer dinamicamente em tempo de execução,
+  // eliminando o race condition onde _yt ficava null porque
+  // onYouTubeIframeAPIReady ainda não havia sido chamado no onLoadStop.
   window._nexusPlayer = {
-    _yt: null,
 
-    // ── Conectar ao YT.Player já criado pelo onYouTubeIframeAPIReady ─────────
-    // NÃO cria um novo YT.Player para evitar conflito com o _ytPlayer
-    // criado pelo _buildHtmlWrapper. Apenas conecta ao existente.
-    initYT: function() {
-      if (window._ytPlayer && !this._yt) {
-        this._yt = window._ytPlayer;
-      }
-    },
-
-    // ── Obter posição atual (ms) ────────────────────────────────────────────
+    // ── Obter posição atual (ms) ──────────────────────────────────────────────
     getPosition: function() {
       try {
-        if (this._yt && this._yt.getCurrentTime) {
-          return Math.floor(this._yt.getCurrentTime() * 1000);
-        }
-        // window._ytPlayer (legacy)
         if (window._ytPlayer && window._ytPlayer.getCurrentTime) {
           return Math.floor(window._ytPlayer.getCurrentTime() * 1000);
         }
@@ -87,13 +77,9 @@ const _kPlayerBridgeJs = r'''
     // ── Obter duração total (ms) ────────────────────────────────────────────
     getDuration: function() {
       try {
-        if (this._yt && this._yt.getDuration) {
-          var d = this._yt.getDuration();
-          if (d > 0) return Math.floor(d * 1000);
-        }
         if (window._ytPlayer && window._ytPlayer.getDuration) {
-          var d2 = window._ytPlayer.getDuration();
-          if (d2 > 0) return Math.floor(d2 * 1000);
+          var d = window._ytPlayer.getDuration();
+          if (d > 0) return Math.floor(d * 1000);
         }
         var v = document.querySelector('video');
         if (v && !isNaN(v.duration) && v.duration > 0) {
@@ -103,7 +89,7 @@ const _kPlayerBridgeJs = r'''
       return 0;
     },
 
-    // ── Verificar se está em buffering ──────────────────────────────────────
+    // ── Verificar se está em buffering ──────────────────────────────────────────
     isBuffering: function() {
       try {
         var v = document.querySelector('video');
@@ -115,40 +101,36 @@ const _kPlayerBridgeJs = r'''
       return false;
     },
 
-    // ── Play ────────────────────────────────────────────────────────────────
+    // ── Play ──────────────────────────────────────────────────────────────────────
     play: function() {
       try {
-        if (this._yt && this._yt.playVideo) { this._yt.playVideo(); return; }
         if (window._ytPlayer && window._ytPlayer.playVideo) { window._ytPlayer.playVideo(); return; }
         var v = document.querySelector('video');
         if (v) v.play();
       } catch(e) {}
     },
 
-    // ── Pause ───────────────────────────────────────────────────────────────
+    // ── Pause ─────────────────────────────────────────────────────────────────────
     pause: function() {
       try {
-        if (this._yt && this._yt.pauseVideo) { this._yt.pauseVideo(); return; }
         if (window._ytPlayer && window._ytPlayer.pauseVideo) { window._ytPlayer.pauseVideo(); return; }
         var v = document.querySelector('video');
         if (v) v.pause();
       } catch(e) {}
     },
 
-    // ── Seek ────────────────────────────────────────────────────────────────
+    // ── Seek ──────────────────────────────────────────────────────────────────────
     seek: function(seconds) {
       try {
-        if (this._yt && this._yt.seekTo) { this._yt.seekTo(seconds, true); return; }
         if (window._ytPlayer && window._ytPlayer.seekTo) { window._ytPlayer.seekTo(seconds, true); return; }
         var v = document.querySelector('video');
         if (v) v.currentTime = seconds;
       } catch(e) {}
     },
 
-    // ── Set playback rate ───────────────────────────────────────────────────
+    // ── Set playback rate ────────────────────────────────────────────────────────────
     setRate: function(rate) {
       try {
-        if (this._yt && this._yt.setPlaybackRate) { this._yt.setPlaybackRate(rate); return; }
         if (window._ytPlayer && window._ytPlayer.setPlaybackRate) { window._ytPlayer.setPlaybackRate(rate); return; }
         var v = document.querySelector('video');
         if (v) v.playbackRate = rate;
@@ -156,17 +138,6 @@ const _kPlayerBridgeJs = r'''
     }
   };
 
-  // Tentar inicializar YT imediatamente (pode já estar disponível)
-  // NOTA: initYT() NÃO cria um novo YT.Player — apenas conecta ao _ytPlayer
-  // já criado pelo onYouTubeIframeAPIReady no _buildHtmlWrapper.
-  // Os event listeners do <video> são registrados pelo _injectControlScript
-  // (widget) via callHandler nativo, evitando duplicação com console.log.
-  window._nexusPlayer.initYT();
-
-  // Aguardar YT.ready se necessário
-  if (window.YT && window.YT.ready) {
-    window.YT.ready(function() { window._nexusPlayer.initYT(); });
-  }
   // Os event listeners do <video> HTML5 são registrados pelo
   // _injectControlScript (ScreeningPlayerWidget) via callHandler nativo.
   // Não registramos aqui para evitar duplicação de eventos.
@@ -346,9 +317,6 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
             if (window._ytPlayer && window._ytPlayer.getPlayerState) {
               return window._ytPlayer.getPlayerState() === 1;
             }
-            if (window._nexusPlayer && window._nexusPlayer._yt && window._nexusPlayer._yt.getPlayerState) {
-              return window._nexusPlayer._yt.getPlayerState() === 1;
-            }
           } catch(e) {}
           return false;
         })()
@@ -362,20 +330,14 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   Future<int?> _getPositionMs() async {
     if (_webViewController == null || _isNativeMode || _webViewDisposed) return null;
     try {
-      // Tenta múltiplas fontes em ordem de preferência:
-      // 1. window._nexusPlayer (abstração unificada)
-      // 2. window._ytPlayer (YouTube IFrame API direta)
-      // 3. document.querySelector('video') (HTML5 <video>)
+      // Tenta obter posição via window._ytPlayer (YouTube IFrame API)
+      // ou document.querySelector('video') (HTML5 <video>).
       final result = await _webViewController!.evaluateJavascript(source: '''
         (function() {
           try {
-            if (window._nexusPlayer && window._nexusPlayer._yt && window._nexusPlayer._yt.getCurrentTime) {
-              var p = Math.floor(window._nexusPlayer._yt.getCurrentTime() * 1000);
-              if (p >= 0) return p;
-            }
             if (window._ytPlayer && window._ytPlayer.getCurrentTime) {
-              var p2 = Math.floor(window._ytPlayer.getCurrentTime() * 1000);
-              if (p2 >= 0) return p2;
+              var p = Math.floor(window._ytPlayer.getCurrentTime() * 1000);
+              if (p >= 0) return p;
             }
             var v = document.querySelector('video');
             if (v && !isNaN(v.currentTime)) return Math.floor(v.currentTime * 1000);
@@ -408,9 +370,6 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
             if (window._ytPlayer && window._ytPlayer.getPlayerState) {
               return window._ytPlayer.getPlayerState() === 3;
             }
-            if (window._nexusPlayer && window._nexusPlayer._yt && window._nexusPlayer._yt.getPlayerState) {
-              return window._nexusPlayer._yt.getPlayerState() === 3;
-            }
             var v = document.querySelector('video');
             if (v) return v.networkState === 2 && v.readyState < 3;
           } catch(e) {}
@@ -426,20 +385,14 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   Future<void> _updateDuration() async {
     if (_webViewController == null || !mounted || _isNativeMode) return;
     try {
-      // Tenta múltiplas fontes em ordem de preferência:
-      // 1. window._nexusPlayer (abstração unificada)
-      // 2. window._ytPlayer (YouTube IFrame API direta)
-      // 3. document.querySelector('video') (HTML5 <video>)
+      // Tenta obter duração via window._ytPlayer (YouTube IFrame API)
+      // ou document.querySelector('video') (HTML5 <video>).
       final result = await _webViewController!.evaluateJavascript(source: '''
         (function() {
           try {
-            if (window._nexusPlayer && window._nexusPlayer._yt && window._nexusPlayer._yt.getDuration) {
-              var d = window._nexusPlayer._yt.getDuration();
-              if (d > 0) return Math.floor(d * 1000);
-            }
             if (window._ytPlayer && window._ytPlayer.getDuration) {
-              var d2 = window._ytPlayer.getDuration();
-              if (d2 > 0) return Math.floor(d2 * 1000);
+              var d = window._ytPlayer.getDuration();
+              if (d > 0) return Math.floor(d * 1000);
             }
             var v = document.querySelector('video');
             if (v && !isNaN(v.duration) && v.duration > 0) return Math.floor(v.duration * 1000);

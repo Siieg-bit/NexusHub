@@ -650,14 +650,17 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
           } catch(e) { /* silencioso */ }
         }
 
-        // Definir _nexusPlayer apenas se ainda não foi injetado
+        // Definir _nexusPlayer apenas se ainda não foi injetado.
+        // IMPORTANTE: nenhum método armazena referência estática ao _ytPlayer
+        // (_yt foi removido). Todos consultam window._ytPlayer dinamicamente
+        // em tempo de execução, eliminando o race condition onde _yt ficava
+        // null porque onYouTubeIframeAPIReady ainda não havia sido chamado
+        // no momento do onLoadStop.
         if (!window._nexusPlayer) {
           window._nexusPlayer = {
-            _yt: window._ytPlayer || null,
-
             play: function() {
               try {
-                var yt = this._yt || window._ytPlayer;
+                var yt = window._ytPlayer;
                 if (yt && yt.playVideo) { yt.playVideo(); return; }
                 var v = document.querySelector('video');
                 if (v) v.play();
@@ -665,7 +668,7 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             },
             pause: function() {
               try {
-                var yt = this._yt || window._ytPlayer;
+                var yt = window._ytPlayer;
                 if (yt && yt.pauseVideo) { yt.pauseVideo(); return; }
                 var v = document.querySelector('video');
                 if (v) v.pause();
@@ -673,7 +676,7 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             },
             seek: function(seconds) {
               try {
-                var yt = this._yt || window._ytPlayer;
+                var yt = window._ytPlayer;
                 if (yt && yt.seekTo) { yt.seekTo(seconds, true); return; }
                 var v = document.querySelector('video');
                 if (v) v.currentTime = seconds;
@@ -681,7 +684,7 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             },
             getPosition: function() {
               try {
-                var yt = this._yt || window._ytPlayer;
+                var yt = window._ytPlayer;
                 if (yt && yt.getCurrentTime) return Math.floor(yt.getCurrentTime() * 1000);
                 var v = document.querySelector('video');
                 if (v && !isNaN(v.currentTime)) return Math.floor(v.currentTime * 1000);
@@ -690,7 +693,7 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             },
             getDuration: function() {
               try {
-                var yt = this._yt || window._ytPlayer;
+                var yt = window._ytPlayer;
                 if (yt && yt.getDuration) {
                   var d = yt.getDuration();
                   if (d > 0) return Math.floor(d * 1000);
@@ -709,18 +712,13 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
             },
             setRate: function(rate) {
               try {
-                var yt = this._yt || window._ytPlayer;
+                var yt = window._ytPlayer;
                 if (yt && yt.setPlaybackRate) yt.setPlaybackRate(rate);
                 var v = document.querySelector('video');
                 if (v) v.playbackRate = rate;
               } catch(e) {}
             }
           };
-        } else {
-          // Já existe: apenas atualizar a referência ao _ytPlayer se disponível
-          if (window._ytPlayer && !window._nexusPlayer._yt) {
-            window._nexusPlayer._yt = window._ytPlayer;
-          }
         }
 
         // Registrar event listeners do <video> HTML5 (idempotente via flag)
@@ -755,12 +753,6 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
           });
         }
 
-        // Para YouTube: conectar eventos do YT.Player ao bridge
-        // (os eventos onStateChange do HTML já estão no _buildHtmlWrapper)
-        // Aqui apenas garantimos que _nexusPlayer._yt está atualizado
-        if (window._ytPlayer && window._nexusPlayer) {
-          window._nexusPlayer._yt = window._ytPlayer;
-        }
         // Para Twitch/Kick no modo direto: desmutar apos autoplay.
         // muted=true foi necessario para autoplay funcionar no Chromium Android.
         // Como o script roda no contexto do player (nao cross-origin),
@@ -1095,8 +1087,6 @@ $touchBlockerHtml
             onReady: function(e) {
               console.log('__YT_READY__');
               e.target.playVideo();
-              // Atualizar referência no _nexusPlayer se já foi injetado
-              if (window._nexusPlayer) window._nexusPlayer._yt = e.target;
               // Notificar duração inicial — com retries caso o handler Flutter
               // ainda não esteja registrado no primeiro frame (race condition
               // entre onWebViewCreated Dart e onReady JS).
