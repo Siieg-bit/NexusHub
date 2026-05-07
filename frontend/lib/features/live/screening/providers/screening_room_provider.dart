@@ -32,6 +32,9 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
   RealtimeChannel? _channel;
   Timer? _heartbeatTimer;
   Timer? _cleanupTimer;
+  /// Fila restaurada do metadata ao reentrar em sessão existente.
+  /// Usada no joinRoom para passar ao copyWith antes de ser zerada.
+  List<Map<String, String>>? _restoredQueue;
 
   ScreeningRoomNotifier({required this.threadId, required this.ref})
       : super(ScreeningRoomState(threadId: threadId));
@@ -95,13 +98,41 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
           return;
         }
 
-        final row = (result as List).first as Map<String, dynamic>;
+        final row = (result as List).first as Map<String, dynamic>();
         isHost = row['is_caller_host'] as bool? ?? false;
         hostUserId = row['host_user_id'] as String?;
         videoUrl = row['video_url'] as String?;
         videoTitle = row['video_title'] as String?;
         videoThumbnail = row['video_thumbnail'] as String?;
         debugPrint('[ScreeningRoom] Sessão encontrada — isHost=$isHost, hostUserId=$hostUserId, videoUrl=$videoUrl');
+
+        // Restaurar a fila do metadata (persistida por _broadcastQueueUpdate).
+        // O RPC get_screening_session_state não retorna a fila diretamente;
+        // ela é armazenada no campo video_queue do metadata JSONB.
+        // Buscar o metadata separadamente para restaurar a fila.
+        try {
+          final metaResult = await SupabaseService.client
+              .from('call_sessions')
+              .select('metadata')
+              .eq('id', sessionId)
+              .maybeSingle();
+          if (metaResult != null) {
+            final meta = metaResult['metadata'] as Map<String, dynamic>?;
+            final rawQueue = meta?['video_queue'] as List<dynamic>?;
+            if (rawQueue != null && rawQueue.isNotEmpty) {
+              // Restaurar a fila no estado local antes do state = state.copyWith()
+              // abaixo, que define videoQueue: const [].
+              // Usamos uma variável local para passar ao copyWith.
+              _restoredQueue = rawQueue
+                  .map((e) => Map<String, String>.from(
+                      (e as Map).map((k, v) => MapEntry(k.toString(), v.toString()))))
+                  .toList();
+              debugPrint('[ScreeningRoom] Fila restaurada do metadata: ${_restoredQueue!.length} itens');
+            }
+          }
+        } catch (e) {
+          debugPrint('[ScreeningRoom] Erro ao restaurar fila do metadata: $e');
+        }
 
         // Registrar como participante
         debugPrint('[ScreeningRoom] Chamando _joinAsParticipant...');
@@ -182,6 +213,12 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
       }
       debugPrint('[ScreeningRoom] Participantes carregados: ${participants.length}');
 
+      // Usar a fila restaurada do metadata (se disponível) ou lista vazia.
+      // _restoredQueue é preenchida no bloco de reentrada (existingSessionId != null)
+      // ao ler o campo video_queue do metadata JSONB da sessão.
+      final queueToRestore = _restoredQueue ?? const [];
+      _restoredQueue = null; // limpar para não vazar para próxima chamada
+
       state = state.copyWith(
         status: ScreeningRoomStatus.active,
         sessionId: sessionId,
@@ -191,10 +228,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         currentVideoTitle: videoTitle,
         currentVideoThumbnail: videoThumbnail,
         participants: participants,
-        // Resetar a fila ao entrar/criar uma sala para evitar estado residual
-        // de sessões anteriores (o provider é family por threadId e persiste
-        // enquanto houver listeners ativos).
-        videoQueue: const [],
+        videoQueue: queueToRestore,
       );
       debugPrint('[ScreeningRoom] Estado atualizado para active. Iniciando Realtime e heartbeat...');
 
@@ -757,6 +791,23 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
         'ts': DateTime.now().millisecondsSinceEpoch,
       },
     );
+    // Persistir a fila no metadata do banco para que seja restaurada
+    // quando o host minimiza e volta à sala (joinRoom lê o metadata).
+    // Faz merge com o metadata atual para não sobrescrever video_url etc.
+    if (state.sessionId != null) {
+      SupabaseService.client.rpc('update_screening_metadata', params: {
+        'p_session_id': state.sessionId,
+        'p_metadata': {
+          'video_url': state.currentVideoUrl ?? '',
+          'video_title': state.currentVideoTitle ?? '',
+          'video_thumbnail': state.currentVideoThumbnail ?? '',
+          'is_playing': false,
+          'video_queue': queue,
+        },
+      }).catchError((e) {
+        debugPrint('[ScreeningRoom] _broadcastQueueUpdate persist error: $e');
+      });
+    }
   }
 
   void _dispose() {

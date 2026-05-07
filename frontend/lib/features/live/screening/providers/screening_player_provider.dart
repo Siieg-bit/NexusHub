@@ -264,10 +264,20 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   }
 
   /// Chamado em onLoadStart — reseta o estado.
+  /// Reseta duration/position/isLive/hasEnded/isPlaying para evitar que o
+  /// getter isLiveStream (isLive || duration==zero) fique true durante o
+  /// carregamento inicial e oculte os controles de VOD (seek bar, ±10s).
   void onWebViewLoading() {
-    state = state.copyWith(isReady: false, isBuffering: true);
     _positionPollTimer?.cancel();
     _bridgeInjected = false;
+    // Reconstruir o estado do zero para garantir que duration/position/isLive
+    // não herdem valores de um vídeo anterior. copyWith não consegue setar
+    // duration/position para Duration.zero de forma confiável quando o estado
+    // anterior já tem esses valores.
+    state = ScreeningPlayerState(
+      isReady: false,
+      isBuffering: true,
+    );
   }
 
   // ── Injeção do bridge JS ──────────────────────────────────────────────────────
