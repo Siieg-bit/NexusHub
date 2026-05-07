@@ -13,6 +13,7 @@
 // =============================================================================
 
 import 'package:better_player_plus/better_player_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_kit/media_kit.dart';
@@ -73,17 +74,21 @@ class _ScreeningNativePlayerWidgetState
     _mkPlayer = Player();
     _mkController = VideoController(_mkPlayer!);
 
-    await _mkPlayer!.open(
-      Media(
-        widget.hlsUrl,
-        httpHeaders: widget.resolution?.headers ??
-            _headersForPlatform(widget.platform),
-      ),
-    );
+    // IMPORTANTE: registrar o player ANTES do open() para que _isNativeMode=true
+    // desde o início. Isso evita que play()/pause() caiam no caminho do WebView
+    // enquanto o open() ainda está em andamento.
+    if (mounted) {
+      ref
+          .read(screeningPlayerProvider(widget.sessionId).notifier)
+          .registerNativePlayer(_mkPlayer!);
+      debugPrint('[NativePlayer] registerNativePlayer chamado antes do open()');
+    }
 
-    // Callbacks de sincronização com o ScreeningPlayerProvider
+    // Callbacks de sincronização com o ScreeningPlayerProvider.
+    // Registrados ANTES do open() para não perder eventos emitidos durante a abertura.
     _mkPlayer!.stream.playing.listen((playing) {
       if (!mounted) return;
+      debugPrint('[NativePlayer] stream.playing=$playing');
       final notifier =
           ref.read(screeningPlayerProvider(widget.sessionId).notifier);
       if (playing) {
@@ -95,6 +100,7 @@ class _ScreeningNativePlayerWidgetState
 
     _mkPlayer!.stream.duration.listen((duration) {
       if (!mounted || duration == Duration.zero) return;
+      debugPrint('[NativePlayer] stream.duration=${duration.inMilliseconds}ms');
       ref
           .read(screeningPlayerProvider(widget.sessionId).notifier)
           .onDurationUpdate(duration.inMilliseconds);
@@ -109,16 +115,36 @@ class _ScreeningNativePlayerWidgetState
 
     _mkPlayer!.stream.buffering.listen((buffering) {
       if (!mounted) return;
+      debugPrint('[NativePlayer] stream.buffering=$buffering');
       ref
           .read(screeningPlayerProvider(widget.sessionId).notifier)
           .onNativeBuffering(buffering);
     });
 
+    _mkPlayer!.stream.error.listen((error) {
+      debugPrint('[NativePlayer] stream.error=$error');
+    });
+
+    await _mkPlayer!.open(
+      Media(
+        widget.hlsUrl,
+        httpHeaders: widget.resolution?.headers ??
+            _headersForPlatform(widget.platform),
+      ),
+    );
+    debugPrint('[NativePlayer] open() concluído — url=${widget.hlsUrl}');
+
+    // Sincronizar isPlaying com o estado real do player após o open().
+    // O stream.playing pode ter emitido antes do widget estar montado,
+    // então verificamos o estado atual e atualizamos o provider manualmente.
     if (mounted) {
+      final isPlaying = _mkPlayer!.state.playing;
+      final duration = _mkPlayer!.state.duration;
+      debugPrint('[NativePlayer] estado após open(): isPlaying=$isPlaying, duration=${duration.inMilliseconds}ms');
+      final notifier = ref.read(screeningPlayerProvider(widget.sessionId).notifier);
+      if (isPlaying) notifier.onNativePlay();
+      if (duration > Duration.zero) notifier.onDurationUpdate(duration.inMilliseconds);
       setState(() => _initialized = true);
-      ref
-          .read(screeningPlayerProvider(widget.sessionId).notifier)
-          .registerNativePlayer(_mkPlayer!);
     }
   }
 

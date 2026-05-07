@@ -429,9 +429,11 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   // ── Comandos de reprodução (roteiam para nativo ou WebView) ──────────────────
 
   Future<void> play() async {
+    debugPrint('[ScreeningPlayer] play() — _isNativeMode=$_isNativeMode, _nativePlayer=${_nativePlayer != null}');
     if (_isNativeMode) {
       await _nativePlayer?.play();
       await _drmPlayer?.play();
+      debugPrint('[ScreeningPlayer] play() nativo executado');
       if (mounted) {
         state = state.copyWith(isPlaying: true);
       }
@@ -453,9 +455,11 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   }
 
   Future<void> pause() async {
+    debugPrint('[ScreeningPlayer] pause() — _isNativeMode=$_isNativeMode, _nativePlayer=${_nativePlayer != null}');
     if (_isNativeMode) {
       await _nativePlayer?.pause();
       await _drmPlayer?.pause();
+      debugPrint('[ScreeningPlayer] pause() nativo executado');
       if (mounted) {
         state = state.copyWith(isPlaying: false);
       }
@@ -656,6 +660,7 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
     _positionPollTimer?.cancel();
     _positionPollTimer = null;
     state = state.copyWith(isReady: true, isBuffering: false);
+    debugPrint('[ScreeningPlayer] registerNativePlayer OK — _isNativeMode=true');
   }
 
   // ── Player DRM (better_player_plus / Widevine) ────────────────────────────────
@@ -683,11 +688,13 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
 
   void onNativePlay() {
     if (!mounted) return;
+    debugPrint('[ScreeningPlayer] onNativePlay()');
     state = state.copyWith(isPlaying: true, isBuffering: false);
   }
 
   void onNativePause() {
     if (!mounted) return;
+    debugPrint('[ScreeningPlayer] onNativePause()');
     state = state.copyWith(isPlaying: false);
   }
 
