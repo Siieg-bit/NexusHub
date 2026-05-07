@@ -418,8 +418,13 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen>
     // Não retornamos um widget genérico durante o loading: o ScreeningAdaptiveLayout
     // já exibe o ScreeningEntryAnimation ("Preparando a experiência") como overlay
     // enquanto entryAnimationDone == false. Isso evita que o widget seja desmontado
-    // e remontado entre os estados loading → active, o que impedia o didUpdateWidget
-    // de disparar o fade-out corretamente.
+    // e remontado entre os estados loading → active.
+    //
+    // O sessionId pode ser '' enquanto o joinRoom() ainda não terminou. O
+    // ScreeningAdaptiveLayout trata isso via didUpdateWidget: quando o sessionId
+    // muda de '' para o ID real, o ScreeningPlayerWidget é recriado com o ID
+    // correto (uma única vez). Após isso o player não é mais destruído nas
+    // alternâncias de orientação/fullscreen.
 
     // ── Estado de erro ──────────────────────────────────────────────────────
     if (roomState.status == ScreeningRoomStatus.error) {

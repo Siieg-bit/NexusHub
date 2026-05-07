@@ -287,11 +287,6 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
     switch (resolution.type) {
       case StreamType.hls:
       case StreamType.direct:
-        // Não criar o player enquanto o sessionId for vazio (antes do joinRoom
-        // terminar). Evita o provider fantasma screeningPlayerProvider('') que
-        // registraria o player nativo no provider errado. O layout já exibe a
-        // ScreeningEntryAnimation como overlay visual durante esse período.
-        if (widget.sessionId.isEmpty) return const SizedBox.shrink();
         // Player nativo via media_kit.
         // O _isLoading é controlado pelo próprio ScreeningNativePlayerWidget
         // via onNativePlay/onNativeBuffering no provider. Garantir que o

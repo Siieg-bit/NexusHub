@@ -75,7 +75,9 @@ class _ScreeningAdaptiveLayoutState
   /// O player é criado UMA ÚNICA VEZ e reutilizado em todos os layouts.
   /// Isso evita que o WebView seja destruído/recriado ao alternar entre
   /// portrait normal ↔ fullscreen (isImmersive) ↔ landscape.
-  late final Widget _playerWidget;
+  // Não usar 'final': o player é recriado uma única vez quando o sessionId
+  // muda de '' para o ID real (joinRoom concluído). Após isso não muda mais.
+  late Widget _playerWidget;
 
   @override
   void initState() {
@@ -85,6 +87,24 @@ class _ScreeningAdaptiveLayoutState
       sessionId: widget.sessionId,
       threadId: widget.threadId,
     );
+  }
+
+  @override
+  void didUpdateWidget(ScreeningAdaptiveLayout oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Recriar o player apenas quando o sessionId muda de vazio para não-vazio.
+    // Isso acontece uma única vez: quando o joinRoom() termina e o sessionId
+    // real chega. Após isso o sessionId não muda mais, então o WebView
+    // não será destruído nas alternâncias de orientação/fullscreen.
+    if (oldWidget.sessionId.isEmpty && widget.sessionId.isNotEmpty) {
+      setState(() {
+        _playerWidget = ScreeningPlayerWidget(
+          key: ValueKey(widget.sessionId),
+          sessionId: widget.sessionId,
+          threadId: widget.threadId,
+        );
+      });
+    }
   }
 
   void _handleOrientationChange(Orientation orientation) {
