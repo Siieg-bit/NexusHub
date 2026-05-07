@@ -13,6 +13,7 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/cache_service.dart';
 import '../../../core/utils/constants.dart';
+import '../../../core/services/remote_config_service.dart';
 import '../../../core/utils/responsive.dart';
 
 /// Tela de Configurações Gerais — Hub central para todas as configurações.
@@ -521,7 +522,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     });
 
     final response = await http.post(
-      Uri.parse(AppConstants.discordBugReportWebhook),
+      Uri.parse(RemoteConfigService.discordBugReportWebhook),
       headers: {'Content-Type': 'application/json'},
       body: payload,
     );
@@ -1050,7 +1051,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             title: Text(s.helpCenter,
                                 style: TextStyle(color: context.nexusTheme.textPrimary)),
                             content: Text(
-                              'Para suporte, entre em contato:\n\n\u2022 Email: suporte@nexushub.app\n\u2022 Discord: discord.gg/nexushub\n\u2022 FAQ: nexushub.app/faq',
+                              'Para suporte, entre em contato:\n\n\u2022 Email: ${RemoteConfigService.supportEmail}\n\u2022 Discord: ${RemoteConfigService.discordServer}\n\u2022 FAQ: ${RemoteConfigService.faqUrl}',
                               style: TextStyle(color: context.nexusTheme.textSecondary),
                             ),
                             actions: [

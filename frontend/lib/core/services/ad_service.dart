@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'supabase_service.dart';
+import 'remote_config_service.dart';
 
 /// Serviço de Anúncios — Gerencia Rewarded Ads para ganhar moedas.
 ///
@@ -24,8 +25,8 @@ class AdService {
   static RewardedAd? _rewardedAd;
   static bool _adLoading = false;
 
-  /// Limite diário de anúncios recompensados por usuário
-  static const int maxDailyRewardedAds = 3;
+  /// Limite diário de anúncios recompensados por usuário (dinâmico via RemoteConfig)
+  static int get maxDailyRewardedAds => RemoteConfigService.maxDailyRewardedAds;
   static int _todayRewardedCount = 0;
   static DateTime? _lastRewardDate;
 
@@ -93,7 +94,8 @@ class AdService {
   /// Mostra o anúncio recompensado e credita moedas ao completar.
   ///
   /// Retorna `true` se o usuário completou o anúncio e recebeu a recompensa.
-  static Future<bool> showRewardedAd({int rewardCoins = 10}) async {
+  static Future<bool> showRewardedAd({int? rewardCoins}) async {
+    final effectiveCoins = rewardCoins ?? RemoteConfigService.rewardedCoinsPerAd;
     if (!canWatchAd) {
       debugPrint('[AdService] Limite diário atingido ou não inicializado');
       return false;
@@ -126,9 +128,9 @@ class AdService {
       onUserEarnedReward: (ad, reward) async {
         _todayRewardedCount++;
         _lastRewardDate = DateTime.now();
-        await _creditAdReward(rewardCoins);
-        await _logAdReward(rewardCoins);
-        debugPrint('[AdService] Recompensa de $rewardCoins moedas creditada');
+        await _creditAdReward(effectiveCoins);
+        await _logAdReward(effectiveCoins);
+        debugPrint('[AdService] Recompensa de $effectiveCoins moedas creditada');
         if (!completer.isCompleted) completer.complete(true);
       },
     );

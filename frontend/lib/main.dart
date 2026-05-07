@@ -25,6 +25,7 @@ import 'core/services/match_queue_service.dart';
 import 'core/services/iap_service.dart';
 import 'core/services/ad_service.dart';
 import 'core/services/cache_service.dart';
+import 'core/services/remote_config_service.dart';
 import 'core/services/analytics_service.dart';
 import 'core/services/error_handler.dart';
 import 'core/widgets/error_boundary.dart';
@@ -89,6 +90,9 @@ void main() async {
     ),
     _initSafe('cacheService', CacheService.init),
   ]);
+
+  // Remote Config: busca configs do banco antes da UI (usa cache local se offline)
+  await _initSafe('remoteConfig', RemoteConfigService.initialize);
 
   // Grupo 2: Serviços que dependem de Supabase (não-bloqueantes)
   unawaited(Future.wait([

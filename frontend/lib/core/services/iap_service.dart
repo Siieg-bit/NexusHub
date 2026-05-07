@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'supabase_service.dart';
+import 'remote_config_service.dart';
 
 /// Serviço de In-App Purchases via RevenueCat.
 ///
@@ -25,14 +26,29 @@ class IAPService {
   /// Identificadores dos produtos configurados no Google Play Console
   static const String _offeringDefault = 'default';
 
-  /// Pacotes de moedas com preços de referência (exibidos antes de carregar do RevenueCat)
-  static const List<CoinPackage> fallbackCoinPackages = [
-    CoinPackage(id: 'coins_100', coins: 100, priceLabel: r'R$ 4,90'),
-    CoinPackage(id: 'coins_500', coins: 500, priceLabel: r'R$ 19,90'),
-    CoinPackage(id: 'coins_1200', coins: 1200, priceLabel: r'R$ 39,90'),
-    CoinPackage(id: 'coins_3000', coins: 3000, priceLabel: r'R$ 89,90'),
-    CoinPackage(id: 'coins_7000', coins: 7000, priceLabel: r'R$ 179,90'),
-  ];
+  /// Pacotes de moedas com preços de referência (carregados do RemoteConfigService)
+  static List<CoinPackage> get fallbackCoinPackages {
+    final raw = RemoteConfigService.coinPackages;
+    if (raw.isNotEmpty) {
+      final packages = raw.map((p) {
+        final map = p as Map<String, dynamic>;
+        return CoinPackage(
+          id:         map['id']          as String? ?? '',
+          coins:      (map['coins']      as num?)?.toInt() ?? 0,
+          priceLabel: map['price_label'] as String? ?? '',
+        );
+      }).where((p) => p.id.isNotEmpty && p.coins > 0).toList();
+      if (packages.isNotEmpty) return packages;
+    }
+    // Fallback hardcoded para o caso do RemoteConfig ainda não ter carregado
+    return const [
+      CoinPackage(id: 'coins_100',  coins: 100,  priceLabel: r'R$ 4,90'),
+      CoinPackage(id: 'coins_500',  coins: 500,  priceLabel: r'R$ 19,90'),
+      CoinPackage(id: 'coins_1200', coins: 1200, priceLabel: r'R$ 39,90'),
+      CoinPackage(id: 'coins_3000', coins: 3000, priceLabel: r'R$ 89,90'),
+      CoinPackage(id: 'coins_7000', coins: 7000, priceLabel: r'R$ 179,90'),
+    ];
+  }
 
   static bool _initialized = false;
   static bool _isAminoPlus = false;

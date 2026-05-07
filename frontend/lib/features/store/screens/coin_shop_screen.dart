@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../core/services/iap_service.dart';
 import '../../../core/services/ad_service.dart';
+import '../../../core/services/remote_config_service.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/utils/responsive.dart';
@@ -91,11 +92,12 @@ class _CoinShopScreenState extends ConsumerState<CoinShopScreen> {
     }
     setState(() => _isWatchingAd = true);
     try {
-      final success = await AdService.showRewardedAd(rewardCoins: 5);
+      final adCoins = RemoteConfigService.rewardedCoinsPerAd;
+      final success = await AdService.showRewardedAd(rewardCoins: adCoins);
       if (!mounted) return;
       if (success) {
-        setState(() => _userCoins += 5);
-        _showSuccess('+5 moedas ganhas!');
+        setState(() => _userCoins += adCoins);
+        _showSuccess('+$adCoins moedas ganhas!');
       } else {
         _showError(s.adNotAvailable);
       }
