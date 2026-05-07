@@ -572,7 +572,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
     if (!state.isHost || state.sessionId == null) return;
 
     try {
-      // Persistir no banco
+      // Persistir no banco — incluir video_queue para não apagar a fila ao trocar de vídeo.
       await SupabaseService.client.rpc('update_screening_metadata', params: {
         'p_session_id': state.sessionId,
         'p_metadata': {
@@ -580,6 +580,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
           'video_title': videoTitle,
           'video_thumbnail': videoThumbnail ?? '',
           'is_playing': false,
+          'video_queue': state.videoQueue,
         },
       });
 
@@ -618,6 +619,7 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
           'video_title': '',
           'video_thumbnail': '',
           'is_playing': false,
+          'video_queue': state.videoQueue,
         },
       });
 

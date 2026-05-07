@@ -370,8 +370,10 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
   /// Evita o delay fixo de 2s que deixava isLiveStream=true e ocultava
   /// a seek bar e os botões de avançar/retroceder na primeira carga.
   void _scheduleDurationRetries() {
-    // Tentativas: 300ms, 800ms, 1.5s, 3s, 5s
-    const delays = [300, 800, 1500, 3000, 5000];
+    // Tentativas: 300ms, 800ms, 1.5s, 3s, 5s, 8s, 10s
+    // Estendido até 10s para cobrir conexões lentas onde o YT.Player
+    // demora mais para inicializar e reportar a duração.
+    const delays = [300, 800, 1500, 3000, 5000, 8000, 10000];
     for (final ms in delays) {
       Future.delayed(Duration(milliseconds: ms), () async {
         if (!mounted || state.duration > Duration.zero) return;

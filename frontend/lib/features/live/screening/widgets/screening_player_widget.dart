@@ -1035,9 +1035,18 @@ $touchBlockerHtml
               e.target.playVideo();
               // Atualizar referência no _nexusPlayer se já foi injetado
               if (window._nexusPlayer) window._nexusPlayer._yt = e.target;
-              // Notificar duração inicial
-              var dur = Math.floor(e.target.getDuration() * 1000);
-              if (dur > 0) _ytBridge('VIDEO_DURATION', dur);
+              // Notificar duração inicial — com retries caso o handler Flutter
+              // ainda não esteja registrado no primeiro frame (race condition
+              // entre onWebViewCreated Dart e onReady JS).
+              var _ytTarget = e.target;
+              function _sendDuration() {
+                var dur = Math.floor(_ytTarget.getDuration() * 1000);
+                if (dur > 0) _ytBridge('VIDEO_DURATION', dur);
+              }
+              _sendDuration();
+              setTimeout(_sendDuration, 500);
+              setTimeout(_sendDuration, 1500);
+              setTimeout(_sendDuration, 3000);
             },
             onStateChange: function(e) {
               // -1=unstarted, 0=ended, 1=playing, 2=paused, 3=buffering

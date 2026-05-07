@@ -49,8 +49,9 @@ class ScreeningPlayerState {
   });
 
   /// TRUE se o conteúdo é ao vivo: plataforma explicitamente live (Twitch,
-  /// Kick, YouTubeLive) OU duração desconhecida (duration == Duration.zero).
-  bool get isLiveStream => isLive || duration == Duration.zero;
+  /// Kick, YouTubeLive). Não usa duration==zero pois isso ocultaria os controles
+  /// de VOD durante o carregamento inicial (antes da duração ser reportada).
+  bool get isLiveStream => isLive;
 
   ScreeningPlayerState copyWith({
     ScreeningPlayerType? playerType,
