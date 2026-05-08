@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'cache_policy_service.dart';
+
 /// ============================================================================
 /// CacheService — Cache Offline-First com Hive.
 ///
@@ -397,12 +399,16 @@ class CacheService {
   }
 
   /// Verifica se o cache de um recurso está expirado.
-  /// [maxAge] é a duração máxima do cache (padrão: 5 minutos).
-  static bool isCacheExpired(String key,
-      {Duration maxAge = const Duration(minutes: 5)}) {
+  ///
+  /// Quando [maxAge] é informado, respeita o TTL explícito do chamador para
+  /// compatibilidade. Quando omitido, usa `CachePolicyService`, que lê TTLs
+  /// remotos com fallback local seguro.
+  static bool isCacheExpired(String key, {Duration? maxAge}) {
     final lastSync = getLastSync(key);
     if (lastSync == null) return true;
-    return DateTime.now().toUtc().difference(lastSync) > maxAge;
+
+    final effectiveMaxAge = maxAge ?? CachePolicyService.maxAgeFor(key);
+    return DateTime.now().toUtc().difference(lastSync) > effectiveMaxAge;
   }
 
   /// Verifica se o cache de um recurso existe.

@@ -208,6 +208,10 @@ class RemoteConfigService {
   // IAP
   static List<dynamic> get coinPackages => getList('iap.coin_packages');
 
+  // Cache
+  static Map<String, dynamic> get cacheTtlSeconds =>
+      getMap('cache.ttl_seconds');
+
   // Feature flags
   static bool get isVoiceChatEnabled =>
       getBool('features.voice_chat_enabled', fallback: true);
@@ -231,6 +235,8 @@ class RemoteConfigService {
       getBool('features.remote_onboarding_slides_enabled', fallback: true);
   static bool get isRemoteStreamingRulesEnabled =>
       getBool('features.remote_streaming_rules_enabled', fallback: true);
+  static bool get isRemoteCachePoliciesEnabled =>
+      getBool('features.remote_cache_policies_enabled', fallback: true);
   static bool get isMaintenanceMode =>
       getBool('features.maintenance_mode', fallback: false);
   static String get minAppVersion =>
