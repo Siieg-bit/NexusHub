@@ -515,9 +515,25 @@ class _ScreeningBrowserSheetState
     }
 
     // ── Kick ────────────────────────────────────────────────────────────────────────────
+    // A API do Kick (kick.com/api/v2/channels/<slug>) é bloqueada por Cloudflare
+    // quando chamada via HTTP direto (retorna 403). O WebView já tem os cookies
+    // do Cloudflare e pode ler as OG tags da página diretamente.
     if (u.contains('kick.com')) {
-      final meta = await KickMetaService.resolve(url);
-      return (title: meta.title, thumbnailUrl: meta.thumbnailUrl);
+      // Prioridade 1: OG tags via WebView (já tem cookies do Cloudflare)
+      if (_webViewController != null) {
+        final ogMeta = await OgTagsMetaService.resolveFromWebView(_webViewController!);
+        if (ogMeta != null && ogMeta.title.isNotEmpty) {
+          return (title: ogMeta.title, thumbnailUrl: ogMeta.thumbnailUrl);
+        }
+      }
+      // Prioridade 2: KickMetaService via HTTP (pode funcionar em alguns dispositivos/redes)
+      try {
+        final meta = await KickMetaService.resolve(url);
+        return (title: meta.title, thumbnailUrl: meta.thumbnailUrl);
+      } catch (_) {
+        // 403 Cloudflare — ignorar e usar título genérico
+      }
+      return null;
     }
 
     // ── Vimeo ──────────────────────────────────────────────────────────────────────────
