@@ -78,8 +78,8 @@ A arquitetura aprovada é **remota por domínio, tipada e com fallback local**. 
 | P3.1 | Níveis | Criar tabela/RPC `level_definitions`. | Aplicado e validado no Supabase remoto; pendente teste no app | Migration `244_level_definitions.sql` aplicada no projeto `ylvzqqvcanzzswjkqeya`; tabela, RPC, grants, policies, seed multilíngue de 200 registros e flag confirmados. |
 | P3.2 | Níveis | Integrar helpers/theme ao serviço central. | Concluído textualmente; pendente Flutter real | `LevelDefinitionService` inicializa no boot, `helpers.dart` usa thresholds/títulos centralizados e `AppTheme.getLevelColor()` usa cor remota com fallback local. |
 | P3.3 | Níveis | Validar paridade visual com baseline. | Concluído textualmente; pendente teste visual em device/staging | Validação textual confirmou seed multilíngue, RPC, flag e integrações; falta `flutter analyze`, staging Supabase e comparação visual real. |
-| P4.1 | Announcements | Usar/ajustar `system_announcements` para banners/manutenção. | Pendente | Manter AppStrings apenas como fallback. |
-| P4.2 | Announcements | Implementar janela ativa, severidade e dismiss. | Pendente | Operação sem novo APK. |
+| P4.1 | Announcements | Usar/ajustar `system_announcements` para banners/manutenção. | Aplicado e validado no Supabase remoto; pendente teste no app | Migration `245_system_announcements_server_driven.sql` aplicada no projeto `ylvzqqvcanzzswjkqeya`; colunas v2, RPC `get_active_announcements_v2`, grants, policies, flag e RPC legada preservada foram confirmados remotamente. |
+| P4.2 | Announcements | Implementar janela ativa, severidade e dismiss. | Concluído textualmente; pendente Flutter real | `AnnouncementService`, `activeAnnouncementsProvider` e `announcement_banner.dart` usam conteúdo remoto tipado, severidade visual, CTA, `dismissible` persistido e fallback local vazio. |
 | P5.1 | Onboarding | Criar tabela/RPC `onboarding_slides`. | Pendente | Medium priority do mapa. |
 | P5.2 | Onboarding | Integrar provider com fallback local. | Pendente | App novo abre offline. |
 | P5.3 | Onboarding | Preparar variante/A-B test. | Pendente | Sem decidir produto sem confirmação. |
@@ -100,7 +100,7 @@ A arquitetura aprovada é **remota por domínio, tipada e com fallback local**. 
 | 1 | Endurecer OTA Translations com flag, locale ativo e fluxo de edição. | Base para copy remota. |
 | 2 | Migrar Free Coins para tabela/RPC/provider/fallback. | Primeiro item de alto impacto ainda pendente. |
 | 3 | Migrar Level Definitions, incluindo títulos, faixas e cores. | Concluído textualmente; próximo bloqueio é Flutter real + staging Supabase para validar paridade visual. |
-| 4 | Ativar System Announcements por servidor. | Operação, manutenção e comunicação. |
+| 4 | Ativar System Announcements por servidor. | Concluído textualmente e aplicado no Supabase remoto; falta validação Flutter/device. |
 | 5 | Migrar Onboarding com fallback e variantes. | Testes sem novo APK. |
 | 6 | Migrar Streaming Rules com allowlist conservadora. | Segurança. |
 | 7 | Migrar Cache TTLs para política central remota. | Otimização. |

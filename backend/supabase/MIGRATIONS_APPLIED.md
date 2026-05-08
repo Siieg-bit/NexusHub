@@ -13,13 +13,14 @@
 | 102 | `102_community_visual_enhancements.sql` | Aplicada |
 | 103 | `103_smart_links_system.sql` | Aplicada |
 
-### Lote 242-244 — Aplicado em 07/05/2026
+### Lote 242-245 — Aplicado em 07/05/2026
 
 | Migration | Arquivo | Status |
 |-----------|---------|--------|
 | 242 | `242_ota_translations_remote_config_flag.sql` | Aplicada e validada |
 | 243 | `243_reward_tasks_free_coins.sql` | Aplicada e validada |
 | 244 | `244_level_definitions.sql` | Aplicada e validada |
+| 245 | `245_system_announcements_server_driven.sql` | Aplicada e validada |
 
 ### Observações
 
@@ -28,3 +29,4 @@
 - Migration 242: flag `features.ota_translations_enabled` confirmada em `app_remote_config` no projeto remoto.
 - Migration 243: tabela `reward_tasks`, RPC `get_reward_tasks`, grants, policies, seed PT/EN e flag `features.remote_reward_tasks_enabled` confirmados no projeto remoto.
 - Migration 244: tabela `level_definitions`, RPC `get_level_definitions`, grants, policies, seed multilíngue de 200 registros ativos e flag `features.remote_level_definitions_enabled` confirmados no projeto remoto.
+- Migration 245: tabela `system_announcements` estendida com `locale`, `severity`, `placement`, `dismissible`, `sort_order`, `schema_version` e `metadata`; RPC `get_active_announcements_v2`, grant `authenticated`, policies, flag `features.remote_announcements_enabled` e preservação da RPC legada `get_active_system_announcements` confirmados no projeto remoto.
