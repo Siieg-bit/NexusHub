@@ -212,6 +212,12 @@ class RemoteConfigService {
   static Map<String, dynamic> get cacheTtlSeconds =>
       getMap('cache.ttl_seconds');
 
+  // Notificações
+  static Map<String, dynamic> get notificationChannelsConfig =>
+      getMap('notifications.channels');
+  static Map<String, dynamic> get notificationChannels =>
+      notificationChannelsConfig;
+
   // Feature flags
   static bool get isVoiceChatEnabled =>
       getBool('features.voice_chat_enabled', fallback: true);
@@ -237,6 +243,8 @@ class RemoteConfigService {
       getBool('features.remote_streaming_rules_enabled', fallback: true);
   static bool get isRemoteCachePoliciesEnabled =>
       getBool('features.remote_cache_policies_enabled', fallback: true);
+  static bool get isRemoteNotificationChannelsEnabled =>
+      getBool('features.remote_notification_channels_enabled', fallback: true);
   static bool get isMaintenanceMode =>
       getBool('features.maintenance_mode', fallback: false);
   static String get minAppVersion =>

@@ -4,6 +4,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:convert';
 import 'supabase_service.dart';
 import 'haptic_service.dart';
+import 'notification_channel_config_service.dart';
 
 // ============================================================================
 // MatchQueueService — Singleton de fila de matchmaking em background
@@ -93,21 +94,25 @@ class MatchQueueService {
   Future<void> _showMatchNotification(String threadId) async {
     try {
       await initNotifications();
+      final channelId = NotificationChannelConfigService.channelIdForType('match');
+      final channelName =
+          NotificationChannelConfigService.channelNameForId(channelId);
+
       await _localNotifications.show(
         9999, // ID fixo para match — sobrescreve notificação anterior
         '🎉 Match encontrado!',
         'Alguém com interesses em comum quer conversar. Toque para abrir o chat.',
-        const NotificationDetails(
+        NotificationDetails(
           android: AndroidNotificationDetails(
-            'nexushub_social',
-            'SOCIAL',
+            channelId,
+            channelName,
             icon: '@mipmap/ic_launcher',
             importance: Importance.high,
             priority: Priority.high,
             enableVibration: true,
             playSound: true,
           ),
-          iOS: DarwinNotificationDetails(
+          iOS: const DarwinNotificationDetails(
             presentAlert: true,
             presentBadge: true,
             presentSound: true,

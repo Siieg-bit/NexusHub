@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
+import 'notification_channel_config_service.dart';
 import 'supabase_service.dart';
 import '../../firebase_options.dart';
 import '../l10n/locale_provider.dart';
@@ -40,36 +41,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         message.data['body'] as String? ?? '';
     final type = message.data['type'] as String? ?? 'default';
 
-    String channelId;
-    switch (type) {
-      case 'chat':
-      case 'chat_message':
-      case 'chat_mention':
-      case 'roleplay':
-        channelId = 'nexushub_chat';
-        break;
-      case 'like':
-      case 'comment':
-      case 'follow':
-      case 'match':
-      case 'mention':
-      case 'wall_post':
-        channelId = 'nexushub_social';
-        break;
-      case 'community_invite':
-      case 'community_update':
-      case 'join_request':
-      case 'role_change':
-        channelId = 'nexushub_community';
-        break;
-      case 'moderation':
-      case 'strike':
-      case 'ban':
-        channelId = 'nexushub_moderation';
-        break;
-      default:
-        channelId = 'nexushub_default';
-    }
+    final channelId = NotificationChannelConfigService.channelIdForType(type);
+    final channelName =
+        NotificationChannelConfigService.channelNameForId(channelId);
 
     await plugin.show(
       message.hashCode,
@@ -78,7 +52,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       NotificationDetails(
         android: AndroidNotificationDetails(
           channelId,
-          channelId.replaceAll('nexushub_', '').toUpperCase(),
+          channelName,
           icon: '@mipmap/ic_launcher',
           importance: Importance.high,
           priority: Priority.high,
@@ -261,38 +235,14 @@ class PushNotificationService {
   /// Configura os canais de notificação do Android
   static Future<void> _setupNotificationChannels() async {
     final s = getStrings();
-    final channels = [
-      AndroidNotificationChannel(
-        'nexushub_default',
-        'Geral',
-        description: s.generalNotifications,
-        importance: Importance.defaultImportance,
-      ),
-      AndroidNotificationChannel(
-        'nexushub_chat',
-        'Mensagens',
-        description: s.newMessageNotifications,
-        importance: Importance.high,
-      ),
-      AndroidNotificationChannel(
-        'nexushub_social',
-        'Social',
-        description: s.likesCommentsFollowers,
-        importance: Importance.defaultImportance,
-      ),
-      AndroidNotificationChannel(
-        'nexushub_community',
-        'Comunidades',
-        description: s.communityUpdates,
-        importance: Importance.defaultImportance,
-      ),
-      AndroidNotificationChannel(
-        'nexushub_moderation',
-        s.moderationLabel,
-        description: s.moderationAlerts,
-        importance: Importance.high,
-      ),
-    ];
+    final channels = NotificationChannelConfigService.getChannels(
+      generalDescription: s.generalNotifications,
+      chatDescription: s.newMessageNotifications,
+      socialDescription: s.likesCommentsFollowers,
+      communityDescription: s.communityUpdates,
+      moderationName: s.moderationLabel,
+      moderationDescription: s.moderationAlerts,
+    ).map((channel) => channel.toAndroidChannel()).toList(growable: false);
 
     final androidPlugin =
         _localNotifications.resolvePlatformSpecificImplementation<
@@ -397,34 +347,10 @@ class PushNotificationService {
       }
     }
 
-    // Determinar o canal baseado no tipo de notificação
-    String channelId;
-    switch (type) {
-      case 'chat_message':
-      case 'chat_mention':
-      case 'roleplay':
-        channelId = 'nexushub_chat';
-        break;
-      case 'like':
-      case 'comment':
-      case 'follow':
-      case 'match':
-      case 'mention':
-      case 'wall_post':
-        channelId = 'nexushub_social';
-        break;
-      case 'community_update':
-      case 'community_invite':
-        channelId = 'nexushub_community';
-        break;
-      case 'moderation':
-      case 'strike':
-      case 'ban':
-        channelId = 'nexushub_moderation';
-        break;
-      default:
-        channelId = 'nexushub_default';
-    }
+    // Determinar o canal versionado baseado no tipo de notificação.
+    final channelId = NotificationChannelConfigService.channelIdForType(type);
+    final channelName =
+        NotificationChannelConfigService.channelNameForId(channelId);
 
     // Mostrar notificação local com configurações otimizadas
     _localNotifications.show(
@@ -434,7 +360,7 @@ class PushNotificationService {
       NotificationDetails(
         android: AndroidNotificationDetails(
           channelId,
-          channelId.replaceAll('nexushub_', '').toUpperCase(),
+          channelName,
           icon: '@mipmap/ic_launcher',
           importance: Importance.high,
           priority: Priority.high,
