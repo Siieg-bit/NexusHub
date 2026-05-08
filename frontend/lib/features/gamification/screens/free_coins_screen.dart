@@ -1,10 +1,14 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import '../../../core/services/supabase_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/ad_service.dart';
 import '../../../core/services/remote_config_service.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../core/l10n/locale_provider.dart';
+import '../models/reward_task.dart';
+import '../providers/reward_tasks_provider.dart';
+import '../services/reward_task_service.dart';
 
 /// Tela "Ganhar Moedas Grátis" — Estilo Amino original.
 /// Header azul celeste com saldo, corpo claro com cards de atividades.
@@ -18,7 +22,6 @@ class FreeCoinsScreen extends ConsumerStatefulWidget {
 class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
   int _balance = 0;
   int _adsWatchedToday = 0;
-  // Limite diário carregado do RemoteConfigService
   int get _maxAdsPerDay => RemoteConfigService.maxDailyRewardedAds;
   bool _isLoadingAd = false;
 
@@ -76,27 +79,28 @@ class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
       final success = await AdService.showRewardedAd(rewardCoins: rewardCoins);
       if (!mounted) return;
       if (success) {
-        if (!mounted) return;
         setState(() {
           _balance += rewardCoins;
           _adsWatchedToday++;
         });
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(s.rewardCoinsLabel(rewardCoins),
-                  style: const TextStyle(color: Colors.white)),
-              backgroundColor: const Color(0xFF4CAF50),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              s.rewardCoinsLabel(rewardCoins),
+              style: const TextStyle(color: Colors.white),
             ),
-          );
-        }
+            backgroundColor: const Color(0xFF4CAF50),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.errorLoadingAd,
-                style: const TextStyle(color: Colors.white)),
+            content: Text(
+              s.errorLoadingAd,
+              style: const TextStyle(color: Colors.white),
+            ),
             backgroundColor: const Color(0xFFE53935),
           ),
         );
@@ -108,15 +112,16 @@ class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
+    final rewardTasksState = ref.watch(rewardTasksProvider);
+    final rewardTasks = rewardTasksState.valueOrNull ??
+        RewardTaskService.fallbackRewardTasks(s);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
         children: [
-          // =============================================================
-          // HEADER AZUL CELESTE
-          // =============================================================
           Container(
             width: double.infinity,
             decoration: const BoxDecoration(
@@ -132,12 +137,17 @@ class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
                 children: [
                   Padding(
                     padding: EdgeInsets.symmetric(
-                        horizontal: r.s(4), vertical: r.s(4)),
+                      horizontal: r.s(4),
+                      vertical: r.s(4),
+                    ),
                     child: Row(
                       children: [
                         IconButton(
-                          icon: Icon(Icons.arrow_back_ios_rounded,
-                              color: Colors.white, size: r.s(20)),
+                          icon: Icon(
+                            Icons.arrow_back_ios_rounded,
+                            color: Colors.white,
+                            size: r.s(20),
+                          ),
                           onPressed: () => Navigator.pop(context),
                         ),
                         Expanded(
@@ -165,10 +175,7 @@ class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFFFFD700),
-                                Color(0xFFFFA500),
-                              ],
+                              colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
                             ),
                             boxShadow: [
                               BoxShadow(
@@ -201,7 +208,9 @@ class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
                         Text(
                           'Amino Coins',
                           style: TextStyle(
-                              color: Colors.white70, fontSize: r.fs(13)),
+                            color: Colors.white70,
+                            fontSize: r.fs(13),
+                          ),
                         ),
                       ],
                     ),
@@ -210,85 +219,11 @@ class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
               ),
             ),
           ),
-
-          // =============================================================
-          // CORPO — Cards de atividades
-          // =============================================================
           Expanded(
             child: ListView(
               padding: EdgeInsets.all(r.s(16)),
               children: [
-                // Assistir Anúncios
-                _SectionTitle(title: s.watchAdsAction),
-                SizedBox(height: r.s(8)),
-                _EarningCard(
-                  icon: Icons.play_circle_filled_rounded,
-                  iconColor: const Color(0xFFE53935),
-                  title: s.watchVideoAction,
-                  subtitle: '$_adsWatchedToday/$_maxAdsPerDay assistidos hoje',
-                  reward: '+${RemoteConfigService.rewardedCoinsPerAd}',
-                  onTap: _adsWatchedToday < _maxAdsPerDay ? _watchAd : null,
-                  isLoading: _isLoadingAd,
-                ),
-                SizedBox(height: r.s(20)),
-
-                // Atividades Diárias
-                _SectionTitle(title: s.dailyActivities),
-                SizedBox(height: r.s(8)),
-                _EarningCard(
-                  icon: Icons.calendar_today_rounded,
-                  iconColor: Color(0xFF2196F3),
-                  title: s.dailyCheckIn2,
-                  subtitle: s.checkInEveryDay,
-                  reward: '+5-25',
-                ),
-                _EarningCard(
-                  icon: Icons.edit_rounded,
-                  iconColor: Color(0xFF4CAF50),
-                  title: 'Criar um Post',
-                  subtitle: s.publishContentCommunity,
-                  reward: '+3',
-                ),
-                _EarningCard(
-                  icon: Icons.comment_rounded,
-                  iconColor: Color(0xFF00BCD4),
-                  title: 'Comentar em Posts',
-                  subtitle: s.joinDiscussions,
-                  reward: '+1',
-                ),
-                _EarningCard(
-                  icon: Icons.quiz_rounded,
-                  iconColor: Color(0xFFFF9800),
-                  title: 'Responder Quiz',
-                  subtitle: s.getCommunityQuizzes,
-                  reward: '+2',
-                ),
-                SizedBox(height: r.s(20)),
-
-                // Conquistas
-                _SectionTitle(title: s.achievements),
-                SizedBox(height: r.s(8)),
-                _EarningCard(
-                  icon: Icons.emoji_events_rounded,
-                  iconColor: Color(0xFFFF9800),
-                  title: 'Completar Conquistas',
-                  subtitle: 'Desbloqueie badges e ganhe moedas',
-                  reward: '+10-100',
-                ),
-                _EarningCard(
-                  icon: Icons.person_add_rounded,
-                  iconColor: Color(0xFF9C27B0),
-                  title: 'Convidar Amigos',
-                  subtitle: 'Ganhe moedas quando amigos se cadastram',
-                  reward: '+50',
-                ),
-                _EarningCard(
-                  icon: Icons.trending_up_rounded,
-                  iconColor: Color(0xFF2196F3),
-                  title: s.levelUpAction,
-                  subtitle: s.earnCoinsLevelUp,
-                  reward: '+20',
-                ),
+                ..._buildRewardSections(rewardTasks),
                 SizedBox(height: r.s(24)),
               ],
             ),
@@ -296,6 +231,82 @@ class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
         ],
       ),
     );
+  }
+
+  List<Widget> _buildRewardSections(List<RewardTask> tasks) {
+    final widgets = <Widget>[];
+    String? currentSectionKey;
+
+    for (final task in tasks) {
+      if (currentSectionKey != task.sectionKey) {
+        if (widgets.isNotEmpty) {
+          widgets.add(SizedBox(height: context.r.s(20)));
+        }
+        widgets.add(_SectionTitle(title: task.sectionTitle));
+        widgets.add(SizedBox(height: context.r.s(8)));
+        currentSectionKey = task.sectionKey;
+      }
+
+      widgets.add(
+        _EarningCard(
+          icon: _iconFor(task.iconName),
+          iconColor: _colorFromHex(task.iconColorHex),
+          title: task.title,
+          subtitle: _formatTemplate(task.subtitle),
+          reward: _formatTemplate(task.rewardLabel),
+          onTap: _tapFor(task),
+          isLoading: task.isRewardedAd && _isLoadingAd,
+        ),
+      );
+    }
+
+    return widgets;
+  }
+
+  VoidCallback? _tapFor(RewardTask task) {
+    if (!task.isRewardedAd) return null;
+    if (_adsWatchedToday >= _maxAdsPerDay) return null;
+    return _watchAd;
+  }
+
+  String _formatTemplate(String value) {
+    return value
+        .replaceAll('{watched}', _adsWatchedToday.toString())
+        .replaceAll('{max}', _maxAdsPerDay.toString())
+        .replaceAll(
+          '{rewarded_coins_per_ad}',
+          RemoteConfigService.rewardedCoinsPerAd.toString(),
+        );
+  }
+
+  IconData _iconFor(String name) {
+    switch (name) {
+      case 'calendar_today':
+        return Icons.calendar_today_rounded;
+      case 'comment':
+        return Icons.comment_rounded;
+      case 'edit':
+        return Icons.edit_rounded;
+      case 'emoji_events':
+        return Icons.emoji_events_rounded;
+      case 'person_add':
+        return Icons.person_add_rounded;
+      case 'play_circle_filled':
+        return Icons.play_circle_filled_rounded;
+      case 'quiz':
+        return Icons.quiz_rounded;
+      case 'trending_up':
+        return Icons.trending_up_rounded;
+      default:
+        return Icons.monetization_on_rounded;
+    }
+  }
+
+  Color _colorFromHex(String hex) {
+    final normalized = hex.replaceAll('#', '').trim();
+    final withAlpha = normalized.length == 6 ? 'FF$normalized' : normalized;
+    final value = int.tryParse(withAlpha, radix: 16);
+    return Color(value ?? 0xFFFF9800);
   }
 }
 
@@ -311,7 +322,7 @@ class _SectionTitle extends ConsumerWidget {
       style: TextStyle(
         fontWeight: FontWeight.w700,
         fontSize: r.fs(16),
-        color: Color(0xFF333333),
+        color: const Color(0xFF333333),
       ),
     );
   }
@@ -326,7 +337,7 @@ class _EarningCard extends ConsumerWidget {
   final VoidCallback? onTap;
   final bool isLoading;
 
-  _EarningCard({
+  const _EarningCard({
     required this.icon,
     required this.iconColor,
     required this.title,
@@ -374,7 +385,7 @@ class _EarningCard extends ConsumerWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: r.fs(14),
-                    color: Color(0xFF333333),
+                    color: const Color(0xFF333333),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -385,13 +396,14 @@ class _EarningCard extends ConsumerWidget {
               ],
             ),
           ),
-          // Reward badge
           onTap != null
               ? GestureDetector(
                   onTap: isLoading ? null : onTap,
                   child: Container(
                     padding: EdgeInsets.symmetric(
-                        horizontal: r.s(12), vertical: r.s(6)),
+                      horizontal: r.s(12),
+                      vertical: r.s(6),
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF4CAF50),
                       borderRadius: BorderRadius.circular(r.s(16)),
@@ -400,14 +412,19 @@ class _EarningCard extends ConsumerWidget {
                         ? SizedBox(
                             width: r.s(14),
                             height: r.s(14),
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
                         : Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.monetization_on_rounded,
-                                  color: Colors.white, size: r.s(14)),
+                              Icon(
+                                Icons.monetization_on_rounded,
+                                color: Colors.white,
+                                size: r.s(14),
+                              ),
                               SizedBox(width: r.s(4)),
                               Text(
                                 reward,
@@ -423,7 +440,9 @@ class _EarningCard extends ConsumerWidget {
                 )
               : Container(
                   padding: EdgeInsets.symmetric(
-                      horizontal: r.s(10), vertical: r.s(4)),
+                    horizontal: r.s(10),
+                    vertical: r.s(4),
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF9800).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(r.s(12)),
@@ -431,13 +450,16 @@ class _EarningCard extends ConsumerWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.monetization_on_rounded,
-                          color: Color(0xFFFF9800), size: r.s(14)),
+                      Icon(
+                        Icons.monetization_on_rounded,
+                        color: const Color(0xFFFF9800),
+                        size: r.s(14),
+                      ),
                       SizedBox(width: r.s(4)),
                       Text(
                         reward,
                         style: TextStyle(
-                          color: Color(0xFFFF9800),
+                          color: const Color(0xFFFF9800),
                           fontSize: r.fs(12),
                           fontWeight: FontWeight.w700,
                         ),

@@ -221,6 +221,8 @@ class RemoteConfigService {
       getBool('features.iap_enabled', fallback: true);
   static bool get isOtaTranslationsEnabled =>
       getBool('features.ota_translations_enabled', fallback: true);
+  static bool get isRemoteRewardTasksEnabled =>
+      getBool('features.remote_reward_tasks_enabled', fallback: true);
   static bool get isMaintenanceMode =>
       getBool('features.maintenance_mode', fallback: false);
   static String get minAppVersion =>
