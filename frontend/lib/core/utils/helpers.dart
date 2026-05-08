@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../l10n/locale_provider.dart';
 import '../l10n/app_strings.dart';
 import '../services/level_definition_service.dart';
+import '../services/remote_config_service.dart';
 
 /// Utilitários e helpers do aplicativo.
 
