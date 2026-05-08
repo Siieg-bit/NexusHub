@@ -95,8 +95,13 @@ void main() async {
   // Remote Config: busca configs do banco antes da UI (usa cache local se offline)
   await _initSafe('remoteConfig', RemoteConfigService.initialize);
 
-  // OTA Translations: carrega traduções editáveis no servidor com fallback local.
-  await _initSafe('otaTranslations', OtaTranslationService.initialize);
+  // OTA Translations: carrega primeiro o idioma ativo, com fallback local.
+  final initialLocale = await resolveInitialAppLocale();
+  await _initSafe(
+    'otaTranslations',
+    () => OtaTranslationService.initialize(initialLocale: initialLocale.code),
+  );
+  updateGlobalStrings(initialLocale);
 
   // Grupo 2: Serviços que dependem de Supabase (não-bloqueantes)
   unawaited(Future.wait([

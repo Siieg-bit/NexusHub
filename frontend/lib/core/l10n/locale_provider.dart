@@ -136,6 +136,22 @@ final stringsProvider = Provider<AppStrings>((ref) {
   return locale.strings;
 });
 
+/// Resolve o idioma inicial antes da criação da árvore Riverpod.
+///
+/// Usado no boot para carregar primeiro as traduções OTA do locale realmente
+/// ativo, sem precisar instanciar providers nem bloquear a UI baixando todos os
+/// idiomas suportados.
+Future<AppLocale> resolveInitialAppLocale() async {
+  try {
+    final box = await Hive.openBox<String>(LocaleNotifier._boxName);
+    final saved = box.get(LocaleNotifier._key);
+    if (saved != null) return AppLocale.fromCode(saved);
+  } catch (e) {
+    debugPrint('[locale_provider] Erro ao resolver locale inicial: $e');
+  }
+  return AppLocale.fromSystem();
+}
+
 /// Cache global das strings do idioma atual.
 /// Atualizado pelo [localeProvider] via [updateGlobalStrings] sempre que o
 /// idioma muda — garante que [getStrings()] retorne o idioma correto em

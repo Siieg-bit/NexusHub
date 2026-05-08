@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'remote_config_service.dart';
 import 'supabase_service.dart';
 
 // =============================================================================
@@ -40,42 +42,74 @@ class OtaTranslationService {
   /// Nunca lança exceção. Se a rede ou Supabase falharem, usa o último cache
   /// local conhecido; se não houver cache, todos os getters continuam retornando
   /// seus fallbacks locais.
-  static Future<void> initialize({List<String>? locales}) async {
+  static Future<void> initialize({
+    String? initialLocale,
+    List<String>? locales,
+    bool preloadRemainingLocales = true,
+  }) async {
     if (_initialized) return;
 
-    final targetLocales = locales ?? _kSupportedTranslationLocales;
-
-    try {
-      final entries = await Future.wait(
-        targetLocales.map(_fetchLocaleTranslations),
-        eagerError: false,
-      );
-      final remote = <String, Map<String, String>>{
-        for (final entry in entries)
-          if (entry != null && entry.value.isNotEmpty) entry.key: entry.value,
-      };
-
-      if (remote.isNotEmpty) {
-        _cache
-          ..clear()
-          ..addAll(remote);
-        await _saveToLocalCache(_cache);
-        debugPrint('[OtaTranslations] ✅ ${_totalKeys(_cache)} traduções carregadas do banco');
-      } else {
-        await _loadLocalFallback();
-      }
-    } catch (e) {
-      debugPrint('[OtaTranslations] ⚠️ Falha ao buscar traduções remotas: $e');
-      await _loadLocalFallback();
+    if (!RemoteConfigService.isOtaTranslationsEnabled) {
+      _cache.clear();
+      _initialized = true;
+      debugPrint('[OtaTranslations] ⏸️ Desabilitado por Remote Config');
+      return;
     }
 
-    _initialized = true;
+    final targetLocales =
+        _normalizeLocaleList(locales ?? _kSupportedTranslationLocales);
+    if (targetLocales.isEmpty) {
+      _initialized = true;
+      return;
+    }
+
+    final preferredLocale = _resolvePreferredLocale(initialLocale, targetLocales);
+
+    try {
+      // Carrega primeiro o último cache local conhecido. Isso mantém fallback
+      // offline imediato sem aguardar todos os idiomas remotos no boot.
+      await _loadLocalFallback();
+
+      // Busca síncrona apenas do idioma ativo. O boot não fica preso ao download
+      // paralelo dos demais locales, reduzindo latência de inicialização.
+      final primaryEntry = await _fetchLocaleTranslations(preferredLocale);
+      if (primaryEntry != null && primaryEntry.value.isNotEmpty) {
+        _cache[primaryEntry.key] = primaryEntry.value;
+        await _saveToLocalCache(_cache);
+        debugPrint(
+          '[OtaTranslations] ✅ ${primaryEntry.value.length} traduções carregadas para ${primaryEntry.key}',
+        );
+      }
+
+      _initialized = true;
+
+      if (preloadRemainingLocales) {
+        final remainingLocales = targetLocales
+            .where((locale) => locale != preferredLocale)
+            .toList(growable: false);
+        if (remainingLocales.isNotEmpty) {
+          unawaited(_preloadLocalesInBackground(remainingLocales));
+        }
+      }
+    } catch (e) {
+      debugPrint('[OtaTranslations] ⚠️ Falha ao inicializar traduções OTA: $e');
+      await _loadLocalFallback();
+      _initialized = true;
+    }
   }
 
   /// Recarrega traduções remotas. Útil após atualizações via painel admin.
-  static Future<void> refresh({List<String>? locales}) async {
+  static Future<void> refresh({
+    String? initialLocale,
+    List<String>? locales,
+    bool preloadRemainingLocales = true,
+  }) async {
     _initialized = false;
-    await initialize(locales: locales);
+    await initialize(
+      initialLocale: initialLocale,
+      locales: locales,
+      preloadRemainingLocales: preloadRemainingLocales,
+    );
   }
 
   /// Retorna a tradução remota para [locale]/[key] quando houver valor ativo.
@@ -84,6 +118,53 @@ class OtaTranslationService {
     final value = _cache[locale]?[key];
     if (value == null || value.isEmpty) return fallback;
     return value;
+  }
+
+  static List<String> _normalizeLocaleList(Iterable<String> locales) {
+    final normalized = <String>[];
+    for (final locale in locales) {
+      final code = locale.trim().toLowerCase();
+      if (code.isEmpty || normalized.contains(code)) continue;
+      if (_kSupportedTranslationLocales.contains(code)) {
+        normalized.add(code);
+      }
+    }
+    return normalized;
+  }
+
+  static String _resolvePreferredLocale(
+    String? initialLocale,
+    List<String> targetLocales,
+  ) {
+    final normalized = initialLocale?.trim().toLowerCase();
+    if (normalized != null && targetLocales.contains(normalized)) {
+      return normalized;
+    }
+    return targetLocales.first;
+  }
+
+  static Future<void> _preloadLocalesInBackground(List<String> locales) async {
+    try {
+      final entries = await Future.wait(
+        locales.map(_fetchLocaleTranslations),
+        eagerError: false,
+      );
+      var changed = false;
+      for (final entry in entries) {
+        if (entry != null && entry.value.isNotEmpty) {
+          _cache[entry.key] = entry.value;
+          changed = true;
+        }
+      }
+      if (changed) {
+        await _saveToLocalCache(_cache);
+        debugPrint(
+          '[OtaTranslations] ✅ ${_totalKeys(_cache)} traduções disponíveis após prefetch',
+        );
+      }
+    } catch (e) {
+      debugPrint('[OtaTranslations] ⚠️ Prefetch em background falhou: $e');
+    }
   }
 
   static Future<MapEntry<String, Map<String, String>>?> _fetchLocaleTranslations(

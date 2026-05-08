@@ -85,14 +85,18 @@ def main() -> None:
     main_dart = read('frontend/lib/main.dart')
     if "import 'core/services/ota_translation_service.dart';" not in main_dart:
         fail('main.dart sem import do serviço OTA')
-    if "_initSafe('otaTranslations', OtaTranslationService.initialize)" not in main_dart:
+    if "_initSafe(\n    'otaTranslations'," not in main_dart or 'OtaTranslationService.initialize(initialLocale:' not in main_dart:
         fail('main.dart não inicializa OTA Translations')
+    if 'updateGlobalStrings(initialLocale)' not in main_dart:
+        fail('main.dart não sincroniza strings globais após OTA')
 
     service = read('frontend/lib/core/services/ota_translation_service.dart')
     required_service_tokens = [
         'SharedPreferences',
         'SupabaseService.client',
         'Future.wait',
+        'RemoteConfigService.isOtaTranslationsEnabled',
+        'unawaited(_preloadLocalesInBackground',
         '.timeout(_kTranslationFetchTimeout)',
         '_loadFromLocalCache',
         '_saveToLocalCache',

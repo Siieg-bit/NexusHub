@@ -69,8 +69,8 @@ A arquitetura aprovada é **remota por domínio, tipada e com fallback local**. 
 | P0.1 | Baseline | Rodar `flutter analyze`, format e build interno. | Pendente | O ambiente atual não possui Flutter/Dart no PATH. |
 | P0.2 | Banco | Aplicar `241_app_translations.sql` em staging. | Pendente | Não promover direto para produção. |
 | P0.3 | OTA | Testar alteração real de uma string sem novo APK. | Pendente | Exige staging + build interno. |
-| P1.1 | OTA | Buscar locale ativo primeiro e demais em background opcional. | Pendente | Evita atrasar cold start. |
-| P1.2 | OTA | Criar flag `features.ota_translations_enabled`. | Pendente | Rollback sem APK. |
+| P1.1 | OTA | Buscar locale ativo primeiro e demais em background opcional. | Concluído textualmente; pendente Flutter real | Implementado em `OtaTranslationService.initialize(initialLocale:)` com prefetch via `unawaited`. |
+| P1.2 | OTA | Criar flag `features.ota_translations_enabled`. | Concluído textualmente; pendente staging | Getter em `RemoteConfigService` e migration `242_ota_translations_remote_config_flag.sql`. |
 | P1.3 | OTA | Criar fluxo admin/script seguro para editar traduções. | Pendente | Evita SQL manual arriscado. |
 | P2.1 | Free Coins | Criar tabela/RPC `reward_tasks`. | Pendente | Alta prioridade do mapa. |
 | P2.2 | Free Coins | Integrar tela via service/provider tipado. | Pendente | Sem conteúdo primário hardcoded na tela. |
@@ -110,6 +110,6 @@ A arquitetura aprovada é **remota por domínio, tipada e com fallback local**. 
 
 ## Observações abertas
 
-Validação executada: `python3.11 scripts/validate_ota_translations.py` retornou OK, com 3053 getters cobertos, 85 métodos delegados e 29950 linhas de seed. O ambiente atual não possui `dart` nem `flutter` no PATH, então a análise estática oficial do Flutter deve ser executada no CI ou em uma máquina de desenvolvimento antes de promover para produção.
+Validação executada novamente após o hardening P0/P1: `python3.11 scripts/validate_ota_translations.py` retornou OK, com 3053 getters cobertos, 85 métodos delegados e 29950 linhas de seed. O ambiente atual não possui `dart` nem `flutter` no PATH, então a análise estática oficial do Flutter deve ser executada no CI ou em uma máquina de desenvolvimento antes de promover para produção.
 
 O plano completo de produção está documentado em `PLANO_ACAO_COMPLETO_APK_PARA_SERVIDOR_2026.md`. A conclusão atual é que a infraestrutura OTA criada é uma base correta, mas a migração completa do mapa ainda depende das fases P0 a P10 acima.
