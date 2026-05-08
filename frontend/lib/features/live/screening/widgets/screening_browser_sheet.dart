@@ -551,8 +551,14 @@ class _ScreeningBrowserSheetState
           if (value is Map) {
             if (value['error'] == null) {
               final title = value['title']?.toString() ?? slug;
-              final thumb = value['thumb']?.toString();
-              debugPrint('[KickMeta] WebView fetch: "$title" thumb=$thumb');
+              final rawThumb = value['thumb']?.toString();
+              // stream.kick.com/thumbnails/... é bloqueado por Cloudflare
+              // quando carregado via NetworkImage (sem cookies do browser).
+              // Retornar null para usar o placeholder/ícone genérico do Kick.
+              final thumb = (rawThumb != null && rawThumb.contains('stream.kick.com'))
+                  ? null
+                  : rawThumb;
+              debugPrint('[KickMeta] WebView fetch: "$title" thumb=$thumb (raw=$rawThumb)');
               return (title: title, thumbnailUrl: thumb);
             }
             debugPrint('[KickMeta] WebView fetch erro: \${value["error"]}');
