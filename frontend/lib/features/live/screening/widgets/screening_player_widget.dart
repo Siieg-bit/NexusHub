@@ -474,17 +474,23 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         mediaPlaybackRequiresUserGesture: false,
         allowsInlineMediaPlayback: true,
         allowsAirPlayForMediaPlayback: true,
-        // useHybridComposition: true para Twitch/Kick.
-        // No Flutter 3.27+ / Android 14+, useHybridComposition:false ativa o
-        // SurfaceProducer backend (Vulkan) que causa erros AHardwareBuffer em
-        // dispositivos Qualcomm (formato pixel 0x3b não suportado pelo gralloc).
-        // Com true (AndroidViewSurface/SurfaceTexture), a composição é feita
-        // via SurfaceTexture que tem suporte universal em todos os dispositivos.
-        useHybridComposition: true,
+        // useHybridComposition: false — mais eficiente (sem overhead de copia de
+        // frames entre threads). O bug do SurfaceProducer Vulkan (AHardwareBuffer
+        // formato 0x3b) estava relacionado ao transparentBackground:true (RGBA).
+        // Com transparentBackground:false (RGB), o SurfaceProducer usa formato
+        // opaco que é suportado pelo gralloc Qualcomm sem erros.
+        useHybridComposition: false,
         supportZoom: false,
         disableHorizontalScroll: true,
         disableVerticalScroll: true,
-        transparentBackground: true,
+        // transparentBackground: false — o player tem fundo preto sólido.
+        // true força composição com canal alpha, dobrando o trabalho de renderização.
+        transparentBackground: false,
+        // Desabilitar recursos desnecessários para player de vídeo
+        geolocationEnabled: false,
+        allowFileAccess: false,
+        allowContentAccess: false,
+        saveFormData: false,
         // User-Agent mobile para Twitch/Kick (UI simplificada)
         userAgent:
             'Mozilla/5.0 (Linux; Android 13; Pixel 7) '
