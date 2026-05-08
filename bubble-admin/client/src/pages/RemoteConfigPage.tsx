@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
+import type { CSSProperties, FC } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
   Settings2, RefreshCw, Save, Search, ChevronDown, ChevronRight,
   Sliders, Shield, Link2, Megaphone, ShoppingCart, Flag, Loader2,
+  Database, Bell, Clock, Plus, X,
 } from "lucide-react";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -16,15 +18,28 @@ type ConfigRow = {
   updated_at: string;
 };
 
-const CATEGORY_META: Record<string, { label: string; color: string; rgb: string; icon: React.FC<{ size?: number; style?: React.CSSProperties }> }> = {
-  limits:      { label: "Limites",       color: "#60A5FA", rgb: "96,165,250",   icon: Sliders },
-  pagination:  { label: "Paginação",     color: "#34D399", rgb: "52,211,153",   icon: Sliders },
-  rate_limits: { label: "Rate Limits",   color: "#FBBF24", rgb: "251,191,36",   icon: Shield },
-  links:       { label: "Links",         color: "#A78BFA", rgb: "167,139,250",  icon: Link2 },
-  ads:         { label: "Anúncios",      color: "#F97316", rgb: "249,115,22",   icon: Megaphone },
-  iap:         { label: "IAP / Moedas",  color: "#EC4899", rgb: "236,72,153",   icon: ShoppingCart },
-  features:    { label: "Feature Flags", color: "#10B981", rgb: "16,185,129",   icon: Flag },
-  general:     { label: "Geral",         color: "#94A3B8", rgb: "148,163,184",  icon: Settings2 },
+type AdminUpdateResult = {
+  success?: boolean;
+  key?: string;
+  value?: unknown;
+  category?: string;
+  description?: string;
+  action?: "insert" | "update";
+  error?: string;
+};
+
+const CATEGORY_META: Record<string, { label: string; color: string; rgb: string; icon: FC<{ size?: number; style?: CSSProperties }> }> = {
+  limits:        { label: "Limites",       color: "#60A5FA", rgb: "96,165,250",   icon: Sliders },
+  pagination:    { label: "Paginação",     color: "#34D399", rgb: "52,211,153",   icon: Sliders },
+  rate_limits:   { label: "Rate Limits",   color: "#FBBF24", rgb: "251,191,36",   icon: Shield },
+  links:         { label: "Links",         color: "#A78BFA", rgb: "167,139,250",  icon: Link2 },
+  ads:           { label: "Anúncios",      color: "#F97316", rgb: "249,115,22",   icon: Megaphone },
+  iap:           { label: "IAP / Moedas",  color: "#EC4899", rgb: "236,72,153",   icon: ShoppingCart },
+  features:      { label: "Feature Flags", color: "#10B981", rgb: "16,185,129",   icon: Flag },
+  cache:         { label: "Cache",         color: "#38BDF8", rgb: "56,189,248",   icon: Clock },
+  notifications: { label: "Notificações",  color: "#818CF8", rgb: "129,140,248",  icon: Bell },
+  admin:         { label: "Admin",         color: "#F472B6", rgb: "244,114,182",  icon: Database },
+  general:       { label: "Geral",         color: "#94A3B8", rgb: "148,163,184",  icon: Settings2 },
 };
 
 const fadeUp = {
@@ -41,23 +56,41 @@ function parseValue(raw: string): unknown {
   try { return JSON.parse(raw); } catch { return raw; }
 }
 
+function normalizeRemoteConfigRow(row: AdminUpdateResult, fallback: ConfigRow): ConfigRow {
+  return {
+    key: row.key ?? fallback.key,
+    value: row.value ?? fallback.value,
+    category: row.category ?? fallback.category,
+    description: row.description ?? fallback.description,
+    updated_at: new Date().toISOString(),
+  };
+}
+
 // ─── Componente de linha editável ─────────────────────────────────────────────
 function ConfigItem({
   row,
   onSave,
 }: {
   row: ConfigRow;
-  onSave: (key: string, value: unknown) => Promise<void>;
+  onSave: (key: string, value: unknown, category: string, description: string) => Promise<ConfigRow>;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(formatValue(row.value));
+  const [categoryDraft, setCategoryDraft] = useState(row.category || "general");
+  const [descriptionDraft, setDescriptionDraft] = useState(row.description || "");
   const [saving, setSaving] = useState(false);
   const isJson = typeof row.value === "object" || (typeof row.value === "string" && (row.value.startsWith("{") || row.value.startsWith("[")));
+
+  function resetDrafts() {
+    setDraft(formatValue(row.value));
+    setCategoryDraft(row.category || "general");
+    setDescriptionDraft(row.description || "");
+  }
 
   async function handleSave() {
     setSaving(true);
     try {
-      await onSave(row.key, parseValue(draft));
+      await onSave(row.key, parseValue(draft), categoryDraft, descriptionDraft);
       setEditing(false);
     } finally {
       setSaving(false);
@@ -79,7 +112,7 @@ function ConfigItem({
           )}
         </div>
         <button
-          onClick={() => { setEditing(!editing); setDraft(formatValue(row.value)); }}
+          onClick={() => { setEditing(!editing); resetDrafts(); }}
           className="text-[11px] px-2 py-0.5 rounded-lg flex-shrink-0"
           style={{
             background: editing ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.06)",
@@ -93,17 +126,33 @@ function ConfigItem({
 
       {!editing ? (
         <div
-          className="mt-2 rounded-lg px-2 py-1.5 font-mono text-[11px] break-all"
+          className="mt-2 rounded-lg px-2 py-1.5 font-mono text-[11px] break-all whitespace-pre-wrap"
           style={{ background: "rgba(0,0,0,0.2)", color: "#34D399" }}
         >
           {formatValue(row.value)}
         </div>
       ) : (
         <div className="mt-2 space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <input
+              value={categoryDraft}
+              onChange={(e) => setCategoryDraft(e.target.value)}
+              placeholder="category"
+              className="w-full rounded-lg px-2 py-1.5 font-mono text-[11px] outline-none"
+              style={{ background: "rgba(0,0,0,0.3)", color: "#93C5FD", border: "1px solid rgba(147,197,253,0.25)" }}
+            />
+            <input
+              value={descriptionDraft}
+              onChange={(e) => setDescriptionDraft(e.target.value)}
+              placeholder="Descrição operacional"
+              className="w-full rounded-lg px-2 py-1.5 text-[11px] outline-none"
+              style={{ background: "rgba(0,0,0,0.3)", color: "rgba(255,255,255,0.75)", border: "1px solid rgba(255,255,255,0.08)" }}
+            />
+          </div>
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            rows={isJson ? 5 : 2}
+            rows={isJson ? 7 : 3}
             className="w-full rounded-lg px-2 py-1.5 font-mono text-[11px] resize-y outline-none"
             style={{
               background: "rgba(0,0,0,0.3)",
@@ -118,11 +167,64 @@ function ConfigItem({
             style={{ background: "rgba(52,211,153,0.15)", color: "#34D399", border: "1px solid rgba(52,211,153,0.3)" }}
           >
             {saving ? <Loader2 size={11} className="animate-spin" /> : <Save size={11} />}
-            Salvar
+            Salvar via RPC auditável
           </button>
         </div>
       )}
     </div>
+  );
+}
+
+function NewConfigPanel({
+  onCreate,
+  onCancel,
+}: {
+  onCreate: (key: string, value: unknown, category: string, description: string) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [key, setKey] = useState("");
+  const [category, setCategory] = useState("general");
+  const [description, setDescription] = useState("");
+  const [value, setValue] = useState("true");
+  const [saving, setSaving] = useState(false);
+
+  async function handleCreate() {
+    setSaving(true);
+    try {
+      await onCreate(key, parseValue(value), category, description);
+      setKey("");
+      setCategory("general");
+      setDescription("");
+      setValue("true");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}>
+      <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(96,165,250,0.06)", border: "1px solid rgba(96,165,250,0.16)" }}>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[13px] font-semibold" style={{ color: "rgba(255,255,255,0.9)", fontFamily: "'Space Grotesk', sans-serif" }}>Nova configuração remota</p>
+            <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>A criação também passa pela RPC auditável e exige perfil Team Admin.</p>
+          </div>
+          <button onClick={onCancel} className="p-1 rounded-lg" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.55)" }}>
+            <X size={14} />
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <input value={key} onChange={(e) => setKey(e.target.value)} placeholder="chave.exemplo" className="rounded-lg px-3 py-2 text-[12px] font-mono outline-none" style={{ background: "rgba(0,0,0,0.25)", color: "#E5E7EB", border: "1px solid rgba(255,255,255,0.08)" }} />
+          <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="category" className="rounded-lg px-3 py-2 text-[12px] font-mono outline-none" style={{ background: "rgba(0,0,0,0.25)", color: "#93C5FD", border: "1px solid rgba(255,255,255,0.08)" }} />
+        </div>
+        <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descrição operacional" className="w-full rounded-lg px-3 py-2 text-[12px] outline-none" style={{ background: "rgba(0,0,0,0.25)", color: "rgba(255,255,255,0.75)", border: "1px solid rgba(255,255,255,0.08)" }} />
+        <textarea value={value} onChange={(e) => setValue(e.target.value)} rows={5} className="w-full rounded-lg px-3 py-2 text-[12px] font-mono resize-y outline-none" style={{ background: "rgba(0,0,0,0.28)", color: "#FBBF24", border: "1px solid rgba(251,191,36,0.25)" }} />
+        <button onClick={handleCreate} disabled={saving} className="flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-xl" style={{ background: "rgba(52,211,153,0.15)", color: "#34D399", border: "1px solid rgba(52,211,153,0.3)" }}>
+          {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+          Criar configuração
+        </button>
+      </div>
+    </motion.div>
   );
 }
 
@@ -132,6 +234,7 @@ export default function RemoteConfigPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [creating, setCreating] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -152,23 +255,51 @@ export default function RemoteConfigPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  async function handleSave(key: string, value: unknown) {
-    const { error } = await supabase
-      .from("app_remote_config")
-      .update({ value })
-      .eq("key", key);
+  async function saveViaRpc(key: string, value: unknown, category: string, description: string): Promise<ConfigRow> {
+    const fallback: ConfigRow = { key, value, category, description, updated_at: new Date().toISOString() };
+    const { data, error } = await supabase.rpc("admin_update_remote_config", {
+      p_key: key,
+      p_value: value,
+      p_category: category,
+      p_description: description,
+    });
+
     if (error) {
       toast.error(`Erro ao salvar: ${error.message}`);
       throw error;
     }
-    toast.success(`"${key}" atualizado!`);
-    setConfigs((prev) => prev.map((c) => (c.key === key ? { ...c, value } : c)));
+
+    const result = data as AdminUpdateResult;
+    if (!result?.success) {
+      const message = result?.error ?? "Falha desconhecida";
+      toast.error(`Erro ao salvar: ${message}`);
+      throw new Error(message);
+    }
+
+    const normalized = normalizeRemoteConfigRow(result, fallback);
+    toast.success(`"${normalized.key}" ${result.action === "insert" ? "criado" : "atualizado"} com auditoria.`);
+
+    setConfigs((prev) => {
+      const exists = prev.some((c) => c.key === normalized.key);
+      const next = exists
+        ? prev.map((c) => (c.key === normalized.key ? normalized : c))
+        : [...prev, normalized];
+      return next.sort((a, b) => a.category.localeCompare(b.category) || a.key.localeCompare(b.key));
+    });
+
+    return normalized;
+  }
+
+  async function handleCreate(key: string, value: unknown, category: string, description: string) {
+    await saveViaRpc(key, value, category, description);
+    setCreating(false);
   }
 
   const filtered = configs.filter(
     (c) =>
       c.key.toLowerCase().includes(search.toLowerCase()) ||
-      c.description?.toLowerCase().includes(search.toLowerCase())
+      c.description?.toLowerCase().includes(search.toLowerCase()) ||
+      c.category?.toLowerCase().includes(search.toLowerCase())
   );
 
   // Agrupar por categoria
@@ -185,7 +316,7 @@ export default function RemoteConfigPage() {
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-5">
       {/* Header */}
       <motion.div variants={fadeUp} initial="hidden" animate="show" custom={0}>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <div>
             <h1
               className="text-[20px] font-bold tracking-tight"
@@ -194,23 +325,35 @@ export default function RemoteConfigPage() {
               Remote Config
             </h1>
             <p className="text-[12px] font-mono mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>
-              {configs.length} configurações · edições aplicadas imediatamente no app
+              {configs.length} configurações · edições via RPC auditável sem novo deploy
             </p>
           </div>
-          <button
-            onClick={load}
-            disabled={loading}
-            className="flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-xl"
-            style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.08)" }}
-          >
-            <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
-            Atualizar
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCreating((v) => !v)}
+              className="flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-xl"
+              style={{ background: "rgba(52,211,153,0.12)", color: "#34D399", border: "1px solid rgba(52,211,153,0.24)" }}
+            >
+              <Plus size={13} />
+              Nova
+            </button>
+            <button
+              onClick={load}
+              disabled={loading}
+              className="flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-xl"
+              style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
+              Atualizar
+            </button>
+          </div>
         </div>
       </motion.div>
 
+      {creating && <NewConfigPanel onCreate={handleCreate} onCancel={() => setCreating(false)} />}
+
       {/* Busca */}
-      <motion.div variants={fadeUp} initial="hidden" animate="show" custom={1}>
+      <motion.div variants={fadeUp} initial="hidden" animate="show" custom={2}>
         <div
           className="flex items-center gap-2 rounded-xl px-3 py-2"
           style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
@@ -219,7 +362,7 @@ export default function RemoteConfigPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar chave ou descrição..."
+            placeholder="Buscar chave, categoria ou descrição..."
             className="flex-1 bg-transparent outline-none text-[13px]"
             style={{ color: "rgba(255,255,255,0.8)", fontFamily: "'Space Grotesk', sans-serif" }}
           />
@@ -245,7 +388,7 @@ export default function RemoteConfigPage() {
                 variants={fadeUp}
                 initial="hidden"
                 animate="show"
-                custom={i + 2}
+                custom={i + 3}
                 className="rounded-2xl overflow-hidden"
                 style={{ border: `1px solid rgba(${meta.rgb},0.15)` }}
               >
@@ -268,6 +411,7 @@ export default function RemoteConfigPage() {
                     >
                       {meta.label}
                     </span>
+                    <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>{cat}</span>
                     <span
                       className="text-[11px] font-mono px-1.5 py-0.5 rounded-md"
                       style={{ background: `rgba(${meta.rgb},0.1)`, color: meta.color }}
@@ -286,7 +430,7 @@ export default function RemoteConfigPage() {
                 {!isCollapsed && (
                   <div className="p-3 space-y-2" style={{ background: "rgba(0,0,0,0.15)" }}>
                     {rows.map((row) => (
-                      <ConfigItem key={row.key} row={row} onSave={handleSave} />
+                      <ConfigItem key={row.key} row={row} onSave={saveViaRpc} />
                     ))}
                   </div>
                 )}

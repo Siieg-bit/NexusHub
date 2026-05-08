@@ -25,6 +25,7 @@
 | 247 | `247_streaming_rules_server_driven.sql` | Aplicada e validada |
 | 248 | `248_cache_policies_remote_config.sql` | Aplicada e validada |
 | 249 | `249_notification_channels_remote_config.sql` | Aplicada e validada |
+| 250 | `250_admin_remote_config_governance.sql` | Aplicada e validada |
 
 ### Observações
 
@@ -38,3 +39,4 @@
 - Migration 247: tabela `streaming_platform_rules`, RPC `get_streaming_platform_rules`, grant `authenticated`, policies, flag `features.remote_streaming_rules_enabled`, seed conservador de 17 plataformas, metadados DRM e blocklist de URLs diretas confirmados no projeto remoto.
 - Migration 248: flag `features.remote_cache_policies_enabled` e payload `cache.ttl_seconds` confirmados em `app_remote_config`; baseline validado com chaves `default`, `posts`, `post`, `my_communities`, `community`, `messages`, `profiles`, `global_feed`, `for_you_feed`, `notifications` e `wiki`, todos com valores positivos.
 - Migration 249: flag `features.remote_notification_channels_enabled` e payload `notifications.channels` confirmados em `app_remote_config`; validação remota confirmou canais habilitados `default`, `chat`, `social`, `community` e `moderation`, IDs estáveis `nexushub_default`, `nexushub_chat`, `nexushub_social`, `nexushub_community` e `nexushub_moderation`, além do `type_channel_map` para tipos como `chat`, `match`, `community_invite`, `strike` e `ban`.
+- Migration 250: tabela `app_remote_config_audit_log`, RPC `admin_update_remote_config` `SECURITY DEFINER`, grant para `authenticated`, policy `app_remote_config_audit_log_read_team` e índice `idx_app_remote_config_audit_log_key_created` confirmados no projeto remoto; o painel `RemoteConfigPage` passou a criar e salvar configurações via RPC auditável, sem mutação direta de `app_remote_config` pelo cliente.
