@@ -515,23 +515,59 @@ class _ScreeningBrowserSheetState
     }
 
     // ── Kick ────────────────────────────────────────────────────────────────────────────
-    // A API do Kick (kick.com/api/v2/channels/<slug>) é bloqueada por Cloudflare
-    // quando chamada via HTTP direto (retorna 403). O WebView já tem os cookies
-    // do Cloudflare e pode ler as OG tags da página diretamente.
+    // A API do Kick é bloqueada por Cloudflare via HTTP direto (403).
+    // Solução: usar fetch() de dentro do WebView (que tem cookies do Cloudflare)
+    // para chamar a API kick.com/api/v2/channels/<slug> com contexto de browser.
     if (u.contains('kick.com')) {
-      // Prioridade 1: OG tags via WebView (já tem cookies do Cloudflare)
-      if (_webViewController != null) {
-        final ogMeta = await OgTagsMetaService.resolveFromWebView(_webViewController!);
-        if (ogMeta != null && ogMeta.title.isNotEmpty) {
-          return (title: ogMeta.title, thumbnailUrl: ogMeta.thumbnailUrl);
+      // Extrair slug da URL (kick.com/<slug> ou kick.com/video/<id>)
+      final slugMatch = RegExp(r'kick\.com/(?!video/)([a-zA-Z0-9_-]+)').firstMatch(url);
+      final slug = slugMatch?.group(1);
+
+      // Prioridade 1: fetch da API via WebView usando callAsyncJavaScript
+      // (evaluateJavascript não aguarda Promises no Android — callAsyncJavaScript sim)
+      if (_webViewController != null && slug != null) {
+        try {
+          final result = await _webViewController!.callAsyncJavaScript(
+            functionBody: '''
+              try {
+                const r = await fetch('https://kick.com/api/v2/channels/$slug', {
+                  headers: { 'Accept': 'application/json' },
+                  credentials: 'include'
+                });
+                if (!r.ok) return {error: r.status};
+                const d = await r.json();
+                const ls = d.livestream;
+                const title = (ls && ls.session_title) ? ls.session_title
+                            : (d.user && d.user.username) ? d.user.username
+                            : '$slug';
+                const thumb = (ls && ls.thumbnail && ls.thumbnail.url) ? ls.thumbnail.url
+                            : (d.banner_image && d.banner_image.url) ? d.banner_image.url
+                            : null;
+                return {title: title, thumb: thumb};
+              } catch(e) { return {error: e.toString()}; }
+            ''',
+          );
+          final value = result?.value;
+          if (value is Map) {
+            if (value['error'] == null) {
+              final title = value['title']?.toString() ?? slug;
+              final thumb = value['thumb']?.toString();
+              debugPrint('[KickMeta] WebView fetch: "$title" thumb=$thumb');
+              return (title: title, thumbnailUrl: thumb);
+            }
+            debugPrint('[KickMeta] WebView fetch erro: \${value["error"]}');
+          }
+        } catch (e) {
+          debugPrint('[KickMeta] WebView fetch falhou: $e');
         }
       }
-      // Prioridade 2: KickMetaService via HTTP (pode funcionar em alguns dispositivos/redes)
+
+      // Prioridade 2: KickMetaService via HTTP (fallback para redes sem Cloudflare)
       try {
         final meta = await KickMetaService.resolve(url);
         return (title: meta.title, thumbnailUrl: meta.thumbnailUrl);
       } catch (_) {
-        // 403 Cloudflare — ignorar e usar título genérico
+        // 403 Cloudflare — ignorar
       }
       return null;
     }

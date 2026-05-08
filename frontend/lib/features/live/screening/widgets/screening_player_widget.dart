@@ -474,13 +474,13 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         mediaPlaybackRequiresUserGesture: false,
         allowsInlineMediaPlayback: true,
         allowsAirPlayForMediaPlayback: true,
-        // useHybridComposition: false para Twitch/Kick.
-        // Com false (AndroidView), o WebView renderiza diretamente na thread
-        // do Flutter sem overhead de composição entre threads — essencial para
-        // vídeo ao vivo (HLS) que é muito sensível a latência de renderização.
-        // Com true (AndroidViewSurface), o frame do vídeo precisa ser copiado
-        // entre threads a cada frame, causando jank e travamento perceptível.
-        useHybridComposition: false,
+        // useHybridComposition: true para Twitch/Kick.
+        // No Flutter 3.27+ / Android 14+, useHybridComposition:false ativa o
+        // SurfaceProducer backend (Vulkan) que causa erros AHardwareBuffer em
+        // dispositivos Qualcomm (formato pixel 0x3b não suportado pelo gralloc).
+        // Com true (AndroidViewSurface/SurfaceTexture), a composição é feita
+        // via SurfaceTexture que tem suporte universal em todos os dispositivos.
+        useHybridComposition: true,
         supportZoom: false,
         disableHorizontalScroll: true,
         disableVerticalScroll: true,
