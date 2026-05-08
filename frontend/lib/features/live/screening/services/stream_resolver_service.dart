@@ -11,6 +11,7 @@ import 'tubi_stream_service.dart';
 import 'pluto_stream_service.dart';
 import 'youtube_stream_service.dart';
 import 'google_drive_stream_service.dart';
+import 'streaming_rules_service.dart';
 import 'disney/disney_playback_service.dart';
 import 'disney/disney_auth_service.dart';
 
@@ -207,6 +208,47 @@ class StreamResolverService {
     }
   }
 
+  static String _platformRuleId(StreamPlatform platform) {
+    switch (platform) {
+      case StreamPlatform.youtube:
+        return 'youtube';
+      case StreamPlatform.youtubeLive:
+        return 'youtube_live';
+      case StreamPlatform.twitch:
+        return 'twitch';
+      case StreamPlatform.kick:
+        return 'kick';
+      case StreamPlatform.vimeo:
+        return 'vimeo';
+      case StreamPlatform.dailymotion:
+        return 'dailymotion';
+      case StreamPlatform.googleDrive:
+        return 'drive';
+      case StreamPlatform.tubi:
+        return 'tubi';
+      case StreamPlatform.plutoTv:
+        return 'pluto';
+      case StreamPlatform.netflix:
+        return 'netflix';
+      case StreamPlatform.disneyPlus:
+        return 'disney';
+      case StreamPlatform.amazonPrime:
+        return 'amazon';
+      case StreamPlatform.hboMax:
+        return 'hbo';
+      case StreamPlatform.crunchyroll:
+        return 'crunchyroll';
+      case StreamPlatform.vk:
+        return 'vk';
+      case StreamPlatform.local:
+        return 'local';
+      case StreamPlatform.web:
+        return 'web';
+      case StreamPlatform.unknown:
+        return 'unknown';
+    }
+  }
+
   static String _extractYouTubeId(String url) {
     final patterns = [
       RegExp(r'youtu\.be/([a-zA-Z0-9_-]{11})'),
@@ -236,6 +278,10 @@ class StreamResolverService {
   /// Rodada 3.
   static Future<StreamResolution> resolve(String url) async {
     final platform = detectPlatform(url);
+    await StreamingRulesService.assertUrlAllowed(
+      url,
+      preferredPlatformId: _platformRuleId(platform),
+    );
 
     switch (platform) {
       // ── Twitch: HLS nativo otimizado com fallback para embed ─────────────

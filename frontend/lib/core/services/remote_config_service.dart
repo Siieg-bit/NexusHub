@@ -229,6 +229,8 @@ class RemoteConfigService {
       getBool('features.remote_announcements_enabled', fallback: true);
   static bool get isRemoteOnboardingSlidesEnabled =>
       getBool('features.remote_onboarding_slides_enabled', fallback: true);
+  static bool get isRemoteStreamingRulesEnabled =>
+      getBool('features.remote_streaming_rules_enabled', fallback: true);
   static bool get isMaintenanceMode =>
       getBool('features.maintenance_mode', fallback: false);
   static String get minAppVersion =>

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/screening_room_provider.dart';
 import '../services/drm_relay_service.dart';
 import '../services/stream_resolver_service.dart';
+import '../services/streaming_rules_service.dart';
 import '../services/youtube_stream_service.dart';
 import '../services/twitch_stream_service.dart';
 import '../services/vimeo_meta_service.dart';
@@ -388,6 +389,11 @@ class _ScreeningBrowserSheetState
     HapticFeedback.mediumImpact();
 
     try {
+      await StreamingRulesService.assertUrlAllowed(
+        url,
+        preferredPlatformId: _platform.id,
+      );
+
       String finalUrl = url;
       if (_platform.isDrm) {
         final platform = StreamResolverService.detectPlatform(url);
@@ -455,15 +461,26 @@ class _ScreeningBrowserSheetState
       }
       final notifier = ref.read(screeningRoomProvider(widget.threadId).notifier);
       if (widget.addToQueue) {
-        await notifier.addToQueue(url: finalUrl, title: title, thumbnail: thumbnail);
+        await notifier.addToQueue(
+          url: finalUrl,
+          title: title,
+          thumbnail: thumbnail,
+          skipStreamingRuleValidation: true,
+        );
         if (mounted) { HapticFeedback.lightImpact(); Navigator.of(context).pop(); }
       } else {
         await notifier.updateVideo(
           videoUrl: finalUrl,
           videoTitle: title,
           videoThumbnail: thumbnail,
+          skipStreamingRuleValidation: true,
         );
         if (mounted) Navigator.of(context).pop();
+      }
+    } on StreamingRulesException catch (e) {
+      if (mounted) {
+        _showError(e.message);
+        setState(() { _isCapturing = false; _isVideoDetected = false; });
       }
     } catch (e) {
       if (mounted) setState(() { _isCapturing = false; _isVideoDetected = false; });

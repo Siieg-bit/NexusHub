@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../core/services/realtime_service.dart';
 import '../../../auth/providers/auth_provider.dart';
+import '../services/streaming_rules_service.dart';
 import '../models/screening_room_state.dart';
 import '../models/screening_participant.dart';
 import 'screening_voice_provider.dart';
@@ -600,10 +601,15 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
     required String videoUrl,
     required String videoTitle,
     String? videoThumbnail,
+    bool skipStreamingRuleValidation = false,
   }) async {
     if (!state.isHost || state.sessionId == null) return;
 
     try {
+      if (!skipStreamingRuleValidation) {
+        await StreamingRulesService.assertUrlAllowed(videoUrl);
+      }
+
       // Persistir no banco — incluir video_queue para não apagar a fila ao trocar de vídeo.
       await SupabaseService.client.rpc('update_screening_metadata', params: {
         'p_session_id': state.sessionId,
@@ -764,8 +770,13 @@ class ScreeningRoomNotifier extends StateNotifier<ScreeningRoomState> {
     required String url,
     String? title,
     String? thumbnail,
+    bool skipStreamingRuleValidation = false,
   }) async {
     if (!state.isHost) return;
+    if (!skipStreamingRuleValidation) {
+      await StreamingRulesService.assertUrlAllowed(url);
+    }
+
     final item = <String, String>{
       'url': url,
       if (title != null) 'title': title,
