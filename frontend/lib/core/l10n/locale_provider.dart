@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'app_strings.dart';
+import 'app_strings_ota.dart';
 import 'app_strings_pt.dart';
 import 'app_strings_en.dart';
 import 'app_strings_ar.dart';
@@ -31,8 +32,17 @@ enum AppLocale {
   final String flag;
   const AppLocale(this.code, this.label, this.flag);
 
-  /// Retorna as strings do idioma.
+  /// Retorna as strings do idioma com overlay OTA e fallback local.
   AppStrings get strings {
+    final fallback = _fallbackStrings;
+    return OtaAppStrings(locale: code, fallback: fallback);
+  }
+
+  /// Retorna as strings locais empacotadas no APK.
+  ///
+  /// Mantido separado para que a camada OTA seja reversível e nunca remova o
+  /// fallback offline do aplicativo.
+  AppStrings get _fallbackStrings {
     switch (this) {
       case AppLocale.pt:
         return const AppStringsPt();

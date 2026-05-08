@@ -26,6 +26,7 @@ import 'core/services/iap_service.dart';
 import 'core/services/ad_service.dart';
 import 'core/services/cache_service.dart';
 import 'core/services/remote_config_service.dart';
+import 'core/services/ota_translation_service.dart';
 import 'core/services/analytics_service.dart';
 import 'core/services/error_handler.dart';
 import 'core/widgets/error_boundary.dart';
@@ -93,6 +94,9 @@ void main() async {
 
   // Remote Config: busca configs do banco antes da UI (usa cache local se offline)
   await _initSafe('remoteConfig', RemoteConfigService.initialize);
+
+  // OTA Translations: carrega traduções editáveis no servidor com fallback local.
+  await _initSafe('otaTranslations', OtaTranslationService.initialize);
 
   // Grupo 2: Serviços que dependem de Supabase (não-bloqueantes)
   unawaited(Future.wait([
@@ -267,7 +271,7 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final router = ref.watch(appRouterProvider);
     // ignore: unused_local_variable
     final themeMode = ref.watch(themeProvider);
