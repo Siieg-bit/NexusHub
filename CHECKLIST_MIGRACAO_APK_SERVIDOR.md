@@ -75,9 +75,9 @@ A arquitetura aprovada é **remota por domínio, tipada e com fallback local**. 
 | P2.1 | Free Coins | Criar tabela/RPC `reward_tasks`. | Concluído textualmente; pendente staging | Migration `243_reward_tasks_free_coins.sql` cria tabela, seed PT/EN e RPC `get_reward_tasks`. |
 | P2.2 | Free Coins | Integrar tela via service/provider tipado. | Concluído textualmente; pendente Flutter real | `RewardTaskService`, `rewardTasksProvider` e `free_coins_screen.dart` refatorada sem parsing direto de Supabase para cards. |
 | P2.3 | Free Coins | Fallback local e flag de rollback. | Concluído textualmente; pendente teste offline/staging | Fallback em `RewardTaskService.fallbackRewardTasks` e flag `features.remote_reward_tasks_enabled`. |
-| P3.1 | Níveis | Criar tabela/RPC `level_definitions`. | Pendente | Títulos, faixas e cores juntos. |
-| P3.2 | Níveis | Integrar helpers/theme ao serviço central. | Pendente | UI não consulta Supabase direto. |
-| P3.3 | Níveis | Validar paridade visual com baseline. | Pendente | Evita regressão de gamificação. |
+| P3.1 | Níveis | Criar tabela/RPC `level_definitions`. | Concluído textualmente; pendente staging | Migration `244_level_definitions.sql` cria tabela, seed multilíngue de 20 níveis, RPC `get_level_definitions` e flag `features.remote_level_definitions_enabled`. |
+| P3.2 | Níveis | Integrar helpers/theme ao serviço central. | Concluído textualmente; pendente Flutter real | `LevelDefinitionService` inicializa no boot, `helpers.dart` usa thresholds/títulos centralizados e `AppTheme.getLevelColor()` usa cor remota com fallback local. |
+| P3.3 | Níveis | Validar paridade visual com baseline. | Concluído textualmente; pendente teste visual em device/staging | Validação textual confirmou seed multilíngue, RPC, flag e integrações; falta `flutter analyze`, staging Supabase e comparação visual real. |
 | P4.1 | Announcements | Usar/ajustar `system_announcements` para banners/manutenção. | Pendente | Manter AppStrings apenas como fallback. |
 | P4.2 | Announcements | Implementar janela ativa, severidade e dismiss. | Pendente | Operação sem novo APK. |
 | P5.1 | Onboarding | Criar tabela/RPC `onboarding_slides`. | Pendente | Medium priority do mapa. |
@@ -99,7 +99,7 @@ A arquitetura aprovada é **remota por domínio, tipada e com fallback local**. 
 | 0 | Validar o commit OTA atual com Flutter real e staging. | Não iniciar novas migrações sobre base não compilada. |
 | 1 | Endurecer OTA Translations com flag, locale ativo e fluxo de edição. | Base para copy remota. |
 | 2 | Migrar Free Coins para tabela/RPC/provider/fallback. | Primeiro item de alto impacto ainda pendente. |
-| 3 | Migrar Level Definitions, incluindo títulos, faixas e cores. | Evita inconsistência visual. |
+| 3 | Migrar Level Definitions, incluindo títulos, faixas e cores. | Concluído textualmente; próximo bloqueio é Flutter real + staging Supabase para validar paridade visual. |
 | 4 | Ativar System Announcements por servidor. | Operação, manutenção e comunicação. |
 | 5 | Migrar Onboarding com fallback e variantes. | Testes sem novo APK. |
 | 6 | Migrar Streaming Rules com allowlist conservadora. | Segurança. |
@@ -110,6 +110,6 @@ A arquitetura aprovada é **remota por domínio, tipada e com fallback local**. 
 
 ## Observações abertas
 
-Validação executada novamente após o hardening P0/P1: `python3.11 scripts/validate_ota_translations.py` retornou OK, com 3053 getters cobertos, 85 métodos delegados e 29950 linhas de seed. A migração Free Coins também passou por validação textual local, confirmando migration `reward_tasks`, RPC `get_reward_tasks`, feature flag `features.remote_reward_tasks_enabled`, provider tipado e ausência de parsing direto de Supabase na tela. O ambiente atual não possui `dart` nem `flutter` no PATH, então a análise estática oficial do Flutter deve ser executada no CI ou em uma máquina de desenvolvimento antes de promover para produção.
+Validação executada novamente após o hardening P0/P1: `python3.11 scripts/validate_ota_translations.py` retornou OK, com 3053 getters cobertos, 85 métodos delegados e 29950 linhas de seed. A migração Free Coins também passou por validação textual local, confirmando migration `reward_tasks`, RPC `get_reward_tasks`, feature flag `features.remote_reward_tasks_enabled`, provider tipado e ausência de parsing direto de Supabase na tela. A migração Level Definitions passou por validação textual local, confirmando migration `level_definitions`, RPC `get_level_definitions`, seed multilíngue de 20 níveis, feature flag `features.remote_level_definitions_enabled`, boot em `main.dart`, helpers centralizados e cores remotas no tema com fallback. O ambiente atual não possui `dart` nem `flutter` no PATH, então a análise estática oficial do Flutter deve ser executada no CI ou em uma máquina de desenvolvimento antes de promover para produção.
 
 O plano completo de produção está documentado em `PLANO_ACAO_COMPLETO_APK_PARA_SERVIDOR_2026.md`. A conclusão atual é que a infraestrutura OTA criada é uma base correta, mas a migração completa do mapa ainda depende das fases P0 a P10 acima.

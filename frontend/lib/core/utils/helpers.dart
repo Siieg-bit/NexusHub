@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/locale_provider.dart';
 import '../l10n/app_strings.dart';
-import '../services/remote_config_service.dart';
+import '../services/level_definition_service.dart';
 
 /// Utilitários e helpers do aplicativo.
 
@@ -17,25 +17,12 @@ import '../services/remote_config_service.dart';
 // Arredondado para números bonitos.
 // =============================================================================
 
-/// Tabela de reputação necessária para cada nível.
-/// Carregada do RemoteConfigService (tabela app_remote_config).
-/// Fallback hardcoded para o caso do serviço ainda não ter inicializado.
-const List<int> _kFallbackLevelThresholds = [
-  0, 1800, 6300, 13000, 22000, 33000, 46000, 60500,
-  77000, 95000, 115000, 136500, 159500, 184500, 210500,
-  238500, 268000, 299000, 331000, 365000,
-];
-
-/// Retorna a tabela de thresholds de nível do RemoteConfigService.
-/// Se o serviço ainda não carregou, usa o fallback hardcoded.
-List<int> get levelThresholds {
-  final raw = RemoteConfigService.getList('gamification.level_thresholds');
-  if (raw.isNotEmpty) {
-    final parsed = raw.map((e) => e is int ? e : int.tryParse(e.toString()) ?? 0).toList();
-    if (parsed.length == 20) return parsed;
-  }
-  return _kFallbackLevelThresholds;
-}
+/// Retorna a tabela de thresholds de nível da fonte central server-driven.
+///
+/// A fonte primária é `LevelDefinitionService`, inicializada no boot a partir da
+/// RPC `get_level_definitions`. Se o serviço remoto estiver desabilitado, sem
+/// rede ou ainda não inicializado, ele mantém fallback local equivalente ao APK.
+List<int> get levelThresholds => LevelDefinitionService.thresholds;
 
 /// Nível máximo do sistema.
 const int maxLevel = 20;
@@ -128,59 +115,12 @@ int clampDailyReputation(int earnedToday, int amount) {
 /// Nome do nível para exibição (títulos temáticos).
 /// Usa strings i18n para tradução automática.
 String levelTitle(int level) {
-  final s = getStrings();
-  final titles = [
-    s.levelTitleNovice,        // 1
-    s.levelTitleBeginner,      // 2
-    s.levelTitleApprentice,    // 3
-    s.levelTitleExplorer,      // 4
-    s.levelTitleWarrior,       // 5
-    s.levelTitleVeteran,       // 6
-    s.levelTitleSpecialist,    // 7
-    s.levelTitleMaster,        // 8
-    s.levelTitleGrandMaster,   // 9
-    s.levelTitleChampion,      // 10
-    s.levelTitleHero,          // 11
-    s.levelTitleGuardian,      // 12
-    s.levelTitleSentinel,      // 13
-    s.levelTitleLegendary,     // 14
-    s.levelTitleMythical,      // 15
-    s.levelTitleDivine,        // 16
-    s.levelTitleCelestial,     // 17
-    s.levelTitleTranscendent,  // 18
-    s.levelTitleSupreme,       // 19
-    s.levelTitleUltimate,      // 20
-  ];
-  final idx = (level - 1).clamp(0, titles.length - 1);
-  return titles[idx];
+  return LevelDefinitionService.titleForLevel(level, strings: getStrings());
 }
 
 /// Retorna o título do nível usando AppStrings diretamente (para widgets com ref).
 String levelTitleFromStrings(AppStrings s, int level) {
-  final titles = [
-    s.levelTitleNovice,
-    s.levelTitleBeginner,
-    s.levelTitleApprentice,
-    s.levelTitleExplorer,
-    s.levelTitleWarrior,
-    s.levelTitleVeteran,
-    s.levelTitleSpecialist,
-    s.levelTitleMaster,
-    s.levelTitleGrandMaster,
-    s.levelTitleChampion,
-    s.levelTitleHero,
-    s.levelTitleGuardian,
-    s.levelTitleSentinel,
-    s.levelTitleLegendary,
-    s.levelTitleMythical,
-    s.levelTitleDivine,
-    s.levelTitleCelestial,
-    s.levelTitleTranscendent,
-    s.levelTitleSupreme,
-    s.levelTitleUltimate,
-  ];
-  final idx = (level - 1).clamp(0, titles.length - 1);
-  return titles[idx];
+  return LevelDefinitionService.titleForLevel(level, strings: s);
 }
 
 // =============================================================================

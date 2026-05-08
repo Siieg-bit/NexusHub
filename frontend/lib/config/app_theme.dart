@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/services/level_definition_service.dart';
 // google_fonts removido — usando fonte local PlusJakartaSans de assets/fonts/
 
 /// Tema visual do NexusHub — réplica pixel-perfect do Amino Apps.
@@ -126,6 +127,10 @@ class AppTheme {
   static const Color levelBadgeNum = Color(0xFF0D47A1);
 
   static Color getLevelColor(int level) {
+    final remoteHex = LevelDefinitionService.colorHexForLevel(level);
+    final parsed = _tryParseHexColor(remoteHex);
+    if (parsed != null) return parsed;
+
     if (level <= 2) return levelColors[0];
     if (level <= 4) return levelColors[1];
     if (level <= 6) return levelColors[2];
@@ -135,6 +140,12 @@ class AppTheme {
     if (level <= 17) return levelColors[6];
     if (level <= 19) return levelColors[7];
     return levelColors[8];
+  }
+
+  static Color? _tryParseHexColor(String value) {
+    final hex = value.trim().replaceFirst('#', '').toUpperCase();
+    if (!RegExp(r'^[0-9A-F]{6}$').hasMatch(hex)) return null;
+    return Color(int.parse('FF$hex', radix: 16));
   }
 
   // ============================================================================

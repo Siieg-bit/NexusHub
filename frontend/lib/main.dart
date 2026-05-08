@@ -26,6 +26,7 @@ import 'core/services/iap_service.dart';
 import 'core/services/ad_service.dart';
 import 'core/services/cache_service.dart';
 import 'core/services/remote_config_service.dart';
+import 'core/services/level_definition_service.dart';
 import 'core/services/ota_translation_service.dart';
 import 'core/services/analytics_service.dart';
 import 'core/services/error_handler.dart';
@@ -102,6 +103,15 @@ void main() async {
     () => OtaTranslationService.initialize(initialLocale: initialLocale.code),
   );
   updateGlobalStrings(initialLocale);
+
+  // Level Definitions: títulos, thresholds e cores de nível server-driven.
+  await _initSafe(
+    'levelDefinitions',
+    () => LevelDefinitionService.initialize(
+      locale: initialLocale.code,
+      strings: initialLocale.strings,
+    ),
+  );
 
   // Grupo 2: Serviços que dependem de Supabase (não-bloqueantes)
   unawaited(Future.wait([
@@ -228,6 +238,7 @@ class NexusHubApp extends ConsumerStatefulWidget {
 class _NexusHubAppState extends ConsumerState<NexusHubApp> {
   StreamSubscription<Map<String, dynamic>>? _pushSubscription;
   GoRouter? _initializedRouter;
+  String? _lastLevelDefinitionsLocale;
 
   @override
   void didChangeDependencies() {
@@ -291,6 +302,15 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
     // Isso garante que getStrings() retorne as strings corretas em services,
     // models e widgets StatefulWidget que não usam ref.watch(stringsProvider).
     updateGlobalStrings(currentLocale);
+    if (_lastLevelDefinitionsLocale == null) {
+      _lastLevelDefinitionsLocale = currentLocale.code;
+    } else if (_lastLevelDefinitionsLocale != currentLocale.code) {
+      _lastLevelDefinitionsLocale = currentLocale.code;
+      unawaited(LevelDefinitionService.refresh(
+        locale: currentLocale.code,
+        strings: s,
+      ));
+    }
 
     // Manter edge-to-edge com contraste e legibilidade adequados em Android 15/16.
     // O SystemUiOverlayStyle é derivado do baseMode do tema NexusHub ativo,
