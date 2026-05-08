@@ -138,6 +138,14 @@ jobs:
       - name: Build APK (debug)
         run: flutter build apk --debug
 
+      - name: Measure Android size (debug APK)
+        run: |
+          mkdir -p build/reports
+          python3 ../scripts/measure_android_binary_size.py \
+            --frontend-dir . \
+            --output-json build/reports/android-size-debug.json \
+            --output-md build/reports/android-size-debug.md
+
       - name: Upload APK
         continue-on-error: true
         uses: actions/upload-artifact@v4
@@ -146,6 +154,18 @@ jobs:
           path: frontend/build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: warn
           retention-days: 3
+
+      - name: Upload Android size report (debug)
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-size-debug
+          path: |
+            frontend/build/reports/android-size-debug.json
+            frontend/build/reports/android-size-debug.md
+          if-no-files-found: warn
+          retention-days: 30
 
   # ── Build Android (AAB para Play Store) ──
   build-release:
@@ -201,6 +221,15 @@ jobs:
       - name: Build AAB
         run: flutter build appbundle --release
 
+      - name: Measure Android size (release AAB)
+        run: |
+          mkdir -p build/reports
+          python3 ../scripts/measure_android_binary_size.py \
+            --frontend-dir . \
+            --output-json build/reports/android-size-release.json \
+            --output-md build/reports/android-size-release.md \
+            --require-artifacts
+
       - name: Upload AAB
         continue-on-error: true
         uses: actions/upload-artifact@v4
@@ -209,6 +238,18 @@ jobs:
           path: frontend/build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: warn
           retention-days: 30
+
+      - name: Upload Android size report (release)
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-size-release
+          path: |
+            frontend/build/reports/android-size-release.json
+            frontend/build/reports/android-size-release.md
+          if-no-files-found: warn
+          retention-days: 90
 
   # ── Deploy Edge Functions ──
   deploy-functions:
