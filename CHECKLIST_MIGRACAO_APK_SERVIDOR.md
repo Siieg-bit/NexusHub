@@ -80,9 +80,9 @@ A arquitetura aprovada é **remota por domínio, tipada e com fallback local**. 
 | P3.3 | Níveis | Validar paridade visual com baseline. | Concluído textualmente; pendente teste visual em device/staging | Validação textual confirmou seed multilíngue, RPC, flag e integrações; falta `flutter analyze`, staging Supabase e comparação visual real. |
 | P4.1 | Announcements | Usar/ajustar `system_announcements` para banners/manutenção. | Aplicado e validado no Supabase remoto; pendente teste no app | Migration `245_system_announcements_server_driven.sql` aplicada no projeto `ylvzqqvcanzzswjkqeya`; colunas v2, RPC `get_active_announcements_v2`, grants, policies, flag e RPC legada preservada foram confirmados remotamente. |
 | P4.2 | Announcements | Implementar janela ativa, severidade e dismiss. | Concluído textualmente; pendente Flutter real | `AnnouncementService`, `activeAnnouncementsProvider` e `announcement_banner.dart` usam conteúdo remoto tipado, severidade visual, CTA, `dismissible` persistido e fallback local vazio. |
-| P5.1 | Onboarding | Criar tabela/RPC `onboarding_slides`. | Pendente | Medium priority do mapa. |
-| P5.2 | Onboarding | Integrar provider com fallback local. | Pendente | App novo abre offline. |
-| P5.3 | Onboarding | Preparar variante/A-B test. | Pendente | Sem decidir produto sem confirmação. |
+| P5.1 | Onboarding | Criar tabela/RPC `onboarding_slides`. | Aplicado e validado no Supabase remoto; pendente teste no app | Migration `246_onboarding_slides_server_driven.sql` aplicada no projeto `ylvzqqvcanzzswjkqeya`; tabela, RPC `get_onboarding_slides`, grants, policies, flag e seed multilíngue de 30 registros/10 locales confirmados remotamente. |
+| P5.2 | Onboarding | Integrar provider com fallback local. | Concluído textualmente; pendente Flutter real | `OnboardingSlideService`, `onboardingSlidesProvider` e `onboarding_screen.dart` usam conteúdo remoto tipado, fallback local imediato e reagem ao locale ativo. |
+| P5.3 | Onboarding | Preparar variante/A-B test. | Parcialmente preparado; pendente decisão de produto | Schema/RPC já aceitam `variant_key`, mantendo `default`; falta definir estratégia e governança de experimentos antes de ativar variantes reais. |
 | P6.1 | Streaming | Migrar allowlist/blocklist para Remote Config ou tabela. | Pendente | Falha remota deve ser conservadora. |
 | P6.2 | Streaming | Integrar resolvedores a `StreamingRulesService`. | Pendente | Segurança e manutenção de provedores. |
 | P7.1 | Cache | Criar `CachePolicyService` e chaves TTL remotas. | Pendente | Substitui `Duration` hardcoded onde aplicável. |
@@ -101,7 +101,7 @@ A arquitetura aprovada é **remota por domínio, tipada e com fallback local**. 
 | 2 | Migrar Free Coins para tabela/RPC/provider/fallback. | Primeiro item de alto impacto ainda pendente. |
 | 3 | Migrar Level Definitions, incluindo títulos, faixas e cores. | Concluído textualmente; próximo bloqueio é Flutter real + staging Supabase para validar paridade visual. |
 | 4 | Ativar System Announcements por servidor. | Concluído textualmente e aplicado no Supabase remoto; falta validação Flutter/device. |
-| 5 | Migrar Onboarding com fallback e variantes. | Testes sem novo APK. |
+| 5 | Migrar Onboarding com fallback e variantes. | Concluído textualmente e aplicado no Supabase remoto; falta validação Flutter/device e decisão de produto para variantes A/B reais. |
 | 6 | Migrar Streaming Rules com allowlist conservadora. | Segurança. |
 | 7 | Migrar Cache TTLs para política central remota. | Otimização. |
 | 8 | Versionar canais push futuros. | Baixa prioridade e requer cautela Android. |

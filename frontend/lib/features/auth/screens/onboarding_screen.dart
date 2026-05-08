@@ -7,6 +7,9 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../models/onboarding_slide.dart';
+import '../providers/onboarding_slides_provider.dart';
+import '../services/onboarding_slide_service.dart';
 
 /// Tela de Onboarding — réplica fiel do Amino Apps.
 /// Fundo escuro com gradiente animado, logo centralizado, botões translúcidos.
@@ -38,8 +41,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
+    final locale = ref.watch(localeProvider);
+    final slidesAsync = ref.watch(onboardingSlidesProvider);
+    final slides = slidesAsync.valueOrNull ??
+        OnboardingSlideService.fallbackSlides(locale: locale.code, strings: s);
     final r = context.r;
+
     return Scaffold(
       body: AnimatedBuilder(
         animation: _bgController,
@@ -127,28 +135,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
 
                 const Spacer(flex: 1),
 
-                // Features Highlights
+                // Features Highlights server-driven com fallback local.
                 AminoAnimations.slideUp(
                   delay: const Duration(milliseconds: 200),
                   child: Column(
                     children: [
-                      _FeatureRow(
-                        icon: Icons.groups_rounded,
-                        color: context.nexusTheme.accentPrimary,
-                        text: s.thousandsOfCommunities,
-                      ),
-                      SizedBox(height: r.s(16)),
-                      _FeatureRow(
-                        icon: Icons.chat_bubble_rounded,
-                        color: context.nexusTheme.accentSecondary,
-                        text: s.realTimeChat,
-                      ),
-                      SizedBox(height: r.s(16)),
-                      _FeatureRow(
-                        icon: Icons.auto_awesome_rounded,
-                        color: context.nexusTheme.accentSecondary,
-                        text: s.customizeProfile,
-                      ),
+                      for (final slide in slides.take(3)) ...[
+                        _FeatureRow(
+                          icon: _iconFor(slide.iconName),
+                          color: _colorFromHex(
+                            slide.iconColorHex,
+                            fallback: context.nexusTheme.accentSecondary,
+                          ),
+                          title: slide.title,
+                          subtitle: slide.body,
+                        ),
+                        if (slide != slides.take(3).last) SizedBox(height: r.s(16)),
+                      ],
                     ],
                   ),
                 ),
@@ -178,7 +181,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          child: const Text('Criar Conta'),
+                          child: Text(s.createAccount),
                         ),
                       ),
 
@@ -244,17 +247,46 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
       ),
     );
   }
+
+  static IconData _iconFor(String iconName) {
+    switch (iconName) {
+      case 'groups_rounded':
+      case 'groups':
+        return Icons.groups_rounded;
+      case 'chat_bubble_rounded':
+      case 'chat':
+        return Icons.chat_bubble_rounded;
+      case 'auto_awesome_rounded':
+      case 'auto_awesome':
+        return Icons.auto_awesome_rounded;
+      case 'sports_esports_rounded':
+        return Icons.sports_esports_rounded;
+      case 'shield_rounded':
+        return Icons.shield_rounded;
+      default:
+        return Icons.auto_awesome_rounded;
+    }
+  }
+
+  static Color _colorFromHex(String value, {required Color fallback}) {
+    final normalized = value.replaceAll('#', '').trim();
+    if (normalized.length != 6 && normalized.length != 8) return fallback;
+    final parsed = int.tryParse(normalized.length == 6 ? 'FF$normalized' : normalized, radix: 16);
+    return parsed == null ? fallback : Color(parsed);
+  }
 }
 
 class _FeatureRow extends ConsumerWidget {
   final IconData icon;
   final Color color;
-  final String text;
+  final String title;
+  final String subtitle;
 
   const _FeatureRow({
     required this.icon,
     required this.color,
-    required this.text,
+    required this.title,
+    required this.subtitle,
   });
 
   @override
@@ -273,13 +305,32 @@ class _FeatureRow extends ConsumerWidget {
         ),
         SizedBox(width: r.s(14)),
         Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              color: context.nexusTheme.textPrimary,
-              fontSize: r.fs(14),
-              fontWeight: FontWeight.w500,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: context.nexusTheme.textPrimary,
+                  fontSize: r.fs(14),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (subtitle.trim().isNotEmpty) ...[
+                SizedBox(height: r.s(2)),
+                Text(
+                  subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: context.nexusTheme.textSecondary,
+                    fontSize: r.fs(12),
+                    fontWeight: FontWeight.w400,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ],
