@@ -451,12 +451,13 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         mediaPlaybackRequiresUserGesture: false,
         allowsInlineMediaPlayback: true,
         allowsAirPlayForMediaPlayback: true,
-        // useHybridComposition: true para Twitch/Kick.
-        // Com true (AndroidViewSurface), o WebView renderiza em thread separado
-        // do Flutter — elimina jank ao abrir teclado ou interagir com a UI.
-        // Os controles Flutter (ScreeningControlsOverlay) funcionam via
-        // PointerInterceptor que já está configurado no _PortraitLayout.
-        useHybridComposition: true,
+        // useHybridComposition: false para Twitch/Kick.
+        // Com false (AndroidView), o WebView renderiza diretamente na thread
+        // do Flutter sem overhead de composição entre threads — essencial para
+        // vídeo ao vivo (HLS) que é muito sensível a latência de renderização.
+        // Com true (AndroidViewSurface), o frame do vídeo precisa ser copiado
+        // entre threads a cada frame, causando jank e travamento perceptível.
+        useHybridComposition: false,
         supportZoom: false,
         disableHorizontalScroll: true,
         disableVerticalScroll: true,
@@ -493,43 +494,33 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         // Injetar CSS para ocultar UI nativa da Twitch/Kick e bloquear toques
         await controller.evaluateJavascript(source: r'''
           (function() {
-            // Injetar CSS para ocultar UI nativa e bloquear toques
+            // Injetar CSS para ocultar UI nativa da Twitch/Kick.
+            // NÃO usar touch-action:none nem killEvent no document inteiro —
+            // isso impede o autoplay da Twitch que depende de interação JS interna.
+            // O bloqueio de toques do usuário é feito pelo #touch-blocker no
+            // HTML wrapper (YouTube) ou pelo PointerInterceptor Flutter (Twitch/Kick).
             var style = document.createElement('style');
-            style.textContent = [
-              '* { touch-action: none !important; -webkit-user-select: none !important; }',
-              // Ocultar UI da Twitch: header, follow button, chat, controls
-              '.top-nav, .top-bar, .channel-header, .follow-btn, .tw-button,',
-              '[data-a-target="follow-button"], [data-a-target="subscribe-button"],',
-              '[data-a-target="gift-button"], .player-controls, .player-ui,',
-              '.player-overlay-background, .player-overlay, .player-button,',
-              '.player-seek-bar, .player-volume, .player-settings,',
-              '.channel-info-content, .metadata-layout, .tw-title,',
-              // Kick UI
-              '.player-controls-wrapper, .player-header { display: none !important; }',
-              // Garantir que o video ocupe 100% da tela sem cortar
-              // object-fit: contain preserva o aspect ratio (letterbox)
-              'video { width: 100vw !important; height: 100vh !important;',
-              '  position: fixed !important; top: 0 !important; left: 0 !important;',
-              '  object-fit: contain !important; z-index: 1 !important;',
-              '  background: #000 !important; }',
-              // Touch blocker sobre tudo
-              'body::after { content: ""; position: fixed; top: 0; left: 0;',
-              '  width: 100%; height: 100%; z-index: 99999;',
-              '  pointer-events: all; touch-action: none; }',
-            ].join(' ');
+            style.textContent =
+              // ── Twitch: ocultar header, follow, chat, controles do player ──
+              '.top-nav, .top-bar, .channel-header, .follow-btn, .tw-button,' +
+              '[data-a-target="follow-button"], [data-a-target="subscribe-button"],' +
+              '[data-a-target="gift-button"], .player-controls, .player-ui,' +
+              '.player-overlay-background, .player-overlay, .player-button,' +
+              '.player-seek-bar, .player-volume, .player-settings,' +
+              '.channel-info-content, .metadata-layout, .tw-title,' +
+              // ── Kick: ocultar controles e header ──
+              '.player-controls-wrapper, .player-header,' +
+              // ── Kick: ocultar elementos adicionais ──
+              '.vod-controls, .live-controls, .channel-info,' +
+              '[class*="Controls"], [class*="controls"],' +
+              '[class*="Header"], [class*="header"]' +
+              ' { display: none !important; }' +
+              // ── Vídeo ocupa 100% da tela ──
+              'video { width: 100vw !important; height: 100vh !important;' +
+              '  position: fixed !important; top: 0 !important; left: 0 !important;' +
+              '  object-fit: contain !important; z-index: 1 !important;' +
+              '  background: #000 !important; }';
             document.head.appendChild(style);
-            // Bloquear todos os eventos de touch no document
-            function killEvent(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              e.stopImmediatePropagation();
-            }
-            var opts = { capture: true, passive: false };
-            document.addEventListener('touchstart',  killEvent, opts);
-            document.addEventListener('touchmove',   killEvent, opts);
-            document.addEventListener('touchend',    killEvent, opts);
-            document.addEventListener('touchcancel', killEvent, opts);
-            document.addEventListener('contextmenu', killEvent, opts);
           })();
         ''');
         await _injectControlScript(controller);
