@@ -181,19 +181,40 @@ class ScreeningPlayerNotifier extends StateNotifier<ScreeningPlayerState> {
 
   // ── Registrar o WebViewController ────────────────────────────────────────────
 
-  void registerWebViewController(InAppWebViewController controller) {
+  /// Registra o WebViewController do InAppWebView.
+  ///
+  /// [forceWebMode] deve ser `true` quando chamado por um embed WebView que
+  /// substitui o player nativo (ex: fallback Kick/Twitch após erro HLS).
+  /// Nesse caso, o modo nativo é encerrado e _nativePlayer é descartado.
+  void registerWebViewController(
+    InAppWebViewController controller, {
+    bool forceWebMode = false,
+  }) {
     _webViewController = controller;
     _bridgeInjected = false;
     _webViewDisposed = false;
-    // NUNCA zerar _isNativeMode se o player nativo já foi registrado.
-    // O ScreeningPlayerWidget pode ser reconstruído (ex: mudança de sessionId)
-    // e chamar registerWebViewController novamente — mas se o ScreeningNativePlayerWidget
-    // já registrou o player nativo, _isNativeMode deve permanecer true.
-    // Só sair do modo nativo se explicitamente não há player nativo ativo.
-    if (_nativePlayer == null && _drmPlayer == null) {
+    if (forceWebMode) {
+      // Embed WebView está assumindo o player — sair do modo nativo.
+      // O ScreeningNativePlayerWidget pode ainda não ter sido destruído
+      // pelo Flutter (destruição assíncrona), mas o player nativo já não
+      // deve receber comandos. Descartá-lo aqui evita o conflito.
+      _nativePlayer?.stop();
+      _nativePlayer = null;
+      _drmPlayer = null;
       _isNativeMode = false;
+      _positionPollTimer?.cancel();
+      _positionPollTimer = null;
+    } else {
+      // NUNCA zerar _isNativeMode se o player nativo já foi registrado.
+      // O ScreeningPlayerWidget pode ser reconstruído (ex: mudança de sessionId)
+      // e chamar registerWebViewController novamente — mas se o ScreeningNativePlayerWidget
+      // já registrou o player nativo, _isNativeMode deve permanecer true.
+      // Só sair do modo nativo se explicitamente não há player nativo ativo.
+      if (_nativePlayer == null && _drmPlayer == null) {
+        _isNativeMode = false;
+      }
     }
-    debugPrint('[ScreeningPlayer] registerWebViewController — _isNativeMode=$_isNativeMode (nativePlayer=${_nativePlayer != null}, drmPlayer=${_drmPlayer != null})');
+    debugPrint('[ScreeningPlayer] registerWebViewController — _isNativeMode=$_isNativeMode, forceWebMode=$forceWebMode (nativePlayer=${_nativePlayer != null}, drmPlayer=${_drmPlayer != null})');
   }
 
   /// Chamado quando o InAppWebView é destruído (onDispose do widget).

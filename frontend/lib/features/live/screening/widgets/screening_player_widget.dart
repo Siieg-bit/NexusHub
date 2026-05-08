@@ -495,7 +495,10 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         if (mounted) setState(() => _isLoading = true);
         _webViewController = controller;
         final notifier = ref.read(screeningPlayerProvider(widget.sessionId).notifier);
-        notifier.registerWebViewController(controller);
+        // forceWebMode: true — garante que o provider sai do modo nativo
+        // (caso o ScreeningNativePlayerWidget ainda não tenha sido destruído
+        // pelo Flutter quando o embed WebView é criado como fallback).
+        notifier.registerWebViewController(controller, forceWebMode: true);
         notifier.setIsLive(isLive);
         controller.addJavaScriptHandler(
           handlerName: 'NexusPlayerBridge',
