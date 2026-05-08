@@ -313,23 +313,25 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         );
 
       case StreamType.embed:
-        // Para Twitch/Kick: carregar a URL do embed DIRETAMENTE no InAppWebView
+        // Para Twitch/Kick/YouTube: carregar a URL do embed DIRETAMENTE no InAppWebView
         // (sem HTML wrapper com iframe). Isso permite que o _injectControlScript
         // acesse o DOM do player diretamente (document.querySelector('video'))
         // sem a barreira cross-origin do iframe.
+        //
+        // IMPORTANTE para YouTube: ao carregar youtube.com/embed/ID diretamente
+        // no WebView (sem iframe), o JS injetado roda no mesmo contexto do player.
+        // Isso permite injetar CSS diretamente em .ytp-chrome-top, .ytp-chrome-bottom
+        // etc., eliminando completamente os controles nativos. Com iframe+HTML wrapper,
+        // o same-origin policy bloqueia qualquer acesso ao contentDocument do iframe.
         if (resolution.platform == StreamPlatform.twitch ||
-            resolution.platform == StreamPlatform.kick) {
+            resolution.platform == StreamPlatform.kick ||
+            resolution.platform == StreamPlatform.youtube ||
+            resolution.platform == StreamPlatform.youtubeLive) {
           return _buildDirectEmbedPlayer(context, resolution);
         }
-        // Para YouTube/Vimeo/outros: HTML wrapper com iframe embed.
+        // Para Vimeo/outros: HTML wrapper com iframe embed.
         // O player já está posicionado abaixo do TopBar no layout Flutter,
         // por isso não é necessário padding-top no HTML.
-        //
-        // IMPORTANTE: baseUrl deve ser 'https://nexushub.app' (não youtube.com).
-        // Usar baseUrl=youtube.com causa erro 152-4 (embed não permitido) porque
-        // o YouTube bloqueia embeds que parecem vir do próprio domínio youtube.com.
-        // O postMessage do IFrame API funciona via window.addEventListener('message')
-        // no HTML wrapper, independente do baseUrl.
         final htmlContent = _buildHtmlWrapper(resolution.url);
         return InAppWebView(
           key: ValueKey(resolution.url),
@@ -442,9 +444,20 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   /// o DOM do player diretamente via document.querySelector('video').
   Widget _buildDirectEmbedPlayer(BuildContext context, StreamResolution resolution) {
     final embedUrl = resolution.url;
+    final isYouTube = resolution.platform == StreamPlatform.youtube ||
+        resolution.platform == StreamPlatform.youtubeLive;
     final isLive = resolution.platform == StreamPlatform.twitch ||
         resolution.platform == StreamPlatform.kick ||
         resolution.platform == StreamPlatform.youtubeLive;
+    // YouTube: User-Agent desktop para evitar redirect para m.youtube.com
+    // Twitch/Kick: User-Agent mobile para UI simplificada
+    final userAgent = isYouTube
+        ? 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+          'AppleWebKit/537.36 (KHTML, like Gecko) '
+          'Chrome/124.0.0.0 Safari/537.36'
+        : 'Mozilla/5.0 (Linux; Android 13; Pixel 7) '
+          'AppleWebKit/537.36 (KHTML, like Gecko) '
+          'Chrome/124.0.0.0 Mobile Safari/537.36';
     return InAppWebView(
       key: ValueKey('direct_$embedUrl'),
       initialUrlRequest: URLRequest(url: WebUri(embedUrl)),
@@ -453,23 +466,19 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         mediaPlaybackRequiresUserGesture: false,
         allowsInlineMediaPlayback: true,
         allowsAirPlayForMediaPlayback: true,
-        // useHybridComposition: true para Twitch/Kick.
-        // Com true (AndroidViewSurface), o WebView renderiza em thread separado
-        // do Flutter — elimina jank ao abrir teclado ou interagir com a UI.
-        // Com false (AndroidView), o WebView compete com o Flutter pelo mesmo
-        // thread de renderizacao, causando travamentos com video de alta resolucao.
-        // Os controles Flutter (ScreeningControlsOverlay) funcionam via
-        // PointerInterceptor que ja esta configurado no _PortraitLayout.
-        useHybridComposition: true,
+        // useHybridComposition: false para YouTube (igual ao HTML wrapper).
+        // Com false (AndroidView), widgets Flutter sobrepostos recebem toques.
+        // Com true (AndroidViewSurface), o ScreeningControlsOverlay não recebe
+        // cliques no Android (pointer_interceptor não funciona nesse modo).
+        // Para Twitch/Kick mantemos true pois usam PointerInterceptor.
+        useHybridComposition: !isYouTube,
         supportZoom: false,
         disableHorizontalScroll: true,
         disableVerticalScroll: true,
         transparentBackground: true,
-        // User-Agent mobile para Twitch/Kick (UI simplificada)
-        userAgent:
-            'Mozilla/5.0 (Linux; Android 13; Pixel 7) '
-            'AppleWebKit/537.36 (KHTML, like Gecko) '
-            'Chrome/124.0.0.0 Mobile Safari/537.36',
+        iframeAllow: 'autoplay; fullscreen; picture-in-picture',
+        iframeAllowFullscreen: true,
+        userAgent: userAgent,
       ),
       onWebViewCreated: (controller) {
         if (mounted) setState(() => _isLoading = true);
@@ -493,49 +502,207 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         ref.read(screeningPlayerProvider(widget.sessionId).notifier).onWebViewLoading();
       },
       onLoadStop: (controller, url) async {
-        if (mounted) setState(() => _isLoading = false);
-        // Injetar CSS para ocultar UI nativa da Twitch/Kick e bloquear toques
-        await controller.evaluateJavascript(source: r'''
-          (function() {
-            // Injetar CSS para ocultar UI nativa e bloquear toques
-            var style = document.createElement('style');
-            style.textContent = [
-              '* { touch-action: none !important; -webkit-user-select: none !important; }',
-              // Ocultar UI da Twitch: header, follow button, chat, controls
-              '.top-nav, .top-bar, .channel-header, .follow-btn, .tw-button,',
-              '[data-a-target="follow-button"], [data-a-target="subscribe-button"],',
-              '[data-a-target="gift-button"], .player-controls, .player-ui,',
-              '.player-overlay-background, .player-overlay, .player-button,',
-              '.player-seek-bar, .player-volume, .player-settings,',
-              '.channel-info-content, .metadata-layout, .tw-title,',
-              // Kick UI
-              '.player-controls-wrapper, .player-header { display: none !important; }',
-              // Garantir que o video ocupe 100% da tela sem cortar
-              // object-fit: contain preserva o aspect ratio (letterbox)
-              'video { width: 100vw !important; height: 100vh !important;',
-              '  position: fixed !important; top: 0 !important; left: 0 !important;',
-              '  object-fit: contain !important; z-index: 1 !important;',
-              '  background: #000 !important; }',
-              // Touch blocker sobre tudo
-              'body::after { content: ""; position: fixed; top: 0; left: 0;',
-              '  width: 100%; height: 100%; z-index: 99999;',
-              '  pointer-events: all; touch-action: none; }',
-            ].join(' ');
-            document.head.appendChild(style);
-            // Bloquear todos os eventos de touch no document
-            function killEvent(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              e.stopImmediatePropagation();
-            }
-            var opts = { capture: true, passive: false };
-            document.addEventListener('touchstart',  killEvent, opts);
-            document.addEventListener('touchmove',   killEvent, opts);
-            document.addEventListener('touchend',    killEvent, opts);
-            document.addEventListener('touchcancel', killEvent, opts);
-            document.addEventListener('contextmenu', killEvent, opts);
-          })();
-        ''');
+        // Para YouTube: NÃO remover o overlay aqui.
+        // O overlay só é removido quando __YT_READY__ for recebido via console.log,
+        // garantindo que o CSS de ocultação já foi injetado antes de exibir o vídeo.
+        if (!isYouTube) {
+          if (mounted) setState(() => _isLoading = false);
+        }
+        if (isYouTube) {
+          // ── CSS direto no DOM do YouTube ──────────────────────────────────────
+          // Como a URL é carregada DIRETAMENTE no WebView (sem iframe),
+          // o JS injetado roda no mesmo contexto do player do YouTube.
+          // Podemos acessar document.querySelector('.ytp-chrome-top') etc.
+          // diretamente — sem nenhuma barreira de same-origin policy.
+          // Isso é impossível com o HTML wrapper (iframe cross-origin).
+          await controller.evaluateJavascript(source: r'''
+            (function() {
+              if (document.getElementById('nexus-yt-hide')) return;
+              var s = document.createElement('style');
+              s.id = 'nexus-yt-hide';
+              s.textContent =
+                /* ── Controles do player (chrome top e bottom) ── */
+                '.ytp-chrome-top,' +
+                '.ytp-chrome-top-buttons,' +
+                '.ytp-title,' +
+                '.ytp-title-text,' +
+                '.ytp-title-channel,' +
+                '.ytp-title-channel-logo,' +
+                '.ytp-title-link,' +
+                '.ytp-watermark,' +
+                '.ytp-gradient-top,' +
+                '.ytp-gradient-bottom,' +
+                '.ytp-chrome-bottom,' +
+                '.ytp-progress-bar-container,' +
+                '.ytp-progress-bar,' +
+                '.ytp-play-progress,' +
+                '.ytp-load-progress,' +
+                '.ytp-scrubber-container,' +
+                '.ytp-time-display,' +
+                '.ytp-left-controls,' +
+                '.ytp-right-controls,' +
+                /* ── Botões individuais ── */
+                '.ytp-button,' +
+                '.ytp-play-button,' +
+                '.ytp-next-button,' +
+                '.ytp-share-button,' +
+                '.ytp-watch-later-button,' +
+                '.ytp-copylink-button,' +
+                '.ytp-settings-button,' +
+                '.ytp-fullscreen-button,' +
+                '.ytp-overflow-button,' +
+                '.ytp-subtitles-button,' +
+                '.ytp-cards-button,' +
+                '.ytp-miniplayer-button,' +
+                '.ytp-mute-button,' +
+                '.ytp-volume-panel,' +
+                /* ── Overlays e end-cards ── */
+                '.ytp-pause-overlay,' +
+                '.ytp-pause-overlay-container,' +
+                '.ytp-endscreen-element,' +
+                '.ytp-ce-element,' +
+                '.ytp-ce-covering-overlay,' +
+                '.ytp-ce-covering-image,' +
+                '.ytp-ce-expanding-overlay,' +
+                /* ── Info cards ── */
+                '.iv-branding,' +
+                '.iv-card-cta,' +
+                '.ytp-cards-teaser,' +
+                '.ytp-cards-teaser-text,' +
+                /* ── Spinner de loading ── */
+                '.ytp-spinner,' +
+                /* ── Bezel (ícone play/pause ao centro ao clicar) ── */
+                '.ytp-bezel,' +
+                '.ytp-bezel-icon,' +
+                /* ── Tooltip ── */
+                '.ytp-tooltip,' +
+                /* ── Barra de preview ao hover ── */
+                '.ytp-hover-progress,' +
+                /* ── Painel de configurações ── */
+                '.ytp-panel,' +
+                '.ytp-panel-menu,' +
+                /* ── Autoplay ── */
+                '.ytp-autonav-endscreen,' +
+                '.ytp-autonav-endscreen-upnext-container' +
+                ' { display: none !important; visibility: hidden !important; opacity: 0 !important; }' +
+                /* ── Vídeo ocupa 100% da tela ── */
+                'video { width: 100vw !important; height: 100vh !important;' +
+                '  position: fixed !important; top: 0 !important; left: 0 !important;' +
+                '  object-fit: contain !important; z-index: 1 !important;' +
+                '  background: #000 !important; }' +
+                /* ── Fundo preto para o player ── */
+                '.html5-video-player, #player, .ytp-player-content, body { background: #000 !important; }' +
+                /* ── Touch blocker sobre tudo ── */
+                'body::after { content: ""; position: fixed; top: 0; left: 0;' +
+                '  width: 100%; height: 100%; z-index: 99999;' +
+                '  pointer-events: all; touch-action: none; }';
+              document.head.appendChild(s);
+
+              // Retry: o YouTube recria elementos dinamicamente após carregamento.
+              // Reinjetar o style a cada 500ms por 5s para garantir persistência.
+              var _retryCount = 0;
+              var _retryTimer = setInterval(function() {
+                _retryCount++;
+                if (!document.getElementById('nexus-yt-hide')) {
+                  var clone = s.cloneNode(true);
+                  document.head.appendChild(clone);
+                }
+                if (_retryCount >= 10) clearInterval(_retryTimer);
+              }, 500);
+
+              // Bloquear todos os eventos de input
+              function killEvent(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+              }
+              var capOpts = { capture: true, passive: false };
+              ['touchstart','touchmove','touchend','touchcancel',
+               'mousedown','mousemove','mouseup','click','dblclick',
+               'pointerdown','pointermove','pointerup','pointercancel',
+               'wheel','contextmenu','dragstart'].forEach(function(ev) {
+                document.addEventListener(ev, killEvent, capOpts);
+              });
+
+              // Emitir __YT_READY__ para remover o overlay de loading do Flutter.
+              // No modo direto não há onYouTubeIframeAPIReady — emitir aqui após
+              // o CSS ter sido injetado garante que os controles já estão ocultos.
+              console.log('__YT_READY__');
+
+              // Registrar eventos do <video> para notificar Flutter via bridge.
+              // O YouTube carrega o <video> assincronamente — usar retry com
+              // MutationObserver para garantir que os listeners sejam registrados.
+              function _attachYtVideoListeners() {
+                var v = document.querySelector('video');
+                if (!v || v._nexusDirectListeners) return;
+                v._nexusDirectListeners = true;
+                v.addEventListener('playing', function() { console.log('__YT_PLAYING__'); });
+                v.addEventListener('pause',   function() { console.log('__YT_PAUSED__'); });
+                v.addEventListener('waiting', function() { console.log('__YT_BUFFERING__'); });
+                v.addEventListener('ended',   function() { console.log('__VIDEO_ENDED__'); });
+                v.addEventListener('timeupdate', function() {
+                  var now = Date.now();
+                  if (!v._lastYtPos || now - v._lastYtPos > 500) {
+                    v._lastYtPos = now;
+                    if (!isNaN(v.currentTime)) console.log('__YT_POS:' + Math.floor(v.currentTime * 1000) + '__');
+                  }
+                });
+                v.addEventListener('durationchange', function() {
+                  if (!isNaN(v.duration) && v.duration > 0)
+                    console.log('__YT_DUR:' + Math.floor(v.duration * 1000) + '__');
+                });
+              }
+              // Tentar imediatamente
+              _attachYtVideoListeners();
+              // Retry a cada 500ms por 5s caso o <video> ainda não exista
+              var _vidRetry = 0;
+              var _vidTimer = setInterval(function() {
+                _vidRetry++;
+                _attachYtVideoListeners();
+                if (_vidRetry >= 10 || document.querySelector('video._nexusDirectListeners') ||
+                    (document.querySelector('video') && document.querySelector('video')._nexusDirectListeners))
+                  clearInterval(_vidTimer);
+              }, 500);
+            })();
+          ''');
+        } else {
+          // Twitch/Kick: CSS original de ocultação de UI
+          await controller.evaluateJavascript(source: r'''
+            (function() {
+              var style = document.createElement('style');
+              style.textContent = [
+                '* { touch-action: none !important; -webkit-user-select: none !important; }',
+                '.top-nav, .top-bar, .channel-header, .follow-btn, .tw-button,',
+                '[data-a-target="follow-button"], [data-a-target="subscribe-button"],',
+                '[data-a-target="gift-button"], .player-controls, .player-ui,',
+                '.player-overlay-background, .player-overlay, .player-button,',
+                '.player-seek-bar, .player-volume, .player-settings,',
+                '.channel-info-content, .metadata-layout, .tw-title,',
+                '.player-controls-wrapper, .player-header { display: none !important; }',
+                'video { width: 100vw !important; height: 100vh !important;',
+                '  position: fixed !important; top: 0 !important; left: 0 !important;',
+                '  object-fit: contain !important; z-index: 1 !important;',
+                '  background: #000 !important; }',
+                'body::after { content: ""; position: fixed; top: 0; left: 0;',
+                '  width: 100%; height: 100%; z-index: 99999;',
+                '  pointer-events: all; touch-action: none; }',
+              ].join(' ');
+              document.head.appendChild(style);
+              function killEvent(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+              }
+              var opts = { capture: true, passive: false };
+              document.addEventListener('touchstart',  killEvent, opts);
+              document.addEventListener('touchmove',   killEvent, opts);
+              document.addEventListener('touchend',    killEvent, opts);
+              document.addEventListener('touchcancel', killEvent, opts);
+              document.addEventListener('contextmenu', killEvent, opts);
+            })();
+          ''');
+        }
         await _injectControlScript(controller);
         final notifier = ref.read(screeningPlayerProvider(widget.sessionId).notifier);
         notifier.markBridgeInjected();
