@@ -60,6 +60,12 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
   // ── Ambient gradient key ────────────────────────────────────────────────────────────────────────────────────────
   final _ambientGradientKey = GlobalKey<ScreeningAmbientGradientState>();
 
+  // ── Fallback de erro nativo ───────────────────────────────────────────────
+  // Quando o player nativo (media_kit) falha repetidamente (ex: DNS não resolve
+  // para usher.twitchapps.com), este flag faz o widget usar o embed WebView
+  // em vez do player nativo. Resetado quando a URL do vídeo muda.
+  bool _nativeErrorOccurred = false;
+
   // ── Seek visual feedback ────────────────────────────────────────────────────────────────────────────────────────
   bool _showSeekLeft = false;
   bool _showSeekRight = false;
@@ -182,7 +188,10 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
         // do primeiro frame do novo InAppWebView (que será recriado com
         // nova key: ValueKey(url) no próximo rebuild).
         if (previous != next && next != null && next.isNotEmpty && mounted) {
-          setState(() => _isLoading = true);
+          setState(() {
+            _isLoading = true;
+            _nativeErrorOccurred = false; // reset ao trocar de vídeo
+          });
         }
       },
     );
@@ -303,6 +312,17 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
                 .setIsLive(isLivePlatform);
           }
         });
+        // Se o player nativo falhou (ex: DNS não resolve para Twitch),
+        // usar embed WebView como fallback.
+        if (_nativeErrorOccurred) {
+          debugPrint('[ScreeningPlayer] Fallback para embed após erro nativo');
+          return _buildDirectEmbedPlayer(context, StreamResolution(
+            url: _toEmbedUrlFallback(resolution.originalUrl ?? resolution.url) ?? resolution.url,
+            type: StreamType.embed,
+            platform: resolution.platform,
+            originalUrl: resolution.originalUrl ?? resolution.url,
+          ));
+        }
         return ScreeningNativePlayerWidget(
           key: ValueKey('${resolution.url}_${widget.sessionId}'),
           hlsUrl: resolution.url,
@@ -310,6 +330,9 @@ class _ScreeningPlayerWidgetState extends ConsumerState<ScreeningPlayerWidget>
           threadId: widget.threadId,
           platform: resolution.platform,
           resolution: resolution,
+          onNativeError: () {
+            if (mounted) setState(() => _nativeErrorOccurred = true);
+          },
         );
 
       case StreamType.embed:

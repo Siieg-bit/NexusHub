@@ -31,6 +31,10 @@ class ScreeningNativePlayerWidget extends ConsumerStatefulWidget {
   /// Necessário para DRM (contém licenseUrl, pssh, headers).
   final StreamResolution? resolution;
 
+  /// Chamado quando o player nativo falha repetidamente (ex: DNS não resolve,
+  /// HLS URL inválida). O widget pai deve usar isso para fazer fallback para embed.
+  final VoidCallback? onNativeError;
+
   const ScreeningNativePlayerWidget({
     super.key,
     required this.hlsUrl,
@@ -38,6 +42,7 @@ class ScreeningNativePlayerWidget extends ConsumerStatefulWidget {
     required this.threadId,
     required this.platform,
     this.resolution,
+    this.onNativeError,
   });
 
   @override
@@ -55,6 +60,7 @@ class _ScreeningNativePlayerWidgetState
   BetterPlayerController? _bpController;
 
   bool _initialized = false;
+  int _errorCount = 0;
   bool get _usesDrm =>
       widget.resolution?.requiresDrm == true &&
       widget.resolution?.licenseUrl != null;
@@ -113,6 +119,16 @@ class _ScreeningNativePlayerWidgetState
 
     _mkPlayer!.stream.error.listen((error) {
       debugPrint('[NativePlayer] stream.error=$error');
+      _errorCount++;
+      // Após 2 erros consecutivos, acionar o fallback para embed.
+      // Um único erro pode ser transitório (ex: perda de pacote), mas 2 erros
+      // indicam falha real (DNS não resolve, URL inválida, bloqueio de rede).
+      if (_errorCount >= 2 && mounted) {
+        debugPrint('[NativePlayer] ≥2 erros — acionando fallback para embed');
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) widget.onNativeError?.call();
+        });
+      }
     });
 
     // IMPORTANTE: registerNativePlayer() modifica o provider (state=).
